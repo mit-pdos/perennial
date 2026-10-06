@@ -93,14 +93,13 @@ func primed(xs []string) []string {
 func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	w := new(strings.Builder)
 	ns := glang.LeanIdent(spec.Name.Name)
-	fmt.Fprintf(w, "namespace %s\n", ns)
 	params := ctx.namedTypeParams(spec)
 	typeBinders := leanTypeParamBinders(params, "Type")
-	tApplied := leanApplied("t", params)
+	tApplied := leanApplied(ns, params)
 
 	switch ctx.filter.GetAction(spec.Name.Name) {
 	case declfilter.Axiomatize:
-		fmt.Fprintf(w, "axiom t : %s\n", leanForall(typeBinders, "Type"))
+		fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
 		zvBinders := ""
 		if len(params) > 0 {
 			zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
@@ -108,8 +107,8 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 				zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
 			}
 		}
-		fmt.Fprintf(w, "axiom zero_val : %s\n", leanForall(zvBinders, "ZeroVal "+tApplied))
-		fmt.Fprintf(w, "attribute [instance] zero_val\n")
+		fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
+		fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
 	case declfilter.Translate:
 		switch t := ctx.typeOf(spec.Type).(type) {
 		case *types.Struct:
@@ -117,7 +116,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "structure t [FfiSyntax]%s%s where\n  mk ::\n", sep, typeBinders)
+			fmt.Fprintf(w, "structure %s [FfiSyntax]%s%s where\n  mk ::\n", ns, sep, typeBinders)
 			for i := range t.NumFields() {
 				f := t.Field(i)
 				ft := ctx.toLeanType(spec, f.Type())
@@ -130,20 +129,19 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 					zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
 				}
 			}
-			fmt.Fprintf(w, "\ninstance zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨t.mk", zvBinders, tApplied)
+			fmt.Fprintf(w, "\ninstance %s.zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
 			for range t.NumFields() {
 				fmt.Fprint(w, " zeroValDef")
 			}
-			fmt.Fprint(w, "⟩\n")
+			fmt.Fprint(w, "⟩")
 		default:
 			sep := ""
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "abbrev t [FfiSyntax]%s%s : Type := %s\n", sep, typeBinders, ctx.toLeanType(spec, t))
+			fmt.Fprintf(w, "abbrev %s [FfiSyntax]%s%s : Type := %s", ns, sep, typeBinders, ctx.toLeanType(spec, t))
 		}
 	}
-	fmt.Fprintf(w, "end %s", ns)
 	return w.String()
 }
 
@@ -184,7 +182,7 @@ func (ctx *Ctx) leanStructImplBody(spec *ast.TypeSpec) glang.Expr {
 // namedTypeLeanPropClassDecl is the Lean version of namedTypePropClassDecl.
 func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	typeName := spec.Name.Name
-	gallinaTypeName := glang.LeanIdent(typeName)
+	gallinaTypeName := glang.LeanTypeDesc(typeName)
 	gallinaImplTypeName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
 
 	t := ctx.typeOf(spec.Name).(*types.Named)
@@ -206,7 +204,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 
 	implTy := leanApplied(gallinaImplTypeName, params)
 	ty := leanApplied(gallinaTypeName, params)
-	rocqTy := leanApplied(gallinaTypeName+".t", primed(params))
+	rocqTy := leanApplied(glang.LeanIdent(typeName), primed(params))
 
 	// type repr instance
 	if _, ok := ctx.typeOf(spec.Type).(*types.Struct); ok ||
@@ -386,12 +384,14 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 	case *types.Named:
 		var baseName string
 		pkg := t.Obj().Pkg()
-		if pkg != nil && pkg.Path() != ctx.pkgPath {
-			baseName = ctx.pkgRef(pkg) + "." + glang.ToIdent(t.Obj().Name()) + ".t"
+		if pkg == nil {
+			// universe types (error) are modeled by the framework
+			baseName = glang.LeanQuote(glang.ToIdent(t.Obj().Name()) + ".t")
+		} else if pkg.Path() != ctx.pkgPath {
+			baseName = glang.LeanQuote(ctx.pkgRef(pkg)) + "." + glang.LeanIdent(t.Obj().Name())
 		} else {
-			baseName = glang.ToIdent(t.Obj().Name()) + ".t"
+			baseName = glang.LeanIdent(t.Obj().Name())
 		}
-		baseName = glang.LeanQuote(baseName)
 		if t.TypeParams() != nil {
 			var params []string
 			for i := 0; i < t.TypeArgs().Len(); i++ {

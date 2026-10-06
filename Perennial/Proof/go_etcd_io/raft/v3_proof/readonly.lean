@@ -591,7 +591,7 @@ theorem heartbeat_ack_quorum_not_stale (γ : RaftNames) (term : w64) (ctx : GoSt
 end global_proof
 
 /-- Rocq `Axiom ownRaft`. -/
-axiom ownRaft [FfiSyntax] {GF : BundledGFunctors} (γ : RaftNames) (rf : v3.raft.t) : IProp GF
+axiom ownRaft [FfiSyntax] {GF : BundledGFunctors} (γ : RaftNames) (rf : v3.raft) : IProp GF
 
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -625,13 +625,13 @@ single-voter configuration). The true spec: given the `ProgressTracker` and
 its two voter maps (`Voters[0]`, `Voters[1]`, both non-nil), the result is
 `len(Voters[0]) == 1 && len(Voters[1]) == 0`, where `len` is the (wrapping)
 `int` size of the map. -/
-theorem ProgressTracker.wp_IsSingleton (p : Loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker.t)
+theorem ProgressTracker.wp_IsSingleton (p : Loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker)
     (v0 v1 : Loc) (m0 m1 : GMap w64 Unit) (dq0 dq1 : DFrac) :
     {{ "Hp" ∷ p ↦{dq} pt ∗
         "%Hvoters" ∷ ⌜pt.Config'.Voters'.arr = [v0, v1]⌝ ∗
         "Hm0" ∷ (v0 ↦${dq0} m0 : IProp GF) ∗
         "Hm1" ∷ (v1 ↦${dq1} m1 : IProp GF) }}
-      (App (Val (p @!! go.GoType.PointerType v3.tracker.ProgressTracker @!! go!"IsSingleton"))
+      (App (Val (p @!! go.GoType.PointerType v3.tracker.ProgressTracker.ty @!! go!"IsSingleton"))
         (Val #()))
     {{ RET #(decide (W64 (GMap.size m0) = W64 1 ∧ W64 (GMap.size m1) = W64 0));
         p ↦{dq} pt ∗ v0 ↦${dq0} m0 ∗ v1 ↦${dq1} m1 }} := by
@@ -672,9 +672,9 @@ theorem ProgressTracker.wp_IsSingleton (p : Loc) (dq : DFrac) (pt : v3.tracker.P
     simp only [TypedPointsto.typedPointstoDef, named]
     iframe
 
-theorem raft.wp_committedEntryInCurrentTerm (r : Loc) (rf : v3.raft.t) (γ : RaftNames) :
+theorem raft.wp_committedEntryInCurrentTerm (r : Loc) (rf : v3.raft) (γ : RaftNames) :
     {{ r ↦ rf ∗ ownRaft (GF := GF) γ rf }}
-      (App (Val (r @!! go.GoType.PointerType v3.raft @!! go!"committedEntryInCurrentTerm"))
+      (App (Val (r @!! go.GoType.PointerType v3.raft.ty @!! go!"committedEntryInCurrentTerm"))
         (Val #()))
     {{ (c : Bool), RET #c; r ↦ rf ∗ ownRaft γ rf ∗
         if c then ∃ l, isCommittedInTerm γ rf.Term' l else True }} := by
@@ -690,7 +690,7 @@ theorem raft.wp_committedEntryInCurrentTerm (r : Loc) (rf : v3.raft.t) (γ : Raf
 /-- Rocq `isReadIndexRequest`. -/
 def isReadIndexRequest (γ : RaftNames) (r : Loc) (read_req_ctx : GoString) (index : w64) :
     IProp GF :=
-  iprop(∃ read_req : v3.readIndexRequest.t,
+  iprop(∃ read_req : v3.readIndexRequest,
     "#r" ∷ r ↦□ read_req ∗
     "#ctx" ∷ read_req.req'.Context' ↦*□ read_req_ctx ∗
     "%Hindex" ∷ ⌜read_req.index' = index⌝ ∗
@@ -717,7 +717,7 @@ The heartbeat context of a new request is `u64Le (n + 1)`, which must not
 wrap around to an already used context, so `wp_readOnly_addRequest` requires
 `n < 2^64 - 1` (Rocq: no `n`, and the overflow side condition is admitted). -/
 def ownReadOnly (γ : RaftNames) (r : Loc) (term : w64) (n : Nat) : IProp GF :=
-  iprop(∃ (ro : v3.readOnly.t) (acks : GMap w64 w64) (unconfirmedReads : List Loc)
+  iprop(∃ (ro : v3.readOnly) (acks : GMap w64 w64) (unconfirmedReads : List Loc)
       (read_reqs : List ((GoString × w64) × GSet w64)),
     "r" ∷ r ↦ ro ∗
     "Hacks" ∷ ro.acks' ↦$ acks ∗
@@ -806,7 +806,7 @@ theorem wp_readOnly_recvAck (γ : RaftNames) (r : Loc) (term : w64) («from» : 
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
         "Hctx" ∷ ctx_sl ↦* ctx ∗
         "#Hack" ∷ isHeartbeatAck γ «from» term ctx }}
-      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"recvAck")) (Val #«from»))
+      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly.ty @!! go!"recvAck")) (Val #«from»))
         (Val #ctx_sl))
     {{ RET #(); ownReadOnly cfg γ r term n }} := by
   wp_start as ⟨Hown, Hctx, #Hack⟩
@@ -894,14 +894,14 @@ axiom JointConfig.wp_CommittedIndex (cfg : GSet w64)
     [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : go_etcd_io.raft.v3.quorum.Assumptions]
-    (l : interface.t_ok) (acks : GMap w64 w64) (c : v3.quorum.JointConfig.t) (voters_ref : Loc)
+    (l : interface.t_ok) (acks : GMap w64 w64) (c : v3.quorum.JointConfig) (voters_ref : Loc)
     (voters : GMap w64 Unit) (I : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.raft.v3.quorum ∗
         "Hl" ∷ ownAckedIndexer l acks I ∗
         "%Hc" ∷ ⌜c.arr = [voters_ref, map.nil]⌝ ∗
         "voters" ∷ voters_ref ↦$ voters ∗
         "%Hvoters_cfg" ∷ ⌜domSet voters = cfg⌝ }}
-      (App (Val (c @!! v3.quorum.JointConfig @!! go!"CommittedIndex")) (Val #(interface.ok l)))
+      (App (Val (c @!! v3.quorum.JointConfig.ty @!! go!"CommittedIndex")) (Val #(interface.ok l)))
     {{ (c : w64), RET #c; ownAckedIndexer l acks I ∗
         voters_ref ↦$ voters ∗
         ⌜0 ≤ sint.Z c ∧
@@ -936,8 +936,8 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 /-- Rocq `MsgReadIndex`. -/
 def MsgReadIndex : w32 := W32 15
 
-theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raft.t)
-    (m : v3.raftpb.Message.t) :
+theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raft)
+    (m : v3.raftpb.Message) :
     {{ "Hr" ∷ r ↦ rf ∗
         "Hrf" ∷ ownRaft (GF := GF) γ rf ∗
         "%HmType" ∷ ⌜m.Type' = MsgReadIndex⌝ ∗
@@ -952,8 +952,8 @@ theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raf
   -- (`trk.Visit` with a closure, `sendHeartbeat`, `send`, which calls `Logger` methods).
   sorry -- Rocq: Admitted
 
-theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft.t)
-    (m : v3.raftpb.Message.t) :
+theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft)
+    (m : v3.raftpb.Message) :
     {{ "Hr" ∷ r ↦ rf ∗
         "Hrf" ∷ ownRaft (GF := GF) γ rf ∗
         "%HmType" ∷ ⌜m.Type' = MsgReadIndex⌝ }}
@@ -969,7 +969,7 @@ theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
 theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
-    (c : v3.quorum.JointConfig.t) (voters_ref : Loc) (voters : GMap w64 Unit) (n : Nat) :
+    (c : v3.quorum.JointConfig) (voters_ref : Loc) (voters : GMap w64 Unit) (n : Nat) :
     0 < GMap.size cfg →
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
@@ -977,7 +977,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
         "%Hc" ∷ ⌜c.arr = [voters_ref, map.nil]⌝ ∗
         "voters" ∷ voters_ref ↦$ voters ∗
         "%Hvoters_cfg" ∷ ⌜domSet voters = cfg⌝ }}
-      (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"maybeAdvance")) (Val #c))
+      (App (Val (r @!! go.GoType.PointerType v3.readOnly.ty @!! go!"maybeAdvance")) (Val #c))
     {{ (rs : slice.t) (reads : List Loc), RET #rs;
         ownReadOnly cfg γ r term n ∗
         voters_ref ↦$ voters ∗
@@ -997,7 +997,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
   wp_method_call
   wp_call
   wp_auto
-  ihave HAI : ownAckedIndexer (interface.mk (go.GoType.PointerType v3.readOnly) #r) acks
+  ihave HAI : ownAckedIndexer (interface.mk (go.GoType.PointerType v3.readOnly.ty) #r) acks
       iprop(r ↦ ro ∗ ro.acks' ↦$ acks) $$ [r Hacks]
   · unfold ownAckedIndexer
     isplitl [r Hacks]
@@ -1194,7 +1194,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
 theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w64)
-    (req : v3.raftpb.Message.t) (read_req_ctx : GoString) (log : List (List w8)) (dq : DFrac)
+    (req : v3.raftpb.Message) (read_req_ctx : GoString) (log : List (List w8)) (dq : DFrac)
     (Ψ : List (List w8) → IProp GF) (n : Nat) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "#Hinv" ∷ isRaftCommitInv γ ∗
@@ -1205,7 +1205,7 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w6
         "%Hn" ∷ ⌜n < 2 ^ 64 - 1⌝ ∗
         "Hctx" ∷ req.Context' ↦*{dq} read_req_ctx ∗
         "#Hread_ctx" ∷ isReadReqCtx γ read_req_ctx Ψ }}
-      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"addRequest"))
+      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly.ty @!! go!"addRequest"))
         (Val #commitIndex)) (Val #req))
     {{ RET #(); ownReadOnly cfg γ r term (n + 1) }} := by
   wp_start as ⟨#Hinv, Hown, Hcom, %HcommitIndex, %Hn, Hctx, #Hread_ctx⟩
@@ -1215,13 +1215,13 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w6
   wp_auto
   irename «$sl0» => Hreq
   wp_bind (App (Val (GoInstruction (CompositeLiteral _))) (Val (LiteralValueV _)))
-  iapply wp_slice_literal (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest) [«$sl0_ptr»]
+  iapply wp_slice_literal (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest.ty) [«$sl0_ptr»]
   wp_auto
   isplitl []
   · ipureintro; rfl
   iintro %sl_ptr ⟨Hsl, -⟩
   wp_auto
-  wp_apply +noauto wp_slice_append (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest)
+  wp_apply +noauto wp_slice_append (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest.ty)
     ro.unconfirmedReads' unconfirmedReads _ [«$sl0_ptr»] (DFrac.own 1)
     $$ [unconfirmedReads unconfirmedReads_cap Hsl]
   · iframe

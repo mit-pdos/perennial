@@ -23,11 +23,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : log.Assumptions]
 
 instance Logger_typed_pointsto :
-    TypedPointsto (GF := GF) log.Logger.t :=
+    TypedPointsto (GF := GF) log.Logger :=
   sorry -- Rocq: Admitted
 
 instance Logger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) log.Logger.t log.Logger.underlying :=
+    IntoValTypedUnderlying (GF := GF) log.Logger log.Logger.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

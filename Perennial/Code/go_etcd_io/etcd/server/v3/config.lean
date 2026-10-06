@@ -17,15 +17,15 @@ end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.config
 
-def ServerConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/config.ServerConfig" [])
 
-attribute [irreducible] ServerConfig
+attribute [irreducible] ServerConfig.ty
 
-def V2DeprecationEnum [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def V2DeprecationEnum.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/config.V2DeprecationEnum" [])
 
-attribute [irreducible] V2DeprecationEnum
+attribute [irreducible] V2DeprecationEnum.ty
 
 axiom ServerConfig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -66,30 +66,26 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-namespace ServerConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerConfig
+axiom ServerConfig : Type
+axiom ServerConfig.zero_val : ZeroVal ServerConfig
+attribute [instance] ServerConfig.zero_val
 
 class ServerConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerConfig.underlying ServerConfig.t
-  underlying : go.UnderlyingDirectedEq ServerConfig ServerConfig.underlying
+  type_repr : go.TypeReprUnderlying ServerConfig.underlying ServerConfig
+  underlying : go.UnderlyingDirectedEq ServerConfig.ty ServerConfig.underlying
   isUnderlying : go.IsUnderlying ServerConfig.underlying ServerConfig.underlying
 
 attribute [instance] ServerConfig.TypeAssumptions.type_repr
   ServerConfig.TypeAssumptions.underlying
   ServerConfig.TypeAssumptions.isUnderlying
 
-namespace V2DeprecationEnum
-abbrev t [FfiSyntax] : Type := GoString
-end V2DeprecationEnum
+abbrev V2DeprecationEnum [FfiSyntax] : Type := GoString
 
 @[reducible] def V2DeprecationEnum.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class V2DeprecationEnum.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq V2DeprecationEnum V2DeprecationEnum.underlying
+  underlying : go.UnderlyingDirectedEq V2DeprecationEnum.ty V2DeprecationEnum.underlying
 
 attribute [instance] V2DeprecationEnum.TypeAssumptions.underlying
 

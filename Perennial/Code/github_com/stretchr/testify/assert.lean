@@ -17,73 +17,73 @@ end pkg_id
 
 namespace github_com.stretchr.testify.assert
 
-def compareResult [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def compareResult.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.compareResult" [])
 
-attribute [irreducible] compareResult
+attribute [irreducible] compareResult.ty
 
-def TestingT [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TestingT.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.TestingT" [])
 
-attribute [irreducible] TestingT
+attribute [irreducible] TestingT.ty
 
-def ComparisonAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ComparisonAssertionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.ComparisonAssertionFunc" [])
 
-attribute [irreducible] ComparisonAssertionFunc
+attribute [irreducible] ComparisonAssertionFunc.ty
 
-def ValueAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ValueAssertionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.ValueAssertionFunc" [])
 
-attribute [irreducible] ValueAssertionFunc
+attribute [irreducible] ValueAssertionFunc.ty
 
-def BoolAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def BoolAssertionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.BoolAssertionFunc" [])
 
-attribute [irreducible] BoolAssertionFunc
+attribute [irreducible] BoolAssertionFunc.ty
 
-def ErrorAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ErrorAssertionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.ErrorAssertionFunc" [])
 
-attribute [irreducible] ErrorAssertionFunc
+attribute [irreducible] ErrorAssertionFunc.ty
 
-def Comparison [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Comparison.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.Comparison" [])
 
-attribute [irreducible] Comparison
+attribute [irreducible] Comparison.ty
 
-def failNower [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def failNower.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.failNower" [])
 
-attribute [irreducible] failNower
+attribute [irreducible] failNower.ty
 
-def labeledContent [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def labeledContent.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.labeledContent" [])
 
-attribute [irreducible] labeledContent
+attribute [irreducible] labeledContent.ty
 
-def PanicTestFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PanicTestFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.PanicTestFunc" [])
 
-attribute [irreducible] PanicTestFunc
+attribute [irreducible] PanicTestFunc.ty
 
-def CollectT [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CollectT.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.CollectT" [])
 
-attribute [irreducible] CollectT
+attribute [irreducible] CollectT.ty
 
-def Assertions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Assertions.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/stretchr/testify/assert.Assertions" [])
 
-attribute [irreducible] Assertions
+attribute [irreducible] Assertions.ty
 
-@[reducible] def CompareType [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  compareResult
+@[reducible] def CompareType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  compareResult.ty
 
-@[reducible] def PanicAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TestingT, PanicTestFunc, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
+@[reducible] def PanicAssertionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, PanicTestFunc.ty, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-@[reducible] def tHelper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def tHelper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Helper" (go.signature.Signature [] false []))])
 
 axiom compareLess [FfiSyntax] [GoGlobalContext] : val
@@ -826,111 +826,93 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val intType.init) (Val #()))))))))
 
-namespace compareResult
-abbrev t [FfiSyntax] : Type := w64
-end compareResult
+abbrev compareResult [FfiSyntax] : Type := w64
 
 @[reducible] def compareResult.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class compareResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq compareResult compareResult.underlying
+  underlying : go.UnderlyingDirectedEq compareResult.ty compareResult.underlying
 
 attribute [instance] compareResult.TypeAssumptions.underlying
 
-namespace TestingT
-abbrev t [FfiSyntax] : Type := interface.t
-end TestingT
+abbrev TestingT [FfiSyntax] : Type := interface.t
 
 @[reducible] def TestingT.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true []))])
 
 class TestingT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TestingT TestingT.underlying
+  underlying : go.UnderlyingDirectedEq TestingT.ty TestingT.underlying
 
 attribute [instance] TestingT.TypeAssumptions.underlying
 
-namespace ComparisonAssertionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end ComparisonAssertionFunc
+abbrev ComparisonAssertionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def ComparisonAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TestingT, (go.GoType.InterfaceType []), (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
+  (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, (go.GoType.InterfaceType []), (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
 class ComparisonAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ComparisonAssertionFunc ComparisonAssertionFunc.underlying
+  underlying : go.UnderlyingDirectedEq ComparisonAssertionFunc.ty ComparisonAssertionFunc.underlying
 
 attribute [instance] ComparisonAssertionFunc.TypeAssumptions.underlying
 
-namespace ValueAssertionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end ValueAssertionFunc
+abbrev ValueAssertionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def ValueAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TestingT, (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
+  (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
 class ValueAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ValueAssertionFunc ValueAssertionFunc.underlying
+  underlying : go.UnderlyingDirectedEq ValueAssertionFunc.ty ValueAssertionFunc.underlying
 
 attribute [instance] ValueAssertionFunc.TypeAssumptions.underlying
 
-namespace BoolAssertionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end BoolAssertionFunc
+abbrev BoolAssertionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def BoolAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TestingT, go.bool, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
+  (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, go.bool, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
 class BoolAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq BoolAssertionFunc BoolAssertionFunc.underlying
+  underlying : go.UnderlyingDirectedEq BoolAssertionFunc.ty BoolAssertionFunc.underlying
 
 attribute [instance] BoolAssertionFunc.TypeAssumptions.underlying
 
-namespace ErrorAssertionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end ErrorAssertionFunc
+abbrev ErrorAssertionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def ErrorAssertionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TestingT, go.error, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
+  (go.GoType.FunctionType (go.signature.Signature [TestingT.ty, go.error, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
 class ErrorAssertionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ErrorAssertionFunc ErrorAssertionFunc.underlying
+  underlying : go.UnderlyingDirectedEq ErrorAssertionFunc.ty ErrorAssertionFunc.underlying
 
 attribute [instance] ErrorAssertionFunc.TypeAssumptions.underlying
 
-namespace Comparison
-abbrev t [FfiSyntax] : Type := func.t
-end Comparison
+abbrev Comparison [FfiSyntax] : Type := func.t
 
 @[reducible] def Comparison.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))
 
 class Comparison.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Comparison Comparison.underlying
+  underlying : go.UnderlyingDirectedEq Comparison.ty Comparison.underlying
 
 attribute [instance] Comparison.TypeAssumptions.underlying
 
-namespace failNower
-abbrev t [FfiSyntax] : Type := interface.t
-end failNower
+abbrev failNower [FfiSyntax] : Type := interface.t
 
 @[reducible] def failNower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false []))])
 
 class failNower.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq failNower failNower.underlying
+  underlying : go.UnderlyingDirectedEq failNower.ty failNower.underlying
 
 attribute [instance] failNower.TypeAssumptions.underlying
 
-namespace labeledContent
-structure t [FfiSyntax] where
+structure labeledContent [FfiSyntax] where
   mk ::
   label' : GoString
   content' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end labeledContent
+instance labeledContent.zero_val [FfiSyntax] : ZeroVal labeledContent :=
+  ⟨labeledContent.mk zeroValDef zeroValDef⟩
 
 @[reducible] def labeledContent.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"label" go.string),
@@ -947,12 +929,12 @@ instance equals_unfold_labeledContent [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType labeledContent.fields)
 
 class labeledContent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying labeledContent.underlying labeledContent.t
-  underlying : go.UnderlyingDirectedEq labeledContent labeledContent.underlying
-  get_label : ∀ (x : labeledContent.t), go.IsGoStepPureDetTagged under (StructFieldGet labeledContent.underlying go!"label") #x (Val #(x.label'))
-  set_label : ∀ (x : labeledContent.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet labeledContent.underlying go!"label") (PairV #x #y) (Val #(({ x with label' := y } : labeledContent.t)))
-  get_content : ∀ (x : labeledContent.t), go.IsGoStepPureDetTagged under (StructFieldGet labeledContent.underlying go!"content") #x (Val #(x.content'))
-  set_content : ∀ (x : labeledContent.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet labeledContent.underlying go!"content") (PairV #x #y) (Val #(({ x with content' := y } : labeledContent.t)))
+  type_repr : go.TypeReprUnderlying labeledContent.underlying labeledContent
+  underlying : go.UnderlyingDirectedEq labeledContent.ty labeledContent.underlying
+  get_label : ∀ (x : labeledContent), go.IsGoStepPureDetTagged under (StructFieldGet labeledContent.underlying go!"label") #x (Val #(x.label'))
+  set_label : ∀ (x : labeledContent) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet labeledContent.underlying go!"label") (PairV #x #y) (Val #(({ x with label' := y } : labeledContent)))
+  get_content : ∀ (x : labeledContent), go.IsGoStepPureDetTagged under (StructFieldGet labeledContent.underlying go!"content") #x (Val #(x.content'))
+  set_content : ∀ (x : labeledContent) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet labeledContent.underlying go!"content") (PairV #x #y) (Val #(({ x with content' := y } : labeledContent)))
 
 attribute [instance] labeledContent.TypeAssumptions.type_repr
   labeledContent.TypeAssumptions.underlying
@@ -961,26 +943,22 @@ attribute [instance] labeledContent.TypeAssumptions.type_repr
   labeledContent.TypeAssumptions.get_content
   labeledContent.TypeAssumptions.set_content
 
-namespace PanicTestFunc
-abbrev t [FfiSyntax] : Type := func.t
-end PanicTestFunc
+abbrev PanicTestFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def PanicTestFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false []))
 
 class PanicTestFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq PanicTestFunc PanicTestFunc.underlying
+  underlying : go.UnderlyingDirectedEq PanicTestFunc.ty PanicTestFunc.underlying
 
 attribute [instance] PanicTestFunc.TypeAssumptions.underlying
 
-namespace CollectT
-structure t [FfiSyntax] where
+structure CollectT [FfiSyntax] where
   mk ::
   errors' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end CollectT
+instance CollectT.zero_val [FfiSyntax] : ZeroVal CollectT :=
+  ⟨CollectT.mk zeroValDef⟩
 
 @[reducible] def CollectT.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"errors" (go.GoType.SliceType go.error))]
@@ -996,27 +974,25 @@ instance equals_unfold_CollectT [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CollectT.fields)
 
 class CollectT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CollectT.underlying CollectT.t
-  underlying : go.UnderlyingDirectedEq CollectT CollectT.underlying
-  get_errors : ∀ (x : CollectT.t), go.IsGoStepPureDetTagged under (StructFieldGet CollectT.underlying go!"errors") #x (Val #(x.errors'))
-  set_errors : ∀ (x : CollectT.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet CollectT.underlying go!"errors") (PairV #x #y) (Val #(({ x with errors' := y } : CollectT.t)))
+  type_repr : go.TypeReprUnderlying CollectT.underlying CollectT
+  underlying : go.UnderlyingDirectedEq CollectT.ty CollectT.underlying
+  get_errors : ∀ (x : CollectT), go.IsGoStepPureDetTagged under (StructFieldGet CollectT.underlying go!"errors") #x (Val #(x.errors'))
+  set_errors : ∀ (x : CollectT) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet CollectT.underlying go!"errors") (PairV #x #y) (Val #(({ x with errors' := y } : CollectT)))
 
 attribute [instance] CollectT.TypeAssumptions.type_repr
   CollectT.TypeAssumptions.underlying
   CollectT.TypeAssumptions.get_errors
   CollectT.TypeAssumptions.set_errors
 
-namespace Assertions
-structure t [FfiSyntax] where
+structure Assertions [FfiSyntax] where
   mk ::
-  t' : TestingT.t
+  t' : TestingT
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end Assertions
+instance Assertions.zero_val [FfiSyntax] : ZeroVal Assertions :=
+  ⟨Assertions.mk zeroValDef⟩
 
 @[reducible] def Assertions.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"t" TestingT)]
+  [(go.field_decl.FieldDecl go!"t" TestingT.ty)]
 
 @[irreducible] def Assertions.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Assertions.fieldsUnsealed
@@ -1029,10 +1005,10 @@ instance equals_unfold_Assertions [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Assertions.fields)
 
 class Assertions.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Assertions.underlying Assertions.t
-  underlying : go.UnderlyingDirectedEq Assertions Assertions.underlying
-  get_t : ∀ (x : Assertions.t), go.IsGoStepPureDetTagged under (StructFieldGet Assertions.underlying go!"t") #x (Val #(x.t'))
-  set_t : ∀ (x : Assertions.t) (y : TestingT.t), go.IsGoStepPureDetTagged under (StructFieldSet Assertions.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : Assertions.t)))
+  type_repr : go.TypeReprUnderlying Assertions.underlying Assertions
+  underlying : go.UnderlyingDirectedEq Assertions.ty Assertions.underlying
+  get_t : ∀ (x : Assertions), go.IsGoStepPureDetTagged under (StructFieldGet Assertions.underlying go!"t") #x (Val #(x.t'))
+  set_t : ∀ (x : Assertions) (y : TestingT), go.IsGoStepPureDetTagged under (StructFieldSet Assertions.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : Assertions)))
 
 attribute [instance] Assertions.TypeAssumptions.type_repr
   Assertions.TypeAssumptions.underlying

@@ -772,7 +772,7 @@ theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (
           xs.length ≤ 2 ^ 62⌝ }}
       (App (App (App (App (Val #(functions choosePivotCmpFunc [Et])) (Val #data)) (Val #a))
         (Val #b)) (Val #cmp_code))
-    {{ (r : w64) (hint : slices.sortedHint.t), RET (PairV #r #hint);
+    {{ (r : w64) (hint : slices.sortedHint), RET (PairV #r #hint);
         data ↦* xs ∗
         "%Hr_bound" ∷ ⌜sint.Z a ≤ sint.Z r ∧ sint.Z r < sint.Z b⌝ }} := by
   wp_start as H
@@ -814,10 +814,10 @@ theorem wp_choosePivotCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t) (
     (try wp_if_destruct) <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); iapply HΦ; iframe; ipureintro; exact this)
 
 omit [StrictWeakOrder R] in
-theorem xorshift.wp_Next (r : Loc) (v : xorshift.t) :
+theorem xorshift.wp_Next (r : Loc) (v : xorshift) :
     {{ (r ↦ v : IProp GF) }}
-      (App (Val (r @!! go.GoType.PointerType xorshift @!! go!"Next")) (Val #()))
-    {{ (n : w64), RET #n; ∃ v' : xorshift.t, r ↦ v' }} := by
+      (App (Val (r @!! go.GoType.PointerType xorshift.ty @!! go!"Next")) (Val #()))
+    {{ (n : w64), RET #n; ∃ v' : xorshift, r ↦ v' }} := by
   wp_start as Hr
   wp_auto
   wp_end
@@ -875,7 +875,7 @@ theorem wp_breakPatternsCmpFunc (data : slice.t) (a b : w64) (cmp_code : func.t)
     have hL : sint.Z (b - a) = sint.Z b - sint.Z a := by word
     have hd : sint.Z (BitVec.sdiv (b - a) (W64 4)) = (sint.Z b - sint.Z a) / 4 := by
       rw [sint_sdiv4 _ (by omega), hL]
-    ihave HI : (∃ (xs1 : List E) (idx_val : w64) (rv : xorshift.t),
+    ihave HI : (∃ (xs1 : List E) (idx_val : w64) (rv : xorshift),
         "Hxs" ∷ data ↦* xs1 ∗
         "idx" ∷ idx_ptr ↦ idx_val ∗
         "random" ∷ random_ptr ↦ rv ∗

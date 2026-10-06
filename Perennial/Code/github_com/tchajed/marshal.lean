@@ -19,15 +19,15 @@ end pkg_id
 
 namespace github_com.tchajed.marshal
 
-def Enc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Enc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Enc" [])
 
-attribute [irreducible] Enc
+attribute [irreducible] Enc.ty
 
-def Dec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Dec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Dec" [])
 
-attribute [irreducible] Dec
+attribute [irreducible] Dec.ty
 
 noncomputable def NewEncFromSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.NewEncFromSlice"
@@ -171,7 +171,7 @@ noncomputable def ReadInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -186,7 +186,7 @@ noncomputable def ReadInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"Uint32"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"Uint32"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -317,7 +317,7 @@ noncomputable def WriteInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b3"))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "off"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b3"))))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b3") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -354,7 +354,7 @@ noncomputable def WriteInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b3"))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "off"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b3"))))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"PutUint32"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"PutUint32"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b3") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -579,15 +579,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.std.initialize') (Val #()))))))))
 
-namespace Enc
-structure t [FfiSyntax] where
+structure Enc [FfiSyntax] where
   mk ::
   b' : slice.t
   off' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Enc
+instance Enc.zero_val [FfiSyntax] : ZeroVal Enc :=
+  ⟨Enc.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Enc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
@@ -604,12 +602,12 @@ instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Enc.fields)
 
 class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Enc.underlying Enc.t
-  underlying : go.UnderlyingDirectedEq Enc Enc.underlying
-  get_b : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Enc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc.t)))
-  get_off : ∀ (x : Enc.t), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
-  set_off : ∀ (x : Enc.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc.t)))
+  type_repr : go.TypeReprUnderlying Enc.underlying Enc
+  underlying : go.UnderlyingDirectedEq Enc.ty Enc.underlying
+  get_b : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Enc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc)))
+  get_off : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
+  set_off : ∀ (x : Enc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc)))
 
 attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.underlying
@@ -618,15 +616,13 @@ attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.get_off
   Enc.TypeAssumptions.set_off
 
-namespace Dec
-structure t [FfiSyntax] where
+structure Dec [FfiSyntax] where
   mk ::
   b' : slice.t
   off' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Dec
+instance Dec.zero_val [FfiSyntax] : ZeroVal Dec :=
+  ⟨Dec.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Dec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
@@ -643,12 +639,12 @@ instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Dec.fields)
 
 class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Dec.underlying Dec.t
-  underlying : go.UnderlyingDirectedEq Dec Dec.underlying
-  get_b : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Dec.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec.t)))
-  get_off : ∀ (x : Dec.t), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
-  set_off : ∀ (x : Dec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec.t)))
+  type_repr : go.TypeReprUnderlying Dec.underlying Dec
+  underlying : go.UnderlyingDirectedEq Dec.ty Dec.underlying
+  get_b : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Dec) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec)))
+  get_off : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
+  set_off : ∀ (x : Dec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec)))
 
 attribute [instance] Dec.TypeAssumptions.type_repr
   Dec.TypeAssumptions.underlying

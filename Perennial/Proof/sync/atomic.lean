@@ -145,7 +145,7 @@ theorem wp_CompareAndSwapUint64 (addr : Loc) (old new : w64) :
     iexact HΦ
 
 def ownUint64Def (u : Loc) (dq : DFrac) (v : w64) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Uint64.t }) dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Uint64 }) dq
 @[irreducible] def ownUint64 (u : Loc) (dq : DFrac) (v : w64) : IProp GF := ownUint64Def u dq v
 theorem ownUint64_unseal : @ownUint64 = @ownUint64Def := by funext; with_unfolding_all rfl
 
@@ -173,7 +173,7 @@ instance ownUint64_combines_gives (u : Loc) (v v' : w64) (dq dq' : DFrac) :
 theorem Uint64.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w64, ownUint64 u dq v ∗ (ownUint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint64 @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadUint64 $$ [] [HΦ]
@@ -198,7 +198,7 @@ theorem Uint64.wp_Store (u : Loc) (v : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w64, ownUint64 u (DFrac.own 1) old ∗
         (ownUint64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint64 @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_StoreUint64 $$ [] [HΦ]
@@ -223,7 +223,7 @@ theorem Uint64.wp_Add (u : Loc) (delta : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w64, ownUint64 u (DFrac.own 1) old ∗
         (ownUint64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint64 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_AddUint64 $$ [] [HΦ]
@@ -249,7 +249,7 @@ theorem Uint64.wp_CompareAndSwap (u : Loc) (old new : w64) :
       (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), ownUint64 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownUint64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType Uint64 @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -354,7 +354,7 @@ theorem wp_CompareAndSwapInt64 (addr : Loc) (old new : w64) :
     iexact HΦ
 
 def ownInt64Def (u : Loc) (dq : DFrac) (v : w64) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Int64.t }) dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Int64 }) dq
 @[irreducible] def ownInt64 (u : Loc) (dq : DFrac) (v : w64) : IProp GF := ownInt64Def u dq v
 theorem ownInt64_unseal : @ownInt64 = @ownInt64Def := by funext; with_unfolding_all rfl
 
@@ -382,7 +382,7 @@ instance ownInt64_combines_gives (u : Loc) (v v' : w64) (dq dq' : DFrac) :
 theorem Int64.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w64, ownInt64 u dq v ∗ (ownInt64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int64 @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int64.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadInt64 $$ [] [HΦ]
@@ -407,7 +407,7 @@ theorem Int64.wp_Store (u : Loc) (v : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w64, ownInt64 u (DFrac.own 1) old ∗
         (ownInt64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int64 @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int64.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_StoreInt64 $$ [] [HΦ]
@@ -432,7 +432,7 @@ theorem Int64.wp_Add (u : Loc) (delta : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w64, ownInt64 u (DFrac.own 1) old ∗
         (ownInt64 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int64 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int64.ty @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_AddInt64 $$ [] [HΦ]
@@ -458,7 +458,7 @@ theorem Int64.wp_CompareAndSwap (u : Loc) (old new : w64) :
       (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), ownInt64 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownInt64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType Int64 @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType Int64.ty @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -563,7 +563,7 @@ theorem wp_CompareAndSwapUint32 (addr : Loc) (old new : w32) :
     iexact HΦ
 
 def ownUint32Def (u : Loc) (dq : DFrac) (v : w32) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Uint32.t }) dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Uint32 }) dq
 @[irreducible] def ownUint32 (u : Loc) (dq : DFrac) (v : w32) : IProp GF := ownUint32Def u dq v
 theorem ownUint32_unseal : @ownUint32 = @ownUint32Def := by funext; with_unfolding_all rfl
 
@@ -591,7 +591,7 @@ instance ownUint32_combines_gives (u : Loc) (v v' : w32) (dq dq' : DFrac) :
 theorem Uint32.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w32, ownUint32 u dq v ∗ (ownUint32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint32 @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint32.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadUint32 $$ [] [HΦ]
@@ -616,7 +616,7 @@ theorem Uint32.wp_Store (u : Loc) (v : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w32, ownUint32 u (DFrac.own 1) old ∗
         (ownUint32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint32 @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint32.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_StoreUint32 $$ [] [HΦ]
@@ -641,7 +641,7 @@ theorem Uint32.wp_Add (u : Loc) (delta : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w32, ownUint32 u (DFrac.own 1) old ∗
         (ownUint32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Uint32 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Uint32.ty @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_AddUint32 $$ [] [HΦ]
@@ -667,7 +667,7 @@ theorem Uint32.wp_CompareAndSwap (u : Loc) (old new : w32) :
       (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), ownUint32 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownUint32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType Uint32 @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType Uint32.ty @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -772,7 +772,7 @@ theorem wp_CompareAndSwapInt32 (addr : Loc) (old new : w32) :
     iexact HΦ
 
 def ownInt32Def (u : Loc) (dq : DFrac) (v : w32) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Int32.t }) dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Int32 }) dq
 @[irreducible] def ownInt32 (u : Loc) (dq : DFrac) (v : w32) : IProp GF := ownInt32Def u dq v
 theorem ownInt32_unseal : @ownInt32 = @ownInt32Def := by funext; with_unfolding_all rfl
 
@@ -800,7 +800,7 @@ instance ownInt32_combines_gives (u : Loc) (v v' : w32) (dq dq' : DFrac) :
 theorem Int32.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : w32, ownInt32 u dq v ∗ (ownInt32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int32 @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadInt32 $$ [] [HΦ]
@@ -825,7 +825,7 @@ theorem Int32.wp_Store (u : Loc) (v : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w32, ownInt32 u (DFrac.own 1) old ∗
         (ownInt32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int32 @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_StoreInt32 $$ [] [HΦ]
@@ -850,7 +850,7 @@ theorem Int32.wp_Add (u : Loc) (delta : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : w32, ownInt32 u (DFrac.own 1) old ∗
         (ownInt32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Int32 @!! go!"Add")) (Val #delta)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_AddInt32 $$ [] [HΦ]
@@ -876,7 +876,7 @@ theorem Int32.wp_CompareAndSwap (u : Loc) (old new : w32) :
       (|={⊤,∅}=> ▷ ∃ (v : w32) (dq : DFrac), ownInt32 u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownInt32 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType Int32 @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -969,7 +969,7 @@ section pointer
 variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] (T : go.GoType) [IntoValTyped (GF := GF) T' T]
 
 def ownPointerDef (u : Loc) (dq : DFrac) (v : Loc) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v } : Pointer.t T') dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v } : Pointer T') dq
 @[irreducible] def ownPointer (u : Loc) (dq : DFrac) (v : Loc) : IProp GF :=
   ownPointerDef (T' := T') u dq v
 theorem ownPointer_unseal : @ownPointer = @ownPointerDef := by funext; with_unfolding_all rfl
@@ -981,7 +981,7 @@ instance ownPointer_timeless (u : Loc) (dq : DFrac) (v : Loc) :
 theorem Pointer.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : Loc, ownPointer (T' := T') u dq v ∗ (ownPointer (T' := T') u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType (Pointer T) @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadPointer $$ [] [HΦ]
@@ -1006,7 +1006,7 @@ theorem Pointer.wp_Store (u : Loc) (v : Loc) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : Loc, ownPointer (T' := T') u (DFrac.own 1) old ∗
         (ownPointer (T' := T') u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType (Pointer T) @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_StorePointer $$ [] [HΦ]
@@ -1032,7 +1032,7 @@ theorem Pointer.wp_CompareAndSwap (u : Loc) (old new : Loc) :
       (|={⊤,∅}=> ▷ ∃ (v : Loc) (dq : DFrac), ownPointer (T' := T') u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownPointer (T' := T') u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType (Pointer T) @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto
@@ -1061,7 +1061,7 @@ theorem Pointer.wp_Swap (u : Loc) (v' : Loc) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ∃ v : Loc, ownPointer (T' := T') u (DFrac.own 1) v ∗
         (ownPointer (T' := T') u (DFrac.own 1) v' ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType (Pointer T) @!! go!"Swap")) (Val #v')) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Swap")) (Val #v')) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_SwapPointer $$ [] [HΦ]
@@ -1093,7 +1093,7 @@ theorem b32w_inj {b1 b2 : Bool} (h : b32w b1 = b32w b2) : b1 = b2 := by
   cases b1 <;> cases b2 <;> first | rfl | (exfalso; revert h; decide)
 
 def ownBoolDef (u : Loc) (dq : DFrac) (v : Bool) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := b32w v } : Bool'.t) dq
+  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := b32w v } : Bool') dq
 @[irreducible] def ownBool (u : Loc) (dq : DFrac) (v : Bool) : IProp GF := ownBoolDef u dq v
 theorem ownBool_unseal : @ownBool = @ownBoolDef := by funext; with_unfolding_all rfl
 
@@ -1118,12 +1118,12 @@ instance ownBool_combines_gives (u : Loc) (v v' : Bool) (dq dq' : DFrac) :
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
-    exact b32w_inj (congrArg Bool'.t.v' Heq)
+    exact b32w_inj (congrArg Bool'.v' Heq)
 
 theorem Bool.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ v : Bool, ownBool u dq v ∗ (ownBool u dq v ={∅,⊤}=∗ Φ #v)) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Bool' @!! go!"Load")) (Val #())) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply_core wp_LoadUint32 $$ [] [HΦ]
@@ -1154,7 +1154,7 @@ theorem Bool.wp_Store (u : Loc) (v : Bool) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ old : Bool, ownBool u (DFrac.own 1) old ∗
         (ownBool u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (u @!! go.GoType.PointerType Bool' @!! go!"Store")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
   wp_start as _
   wp_auto
   wp_apply wp_b32
@@ -1181,7 +1181,7 @@ theorem Bool.wp_CompareAndSwap (u : Loc) (old new : Bool) :
       (|={⊤,∅}=> ▷ ∃ (v : Bool) (dq : DFrac), ownBool u dq v ∗
         ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
         (ownBool u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-      WP (App (App (Val (u @!! go.GoType.PointerType Bool' @!! go!"CompareAndSwap")) (Val #old))
+      WP (App (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"CompareAndSwap")) (Val #old))
         (Val #new)) {{ Φ }} := by
   wp_start as _
   wp_auto

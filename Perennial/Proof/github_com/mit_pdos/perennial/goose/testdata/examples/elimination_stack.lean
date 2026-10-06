@@ -70,9 +70,9 @@ instance ownLockedStack_timeless (γ : GName) (σ : List GoString) :
   unfold ownLockedStack; infer_instance
 
 def isLockedStack (s : Loc) (γ : GName) : IProp GF :=
-  iprop("#Hmu" ∷ sync.isMutex (s.[LockedStack.t, go!"mu"])
+  iprop("#Hmu" ∷ sync.isMutex (s.[LockedStack, go!"mu"])
       iprop(∃ (stack_sl : slice.t) (stack : List GoString),
-        "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
+        "stack" ∷ s.[LockedStack, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
         "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
         "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ∗
@@ -97,10 +97,10 @@ theorem wp_NewLockedStack :
   icases ghostVar_split γ ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
   · rw [Qp.half_add_half]; iexact Hγ
   imod sync.init_Mutex iprop(∃ (stack_sl : slice.t) (stack : List GoString),
-        "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
+        "stack" ∷ s.[LockedStack, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
         "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
-        "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ⊤ (s.[LockedStack.t, go!"mu"])
+        "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ⊤ (s.[LockedStack, go!"mu"])
     $$ [mu] [stack Hsl Hcap Hauth] with #Hmu
   · iexact mu
   · inext; iexists stack_sl, []; rw [List.reverse_nil]; iframe
@@ -113,7 +113,7 @@ theorem LockedStack.wp_Push (v : GoString) (γ : GName) (s : Loc) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isLockedStack s γ) -∗
       (|={⊤,∅}=> ∃ σ, ownLockedStack γ σ ∗ (ownLockedStack γ (v :: σ) ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (s @!! go.GoType.PointerType LockedStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType LockedStack.ty @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
   unfold isLockedStack
   iNamed His
@@ -153,7 +153,7 @@ theorem LockedStack.wp_Pop (γ : GName) (s : Loc) :
         (match σ with
          | [] => ownLockedStack γ [] ={∅,⊤}=∗ Φ (PairV #(go!"") #false)
          | v :: σ => ownLockedStack γ σ ={∅,⊤}=∗ Φ (PairV #v #true))) -∗
-      WP (App (Val (s @!! go.GoType.PointerType LockedStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType LockedStack.ty @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
   unfold isLockedStack
   iNamed His
@@ -249,7 +249,7 @@ abbrev elimInv (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
     "Hexchanger" ∷ ownExchangerInv γ (N.@"inv") exstate)
 
 def isEliminationStack (s : Loc) (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
-  iprop(∃ st : EliminationStack.t,
+  iprop(∃ st : EliminationStack,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ isLockedStack st.base' γ.lsGn ∗
     "#Hch" ∷ isChan st.exchanger' γ.chGn GoString ∗
@@ -366,7 +366,7 @@ theorem EliminationStack.wp_Push (v : GoString) (γ : EliminationStackNames) (s 
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isEliminationStack s γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
         (ownEliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (s @!! go.GoType.PointerType EliminationStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType EliminationStack.ty @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
   unfold isEliminationStack
   iNamed His
@@ -500,7 +500,7 @@ theorem EliminationStack.wp_Push (v : GoString) (γ : EliminationStackNames) (s 
   isplit
   · -- timeout: push onto the locked stack
     simp only [chan.blockingClausePre]
-    iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
+    iexists time.Time, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
     isplitr
     · ipureintro; rfl
     isplitr
@@ -543,7 +543,7 @@ theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : Loc) (N : Name
         (match σ with
          | [] => ownEliminationStack γ [] ={∅,⊤ \ ↑N}=∗ Φ (PairV #(go!"") #false)
          | v :: σ => ownEliminationStack γ σ ={∅,⊤ \ ↑N}=∗ Φ (PairV #v #true))) -∗
-      WP (App (Val (s @!! go.GoType.PointerType EliminationStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType EliminationStack.ty @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
   unfold isEliminationStack
   iNamed His
@@ -682,7 +682,7 @@ theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : Loc) (N : Name
   isplit
   · -- timeout: pop from the locked stack
     simp only [chan.blockingClausePre]
-    iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
+    iexists time.Time, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
     isplitr
     · ipureintro; rfl
     isplitr

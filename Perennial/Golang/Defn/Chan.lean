@@ -17,11 +17,11 @@ variable [FfiSyntax] [GoGlobalContext]
 
 open github_com.mit_pdos.perennial.goose.model in
 def receive (elem_type : go.GoType) : val :=
-  λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Receive" "c" #()
+  λ: "c", MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "Receive" "c" #()
 
 open github_com.mit_pdos.perennial.goose.model in
 def send (elem_type : go.GoType) : val :=
-  λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Send" "c"
+  λ: "c", MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "Send" "c"
 
 def forRange (elem_type : go.GoType) : val :=
   λ: "c" "body",
@@ -58,12 +58,12 @@ def tryCommClause (c : comm_clause) : val :=
     match case' with
     | SendCase elem_type ch e =>
         gl(let: "success" :=
-          MethodResolve (go.PointerType (channel.Channel elem_type)) "TrySend" ch e "blocking" in
+          MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "TrySend" ch e "blocking" in
         if: "success" then ((λ: <>, body : val) #(), #true)
         else (#(), #false))
     | RecvCase elem_type ch =>
         gl(let: (("success", "v"), "ok") :=
-          MethodResolve (go.PointerType (channel.Channel elem_type)) "TryReceive" ch "blocking" in
+          MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "TryReceive" ch "blocking" in
         if: "success" then ((λ: <>, body : val) #() ("v", "ok"), #true)
         else (#(), #false))
 
@@ -101,15 +101,15 @@ class ChanSemantics [GoSemanticsFunctions] : Prop where
   close_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.close [t]
-    (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Close" "c" #() : val)
+    (λ: "c", MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "Close" "c" #() : val)
   len_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.len [t]
-    (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Len" "c" #() : val)
+    (λ: "c", MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "Len" "c" #() : val)
   cap_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.cap [t]
-    (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Cap" "c" #() : val)
+    (λ: "c", MethodResolve (go.PointerType (channel.Channel.ty elem_type)) "Cap" "c" #() : val)
 
   chan_select_nonblocking (default_handler : Expr) (clauses : List comm_clause) :
     is_go_step_pure SelectStmt (SelectStmtClausesV (some default_handler) clauses) =

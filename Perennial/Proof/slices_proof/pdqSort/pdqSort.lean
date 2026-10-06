@@ -392,7 +392,7 @@ theorem wp_pdqsortCmpFunc (data : slice.t) (a b limit : w64) (cmp_code : func.t)
   -- reverse a decreasing range
   wp_bind (if: _ then _ else _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
-      ∃ (xs' : List E) (hint : slices.sortedHint.t) (r : w64),
+      ∃ (xs' : List E) (hint : slices.sortedHint) (r : w64),
       "a" ∷ a_ptr ↦ a_val ∗
       "b" ∷ b_ptr ↦ b_val ∗
       "cmp" ∷ cmp_ptr ↦ cmp_code ∗

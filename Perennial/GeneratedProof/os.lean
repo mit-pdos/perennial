@@ -22,11 +22,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance dirInfo_typed_pointsto :
-    TypedPointsto (GF := GF) os.dirInfo.t :=
+    TypedPointsto (GF := GF) os.dirInfo :=
   sorry -- Rocq: Admitted
 
 instance dirInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.dirInfo.t os.dirInfo.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.dirInfo os.dirInfo.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -41,48 +41,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance SyscallError_typed_pointsto :
-    TypedPointsto (GF := GF) os.SyscallError.t where
+    TypedPointsto (GF := GF) os.SyscallError where
   typedPointstoDef l v dq := iprop(
-    "Syscall" ∷ typedPointsto (structFieldRef os.SyscallError.t go!"Syscall" l) v.Syscall' dq ∗
-    "Err" ∷ typedPointsto (structFieldRef os.SyscallError.t go!"Err" l) v.Err' dq ∗
+    "Syscall" ∷ typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SyscallError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.SyscallError.t os.SyscallError.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.SyscallError os.SyscallError.underlying := by
   solve_into_val_typed_struct
 
-instance SyscallError_access_load_Syscall (l : Loc) (v : os.SyscallError.t) (dq : DFrac) :
+instance SyscallError_access_load_Syscall (l : Loc) (v : os.SyscallError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Syscall" l) v.Syscall' dq)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Syscall" l) v.Syscall' dq)
+      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' dq)
+      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError.t) (Syscall' : GoString) :
+instance SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError) (Syscall' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Syscall" l) v.Syscall' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Syscall" l) Syscall' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Syscall' := Syscall' } : os.SyscallError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) Syscall' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Syscall' := Syscall' } : os.SyscallError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_load_Err (l : Loc) (v : os.SyscallError.t) (dq : DFrac) :
+instance SyscallError_access_load_Err (l : Loc) (v : os.SyscallError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError.t) (Err' : error.t) :
+instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.SyscallError.t go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.SyscallError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) Err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.SyscallError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -98,11 +98,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance Process_typed_pointsto :
-    TypedPointsto (GF := GF) os.Process.t :=
+    TypedPointsto (GF := GF) os.Process :=
   sorry -- Rocq: Admitted
 
 instance Process_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.Process.t os.Process.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.Process os.Process.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -117,11 +117,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance processHandle_typed_pointsto :
-    TypedPointsto (GF := GF) os.processHandle.t :=
+    TypedPointsto (GF := GF) os.processHandle :=
   sorry -- Rocq: Admitted
 
 instance processHandle_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.processHandle.t os.processHandle.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.processHandle os.processHandle.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -136,11 +136,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance ProcAttr_typed_pointsto :
-    TypedPointsto (GF := GF) os.ProcAttr.t :=
+    TypedPointsto (GF := GF) os.ProcAttr :=
   sorry -- Rocq: Admitted
 
 instance ProcAttr_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.ProcAttr.t os.ProcAttr.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.ProcAttr os.ProcAttr.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -155,11 +155,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance ProcessState_typed_pointsto :
-    TypedPointsto (GF := GF) os.ProcessState.t :=
+    TypedPointsto (GF := GF) os.ProcessState :=
   sorry -- Rocq: Admitted
 
 instance ProcessState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.ProcessState.t os.ProcessState.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.ProcessState os.ProcessState.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -174,82 +174,82 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance LinkError_typed_pointsto :
-    TypedPointsto (GF := GF) os.LinkError.t where
+    TypedPointsto (GF := GF) os.LinkError where
   typedPointstoDef l v dq := iprop(
-    "Op" ∷ typedPointsto (structFieldRef os.LinkError.t go!"Op" l) v.Op' dq ∗
-    "Old" ∷ typedPointsto (structFieldRef os.LinkError.t go!"Old" l) v.Old' dq ∗
-    "New" ∷ typedPointsto (structFieldRef os.LinkError.t go!"New" l) v.New' dq ∗
-    "Err" ∷ typedPointsto (structFieldRef os.LinkError.t go!"Err" l) v.Err' dq ∗
+    "Op" ∷ typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' dq ∗
+    "Old" ∷ typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' dq ∗
+    "New" ∷ typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LinkError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.LinkError.t os.LinkError.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.LinkError os.LinkError.underlying := by
   solve_into_val_typed_struct
 
-instance LinkError_access_load_Op (l : Loc) (v : os.LinkError.t) (dq : DFrac) :
+instance LinkError_access_load_Op (l : Loc) (v : os.LinkError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Op" l) v.Op' dq)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Op" l) v.Op' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Op (l : Loc) (v : os.LinkError.t) (Op' : GoString) :
+instance LinkError_access_store_Op (l : Loc) (v : os.LinkError) (Op' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Op" l) v.Op' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError.t go!"Op" l) Op' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := Op' } : os.LinkError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.LinkError go!"Op" l) Op' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := Op' } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_load_Old (l : Loc) (v : os.LinkError.t) (dq : DFrac) :
+instance LinkError_access_load_Old (l : Loc) (v : os.LinkError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Old" l) v.Old' dq)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Old" l) v.Old' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Old (l : Loc) (v : os.LinkError.t) (Old' : GoString) :
+instance LinkError_access_store_Old (l : Loc) (v : os.LinkError) (Old' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Old" l) v.Old' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError.t go!"Old" l) Old' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Old' := Old' } : os.LinkError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.LinkError go!"Old" l) Old' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Old' := Old' } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_load_New (l : Loc) (v : os.LinkError.t) (dq : DFrac) :
+instance LinkError_access_load_New (l : Loc) (v : os.LinkError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"New" l) v.New' dq)
-      (typedPointsto (structFieldRef os.LinkError.t go!"New" l) v.New' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_New (l : Loc) (v : os.LinkError.t) (New' : GoString) :
+instance LinkError_access_store_New (l : Loc) (v : os.LinkError) (New' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"New" l) v.New' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError.t go!"New" l) New' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with New' := New' } : os.LinkError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.LinkError go!"New" l) New' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with New' := New' } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_load_Err (l : Loc) (v : os.LinkError.t) (dq : DFrac) :
+instance LinkError_access_load_Err (l : Loc) (v : os.LinkError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Err (l : Loc) (v : os.LinkError.t) (Err' : error.t) :
+instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.LinkError.t go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError.t go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.LinkError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.LinkError go!"Err" l) Err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -265,7 +265,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance noReadFrom_typed_pointsto :
-    TypedPointsto (GF := GF) os.noReadFrom.t where
+    TypedPointsto (GF := GF) os.noReadFrom where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -273,7 +273,7 @@ instance noReadFrom_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noReadFrom_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.noReadFrom.t os.noReadFrom.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.noReadFrom os.noReadFrom.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -288,48 +288,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance fileWithoutReadFrom_typed_pointsto :
-    TypedPointsto (GF := GF) os.fileWithoutReadFrom.t where
+    TypedPointsto (GF := GF) os.fileWithoutReadFrom where
   typedPointstoDef l v dq := iprop(
-    "noReadFrom" ∷ typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"noReadFrom" l) v.noReadFrom' dq ∗
-    "File" ∷ typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"File" l) v.File' dq ∗
+    "noReadFrom" ∷ typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' dq ∗
+    "File" ∷ typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fileWithoutReadFrom_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileWithoutReadFrom.t os.fileWithoutReadFrom.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.fileWithoutReadFrom os.fileWithoutReadFrom.underlying := by
   solve_into_val_typed_struct
 
-instance fileWithoutReadFrom_access_load_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom.t) (dq : DFrac) :
+instance fileWithoutReadFrom_access_load_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"noReadFrom" l) v.noReadFrom' dq)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"noReadFrom" l) v.noReadFrom' dq)
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' dq)
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom.t) (noReadFrom' : os.noReadFrom.t) :
+instance fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (noReadFrom' : os.noReadFrom) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"noReadFrom" l) v.noReadFrom' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"noReadFrom" l) noReadFrom' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noReadFrom' := noReadFrom' } : os.fileWithoutReadFrom.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) noReadFrom' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noReadFrom' := noReadFrom' } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutReadFrom_access_load_File (l : Loc) (v : os.fileWithoutReadFrom.t) (dq : DFrac) :
+instance fileWithoutReadFrom_access_load_File (l : Loc) (v : os.fileWithoutReadFrom) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"File" l) v.File' dq)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"File" l) v.File' dq)
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' dq)
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom.t) (File' : Loc) :
+instance fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom) (File' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"File" l) v.File' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom.t go!"File" l) File' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutReadFrom.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) File' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -345,7 +345,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance noWriteTo_typed_pointsto :
-    TypedPointsto (GF := GF) os.noWriteTo.t where
+    TypedPointsto (GF := GF) os.noWriteTo where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -353,7 +353,7 @@ instance noWriteTo_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noWriteTo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.noWriteTo.t os.noWriteTo.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.noWriteTo os.noWriteTo.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -368,48 +368,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance fileWithoutWriteTo_typed_pointsto :
-    TypedPointsto (GF := GF) os.fileWithoutWriteTo.t where
+    TypedPointsto (GF := GF) os.fileWithoutWriteTo where
   typedPointstoDef l v dq := iprop(
-    "noWriteTo" ∷ typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"noWriteTo" l) v.noWriteTo' dq ∗
-    "File" ∷ typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"File" l) v.File' dq ∗
+    "noWriteTo" ∷ typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' dq ∗
+    "File" ∷ typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance fileWithoutWriteTo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileWithoutWriteTo.t os.fileWithoutWriteTo.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.fileWithoutWriteTo os.fileWithoutWriteTo.underlying := by
   solve_into_val_typed_struct
 
-instance fileWithoutWriteTo_access_load_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo.t) (dq : DFrac) :
+instance fileWithoutWriteTo_access_load_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"noWriteTo" l) v.noWriteTo' dq)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"noWriteTo" l) v.noWriteTo' dq)
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' dq)
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo.t) (noWriteTo' : os.noWriteTo.t) :
+instance fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (noWriteTo' : os.noWriteTo) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"noWriteTo" l) v.noWriteTo' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"noWriteTo" l) noWriteTo' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noWriteTo' := noWriteTo' } : os.fileWithoutWriteTo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) noWriteTo' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noWriteTo' := noWriteTo' } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutWriteTo_access_load_File (l : Loc) (v : os.fileWithoutWriteTo.t) (dq : DFrac) :
+instance fileWithoutWriteTo_access_load_File (l : Loc) (v : os.fileWithoutWriteTo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"File" l) v.File' dq)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"File" l) v.File' dq)
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' dq)
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo.t) (File' : Loc) :
+instance fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo) (File' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"File" l) v.File' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo.t go!"File" l) File' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutWriteTo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) File' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -425,11 +425,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance file_typed_pointsto :
-    TypedPointsto (GF := GF) os.file.t :=
+    TypedPointsto (GF := GF) os.file :=
   sorry -- Rocq: Admitted
 
 instance file_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.file.t os.file.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.file os.file.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -444,11 +444,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance unixDirent_typed_pointsto :
-    TypedPointsto (GF := GF) os.unixDirent.t :=
+    TypedPointsto (GF := GF) os.unixDirent :=
   sorry -- Rocq: Admitted
 
 instance unixDirent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.unixDirent.t os.unixDirent.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.unixDirent os.unixDirent.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -463,31 +463,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance rawConn_typed_pointsto :
-    TypedPointsto (GF := GF) os.rawConn.t where
+    TypedPointsto (GF := GF) os.rawConn where
   typedPointstoDef l v dq := iprop(
-    "file" ∷ typedPointsto (structFieldRef os.rawConn.t go!"file" l) v.file' dq ∗
+    "file" ∷ typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rawConn_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.rawConn.t os.rawConn.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.rawConn os.rawConn.underlying := by
   solve_into_val_typed_struct
 
-instance rawConn_access_load_file (l : Loc) (v : os.rawConn.t) (dq : DFrac) :
+instance rawConn_access_load_file (l : Loc) (v : os.rawConn) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.rawConn.t go!"file" l) v.file' dq)
-      (typedPointsto (structFieldRef os.rawConn.t go!"file" l) v.file' dq)
+      (typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' dq)
+      (typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rawConn_access_store_file (l : Loc) (v : os.rawConn.t) (file' : Loc) :
+instance rawConn_access_store_file (l : Loc) (v : os.rawConn) (file' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.rawConn.t go!"file" l) v.file' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.rawConn.t go!"file" l) file' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.rawConn.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.rawConn go!"file" l) file' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.rawConn) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -503,31 +503,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance Root_typed_pointsto :
-    TypedPointsto (GF := GF) os.Root.t where
+    TypedPointsto (GF := GF) os.Root where
   typedPointstoDef l v dq := iprop(
-    "root" ∷ typedPointsto (structFieldRef os.Root.t go!"root" l) v.root' dq ∗
+    "root" ∷ typedPointsto (structFieldRef os.Root go!"root" l) v.root' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Root_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.Root.t os.Root.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.Root os.Root.underlying := by
   solve_into_val_typed_struct
 
-instance Root_access_load_root (l : Loc) (v : os.Root.t) (dq : DFrac) :
+instance Root_access_load_root (l : Loc) (v : os.Root) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.Root.t go!"root" l) v.root' dq)
-      (typedPointsto (structFieldRef os.Root.t go!"root" l) v.root' dq)
+      (typedPointsto (structFieldRef os.Root go!"root" l) v.root' dq)
+      (typedPointsto (structFieldRef os.Root go!"root" l) v.root' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Root_access_store_root (l : Loc) (v : os.Root.t) (root' : Loc) :
+instance Root_access_store_root (l : Loc) (v : os.Root) (root' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.Root.t go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.Root.t go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : os.Root.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.Root go!"root" l) v.root' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.Root go!"root" l) root' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : os.Root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -543,11 +543,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance root_typed_pointsto :
-    TypedPointsto (GF := GF) os.root.t :=
+    TypedPointsto (GF := GF) os.root :=
   sorry -- Rocq: Admitted
 
 instance root_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.root.t os.root.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.root os.root.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -562,31 +562,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance File_typed_pointsto :
-    TypedPointsto (GF := GF) os.File.t where
+    TypedPointsto (GF := GF) os.File where
   typedPointstoDef l v dq := iprop(
-    "file" ∷ typedPointsto (structFieldRef os.File.t go!"file" l) v.file' dq ∗
+    "file" ∷ typedPointsto (structFieldRef os.File go!"file" l) v.file' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance File_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.File.t os.File.underlying := by
+    IntoValTypedUnderlying (GF := GF) os.File os.File.underlying := by
   solve_into_val_typed_struct
 
-instance File_access_load_file (l : Loc) (v : os.File.t) (dq : DFrac) :
+instance File_access_load_file (l : Loc) (v : os.File) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.File.t go!"file" l) v.file' dq)
-      (typedPointsto (structFieldRef os.File.t go!"file" l) v.file' dq)
+      (typedPointsto (structFieldRef os.File go!"file" l) v.file' dq)
+      (typedPointsto (structFieldRef os.File go!"file" l) v.file' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance File_access_store_file (l : Loc) (v : os.File.t) (file' : Loc) :
+instance File_access_store_file (l : Loc) (v : os.File) (file' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef os.File.t go!"file" l) v.file' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.File.t go!"file" l) file' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.File.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.File go!"file" l) v.file' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.File go!"file" l) file' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.File) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -602,11 +602,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 instance fileStat_typed_pointsto :
-    TypedPointsto (GF := GF) os.fileStat.t :=
+    TypedPointsto (GF := GF) os.fileStat :=
   sorry -- Rocq: Admitted
 
 instance fileStat_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.fileStat.t os.fileStat.underlying :=
+    IntoValTypedUnderlying (GF := GF) os.fileStat os.fileStat.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

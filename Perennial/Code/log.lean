@@ -18,10 +18,10 @@ end pkg_id
 
 namespace log
 
-def Logger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Logger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"log.Logger" [])
 
-attribute [irreducible] Logger
+attribute [irreducible] Logger.ty
 
 axiom Logger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -138,15 +138,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val std.init) (Val #()))))))))
 
-namespace Logger
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Logger
+axiom Logger : Type
+axiom Logger.zero_val : ZeroVal Logger
+attribute [instance] Logger.zero_val
 
 class Logger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Logger.underlying Logger.t
-  underlying : go.UnderlyingDirectedEq Logger Logger.underlying
+  type_repr : go.TypeReprUnderlying Logger.underlying Logger
+  underlying : go.UnderlyingDirectedEq Logger.ty Logger.underlying
   isUnderlying : go.IsUnderlying Logger.underlying Logger.underlying
 
 attribute [instance] Logger.TypeAssumptions.type_repr

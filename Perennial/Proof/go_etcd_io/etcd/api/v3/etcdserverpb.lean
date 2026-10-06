@@ -35,21 +35,21 @@ instance get_isPkgInit_wf_inst :
 stuff. Want to turn the protobuf data into Gallina. -/
 axiom InternalRaftRequestC : Type
 axiom ownInternalRaftRequest
-    (req : etcdserverpb.InternalRaftRequest.t) (req_abs : InternalRaftRequestC) : IProp GF
+    (req : etcdserverpb.InternalRaftRequest) (req_abs : InternalRaftRequestC) : IProp GF
 axiom IsRaftRequestMarshalled (req_abs : InternalRaftRequestC) (data : List w8) : Prop
 
 axiom ownInternalRaftRequest_new_header
-    (req : etcdserverpb.InternalRaftRequest.t) (hdr_ptr : Loc)
-    (hdr : etcdserverpb.RequestHeader.t) (req_abs : InternalRaftRequestC) :
+    (req : etcdserverpb.InternalRaftRequest) (hdr_ptr : Loc)
+    (hdr : etcdserverpb.RequestHeader) (req_abs : InternalRaftRequestC) :
     ownInternalRaftRequest (GF := GF) req req_abs -∗
     hdr_ptr ↦ hdr -∗
     ∃ req_abs', ownInternalRaftRequest ({ req with Header' := hdr_ptr }) req_abs'
 
-axiom InternalRaftRequest.wp_Marshal [package_sem : etcdserverpb.Assumptions] (m_ptr : Loc) (m : etcdserverpb.InternalRaftRequest.t)
+axiom InternalRaftRequest.wp_Marshal [package_sem : etcdserverpb.Assumptions] (m_ptr : Loc) (m : etcdserverpb.InternalRaftRequest)
     (msg : InternalRaftRequestC) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb ∗
        m_ptr ↦ m ∗ ownInternalRaftRequest m msg }}
-      (App (Val (m_ptr @!! go.GoType.PointerType etcdserverpb.InternalRaftRequest @!! go!"Marshal"))
+      (App (Val (m_ptr @!! go.GoType.PointerType etcdserverpb.InternalRaftRequest.ty @!! go!"Marshal"))
         (Val #()))
     {{ (dAtA_sl : slice.t) (err : error.t), RET #(dAtA_sl, err);
         m_ptr ↦ m ∗

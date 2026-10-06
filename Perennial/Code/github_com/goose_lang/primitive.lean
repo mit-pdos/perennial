@@ -18,15 +18,15 @@ end pkg_id
 
 namespace github_com.goose_lang.primitive
 
-def Mutex [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Mutex.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive.Mutex" [])
 
-attribute [irreducible] Mutex
+attribute [irreducible] Mutex.ty
 
-def ProphId [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ProphId.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive.ProphId" [])
 
-attribute [irreducible] ProphId
+attribute [irreducible] ProphId.ty
 
 noncomputable def RandomUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.RandomUint64"
@@ -68,10 +68,10 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex.t
-  underlying : go.UnderlyingDirectedEq Mutex Mutex.underlying
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" Mutex.Lock.impl
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" Mutex.Unlock.impl
+  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex
+  underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
@@ -79,8 +79,8 @@ attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.ptr_Unlock_unfold
 
 class ProphId.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ProphId.underlying ProphId.t
-  underlying : go.UnderlyingDirectedEq ProphId ProphId.underlying
+  type_repr : go.TypeReprUnderlying ProphId.underlying ProphId
+  underlying : go.UnderlyingDirectedEq ProphId.ty ProphId.underlying
 
 attribute [instance] ProphId.TypeAssumptions.type_repr
   ProphId.TypeAssumptions.underlying

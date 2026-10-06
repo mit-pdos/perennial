@@ -24,227 +24,227 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
-def Foo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Foo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Foo" [])
 
-attribute [irreducible] Foo
+attribute [irreducible] Foo.ty
 
-def importantStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def importantStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.importantStruct" [])
 
-attribute [irreducible] importantStruct
+attribute [irreducible] importantStruct.ty
 
-def stringWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def stringWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.stringWrapper" [])
 
-attribute [irreducible] stringWrapper
+attribute [irreducible] stringWrapper.ty
 
-def Uint32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Uint32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Uint32" [])
 
-attribute [irreducible] Uint32
+attribute [irreducible] Uint32.ty
 
-def numWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def numWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.numWrapper" [])
 
-attribute [irreducible] numWrapper
+attribute [irreducible] numWrapper.ty
 
-def withInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def withInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.withInterface" [])
 
-attribute [irreducible] withInterface
+attribute [irreducible] withInterface.ty
 
-def diskWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def diskWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskWrapper" [])
 
-attribute [irreducible] diskWrapper
+attribute [irreducible] diskWrapper.ty
 
-def embedA [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def embedA.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.embedA" [])
 
-attribute [irreducible] embedA
+attribute [irreducible] embedA.ty
 
-def embedB [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def embedB.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.embedB" [])
 
-attribute [irreducible] embedB
+attribute [irreducible] embedB.ty
 
-def embedC [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def embedC.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.embedC" [])
 
-attribute [irreducible] embedC
+attribute [irreducible] embedC.ty
 
-def embedD [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def embedD.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.embedD" [])
 
-attribute [irreducible] embedD
+attribute [irreducible] embedD.ty
 
-def Enum1 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Enum1.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Enum1" [])
 
-attribute [irreducible] Enum1
+attribute [irreducible] Enum1.ty
 
-def Enum2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Enum2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Enum2" [])
 
-attribute [irreducible] Enum2
+attribute [irreducible] Enum2.ty
 
-def Fooer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Fooer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Fooer" [])
 
-attribute [irreducible] Fooer
+attribute [irreducible] Fooer.ty
 
-def concreteFooer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def concreteFooer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.concreteFooer" [])
 
-attribute [irreducible] concreteFooer
+attribute [irreducible] concreteFooer.ty
 
-def FooerUser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def FooerUser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.FooerUser" [])
 
-attribute [irreducible] FooerUser
+attribute [irreducible] FooerUser.ty
 
-def PointerInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PointerInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.PointerInterface" [])
 
-attribute [irreducible] PointerInterface
+attribute [irreducible] PointerInterface.ty
 
-def concrete1 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def concrete1.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.concrete1" [])
 
-attribute [irreducible] concrete1
+attribute [irreducible] concrete1.ty
 
-def my_u32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def my_u32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.my_u32" [])
 
-attribute [irreducible] my_u32
+attribute [irreducible] my_u32.ty
 
-def also_u32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def also_u32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.also_u32" [])
 
-attribute [irreducible] also_u32
+attribute [irreducible] also_u32.ty
 
-def allTheLiterals [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def allTheLiterals.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.allTheLiterals" [])
 
-attribute [irreducible] allTheLiterals
+attribute [irreducible] allTheLiterals.ty
 
-def hasCondVar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def hasCondVar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.hasCondVar" [])
 
-attribute [irreducible] hasCondVar
+attribute [irreducible] hasCondVar.ty
 
-def IntWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def IntWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.IntWrapper" [])
 
-attribute [irreducible] IntWrapper
+attribute [irreducible] IntWrapper.ty
 
-def MapWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MapWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.MapWrapper" [])
 
-attribute [irreducible] MapWrapper
+attribute [irreducible] MapWrapper.ty
 
-def mapElem [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def mapElem.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mapElem" [])
 
-attribute [irreducible] mapElem
+attribute [irreducible] mapElem.ty
 
-def containsPointer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def containsPointer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.containsPointer" [])
 
-attribute [irreducible] containsPointer
+attribute [irreducible] containsPointer.ty
 
-def wrapExternalStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def wrapExternalStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.wrapExternalStruct" [])
 
-attribute [irreducible] wrapExternalStruct
+attribute [irreducible] wrapExternalStruct.ty
 
-def typing [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def typing.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typing" [])
 
-attribute [irreducible] typing
+attribute [irreducible] typing.ty
 
-def composite [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def composite.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.composite" [])
 
-attribute [irreducible] composite
+attribute [irreducible] composite.ty
 
-def R [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def R.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.R" [])
 
-attribute [irreducible] R
+attribute [irreducible] R.ty
 
-def Other [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Other.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Other" [])
 
-attribute [irreducible] Other
+attribute [irreducible] Other.ty
 
-def RecursiveEmbedded [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def RecursiveEmbedded.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.RecursiveEmbedded" [])
 
-attribute [irreducible] RecursiveEmbedded
+attribute [irreducible] RecursiveEmbedded.ty
 
-def Block [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Block.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Block" [])
 
-attribute [irreducible] Block
+attribute [irreducible] Block.ty
 
-def SliceAlias [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SliceAlias.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.SliceAlias" [])
 
-attribute [irreducible] SliceAlias
+attribute [irreducible] SliceAlias.ty
 
-def thing [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def thing.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.thing" [])
 
-attribute [irreducible] thing
+attribute [irreducible] thing.ty
 
-def sliceOfThings [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def sliceOfThings.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceOfThings" [])
 
-attribute [irreducible] sliceOfThings
+attribute [irreducible] sliceOfThings.ty
 
-def Point [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Point.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Point" [])
 
-attribute [irreducible] Point
+attribute [irreducible] Point.ty
 
-def TwoInts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TwoInts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.TwoInts" [])
 
-attribute [irreducible] TwoInts
+attribute [irreducible] TwoInts.ty
 
-def S [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def S.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.S" [])
 
-attribute [irreducible] S
+attribute [irreducible] S.ty
 
-def B [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.B" [])
 
-attribute [irreducible] B
+attribute [irreducible] B.ty
 
-def A [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def A.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.A" [])
 
-attribute [irreducible] A
+attribute [irreducible] A.ty
 
-def Timestamp [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Timestamp.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Timestamp" [])
 
-attribute [irreducible] Timestamp
+attribute [irreducible] Timestamp.ty
 
-def UseTypeAbbrev [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UseTypeAbbrev.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.UseTypeAbbrev" [])
 
-attribute [irreducible] UseTypeAbbrev
+attribute [irreducible] UseTypeAbbrev.ty
 
-def UseNamedType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UseNamedType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.UseNamedType" [])
 
-attribute [irreducible] UseNamedType
+attribute [irreducible] UseNamedType.ty
 
-@[reducible] def my_u64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def my_u64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 @[reducible] noncomputable def arrayA [FfiSyntax] [GoGlobalContext] : val :=
@@ -1325,23 +1325,23 @@ noncomputable def condvarWrapping.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "mu" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "mu" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "cond1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "mu")))
+  (Let "cond1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) _root_.Perennial.sync.Locker.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "mu")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.NewCond []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond1"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond.ty) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "cond1"))) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "mu") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "cond1") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Pair (Var "cond1") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "mu") (Var "$r0"))))))))))
 
 /-- go: const.go:37:6 -/
 noncomputable def useUntypedInt.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1576,9 +1576,9 @@ noncomputable def stringToStringWrapper.impl [FfiSyntax] [GoGlobalContext] : val
 noncomputable def stringWrapperToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc stringWrapper))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc stringWrapper.ty))) (Var "s"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad stringWrapper))) (Var "s"))))))
+  (App (Val (GoInstruction (GoLoad stringWrapper.ty))) (Var "s"))))))
 
 /-- go: conversions.go:41:6 -/
 noncomputable def testU32NewtypeLen.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1588,7 +1588,7 @@ noncomputable def testU32NewtypeLen.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 20)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals Uint32))) (Pair (App (Val (GoInstruction (Convert go.int Uint32))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s"))
+  (App (Val (GoInstruction (GoOp GoEquals Uint32.ty))) (Pair (App (Val (GoInstruction (Convert go.int Uint32.ty))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W32 20)))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
@@ -1598,12 +1598,12 @@ noncomputable def numWrapper.inc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType numWrapper)))) (Var "n"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType numWrapper.ty)))) (Var "n"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore numWrapper))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType numWrapper)))) (Var "n")) (App (Val (GoInstruction (GoOp GoPlus numWrapper))) (Pair (App (Val (GoInstruction (GoLoad numWrapper))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType numWrapper)))) (Var "n"))) (Val #(W64 1))))))))))))
+  (App (Val (GoInstruction (GoStore numWrapper.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType numWrapper.ty)))) (Var "n")) (App (Val (GoInstruction (GoOp GoPlus numWrapper.ty))) (Pair (App (Val (GoInstruction (GoLoad numWrapper.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType numWrapper.ty)))) (Var "n"))) (Val #(W64 1))))))))))))
 
 /-- go: conversions.go:52:6 -/
 noncomputable def testNumWrapper.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1612,46 +1612,46 @@ noncomputable def testNumWrapper.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "n" (App (Val (GoInstruction (GoAlloc numWrapper))) (App (Val (GoInstruction (GoZeroVal numWrapper))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc numWrapper.ty))) (App (Val (GoInstruction (GoZeroVal numWrapper.ty))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType numWrapper) go!"inc"))) (Var "n")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType numWrapper.ty) go!"inc"))) (Var "n")) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore numWrapper))) (Pair (Var "n") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore numWrapper.ty))) (Pair (Var "n") (Var "$r0"))))))))))
 
 /-- go: conversions.go:61:6 -/
 noncomputable def testConversionLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc withInterface))) (App (Val (GoInstruction (GoZeroVal withInterface))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc withInterface.ty))) (App (Val (GoInstruction (GoZeroVal withInterface.ty))) (Val #())))
   (Let "$r0" (Let "$v0" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral withInterface))) (LiteralValue [(KeyedElement none (ElementExpression go.untypedNil (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral withInterface.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.untypedNil (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral withInterface))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.untypedNil (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral withInterface.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.untypedNil (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.any go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.any go.any)))) (Val #())))
   (Let "$r0" (Let "$k0" (Val UntypedNil)
   (Let "$v1" (Val UntypedNil)
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.any go.any)))) (LiteralValue [(KeyedElement (some (KeyExpression go.untypedNil (Var "$k0"))) (ElementExpression go.untypedNil (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert withInterface go.any))) (App (Val (GoInstruction (GoLoad withInterface))) (Var "s")))
+  (Let "$r0" (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface go.any))) (App (Val (GoInstruction (GoLoad withInterface))) (Var "s"))))) (App (Val (GoInstruction (Convert withInterface go.any))) (App (Val (GoInstruction (GoLoad withInterface))) (Var "s"))))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s"))))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s"))))))))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface go.any))) (App (Val (GoInstruction (GoLoad withInterface))) (Var "s")))) (Var "$r0")))))))
+  (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s")))) (Var "$r0")))))))
   (App (Val doExecute)
   (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.any go.any)))) (Pair (Var "m") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore withInterface))) (Pair (Var "s") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore withInterface.ty))) (Pair (Var "s") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore withInterface))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore withInterface.ty))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: copy.go:3:6 -/
 noncomputable def testCopySimple.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1940,27 +1940,27 @@ noncomputable def getRandom.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def diskArgument.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
-  (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "b" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
+  (Let "b" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 1))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "b"))
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")) (Var "$a1")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "b"))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))) (Var "$a0")) (Var "$a1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "b") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "b") (Var "$r0")))))))))))
 
 /-- go: embedded.go:19:17 -/
 noncomputable def embedA.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc embedA))) (Var "a"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc embedA.ty))) (Var "a"))
   (App (Val doReturn)
   (Val #(go!"embedA.Foo()")))))))
 
@@ -1969,7 +1969,7 @@ noncomputable def embedB.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc embedB))) (Var "a"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc embedB.ty))) (Var "a"))
   (App (Val doReturn)
   (Val #(go!"embedB.Foo()")))))))
 
@@ -1978,7 +1978,7 @@ noncomputable def embedA.Bar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedA)))) (Var "a"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedA.ty)))) (Var "a"))
   (App (Val doReturn)
   (Val #(go!"*embedA.Bar()")))))))
 
@@ -1987,7 +1987,7 @@ noncomputable def embedB.Car.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedB)))) (Var "a"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedB.ty)))) (Var "a"))
   (App (Val doReturn)
   (Val #(go!"*embedB.Car()")))))))
 
@@ -1996,40 +1996,40 @@ noncomputable def returnEmbedVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (CompositeLiteral embedB))) (LiteralValue [])))))
+  (App (Val (GoInstruction (CompositeLiteral embedB.ty))) (LiteralValue [])))))
 
 /-- go: embedded.go:39:6 -/
 noncomputable def returnEmbedValWithPointer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (CompositeLiteral embedD))) (LiteralValue [])))))
+  (App (Val (GoInstruction (CompositeLiteral embedD.ty))) (LiteralValue [])))))
 
 /-- go: embedded.go:43:6 -/
 noncomputable def useEmbeddedField.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
-  (Let "d" (App (Val (GoInstruction (GoAlloc embedD))) (Var "d"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc embedD.ty))) (Var "d"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "d")))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "d")))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(go!"a1"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedD)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType embedD)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc embedD))) (App (Val (GoInstruction (CompositeLiteral embedD))) (LiteralValue [])))
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType embedD.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType embedD.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc embedD.ty))) (App (Val (GoInstruction (CompositeLiteral embedD.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(go!"a2"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.string))) (Var "x")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef embedA go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedD)))) (Var "y"))))))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedD.ty)))) (Var "y"))))))) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType embedD)))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType embedD.ty)))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef embedA go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "d")))))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val doExecute)
@@ -2040,9 +2040,9 @@ noncomputable def useEmbeddedValField.impl [FfiSyntax] [GoGlobalContext] : val :
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldGet embedA go!"a"))) (App (Val (GoInstruction (StructFieldGet embedB go!"embedA"))) (App (App (Val (GoInstruction (FuncResolve returnEmbedVal []))) (Val #())) (Val #()))))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldGet embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldGet embedB.ty go!"embedA"))) (App (App (Val (GoInstruction (FuncResolve returnEmbedVal []))) (Val #())) (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (StructFieldGet embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldGet embedD go!"embedC"))) (App (App (Val (GoInstruction (FuncResolve returnEmbedValWithPointer []))) (Val #())) (Val #())))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef embedA.ty go!"a"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (App (App (Val (GoInstruction (FuncResolve returnEmbedValWithPointer []))) (Val #())) (Val #())))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.string))) (Var "x")))))
@@ -2055,20 +2055,20 @@ noncomputable def useEmbeddedValField.impl [FfiSyntax] [GoGlobalContext] : val :
 noncomputable def useEmbeddedMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
-  (Let "d" (App (Val (GoInstruction (GoAlloc embedD))) (Var "d"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc embedD.ty))) (Var "d"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD) go!"Bar"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "d")))))) (Val #()))))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Bar"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #()))))))))
 
 /-- go: embedded.go:64:6 -/
 noncomputable def useEmbeddedMethod2.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
-  (Let "d" (App (Val (GoInstruction (GoAlloc embedD))) (Var "d"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc embedD.ty))) (Var "d"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD) go!"Foo"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "d"))))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Foo"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d"))))) (Val #())))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD) go!"Car"))) (Var "d")) (Val #())))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Car"))) (Var "d")) (Val #())))))))
 
 /-- go: empty_functions.go:3:6 -/
 noncomputable def empty.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2356,7 +2356,7 @@ noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (Var "f"))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (Var "f"))
   (App (Val doExecute)
   (Val #()))))))
 
@@ -2364,29 +2364,29 @@ noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def fooConsumer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
-  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer))) (Var "f"))
+  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer.ty))) (Var "f"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Fooer go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer))) (Var "f"))) (Val #())))))))
+  (App (App (Val (GoInstruction (MethodResolve Fooer.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer.ty))) (Var "f"))) (Val #())))))))
 
 /-- go: interfaces.go:22:6 -/
 noncomputable def testAssignConcreteToInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c")))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c")))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer)))) (Var "x")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "c") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: interfaces.go:27:6 -/
 noncomputable def testPassConcreteToInterfaceArg.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2395,79 +2395,79 @@ noncomputable def testPassConcreteToInterfaceArg.impl [FfiSyntax] [GoGlobalConte
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer))) (App (Val (GoInstruction (GoZeroVal Fooer))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c")))
+  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer.ty))) (App (Val (GoInstruction (GoZeroVal Fooer.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Fooer go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer))) (Var "f"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve Fooer.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer.ty))) (Var "f"))) (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType concreteFooer) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType concreteFooer.ty) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c"))) (Val #()))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad Fooer))) (Var "f"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad Fooer.ty))) (Var "f"))
   (App (App (Val (GoInstruction (FuncResolve fooConsumer []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c")))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c")))
   (App (App (Val (GoInstruction (FuncResolve fooConsumer []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "c") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
 
 /-- go: interfaces.go:37:6 -/
 noncomputable def testPassConcreteToInterfaceArgSpecial.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "c1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "c1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "c2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "c2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType Fooer)))) (Val #())))
-  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c1"))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c2"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer)))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer) (Var "$v1")))]))))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType Fooer.ty)))) (Val #())))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c1"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c2"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer.ty)))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer.ty) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer.ty) (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 Fooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 Fooer)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 Fooer)]))) (Val #())) (Val #()))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 Fooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 Fooer.ty)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 Fooer.ty)]))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c1")))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c1")))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc FooerUser))) (App (Val (GoInstruction (GoZeroVal FooerUser))) (Val #())))
-  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c1"))
-  (App (Val (GoInstruction (CompositeLiteral FooerUser))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer) (Var "$v0")))])))
+  (Let "f" (App (Val (GoInstruction (GoAlloc FooerUser.ty))) (App (Val (GoInstruction (GoZeroVal FooerUser.ty))) (Val #())))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c1"))
+  (App (Val (GoInstruction (CompositeLiteral FooerUser.ty))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType concreteFooer.ty) (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Fooer)))) (Var "l")) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 Fooer)))) (Var "m"))) (App (Val (GoInstruction (GoLoad FooerUser))) (Var "f"))))))
+  (Pair (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Fooer.ty)))) (Var "l")) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 Fooer.ty)))) (Var "m"))) (App (Val (GoInstruction (GoLoad FooerUser.ty))) (Var "f"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore FooerUser))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore FooerUser.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 Fooer)))) (Var "m"))) (Val #(W64 10))) (Var "$r0")))))))
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 Fooer.ty)))) (Var "m"))) (Val #(W64 10))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 Fooer)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 Fooer.ty)))) (Pair (Var "m") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Fooer)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Fooer.ty)))) (Pair (Var "l") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "c2") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "c2") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "c1") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "c1") (Var "$r0")))))))))
 
 /-- go: interfaces.go:51:6 -/
 noncomputable def takesVarArgsInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "fs"
   (App (Val exceptionDo)
-  (Let "fs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer)))) (Var "fs"))
+  (Let "fs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer.ty)))) (Var "fs"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Fooer go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType Fooer)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Fooer)))) (Var "fs")) (Val #(W64 0)))))) (Val #())))))))
+  (App (App (Val (GoInstruction (MethodResolve Fooer.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType Fooer.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Fooer.ty)))) (Var "fs")) (Val #(W64 0)))))) (Val #())))))))
 
 /-- go: interfaces.go:55:6 -/
 noncomputable def test.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2477,9 +2477,9 @@ noncomputable def test.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue []))))
-  (Let "$sl1" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue []))))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer)))) (LiteralValue [(KeyedElement none (ElementExpression Fooer (Var "$sl0"))), (KeyedElement none (ElementExpression Fooer (Var "$sl1")))]))))
+  (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue []))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue []))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer.ty)))) (LiteralValue [(KeyedElement none (ElementExpression Fooer.ty (Var "$sl0"))), (KeyedElement none (ElementExpression Fooer.ty (Var "$sl1")))]))))
   (App (App (Val (GoInstruction (FuncResolve takesVarArgsInterface []))) (Val #())) (Var "$a0")))))))
 
 /-- go: interfaces.go:59:6 -/
@@ -2487,7 +2487,7 @@ noncomputable def returnConcrete.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue []))) (Val #(W64 10))))))
+  (Pair (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue []))) (Val #(W64 10))))))
 
 /-- converts an object into an interface in a multiple return destructuring statement.
 
@@ -2495,12 +2495,12 @@ noncomputable def returnConcrete.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve returnConcrete []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (Var "$ret0"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (Var "$ret0"))
   (Let "$r1" (Var "$ret1")
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2509,43 +2509,43 @@ noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer)))) (Var "x")) (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x")) (Var "$r0"))))))))))))))
 
 /-- go: interfaces.go:70:6 -/
 noncomputable def testReturnStatment.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "y"))))))
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "y"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "y") (Var "$r0")))))))))
 
 /-- go: interfaces.go:75:6 -/
 noncomputable def testConversionInEq.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
-  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer))) (Var "f"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))
+  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer.ty))) (Var "f"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concreteFooer.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c")))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals Fooer))) (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer)))) (Var "c"))) (App (Val (GoInstruction (GoLoad Fooer))) (Var "f")))))))
+  (App (Val (GoInstruction (GoOp GoEquals Fooer.ty))) (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concreteFooer.ty)))) (Var "c"))) (App (Val (GoInstruction (GoLoad Fooer.ty))) (Var "f")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer))) (Pair (Var "f") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (Var "f") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer)))) (Pair (Var "c") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concreteFooer.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
 
 /-- go: interfaces.go:82:6 -/
 noncomputable def takeMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "f"
   (App (Val exceptionDo)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer)))) (Var "f"))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer.ty)))) (Var "f"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
   (App (Val doExecute)
   (Val #())))))))
@@ -2555,7 +2555,7 @@ noncomputable def giveMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue []))))) (App (Val (GoInstruction (GoAlloc concreteFooer))) (App (Val (GoInstruction (CompositeLiteral concreteFooer))) (LiteralValue [])))))))
+  (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue []))))) (App (Val (GoInstruction (GoAlloc concreteFooer.ty))) (App (Val (GoInstruction (CompositeLiteral concreteFooer.ty))) (LiteralValue [])))))))
 
 /-- go: interfaces.go:89:6 -/
 noncomputable def testConversionInMultipleReturnPassThrough.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2566,7 +2566,7 @@ noncomputable def testConversionInMultipleReturnPassThrough.impl [FfiSyntax] [Go
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (App (Val doReturn)
-  (Pair (Pair (Var "$ret0") (Var "$ret1")) (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (Var "$ret2"))))))))))
+  (Pair (Pair (Var "$ret0") (Var "$ret1")) (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (Var "$ret2"))))))))))
 
 /-- See "special case" in https://go.dev/ref/spec#Calls
 
@@ -2584,8 +2584,8 @@ noncomputable def testConversionInMultiplePassThrough.impl [FfiSyntax] [GoGlobal
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$a0" (Var "$ret0")
   (Let "$a1" (Let "$sl0" (Var "$ret1")
-  (Let "$sl1" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer) Fooer))) (Var "$ret2"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer)))) (LiteralValue [(KeyedElement none (ElementExpression Fooer (Var "$sl0"))), (KeyedElement none (ElementExpression Fooer (Var "$sl1")))]))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert (go.GoType.PointerType concreteFooer.ty) Fooer.ty))) (Var "$ret2"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Fooer.ty)))) (LiteralValue [(KeyedElement none (ElementExpression Fooer.ty (Var "$sl0"))), (KeyedElement none (ElementExpression Fooer.ty (Var "$sl1")))]))))
   (App (App (App (Val (GoInstruction (FuncResolve takeMultiple []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: interfaces.go:106:20 -/
@@ -2593,7 +2593,7 @@ noncomputable def concrete1.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc concrete1))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc concrete1.ty))) (Var "c"))
   (App (Val doExecute)
   (Val #()))))))
 
@@ -2602,7 +2602,7 @@ noncomputable def concrete1.B.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concrete1)))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concrete1.ty)))) (Var "c"))
   (App (Val doExecute)
   (Val #()))))))
 
@@ -2613,26 +2613,26 @@ noncomputable def testPtrMset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concrete1)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concrete1)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc concrete1))) (App (Val (GoInstruction (CompositeLiteral concrete1))) (LiteralValue [])))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concrete1.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType concrete1.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc concrete1.ty))) (App (Val (GoInstruction (CompositeLiteral concrete1.ty))) (LiteralValue [])))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "p" (App (Val (GoInstruction (GoAlloc PointerInterface))) (App (Val (GoInstruction (GoZeroVal PointerInterface))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concrete1) PointerInterface))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concrete1)))) (Var "a")))
+  (Let "p" (App (Val (GoInstruction (GoAlloc PointerInterface.ty))) (App (Val (GoInstruction (GoZeroVal PointerInterface.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType concrete1.ty) PointerInterface.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concrete1.ty)))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer))) (App (Val (GoInstruction (GoZeroVal Fooer))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert concrete1 Fooer))) (App (Val (GoInstruction (GoLoad concrete1))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concrete1)))) (Var "a"))))
+  (Let "f" (App (Val (GoInstruction (GoAlloc Fooer.ty))) (App (Val (GoInstruction (GoZeroVal Fooer.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert concrete1.ty Fooer.ty))) (App (Val (GoInstruction (GoLoad concrete1.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType concrete1.ty)))) (Var "a"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Fooer go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer))) (Var "f"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve Fooer.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad Fooer.ty))) (Var "f"))) (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve PointerInterface go!"B"))) (App (Val (GoInstruction (GoLoad PointerInterface))) (Var "p"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve PointerInterface.ty go!"B"))) (App (Val (GoInstruction (GoLoad PointerInterface.ty))) (Var "p"))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore PointerInterface))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore PointerInterface.ty))) (Pair (Var "p") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concrete1)))) (Pair (Var "a") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType concrete1.ty)))) (Pair (Var "a") (Var "$r0"))))))))))
 
 /-- go: interfaces.go:120:6 -/
 noncomputable def pointerAny.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2683,7 +2683,7 @@ noncomputable def normalLiterals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val #(go!"foo"))
   (Let "$v2" (Val #true)
-  (App (Val (GoInstruction (CompositeLiteral allTheLiterals))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral allTheLiterals.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
 
 /-- go: literals.go:17:6 -/
 noncomputable def outOfOrderLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2693,7 +2693,7 @@ noncomputable def outOfOrderLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v0" (Val #true)
   (Let "$v1" (Val #(go!"foo"))
   (Let "$v2" (Val #(W64 0))
-  (App (Val (GoInstruction (CompositeLiteral allTheLiterals))) (LiteralValue [(KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v2")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral allTheLiterals.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v2")))]))))))))
 
 /-- go: literals.go:25:6 -/
 noncomputable def specialLiterals.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2703,7 +2703,7 @@ noncomputable def specialLiterals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v0" (Val #(W64 4096))
   (Let "$v1" (Val #(go!""))
   (Let "$v2" (Val #false)
-  (App (Val (GoInstruction (CompositeLiteral allTheLiterals))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral allTheLiterals.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
 
 /-- go: literals.go:33:6 -/
 noncomputable def oddLiterals.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2713,7 +2713,7 @@ noncomputable def oddLiterals.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v0" (Val #(W64 5))
   (Let "$v1" (Val #(go!"backquote string"))
   (Let "$v2" (Val #false)
-  (App (Val (GoInstruction (CompositeLiteral allTheLiterals))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral allTheLiterals.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"int")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"s")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.bool (Var "$v2")))]))))))))
 
 /-- go: literals.go:41:6 -/
 noncomputable def unKeyedLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2723,7 +2723,7 @@ noncomputable def unKeyedLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val #(go!"a"))
   (Let "$v2" (Val #false)
-  (App (Val (GoInstruction (CompositeLiteral allTheLiterals))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.bool (Var "$v2")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral allTheLiterals.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.bool (Var "$v2")))]))))))))
 
 /-- go: locks.go:5:6 -/
 noncomputable def useLocks.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2732,16 +2732,16 @@ noncomputable def useLocks.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: locks.go:11:6 -/
 noncomputable def useCondVar.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2750,28 +2750,28 @@ noncomputable def useCondVar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m")))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) _root_.Perennial.sync.Locker.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.NewCond []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "c"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond.ty) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "c"))) (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "c"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond.ty) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "c"))) (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Pair (Var "c") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: log_debugging.go:5:6 -/
 noncomputable def ToBeDebugged.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3231,31 +3231,31 @@ noncomputable def MapSize.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def NamedMapAssignment.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "m" (App (Val (GoInstruction (GoAlloc MapWrapper))) (App (Val (GoInstruction (GoZeroVal MapWrapper))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [MapWrapper]))) (Val #())) (Val #()))
+  (Let "m" (App (Val (GoInstruction (GoAlloc MapWrapper.ty))) (App (Val (GoInstruction (GoZeroVal MapWrapper.ty))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [MapWrapper.ty]))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad MapWrapper))) (Var "m")))))
+  (App (Val (GoInstruction (GoLoad MapWrapper.ty))) (Var "m")))))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad MapWrapper))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad MapWrapper.ty))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore MapWrapper))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore MapWrapper.ty))) (Pair (Var "m") (Var "$r0")))))))))
 
 /-- go: maps.go:32:6 -/
 noncomputable def MapTypeAliases.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m1"
   (Lam "m2"
   (App (Val exceptionDo)
-  (Let "m2" (App (Val (GoInstruction (GoAlloc MapWrapper))) (Var "m2"))
-  (Let "m1" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType IntWrapper go.bool)))) (Var "m1"))
+  (Let "m2" (App (Val (GoInstruction (GoAlloc MapWrapper.ty))) (Var "m2"))
+  (Let "m1" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType IntWrapper.ty go.bool)))) (Var "m1"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 go.bool)) (App (Val (GoInstruction (GoLoad MapWrapper))) (Var "m2"))) (Val #(W64 0)))
+  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 go.bool)) (App (Val (GoInstruction (GoLoad MapWrapper.ty))) (Var "m2"))) (Val #(W64 0)))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert IntWrapper)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType IntWrapper go.bool)))) (Var "m1"))) (Val #(W64 4))) (Var "$r0"))))))))))
+  (App (App (App (Val (map.insert IntWrapper.ty)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType IntWrapper.ty go.bool)))) (Var "m1"))) (Val #(W64 4))) (Var "$r0"))))))))))
 
 /-- go: maps.go:36:6 -/
 noncomputable def StringMap.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3272,14 +3272,14 @@ noncomputable def mapUpdateField.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem))]))) (Val #())) (Val #()))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem.ty))))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem.ty))]))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 10))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef mapElem go!"a"))) (App (App (Val (map.lookup1 go.uint64 (go.GoType.PointerType mapElem))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem))))) (Var "x"))) (Val #(W64 0)))) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef mapElem.ty go!"a"))) (App (App (Val (map.lookup1 go.uint64 (go.GoType.PointerType mapElem.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem.ty))))) (Var "x"))) (Val #(W64 0)))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem))))) (Pair (Var "x") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.PointerType mapElem.ty))))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: maps.go:58:6 -/
 noncomputable def mapGetCall.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3490,8 +3490,8 @@ noncomputable def useNilField.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc containsPointer))) (Let "$v0" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral containsPointer))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression go.untypedNil (Var "$v0")))])))))))
+  (App (Val (GoInstruction (GoAlloc containsPointer.ty))) (Let "$v0" (Val UntypedNil)
+  (App (Val (GoInstruction (CompositeLiteral containsPointer.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression go.untypedNil (Var "$v0")))])))))))
 
 /-- go: operators.go:3:6 -/
 noncomputable def LogicalOperators.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3631,12 +3631,12 @@ noncomputable def wrapExternalStruct.join.impl [FfiSyntax] [GoGlobalContext] : v
   (LamV "w"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "w" (App (Val (GoInstruction (GoAlloc wrapExternalStruct))) (Var "w"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc wrapExternalStruct.ty))) (Var "w"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle) go!"Join"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle)))) (App (Val (GoInstruction (StructFieldRef wrapExternalStruct go!"j"))) (Var "w")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle.ty) go!"Join"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle.ty)))) (App (Val (GoInstruction (StructFieldRef wrapExternalStruct.ty go!"j"))) (Var "w")))) (Val #()))))))))
 
 /-- go: panic.go:3:6 -/
 noncomputable def PanicAtTheDisco.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3656,14 +3656,14 @@ noncomputable def Oracle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "p" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.ProphId))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.ProphId))) (Val #())))
+  (Let "p" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.NewProph []))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.ProphId))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Var "p"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId))) (Pair (Var "p") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Pair (Var "p") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId))) (Pair (Var "p") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Pair (Var "p") (Var "$r0"))))))))))
 
 /-- go: reassign.go:8:6 -/
 noncomputable def ReassignVars.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3678,22 +3678,22 @@ noncomputable def ReassignVars.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 3))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "z" (App (Val (GoInstruction (GoAlloc composite))) (App (Val (GoInstruction (GoZeroVal composite))) (Val #())))
+  (Let "z" (App (Val (GoInstruction (GoAlloc composite.ty))) (App (Val (GoInstruction (GoZeroVal composite.ty))) (Val #())))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
-  (App (Val (GoInstruction (CompositeLiteral composite))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral composite.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
-  (App (Val (GoInstruction (CompositeLiteral composite))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral composite.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef composite go!"a"))) (Var "z")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef composite.ty go!"a"))) (Var "z")))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore composite))) (Pair (Var "z") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore composite.ty))) (Pair (Var "z") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore composite))) (Pair (Var "z") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore composite.ty))) (Pair (Var "z") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val doExecute)
@@ -3714,24 +3714,24 @@ noncomputable def R.recurMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType R)))) (Var "r"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType R.ty)))) (Var "r"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType R) go!"recurMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType R)))) (Var "r"))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType R.ty) go!"recurMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType R.ty)))) (Var "r"))) (Val #()))))))))
 
 /-- go: recursive.go:22:29 -/
 noncomputable def RecursiveEmbedded.recurEmbeddedMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RecursiveEmbedded)))) (Var "r"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RecursiveEmbedded.ty)))) (Var "r"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Other) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldRef RecursiveEmbedded go!"Other"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded)))) (Var "r")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Other.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldRef RecursiveEmbedded.ty go!"Other"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (Var "r")))) (Val #()))))))))
 
 /-- go: renamedImport.go:7:6 -/
 noncomputable def useRenamedImport.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3825,7 +3825,7 @@ noncomputable def TwoDiskWrite.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "a"
   (Lam "v"
   (App (Val exceptionDo)
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block))) (Var "v"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (Var "v"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
   (Let "diskId" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskId"))
   (App (Val doReturn)
@@ -3842,7 +3842,7 @@ noncomputable def TwoDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "diskId" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskId"))
   (App (Val doReturn)
   (Pair (Let "$v0" (Val #(W64 0))
-  (App (Val (GoInstruction (CompositeLiteral Block))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))) (Val #true))))))))
+  (App (Val (GoInstruction (CompositeLiteral Block.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))) (Val #true))))))))
 
 /-- TwoDiskLock is a dummy function to represent locking an address in the
     base layer
@@ -3873,7 +3873,7 @@ noncomputable def ReplicatedDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block))) (App (Val (GoInstruction (GoZeroVal Block))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
   (Let "__p" (Let "$a0" (Val Disk1)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -3884,7 +3884,7 @@ noncomputable def ReplicatedDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "v2" (App (Val (GoInstruction (GoAlloc Block))) (App (Val (GoInstruction (GoZeroVal Block))) (Val #())))
+  (Let "v2" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
   (Let "__p" (Let "$a0" (Val Disk2)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -3896,18 +3896,18 @@ noncomputable def ReplicatedDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Block))) (Var "v2")))))
+  (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v2")))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve TwoDiskUnlock []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (Var "$r1")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block))) (Pair (Var "v2") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v2") (Var "$r0")))))))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Block))) (Var "v")))))
+  (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v")))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve TwoDiskUnlock []))) (Val #())) (Var "$a0")))))
@@ -3916,7 +3916,7 @@ noncomputable def ReplicatedDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block))) (Pair (Var "v") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v") (Var "$r0"))))))))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve TwoDiskLock []))) (Val #())) (Var "$a0"))))))))
@@ -3926,7 +3926,7 @@ noncomputable def ReplicatedDiskWrite.impl [FfiSyntax] [GoGlobalContext] : val :
   (LamV "a"
   (Lam "v"
   (App (Val exceptionDo)
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block))) (Var "v"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (Var "v"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -3940,12 +3940,12 @@ noncomputable def ReplicatedDiskWrite.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (Let "$a0" (Val Disk2)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block))) (Var "v"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
   (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
   (App (Val doExecute)
   (Let "$a0" (Val Disk1)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block))) (Var "v"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
   (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
@@ -3965,7 +3965,7 @@ noncomputable def ReplicatedDiskRecover.impl [FfiSyntax] [GoGlobalContext] : val
   (Val #true))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block))) (App (Val (GoInstruction (GoZeroVal Block))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
   (Let "__p" (Let "$a0" (Val Disk1)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -3985,14 +3985,14 @@ noncomputable def ReplicatedDiskRecover.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val doExecute)
   (Let "$a0" (Val Disk2)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block))) (Var "v"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
   (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block))) (Pair (Var "v") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v") (Var "$r0"))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (Val DiskSize))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
@@ -4177,17 +4177,17 @@ noncomputable def sliceOfThings.getThingRef.impl [FfiSyntax] [GoGlobalContext] :
   (LamV "ts"
   (Lam "i"
   (App (Val exceptionDo)
-  (Let "ts" (App (Val (GoInstruction (GoAlloc sliceOfThings))) (Var "ts"))
+  (Let "ts" (App (Val (GoInstruction (GoAlloc sliceOfThings.ty))) (Var "ts"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (IndexRef (go.GoType.SliceType thing)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType thing)))) (App (Val (GoInstruction (StructFieldRef sliceOfThings go!"things"))) (Var "ts"))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))))
+  (App (Val (GoInstruction (IndexRef (go.GoType.SliceType thing.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType thing.ty)))) (App (Val (GoInstruction (StructFieldRef sliceOfThings.ty go!"things"))) (Var "ts"))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))))
 
 /-- go: slices.go:30:6 -/
 noncomputable def makeAlias.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (FuncResolve go.make2 [SliceAlias]))) (Val #())) (Val #(W64 10))))))
+  (App (App (Val (GoInstruction (FuncResolve go.make2 [SliceAlias.ty]))) (Val #())) (Val #(W64 10))))))
 
 /-- Skip is a placeholder for some impure code
 
@@ -4205,8 +4205,8 @@ noncomputable def simpleSpawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -4222,7 +4222,7 @@ noncomputable def simpleSpawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve Skip []))) (Val #())) (Val #())))
@@ -4231,24 +4231,24 @@ noncomputable def simpleSpawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #())))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #())))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "v")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #()))))))
   (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "v") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "l") (Var "$r0"))))))))))
 
 /-- go: spawn.go:26:6 -/
 noncomputable def threadCode.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4340,22 +4340,22 @@ noncomputable def Point.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "z"
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc Point))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc Point.ty))) (Var "c"))
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "z"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point go!"x"))) (Var "c"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point go!"y"))) (Var "c"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z"))))))))))
+  (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point.ty go!"x"))) (Var "c"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point.ty go!"y"))) (Var "c"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z"))))))))))
 
 /-- go: struct_method.go:12:16 -/
 noncomputable def Point.GetField.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc Point))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc Point.ty))) (Var "c"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point go!"x"))) (Var "c")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point.ty go!"x"))) (Var "c")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point go!"y"))) (Var "c")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Point.ty go!"y"))) (Var "c")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))))
@@ -4368,21 +4368,21 @@ noncomputable def Point.GetField.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def UseAdd.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc Point))) (App (Val (GoInstruction (GoZeroVal Point))) (Val #())))
+  (Let "c" (App (Val (GoInstruction (GoAlloc Point.ty))) (App (Val (GoInstruction (GoZeroVal Point.ty))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 2))
   (Let "$v1" (Val #(W64 3))
-  (App (Val (GoInstruction (CompositeLiteral Point))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral Point.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 4))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Point) go!"Add"))) (Var "c")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Point.ty) go!"Add"))) (Var "c")) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "r") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Point))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore Point.ty))) (Pair (Var "c") (Var "$r0")))))))))
 
 /-- go: struct_method.go:24:6 -/
 noncomputable def UseAddWithLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4390,9 +4390,9 @@ noncomputable def UseAddWithLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 4))
-  (App (App (Val (GoInstruction (MethodResolve Point go!"Add"))) (Let "$v0" (Val #(W64 2))
+  (App (App (Val (GoInstruction (MethodResolve Point.ty go!"Add"))) (Let "$v0" (Val #(W64 2))
   (Let "$v1" (Val #(W64 3))
-  (App (Val (GoInstruction (CompositeLiteral Point))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))) (Var "$a0")))
+  (App (Val (GoInstruction (CompositeLiteral Point.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r")))))
@@ -4412,99 +4412,99 @@ noncomputable def NewS.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc S))) (Let "$v0" (Val #(W64 2))
+  (App (Val (GoInstruction (GoAlloc S.ty))) (Let "$v0" (Val #(W64 2))
   (Let "$v1" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
-  (App (Val (GoInstruction (CompositeLiteral TwoInts))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral TwoInts.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (Let "$v2" (Val #true)
-  (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression TwoInts (Var "$v1"))), (KeyedElement (some (KeyField go!"c")) (ElementExpression go.bool (Var "$v2")))])))))))))
+  (App (Val (GoInstruction (CompositeLiteral S.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression TwoInts.ty (Var "$v1"))), (KeyedElement (some (KeyField go!"c")) (ElementExpression go.bool (Var "$v2")))])))))))))
 
 /-- go: struct_pointers.go:22:13 -/
 noncomputable def S.readA.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S.ty)))) (Var "s"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef S go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef S.ty go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s")))))))))
 
 /-- go: struct_pointers.go:26:13 -/
 noncomputable def S.readB.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S.ty)))) (Var "s"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
+  (App (Val (GoInstruction (GoLoad TwoInts.ty))) (App (Val (GoInstruction (StructFieldRef S.ty go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s")))))))))
 
 /-- go: struct_pointers.go:30:12 -/
 noncomputable def S.readBVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S.ty))) (Var "s"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (Var "s"))))))))
+  (App (Val (GoInstruction (GoLoad TwoInts.ty))) (App (Val (GoInstruction (StructFieldRef S.ty go!"b"))) (Var "s"))))))))
 
 /-- go: struct_pointers.go:34:13 -/
 noncomputable def S.writeB.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "two"
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
-  (Let "two" (App (Val (GoInstruction (GoAlloc TwoInts))) (Var "two"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S.ty)))) (Var "s"))
+  (Let "two" (App (Val (GoInstruction (GoAlloc TwoInts.ty))) (Var "two"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad TwoInts))) (Var "two"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad TwoInts.ty))) (Var "two"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore TwoInts))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s"))) (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore TwoInts.ty))) (Pair (App (Val (GoInstruction (StructFieldRef S.ty go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s"))) (Var "$r0")))))))))))
 
 /-- go: struct_pointers.go:38:13 -/
 noncomputable def S.negateC.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S.ty)))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S.ty go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s"))) (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S.ty go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s"))) (Var "$r0"))))))))))
 
 /-- go: struct_pointers.go:42:13 -/
 noncomputable def S.refC.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S.ty)))) (Var "s"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s"))))))))
+  (App (Val (GoInstruction (StructFieldRef S.ty go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S.ty)))) (Var "s"))))))))
 
 /-- go: struct_pointers.go:46:6 -/
 noncomputable def localSRef.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S.ty))) (App (Val (GoInstruction (GoZeroVal S.ty))) (Val #())))
   (App (Val doReturn)
-  (App (Val (GoInstruction (StructFieldRef S go!"b"))) (Var "s"))))))
+  (App (Val (GoInstruction (StructFieldRef S.ty go!"b"))) (Var "s"))))))
 
 /-- go: struct_pointers.go:54:6 -/
 noncomputable def setField.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S.ty))) (App (Val (GoInstruction (GoZeroVal S.ty))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad S))) (Var "s")))))
+  (App (Val (GoInstruction (GoLoad S.ty))) (Var "s")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"c"))) (Var "s")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S.ty go!"c"))) (Var "s")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"a"))) (Var "s")) (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef S.ty go!"a"))) (Var "s")) (Var "$r0")))))))))
 
 /-- go: switch.go:3:6 -/
 noncomputable def testSwitchVal.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4545,15 +4545,15 @@ noncomputable def testSwitchMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def DoSomeLocking.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exceptionDo)
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))) (Val #()))))))))
 
 /-- go: synchronization.go:15:6 -/
 noncomputable def makeLock.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4562,14 +4562,14 @@ noncomputable def makeLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "l"))
   (App (App (Val (GoInstruction (FuncResolve DoSomeLocking []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "l") (Var "$r0"))))))))))
 
 /-- go: time.go:5:6 -/
 noncomputable def sleep.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4924,25 +4924,21 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mapLiteralWithConversion (go.GoType.MapType go.any go.any))) (Val #()))))))))
 
-namespace Foo
-abbrev t [FfiSyntax] : Type := (array.t w64 10)
-end Foo
+abbrev Foo [FfiSyntax] : Type := (array.t w64 10)
 
 @[reducible] def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 10 go.uint64)
 
 class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Foo Foo.underlying
+  underlying : go.UnderlyingDirectedEq Foo.ty Foo.underlying
 
 attribute [instance] Foo.TypeAssumptions.underlying
 
-namespace importantStruct
-structure t [FfiSyntax] where
+structure importantStruct [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end importantStruct
+instance importantStruct.zero_val [FfiSyntax] : ZeroVal importantStruct :=
+  ⟨importantStruct.mk⟩
 
 @[reducible] def importantStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -4958,58 +4954,50 @@ instance equals_unfold_importantStruct [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType importantStruct.fields)
 
 class importantStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying importantStruct.underlying importantStruct.t
-  underlying : go.UnderlyingDirectedEq importantStruct importantStruct.underlying
+  type_repr : go.TypeReprUnderlying importantStruct.underlying importantStruct
+  underlying : go.UnderlyingDirectedEq importantStruct.ty importantStruct.underlying
 
 attribute [instance] importantStruct.TypeAssumptions.type_repr
   importantStruct.TypeAssumptions.underlying
 
-namespace stringWrapper
-abbrev t [FfiSyntax] : Type := GoString
-end stringWrapper
+abbrev stringWrapper [FfiSyntax] : Type := GoString
 
 @[reducible] def stringWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class stringWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq stringWrapper stringWrapper.underlying
+  underlying : go.UnderlyingDirectedEq stringWrapper.ty stringWrapper.underlying
 
 attribute [instance] stringWrapper.TypeAssumptions.underlying
 
-namespace Uint32
-abbrev t [FfiSyntax] : Type := w32
-end Uint32
+abbrev Uint32 [FfiSyntax] : Type := w32
 
 @[reducible] def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Uint32 Uint32.underlying
+  underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
 
 attribute [instance] Uint32.TypeAssumptions.underlying
 
-namespace numWrapper
-abbrev t [FfiSyntax] : Type := w64
-end numWrapper
+abbrev numWrapper [FfiSyntax] : Type := w64
 
 @[reducible] def numWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class numWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq numWrapper numWrapper.underlying
-  ptr_inc_unfold : MethodUnfold (go.GoType.PointerType numWrapper) go!"inc" numWrapper.inc.impl
+  underlying : go.UnderlyingDirectedEq numWrapper.ty numWrapper.underlying
+  ptr_inc_unfold : MethodUnfold (go.GoType.PointerType numWrapper.ty) go!"inc" numWrapper.inc.impl
 
 attribute [instance] numWrapper.TypeAssumptions.underlying
   numWrapper.TypeAssumptions.ptr_inc_unfold
 
-namespace withInterface
-structure t [FfiSyntax] where
+structure withInterface [FfiSyntax] where
   mk ::
   a' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end withInterface
+instance withInterface.zero_val [FfiSyntax] : ZeroVal withInterface :=
+  ⟨withInterface.mk zeroValDef⟩
 
 @[reducible] def withInterface.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.any)]
@@ -5025,27 +5013,25 @@ instance equals_unfold_withInterface [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType withInterface.fields)
 
 class withInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying withInterface.underlying withInterface.t
-  underlying : go.UnderlyingDirectedEq withInterface withInterface.underlying
-  get_a : ∀ (x : withInterface.t), go.IsGoStepPureDetTagged under (StructFieldGet withInterface.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : withInterface.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface.t)))
+  type_repr : go.TypeReprUnderlying withInterface.underlying withInterface
+  underlying : go.UnderlyingDirectedEq withInterface.ty withInterface.underlying
+  get_a : ∀ (x : withInterface), go.IsGoStepPureDetTagged under (StructFieldGet withInterface.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : withInterface) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface)))
 
 attribute [instance] withInterface.TypeAssumptions.type_repr
   withInterface.TypeAssumptions.underlying
   withInterface.TypeAssumptions.get_a
   withInterface.TypeAssumptions.set_a
 
-namespace diskWrapper
-structure t [FfiSyntax] where
+structure diskWrapper [FfiSyntax] where
   mk ::
-  d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t
+  d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end diskWrapper
+instance diskWrapper.zero_val [FfiSyntax] : ZeroVal diskWrapper :=
+  ⟨diskWrapper.mk zeroValDef⟩
 
 @[reducible] def diskWrapper.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk)]
+  [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty)]
 
 @[irreducible] def diskWrapper.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   diskWrapper.fieldsUnsealed
@@ -5058,24 +5044,22 @@ instance equals_unfold_diskWrapper [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType diskWrapper.fields)
 
 class diskWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying diskWrapper.underlying diskWrapper.t
-  underlying : go.UnderlyingDirectedEq diskWrapper diskWrapper.underlying
-  get_d : ∀ (x : diskWrapper.t), go.IsGoStepPureDetTagged under (StructFieldGet diskWrapper.underlying go!"d") #x (Val #(x.d'))
-  set_d : ∀ (x : diskWrapper.t) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t), go.IsGoStepPureDetTagged under (StructFieldSet diskWrapper.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : diskWrapper.t)))
+  type_repr : go.TypeReprUnderlying diskWrapper.underlying diskWrapper
+  underlying : go.UnderlyingDirectedEq diskWrapper.ty diskWrapper.underlying
+  get_d : ∀ (x : diskWrapper), go.IsGoStepPureDetTagged under (StructFieldGet diskWrapper.underlying go!"d") #x (Val #(x.d'))
+  set_d : ∀ (x : diskWrapper) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk), go.IsGoStepPureDetTagged under (StructFieldSet diskWrapper.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : diskWrapper)))
 
 attribute [instance] diskWrapper.TypeAssumptions.type_repr
   diskWrapper.TypeAssumptions.underlying
   diskWrapper.TypeAssumptions.get_d
   diskWrapper.TypeAssumptions.set_d
 
-namespace embedA
-structure t [FfiSyntax] where
+structure embedA [FfiSyntax] where
   mk ::
   a' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end embedA
+instance embedA.zero_val [FfiSyntax] : ZeroVal embedA :=
+  ⟨embedA.mk zeroValDef⟩
 
 @[reducible] def embedA.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.string)]
@@ -5091,14 +5075,14 @@ instance equals_unfold_embedA [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType embedA.fields)
 
 class embedA.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying embedA.underlying embedA.t
-  underlying : go.UnderlyingDirectedEq embedA embedA.underlying
-  get_a : ∀ (x : embedA.t), go.IsGoStepPureDetTagged under (StructFieldGet embedA.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : embedA.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet embedA.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : embedA.t)))
-  Foo_unfold : MethodUnfold embedA go!"Foo" embedA.Foo.impl
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedA) go!"Bar" embedA.Bar.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedA) go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve embedA go!"Foo"))) (App (Val (GoInstruction (GoLoad embedA))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying embedA.underlying embedA
+  underlying : go.UnderlyingDirectedEq embedA.ty embedA.underlying
+  get_a : ∀ (x : embedA), go.IsGoStepPureDetTagged under (StructFieldGet embedA.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : embedA) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet embedA.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : embedA)))
+  Foo_unfold : MethodUnfold embedA.ty go!"Foo" embedA.Foo.impl
+  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Bar" embedA.Bar.impl
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve embedA.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedA.ty))) (Var "$r"))))
 
 attribute [instance] embedA.TypeAssumptions.type_repr
   embedA.TypeAssumptions.underlying
@@ -5108,17 +5092,15 @@ attribute [instance] embedA.TypeAssumptions.type_repr
   embedA.TypeAssumptions.ptr_Bar_unfold
   embedA.TypeAssumptions.ptr_Foo_unfold
 
-namespace embedB
-structure t [FfiSyntax] where
+structure embedB [FfiSyntax] where
   mk ::
-  embedA' : embedA.t
+  embedA' : embedA
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end embedB
+instance embedB.zero_val [FfiSyntax] : ZeroVal embedB :=
+  ⟨embedB.mk zeroValDef⟩
 
 @[reducible] def embedB.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"embedA" embedA)]
+  [(go.field_decl.EmbeddedField go!"embedA" embedA.ty)]
 
 @[irreducible] def embedB.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   embedB.fieldsUnsealed
@@ -5131,16 +5113,16 @@ instance equals_unfold_embedB [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType embedB.fields)
 
 class embedB.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying embedB.underlying embedB.t
-  underlying : go.UnderlyingDirectedEq embedB embedB.underlying
-  get_embedA : ∀ (x : embedB.t), go.IsGoStepPureDetTagged under (StructFieldGet embedB.underlying go!"embedA") #x (Val #(x.embedA'))
-  set_embedA : ∀ (x : embedB.t) (y : embedA.t), go.IsGoStepPureDetTagged under (StructFieldSet embedB.underlying go!"embedA") (PairV #x #y) (Val #(({ x with embedA' := y } : embedB.t)))
-  Foo_unfold : MethodUnfold embedB go!"Foo" embedB.Foo.impl
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedB) go!"Bar" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB go!"embedA"))) (Var "$r"))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedB) go!"Car" embedB.Car.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedB) go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve embedB go!"Foo"))) (App (Val (GoInstruction (GoLoad embedB))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying embedB.underlying embedB
+  underlying : go.UnderlyingDirectedEq embedB.ty embedB.underlying
+  get_embedA : ∀ (x : embedB), go.IsGoStepPureDetTagged under (StructFieldGet embedB.underlying go!"embedA") #x (Val #(x.embedA'))
+  set_embedA : ∀ (x : embedB) (y : embedA), go.IsGoStepPureDetTagged under (StructFieldSet embedB.underlying go!"embedA") (PairV #x #y) (Val #(({ x with embedA' := y } : embedB)))
+  Foo_unfold : MethodUnfold embedB.ty go!"Foo" embedB.Foo.impl
+  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Bar" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (Var "$r"))))
+  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Car" embedB.Car.impl
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve embedB.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedB.ty))) (Var "$r"))))
 
 attribute [instance] embedB.TypeAssumptions.type_repr
   embedB.TypeAssumptions.underlying
@@ -5151,17 +5133,15 @@ attribute [instance] embedB.TypeAssumptions.type_repr
   embedB.TypeAssumptions.ptr_Car_unfold
   embedB.TypeAssumptions.ptr_Foo_unfold
 
-namespace embedC
-structure t [FfiSyntax] where
+structure embedC [FfiSyntax] where
   mk ::
   embedB' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end embedC
+instance embedC.zero_val [FfiSyntax] : ZeroVal embedC :=
+  ⟨embedC.mk zeroValDef⟩
 
 @[reducible] def embedC.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"embedB" (go.GoType.PointerType embedB))]
+  [(go.field_decl.EmbeddedField go!"embedB" (go.GoType.PointerType embedB.ty))]
 
 @[irreducible] def embedC.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   embedC.fieldsUnsealed
@@ -5174,22 +5154,22 @@ instance equals_unfold_embedC [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType embedC.fields)
 
 class embedC.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying embedC.underlying embedC.t
-  underlying : go.UnderlyingDirectedEq embedC embedC.underlying
-  get_embedB : ∀ (x : embedC.t), go.IsGoStepPureDetTagged under (StructFieldGet embedC.underlying go!"embedB") #x (Val #(x.embedB'))
-  set_embedB : ∀ (x : embedC.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet embedC.underlying go!"embedB") (PairV #x #y) (Val #(({ x with embedB' := y } : embedC.t)))
-  Bar_unfold : MethodUnfold embedC go!"Bar" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedC go!"embedB"))) (Var "$r"))))
-  Car_unfold : MethodUnfold embedC go!"Car" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedC go!"embedB"))) (Var "$r"))))
-  Foo_unfold : MethodUnfold embedC go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedC go!"embedB"))) (Var "$r"))))
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedC) go!"Bar" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Bar"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (Var "$r")))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedC) go!"Car" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Car"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (Var "$r")))))
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedC) go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB)))) (App (Val (GoInstruction (StructFieldRef embedC go!"embedB"))) (Var "$r")))))
+  type_repr : go.TypeReprUnderlying embedC.underlying embedC
+  underlying : go.UnderlyingDirectedEq embedC.ty embedC.underlying
+  get_embedB : ∀ (x : embedC), go.IsGoStepPureDetTagged under (StructFieldGet embedC.underlying go!"embedB") #x (Val #(x.embedB'))
+  set_embedB : ∀ (x : embedC) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet embedC.underlying go!"embedB") (PairV #x #y) (Val #(({ x with embedB' := y } : embedC)))
+  Bar_unfold : MethodUnfold embedC.ty go!"Bar" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
+  Car_unfold : MethodUnfold embedC.ty go!"Car" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
+  Foo_unfold : MethodUnfold embedC.ty go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
+  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Bar" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Bar"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
+  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Car" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Car"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
 
 attribute [instance] embedC.TypeAssumptions.type_repr
   embedC.TypeAssumptions.underlying
@@ -5202,17 +5182,15 @@ attribute [instance] embedC.TypeAssumptions.type_repr
   embedC.TypeAssumptions.ptr_Car_unfold
   embedC.TypeAssumptions.ptr_Foo_unfold
 
-namespace embedD
-structure t [FfiSyntax] where
+structure embedD [FfiSyntax] where
   mk ::
-  embedC' : embedC.t
+  embedC' : embedC
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end embedD
+instance embedD.zero_val [FfiSyntax] : ZeroVal embedD :=
+  ⟨embedD.mk zeroValDef⟩
 
 @[reducible] def embedD.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"embedC" embedC)]
+  [(go.field_decl.EmbeddedField go!"embedC" embedC.ty)]
 
 @[irreducible] def embedD.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   embedD.fieldsUnsealed
@@ -5225,22 +5203,22 @@ instance equals_unfold_embedD [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType embedD.fields)
 
 class embedD.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying embedD.underlying embedD.t
-  underlying : go.UnderlyingDirectedEq embedD embedD.underlying
-  get_embedC : ∀ (x : embedD.t), go.IsGoStepPureDetTagged under (StructFieldGet embedD.underlying go!"embedC") #x (Val #(x.embedC'))
-  set_embedC : ∀ (x : embedD.t) (y : embedC.t), go.IsGoStepPureDetTagged under (StructFieldSet embedD.underlying go!"embedC") (PairV #x #y) (Val #(({ x with embedC' := y } : embedD.t)))
-  Bar_unfold : MethodUnfold embedD go!"Bar" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve embedC go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedD go!"embedC"))) (Var "$r"))))
-  Car_unfold : MethodUnfold embedD go!"Car" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve embedC go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedD go!"embedC"))) (Var "$r"))))
-  Foo_unfold : MethodUnfold embedD go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve embedC go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedD go!"embedC"))) (Var "$r"))))
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedD) go!"Bar" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "$r"))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedD) go!"Car" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC) go!"Car"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "$r"))))
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedD) go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC) go!"Foo"))) (App (Val (GoInstruction (StructFieldRef embedD go!"embedC"))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying embedD.underlying embedD
+  underlying : go.UnderlyingDirectedEq embedD.ty embedD.underlying
+  get_embedC : ∀ (x : embedD), go.IsGoStepPureDetTagged under (StructFieldGet embedD.underlying go!"embedC") #x (Val #(x.embedC'))
+  set_embedC : ∀ (x : embedD) (y : embedC), go.IsGoStepPureDetTagged under (StructFieldSet embedD.underlying go!"embedC") (PairV #x #y) (Val #(({ x with embedC' := y } : embedD)))
+  Bar_unfold : MethodUnfold embedD.ty go!"Bar" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve embedC.ty go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
+  Car_unfold : MethodUnfold embedD.ty go!"Car" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve embedC.ty go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
+  Foo_unfold : MethodUnfold embedD.ty go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve embedC.ty go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
+  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Bar" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
+  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Car" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Car"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Foo"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
 
 attribute [instance] embedD.TypeAssumptions.type_repr
   embedD.TypeAssumptions.underlying
@@ -5253,50 +5231,42 @@ attribute [instance] embedD.TypeAssumptions.type_repr
   embedD.TypeAssumptions.ptr_Car_unfold
   embedD.TypeAssumptions.ptr_Foo_unfold
 
-namespace Enum1
-abbrev t [FfiSyntax] : Type := w64
-end Enum1
+abbrev Enum1 [FfiSyntax] : Type := w64
 
 @[reducible] def Enum1.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class Enum1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Enum1 Enum1.underlying
+  underlying : go.UnderlyingDirectedEq Enum1.ty Enum1.underlying
 
 attribute [instance] Enum1.TypeAssumptions.underlying
 
-namespace Enum2
-abbrev t [FfiSyntax] : Type := w64
-end Enum2
+abbrev Enum2 [FfiSyntax] : Type := w64
 
 @[reducible] def Enum2.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class Enum2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Enum2 Enum2.underlying
+  underlying : go.UnderlyingDirectedEq Enum2.ty Enum2.underlying
 
 attribute [instance] Enum2.TypeAssumptions.underlying
 
-namespace Fooer
-abbrev t [FfiSyntax] : Type := interface.t
-end Fooer
+abbrev Fooer [FfiSyntax] : Type := interface.t
 
 @[reducible] def Fooer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
 
 class Fooer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Fooer Fooer.underlying
+  underlying : go.UnderlyingDirectedEq Fooer.ty Fooer.underlying
 
 attribute [instance] Fooer.TypeAssumptions.underlying
 
-namespace concreteFooer
-structure t [FfiSyntax] where
+structure concreteFooer [FfiSyntax] where
   mk ::
   a' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end concreteFooer
+instance concreteFooer.zero_val [FfiSyntax] : ZeroVal concreteFooer :=
+  ⟨concreteFooer.mk zeroValDef⟩
 
 @[reducible] def concreteFooer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64)]
@@ -5312,11 +5282,11 @@ instance equals_unfold_concreteFooer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType concreteFooer.fields)
 
 class concreteFooer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying concreteFooer.underlying concreteFooer.t
-  underlying : go.UnderlyingDirectedEq concreteFooer concreteFooer.underlying
-  get_a : ∀ (x : concreteFooer.t), go.IsGoStepPureDetTagged under (StructFieldGet concreteFooer.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : concreteFooer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet concreteFooer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : concreteFooer.t)))
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concreteFooer) go!"Foo" concreteFooer.Foo.impl
+  type_repr : go.TypeReprUnderlying concreteFooer.underlying concreteFooer
+  underlying : go.UnderlyingDirectedEq concreteFooer.ty concreteFooer.underlying
+  get_a : ∀ (x : concreteFooer), go.IsGoStepPureDetTagged under (StructFieldGet concreteFooer.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : concreteFooer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet concreteFooer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : concreteFooer)))
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concreteFooer.ty) go!"Foo" concreteFooer.Foo.impl
 
 attribute [instance] concreteFooer.TypeAssumptions.type_repr
   concreteFooer.TypeAssumptions.underlying
@@ -5324,17 +5294,15 @@ attribute [instance] concreteFooer.TypeAssumptions.type_repr
   concreteFooer.TypeAssumptions.set_a
   concreteFooer.TypeAssumptions.ptr_Foo_unfold
 
-namespace FooerUser
-structure t [FfiSyntax] where
+structure FooerUser [FfiSyntax] where
   mk ::
-  f' : Fooer.t
+  f' : Fooer
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end FooerUser
+instance FooerUser.zero_val [FfiSyntax] : ZeroVal FooerUser :=
+  ⟨FooerUser.mk zeroValDef⟩
 
 @[reducible] def FooerUser.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"f" Fooer)]
+  [(go.field_decl.FieldDecl go!"f" Fooer.ty)]
 
 @[irreducible] def FooerUser.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   FooerUser.fieldsUnsealed
@@ -5347,35 +5315,31 @@ instance equals_unfold_FooerUser [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType FooerUser.fields)
 
 class FooerUser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying FooerUser.underlying FooerUser.t
-  underlying : go.UnderlyingDirectedEq FooerUser FooerUser.underlying
-  get_f : ∀ (x : FooerUser.t), go.IsGoStepPureDetTagged under (StructFieldGet FooerUser.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : FooerUser.t) (y : Fooer.t), go.IsGoStepPureDetTagged under (StructFieldSet FooerUser.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : FooerUser.t)))
+  type_repr : go.TypeReprUnderlying FooerUser.underlying FooerUser
+  underlying : go.UnderlyingDirectedEq FooerUser.ty FooerUser.underlying
+  get_f : ∀ (x : FooerUser), go.IsGoStepPureDetTagged under (StructFieldGet FooerUser.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : FooerUser) (y : Fooer), go.IsGoStepPureDetTagged under (StructFieldSet FooerUser.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : FooerUser)))
 
 attribute [instance] FooerUser.TypeAssumptions.type_repr
   FooerUser.TypeAssumptions.underlying
   FooerUser.TypeAssumptions.get_f
   FooerUser.TypeAssumptions.set_f
 
-namespace PointerInterface
-abbrev t [FfiSyntax] : Type := interface.t
-end PointerInterface
+abbrev PointerInterface [FfiSyntax] : Type := interface.t
 
 @[reducible] def PointerInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"B" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
 
 class PointerInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq PointerInterface PointerInterface.underlying
+  underlying : go.UnderlyingDirectedEq PointerInterface.ty PointerInterface.underlying
 
 attribute [instance] PointerInterface.TypeAssumptions.underlying
 
-namespace concrete1
-structure t [FfiSyntax] where
+structure concrete1 [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end concrete1
+instance concrete1.zero_val [FfiSyntax] : ZeroVal concrete1 :=
+  ⟨concrete1.mk⟩
 
 @[reducible] def concrete1.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -5391,12 +5355,12 @@ instance equals_unfold_concrete1 [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType concrete1.fields)
 
 class concrete1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying concrete1.underlying concrete1.t
-  underlying : go.UnderlyingDirectedEq concrete1 concrete1.underlying
-  Foo_unfold : MethodUnfold concrete1 go!"Foo" concrete1.Foo.impl
-  ptr_B_unfold : MethodUnfold (go.GoType.PointerType concrete1) go!"B" concrete1.B.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concrete1) go!"Foo" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve concrete1 go!"Foo"))) (App (Val (GoInstruction (GoLoad concrete1))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying concrete1.underlying concrete1
+  underlying : go.UnderlyingDirectedEq concrete1.ty concrete1.underlying
+  Foo_unfold : MethodUnfold concrete1.ty go!"Foo" concrete1.Foo.impl
+  ptr_B_unfold : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"B" concrete1.B.impl
+  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"Foo" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve concrete1.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad concrete1.ty))) (Var "$r"))))
 
 attribute [instance] concrete1.TypeAssumptions.type_repr
   concrete1.TypeAssumptions.underlying
@@ -5404,40 +5368,34 @@ attribute [instance] concrete1.TypeAssumptions.type_repr
   concrete1.TypeAssumptions.ptr_B_unfold
   concrete1.TypeAssumptions.ptr_Foo_unfold
 
-namespace my_u32
-abbrev t [FfiSyntax] : Type := w32
-end my_u32
+abbrev my_u32 [FfiSyntax] : Type := w32
 
 @[reducible] def my_u32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
 class my_u32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq my_u32 my_u32.underlying
+  underlying : go.UnderlyingDirectedEq my_u32.ty my_u32.underlying
 
 attribute [instance] my_u32.TypeAssumptions.underlying
 
-namespace also_u32
-abbrev t [FfiSyntax] : Type := my_u32.t
-end also_u32
+abbrev also_u32 [FfiSyntax] : Type := my_u32
 
 @[reducible] def also_u32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  my_u32
+  my_u32.ty
 
 class also_u32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq also_u32 also_u32.underlying
+  underlying : go.UnderlyingDirectedEq also_u32.ty also_u32.underlying
 
 attribute [instance] also_u32.TypeAssumptions.underlying
 
-namespace allTheLiterals
-structure t [FfiSyntax] where
+structure allTheLiterals [FfiSyntax] where
   mk ::
   int' : w64
   s' : GoString
   b' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end allTheLiterals
+instance allTheLiterals.zero_val [FfiSyntax] : ZeroVal allTheLiterals :=
+  ⟨allTheLiterals.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def allTheLiterals.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"int" go.uint64),
@@ -5455,14 +5413,14 @@ instance equals_unfold_allTheLiterals [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType allTheLiterals.fields)
 
 class allTheLiterals.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying allTheLiterals.underlying allTheLiterals.t
-  underlying : go.UnderlyingDirectedEq allTheLiterals allTheLiterals.underlying
-  get_int : ∀ (x : allTheLiterals.t), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"int") #x (Val #(x.int'))
-  set_int : ∀ (x : allTheLiterals.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"int") (PairV #x #y) (Val #(({ x with int' := y } : allTheLiterals.t)))
-  get_s : ∀ (x : allTheLiterals.t), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : allTheLiterals.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : allTheLiterals.t)))
-  get_b : ∀ (x : allTheLiterals.t), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : allTheLiterals.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : allTheLiterals.t)))
+  type_repr : go.TypeReprUnderlying allTheLiterals.underlying allTheLiterals
+  underlying : go.UnderlyingDirectedEq allTheLiterals.ty allTheLiterals.underlying
+  get_int : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"int") #x (Val #(x.int'))
+  set_int : ∀ (x : allTheLiterals) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"int") (PairV #x #y) (Val #(({ x with int' := y } : allTheLiterals)))
+  get_s : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : allTheLiterals) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : allTheLiterals)))
+  get_b : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : allTheLiterals) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : allTheLiterals)))
 
 attribute [instance] allTheLiterals.TypeAssumptions.type_repr
   allTheLiterals.TypeAssumptions.underlying
@@ -5473,17 +5431,15 @@ attribute [instance] allTheLiterals.TypeAssumptions.type_repr
   allTheLiterals.TypeAssumptions.get_b
   allTheLiterals.TypeAssumptions.set_b
 
-namespace hasCondVar
-structure t [FfiSyntax] where
+structure hasCondVar [FfiSyntax] where
   mk ::
   cond' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end hasCondVar
+instance hasCondVar.zero_val [FfiSyntax] : ZeroVal hasCondVar :=
+  ⟨hasCondVar.mk zeroValDef⟩
 
 @[reducible] def hasCondVar.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond))]
+  [(go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond.ty))]
 
 @[irreducible] def hasCondVar.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   hasCondVar.fieldsUnsealed
@@ -5496,49 +5452,43 @@ instance equals_unfold_hasCondVar [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType hasCondVar.fields)
 
 class hasCondVar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying hasCondVar.underlying hasCondVar.t
-  underlying : go.UnderlyingDirectedEq hasCondVar hasCondVar.underlying
-  get_cond : ∀ (x : hasCondVar.t), go.IsGoStepPureDetTagged under (StructFieldGet hasCondVar.underlying go!"cond") #x (Val #(x.cond'))
-  set_cond : ∀ (x : hasCondVar.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet hasCondVar.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : hasCondVar.t)))
+  type_repr : go.TypeReprUnderlying hasCondVar.underlying hasCondVar
+  underlying : go.UnderlyingDirectedEq hasCondVar.ty hasCondVar.underlying
+  get_cond : ∀ (x : hasCondVar), go.IsGoStepPureDetTagged under (StructFieldGet hasCondVar.underlying go!"cond") #x (Val #(x.cond'))
+  set_cond : ∀ (x : hasCondVar) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet hasCondVar.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : hasCondVar)))
 
 attribute [instance] hasCondVar.TypeAssumptions.type_repr
   hasCondVar.TypeAssumptions.underlying
   hasCondVar.TypeAssumptions.get_cond
   hasCondVar.TypeAssumptions.set_cond
 
-namespace IntWrapper
-abbrev t [FfiSyntax] : Type := w64
-end IntWrapper
+abbrev IntWrapper [FfiSyntax] : Type := w64
 
 @[reducible] def IntWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class IntWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq IntWrapper IntWrapper.underlying
+  underlying : go.UnderlyingDirectedEq IntWrapper.ty IntWrapper.underlying
 
 attribute [instance] IntWrapper.TypeAssumptions.underlying
 
-namespace MapWrapper
-abbrev t [FfiSyntax] : Type := map.t
-end MapWrapper
+abbrev MapWrapper [FfiSyntax] : Type := map.t
 
 @[reducible] def MapWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.uint64 go.bool)
 
 class MapWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq MapWrapper MapWrapper.underlying
+  underlying : go.UnderlyingDirectedEq MapWrapper.ty MapWrapper.underlying
 
 attribute [instance] MapWrapper.TypeAssumptions.underlying
 
-namespace mapElem
-structure t [FfiSyntax] where
+structure mapElem [FfiSyntax] where
   mk ::
   a' : w64
   b' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end mapElem
+instance mapElem.zero_val [FfiSyntax] : ZeroVal mapElem :=
+  ⟨mapElem.mk zeroValDef zeroValDef⟩
 
 @[reducible] def mapElem.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
@@ -5555,12 +5505,12 @@ instance equals_unfold_mapElem [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType mapElem.fields)
 
 class mapElem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying mapElem.underlying mapElem.t
-  underlying : go.UnderlyingDirectedEq mapElem mapElem.underlying
-  get_a : ∀ (x : mapElem.t), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : mapElem.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : mapElem.t)))
-  get_b : ∀ (x : mapElem.t), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : mapElem.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : mapElem.t)))
+  type_repr : go.TypeReprUnderlying mapElem.underlying mapElem
+  underlying : go.UnderlyingDirectedEq mapElem.ty mapElem.underlying
+  get_a : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : mapElem)))
+  get_b : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : mapElem)))
 
 attribute [instance] mapElem.TypeAssumptions.type_repr
   mapElem.TypeAssumptions.underlying
@@ -5569,14 +5519,12 @@ attribute [instance] mapElem.TypeAssumptions.type_repr
   mapElem.TypeAssumptions.get_b
   mapElem.TypeAssumptions.set_b
 
-namespace containsPointer
-structure t [FfiSyntax] where
+structure containsPointer [FfiSyntax] where
   mk ::
   s' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end containsPointer
+instance containsPointer.zero_val [FfiSyntax] : ZeroVal containsPointer :=
+  ⟨containsPointer.mk zeroValDef⟩
 
 @[reducible] def containsPointer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.PointerType go.uint64))]
@@ -5592,27 +5540,25 @@ instance equals_unfold_containsPointer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType containsPointer.fields)
 
 class containsPointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying containsPointer.underlying containsPointer.t
-  underlying : go.UnderlyingDirectedEq containsPointer containsPointer.underlying
-  get_s : ∀ (x : containsPointer.t), go.IsGoStepPureDetTagged under (StructFieldGet containsPointer.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : containsPointer.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet containsPointer.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : containsPointer.t)))
+  type_repr : go.TypeReprUnderlying containsPointer.underlying containsPointer
+  underlying : go.UnderlyingDirectedEq containsPointer.ty containsPointer.underlying
+  get_s : ∀ (x : containsPointer), go.IsGoStepPureDetTagged under (StructFieldGet containsPointer.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : containsPointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet containsPointer.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : containsPointer)))
 
 attribute [instance] containsPointer.TypeAssumptions.type_repr
   containsPointer.TypeAssumptions.underlying
   containsPointer.TypeAssumptions.get_s
   containsPointer.TypeAssumptions.set_s
 
-namespace wrapExternalStruct
-structure t [FfiSyntax] where
+structure wrapExternalStruct [FfiSyntax] where
   mk ::
   j' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end wrapExternalStruct
+instance wrapExternalStruct.zero_val [FfiSyntax] : ZeroVal wrapExternalStruct :=
+  ⟨wrapExternalStruct.mk zeroValDef⟩
 
 @[reducible] def wrapExternalStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"j" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle))]
+  [(go.field_decl.FieldDecl go!"j" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.std.JoinHandle.ty))]
 
 @[irreducible] def wrapExternalStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   wrapExternalStruct.fieldsUnsealed
@@ -5625,13 +5571,13 @@ instance equals_unfold_wrapExternalStruct [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType wrapExternalStruct.fields)
 
 class wrapExternalStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying wrapExternalStruct.underlying wrapExternalStruct.t
-  underlying : go.UnderlyingDirectedEq wrapExternalStruct wrapExternalStruct.underlying
-  get_j : ∀ (x : wrapExternalStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet wrapExternalStruct.underlying go!"j") #x (Val #(x.j'))
-  set_j : ∀ (x : wrapExternalStruct.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet wrapExternalStruct.underlying go!"j") (PairV #x #y) (Val #(({ x with j' := y } : wrapExternalStruct.t)))
-  join_unfold : MethodUnfold wrapExternalStruct go!"join" wrapExternalStruct.join.impl
-  ptr_join_unfold : MethodUnfold (go.GoType.PointerType wrapExternalStruct) go!"join" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve wrapExternalStruct go!"join"))) (App (Val (GoInstruction (GoLoad wrapExternalStruct))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying wrapExternalStruct.underlying wrapExternalStruct
+  underlying : go.UnderlyingDirectedEq wrapExternalStruct.ty wrapExternalStruct.underlying
+  get_j : ∀ (x : wrapExternalStruct), go.IsGoStepPureDetTagged under (StructFieldGet wrapExternalStruct.underlying go!"j") #x (Val #(x.j'))
+  set_j : ∀ (x : wrapExternalStruct) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet wrapExternalStruct.underlying go!"j") (PairV #x #y) (Val #(({ x with j' := y } : wrapExternalStruct)))
+  join_unfold : MethodUnfold wrapExternalStruct.ty go!"join" wrapExternalStruct.join.impl
+  ptr_join_unfold : MethodUnfold (go.GoType.PointerType wrapExternalStruct.ty) go!"join" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve wrapExternalStruct.ty go!"join"))) (App (Val (GoInstruction (GoLoad wrapExternalStruct.ty))) (Var "$r"))))
 
 attribute [instance] wrapExternalStruct.TypeAssumptions.type_repr
   wrapExternalStruct.TypeAssumptions.underlying
@@ -5640,17 +5586,15 @@ attribute [instance] wrapExternalStruct.TypeAssumptions.type_repr
   wrapExternalStruct.TypeAssumptions.join_unfold
   wrapExternalStruct.TypeAssumptions.ptr_join_unfold
 
-namespace typing
-structure t [FfiSyntax] where
+structure typing [FfiSyntax] where
   mk ::
-  proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId.t
+  proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end typing
+instance typing.zero_val [FfiSyntax] : ZeroVal typing :=
+  ⟨typing.mk zeroValDef⟩
 
 @[reducible] def typing.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"proph" _root_.Perennial.github_com.goose_lang.primitive.ProphId)]
+  [(go.field_decl.FieldDecl go!"proph" _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty)]
 
 @[irreducible] def typing.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   typing.fieldsUnsealed
@@ -5663,25 +5607,23 @@ instance equals_unfold_typing [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType typing.fields)
 
 class typing.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying typing.underlying typing.t
-  underlying : go.UnderlyingDirectedEq typing typing.underlying
-  get_proph : ∀ (x : typing.t), go.IsGoStepPureDetTagged under (StructFieldGet typing.underlying go!"proph") #x (Val #(x.proph'))
-  set_proph : ∀ (x : typing.t) (y : _root_.Perennial.github_com.goose_lang.primitive.ProphId.t), go.IsGoStepPureDetTagged under (StructFieldSet typing.underlying go!"proph") (PairV #x #y) (Val #(({ x with proph' := y } : typing.t)))
+  type_repr : go.TypeReprUnderlying typing.underlying typing
+  underlying : go.UnderlyingDirectedEq typing.ty typing.underlying
+  get_proph : ∀ (x : typing), go.IsGoStepPureDetTagged under (StructFieldGet typing.underlying go!"proph") #x (Val #(x.proph'))
+  set_proph : ∀ (x : typing) (y : _root_.Perennial.github_com.goose_lang.primitive.ProphId), go.IsGoStepPureDetTagged under (StructFieldSet typing.underlying go!"proph") (PairV #x #y) (Val #(({ x with proph' := y } : typing)))
 
 attribute [instance] typing.TypeAssumptions.type_repr
   typing.TypeAssumptions.underlying
   typing.TypeAssumptions.get_proph
   typing.TypeAssumptions.set_proph
 
-namespace composite
-structure t [FfiSyntax] where
+structure composite [FfiSyntax] where
   mk ::
   a' : w64
   b' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end composite
+instance composite.zero_val [FfiSyntax] : ZeroVal composite :=
+  ⟨composite.mk zeroValDef zeroValDef⟩
 
 @[reducible] def composite.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
@@ -5698,12 +5640,12 @@ instance equals_unfold_composite [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType composite.fields)
 
 class composite.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying composite.underlying composite.t
-  underlying : go.UnderlyingDirectedEq composite composite.underlying
-  get_a : ∀ (x : composite.t), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : composite.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : composite.t)))
-  get_b : ∀ (x : composite.t), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : composite.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : composite.t)))
+  type_repr : go.TypeReprUnderlying composite.underlying composite
+  underlying : go.UnderlyingDirectedEq composite.ty composite.underlying
+  get_a : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : composite)))
+  get_b : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : composite)))
 
 attribute [instance] composite.TypeAssumptions.type_repr
   composite.TypeAssumptions.underlying
@@ -5712,13 +5654,11 @@ attribute [instance] composite.TypeAssumptions.type_repr
   composite.TypeAssumptions.get_b
   composite.TypeAssumptions.set_b
 
-namespace R
-structure t [FfiSyntax] where
+structure R [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end R
+instance R.zero_val [FfiSyntax] : ZeroVal R :=
+  ⟨R.mk⟩
 
 @[reducible] def R.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -5734,25 +5674,23 @@ instance equals_unfold_R [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType R.fields)
 
 class R.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying R.underlying R.t
-  underlying : go.UnderlyingDirectedEq R R.underlying
-  ptr_recurMethod_unfold : MethodUnfold (go.GoType.PointerType R) go!"recurMethod" R.recurMethod.impl
+  type_repr : go.TypeReprUnderlying R.underlying R
+  underlying : go.UnderlyingDirectedEq R.ty R.underlying
+  ptr_recurMethod_unfold : MethodUnfold (go.GoType.PointerType R.ty) go!"recurMethod" R.recurMethod.impl
 
 attribute [instance] R.TypeAssumptions.type_repr
   R.TypeAssumptions.underlying
   R.TypeAssumptions.ptr_recurMethod_unfold
 
-namespace Other
-structure t [FfiSyntax] where
+structure Other [FfiSyntax] where
   mk ::
   RecursiveEmbedded' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end Other
+instance Other.zero_val [FfiSyntax] : ZeroVal Other :=
+  ⟨Other.mk zeroValDef⟩
 
 @[reducible] def Other.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"RecursiveEmbedded" (go.GoType.PointerType RecursiveEmbedded))]
+  [(go.field_decl.EmbeddedField go!"RecursiveEmbedded" (go.GoType.PointerType RecursiveEmbedded.ty))]
 
 @[irreducible] def Other.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Other.fieldsUnsealed
@@ -5765,14 +5703,14 @@ instance equals_unfold_Other [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Other.fields)
 
 class Other.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Other.underlying Other.t
-  underlying : go.UnderlyingDirectedEq Other Other.underlying
-  get_RecursiveEmbedded : ∀ (x : Other.t), go.IsGoStepPureDetTagged under (StructFieldGet Other.underlying go!"RecursiveEmbedded") #x (Val #(x.RecursiveEmbedded'))
-  set_RecursiveEmbedded : ∀ (x : Other.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Other.underlying go!"RecursiveEmbedded") (PairV #x #y) (Val #(({ x with RecursiveEmbedded' := y } : Other.t)))
-  recurEmbeddedMethod_unfold : MethodUnfold Other go!"recurEmbeddedMethod" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldGet Other go!"RecursiveEmbedded"))) (Var "$r"))))
-  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType Other) go!"recurEmbeddedMethod" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded)))) (App (Val (GoInstruction (StructFieldRef Other go!"RecursiveEmbedded"))) (Var "$r")))))
+  type_repr : go.TypeReprUnderlying Other.underlying Other
+  underlying : go.UnderlyingDirectedEq Other.ty Other.underlying
+  get_RecursiveEmbedded : ∀ (x : Other), go.IsGoStepPureDetTagged under (StructFieldGet Other.underlying go!"RecursiveEmbedded") #x (Val #(x.RecursiveEmbedded'))
+  set_RecursiveEmbedded : ∀ (x : Other) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Other.underlying go!"RecursiveEmbedded") (PairV #x #y) (Val #(({ x with RecursiveEmbedded' := y } : Other)))
+  recurEmbeddedMethod_unfold : MethodUnfold Other.ty go!"recurEmbeddedMethod" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldGet Other.ty go!"RecursiveEmbedded"))) (Var "$r"))))
+  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType Other.ty) go!"recurEmbeddedMethod" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (App (Val (GoInstruction (StructFieldRef Other.ty go!"RecursiveEmbedded"))) (Var "$r")))))
 
 attribute [instance] Other.TypeAssumptions.type_repr
   Other.TypeAssumptions.underlying
@@ -5781,17 +5719,15 @@ attribute [instance] Other.TypeAssumptions.type_repr
   Other.TypeAssumptions.recurEmbeddedMethod_unfold
   Other.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
 
-namespace RecursiveEmbedded
-structure t [FfiSyntax] where
+structure RecursiveEmbedded [FfiSyntax] where
   mk ::
-  Other' : Other.t
+  Other' : Other
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end RecursiveEmbedded
+instance RecursiveEmbedded.zero_val [FfiSyntax] : ZeroVal RecursiveEmbedded :=
+  ⟨RecursiveEmbedded.mk zeroValDef⟩
 
 @[reducible] def RecursiveEmbedded.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Other" Other)]
+  [(go.field_decl.EmbeddedField go!"Other" Other.ty)]
 
 @[irreducible] def RecursiveEmbedded.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   RecursiveEmbedded.fieldsUnsealed
@@ -5804,11 +5740,11 @@ instance equals_unfold_RecursiveEmbedded [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType RecursiveEmbedded.fields)
 
 class RecursiveEmbedded.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying RecursiveEmbedded.underlying RecursiveEmbedded.t
-  underlying : go.UnderlyingDirectedEq RecursiveEmbedded RecursiveEmbedded.underlying
-  get_Other : ∀ (x : RecursiveEmbedded.t), go.IsGoStepPureDetTagged under (StructFieldGet RecursiveEmbedded.underlying go!"Other") #x (Val #(x.Other'))
-  set_Other : ∀ (x : RecursiveEmbedded.t) (y : Other.t), go.IsGoStepPureDetTagged under (StructFieldSet RecursiveEmbedded.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : RecursiveEmbedded.t)))
-  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType RecursiveEmbedded) go!"recurEmbeddedMethod" RecursiveEmbedded.recurEmbeddedMethod.impl
+  type_repr : go.TypeReprUnderlying RecursiveEmbedded.underlying RecursiveEmbedded
+  underlying : go.UnderlyingDirectedEq RecursiveEmbedded.ty RecursiveEmbedded.underlying
+  get_Other : ∀ (x : RecursiveEmbedded), go.IsGoStepPureDetTagged under (StructFieldGet RecursiveEmbedded.underlying go!"Other") #x (Val #(x.Other'))
+  set_Other : ∀ (x : RecursiveEmbedded) (y : Other), go.IsGoStepPureDetTagged under (StructFieldSet RecursiveEmbedded.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : RecursiveEmbedded)))
+  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod" RecursiveEmbedded.recurEmbeddedMethod.impl
 
 attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.underlying
@@ -5816,14 +5752,12 @@ attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.set_Other
   RecursiveEmbedded.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
 
-namespace Block
-structure t [FfiSyntax] where
+structure Block [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end Block
+instance Block.zero_val [FfiSyntax] : ZeroVal Block :=
+  ⟨Block.mk zeroValDef⟩
 
 @[reducible] def Block.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.uint64)]
@@ -5839,36 +5773,32 @@ instance equals_unfold_Block [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Block.fields)
 
 class Block.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Block.underlying Block.t
-  underlying : go.UnderlyingDirectedEq Block Block.underlying
-  get_Value : ∀ (x : Block.t), go.IsGoStepPureDetTagged under (StructFieldGet Block.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : Block.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Block.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Block.t)))
+  type_repr : go.TypeReprUnderlying Block.underlying Block
+  underlying : go.UnderlyingDirectedEq Block.ty Block.underlying
+  get_Value : ∀ (x : Block), go.IsGoStepPureDetTagged under (StructFieldGet Block.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : Block) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Block.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Block)))
 
 attribute [instance] Block.TypeAssumptions.type_repr
   Block.TypeAssumptions.underlying
   Block.TypeAssumptions.get_Value
   Block.TypeAssumptions.set_Value
 
-namespace SliceAlias
-abbrev t [FfiSyntax] : Type := slice.t
-end SliceAlias
+abbrev SliceAlias [FfiSyntax] : Type := slice.t
 
 @[reducible] def SliceAlias.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.bool)
 
 class SliceAlias.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SliceAlias SliceAlias.underlying
+  underlying : go.UnderlyingDirectedEq SliceAlias.ty SliceAlias.underlying
 
 attribute [instance] SliceAlias.TypeAssumptions.underlying
 
-namespace thing
-structure t [FfiSyntax] where
+structure thing [FfiSyntax] where
   mk ::
   x' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end thing
+instance thing.zero_val [FfiSyntax] : ZeroVal thing :=
+  ⟨thing.mk zeroValDef⟩
 
 @[reducible] def thing.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64)]
@@ -5884,27 +5814,25 @@ instance equals_unfold_thing [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType thing.fields)
 
 class thing.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying thing.underlying thing.t
-  underlying : go.UnderlyingDirectedEq thing thing.underlying
-  get_x : ∀ (x : thing.t), go.IsGoStepPureDetTagged under (StructFieldGet thing.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : thing.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet thing.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : thing.t)))
+  type_repr : go.TypeReprUnderlying thing.underlying thing
+  underlying : go.UnderlyingDirectedEq thing.ty thing.underlying
+  get_x : ∀ (x : thing), go.IsGoStepPureDetTagged under (StructFieldGet thing.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : thing) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet thing.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : thing)))
 
 attribute [instance] thing.TypeAssumptions.type_repr
   thing.TypeAssumptions.underlying
   thing.TypeAssumptions.get_x
   thing.TypeAssumptions.set_x
 
-namespace sliceOfThings
-structure t [FfiSyntax] where
+structure sliceOfThings [FfiSyntax] where
   mk ::
   things' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end sliceOfThings
+instance sliceOfThings.zero_val [FfiSyntax] : ZeroVal sliceOfThings :=
+  ⟨sliceOfThings.mk zeroValDef⟩
 
 @[reducible] def sliceOfThings.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"things" (go.GoType.SliceType thing))]
+  [(go.field_decl.FieldDecl go!"things" (go.GoType.SliceType thing.ty))]
 
 @[irreducible] def sliceOfThings.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   sliceOfThings.fieldsUnsealed
@@ -5917,13 +5845,13 @@ instance equals_unfold_sliceOfThings [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType sliceOfThings.fields)
 
 class sliceOfThings.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying sliceOfThings.underlying sliceOfThings.t
-  underlying : go.UnderlyingDirectedEq sliceOfThings sliceOfThings.underlying
-  get_things : ∀ (x : sliceOfThings.t), go.IsGoStepPureDetTagged under (StructFieldGet sliceOfThings.underlying go!"things") #x (Val #(x.things'))
-  set_things : ∀ (x : sliceOfThings.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings.t)))
-  getThingRef_unfold : MethodUnfold sliceOfThings go!"getThingRef" sliceOfThings.getThingRef.impl
-  ptr_getThingRef_unfold : MethodUnfold (go.GoType.PointerType sliceOfThings) go!"getThingRef" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve sliceOfThings go!"getThingRef"))) (App (Val (GoInstruction (GoLoad sliceOfThings))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying sliceOfThings.underlying sliceOfThings
+  underlying : go.UnderlyingDirectedEq sliceOfThings.ty sliceOfThings.underlying
+  get_things : ∀ (x : sliceOfThings), go.IsGoStepPureDetTagged under (StructFieldGet sliceOfThings.underlying go!"things") #x (Val #(x.things'))
+  set_things : ∀ (x : sliceOfThings) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings)))
+  getThingRef_unfold : MethodUnfold sliceOfThings.ty go!"getThingRef" sliceOfThings.getThingRef.impl
+  ptr_getThingRef_unfold : MethodUnfold (go.GoType.PointerType sliceOfThings.ty) go!"getThingRef" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve sliceOfThings.ty go!"getThingRef"))) (App (Val (GoInstruction (GoLoad sliceOfThings.ty))) (Var "$r"))))
 
 attribute [instance] sliceOfThings.TypeAssumptions.type_repr
   sliceOfThings.TypeAssumptions.underlying
@@ -5932,15 +5860,13 @@ attribute [instance] sliceOfThings.TypeAssumptions.type_repr
   sliceOfThings.TypeAssumptions.getThingRef_unfold
   sliceOfThings.TypeAssumptions.ptr_getThingRef_unfold
 
-namespace Point
-structure t [FfiSyntax] where
+structure Point [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Point
+instance Point.zero_val [FfiSyntax] : ZeroVal Point :=
+  ⟨Point.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Point.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
@@ -5957,21 +5883,21 @@ instance equals_unfold_Point [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Point.fields)
 
 class Point.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Point.underlying Point.t
-  underlying : go.UnderlyingDirectedEq Point Point.underlying
-  get_x : ∀ (x : Point.t), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : Point.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Point.t)))
-  get_y : ∀ (x : Point.t), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : Point.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Point.t)))
-  Add_unfold : MethodUnfold Point go!"Add" Point.Add.impl
-  GetField_unfold : MethodUnfold Point go!"GetField" Point.GetField.impl
-  IgnoreReceiver_unfold : MethodUnfold Point go!"IgnoreReceiver" Point.IgnoreReceiver.impl
-  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Point) go!"Add" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve Point go!"Add"))) (App (Val (GoInstruction (GoLoad Point))) (Var "$r"))))
-  ptr_GetField_unfold : MethodUnfold (go.GoType.PointerType Point) go!"GetField" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve Point go!"GetField"))) (App (Val (GoInstruction (GoLoad Point))) (Var "$r"))))
-  ptr_IgnoreReceiver_unfold : MethodUnfold (go.GoType.PointerType Point) go!"IgnoreReceiver" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve Point go!"IgnoreReceiver"))) (App (Val (GoInstruction (GoLoad Point))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying Point.underlying Point
+  underlying : go.UnderlyingDirectedEq Point.ty Point.underlying
+  get_x : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Point)))
+  get_y : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Point)))
+  Add_unfold : MethodUnfold Point.ty go!"Add" Point.Add.impl
+  GetField_unfold : MethodUnfold Point.ty go!"GetField" Point.GetField.impl
+  IgnoreReceiver_unfold : MethodUnfold Point.ty go!"IgnoreReceiver" Point.IgnoreReceiver.impl
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"Add" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Point.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
+  ptr_GetField_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"GetField" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Point.ty go!"GetField"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
+  ptr_IgnoreReceiver_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"IgnoreReceiver" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Point.ty go!"IgnoreReceiver"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
 
 attribute [instance] Point.TypeAssumptions.type_repr
   Point.TypeAssumptions.underlying
@@ -5986,15 +5912,13 @@ attribute [instance] Point.TypeAssumptions.type_repr
   Point.TypeAssumptions.ptr_GetField_unfold
   Point.TypeAssumptions.ptr_IgnoreReceiver_unfold
 
-namespace TwoInts
-structure t [FfiSyntax] where
+structure TwoInts [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end TwoInts
+instance TwoInts.zero_val [FfiSyntax] : ZeroVal TwoInts :=
+  ⟨TwoInts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def TwoInts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
@@ -6011,12 +5935,12 @@ instance equals_unfold_TwoInts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType TwoInts.fields)
 
 class TwoInts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying TwoInts.underlying TwoInts.t
-  underlying : go.UnderlyingDirectedEq TwoInts TwoInts.underlying
-  get_x : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts.t)))
-  get_y : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : TwoInts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts.t)))
+  type_repr : go.TypeReprUnderlying TwoInts.underlying TwoInts
+  underlying : go.UnderlyingDirectedEq TwoInts.ty TwoInts.underlying
+  get_x : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts)))
+  get_y : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts)))
 
 attribute [instance] TwoInts.TypeAssumptions.type_repr
   TwoInts.TypeAssumptions.underlying
@@ -6025,20 +5949,18 @@ attribute [instance] TwoInts.TypeAssumptions.type_repr
   TwoInts.TypeAssumptions.get_y
   TwoInts.TypeAssumptions.set_y
 
-namespace S
-structure t [FfiSyntax] where
+structure S [FfiSyntax] where
   mk ::
   a' : w64
-  b' : TwoInts.t
+  b' : TwoInts
   c' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end S
+instance S.zero_val [FfiSyntax] : ZeroVal S :=
+  ⟨S.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def S.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
-(go.field_decl.FieldDecl go!"b" TwoInts),
+(go.field_decl.FieldDecl go!"b" TwoInts.ty),
 (go.field_decl.FieldDecl go!"c" go.bool)]
 
 @[irreducible] def S.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -6052,22 +5974,22 @@ instance equals_unfold_S [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType S.fields)
 
 class S.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying S.underlying S.t
-  underlying : go.UnderlyingDirectedEq S S.underlying
-  get_a : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : S.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S.t)))
-  get_b : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : S.t) (y : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S.t)))
-  get_c : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : S.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S.t)))
-  readBVal_unfold : MethodUnfold S go!"readBVal" S.readBVal.impl
-  ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S) go!"negateC" S.negateC.impl
-  ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S) go!"readA" S.readA.impl
-  ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S) go!"readB" S.readB.impl
-  ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S) go!"readBVal" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve S go!"readBVal"))) (App (Val (GoInstruction (GoLoad S))) (Var "$r"))))
-  ptr_refC_unfold : MethodUnfold (go.GoType.PointerType S) go!"refC" S.refC.impl
-  ptr_writeB_unfold : MethodUnfold (go.GoType.PointerType S) go!"writeB" S.writeB.impl
+  type_repr : go.TypeReprUnderlying S.underlying S
+  underlying : go.UnderlyingDirectedEq S.ty S.underlying
+  get_a : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : S) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S)))
+  get_b : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : S) (y : TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
+  get_c : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : S) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S)))
+  readBVal_unfold : MethodUnfold S.ty go!"readBVal" S.readBVal.impl
+  ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"negateC" S.negateC.impl
+  ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readA" S.readA.impl
+  ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readB" S.readB.impl
+  ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readBVal" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve S.ty go!"readBVal"))) (App (Val (GoInstruction (GoLoad S.ty))) (Var "$r"))))
+  ptr_refC_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"refC" S.refC.impl
+  ptr_writeB_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"writeB" S.writeB.impl
 
 attribute [instance] S.TypeAssumptions.type_repr
   S.TypeAssumptions.underlying
@@ -6085,17 +6007,15 @@ attribute [instance] S.TypeAssumptions.type_repr
   S.TypeAssumptions.ptr_refC_unfold
   S.TypeAssumptions.ptr_writeB_unfold
 
-namespace B
-structure t [FfiSyntax] where
+structure B [FfiSyntax] where
   mk ::
   a' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end B
+instance B.zero_val [FfiSyntax] : ZeroVal B :=
+  ⟨B.mk zeroValDef⟩
 
 @[reducible] def B.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"a" (go.GoType.SliceType A))]
+  [(go.field_decl.FieldDecl go!"a" (go.GoType.SliceType A.ty))]
 
 @[irreducible] def B.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   B.fieldsUnsealed
@@ -6108,23 +6028,21 @@ instance equals_unfold_B [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType B.fields)
 
 class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying B.underlying B.t
-  underlying : go.UnderlyingDirectedEq B B.underlying
-  get_a : ∀ (x : B.t), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : B.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B.t)))
+  type_repr : go.TypeReprUnderlying B.underlying B
+  underlying : go.UnderlyingDirectedEq B.ty B.underlying
+  get_a : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : B) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B)))
 
 attribute [instance] B.TypeAssumptions.type_repr
   B.TypeAssumptions.underlying
   B.TypeAssumptions.get_a
   B.TypeAssumptions.set_a
 
-namespace A
-structure t [FfiSyntax] where
+structure A [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end A
+instance A.zero_val [FfiSyntax] : ZeroVal A :=
+  ⟨A.mk⟩
 
 @[reducible] def A.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -6140,45 +6058,39 @@ instance equals_unfold_A [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType A.fields)
 
 class A.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying A.underlying A.t
-  underlying : go.UnderlyingDirectedEq A A.underlying
+  type_repr : go.TypeReprUnderlying A.underlying A
+  underlying : go.UnderlyingDirectedEq A.ty A.underlying
 
 attribute [instance] A.TypeAssumptions.type_repr
   A.TypeAssumptions.underlying
 
-namespace Timestamp
-abbrev t [FfiSyntax] : Type := w64
-end Timestamp
+abbrev Timestamp [FfiSyntax] : Type := w64
 
 @[reducible] def Timestamp.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class Timestamp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Timestamp Timestamp.underlying
+  underlying : go.UnderlyingDirectedEq Timestamp.ty Timestamp.underlying
 
 attribute [instance] Timestamp.TypeAssumptions.underlying
 
-namespace UseTypeAbbrev
-abbrev t [FfiSyntax] : Type := w64
-end UseTypeAbbrev
+abbrev UseTypeAbbrev [FfiSyntax] : Type := w64
 
 @[reducible] def UseTypeAbbrev.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  my_u64
+  my_u64.ty
 
 class UseTypeAbbrev.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UseTypeAbbrev UseTypeAbbrev.underlying
+  underlying : go.UnderlyingDirectedEq UseTypeAbbrev.ty UseTypeAbbrev.underlying
 
 attribute [instance] UseTypeAbbrev.TypeAssumptions.underlying
 
-namespace UseNamedType
-abbrev t [FfiSyntax] : Type := Timestamp.t
-end UseNamedType
+abbrev UseNamedType [FfiSyntax] : Type := Timestamp
 
 @[reducible] def UseNamedType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  Timestamp
+  Timestamp.ty
 
 class UseNamedType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UseNamedType UseNamedType.underlying
+  underlying : go.UnderlyingDirectedEq UseNamedType.ty UseNamedType.underlying
 
 attribute [instance] UseNamedType.TypeAssumptions.underlying
 

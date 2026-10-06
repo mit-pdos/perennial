@@ -654,11 +654,11 @@ def ownRLockTokenDef (γ : RWMutexNames) : IProp GF := ownToks γ.protGn.rlockOv
 theorem ownRLockToken_unseal : @ownRLockToken GF _ = @ownRLockTokenDef GF _ := by
   funext; with_unfolding_all rfl
 
-abbrev RWW (rw : Loc) : Loc := structFieldRef RWMutex.t go!"w" rw
-abbrev RWReaderSem (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerSem" rw
-abbrev RWWriterSem (rw : Loc) : Loc := structFieldRef RWMutex.t go!"writerSem" rw
-abbrev RWReaderCount (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerCount" rw
-abbrev RWReaderWait (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerWait" rw
+abbrev RWW (rw : Loc) : Loc := structFieldRef RWMutex go!"w" rw
+abbrev RWReaderSem (rw : Loc) : Loc := structFieldRef RWMutex go!"readerSem" rw
+abbrev RWWriterSem (rw : Loc) : Loc := structFieldRef RWMutex go!"writerSem" rw
+abbrev RWReaderCount (rw : Loc) : Loc := structFieldRef RWMutex go!"readerCount" rw
+abbrev RWReaderWait (rw : Loc) : Loc := structFieldRef RWMutex go!"readerWait" rw
 
 abbrev rwLockedPart (rw : Loc) (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
   match state with
@@ -703,7 +703,7 @@ theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (∀ num_readers, ⌜state = .RLocked num_readers⌝ →
             ownRWMutex γ (.RLocked (num_readers + 1)) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RLock")) (Val #())) {{ Φ }} := by
   wp_start as ⟨#His, Htok⟩
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -800,7 +800,7 @@ theorem RWMutex.wp_TryRLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
           (∀ num_readers, ⌜state = .RLocked num_readers⌝ →
             ownRWMutex γ (.RLocked (num_readers + 1)) ={∅,⊤ \ ↑N}=∗ Φ #true)) ∧
          Φ #false) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"TryRLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"TryRLock")) (Val #())) {{ Φ }} := by
   wp_start as ⟨#His, Htok⟩
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -886,7 +886,7 @@ theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ∃ num_readers, ownRWMutex γ (.RLocked (num_readers + 1)) ∗
           (ownRWMutex γ (.RLocked num_readers) ∗ ownRLockToken γ ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RUnlock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RUnlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -1019,7 +1019,7 @@ theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (⌜state = .RLocked 0⌝ → ownRWMutex γ .Locked ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Lock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Lock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1176,7 +1176,7 @@ theorem RWMutex.wp_TryLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       ▷ ((|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (⌜state = .RLocked 0⌝ → ownRWMutex γ .Locked ={∅,⊤ \ ↑N}=∗ Φ #true)) ∧
          Φ #false) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"TryLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"TryLock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1256,7 +1256,7 @@ theorem RWMutex.wp_Unlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ownRWMutex γ .Locked ∗
           (ownRWMutex γ (.RLocked 0) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Unlock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Unlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1363,17 +1363,17 @@ theorem ownToks_replicate (γ : GName) (n : Nat) :
     iapply ih $$ H2
 
 theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
-    typedPointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ⊢
+    typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ⊢
     |={E}=> ∃ γ : RWMutexNames, isRWMutex rw γ N ∗ ownRWMutex γ (.RLocked 0) ∗
       [∗list] _x ∈ List.replicate (Int.toNat actualMaxReaders) (), ownRLockToken γ := by
   iintro Hrw
   iStructNamed Hrw
-  rw [show (zero_val RWMutex.t).readerSem' = W32 0 from rfl,
-    show (zero_val RWMutex.t).writerSem' = W32 0 from rfl,
-    show (zero_val RWMutex.t).readerCount' =
-      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32.t) from rfl,
-    show (zero_val RWMutex.t).readerWait' =
-      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32.t) from rfl]
+  rw [show (zero_val RWMutex).readerSem' = W32 0 from rfl,
+    show (zero_val RWMutex).writerSem' = W32 0 from rfl,
+    show (zero_val RWMutex).readerCount' =
+      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl,
+    show (zero_val RWMutex).readerWait' =
+      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl]
   imod ownTokAuth_alloc (GF := GF) with ⟨%γread_wait, Hread_wait⟩
   imod ownTokAuth_alloc (GF := GF) with ⟨%γrlock, Hrlock⟩
   imod ownTokAuth_add (Int.toNat actualMaxReaders) γrlock 0 $$ Hrlock with ⟨Hrlock, Htoks⟩

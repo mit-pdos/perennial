@@ -18,8 +18,8 @@ end pkg_id
 
 namespace google_golang_org.grpc.status
 
-@[reducible] def Status [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  _root_.Perennial.google_golang_org.genproto.googleapis.rpc.status.Status
+@[reducible] def Status.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  _root_.Perennial.google_golang_org.genproto.googleapis.rpc.status.Status.ty
 
 noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/grpc/status.New"

@@ -18,45 +18,45 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
 
-def Box [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+def Box.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.Box" [T])
 
-attribute [irreducible] Box
+attribute [irreducible] Box.ty
 
-def Container [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+def Container.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.Container" [T])
 
-attribute [irreducible] Container
+attribute [irreducible] Container.ty
 
-def UseContainer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UseContainer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.UseContainer" [])
 
-attribute [irreducible] UseContainer
+attribute [irreducible] UseContainer.ty
 
-def OnlyIndirect [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+def OnlyIndirect.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.OnlyIndirect" [T])
 
-attribute [irreducible] OnlyIndirect
+attribute [irreducible] OnlyIndirect.ty
 
-def MultiParam [FfiSyntax] [GoGlobalContext] (A : go.GoType) (B : go.GoType) : go.GoType :=
+def MultiParam.ty [FfiSyntax] [GoGlobalContext] (A : go.GoType) (B : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.MultiParam" [A, B])
 
-attribute [irreducible] MultiParam
+attribute [irreducible] MultiParam.ty
 
-def TypeParamCollision [FfiSyntax] [GoGlobalContext] (T : go.GoType) (C : go.GoType) : go.GoType :=
+def TypeParamCollision.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) (C : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.TypeParamCollision" [T, C])
 
-attribute [irreducible] TypeParamCollision
+attribute [irreducible] TypeParamCollision.ty
 
-def nonStructGeneric [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+def nonStructGeneric.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.nonStructGeneric" [T])
 
-attribute [irreducible] nonStructGeneric
+attribute [irreducible] nonStructGeneric.ty
 
-def useNonStructGeneric [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+def useNonStructGeneric.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.useNonStructGeneric" [T])
 
-attribute [irreducible] useNonStructGeneric
+attribute [irreducible] useNonStructGeneric.ty
 
 noncomputable def UnderlyingSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.UnderlyingSlice"
@@ -126,26 +126,26 @@ noncomputable def Clone.impl [FfiSyntax] [GoGlobalContext] (S E : go.GoType) : v
 noncomputable def BoxGet.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (Box T)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty T)))) (Var "b"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box T) go!"Value"))) (Var "b")))))))
+  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b")))))))
 
 /-- go: generics.go:17:6 -/
 noncomputable def BoxGet2.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (Box go.uint64)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (Var "b"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef (Box go.uint64) go!"Value"))) (Var "b")))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef (Box.ty go.uint64) go!"Value"))) (Var "b")))))))
 
 /-- go: generics.go:21:17 -/
 noncomputable def Box.Get.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (Box T)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty T)))) (Var "b"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box T) go!"Value"))) (Var "b"))))))))
+  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b"))))))))
 
 /-- go: generics.go:25:6 -/
 noncomputable def makeGenericBox.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
@@ -154,7 +154,7 @@ noncomputable def makeGenericBox.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTy
   (Let "value" (App (Val (GoInstruction (GoAlloc T))) (Var "value"))
   (App (Val doReturn)
   (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "value"))
-  (App (Val (GoInstruction (CompositeLiteral (Box T)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression T (Var "$v0")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral (Box.ty T)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression T (Var "$v0")))])))))))
 
 /-- go: generics.go:29:6 -/
 noncomputable def makeBox.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -162,20 +162,20 @@ noncomputable def makeBox.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Let "$v0" (Val #(W64 42))
-  (App (Val (GoInstruction (CompositeLiteral (Box go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))))))
+  (App (Val (GoInstruction (CompositeLiteral (Box.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))))))
 
 /-- go: generics.go:34:6 -/
 noncomputable def useBoxGet.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (Box go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box go.uint64)))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 42))
   (App (App (Val (GoInstruction (FuncResolve makeGenericBox [go.uint64]))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box go.uint64)) go!"Get"))) (Var "x")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box.ty go.uint64)) go!"Get"))) (Var "x")) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (Box go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (Box.ty go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: generics.go:47:6 -/
 noncomputable def useContainer.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -184,14 +184,14 @@ noncomputable def useContainer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "container" (App (Val (GoInstruction (GoAlloc (Container go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Container go.uint64)))) (Val #())))
+  (Let "container" (App (Val (GoInstruction (GoAlloc (Container.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Container.ty go.uint64)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Let "$k0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.int go.uint64)))) (LiteralValue [(KeyedElement (some (KeyExpression go.int (Var "$k0"))) (ElementExpression go.uint64 (Var "$v1")))]))))
   (Let "$v2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$v3" (Val #(W64 3))
-  (App (Val (GoInstruction (CompositeLiteral (Container go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Y")) (ElementExpression (go.GoType.MapType go.int go.uint64) (Var "$v1"))), (KeyedElement (some (KeyField go!"Z")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"W")) (ElementExpression go.uint64 (Var "$v3")))]))))))
+  (App (Val (GoInstruction (CompositeLiteral (Container.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Y")) (ElementExpression (go.GoType.MapType go.int go.uint64) (Var "$v1"))), (KeyedElement (some (KeyField go!"Z")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"W")) (ElementExpression go.uint64 (Var "$v3")))]))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -201,15 +201,15 @@ noncomputable def useContainer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 4))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (Container go.uint64) go!"W"))) (Var "container")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (Container.ty go.uint64) go!"W"))) (Var "container")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef (Container go.uint64) go!"Z"))) (Var "container")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef (Container.ty go.uint64) go!"Z"))) (Var "container")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert go.int)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.int go.uint64)))) (App (Val (GoInstruction (StructFieldRef (Container go.uint64) go!"Y"))) (Var "container")))) (Val #(W64 2))) (Var "$r0")))))))
+  (App (App (App (Val (map.insert go.int)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.int go.uint64)))) (App (Val (GoInstruction (StructFieldRef (Container.ty go.uint64) go!"Y"))) (Var "container")))) (Val #(W64 2))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (Container go.uint64) go!"X"))) (Var "container")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (Container.ty go.uint64) go!"X"))) (Var "container")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (Container go.uint64)))) (Pair (Var "container") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (Container.ty go.uint64)))) (Pair (Var "container") (Var "$r0"))))))))))
 
 /-- go: generics.go:80:6 -/
 noncomputable def useMultiParam.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -218,35 +218,35 @@ noncomputable def useMultiParam.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "mp" (App (Val (GoInstruction (GoAlloc (MultiParam go.uint64 go.bool)))) (App (Val (GoInstruction (GoZeroVal (MultiParam go.uint64 go.bool)))) (Val #())))
+  (Let "mp" (App (Val (GoInstruction (GoAlloc (MultiParam.ty go.uint64 go.bool)))) (App (Val (GoInstruction (GoZeroVal (MultiParam.ty go.uint64 go.bool)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #true)
   (Let "$v1" (Val #(W64 1))
-  (App (Val (GoInstruction (CompositeLiteral (MultiParam go.uint64 go.bool)))) (LiteralValue [(KeyedElement (some (KeyField go!"Y")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral (MultiParam.ty go.uint64 go.bool)))) (LiteralValue [(KeyedElement (some (KeyField go!"Y")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam go.uint64 go.bool) go!"X"))) (Var "mp")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam.ty go.uint64 go.bool) go!"X"))) (Var "mp")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (MultiParam go.uint64 go.bool)))) (Pair (Var "mp") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (MultiParam.ty go.uint64 go.bool)))) (Pair (Var "mp") (Var "$r0"))))))))))
 
 /-- go: generics.go:85:6 -/
 noncomputable def swapMultiParam.impl [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=
   (LamV "p"
   (App (Val exceptionDo)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (MultiParam A A))))) (Var "p"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (Let "temp" (App (Val (GoInstruction (GoAlloc A))) (App (Val (GoInstruction (GoZeroVal A))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam A A))))) (Var "p"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam A A) go!"Y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam A A))))) (Var "p"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"Y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (Var "temp"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore A))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam A A) go!"Y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam A A))))) (Var "p"))) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore A))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"Y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore A))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam A A))))) (Var "p"))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore A))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore A))) (Pair (Var "temp") (Var "$r0")))))))))))
 
@@ -298,14 +298,12 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.initialize') (Val #())))))))
 
-namespace Box
-structure t [FfiSyntax] (T : Type) where
+structure Box [FfiSyntax] (T : Type) where
   mk ::
   Value' : T
 
-instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zeroValDef⟩
-end Box
+instance Box.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Box T) :=
+  ⟨Box.mk zeroValDef⟩
 
 @[reducible] def Box.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" T)]
@@ -321,13 +319,13 @@ instance equals_unfold_Box [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
   (go.GoType.StructType (Box.fields T))
 
 class Box.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Box.underlying T) (Box.t T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Box T) (Box.underlying T)
-  get_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T) go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T) go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : (Box.t T'))))
-  Get_unfold : ∀ (T : go.GoType), MethodUnfold (Box T) go!"Get" (Box.Get.impl T)
-  ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Box T)) go!"Get" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (Box T) go!"Get"))) (App (Val (GoInstruction (GoLoad (Box T)))) (Var "$r"))))
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Box.underlying T) (Box T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Box.ty T) (Box.underlying T)
+  get_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T) go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T) go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : (Box T'))))
+  Get_unfold : ∀ (T : go.GoType), MethodUnfold (Box.ty T) go!"Get" (Box.Get.impl T)
+  ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Box.ty T)) go!"Get" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (Box.ty T) go!"Get"))) (App (Val (GoInstruction (GoLoad (Box.ty T)))) (Var "$r"))))
 
 attribute [instance] Box.TypeAssumptions.type_repr
   Box.TypeAssumptions.underlying
@@ -336,17 +334,15 @@ attribute [instance] Box.TypeAssumptions.type_repr
   Box.TypeAssumptions.Get_unfold
   Box.TypeAssumptions.ptr_Get_unfold
 
-namespace Container
-structure t [FfiSyntax] (T : Type) where
+structure Container [FfiSyntax] (T : Type) where
   mk ::
   X' : T
   Y' : map.t
   Z' : Loc
   W' : w64
 
-instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Container
+instance Container.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Container T) :=
+  ⟨Container.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Container.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
@@ -365,16 +361,16 @@ instance equals_unfold_Container [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
   (go.GoType.StructType (Container.fields T))
 
 class Container.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Container.underlying T) (Container.t T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Container T) (Container.underlying T)
-  get_X : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"X") #x (Val #(x.X'))
-  set_X : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (Container.t T'))))
-  get_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Y") #x (Val #(x.Y'))
-  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (Container.t T'))))
-  get_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Z") #x (Val #(x.Z'))
-  set_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Z") (PairV #x #y) (Val #(({ x with Z' := y } : (Container.t T'))))
-  get_W : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"W") #x (Val #(x.W'))
-  set_W : ∀ (T : go.GoType) (T' : Type) (x : (Container.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"W") (PairV #x #y) (Val #(({ x with W' := y } : (Container.t T'))))
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Container.underlying T) (Container T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Container.ty T) (Container.underlying T)
+  get_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (Container T'))))
+  get_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Y") #x (Val #(x.Y'))
+  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (Container T'))))
+  get_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Z") #x (Val #(x.Z'))
+  set_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Z") (PairV #x #y) (Val #(({ x with Z' := y } : (Container T'))))
+  get_W : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"W") #x (Val #(x.W'))
+  set_W : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"W") (PairV #x #y) (Val #(({ x with W' := y } : (Container T'))))
 
 attribute [instance] Container.TypeAssumptions.type_repr
   Container.TypeAssumptions.underlying
@@ -387,17 +383,15 @@ attribute [instance] Container.TypeAssumptions.type_repr
   Container.TypeAssumptions.get_W
   Container.TypeAssumptions.set_W
 
-namespace UseContainer
-structure t [FfiSyntax] where
+structure UseContainer [FfiSyntax] where
   mk ::
-  X' : (Container.t w64)
+  X' : (Container w64)
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end UseContainer
+instance UseContainer.zero_val [FfiSyntax] : ZeroVal UseContainer :=
+  ⟨UseContainer.mk zeroValDef⟩
 
 @[reducible] def UseContainer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"X" (Container go.uint64))]
+  [(go.field_decl.FieldDecl go!"X" (Container.ty go.uint64))]
 
 @[irreducible] def UseContainer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   UseContainer.fieldsUnsealed
@@ -410,25 +404,23 @@ instance equals_unfold_UseContainer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType UseContainer.fields)
 
 class UseContainer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying UseContainer.underlying UseContainer.t
-  underlying : go.UnderlyingDirectedEq UseContainer UseContainer.underlying
-  get_X : ∀ (x : UseContainer.t), go.IsGoStepPureDetTagged under (StructFieldGet UseContainer.underlying go!"X") #x (Val #(x.X'))
-  set_X : ∀ (x : UseContainer.t) (y : (Container.t w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer.t)))
+  type_repr : go.TypeReprUnderlying UseContainer.underlying UseContainer
+  underlying : go.UnderlyingDirectedEq UseContainer.ty UseContainer.underlying
+  get_X : ∀ (x : UseContainer), go.IsGoStepPureDetTagged under (StructFieldGet UseContainer.underlying go!"X") #x (Val #(x.X'))
+  set_X : ∀ (x : UseContainer) (y : (Container w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer)))
 
 attribute [instance] UseContainer.TypeAssumptions.type_repr
   UseContainer.TypeAssumptions.underlying
   UseContainer.TypeAssumptions.get_X
   UseContainer.TypeAssumptions.set_X
 
-namespace OnlyIndirect
-structure t [FfiSyntax] (T : Type) where
+structure OnlyIndirect [FfiSyntax] (T : Type) where
   mk ::
   X' : slice.t
   Y' : Loc
 
-instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end OnlyIndirect
+instance OnlyIndirect.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (OnlyIndirect T) :=
+  ⟨OnlyIndirect.mk zeroValDef zeroValDef⟩
 
 @[reducible] def OnlyIndirect.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" (go.GoType.SliceType T)),
@@ -445,12 +437,12 @@ instance equals_unfold_OnlyIndirect [FfiSyntax] [GoGlobalContext] (T : go.GoType
   (go.GoType.StructType (OnlyIndirect.fields T))
 
 class OnlyIndirect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (OnlyIndirect.underlying T) (OnlyIndirect.t T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (OnlyIndirect T) (OnlyIndirect.underlying T)
-  get_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"X") #x (Val #(x.X'))
-  set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect.t T'))))
-  get_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"Y") #x (Val #(x.Y'))
-  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (OnlyIndirect.t T'))))
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (OnlyIndirect.underlying T) (OnlyIndirect T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (OnlyIndirect.ty T) (OnlyIndirect.underlying T)
+  get_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect T'))))
+  get_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"Y") #x (Val #(x.Y'))
+  set_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (OnlyIndirect T'))))
 
 attribute [instance] OnlyIndirect.TypeAssumptions.type_repr
   OnlyIndirect.TypeAssumptions.underlying
@@ -459,15 +451,13 @@ attribute [instance] OnlyIndirect.TypeAssumptions.type_repr
   OnlyIndirect.TypeAssumptions.get_Y
   OnlyIndirect.TypeAssumptions.set_Y
 
-namespace MultiParam
-structure t [FfiSyntax] (A B : Type) where
+structure MultiParam [FfiSyntax] (A B : Type) where
   mk ::
   Y' : B
   X' : A
 
-instance zero_val [FfiSyntax] {A B : Type} [ZeroVal A] [ZeroVal B] : ZeroVal (t A B) :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end MultiParam
+instance MultiParam.zero_val [FfiSyntax] {A B : Type} [ZeroVal A] [ZeroVal B] : ZeroVal (MultiParam A B) :=
+  ⟨MultiParam.mk zeroValDef zeroValDef⟩
 
 @[reducible] def MultiParam.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (A B : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Y" B),
@@ -484,12 +474,12 @@ instance equals_unfold_MultiParam [FfiSyntax] [GoGlobalContext] (A B : go.GoType
   (go.GoType.StructType (MultiParam.fields A B))
 
 class MultiParam.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (A B : go.GoType) (A' B' : Type) [ZeroVal A'] [TypeRepr A A'] [ZeroVal B'] [TypeRepr B B'], go.TypeReprUnderlying (MultiParam.underlying A B) (MultiParam.t A' B')
-  underlying : ∀ (A B : go.GoType), go.UnderlyingDirectedEq (MultiParam A B) (MultiParam.underlying A B)
-  get_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam.t A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"Y") #x (Val #(x.Y'))
-  set_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam.t A' B')) (y : B'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (MultiParam.t A' B'))))
-  get_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam.t A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"X") #x (Val #(x.X'))
-  set_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam.t A' B')) (y : A'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (MultiParam.t A' B'))))
+  type_repr : ∀ (A B : go.GoType) (A' B' : Type) [ZeroVal A'] [TypeRepr A A'] [ZeroVal B'] [TypeRepr B B'], go.TypeReprUnderlying (MultiParam.underlying A B) (MultiParam A' B')
+  underlying : ∀ (A B : go.GoType), go.UnderlyingDirectedEq (MultiParam.ty A B) (MultiParam.underlying A B)
+  get_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"Y") #x (Val #(x.Y'))
+  set_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')) (y : B'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (MultiParam A' B'))))
+  get_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')) (y : A'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (MultiParam A' B'))))
 
 attribute [instance] MultiParam.TypeAssumptions.type_repr
   MultiParam.TypeAssumptions.underlying
@@ -498,15 +488,13 @@ attribute [instance] MultiParam.TypeAssumptions.type_repr
   MultiParam.TypeAssumptions.get_X
   MultiParam.TypeAssumptions.set_X
 
-namespace TypeParamCollision
-structure t [FfiSyntax] (T C : Type) where
+structure TypeParamCollision [FfiSyntax] (T C : Type) where
   mk ::
   X' : T
   Y' : C
 
-instance zero_val [FfiSyntax] {T C : Type} [ZeroVal T] [ZeroVal C] : ZeroVal (t T C) :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end TypeParamCollision
+instance TypeParamCollision.zero_val [FfiSyntax] {T C : Type} [ZeroVal T] [ZeroVal C] : ZeroVal (TypeParamCollision T C) :=
+  ⟨TypeParamCollision.mk zeroValDef zeroValDef⟩
 
 @[reducible] def TypeParamCollision.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T C : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
@@ -523,12 +511,12 @@ instance equals_unfold_TypeParamCollision [FfiSyntax] [GoGlobalContext] (T C : g
   (go.GoType.StructType (TypeParamCollision.fields T C))
 
 class TypeParamCollision.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T C : go.GoType) (T' C' : Type) [ZeroVal T'] [TypeRepr T T'] [ZeroVal C'] [TypeRepr C C'], go.TypeReprUnderlying (TypeParamCollision.underlying T C) (TypeParamCollision.t T' C')
-  underlying : ∀ (T C : go.GoType), go.UnderlyingDirectedEq (TypeParamCollision T C) (TypeParamCollision.underlying T C)
-  get_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision.t T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"X") #x (Val #(x.X'))
-  set_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision.t T' C')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (TypeParamCollision.t T' C'))))
-  get_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision.t T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"Y") #x (Val #(x.Y'))
-  set_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision.t T' C')) (y : C'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (TypeParamCollision.t T' C'))))
+  type_repr : ∀ (T C : go.GoType) (T' C' : Type) [ZeroVal T'] [TypeRepr T T'] [ZeroVal C'] [TypeRepr C C'], go.TypeReprUnderlying (TypeParamCollision.underlying T C) (TypeParamCollision T' C')
+  underlying : ∀ (T C : go.GoType), go.UnderlyingDirectedEq (TypeParamCollision.ty T C) (TypeParamCollision.underlying T C)
+  get_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (TypeParamCollision T' C'))))
+  get_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"Y") #x (Val #(x.Y'))
+  set_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')) (y : C'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (TypeParamCollision T' C'))))
 
 attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.underlying
@@ -537,29 +525,25 @@ attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.get_Y
   TypeParamCollision.TypeAssumptions.set_Y
 
-namespace nonStructGeneric
-abbrev t [FfiSyntax] (T : Type) : Type := slice.t
-end nonStructGeneric
+abbrev nonStructGeneric [FfiSyntax] (T : Type) : Type := slice.t
 
 @[reducible] def nonStructGeneric.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.SliceType T)
 
 class nonStructGeneric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (nonStructGeneric T) (nonStructGeneric.underlying T)
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (nonStructGeneric.ty T) (nonStructGeneric.underlying T)
 
 attribute [instance] nonStructGeneric.TypeAssumptions.underlying
 
-namespace useNonStructGeneric
-structure t [FfiSyntax] (T : Type) where
+structure useNonStructGeneric [FfiSyntax] (T : Type) where
   mk ::
-  x' : (nonStructGeneric.t T)
+  x' : (nonStructGeneric T)
 
-instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zeroValDef⟩
-end useNonStructGeneric
+instance useNonStructGeneric.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (useNonStructGeneric T) :=
+  ⟨useNonStructGeneric.mk zeroValDef⟩
 
 @[reducible] def useNonStructGeneric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"x" (nonStructGeneric T))]
+  [(go.field_decl.FieldDecl go!"x" (nonStructGeneric.ty T))]
 
 @[irreducible] def useNonStructGeneric.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (useNonStructGeneric.fieldsUnsealed T)
@@ -572,10 +556,10 @@ instance equals_unfold_useNonStructGeneric [FfiSyntax] [GoGlobalContext] (T : go
   (go.GoType.StructType (useNonStructGeneric.fields T))
 
 class useNonStructGeneric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (useNonStructGeneric.underlying T) (useNonStructGeneric.t T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (useNonStructGeneric T) (useNonStructGeneric.underlying T)
-  get_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric.t T')), go.IsGoStepPureDetTagged under (StructFieldGet (useNonStructGeneric.underlying T) go!"x") #x (Val #(x.x'))
-  set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric.t T')) (y : (nonStructGeneric.t T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric.t T'))))
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (useNonStructGeneric.underlying T) (useNonStructGeneric T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (useNonStructGeneric.ty T) (useNonStructGeneric.underlying T)
+  get_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (useNonStructGeneric.underlying T) go!"x") #x (Val #(x.x'))
+  set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')) (y : (nonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric T'))))
 
 attribute [instance] useNonStructGeneric.TypeAssumptions.type_repr
   useNonStructGeneric.TypeAssumptions.underlying

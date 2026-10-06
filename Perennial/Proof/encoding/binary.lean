@@ -112,7 +112,7 @@ variable [package_sem : encoding.binary.Assumptions]
 
 /-- Rocq `is_init` (local). -/
 abbrev isInit : IProp GF :=
-  typedPointsto (globalAddr LittleEndian) (zero_val littleEndian.t) DFrac.discard
+  typedPointsto (globalAddr LittleEndian) (zero_val littleEndian) DFrac.discard
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.encoding.binary :=
   define_is_pkg_init isInit
@@ -131,7 +131,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := interface.t) errOverflow go.error as _
-  wp_apply wp_GlobalAlloc (V := littleEndian.t) LittleEndian littleEndian as Hlit
+  wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
   ipersist Hlit
   wp_apply wp_GlobalAlloc (V := interface.t) errBufferTooSmall go.error as _
   wp_apply sync.wp_initialize' _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
@@ -144,10 +144,10 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
-theorem wp_littleEndian_Uint64 (le : littleEndian.t) (b : slice.t) (bs rem : List w8) (dq : DFrac)
+theorem wp_littleEndian_Uint64 (le : littleEndian) (b : slice.t) (bs rem : List w8) (dq : DFrac)
     (Hlen_bs : bs.length = 8) :
     {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
-      (App (Val (le @!! littleEndian @!! go!"Uint64")) (Val #b))
+      (App (Val (le @!! littleEndian.ty @!! go!"Uint64")) (Val #b))
     {{ RET #(leToU64 bs); b ↦*{dq} (bs ++ rem) }} := by
   obtain ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩ :
       ∃ w0 w1 w2 w3 w4 w5 w6 w7, bs = [w0, w1, w2, w3, w4, w5, w6, w7] := by
@@ -195,10 +195,10 @@ theorem wp_littleEndian_Uint64 (le : littleEndian.t) (b : slice.t) (bs rem : Lis
   rw [leToU64_8]
   iapply HΦ $$ Hb
 
-theorem wp_littleEndian_PutUint64 (le : littleEndian.t) (b : slice.t) (space rem : List w8)
+theorem wp_littleEndian_PutUint64 (le : littleEndian) (b : slice.t) (space rem : List w8)
     (v : w64) (Hlen_space : space.length = 8) :
     {{ (b ↦* (space ++ rem) : IProp GF) }}
-      (App (App (Val (le @!! littleEndian @!! go!"PutUint64")) (Val #b)) (Val #v))
+      (App (App (Val (le @!! littleEndian.ty @!! go!"PutUint64")) (Val #b)) (Val #v))
     {{ RET #(); b ↦* (u64Le v ++ rem) }} := by
   obtain ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩ :
       ∃ w0 w1 w2 w3 w4 w5 w6 w7, space = [w0, w1, w2, w3, w4, w5, w6, w7] := by
@@ -279,10 +279,10 @@ theorem wp_littleEndian_PutUint64 (le : littleEndian.t) (b : slice.t) (space rem
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 
-theorem wp_littleEndian_PutUint32 (le : littleEndian.t) (b : slice.t) (space rem : List w8)
+theorem wp_littleEndian_PutUint32 (le : littleEndian) (b : slice.t) (space rem : List w8)
     (v : w32) (Hlen_space : space.length = 4) :
     {{ (b ↦* (space ++ rem) : IProp GF) }}
-      (App (App (Val (le @!! littleEndian @!! go!"PutUint32")) (Val #b)) (Val #v))
+      (App (App (Val (le @!! littleEndian.ty @!! go!"PutUint32")) (Val #b)) (Val #v))
     {{ RET #(); b ↦* (u32Le v ++ rem) }} := by
   obtain ⟨w0, w1, w2, w3, rfl⟩ : ∃ w0 w1 w2 w3, space = [w0, w1, w2, w3] := by
     match space, Hlen_space with
@@ -330,10 +330,10 @@ theorem wp_littleEndian_PutUint32 (le : littleEndian.t) (b : slice.t) (space rem
   simp only [Int.reduceToNat, List.cons_append, List.set_cons_succ, List.set_cons_zero]
   iexact Hb
 
-theorem wp_littleEndian_Uint32 (le : littleEndian.t) (b : slice.t) (bs rem : List w8) (dq : DFrac)
+theorem wp_littleEndian_Uint32 (le : littleEndian) (b : slice.t) (bs rem : List w8) (dq : DFrac)
     (Hlen_bs : bs.length = 4) :
     {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
-      (App (Val (le @!! littleEndian @!! go!"Uint32")) (Val #b))
+      (App (Val (le @!! littleEndian.ty @!! go!"Uint32")) (Val #b))
     {{ RET #(leToU32 bs); b ↦*{dq} (bs ++ rem) }} := by
   obtain ⟨w0, w1, w2, w3, rfl⟩ : ∃ w0 w1 w2 w3, bs = [w0, w1, w2, w3] := by
     match bs, Hlen_bs with
@@ -366,7 +366,7 @@ theorem wp_littleEndian_Uint32 (le : littleEndian.t) (b : slice.t) (bs rem : Lis
 theorem wp_LittleEndian_PutUint64 (b : slice.t) (space rem : List w8) (v : w64)
     (Hlen : space.length = 8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
-      (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian @!! go!"PutUint64"))
+      (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"PutUint64"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* (u64Le v ++ rem) }} := by
   wp_start as Hb
@@ -380,7 +380,7 @@ theorem wp_LittleEndian_PutUint64 (b : slice.t) (space rem : List w8) (v : w64)
 theorem wp_LittleEndian_Uint64 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 8) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
-      (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian @!! go!"Uint64"))
+      (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"Uint64"))
         (Val #b))
     {{ RET #(leToU64 bs); b ↦*{dq} (bs ++ rem) }} := by
   wp_start as Hb
@@ -394,7 +394,7 @@ theorem wp_LittleEndian_Uint64 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : 
 theorem wp_LittleEndian_PutUint32 (b : slice.t) (space rem : List w8) (v : w32)
     (Hlen : space.length = 4) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
-      (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian @!! go!"PutUint32"))
+      (App (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"PutUint32"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* (u32Le v ++ rem) }} := by
   wp_start as Hb
@@ -408,7 +408,7 @@ theorem wp_LittleEndian_PutUint32 (b : slice.t) (space rem : List w8) (v : w32)
 theorem wp_LittleEndian_Uint32 (b : slice.t) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 4) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
-      (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian @!! go!"Uint32"))
+      (App (Val ((globalAddr LittleEndian) @!! go.GoType.PointerType littleEndian.ty @!! go!"Uint32"))
         (Val #b))
     {{ RET #(leToU32 bs); b ↦*{dq} (bs ++ rem) }} := by
   wp_start as Hb

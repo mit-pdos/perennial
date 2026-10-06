@@ -58,6 +58,9 @@ ap.add_argument("--encodings", action="store_true",
 ap.add_argument("--no-generated-edits", action="store_true",
                 help="with --include-generated: plan renames as usual but edit only hand-written files "
                      "(the generated files come from goose)")
+ap.add_argument("--types", action="store_true",
+                help="phase B3: Go named types: the value type X.t becomes X, the descriptor X becomes X.ty "
+                     "(edits all files that goose does not regenerate)")
 ap.add_argument("--ilean", default=None, help="directory holding the .ilean files (default: .lake/build/lib/lean)")
 args = ap.parse_args()
 
@@ -92,9 +95,12 @@ def is_generated(m):
 
 # ---------------------------------------------------------------- inventory
 inv = {}
+inv_head = {}
 for line in open(args.inventory, encoding="utf-8"):
-    m, n, k, s = line.rstrip("\n").split("\t")
+    parts = line.rstrip("\n").split("\t")
+    m, n, k, s = parts[:4]
     inv[n] = (m, k, s)
+    inv_head[n] = parts[4] if len(parts) > 4 else ""
 
 # ---------------------------------------------------------------- ileans
 if args.ilean:
@@ -453,6 +459,37 @@ while True:
         if nf != split_name(n):
             affected[n] = nf
 
+if args.types:
+    # descriptors: go.GoType-valued definitions of generated Go named types (and
+    # hand-written ones that have a value type or an assumptions class)
+    def is_desc(n):
+        m, k, s = inv[n]
+        if inv_head.get(n) != "Perennial.go.GoType" or k not in ("def", "axiom", "opaque"):
+            return False
+        c = split_name(n)
+        if c[-1] in ("underlying", "ty") or n.startswith("Perennial.go."):
+            return False
+        if m.startswith(("Perennial.Code.", "Perennial.GeneratedProof.")):
+            return True
+        base = ".".join(c[:-1] + [c[-1].rstrip("'")])
+        return n + ".t" in inv or base + ".TypeAssumptions" in inv
+    desc = {n for n in inv if is_desc(n)}
+    affected = {}
+    for n in inv:
+        c = split_name(n)
+        if n in desc:
+            affected[n] = c + ["ty"]
+            continue
+        for i in range(1, len(c)):
+            if c[i] == "t" and ".".join(c[:i]) in desc:
+                affected[n] = c[:i] + c[i + 1:]
+                break
+    collisions = {}
+    rename = {}
+    new_full = lambda name: split_name(name) if name else []   # namespaces keep their names
+    REGEN = ("Perennial.Code.", "Perennial.GeneratedProof.")
+    is_generated = lambda m: m.startswith(REGEN)
+
 # ---------------------------------------------------------------- edits
 edits = collections.defaultdict(list)    # module -> [(line, c0, c1, newtext, name)]
 skipped = []
@@ -480,7 +517,7 @@ def plan_edit(mod, r, n):
             out = N[len(Nh):]
         else:
             out = N[len(hidden):] if len(N) >= len(hidden) else None
-        if out is None:
+        if not out:
             skipped.append((mod, r, n, t))
             return
         # keep the source spelling of components that do not change

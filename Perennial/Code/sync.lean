@@ -21,100 +21,100 @@ end pkg_id
 
 namespace sync
 
-def Cond [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Cond.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Cond" [])
 
-attribute [irreducible] Cond
+attribute [irreducible] Cond.ty
 
-def copyChecker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def copyChecker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.copyChecker" [])
 
-attribute [irreducible] copyChecker
+attribute [irreducible] copyChecker.ty
 
-def noCopy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noCopy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.noCopy" [])
 
-attribute [irreducible] noCopy
+attribute [irreducible] noCopy.ty
 
-def Map [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Map.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Map" [])
 
-attribute [irreducible] Map
+attribute [irreducible] Map.ty
 
-def Mutex [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Mutex.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Mutex" [])
 
-attribute [irreducible] Mutex
+attribute [irreducible] Mutex.ty
 
-def Locker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Locker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Locker" [])
 
-attribute [irreducible] Locker
+attribute [irreducible] Locker.ty
 
-def Once [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Once.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Once" [])
 
-attribute [irreducible] Once
+attribute [irreducible] Once.ty
 
-def Pool [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Pool.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Pool" [])
 
-attribute [irreducible] Pool
+attribute [irreducible] Pool.ty
 
-def poolLocalInternal [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def poolLocalInternal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.poolLocalInternal" [])
 
-attribute [irreducible] poolLocalInternal
+attribute [irreducible] poolLocalInternal.ty
 
-def poolLocal [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def poolLocal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.poolLocal" [])
 
-attribute [irreducible] poolLocal
+attribute [irreducible] poolLocal.ty
 
-def poolDequeue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def poolDequeue.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.poolDequeue" [])
 
-attribute [irreducible] poolDequeue
+attribute [irreducible] poolDequeue.ty
 
-def eface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def eface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.eface" [])
 
-attribute [irreducible] eface
+attribute [irreducible] eface.ty
 
-def dequeueNil [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def dequeueNil.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.dequeueNil" [])
 
-attribute [irreducible] dequeueNil
+attribute [irreducible] dequeueNil.ty
 
-def poolChain [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def poolChain.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.poolChain" [])
 
-attribute [irreducible] poolChain
+attribute [irreducible] poolChain.ty
 
-def poolChainElt [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def poolChainElt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.poolChainElt" [])
 
-attribute [irreducible] poolChainElt
+attribute [irreducible] poolChainElt.ty
 
-def notifyList [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def notifyList.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.notifyList" [])
 
-attribute [irreducible] notifyList
+attribute [irreducible] notifyList.ty
 
-def RWMutex [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def RWMutex.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.RWMutex" [])
 
-attribute [irreducible] RWMutex
+attribute [irreducible] RWMutex.ty
 
-def rlocker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def rlocker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.rlocker" [])
 
-attribute [irreducible] rlocker
+attribute [irreducible] rlocker.ty
 
-def WaitGroup [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def WaitGroup.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.WaitGroup" [])
 
-attribute [irreducible] WaitGroup
+attribute [irreducible] WaitGroup.ty
 
 axiom Map.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -226,10 +226,10 @@ noncomputable def syscall_hasWaitingReaders [FfiSyntax] [GoGlobalContext] : GoSt
 noncomputable def NewCond.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (App (Val exceptionDo)
-  (Let "l" (App (Val (GoInstruction (GoAlloc Locker))) (Var "l"))
+  (Let "l" (App (Val (GoInstruction (GoAlloc Locker.ty))) (Var "l"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc Cond))) (Let "$v0" (App (Val (GoInstruction (GoLoad Locker))) (Var "l"))
-  (App (Val (GoInstruction (CompositeLiteral Cond))) (LiteralValue [(KeyedElement (some (KeyField go!"L")) (ElementExpression Locker (Var "$v0")))]))))))))
+  (App (Val (GoInstruction (GoAlloc Cond.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad Locker.ty))) (Var "l"))
+  (App (Val (GoInstruction (CompositeLiteral Cond.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"L")) (ElementExpression Locker.ty (Var "$v0")))]))))))))
 
 /-- Wait atomically unlocks c.L and suspends execution
     of the calling goroutine. After later resuming execution,
@@ -252,29 +252,29 @@ noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond)))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond.ty)))) (Var "c"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "t" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))
   (App (App (Val (GoInstruction (FuncResolve runtime_notifyListAdd []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Locker go!"Lock"))) (App (Val (GoInstruction (GoLoad Locker))) (App (Val (GoInstruction (StructFieldRef Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c"))))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve Locker.ty go!"Lock"))) (App (Val (GoInstruction (GoLoad Locker.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "t"))
   (App (App (App (Val (GoInstruction (FuncResolve runtime_notifyListWait []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Locker go!"Unlock"))) (App (Val (GoInstruction (GoLoad Locker))) (App (Val (GoInstruction (StructFieldRef Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c"))))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve Locker.ty go!"Unlock"))) (App (Val (GoInstruction (GoLoad Locker.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "t") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker.ty) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #())))))))))
 
 /-- Signal wakes one goroutine waiting on c, if there is any.
 
@@ -289,16 +289,16 @@ noncomputable def Cond.Signal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond)))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond.ty)))) (Var "c"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))
   (App (App (Val (GoInstruction (FuncResolve runtime_notifyListNotifyOne []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker.ty) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #())))))))))
 
 /-- Broadcast wakes all goroutines waiting on c.
 
@@ -310,16 +310,16 @@ noncomputable def Cond.Broadcast.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond)))) (Var "c"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Cond.ty)))) (Var "c"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Cond.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))
   (App (App (Val (GoInstruction (FuncResolve runtime_notifyListNotifyAll []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond)))) (Var "c")))) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker.ty) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #())))))))))
 
 /-- Do calls the function f if and only if Do is being called for the
     first time for this instance of [Once]. In other words, given
@@ -347,15 +347,15 @@ noncomputable def Once.Do.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
   (App (Val exceptionDo)
-  (Let "o" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Once)))) (Var "o"))
+  (Let "o" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Once.ty)))) (Var "o"))
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool') go!"Load"))) (App (Val (GoInstruction (StructFieldRef Once go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o")))) (Val #())))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool'.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o")))) (Val #())))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once) go!"doSlow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o"))) (Var "$a0"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"doSlow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o"))) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))))))
 
@@ -365,20 +365,20 @@ noncomputable def Once.doSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "f"
   (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "o" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Once)))) (Var "o"))
+  (Let "o" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Once.ty)))) (Var "o"))
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool') go!"Load"))) (App (Val (GoInstruction (StructFieldRef Once go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o")))) (Val #())))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool'.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o")))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f")) (Val #())))))
   (App (Val doExecute)
   (Let "$a0" (Val #true)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool') go!"Store"))) (App (Val (GoInstruction (StructFieldRef Once go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o"))))
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Bool'.ty) go!"Store"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o"))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Var "$a0"))
@@ -386,13 +386,13 @@ noncomputable def Once.doSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef Once go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o"))))
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o"))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Once go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once)))) (Var "o")))) (Val #())))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o")))) (Val #())))))))))))
 
 /-- RLock locks rw for reading.
 
@@ -405,7 +405,7 @@ noncomputable def RWMutex.RLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -414,16 +414,16 @@ noncomputable def RWMutex.RLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (Let "$a0" (Val #(W32 1))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0)))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0)))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))
   (Let "$a1" (Val #false)
   (Let "$a2" (Val #(W64 0))
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_SemacquireRWMutexR []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
@@ -434,7 +434,7 @@ noncomputable def RWMutex.RLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #())))))))))
@@ -450,24 +450,24 @@ noncomputable def RWMutex.TryRLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Load"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "c"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "c")) (Val #(W32 1))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #true))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
@@ -495,7 +495,7 @@ noncomputable def RWMutex.TryRLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #()))))))))
@@ -510,7 +510,7 @@ noncomputable def RWMutex.RUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -523,12 +523,12 @@ noncomputable def RWMutex.RUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "r")) (Val #(W32 0)))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "r"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RWMutex) go!"rUnlockSlow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))) (Var "$a0"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RWMutex.ty) go!"rUnlockSlow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -539,10 +539,10 @@ noncomputable def RWMutex.RUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.ReleaseMerge []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #())))))))))
@@ -552,16 +552,16 @@ noncomputable def RWMutex.rUnlockSlow.impl [FfiSyntax] [GoGlobalContext] : val :
   (LamV "rw"
   (Lam "r"
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "r"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerWait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0)))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerWait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0)))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))
   (Let "$a1" (Val #false)
   (Let "$a2" (Val #(W64 1))
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_Semrelease []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
@@ -586,7 +586,7 @@ noncomputable def RWMutex.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -594,26 +594,26 @@ noncomputable def RWMutex.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val rwmutexMaxReaders)))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val rwmutexMaxReaders))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val rwmutexMaxReaders))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "r")) (Val #(W32 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "r"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerWait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0))))) (Val #false)))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerWait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0"))) (Val #(W32 0))))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))
   (Let "$a1" (Val #false)
   (Let "$a2" (Val #(W64 0))
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_SemacquireRWMutex []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
@@ -622,13 +622,13 @@ noncomputable def RWMutex.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "r") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #())))))))))
@@ -644,7 +644,7 @@ noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -655,10 +655,10 @@ noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"writerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
@@ -666,7 +666,7 @@ noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (Val #(W32 0))
   (Let "$a1" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val rwmutexMaxReaders)))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0")) (Var "$a1")))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0")) (Var "$a1")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -677,10 +677,10 @@ noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Val #()))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"TryLock"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Val #())))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"TryLock"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #false))))
@@ -696,7 +696,7 @@ noncomputable def RWMutex.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #()))))))))
@@ -713,14 +713,14 @@ noncomputable def RWMutex.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val rwmutexMaxReaders))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerCount"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -731,14 +731,14 @@ noncomputable def RWMutex.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #()))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (Convert go.int32 go.int))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "r"))))))) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))
   (Let "$a1" (Val #false)
   (Let "$a2" (Val #(W64 0))
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_Semrelease []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
@@ -764,10 +764,10 @@ noncomputable def RWMutex.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Release []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Mutex.ty) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Val #())))))))))
@@ -780,9 +780,9 @@ noncomputable def RWMutex.RLocker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "rw"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex)))) (Var "rw"))
+  (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker) Locker))) (App (Val (GoInstruction (Convert (go.GoType.PointerType RWMutex) (go.GoType.PointerType rlocker)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex)))) (Var "rw")))))))))
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker.ty) Locker.ty))) (App (Val (GoInstruction (Convert (go.GoType.PointerType RWMutex.ty) (go.GoType.PointerType rlocker.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))))))))
 
 /-- Add adds delta, which may be negative, to the [WaitGroup] task counter.
     If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
@@ -806,7 +806,7 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "delta"
   (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup)))) (Var "wg"))
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.int))) (Var "delta"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -818,7 +818,7 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Add"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
@@ -837,7 +837,7 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0))))))) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef WaitGroup go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
   (Let "$a1" (Val #false)
   (Let "$a2" (Val #(W64 0))
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_Semrelease []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
@@ -846,14 +846,14 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "w") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 1)))))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "bubbled"))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Disassociate [WaitGroup]))) (Val #())) (Var "$a0"))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Disassociate [WaitGroup.ty]))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Store"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Var "$a0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Store"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state"))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"sync: WaitGroup misuse: Add called concurrently with Wait")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
@@ -878,7 +878,7 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (Val _root_.Perennial.internal.race.Enabled) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
@@ -895,21 +895,21 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "state") (Var "$r0")))))))))
   (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsInBubble []))) (Val #())) (Val #()))
-  (Let "$sw" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Associate [WaitGroup]))) (Val #())) (Var "$a0")))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.Unbubbled)))
+  (Let "$sw" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Associate [WaitGroup.ty]))) (Val #())) (Var "$a0")))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.Unbubbled)))
   (App (Val doExecute)
   (Val #()))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.OtherBubble)))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.OtherBubble)))
   (App (Val doExecute)
   (Let "$a0" (Val #(go!"sync: WaitGroup.Add called from multiple synctest bubbles"))
   (App (App (Val (GoInstruction (FuncResolve fatal []))) (Val #())) (Var "$a0"))))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.CurrentBubble)))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.CurrentBubble)))
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Or"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Or"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0)))) (Val #false)))
   (App (Val doExecute)
@@ -940,7 +940,7 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.ReleaseMerge []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))
@@ -962,13 +962,13 @@ noncomputable def WaitGroup.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup)))) (Var "wg"))
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))) (Var "$a0")))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))) (Var "$a0")))))))))
 
 /-- Wait blocks until the [WaitGroup] task counter is zero.
 
@@ -977,7 +977,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup)))) (Var "wg"))
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -985,7 +985,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
@@ -996,7 +996,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 1))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "synctestDurable" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
@@ -1004,7 +1004,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "isReset" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Val #())) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Val #())) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1019,7 +1019,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
@@ -1028,7 +1028,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "isReset") (Var "$r0")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef WaitGroup go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "synctestDurable"))
   (App (App (App (Val (GoInstruction (FuncResolve runtime_SemacquireWaitGroup []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0))))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsInBubble []))) (Val #())) (Val #())) (Val #false))
@@ -1039,8 +1039,8 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))
   (App (Val doExecute)
   (Val #())))))
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsAssociated [WaitGroup]))) (Val #())) (Var "$a0")))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsAssociated [WaitGroup.ty]))) (Val #())) (Var "$a0")))
   (Let "$r0" (Val #true)
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "synctestDurable") (Var "$r0")))))
@@ -1057,7 +1057,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "synctestDurable") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val _root_.Perennial.internal.race.Enabled) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0)))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Write []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))
@@ -1068,14 +1068,14 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0))))) (Val #false)) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsAssociated [WaitGroup]))) (Val #())) (Var "$a0"))) (Val #false))
+  (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0))))) (Val #false)) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsAssociated [WaitGroup.ty]))) (Val #())) (Var "$a0"))) (Val #false))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state"))
   (Let "$a1" (Val #(W64 0))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef WaitGroup go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"CompareAndSwap"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")) (Var "$a1"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Disassociate [WaitGroup]))) (Val #())) (Var "$a0"))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Disassociate [WaitGroup.ty]))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))
   (App (Val doExecute)
@@ -1083,7 +1083,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg")))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Acquire []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #()))))
@@ -1127,7 +1127,7 @@ noncomputable def WaitGroup.Go.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "f"
   (App (Val exceptionDo)
-  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup)))) (Var "wg"))
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1150,7 +1150,7 @@ noncomputable def WaitGroup.Go.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup) go!"Done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup.ty) go!"Done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))) (Val #())))))
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.recover []))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1171,7 +1171,7 @@ noncomputable def WaitGroup.Go.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Var "$go") (Val #())))))))
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 1))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup)))) (Var "wg"))) (Var "$a0")))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))) (Var "$a0")))))))))))
 
 instance info' : PkgInfo pkg_id.sync where
   pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.race, pkg_id.internal.synctest]
@@ -1191,13 +1191,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.synctest.initialize') (Val #()))))))))
 
-namespace noCopy
-structure t [FfiSyntax] where
+structure noCopy [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end noCopy
+instance noCopy.zero_val [FfiSyntax] : ZeroVal noCopy :=
+  ⟨noCopy.mk⟩
 
 @[reducible] def noCopy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -1213,26 +1211,23 @@ instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noCopy.fields)
 
 class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy.t
-  underlying : go.UnderlyingDirectedEq noCopy noCopy.underlying
+  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
+  underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
 
-namespace Locker
-abbrev t [FfiSyntax] : Type := interface.t
-end Locker
+abbrev Locker [FfiSyntax] : Type := interface.t
 
 @[reducible] def Locker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Lock" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Unlock" (go.signature.Signature [] false []))])
 
 class Locker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Locker Locker.underlying
+  underlying : go.UnderlyingDirectedEq Locker.ty Locker.underlying
 
 attribute [instance] Locker.TypeAssumptions.underlying
 
-namespace notifyList
-structure t [FfiSyntax] where
+structure notifyList [FfiSyntax] where
   mk ::
   wait' : w32
   notify' : w32
@@ -1240,9 +1235,8 @@ structure t [FfiSyntax] where
   head' : Loc
   tail' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end notifyList
+instance notifyList.zero_val [FfiSyntax] : ZeroVal notifyList :=
+  ⟨notifyList.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def notifyList.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wait" go.uint32),
@@ -1262,18 +1256,18 @@ instance equals_unfold_notifyList [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType notifyList.fields)
 
 class notifyList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying notifyList.underlying notifyList.t
-  underlying : go.UnderlyingDirectedEq notifyList notifyList.underlying
-  get_wait : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"wait") #x (Val #(x.wait'))
-  set_wait : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : notifyList.t)))
-  get_notify : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"notify") #x (Val #(x.notify'))
-  set_notify : ∀ (x : notifyList.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : notifyList.t)))
-  get_lock : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : notifyList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : notifyList.t)))
-  get_head : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"head") #x (Val #(x.head'))
-  set_head : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList.t)))
-  get_tail : ∀ (x : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"tail") #x (Val #(x.tail'))
-  set_tail : ∀ (x : notifyList.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList.t)))
+  type_repr : go.TypeReprUnderlying notifyList.underlying notifyList
+  underlying : go.UnderlyingDirectedEq notifyList.ty notifyList.underlying
+  get_wait : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"wait") #x (Val #(x.wait'))
+  set_wait : ∀ (x : notifyList) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : notifyList)))
+  get_notify : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"notify") #x (Val #(x.notify'))
+  set_notify : ∀ (x : notifyList) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : notifyList)))
+  get_lock : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"lock") #x (Val #(x.lock'))
+  set_lock : ∀ (x : notifyList) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : notifyList)))
+  get_head : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList)))
+  get_tail : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList)))
 
 attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.underlying
@@ -1289,29 +1283,27 @@ attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.set_tail
 
 class copyChecker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq copyChecker copyChecker.underlying
-  ptr_check_unfold : MethodUnfold (go.GoType.PointerType copyChecker) go!"check" copyChecker.check.impl
+  underlying : go.UnderlyingDirectedEq copyChecker.ty copyChecker.underlying
+  ptr_check_unfold : MethodUnfold (go.GoType.PointerType copyChecker.ty) go!"check" copyChecker.check.impl
 
 attribute [instance] copyChecker.TypeAssumptions.underlying
   copyChecker.TypeAssumptions.ptr_check_unfold
 
-namespace Cond
-structure t [FfiSyntax] where
+structure Cond [FfiSyntax] where
   mk ::
-  noCopy' : noCopy.t
-  L' : Locker.t
-  notify' : notifyList.t
-  checker' : copyChecker.t
+  noCopy' : noCopy
+  L' : Locker
+  notify' : notifyList
+  checker' : copyChecker
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Cond
+instance Cond.zero_val [FfiSyntax] : ZeroVal Cond :=
+  ⟨Cond.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"noCopy" noCopy),
-(go.field_decl.FieldDecl go!"L" Locker),
-(go.field_decl.FieldDecl go!"notify" notifyList),
-(go.field_decl.FieldDecl go!"checker" copyChecker)]
+  [(go.field_decl.FieldDecl go!"noCopy" noCopy.ty),
+(go.field_decl.FieldDecl go!"L" Locker.ty),
+(go.field_decl.FieldDecl go!"notify" notifyList.ty),
+(go.field_decl.FieldDecl go!"checker" copyChecker.ty)]
 
 @[irreducible] def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Cond.fieldsUnsealed
@@ -1324,19 +1316,19 @@ instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Cond.fields)
 
 class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Cond.underlying Cond.t
-  underlying : go.UnderlyingDirectedEq Cond Cond.underlying
-  get_noCopy : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Cond.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Cond.t)))
-  get_L : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
-  set_L : ∀ (x : Cond.t) (y : Locker.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond.t)))
-  get_notify : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"notify") #x (Val #(x.notify'))
-  set_notify : ∀ (x : Cond.t) (y : notifyList.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : Cond.t)))
-  get_checker : ∀ (x : Cond.t), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"checker") #x (Val #(x.checker'))
-  set_checker : ∀ (x : Cond.t) (y : copyChecker.t), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"checker") (PairV #x #y) (Val #(({ x with checker' := y } : Cond.t)))
-  ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Broadcast" Cond.Broadcast.impl
-  ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Signal" Cond.Signal.impl
-  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond) go!"Wait" Cond.Wait.impl
+  type_repr : go.TypeReprUnderlying Cond.underlying Cond
+  underlying : go.UnderlyingDirectedEq Cond.ty Cond.underlying
+  get_noCopy : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : Cond) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Cond)))
+  get_L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
+  set_L : ∀ (x : Cond) (y : Locker), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
+  get_notify : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"notify") #x (Val #(x.notify'))
+  set_notify : ∀ (x : Cond) (y : notifyList), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : Cond)))
+  get_checker : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"checker") #x (Val #(x.checker'))
+  set_checker : ∀ (x : Cond) (y : copyChecker), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"checker") (PairV #x #y) (Val #(({ x with checker' := y } : Cond)))
+  ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
+  ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
 
 attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.underlying
@@ -1352,15 +1344,13 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.ptr_Signal_unfold
   Cond.TypeAssumptions.ptr_Wait_unfold
 
-namespace Map
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Map
+axiom Map : Type
+axiom Map.zero_val : ZeroVal Map
+attribute [instance] Map.zero_val
 
 class Map.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Map.underlying Map.t
-  underlying : go.UnderlyingDirectedEq Map Map.underlying
+  type_repr : go.TypeReprUnderlying Map.underlying Map
+  underlying : go.UnderlyingDirectedEq Map.ty Map.underlying
   isUnderlying : go.IsUnderlying Map.underlying Map.underlying
 
 attribute [instance] Map.TypeAssumptions.type_repr
@@ -1368,11 +1358,11 @@ attribute [instance] Map.TypeAssumptions.type_repr
   Map.TypeAssumptions.isUnderlying
 
 class Mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex.t
-  underlying : go.UnderlyingDirectedEq Mutex Mutex.underlying
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" Mutex.Lock.impl
-  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"TryLock" Mutex.TryLock.impl
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" Mutex.Unlock.impl
+  type_repr : go.TypeReprUnderlying Mutex.underlying Mutex
+  underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"TryLock" Mutex.TryLock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
@@ -1380,21 +1370,19 @@ attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.ptr_TryLock_unfold
   Mutex.TypeAssumptions.ptr_Unlock_unfold
 
-namespace Once
-structure t [FfiSyntax] where
+structure Once [FfiSyntax] where
   mk ::
-  _0' : noCopy.t
-  done' : _root_.Perennial.sync.atomic.Bool'.t
-  m' : Mutex.t
+  _0' : noCopy
+  done' : _root_.Perennial.sync.atomic.Bool'
+  m' : Mutex
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end Once
+instance Once.zero_val [FfiSyntax] : ZeroVal Once :=
+  ⟨Once.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Once.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy),
-(go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Bool'),
-(go.field_decl.FieldDecl go!"m" Mutex)]
+  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+(go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"m" Mutex.ty)]
 
 @[irreducible] def Once.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Once.fieldsUnsealed
@@ -1407,16 +1395,16 @@ instance equals_unfold_Once [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Once.fields)
 
 class Once.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Once.underlying Once.t
-  underlying : go.UnderlyingDirectedEq Once Once.underlying
-  get__0 : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Once.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Once.t)))
-  get_done : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : Once.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once.t)))
-  get_m : ∀ (x : Once.t), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"m") #x (Val #(x.m'))
-  set_m : ∀ (x : Once.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Once.t)))
-  ptr_Do_unfold : MethodUnfold (go.GoType.PointerType Once) go!"Do" Once.Do.impl
-  ptr_doSlow_unfold : MethodUnfold (go.GoType.PointerType Once) go!"doSlow" Once.doSlow.impl
+  type_repr : go.TypeReprUnderlying Once.underlying Once
+  underlying : go.UnderlyingDirectedEq Once.ty Once.underlying
+  get__0 : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : Once) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Once)))
+  get_done : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : Once) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once)))
+  get_m : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : Once) (y : Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Once)))
+  ptr_Do_unfold : MethodUnfold (go.GoType.PointerType Once.ty) go!"Do" Once.Do.impl
+  ptr_doSlow_unfold : MethodUnfold (go.GoType.PointerType Once.ty) go!"doSlow" Once.doSlow.impl
 
 attribute [instance] Once.TypeAssumptions.type_repr
   Once.TypeAssumptions.underlying
@@ -1429,22 +1417,20 @@ attribute [instance] Once.TypeAssumptions.type_repr
   Once.TypeAssumptions.ptr_Do_unfold
   Once.TypeAssumptions.ptr_doSlow_unfold
 
-namespace Pool
-structure t [FfiSyntax] where
+structure Pool [FfiSyntax] where
   mk ::
-  noCopy' : noCopy.t
+  noCopy' : noCopy
   local' : Loc
   localSize' : w64
   victim' : Loc
   victimSize' : w64
   New' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Pool
+instance Pool.zero_val [FfiSyntax] : ZeroVal Pool :=
+  ⟨Pool.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Pool.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"noCopy" noCopy),
+  [(go.field_decl.FieldDecl go!"noCopy" noCopy.ty),
 (go.field_decl.FieldDecl go!"local" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"localSize" go.uintptr),
 (go.field_decl.FieldDecl go!"victim" «unsafe».Pointer),
@@ -1462,20 +1448,20 @@ instance equals_unfold_Pool [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Pool.fields)
 
 class Pool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Pool.underlying Pool.t
-  underlying : go.UnderlyingDirectedEq Pool Pool.underlying
-  get_noCopy : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Pool.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Pool.t)))
-  get_local : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"local") #x (Val #(x.local'))
-  set_local : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"local") (PairV #x #y) (Val #(({ x with local' := y } : Pool.t)))
-  get_localSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"localSize") #x (Val #(x.localSize'))
-  set_localSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"localSize") (PairV #x #y) (Val #(({ x with localSize' := y } : Pool.t)))
-  get_victim : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victim") #x (Val #(x.victim'))
-  set_victim : ∀ (x : Pool.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victim") (PairV #x #y) (Val #(({ x with victim' := y } : Pool.t)))
-  get_victimSize : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victimSize") #x (Val #(x.victimSize'))
-  set_victimSize : ∀ (x : Pool.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool.t)))
-  get_New : ∀ (x : Pool.t), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"New") #x (Val #(x.New'))
-  set_New : ∀ (x : Pool.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool.t)))
+  type_repr : go.TypeReprUnderlying Pool.underlying Pool
+  underlying : go.UnderlyingDirectedEq Pool.ty Pool.underlying
+  get_noCopy : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : Pool) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Pool)))
+  get_local : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"local") #x (Val #(x.local'))
+  set_local : ∀ (x : Pool) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"local") (PairV #x #y) (Val #(({ x with local' := y } : Pool)))
+  get_localSize : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"localSize") #x (Val #(x.localSize'))
+  set_localSize : ∀ (x : Pool) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"localSize") (PairV #x #y) (Val #(({ x with localSize' := y } : Pool)))
+  get_victim : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victim") #x (Val #(x.victim'))
+  set_victim : ∀ (x : Pool) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victim") (PairV #x #y) (Val #(({ x with victim' := y } : Pool)))
+  get_victimSize : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"victimSize") #x (Val #(x.victimSize'))
+  set_victimSize : ∀ (x : Pool) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool)))
+  get_New : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"New") #x (Val #(x.New'))
+  set_New : ∀ (x : Pool) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool)))
 
 attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.underlying
@@ -1492,34 +1478,30 @@ attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.get_New
   Pool.TypeAssumptions.set_New
 
-namespace poolChainElt
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end poolChainElt
+axiom poolChainElt : Type
+axiom poolChainElt.zero_val : ZeroVal poolChainElt
+attribute [instance] poolChainElt.zero_val
 
 class poolChainElt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying poolChainElt.underlying poolChainElt.t
-  underlying : go.UnderlyingDirectedEq poolChainElt poolChainElt.underlying
+  type_repr : go.TypeReprUnderlying poolChainElt.underlying poolChainElt
+  underlying : go.UnderlyingDirectedEq poolChainElt.ty poolChainElt.underlying
   isUnderlying : go.IsUnderlying poolChainElt.underlying poolChainElt.underlying
 
 attribute [instance] poolChainElt.TypeAssumptions.type_repr
   poolChainElt.TypeAssumptions.underlying
   poolChainElt.TypeAssumptions.isUnderlying
 
-namespace poolChain
-structure t [FfiSyntax] where
+structure poolChain [FfiSyntax] where
   mk ::
   head' : Loc
-  tail' : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)
+  tail' : (_root_.Perennial.sync.atomic.Pointer poolChainElt)
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end poolChain
+instance poolChain.zero_val [FfiSyntax] : ZeroVal poolChain :=
+  ⟨poolChain.mk zeroValDef zeroValDef⟩
 
 @[reducible] def poolChain.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"head" (go.GoType.PointerType poolChainElt)),
-(go.field_decl.FieldDecl go!"tail" (_root_.Perennial.sync.atomic.Pointer poolChainElt))]
+  [(go.field_decl.FieldDecl go!"head" (go.GoType.PointerType poolChainElt.ty)),
+(go.field_decl.FieldDecl go!"tail" (_root_.Perennial.sync.atomic.Pointer.ty poolChainElt.ty))]
 
 @[irreducible] def poolChain.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   poolChain.fieldsUnsealed
@@ -1532,12 +1514,12 @@ instance equals_unfold_poolChain [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType poolChain.fields)
 
 class poolChain.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying poolChain.underlying poolChain.t
-  underlying : go.UnderlyingDirectedEq poolChain poolChain.underlying
-  get_head : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"head") #x (Val #(x.head'))
-  set_head : ∀ (x : poolChain.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain.t)))
-  get_tail : ∀ (x : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"tail") #x (Val #(x.tail'))
-  set_tail : ∀ (x : poolChain.t) (y : (_root_.Perennial.sync.atomic.Pointer.t poolChainElt.t)), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain.t)))
+  type_repr : go.TypeReprUnderlying poolChain.underlying poolChain
+  underlying : go.UnderlyingDirectedEq poolChain.ty poolChain.underlying
+  get_head : ∀ (x : poolChain), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : poolChain) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain)))
+  get_tail : ∀ (x : poolChain), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : poolChain) (y : (_root_.Perennial.sync.atomic.Pointer poolChainElt)), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain)))
 
 attribute [instance] poolChain.TypeAssumptions.type_repr
   poolChain.TypeAssumptions.underlying
@@ -1546,19 +1528,17 @@ attribute [instance] poolChain.TypeAssumptions.type_repr
   poolChain.TypeAssumptions.get_tail
   poolChain.TypeAssumptions.set_tail
 
-namespace poolLocalInternal
-structure t [FfiSyntax] where
+structure poolLocalInternal [FfiSyntax] where
   mk ::
   private' : interface.t
-  shared' : poolChain.t
+  shared' : poolChain
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end poolLocalInternal
+instance poolLocalInternal.zero_val [FfiSyntax] : ZeroVal poolLocalInternal :=
+  ⟨poolLocalInternal.mk zeroValDef zeroValDef⟩
 
 @[reducible] def poolLocalInternal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"private" go.any),
-(go.field_decl.FieldDecl go!"shared" poolChain)]
+(go.field_decl.FieldDecl go!"shared" poolChain.ty)]
 
 @[irreducible] def poolLocalInternal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   poolLocalInternal.fieldsUnsealed
@@ -1571,12 +1551,12 @@ instance equals_unfold_poolLocalInternal [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType poolLocalInternal.fields)
 
 class poolLocalInternal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying poolLocalInternal.underlying poolLocalInternal.t
-  underlying : go.UnderlyingDirectedEq poolLocalInternal poolLocalInternal.underlying
-  get_private : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"private") #x (Val #(x.private'))
-  set_private : ∀ (x : poolLocalInternal.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal.t)))
-  get_shared : ∀ (x : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"shared") #x (Val #(x.shared'))
-  set_shared : ∀ (x : poolLocalInternal.t) (y : poolChain.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal.t)))
+  type_repr : go.TypeReprUnderlying poolLocalInternal.underlying poolLocalInternal
+  underlying : go.UnderlyingDirectedEq poolLocalInternal.ty poolLocalInternal.underlying
+  get_private : ∀ (x : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"private") #x (Val #(x.private'))
+  set_private : ∀ (x : poolLocalInternal) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal)))
+  get_shared : ∀ (x : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"shared") #x (Val #(x.shared'))
+  set_shared : ∀ (x : poolLocalInternal) (y : poolChain), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal)))
 
 attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
   poolLocalInternal.TypeAssumptions.underlying
@@ -1585,18 +1565,16 @@ attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
   poolLocalInternal.TypeAssumptions.get_shared
   poolLocalInternal.TypeAssumptions.set_shared
 
-namespace poolLocal
-structure t [FfiSyntax] where
+structure poolLocal [FfiSyntax] where
   mk ::
-  poolLocalInternal' : poolLocalInternal.t
+  poolLocalInternal' : poolLocalInternal
   pad' : (array.t w8 96)
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end poolLocal
+instance poolLocal.zero_val [FfiSyntax] : ZeroVal poolLocal :=
+  ⟨poolLocal.mk zeroValDef zeroValDef⟩
 
 @[reducible] def poolLocal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"poolLocalInternal" poolLocalInternal),
+  [(go.field_decl.EmbeddedField go!"poolLocalInternal" poolLocalInternal.ty),
 (go.field_decl.FieldDecl go!"pad" (go.GoType.ArrayType 96 go.byte))]
 
 @[irreducible] def poolLocal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1610,12 +1588,12 @@ instance equals_unfold_poolLocal [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType poolLocal.fields)
 
 class poolLocal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying poolLocal.underlying poolLocal.t
-  underlying : go.UnderlyingDirectedEq poolLocal poolLocal.underlying
-  get_poolLocalInternal : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
-  set_poolLocalInternal : ∀ (x : poolLocal.t) (y : poolLocalInternal.t), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal.t)))
-  get_pad : ∀ (x : poolLocal.t), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"pad") #x (Val #(x.pad'))
-  set_pad : ∀ (x : poolLocal.t) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal.t)))
+  type_repr : go.TypeReprUnderlying poolLocal.underlying poolLocal
+  underlying : go.UnderlyingDirectedEq poolLocal.ty poolLocal.underlying
+  get_poolLocalInternal : ∀ (x : poolLocal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"poolLocalInternal") #x (Val #(x.poolLocalInternal'))
+  set_poolLocalInternal : ∀ (x : poolLocal) (y : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal)))
+  get_pad : ∀ (x : poolLocal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"pad") #x (Val #(x.pad'))
+  set_pad : ∀ (x : poolLocal) (y : (array.t w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal)))
 
 attribute [instance] poolLocal.TypeAssumptions.type_repr
   poolLocal.TypeAssumptions.underlying
@@ -1624,19 +1602,17 @@ attribute [instance] poolLocal.TypeAssumptions.type_repr
   poolLocal.TypeAssumptions.get_pad
   poolLocal.TypeAssumptions.set_pad
 
-namespace poolDequeue
-structure t [FfiSyntax] where
+structure poolDequeue [FfiSyntax] where
   mk ::
-  headTail' : _root_.Perennial.sync.atomic.Uint64.t
+  headTail' : _root_.Perennial.sync.atomic.Uint64
   vals' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end poolDequeue
+instance poolDequeue.zero_val [FfiSyntax] : ZeroVal poolDequeue :=
+  ⟨poolDequeue.mk zeroValDef zeroValDef⟩
 
 @[reducible] def poolDequeue.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"headTail" _root_.Perennial.sync.atomic.Uint64),
-(go.field_decl.FieldDecl go!"vals" (go.GoType.SliceType eface))]
+  [(go.field_decl.FieldDecl go!"headTail" _root_.Perennial.sync.atomic.Uint64.ty),
+(go.field_decl.FieldDecl go!"vals" (go.GoType.SliceType eface.ty))]
 
 @[irreducible] def poolDequeue.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   poolDequeue.fieldsUnsealed
@@ -1649,12 +1625,12 @@ instance equals_unfold_poolDequeue [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType poolDequeue.fields)
 
 class poolDequeue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying poolDequeue.underlying poolDequeue.t
-  underlying : go.UnderlyingDirectedEq poolDequeue poolDequeue.underlying
-  get_headTail : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"headTail") #x (Val #(x.headTail'))
-  set_headTail : ∀ (x : poolDequeue.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue.t)))
-  get_vals : ∀ (x : poolDequeue.t), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"vals") #x (Val #(x.vals'))
-  set_vals : ∀ (x : poolDequeue.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue.t)))
+  type_repr : go.TypeReprUnderlying poolDequeue.underlying poolDequeue
+  underlying : go.UnderlyingDirectedEq poolDequeue.ty poolDequeue.underlying
+  get_headTail : ∀ (x : poolDequeue), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"headTail") #x (Val #(x.headTail'))
+  set_headTail : ∀ (x : poolDequeue) (y : _root_.Perennial.sync.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue)))
+  get_vals : ∀ (x : poolDequeue), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"vals") #x (Val #(x.vals'))
+  set_vals : ∀ (x : poolDequeue) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue)))
 
 attribute [instance] poolDequeue.TypeAssumptions.type_repr
   poolDequeue.TypeAssumptions.underlying
@@ -1663,15 +1639,13 @@ attribute [instance] poolDequeue.TypeAssumptions.type_repr
   poolDequeue.TypeAssumptions.get_vals
   poolDequeue.TypeAssumptions.set_vals
 
-namespace eface
-structure t [FfiSyntax] where
+structure eface [FfiSyntax] where
   mk ::
   typ' : Loc
   val' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end eface
+instance eface.zero_val [FfiSyntax] : ZeroVal eface :=
+  ⟨eface.mk zeroValDef zeroValDef⟩
 
 @[reducible] def eface.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
@@ -1688,12 +1662,12 @@ instance equals_unfold_eface [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType eface.fields)
 
 class eface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying eface.underlying eface.t
-  underlying : go.UnderlyingDirectedEq eface eface.underlying
-  get_typ : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"typ") #x (Val #(x.typ'))
-  set_typ : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface.t)))
-  get_val : ∀ (x : eface.t), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"val") #x (Val #(x.val'))
-  set_val : ∀ (x : eface.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface.t)))
+  type_repr : go.TypeReprUnderlying eface.underlying eface
+  underlying : go.UnderlyingDirectedEq eface.ty eface.underlying
+  get_typ : ∀ (x : eface), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"typ") #x (Val #(x.typ'))
+  set_typ : ∀ (x : eface) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface)))
+  get_val : ∀ (x : eface), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"val") #x (Val #(x.val'))
+  set_val : ∀ (x : eface) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface)))
 
 attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.underlying
@@ -1702,37 +1676,33 @@ attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.get_val
   eface.TypeAssumptions.set_val
 
-namespace dequeueNil
-abbrev t [FfiSyntax] : Type := Loc
-end dequeueNil
+abbrev dequeueNil [FfiSyntax] : Type := Loc
 
 @[reducible] def dequeueNil.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.PointerType (go.GoType.StructType []))
 
 class dequeueNil.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq dequeueNil dequeueNil.underlying
+  underlying : go.UnderlyingDirectedEq dequeueNil.ty dequeueNil.underlying
 
 attribute [instance] dequeueNil.TypeAssumptions.underlying
 
-namespace RWMutex
-structure t [FfiSyntax] where
+structure RWMutex [FfiSyntax] where
   mk ::
-  w' : Mutex.t
+  w' : Mutex
   writerSem' : w32
   readerSem' : w32
-  readerCount' : _root_.Perennial.sync.atomic.Int32.t
-  readerWait' : _root_.Perennial.sync.atomic.Int32.t
+  readerCount' : _root_.Perennial.sync.atomic.Int32
+  readerWait' : _root_.Perennial.sync.atomic.Int32
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end RWMutex
+instance RWMutex.zero_val [FfiSyntax] : ZeroVal RWMutex :=
+  ⟨RWMutex.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def RWMutex.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"w" Mutex),
+  [(go.field_decl.FieldDecl go!"w" Mutex.ty),
 (go.field_decl.FieldDecl go!"writerSem" go.uint32),
 (go.field_decl.FieldDecl go!"readerSem" go.uint32),
-(go.field_decl.FieldDecl go!"readerCount" _root_.Perennial.sync.atomic.Int32),
-(go.field_decl.FieldDecl go!"readerWait" _root_.Perennial.sync.atomic.Int32)]
+(go.field_decl.FieldDecl go!"readerCount" _root_.Perennial.sync.atomic.Int32.ty),
+(go.field_decl.FieldDecl go!"readerWait" _root_.Perennial.sync.atomic.Int32.ty)]
 
 @[irreducible] def RWMutex.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   RWMutex.fieldsUnsealed
@@ -1745,26 +1715,26 @@ instance equals_unfold_RWMutex [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType RWMutex.fields)
 
 class RWMutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying RWMutex.underlying RWMutex.t
-  underlying : go.UnderlyingDirectedEq RWMutex RWMutex.underlying
-  get_w : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : RWMutex.t) (y : Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : RWMutex.t)))
-  get_writerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"writerSem") #x (Val #(x.writerSem'))
-  set_writerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"writerSem") (PairV #x #y) (Val #(({ x with writerSem' := y } : RWMutex.t)))
-  get_readerSem : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerSem") #x (Val #(x.readerSem'))
-  set_readerSem : ∀ (x : RWMutex.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerSem") (PairV #x #y) (Val #(({ x with readerSem' := y } : RWMutex.t)))
-  get_readerCount : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerCount") #x (Val #(x.readerCount'))
-  set_readerCount : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerCount") (PairV #x #y) (Val #(({ x with readerCount' := y } : RWMutex.t)))
-  get_readerWait : ∀ (x : RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerWait") #x (Val #(x.readerWait'))
-  set_readerWait : ∀ (x : RWMutex.t) (y : _root_.Perennial.sync.atomic.Int32.t), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : RWMutex.t)))
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Lock" RWMutex.Lock.impl
-  ptr_RLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLock" RWMutex.RLock.impl
-  ptr_RLocker_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RLocker" RWMutex.RLocker.impl
-  ptr_RUnlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"RUnlock" RWMutex.RUnlock.impl
-  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryLock" RWMutex.TryLock.impl
-  ptr_TryRLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"TryRLock" RWMutex.TryRLock.impl
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"Unlock" RWMutex.Unlock.impl
-  ptr_rUnlockSlow_unfold : MethodUnfold (go.GoType.PointerType RWMutex) go!"rUnlockSlow" RWMutex.rUnlockSlow.impl
+  type_repr : go.TypeReprUnderlying RWMutex.underlying RWMutex
+  underlying : go.UnderlyingDirectedEq RWMutex.ty RWMutex.underlying
+  get_w : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : RWMutex) (y : Mutex), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : RWMutex)))
+  get_writerSem : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"writerSem") #x (Val #(x.writerSem'))
+  set_writerSem : ∀ (x : RWMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"writerSem") (PairV #x #y) (Val #(({ x with writerSem' := y } : RWMutex)))
+  get_readerSem : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerSem") #x (Val #(x.readerSem'))
+  set_readerSem : ∀ (x : RWMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerSem") (PairV #x #y) (Val #(({ x with readerSem' := y } : RWMutex)))
+  get_readerCount : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerCount") #x (Val #(x.readerCount'))
+  set_readerCount : ∀ (x : RWMutex) (y : _root_.Perennial.sync.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerCount") (PairV #x #y) (Val #(({ x with readerCount' := y } : RWMutex)))
+  get_readerWait : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerWait") #x (Val #(x.readerWait'))
+  set_readerWait : ∀ (x : RWMutex) (y : _root_.Perennial.sync.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : RWMutex)))
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"Lock" RWMutex.Lock.impl
+  ptr_RLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"RLock" RWMutex.RLock.impl
+  ptr_RLocker_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"RLocker" RWMutex.RLocker.impl
+  ptr_RUnlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"RUnlock" RWMutex.RUnlock.impl
+  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"TryLock" RWMutex.TryLock.impl
+  ptr_TryRLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"TryRLock" RWMutex.TryRLock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"Unlock" RWMutex.Unlock.impl
+  ptr_rUnlockSlow_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"rUnlockSlow" RWMutex.rUnlockSlow.impl
 
 attribute [instance] RWMutex.TypeAssumptions.type_repr
   RWMutex.TypeAssumptions.underlying
@@ -1787,32 +1757,28 @@ attribute [instance] RWMutex.TypeAssumptions.type_repr
   RWMutex.TypeAssumptions.ptr_Unlock_unfold
   RWMutex.TypeAssumptions.ptr_rUnlockSlow_unfold
 
-namespace rlocker
-abbrev t [FfiSyntax] : Type := RWMutex.t
-end rlocker
+abbrev rlocker [FfiSyntax] : Type := RWMutex
 
 @[reducible] def rlocker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  RWMutex
+  RWMutex.ty
 
 class rlocker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq rlocker rlocker.underlying
+  underlying : go.UnderlyingDirectedEq rlocker.ty rlocker.underlying
 
 attribute [instance] rlocker.TypeAssumptions.underlying
 
-namespace WaitGroup
-structure t [FfiSyntax] where
+structure WaitGroup [FfiSyntax] where
   mk ::
-  noCopy' : noCopy.t
-  state' : _root_.Perennial.sync.atomic.Uint64.t
+  noCopy' : noCopy
+  state' : _root_.Perennial.sync.atomic.Uint64
   sema' : w32
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end WaitGroup
+instance WaitGroup.zero_val [FfiSyntax] : ZeroVal WaitGroup :=
+  ⟨WaitGroup.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def WaitGroup.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"noCopy" noCopy),
-(go.field_decl.FieldDecl go!"state" _root_.Perennial.sync.atomic.Uint64),
+  [(go.field_decl.FieldDecl go!"noCopy" noCopy.ty),
+(go.field_decl.FieldDecl go!"state" _root_.Perennial.sync.atomic.Uint64.ty),
 (go.field_decl.FieldDecl go!"sema" go.uint32)]
 
 @[irreducible] def WaitGroup.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1826,18 +1792,18 @@ instance equals_unfold_WaitGroup [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType WaitGroup.fields)
 
 class WaitGroup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying WaitGroup.underlying WaitGroup.t
-  underlying : go.UnderlyingDirectedEq WaitGroup WaitGroup.underlying
-  get_noCopy : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : WaitGroup.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : WaitGroup.t)))
-  get_state : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"state") #x (Val #(x.state'))
-  set_state : ∀ (x : WaitGroup.t) (y : _root_.Perennial.sync.atomic.Uint64.t), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : WaitGroup.t)))
-  get_sema : ∀ (x : WaitGroup.t), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"sema") #x (Val #(x.sema'))
-  set_sema : ∀ (x : WaitGroup.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"sema") (PairV #x #y) (Val #(({ x with sema' := y } : WaitGroup.t)))
-  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Add" WaitGroup.Add.impl
-  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Done" WaitGroup.Done.impl
-  ptr_Go_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Go" WaitGroup.Go.impl
-  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType WaitGroup) go!"Wait" WaitGroup.Wait.impl
+  type_repr : go.TypeReprUnderlying WaitGroup.underlying WaitGroup
+  underlying : go.UnderlyingDirectedEq WaitGroup.ty WaitGroup.underlying
+  get_noCopy : ∀ (x : WaitGroup), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set_noCopy : ∀ (x : WaitGroup) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : WaitGroup)))
+  get_state : ∀ (x : WaitGroup), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"state") #x (Val #(x.state'))
+  set_state : ∀ (x : WaitGroup) (y : _root_.Perennial.sync.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : WaitGroup)))
+  get_sema : ∀ (x : WaitGroup), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"sema") #x (Val #(x.sema'))
+  set_sema : ∀ (x : WaitGroup) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"sema") (PairV #x #y) (Val #(({ x with sema' := y } : WaitGroup)))
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Add" WaitGroup.Add.impl
+  ptr_Done_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Done" WaitGroup.Done.impl
+  ptr_Go_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Go" WaitGroup.Go.impl
+  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Wait" WaitGroup.Wait.impl
 
 attribute [instance] WaitGroup.TypeAssumptions.type_repr
   WaitGroup.TypeAssumptions.underlying

@@ -140,7 +140,7 @@ open rwmutex_guard
 
 theorem RWMutex.wp_RLock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutex rw P }}
-      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RLock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RLock")) (Val #()))
     {{ RET #(); ownRWMutexRLocked rw P ∗ ▷ P rfrac }} := by
   wp_start_folded as Hpre
   simp only [ownRWMutex_unseal, ownRWMutexDef]
@@ -179,7 +179,7 @@ theorem RWMutex.wp_RLock (rw : Loc) (P : Qp → IProp GF) :
 
 theorem RWMutex.wp_RUnlock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutexRLocked rw P ∗ ▷ P rfrac }}
-      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RUnlock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RUnlock")) (Val #()))
     {{ RET #(); ownRWMutex rw P }} := by
   wp_start_folded as ⟨Ho, HP_in⟩
   simp only [ownRWMutexRLocked_unseal, ownRWMutexRLockedDef]
@@ -229,7 +229,7 @@ theorem RWMutex.wp_RUnlock (rw : Loc) (P : Qp → IProp GF) :
 
 theorem RWMutex.wp_Lock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutex rw P }}
-      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Lock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Lock")) (Val #()))
     {{ RET #(); ownRWMutexLocked rw P ∗ ▷ P 1 }} := by
   wp_start_folded as Ho
   simp only [ownRWMutex_unseal, ownRWMutexDef]
@@ -264,7 +264,7 @@ theorem RWMutex.wp_Lock (rw : Loc) (P : Qp → IProp GF) :
 
 theorem RWMutex.wp_Unlock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutexLocked rw P ∗ ▷ P 1 }}
-      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Unlock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Unlock")) (Val #()))
     {{ RET #(); ownRWMutex rw P }} := by
   wp_start_folded as ⟨Ho, HP_in⟩
   simp only [ownRWMutexLocked_unseal, ownRWMutexLockedDef]
@@ -322,7 +322,7 @@ theorem replicate_helper (R Q : IProp GF) (γ : GName) (n : Nat) :
     · iapply ih $$ [$Hmk $Htoks $Hrs]
 
 theorem init_RWMutex (P : Qp → IProp GF) {E : CoPset} (rw : Loc) [HPfrac : Fractional P] :
-    ⊢ ▷ P 1 -∗ typedPointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ={E}=∗
+    ⊢ ▷ P 1 -∗ typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ={E}=∗
       [∗list] _x ∈ List.replicate (Int.toNat rwmutex.actualMaxReaders) (), ownRWMutex rw P := by
   iintro HP Hrw
   imod rwmutex.init_RWMutex (E := E) (nroot.@"rw") rw $$ Hrw with ⟨%γ, #His, Hstate, Hrtoks⟩

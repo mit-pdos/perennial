@@ -19,195 +19,195 @@ end pkg_id
 
 namespace go_opentelemetry_io.otel.trace
 
-def autoTracerProvider [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def autoTracerProvider.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.autoTracerProvider" [])
 
-attribute [irreducible] autoTracerProvider
+attribute [irreducible] autoTracerProvider.ty
 
-def autoTracer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def autoTracer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.autoTracer" [])
 
-attribute [irreducible] autoTracer
+attribute [irreducible] autoTracer.ty
 
-def autoSpan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def autoSpan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.autoSpan" [])
 
-attribute [irreducible] autoSpan
+attribute [irreducible] autoSpan.ty
 
-def spanLimits [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def spanLimits.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.spanLimits" [])
 
-attribute [irreducible] spanLimits
+attribute [irreducible] spanLimits.ty
 
-def TracerConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TracerConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TracerConfig" [])
 
-attribute [irreducible] TracerConfig
+attribute [irreducible] TracerConfig.ty
 
-def TracerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TracerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TracerOption" [])
 
-attribute [irreducible] TracerOption
+attribute [irreducible] TracerOption.ty
 
-def tracerOptionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def tracerOptionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.tracerOptionFunc" [])
 
-attribute [irreducible] tracerOptionFunc
+attribute [irreducible] tracerOptionFunc.ty
 
-def SpanConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanConfig" [])
 
-attribute [irreducible] SpanConfig
+attribute [irreducible] SpanConfig.ty
 
-def SpanStartOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanStartOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanStartOption" [])
 
-attribute [irreducible] SpanStartOption
+attribute [irreducible] SpanStartOption.ty
 
-def spanOptionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def spanOptionFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.spanOptionFunc" [])
 
-attribute [irreducible] spanOptionFunc
+attribute [irreducible] spanOptionFunc.ty
 
-def SpanEndOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanEndOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanEndOption" [])
 
-attribute [irreducible] SpanEndOption
+attribute [irreducible] SpanEndOption.ty
 
-def EventConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EventConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.EventConfig" [])
 
-attribute [irreducible] EventConfig
+attribute [irreducible] EventConfig.ty
 
-def EventOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EventOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.EventOption" [])
 
-attribute [irreducible] EventOption
+attribute [irreducible] EventOption.ty
 
-def SpanOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanOption" [])
 
-attribute [irreducible] SpanOption
+attribute [irreducible] SpanOption.ty
 
-def SpanStartEventOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanStartEventOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanStartEventOption" [])
 
-attribute [irreducible] SpanStartEventOption
+attribute [irreducible] SpanStartEventOption.ty
 
-def SpanEndEventOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanEndEventOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanEndEventOption" [])
 
-attribute [irreducible] SpanEndEventOption
+attribute [irreducible] SpanEndEventOption.ty
 
-def attributeOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def attributeOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.attributeOption" [])
 
-attribute [irreducible] attributeOption
+attribute [irreducible] attributeOption.ty
 
-def SpanEventOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanEventOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanEventOption" [])
 
-attribute [irreducible] SpanEventOption
+attribute [irreducible] SpanEventOption.ty
 
-def timestampOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def timestampOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.timestampOption" [])
 
-attribute [irreducible] timestampOption
+attribute [irreducible] timestampOption.ty
 
-def stackTraceOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def stackTraceOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.stackTraceOption" [])
 
-attribute [irreducible] stackTraceOption
+attribute [irreducible] stackTraceOption.ty
 
-def traceContextKeyType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def traceContextKeyType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.traceContextKeyType" [])
 
-attribute [irreducible] traceContextKeyType
+attribute [irreducible] traceContextKeyType.ty
 
-def nonRecordingSpan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def nonRecordingSpan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.nonRecordingSpan" [])
 
-attribute [irreducible] nonRecordingSpan
+attribute [irreducible] nonRecordingSpan.ty
 
-def noopTracerProvider [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noopTracerProvider.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.noopTracerProvider" [])
 
-attribute [irreducible] noopTracerProvider
+attribute [irreducible] noopTracerProvider.ty
 
-def noopTracer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noopTracer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.noopTracer" [])
 
-attribute [irreducible] noopTracer
+attribute [irreducible] noopTracer.ty
 
-def noopSpan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noopSpan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.noopSpan" [])
 
-attribute [irreducible] noopSpan
+attribute [irreducible] noopSpan.ty
 
-def TracerProvider [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TracerProvider.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TracerProvider" [])
 
-attribute [irreducible] TracerProvider
+attribute [irreducible] TracerProvider.ty
 
-def Span [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Span.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.Span" [])
 
-attribute [irreducible] Span
+attribute [irreducible] Span.ty
 
-def Link [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Link.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.Link" [])
 
-attribute [irreducible] Link
+attribute [irreducible] Link.ty
 
-def SpanKind [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanKind" [])
 
-attribute [irreducible] SpanKind
+attribute [irreducible] SpanKind.ty
 
-def errorConst [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def errorConst.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.errorConst" [])
 
-attribute [irreducible] errorConst
+attribute [irreducible] errorConst.ty
 
-def TraceID [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TraceID.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TraceID" [])
 
-attribute [irreducible] TraceID
+attribute [irreducible] TraceID.ty
 
-def SpanID [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanID.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanID" [])
 
-attribute [irreducible] SpanID
+attribute [irreducible] SpanID.ty
 
-def TraceFlags [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TraceFlags.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TraceFlags" [])
 
-attribute [irreducible] TraceFlags
+attribute [irreducible] TraceFlags.ty
 
-def SpanContextConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanContextConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanContextConfig" [])
 
-attribute [irreducible] SpanContextConfig
+attribute [irreducible] SpanContextConfig.ty
 
-def SpanContext [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SpanContext.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.SpanContext" [])
 
-attribute [irreducible] SpanContext
+attribute [irreducible] SpanContext.ty
 
-def Tracer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Tracer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.Tracer" [])
 
-attribute [irreducible] Tracer
+attribute [irreducible] Tracer.ty
 
-def member [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def member.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.member" [])
 
-attribute [irreducible] member
+attribute [irreducible] member.ty
 
-def TraceState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TraceState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.opentelemetry.io/otel/trace.TraceState" [])
 
-attribute [irreducible] TraceState
+attribute [irreducible] TraceState.ty
 
 axiom autoSpan.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -516,17 +516,15 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.initialize') (Val #()))))))))
 
-namespace autoTracerProvider
-structure t [FfiSyntax] where
+structure autoTracerProvider [FfiSyntax] where
   mk ::
-  TracerProvider' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.t
+  TracerProvider' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end autoTracerProvider
+instance autoTracerProvider.zero_val [FfiSyntax] : ZeroVal autoTracerProvider :=
+  ⟨autoTracerProvider.mk zeroValDef⟩
 
 @[reducible] def autoTracerProvider.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"TracerProvider" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider)]
+  [(go.field_decl.EmbeddedField go!"TracerProvider" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.ty)]
 
 @[irreducible] def autoTracerProvider.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   autoTracerProvider.fieldsUnsealed
@@ -539,30 +537,28 @@ instance equals_unfold_autoTracerProvider [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType autoTracerProvider.fields)
 
 class autoTracerProvider.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying autoTracerProvider.underlying autoTracerProvider.t
-  underlying : go.UnderlyingDirectedEq autoTracerProvider autoTracerProvider.underlying
-  get_TracerProvider : ∀ (x : autoTracerProvider.t), go.IsGoStepPureDetTagged under (StructFieldGet autoTracerProvider.underlying go!"TracerProvider") #x (Val #(x.TracerProvider'))
-  set_TracerProvider : ∀ (x : autoTracerProvider.t) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.t), go.IsGoStepPureDetTagged under (StructFieldSet autoTracerProvider.underlying go!"TracerProvider") (PairV #x #y) (Val #(({ x with TracerProvider' := y } : autoTracerProvider.t)))
+  type_repr : go.TypeReprUnderlying autoTracerProvider.underlying autoTracerProvider
+  underlying : go.UnderlyingDirectedEq autoTracerProvider.ty autoTracerProvider.underlying
+  get_TracerProvider : ∀ (x : autoTracerProvider), go.IsGoStepPureDetTagged under (StructFieldGet autoTracerProvider.underlying go!"TracerProvider") #x (Val #(x.TracerProvider'))
+  set_TracerProvider : ∀ (x : autoTracerProvider) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider), go.IsGoStepPureDetTagged under (StructFieldSet autoTracerProvider.underlying go!"TracerProvider") (PairV #x #y) (Val #(({ x with TracerProvider' := y } : autoTracerProvider)))
 
 attribute [instance] autoTracerProvider.TypeAssumptions.type_repr
   autoTracerProvider.TypeAssumptions.underlying
   autoTracerProvider.TypeAssumptions.get_TracerProvider
   autoTracerProvider.TypeAssumptions.set_TracerProvider
 
-namespace autoTracer
-structure t [FfiSyntax] where
+structure autoTracer [FfiSyntax] where
   mk ::
-  Tracer' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.t
+  Tracer' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer
   name' : GoString
   schemaURL' : GoString
   version' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end autoTracer
+instance autoTracer.zero_val [FfiSyntax] : ZeroVal autoTracer :=
+  ⟨autoTracer.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def autoTracer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Tracer" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer),
+  [(go.field_decl.EmbeddedField go!"Tracer" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.ty),
 (go.field_decl.FieldDecl go!"name" go.string),
 (go.field_decl.FieldDecl go!"schemaURL" go.string),
 (go.field_decl.FieldDecl go!"version" go.string)]
@@ -578,16 +574,16 @@ instance equals_unfold_autoTracer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType autoTracer.fields)
 
 class autoTracer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying autoTracer.underlying autoTracer.t
-  underlying : go.UnderlyingDirectedEq autoTracer autoTracer.underlying
-  get_Tracer : ∀ (x : autoTracer.t), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"Tracer") #x (Val #(x.Tracer'))
-  set_Tracer : ∀ (x : autoTracer.t) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.t), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"Tracer") (PairV #x #y) (Val #(({ x with Tracer' := y } : autoTracer.t)))
-  get_name : ∀ (x : autoTracer.t), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : autoTracer.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : autoTracer.t)))
-  get_schemaURL : ∀ (x : autoTracer.t), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"schemaURL") #x (Val #(x.schemaURL'))
-  set_schemaURL : ∀ (x : autoTracer.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"schemaURL") (PairV #x #y) (Val #(({ x with schemaURL' := y } : autoTracer.t)))
-  get_version : ∀ (x : autoTracer.t), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"version") #x (Val #(x.version'))
-  set_version : ∀ (x : autoTracer.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"version") (PairV #x #y) (Val #(({ x with version' := y } : autoTracer.t)))
+  type_repr : go.TypeReprUnderlying autoTracer.underlying autoTracer
+  underlying : go.UnderlyingDirectedEq autoTracer.ty autoTracer.underlying
+  get_Tracer : ∀ (x : autoTracer), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"Tracer") #x (Val #(x.Tracer'))
+  set_Tracer : ∀ (x : autoTracer) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"Tracer") (PairV #x #y) (Val #(({ x with Tracer' := y } : autoTracer)))
+  get_name : ∀ (x : autoTracer), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"name") #x (Val #(x.name'))
+  set_name : ∀ (x : autoTracer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : autoTracer)))
+  get_schemaURL : ∀ (x : autoTracer), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"schemaURL") #x (Val #(x.schemaURL'))
+  set_schemaURL : ∀ (x : autoTracer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"schemaURL") (PairV #x #y) (Val #(({ x with schemaURL' := y } : autoTracer)))
+  get_version : ∀ (x : autoTracer), go.IsGoStepPureDetTagged under (StructFieldGet autoTracer.underlying go!"version") #x (Val #(x.version'))
+  set_version : ∀ (x : autoTracer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet autoTracer.underlying go!"version") (PairV #x #y) (Val #(({ x with version' := y } : autoTracer)))
 
 attribute [instance] autoTracer.TypeAssumptions.type_repr
   autoTracer.TypeAssumptions.underlying
@@ -600,23 +596,20 @@ attribute [instance] autoTracer.TypeAssumptions.type_repr
   autoTracer.TypeAssumptions.get_version
   autoTracer.TypeAssumptions.set_version
 
-namespace autoSpan
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end autoSpan
+axiom autoSpan : Type
+axiom autoSpan.zero_val : ZeroVal autoSpan
+attribute [instance] autoSpan.zero_val
 
 class autoSpan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying autoSpan.underlying autoSpan.t
-  underlying : go.UnderlyingDirectedEq autoSpan autoSpan.underlying
+  type_repr : go.TypeReprUnderlying autoSpan.underlying autoSpan
+  underlying : go.UnderlyingDirectedEq autoSpan.ty autoSpan.underlying
   isUnderlying : go.IsUnderlying autoSpan.underlying autoSpan.underlying
 
 attribute [instance] autoSpan.TypeAssumptions.type_repr
   autoSpan.TypeAssumptions.underlying
   autoSpan.TypeAssumptions.isUnderlying
 
-namespace spanLimits
-structure t [FfiSyntax] where
+structure spanLimits [FfiSyntax] where
   mk ::
   Attrs' : w64
   AttrValueLen' : w64
@@ -625,9 +618,8 @@ structure t [FfiSyntax] where
   Links' : w64
   LinkAttrs' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end spanLimits
+instance spanLimits.zero_val [FfiSyntax] : ZeroVal spanLimits :=
+  ⟨spanLimits.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def spanLimits.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Attrs" go.int),
@@ -648,20 +640,20 @@ instance equals_unfold_spanLimits [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType spanLimits.fields)
 
 class spanLimits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying spanLimits.underlying spanLimits.t
-  underlying : go.UnderlyingDirectedEq spanLimits spanLimits.underlying
-  get_Attrs : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Attrs") #x (Val #(x.Attrs'))
-  set_Attrs : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Attrs") (PairV #x #y) (Val #(({ x with Attrs' := y } : spanLimits.t)))
-  get_AttrValueLen : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"AttrValueLen") #x (Val #(x.AttrValueLen'))
-  set_AttrValueLen : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"AttrValueLen") (PairV #x #y) (Val #(({ x with AttrValueLen' := y } : spanLimits.t)))
-  get_Events : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Events") #x (Val #(x.Events'))
-  set_Events : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Events") (PairV #x #y) (Val #(({ x with Events' := y } : spanLimits.t)))
-  get_EventAttrs : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"EventAttrs") #x (Val #(x.EventAttrs'))
-  set_EventAttrs : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"EventAttrs") (PairV #x #y) (Val #(({ x with EventAttrs' := y } : spanLimits.t)))
-  get_Links : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Links") #x (Val #(x.Links'))
-  set_Links : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Links") (PairV #x #y) (Val #(({ x with Links' := y } : spanLimits.t)))
-  get_LinkAttrs : ∀ (x : spanLimits.t), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"LinkAttrs") #x (Val #(x.LinkAttrs'))
-  set_LinkAttrs : ∀ (x : spanLimits.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"LinkAttrs") (PairV #x #y) (Val #(({ x with LinkAttrs' := y } : spanLimits.t)))
+  type_repr : go.TypeReprUnderlying spanLimits.underlying spanLimits
+  underlying : go.UnderlyingDirectedEq spanLimits.ty spanLimits.underlying
+  get_Attrs : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Attrs") #x (Val #(x.Attrs'))
+  set_Attrs : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Attrs") (PairV #x #y) (Val #(({ x with Attrs' := y } : spanLimits)))
+  get_AttrValueLen : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"AttrValueLen") #x (Val #(x.AttrValueLen'))
+  set_AttrValueLen : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"AttrValueLen") (PairV #x #y) (Val #(({ x with AttrValueLen' := y } : spanLimits)))
+  get_Events : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Events") #x (Val #(x.Events'))
+  set_Events : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Events") (PairV #x #y) (Val #(({ x with Events' := y } : spanLimits)))
+  get_EventAttrs : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"EventAttrs") #x (Val #(x.EventAttrs'))
+  set_EventAttrs : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"EventAttrs") (PairV #x #y) (Val #(({ x with EventAttrs' := y } : spanLimits)))
+  get_Links : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"Links") #x (Val #(x.Links'))
+  set_Links : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"Links") (PairV #x #y) (Val #(({ x with Links' := y } : spanLimits)))
+  get_LinkAttrs : ∀ (x : spanLimits), go.IsGoStepPureDetTagged under (StructFieldGet spanLimits.underlying go!"LinkAttrs") #x (Val #(x.LinkAttrs'))
+  set_LinkAttrs : ∀ (x : spanLimits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanLimits.underlying go!"LinkAttrs") (PairV #x #y) (Val #(({ x with LinkAttrs' := y } : spanLimits)))
 
 attribute [instance] spanLimits.TypeAssumptions.type_repr
   spanLimits.TypeAssumptions.underlying
@@ -678,233 +670,197 @@ attribute [instance] spanLimits.TypeAssumptions.type_repr
   spanLimits.TypeAssumptions.get_LinkAttrs
   spanLimits.TypeAssumptions.set_LinkAttrs
 
-namespace TracerConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end TracerConfig
+axiom TracerConfig : Type
+axiom TracerConfig.zero_val : ZeroVal TracerConfig
+attribute [instance] TracerConfig.zero_val
 
 class TracerConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying TracerConfig.underlying TracerConfig.t
-  underlying : go.UnderlyingDirectedEq TracerConfig TracerConfig.underlying
+  type_repr : go.TypeReprUnderlying TracerConfig.underlying TracerConfig
+  underlying : go.UnderlyingDirectedEq TracerConfig.ty TracerConfig.underlying
   isUnderlying : go.IsUnderlying TracerConfig.underlying TracerConfig.underlying
 
 attribute [instance] TracerConfig.TypeAssumptions.type_repr
   TracerConfig.TypeAssumptions.underlying
   TracerConfig.TypeAssumptions.isUnderlying
 
-namespace TracerOption
-abbrev t [FfiSyntax] : Type := interface.t
-end TracerOption
+abbrev TracerOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def TracerOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [TracerConfig] false [TracerConfig]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [TracerConfig.ty] false [TracerConfig.ty]))])
 
 class TracerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TracerOption TracerOption.underlying
+  underlying : go.UnderlyingDirectedEq TracerOption.ty TracerOption.underlying
 
 attribute [instance] TracerOption.TypeAssumptions.underlying
 
-namespace tracerOptionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end tracerOptionFunc
+abbrev tracerOptionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def tracerOptionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [TracerConfig] false [TracerConfig]))
+  (go.GoType.FunctionType (go.signature.Signature [TracerConfig.ty] false [TracerConfig.ty]))
 
 class tracerOptionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq tracerOptionFunc tracerOptionFunc.underlying
+  underlying : go.UnderlyingDirectedEq tracerOptionFunc.ty tracerOptionFunc.underlying
 
 attribute [instance] tracerOptionFunc.TypeAssumptions.underlying
 
-namespace SpanConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end SpanConfig
+axiom SpanConfig : Type
+axiom SpanConfig.zero_val : ZeroVal SpanConfig
+attribute [instance] SpanConfig.zero_val
 
 class SpanConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SpanConfig.underlying SpanConfig.t
-  underlying : go.UnderlyingDirectedEq SpanConfig SpanConfig.underlying
+  type_repr : go.TypeReprUnderlying SpanConfig.underlying SpanConfig
+  underlying : go.UnderlyingDirectedEq SpanConfig.ty SpanConfig.underlying
   isUnderlying : go.IsUnderlying SpanConfig.underlying SpanConfig.underlying
 
 attribute [instance] SpanConfig.TypeAssumptions.type_repr
   SpanConfig.TypeAssumptions.underlying
   SpanConfig.TypeAssumptions.isUnderlying
 
-namespace SpanStartOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanStartOption
+abbrev SpanStartOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanStartOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanStart" (go.signature.Signature [SpanConfig] false [SpanConfig]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanStart" (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))])
 
 class SpanStartOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanStartOption SpanStartOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanStartOption.ty SpanStartOption.underlying
 
 attribute [instance] SpanStartOption.TypeAssumptions.underlying
 
-namespace spanOptionFunc
-abbrev t [FfiSyntax] : Type := func.t
-end spanOptionFunc
+abbrev spanOptionFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def spanOptionFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [SpanConfig] false [SpanConfig]))
+  (go.GoType.FunctionType (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))
 
 class spanOptionFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq spanOptionFunc spanOptionFunc.underlying
+  underlying : go.UnderlyingDirectedEq spanOptionFunc.ty spanOptionFunc.underlying
 
 attribute [instance] spanOptionFunc.TypeAssumptions.underlying
 
-namespace SpanEndOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanEndOption
+abbrev SpanEndOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanEndOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanEnd" (go.signature.Signature [SpanConfig] false [SpanConfig]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applySpanEnd" (go.signature.Signature [SpanConfig.ty] false [SpanConfig.ty]))])
 
 class SpanEndOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanEndOption SpanEndOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanEndOption.ty SpanEndOption.underlying
 
 attribute [instance] SpanEndOption.TypeAssumptions.underlying
 
-namespace EventConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end EventConfig
+axiom EventConfig : Type
+axiom EventConfig.zero_val : ZeroVal EventConfig
+attribute [instance] EventConfig.zero_val
 
 class EventConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EventConfig.underlying EventConfig.t
-  underlying : go.UnderlyingDirectedEq EventConfig EventConfig.underlying
+  type_repr : go.TypeReprUnderlying EventConfig.underlying EventConfig
+  underlying : go.UnderlyingDirectedEq EventConfig.ty EventConfig.underlying
   isUnderlying : go.IsUnderlying EventConfig.underlying EventConfig.underlying
 
 attribute [instance] EventConfig.TypeAssumptions.type_repr
   EventConfig.TypeAssumptions.underlying
   EventConfig.TypeAssumptions.isUnderlying
 
-namespace EventOption
-abbrev t [FfiSyntax] : Type := interface.t
-end EventOption
+abbrev EventOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def EventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applyEvent" (go.signature.Signature [EventConfig] false [EventConfig]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"applyEvent" (go.signature.Signature [EventConfig.ty] false [EventConfig.ty]))])
 
 class EventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq EventOption EventOption.underlying
+  underlying : go.UnderlyingDirectedEq EventOption.ty EventOption.underlying
 
 attribute [instance] EventOption.TypeAssumptions.underlying
 
-namespace SpanOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanOption
+abbrev SpanOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption.ty)])])
 
 class SpanOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanOption SpanOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanOption.ty SpanOption.underlying
 
 attribute [instance] SpanOption.TypeAssumptions.underlying
 
-namespace SpanStartEventOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanStartEventOption
+abbrev SpanStartEventOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanStartEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanStartOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
 
 class SpanStartEventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanStartEventOption SpanStartEventOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanStartEventOption.ty SpanStartEventOption.underlying
 
 attribute [instance] SpanStartEventOption.TypeAssumptions.underlying
 
-namespace SpanEndEventOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanEndEventOption
+abbrev SpanEndEventOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanEndEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanEndOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
 
 class SpanEndEventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanEndEventOption SpanEndEventOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanEndEventOption.ty SpanEndEventOption.underlying
 
 attribute [instance] SpanEndEventOption.TypeAssumptions.underlying
 
-namespace attributeOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end attributeOption
+axiom attributeOption : Type
+axiom attributeOption.zero_val : ZeroVal attributeOption
+attribute [instance] attributeOption.zero_val
 
 class attributeOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying attributeOption.underlying attributeOption.t
-  underlying : go.UnderlyingDirectedEq attributeOption attributeOption.underlying
+  type_repr : go.TypeReprUnderlying attributeOption.underlying attributeOption
+  underlying : go.UnderlyingDirectedEq attributeOption.ty attributeOption.underlying
   isUnderlying : go.IsUnderlying attributeOption.underlying attributeOption.underlying
 
 attribute [instance] attributeOption.TypeAssumptions.type_repr
   attributeOption.TypeAssumptions.underlying
   attributeOption.TypeAssumptions.isUnderlying
 
-namespace SpanEventOption
-abbrev t [FfiSyntax] : Type := interface.t
-end SpanEventOption
+abbrev SpanEventOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def SpanEventOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanOption)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm SpanOption.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm EventOption.ty)])])
 
 class SpanEventOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanEventOption SpanEventOption.underlying
+  underlying : go.UnderlyingDirectedEq SpanEventOption.ty SpanEventOption.underlying
 
 attribute [instance] SpanEventOption.TypeAssumptions.underlying
 
-namespace timestampOption
-abbrev t [FfiSyntax] : Type := _root_.Perennial.time.Time.t
-end timestampOption
+abbrev timestampOption [FfiSyntax] : Type := _root_.Perennial.time.Time
 
 @[reducible] def timestampOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  _root_.Perennial.time.Time
+  _root_.Perennial.time.Time.ty
 
 class timestampOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq timestampOption timestampOption.underlying
+  underlying : go.UnderlyingDirectedEq timestampOption.ty timestampOption.underlying
 
 attribute [instance] timestampOption.TypeAssumptions.underlying
 
-namespace stackTraceOption
-abbrev t [FfiSyntax] : Type := Bool
-end stackTraceOption
+abbrev stackTraceOption [FfiSyntax] : Type := Bool
 
 @[reducible] def stackTraceOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.bool
 
 class stackTraceOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq stackTraceOption stackTraceOption.underlying
+  underlying : go.UnderlyingDirectedEq stackTraceOption.ty stackTraceOption.underlying
 
 attribute [instance] stackTraceOption.TypeAssumptions.underlying
 
-namespace traceContextKeyType
-abbrev t [FfiSyntax] : Type := w64
-end traceContextKeyType
+abbrev traceContextKeyType [FfiSyntax] : Type := w64
 
 @[reducible] def traceContextKeyType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class traceContextKeyType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq traceContextKeyType traceContextKeyType.underlying
+  underlying : go.UnderlyingDirectedEq traceContextKeyType.ty traceContextKeyType.underlying
 
 attribute [instance] traceContextKeyType.TypeAssumptions.underlying
 
-namespace noopSpan
-structure t [FfiSyntax] where
+structure noopSpan [FfiSyntax] where
   mk ::
-  Span' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span.t
+  Span' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end noopSpan
+instance noopSpan.zero_val [FfiSyntax] : ZeroVal noopSpan :=
+  ⟨noopSpan.mk zeroValDef⟩
 
 @[reducible] def noopSpan.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Span" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span)]
+  [(go.field_decl.EmbeddedField go!"Span" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span.ty)]
 
 @[irreducible] def noopSpan.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noopSpan.fieldsUnsealed
@@ -917,63 +873,55 @@ instance equals_unfold_noopSpan [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noopSpan.fields)
 
 class noopSpan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noopSpan.underlying noopSpan.t
-  underlying : go.UnderlyingDirectedEq noopSpan noopSpan.underlying
-  get_Span : ∀ (x : noopSpan.t), go.IsGoStepPureDetTagged under (StructFieldGet noopSpan.underlying go!"Span") #x (Val #(x.Span'))
-  set_Span : ∀ (x : noopSpan.t) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span.t), go.IsGoStepPureDetTagged under (StructFieldSet noopSpan.underlying go!"Span") (PairV #x #y) (Val #(({ x with Span' := y } : noopSpan.t)))
+  type_repr : go.TypeReprUnderlying noopSpan.underlying noopSpan
+  underlying : go.UnderlyingDirectedEq noopSpan.ty noopSpan.underlying
+  get_Span : ∀ (x : noopSpan), go.IsGoStepPureDetTagged under (StructFieldGet noopSpan.underlying go!"Span") #x (Val #(x.Span'))
+  set_Span : ∀ (x : noopSpan) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Span), go.IsGoStepPureDetTagged under (StructFieldSet noopSpan.underlying go!"Span") (PairV #x #y) (Val #(({ x with Span' := y } : noopSpan)))
 
 attribute [instance] noopSpan.TypeAssumptions.type_repr
   noopSpan.TypeAssumptions.underlying
   noopSpan.TypeAssumptions.get_Span
   noopSpan.TypeAssumptions.set_Span
 
-namespace TraceID
-abbrev t [FfiSyntax] : Type := (array.t w8 16)
-end TraceID
+abbrev TraceID [FfiSyntax] : Type := (array.t w8 16)
 
 @[reducible] def TraceID.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 16 go.byte)
 
 class TraceID.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TraceID TraceID.underlying
+  underlying : go.UnderlyingDirectedEq TraceID.ty TraceID.underlying
 
 attribute [instance] TraceID.TypeAssumptions.underlying
 
-namespace SpanID
-abbrev t [FfiSyntax] : Type := (array.t w8 8)
-end SpanID
+abbrev SpanID [FfiSyntax] : Type := (array.t w8 8)
 
 @[reducible] def SpanID.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.byte)
 
 class SpanID.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanID SpanID.underlying
+  underlying : go.UnderlyingDirectedEq SpanID.ty SpanID.underlying
 
 attribute [instance] SpanID.TypeAssumptions.underlying
 
-namespace TraceFlags
-abbrev t [FfiSyntax] : Type := w8
-end TraceFlags
+abbrev TraceFlags [FfiSyntax] : Type := w8
 
 @[reducible] def TraceFlags.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
 class TraceFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TraceFlags TraceFlags.underlying
+  underlying : go.UnderlyingDirectedEq TraceFlags.ty TraceFlags.underlying
 
 attribute [instance] TraceFlags.TypeAssumptions.underlying
 
-namespace TraceState
-structure t [FfiSyntax] where
+structure TraceState [FfiSyntax] where
   mk ::
   list' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end TraceState
+instance TraceState.zero_val [FfiSyntax] : ZeroVal TraceState :=
+  ⟨TraceState.mk zeroValDef⟩
 
 @[reducible] def TraceState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"list" (go.GoType.SliceType member))]
+  [(go.field_decl.FieldDecl go!"list" (go.GoType.SliceType member.ty))]
 
 @[irreducible] def TraceState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   TraceState.fieldsUnsealed
@@ -986,34 +934,32 @@ instance equals_unfold_TraceState [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType TraceState.fields)
 
 class TraceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying TraceState.underlying TraceState.t
-  underlying : go.UnderlyingDirectedEq TraceState TraceState.underlying
-  get_list : ∀ (x : TraceState.t), go.IsGoStepPureDetTagged under (StructFieldGet TraceState.underlying go!"list") #x (Val #(x.list'))
-  set_list : ∀ (x : TraceState.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet TraceState.underlying go!"list") (PairV #x #y) (Val #(({ x with list' := y } : TraceState.t)))
+  type_repr : go.TypeReprUnderlying TraceState.underlying TraceState
+  underlying : go.UnderlyingDirectedEq TraceState.ty TraceState.underlying
+  get_list : ∀ (x : TraceState), go.IsGoStepPureDetTagged under (StructFieldGet TraceState.underlying go!"list") #x (Val #(x.list'))
+  set_list : ∀ (x : TraceState) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet TraceState.underlying go!"list") (PairV #x #y) (Val #(({ x with list' := y } : TraceState)))
 
 attribute [instance] TraceState.TypeAssumptions.type_repr
   TraceState.TypeAssumptions.underlying
   TraceState.TypeAssumptions.get_list
   TraceState.TypeAssumptions.set_list
 
-namespace SpanContext
-structure t [FfiSyntax] where
+structure SpanContext [FfiSyntax] where
   mk ::
-  traceID' : TraceID.t
-  spanID' : SpanID.t
-  traceFlags' : TraceFlags.t
-  traceState' : TraceState.t
+  traceID' : TraceID
+  spanID' : SpanID
+  traceFlags' : TraceFlags
+  traceState' : TraceState
   remote' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end SpanContext
+instance SpanContext.zero_val [FfiSyntax] : ZeroVal SpanContext :=
+  ⟨SpanContext.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def SpanContext.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"traceID" TraceID),
-(go.field_decl.FieldDecl go!"spanID" SpanID),
-(go.field_decl.FieldDecl go!"traceFlags" TraceFlags),
-(go.field_decl.FieldDecl go!"traceState" TraceState),
+  [(go.field_decl.FieldDecl go!"traceID" TraceID.ty),
+(go.field_decl.FieldDecl go!"spanID" SpanID.ty),
+(go.field_decl.FieldDecl go!"traceFlags" TraceFlags.ty),
+(go.field_decl.FieldDecl go!"traceState" TraceState.ty),
 (go.field_decl.FieldDecl go!"remote" go.bool)]
 
 @[irreducible] def SpanContext.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1027,18 +973,18 @@ instance equals_unfold_SpanContext [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType SpanContext.fields)
 
 class SpanContext.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SpanContext.underlying SpanContext.t
-  underlying : go.UnderlyingDirectedEq SpanContext SpanContext.underlying
-  get_traceID : ∀ (x : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceID") #x (Val #(x.traceID'))
-  set_traceID : ∀ (x : SpanContext.t) (y : TraceID.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceID") (PairV #x #y) (Val #(({ x with traceID' := y } : SpanContext.t)))
-  get_spanID : ∀ (x : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"spanID") #x (Val #(x.spanID'))
-  set_spanID : ∀ (x : SpanContext.t) (y : SpanID.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"spanID") (PairV #x #y) (Val #(({ x with spanID' := y } : SpanContext.t)))
-  get_traceFlags : ∀ (x : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceFlags") #x (Val #(x.traceFlags'))
-  set_traceFlags : ∀ (x : SpanContext.t) (y : TraceFlags.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceFlags") (PairV #x #y) (Val #(({ x with traceFlags' := y } : SpanContext.t)))
-  get_traceState : ∀ (x : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceState") #x (Val #(x.traceState'))
-  set_traceState : ∀ (x : SpanContext.t) (y : TraceState.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceState") (PairV #x #y) (Val #(({ x with traceState' := y } : SpanContext.t)))
-  get_remote : ∀ (x : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"remote") #x (Val #(x.remote'))
-  set_remote : ∀ (x : SpanContext.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"remote") (PairV #x #y) (Val #(({ x with remote' := y } : SpanContext.t)))
+  type_repr : go.TypeReprUnderlying SpanContext.underlying SpanContext
+  underlying : go.UnderlyingDirectedEq SpanContext.ty SpanContext.underlying
+  get_traceID : ∀ (x : SpanContext), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceID") #x (Val #(x.traceID'))
+  set_traceID : ∀ (x : SpanContext) (y : TraceID), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceID") (PairV #x #y) (Val #(({ x with traceID' := y } : SpanContext)))
+  get_spanID : ∀ (x : SpanContext), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"spanID") #x (Val #(x.spanID'))
+  set_spanID : ∀ (x : SpanContext) (y : SpanID), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"spanID") (PairV #x #y) (Val #(({ x with spanID' := y } : SpanContext)))
+  get_traceFlags : ∀ (x : SpanContext), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceFlags") #x (Val #(x.traceFlags'))
+  set_traceFlags : ∀ (x : SpanContext) (y : TraceFlags), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceFlags") (PairV #x #y) (Val #(({ x with traceFlags' := y } : SpanContext)))
+  get_traceState : ∀ (x : SpanContext), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"traceState") #x (Val #(x.traceState'))
+  set_traceState : ∀ (x : SpanContext) (y : TraceState), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"traceState") (PairV #x #y) (Val #(({ x with traceState' := y } : SpanContext)))
+  get_remote : ∀ (x : SpanContext), go.IsGoStepPureDetTagged under (StructFieldGet SpanContext.underlying go!"remote") #x (Val #(x.remote'))
+  set_remote : ∀ (x : SpanContext) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet SpanContext.underlying go!"remote") (PairV #x #y) (Val #(({ x with remote' := y } : SpanContext)))
 
 attribute [instance] SpanContext.TypeAssumptions.type_repr
   SpanContext.TypeAssumptions.underlying
@@ -1053,19 +999,17 @@ attribute [instance] SpanContext.TypeAssumptions.type_repr
   SpanContext.TypeAssumptions.get_remote
   SpanContext.TypeAssumptions.set_remote
 
-namespace nonRecordingSpan
-structure t [FfiSyntax] where
+structure nonRecordingSpan [FfiSyntax] where
   mk ::
-  noopSpan' : noopSpan.t
-  sc' : SpanContext.t
+  noopSpan' : noopSpan
+  sc' : SpanContext
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end nonRecordingSpan
+instance nonRecordingSpan.zero_val [FfiSyntax] : ZeroVal nonRecordingSpan :=
+  ⟨nonRecordingSpan.mk zeroValDef zeroValDef⟩
 
 @[reducible] def nonRecordingSpan.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"noopSpan" noopSpan),
-(go.field_decl.FieldDecl go!"sc" SpanContext)]
+  [(go.field_decl.EmbeddedField go!"noopSpan" noopSpan.ty),
+(go.field_decl.FieldDecl go!"sc" SpanContext.ty)]
 
 @[irreducible] def nonRecordingSpan.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nonRecordingSpan.fieldsUnsealed
@@ -1078,12 +1022,12 @@ instance equals_unfold_nonRecordingSpan [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType nonRecordingSpan.fields)
 
 class nonRecordingSpan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying nonRecordingSpan.underlying nonRecordingSpan.t
-  underlying : go.UnderlyingDirectedEq nonRecordingSpan nonRecordingSpan.underlying
-  get_noopSpan : ∀ (x : nonRecordingSpan.t), go.IsGoStepPureDetTagged under (StructFieldGet nonRecordingSpan.underlying go!"noopSpan") #x (Val #(x.noopSpan'))
-  set_noopSpan : ∀ (x : nonRecordingSpan.t) (y : noopSpan.t), go.IsGoStepPureDetTagged under (StructFieldSet nonRecordingSpan.underlying go!"noopSpan") (PairV #x #y) (Val #(({ x with noopSpan' := y } : nonRecordingSpan.t)))
-  get_sc : ∀ (x : nonRecordingSpan.t), go.IsGoStepPureDetTagged under (StructFieldGet nonRecordingSpan.underlying go!"sc") #x (Val #(x.sc'))
-  set_sc : ∀ (x : nonRecordingSpan.t) (y : SpanContext.t), go.IsGoStepPureDetTagged under (StructFieldSet nonRecordingSpan.underlying go!"sc") (PairV #x #y) (Val #(({ x with sc' := y } : nonRecordingSpan.t)))
+  type_repr : go.TypeReprUnderlying nonRecordingSpan.underlying nonRecordingSpan
+  underlying : go.UnderlyingDirectedEq nonRecordingSpan.ty nonRecordingSpan.underlying
+  get_noopSpan : ∀ (x : nonRecordingSpan), go.IsGoStepPureDetTagged under (StructFieldGet nonRecordingSpan.underlying go!"noopSpan") #x (Val #(x.noopSpan'))
+  set_noopSpan : ∀ (x : nonRecordingSpan) (y : noopSpan), go.IsGoStepPureDetTagged under (StructFieldSet nonRecordingSpan.underlying go!"noopSpan") (PairV #x #y) (Val #(({ x with noopSpan' := y } : nonRecordingSpan)))
+  get_sc : ∀ (x : nonRecordingSpan), go.IsGoStepPureDetTagged under (StructFieldGet nonRecordingSpan.underlying go!"sc") #x (Val #(x.sc'))
+  set_sc : ∀ (x : nonRecordingSpan) (y : SpanContext), go.IsGoStepPureDetTagged under (StructFieldSet nonRecordingSpan.underlying go!"sc") (PairV #x #y) (Val #(({ x with sc' := y } : nonRecordingSpan)))
 
 attribute [instance] nonRecordingSpan.TypeAssumptions.type_repr
   nonRecordingSpan.TypeAssumptions.underlying
@@ -1092,17 +1036,15 @@ attribute [instance] nonRecordingSpan.TypeAssumptions.type_repr
   nonRecordingSpan.TypeAssumptions.get_sc
   nonRecordingSpan.TypeAssumptions.set_sc
 
-namespace noopTracerProvider
-structure t [FfiSyntax] where
+structure noopTracerProvider [FfiSyntax] where
   mk ::
-  TracerProvider' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.t
+  TracerProvider' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end noopTracerProvider
+instance noopTracerProvider.zero_val [FfiSyntax] : ZeroVal noopTracerProvider :=
+  ⟨noopTracerProvider.mk zeroValDef⟩
 
 @[reducible] def noopTracerProvider.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"TracerProvider" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider)]
+  [(go.field_decl.EmbeddedField go!"TracerProvider" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.ty)]
 
 @[irreducible] def noopTracerProvider.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noopTracerProvider.fieldsUnsealed
@@ -1115,27 +1057,25 @@ instance equals_unfold_noopTracerProvider [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noopTracerProvider.fields)
 
 class noopTracerProvider.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noopTracerProvider.underlying noopTracerProvider.t
-  underlying : go.UnderlyingDirectedEq noopTracerProvider noopTracerProvider.underlying
-  get_TracerProvider : ∀ (x : noopTracerProvider.t), go.IsGoStepPureDetTagged under (StructFieldGet noopTracerProvider.underlying go!"TracerProvider") #x (Val #(x.TracerProvider'))
-  set_TracerProvider : ∀ (x : noopTracerProvider.t) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.t), go.IsGoStepPureDetTagged under (StructFieldSet noopTracerProvider.underlying go!"TracerProvider") (PairV #x #y) (Val #(({ x with TracerProvider' := y } : noopTracerProvider.t)))
+  type_repr : go.TypeReprUnderlying noopTracerProvider.underlying noopTracerProvider
+  underlying : go.UnderlyingDirectedEq noopTracerProvider.ty noopTracerProvider.underlying
+  get_TracerProvider : ∀ (x : noopTracerProvider), go.IsGoStepPureDetTagged under (StructFieldGet noopTracerProvider.underlying go!"TracerProvider") #x (Val #(x.TracerProvider'))
+  set_TracerProvider : ∀ (x : noopTracerProvider) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider), go.IsGoStepPureDetTagged under (StructFieldSet noopTracerProvider.underlying go!"TracerProvider") (PairV #x #y) (Val #(({ x with TracerProvider' := y } : noopTracerProvider)))
 
 attribute [instance] noopTracerProvider.TypeAssumptions.type_repr
   noopTracerProvider.TypeAssumptions.underlying
   noopTracerProvider.TypeAssumptions.get_TracerProvider
   noopTracerProvider.TypeAssumptions.set_TracerProvider
 
-namespace noopTracer
-structure t [FfiSyntax] where
+structure noopTracer [FfiSyntax] where
   mk ::
-  Tracer' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.t
+  Tracer' : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end noopTracer
+instance noopTracer.zero_val [FfiSyntax] : ZeroVal noopTracer :=
+  ⟨noopTracer.mk zeroValDef⟩
 
 @[reducible] def noopTracer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Tracer" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer)]
+  [(go.field_decl.EmbeddedField go!"Tracer" _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.ty)]
 
 @[irreducible] def noopTracer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noopTracer.fieldsUnsealed
@@ -1148,100 +1088,88 @@ instance equals_unfold_noopTracer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noopTracer.fields)
 
 class noopTracer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noopTracer.underlying noopTracer.t
-  underlying : go.UnderlyingDirectedEq noopTracer noopTracer.underlying
-  get_Tracer : ∀ (x : noopTracer.t), go.IsGoStepPureDetTagged under (StructFieldGet noopTracer.underlying go!"Tracer") #x (Val #(x.Tracer'))
-  set_Tracer : ∀ (x : noopTracer.t) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer.t), go.IsGoStepPureDetTagged under (StructFieldSet noopTracer.underlying go!"Tracer") (PairV #x #y) (Val #(({ x with Tracer' := y } : noopTracer.t)))
+  type_repr : go.TypeReprUnderlying noopTracer.underlying noopTracer
+  underlying : go.UnderlyingDirectedEq noopTracer.ty noopTracer.underlying
+  get_Tracer : ∀ (x : noopTracer), go.IsGoStepPureDetTagged under (StructFieldGet noopTracer.underlying go!"Tracer") #x (Val #(x.Tracer'))
+  set_Tracer : ∀ (x : noopTracer) (y : _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.Tracer), go.IsGoStepPureDetTagged under (StructFieldSet noopTracer.underlying go!"Tracer") (PairV #x #y) (Val #(({ x with Tracer' := y } : noopTracer)))
 
 attribute [instance] noopTracer.TypeAssumptions.type_repr
   noopTracer.TypeAssumptions.underlying
   noopTracer.TypeAssumptions.get_Tracer
   noopTracer.TypeAssumptions.set_Tracer
 
-namespace TracerProvider
-abbrev t [FfiSyntax] : Type := interface.t
-end TracerProvider
+abbrev TracerProvider [FfiSyntax] : Type := interface.t
 
 @[reducible] def TracerProvider.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Tracer" (go.signature.Signature [go.string, (go.GoType.SliceType TracerOption)] true [Tracer])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Tracer" (go.signature.Signature [go.string, (go.GoType.SliceType TracerOption.ty)] true [Tracer.ty])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_opentelemetry_io.otel.trace.embedded.TracerProvider.ty)])])
 
 class TracerProvider.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TracerProvider TracerProvider.underlying
+  underlying : go.UnderlyingDirectedEq TracerProvider.ty TracerProvider.underlying
 
 attribute [instance] TracerProvider.TypeAssumptions.underlying
 
-namespace Span
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Span
+axiom Span : Type
+axiom Span.zero_val : ZeroVal Span
+attribute [instance] Span.zero_val
 
 class Span.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Span.underlying Span.t
-  underlying : go.UnderlyingDirectedEq Span Span.underlying
+  type_repr : go.TypeReprUnderlying Span.underlying Span
+  underlying : go.UnderlyingDirectedEq Span.ty Span.underlying
   isUnderlying : go.IsUnderlying Span.underlying Span.underlying
 
 attribute [instance] Span.TypeAssumptions.type_repr
   Span.TypeAssumptions.underlying
   Span.TypeAssumptions.isUnderlying
 
-namespace Link
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Link
+axiom Link : Type
+axiom Link.zero_val : ZeroVal Link
+attribute [instance] Link.zero_val
 
 class Link.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Link.underlying Link.t
-  underlying : go.UnderlyingDirectedEq Link Link.underlying
+  type_repr : go.TypeReprUnderlying Link.underlying Link
+  underlying : go.UnderlyingDirectedEq Link.ty Link.underlying
   isUnderlying : go.IsUnderlying Link.underlying Link.underlying
 
 attribute [instance] Link.TypeAssumptions.type_repr
   Link.TypeAssumptions.underlying
   Link.TypeAssumptions.isUnderlying
 
-namespace SpanKind
-abbrev t [FfiSyntax] : Type := w64
-end SpanKind
+abbrev SpanKind [FfiSyntax] : Type := w64
 
 @[reducible] def SpanKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class SpanKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SpanKind SpanKind.underlying
+  underlying : go.UnderlyingDirectedEq SpanKind.ty SpanKind.underlying
 
 attribute [instance] SpanKind.TypeAssumptions.underlying
 
-namespace errorConst
-abbrev t [FfiSyntax] : Type := GoString
-end errorConst
+abbrev errorConst [FfiSyntax] : Type := GoString
 
 @[reducible] def errorConst.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class errorConst.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq errorConst errorConst.underlying
+  underlying : go.UnderlyingDirectedEq errorConst.ty errorConst.underlying
 
 attribute [instance] errorConst.TypeAssumptions.underlying
 
-namespace SpanContextConfig
-structure t [FfiSyntax] where
+structure SpanContextConfig [FfiSyntax] where
   mk ::
-  TraceID' : TraceID.t
-  SpanID' : SpanID.t
-  TraceFlags' : TraceFlags.t
-  TraceState' : TraceState.t
+  TraceID' : TraceID
+  SpanID' : SpanID
+  TraceFlags' : TraceFlags
+  TraceState' : TraceState
   Remote' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end SpanContextConfig
+instance SpanContextConfig.zero_val [FfiSyntax] : ZeroVal SpanContextConfig :=
+  ⟨SpanContextConfig.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def SpanContextConfig.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"TraceID" TraceID),
-(go.field_decl.FieldDecl go!"SpanID" SpanID),
-(go.field_decl.FieldDecl go!"TraceFlags" TraceFlags),
-(go.field_decl.FieldDecl go!"TraceState" TraceState),
+  [(go.field_decl.FieldDecl go!"TraceID" TraceID.ty),
+(go.field_decl.FieldDecl go!"SpanID" SpanID.ty),
+(go.field_decl.FieldDecl go!"TraceFlags" TraceFlags.ty),
+(go.field_decl.FieldDecl go!"TraceState" TraceState.ty),
 (go.field_decl.FieldDecl go!"Remote" go.bool)]
 
 @[irreducible] def SpanContextConfig.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1255,18 +1183,18 @@ instance equals_unfold_SpanContextConfig [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType SpanContextConfig.fields)
 
 class SpanContextConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SpanContextConfig.underlying SpanContextConfig.t
-  underlying : go.UnderlyingDirectedEq SpanContextConfig SpanContextConfig.underlying
-  get_TraceID : ∀ (x : SpanContextConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceID") #x (Val #(x.TraceID'))
-  set_TraceID : ∀ (x : SpanContextConfig.t) (y : TraceID.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceID") (PairV #x #y) (Val #(({ x with TraceID' := y } : SpanContextConfig.t)))
-  get_SpanID : ∀ (x : SpanContextConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"SpanID") #x (Val #(x.SpanID'))
-  set_SpanID : ∀ (x : SpanContextConfig.t) (y : SpanID.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"SpanID") (PairV #x #y) (Val #(({ x with SpanID' := y } : SpanContextConfig.t)))
-  get_TraceFlags : ∀ (x : SpanContextConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceFlags") #x (Val #(x.TraceFlags'))
-  set_TraceFlags : ∀ (x : SpanContextConfig.t) (y : TraceFlags.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceFlags") (PairV #x #y) (Val #(({ x with TraceFlags' := y } : SpanContextConfig.t)))
-  get_TraceState : ∀ (x : SpanContextConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceState") #x (Val #(x.TraceState'))
-  set_TraceState : ∀ (x : SpanContextConfig.t) (y : TraceState.t), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceState") (PairV #x #y) (Val #(({ x with TraceState' := y } : SpanContextConfig.t)))
-  get_Remote : ∀ (x : SpanContextConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"Remote") #x (Val #(x.Remote'))
-  set_Remote : ∀ (x : SpanContextConfig.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"Remote") (PairV #x #y) (Val #(({ x with Remote' := y } : SpanContextConfig.t)))
+  type_repr : go.TypeReprUnderlying SpanContextConfig.underlying SpanContextConfig
+  underlying : go.UnderlyingDirectedEq SpanContextConfig.ty SpanContextConfig.underlying
+  get_TraceID : ∀ (x : SpanContextConfig), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceID") #x (Val #(x.TraceID'))
+  set_TraceID : ∀ (x : SpanContextConfig) (y : TraceID), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceID") (PairV #x #y) (Val #(({ x with TraceID' := y } : SpanContextConfig)))
+  get_SpanID : ∀ (x : SpanContextConfig), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"SpanID") #x (Val #(x.SpanID'))
+  set_SpanID : ∀ (x : SpanContextConfig) (y : SpanID), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"SpanID") (PairV #x #y) (Val #(({ x with SpanID' := y } : SpanContextConfig)))
+  get_TraceFlags : ∀ (x : SpanContextConfig), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceFlags") #x (Val #(x.TraceFlags'))
+  set_TraceFlags : ∀ (x : SpanContextConfig) (y : TraceFlags), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceFlags") (PairV #x #y) (Val #(({ x with TraceFlags' := y } : SpanContextConfig)))
+  get_TraceState : ∀ (x : SpanContextConfig), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"TraceState") #x (Val #(x.TraceState'))
+  set_TraceState : ∀ (x : SpanContextConfig) (y : TraceState), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"TraceState") (PairV #x #y) (Val #(({ x with TraceState' := y } : SpanContextConfig)))
+  get_Remote : ∀ (x : SpanContextConfig), go.IsGoStepPureDetTagged under (StructFieldGet SpanContextConfig.underlying go!"Remote") #x (Val #(x.Remote'))
+  set_Remote : ∀ (x : SpanContextConfig) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet SpanContextConfig.underlying go!"Remote") (PairV #x #y) (Val #(({ x with Remote' := y } : SpanContextConfig)))
 
 attribute [instance] SpanContextConfig.TypeAssumptions.type_repr
   SpanContextConfig.TypeAssumptions.underlying
@@ -1281,30 +1209,26 @@ attribute [instance] SpanContextConfig.TypeAssumptions.type_repr
   SpanContextConfig.TypeAssumptions.get_Remote
   SpanContextConfig.TypeAssumptions.set_Remote
 
-namespace Tracer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Tracer
+axiom Tracer : Type
+axiom Tracer.zero_val : ZeroVal Tracer
+attribute [instance] Tracer.zero_val
 
 class Tracer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Tracer.underlying Tracer.t
-  underlying : go.UnderlyingDirectedEq Tracer Tracer.underlying
+  type_repr : go.TypeReprUnderlying Tracer.underlying Tracer
+  underlying : go.UnderlyingDirectedEq Tracer.ty Tracer.underlying
   isUnderlying : go.IsUnderlying Tracer.underlying Tracer.underlying
 
 attribute [instance] Tracer.TypeAssumptions.type_repr
   Tracer.TypeAssumptions.underlying
   Tracer.TypeAssumptions.isUnderlying
 
-namespace member
-structure t [FfiSyntax] where
+structure member [FfiSyntax] where
   mk ::
   Key' : GoString
   Value' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end member
+instance member.zero_val [FfiSyntax] : ZeroVal member :=
+  ⟨member.mk zeroValDef zeroValDef⟩
 
 @[reducible] def member.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" go.string),
@@ -1321,12 +1245,12 @@ instance equals_unfold_member [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType member.fields)
 
 class member.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying member.underlying member.t
-  underlying : go.UnderlyingDirectedEq member member.underlying
-  get_Key : ∀ (x : member.t), go.IsGoStepPureDetTagged under (StructFieldGet member.underlying go!"Key") #x (Val #(x.Key'))
-  set_Key : ∀ (x : member.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet member.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : member.t)))
-  get_Value : ∀ (x : member.t), go.IsGoStepPureDetTagged under (StructFieldGet member.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : member.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet member.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : member.t)))
+  type_repr : go.TypeReprUnderlying member.underlying member
+  underlying : go.UnderlyingDirectedEq member.ty member.underlying
+  get_Key : ∀ (x : member), go.IsGoStepPureDetTagged under (StructFieldGet member.underlying go!"Key") #x (Val #(x.Key'))
+  set_Key : ∀ (x : member) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet member.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : member)))
+  get_Value : ∀ (x : member), go.IsGoStepPureDetTagged under (StructFieldGet member.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : member) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet member.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : member)))
 
 attribute [instance] member.TypeAssumptions.type_repr
   member.TypeAssumptions.underlying

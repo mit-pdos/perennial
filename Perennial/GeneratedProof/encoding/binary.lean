@@ -27,7 +27,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance littleEndian_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.littleEndian.t where
+    TypedPointsto (GF := GF) encoding.binary.littleEndian where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -35,7 +35,7 @@ instance littleEndian_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance littleEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.littleEndian.t encoding.binary.littleEndian.underlying := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.littleEndian encoding.binary.littleEndian.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -50,7 +50,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance bigEndian_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.bigEndian.t where
+    TypedPointsto (GF := GF) encoding.binary.bigEndian where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -58,7 +58,7 @@ instance bigEndian_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bigEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian.t encoding.binary.bigEndian.underlying := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian encoding.binary.bigEndian.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -73,65 +73,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance coder_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.coder.t where
+    TypedPointsto (GF := GF) encoding.binary.coder where
   typedPointstoDef l v dq := iprop(
-    "order" ∷ typedPointsto (structFieldRef encoding.binary.coder.t go!"order" l) v.order' dq ∗
-    "buf" ∷ typedPointsto (structFieldRef encoding.binary.coder.t go!"buf" l) v.buf' dq ∗
-    "offset" ∷ typedPointsto (structFieldRef encoding.binary.coder.t go!"offset" l) v.offset' dq ∗
+    "order" ∷ typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq ∗
+    "buf" ∷ typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' dq ∗
+    "offset" ∷ typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance coder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.coder.t encoding.binary.coder.underlying := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.coder encoding.binary.coder.underlying := by
   solve_into_val_typed_struct
 
-instance coder_access_load_order (l : Loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+instance coder_access_load_order (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"order" l) v.order' dq)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"order" l) v.order' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_order (l : Loc) (v : encoding.binary.coder.t) (order' : encoding.binary.ByteOrder.t) :
+instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"order" l) v.order' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"order" l) order' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with order' := order' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' (DFrac.own 1))
+      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) order' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with order' := order' } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"buf" l) v.buf' dq)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder.t) (buf' : slice.t) :
+instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"buf" l) buf' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder.t) (dq : DFrac) :
+instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"offset" l) v.offset' dq)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"offset" l) v.offset' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' dq)
+      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder.t) (offset' : w64) :
+instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"offset" l) v.offset' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder.t go!"offset" l) offset' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with offset' := offset' } : encoding.binary.coder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' (DFrac.own 1))
+      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) offset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with offset' := offset' } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -147,31 +147,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
 instance nativeEndian_typed_pointsto :
-    TypedPointsto (GF := GF) encoding.binary.nativeEndian.t where
+    TypedPointsto (GF := GF) encoding.binary.nativeEndian where
   typedPointstoDef l v dq := iprop(
-    "littleEndian" ∷ typedPointsto (structFieldRef encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq ∗
+    "littleEndian" ∷ typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nativeEndian_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian.t encoding.binary.nativeEndian.underlying := by
+    IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian encoding.binary.nativeEndian.underlying := by
   solve_into_val_typed_struct
 
-instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.nativeEndian.t) (dq : DFrac) :
+instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq)
-      (typedPointsto (structFieldRef encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' dq)
+      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq)
+      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian.t) (littleEndian' : encoding.binary.littleEndian.t) :
+instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef encoding.binary.nativeEndian.t go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.nativeEndian.t go!"littleEndian" l) littleEndian' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with littleEndian' := littleEndian' } : encoding.binary.nativeEndian.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
+      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) littleEndian' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with littleEndian' := littleEndian' } : encoding.binary.nativeEndian) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

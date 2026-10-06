@@ -17,10 +17,10 @@ end pkg_id
 
 namespace cmp
 
-def Ordered [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Ordered.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"cmp.Ordered" [])
 
-attribute [irreducible] Ordered
+attribute [irreducible] Ordered.ty
 
 noncomputable def Less [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"cmp.Less"
@@ -161,15 +161,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-namespace Ordered
-abbrev t [FfiSyntax] : Type := interface.t
-end Ordered
+abbrev Ordered [FfiSyntax] : Type := interface.t
 
 @[reducible] def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
 
 class Ordered.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Ordered Ordered.underlying
+  underlying : go.UnderlyingDirectedEq Ordered.ty Ordered.underlying
 
 attribute [instance] Ordered.TypeAssumptions.underlying
 

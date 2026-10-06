@@ -115,10 +115,10 @@ Lean deviation: the invariant additionally owns the time receipts of the
 Rocq: invariant `suffix ∗ HR` only. -/
 def isGeneratorDef (g : Loc) (R : w64 → IProp GF) : IProp GF :=
   iprop(∃ («prefix» : Int),
-    "#prefix" ∷ g.[Generator.t, go!"prefix"] ↦□ (W64 («prefix» * 2^48)) ∗
+    "#prefix" ∷ g.[Generator, go!"prefix"] ↦□ (W64 («prefix» * 2^48)) ∗
     "#Hinv" ∷
       inv nroot iprop(∃ (init num_used : Int),
-          "suffix" ∷ g.[Generator.t, go!"suffix"] ↦ W64 (init + num_used) ∗
+          "suffix" ∷ g.[Generator, go!"suffix"] ↦ W64 (init + num_used) ∗
           "%Hnum_used" ∷ ⌜0 ≤ num_used⌝ ∗
           "Hused" ∷ ⧗ num_used.toNat ∗
           "HR" ∷ ([∗list] i ∈ seqZ (init + num_used + 1) (2^48 - num_used),
@@ -220,7 +220,7 @@ time-receipt bound; the postcondition gives `R i` under the premise
 `receiptBound GF ≤ 2^48` (Rocq: `R i`), see the module docstring. -/
 theorem Generator.wp_Next (g : Loc) (R : w64 → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isGenerator g R }}
-      (App (Val (g @!! go.GoType.PointerType Generator @!! go!"Next")) (Val #()))
+      (App (Val (g @!! go.GoType.PointerType Generator.ty @!! go!"Next")) (Val #()))
     {{ (i : w64), RET #i; ⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i }} := by
   wp_start as H
   rw [isGenerator_unseal]; unfold isGeneratorDef
@@ -272,8 +272,8 @@ theorem Generator.wp_Next (g : Loc) (R : w64 → IProp GF) :
 see `ids_bigSepL_sub`). -/
 theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : Loc)
     (memberID : w16) (sv : w64) :
-    ⊢ g.[Generator.t, go!"prefix"] ↦ W64 (uint.Z memberID * 2 ^ 48) -∗
-      g.[Generator.t, go!"suffix"] ↦ sv -∗
+    ⊢ g.[Generator, go!"prefix"] ↦ W64 (uint.Z memberID * 2 ^ 48) -∗
+      g.[Generator, go!"suffix"] ↦ sv -∗
       ([∗list] i ∈ L, R (W64 i)) ={⊤}=∗
       isGenerator g R := by
   iintro prefix' suffix HR
@@ -283,7 +283,7 @@ theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0
   obtain ⟨N, hN⟩ : ∃ N : Int, N = 2 ^ 48 := ⟨_, rfl⟩
   rw [← hN]
   imod inv_alloc nroot ⊤ iprop(∃ (init num_used : Int),
-          "suffix" ∷ g.[Generator.t, go!"suffix"] ↦ W64 (init + num_used) ∗
+          "suffix" ∷ g.[Generator, go!"suffix"] ↦ W64 (init + num_used) ∗
           "%Hnum_used" ∷ ⌜0 ≤ num_used⌝ ∗
           "Hused" ∷ ⧗ num_used.toNat ∗
           "HR" ∷ ([∗list] i ∈ seqZ (init + num_used + 1) (N - num_used),
@@ -306,7 +306,7 @@ theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0
 
 /-- `wp_NewGenerator` with the list `seqZ 0 (2^64)` abstracted as `L`. -/
 theorem wp_NewGenerator' (R : w64 → IProp GF)
-    (memberID : w16) (now : time.Time.t) (L : List Int) (hL : L = seqZ 0 (2^64)) :
+    (memberID : w16) (now : time.Time) (L : List Int) (hL : L = seqZ 0 (2^64)) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ L, R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
@@ -332,7 +332,7 @@ theorem wp_NewGenerator' (R : w64 → IProp GF)
 the range of IDs with future timestamps, since the old ones might've been used
 before a crash+restart. -/
 theorem wp_NewGenerator (R : w64 → IProp GF)
-    (memberID : w16) (now : time.Time.t) :
+    (memberID : w16) (now : time.Time) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))

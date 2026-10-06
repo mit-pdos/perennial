@@ -43,7 +43,7 @@ section generic_proofs
 variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.GoType}
   [IntoValTyped (GF := GF) T' T]
 
-theorem wp_BoxGet (b : Box.t T') :
+theorem wp_BoxGet (b : Box T') :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val #(functions BoxGet [T])) (Val #b))
     {{ RET #(b.Value'); True }} := by
@@ -51,17 +51,17 @@ theorem wp_BoxGet (b : Box.t T') :
   wp_auto
   wp_end
 
-theorem Box.wp_Get' (b : Box.t T') :
+theorem Box.wp_Get' (b : Box T') :
     {{ isPkgInit (PROP := IProp GF) pkg }}
-      (App (Val (b @!! Box T @!! go!"Get")) (Val #()))
+      (App (Val (b @!! Box.ty T @!! go!"Get")) (Val #()))
     {{ RET #(b.Value'); True }} := by
   wp_start as _
   wp_auto
   wp_end
 
-theorem Box.wp_Get (l : Loc) (b : Box.t T') :
+theorem Box.wp_Get (l : Loc) (b : Box T') :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ l ↦ b }}
-      (App (Val (l @!! go.GoType.PointerType (Box T) @!! go!"Get")) (Val #()))
+      (App (Val (l @!! go.GoType.PointerType (Box.ty T) @!! go!"Get")) (Val #()))
     {{ RET #(b.Value'); True }} := by
   wp_start
   wp_auto
@@ -71,14 +71,14 @@ theorem Box.wp_Get (l : Loc) (b : Box.t T') :
 theorem wp_makeGenericBox (value : T') :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val #(functions makeGenericBox [T])) (Val #value))
-    {{ RET #(Box.t.mk value); True }} := by
+    {{ RET #(Box.mk value); True }} := by
   wp_start
   wp_auto
   wp_end
 
 end generic_proofs
 
-theorem wp_BoxGet2 (b : Box.t w64) :
+theorem wp_BoxGet2 (b : Box w64) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! BoxGet2)) (Val #b))
     {{ RET #(b.Value'); True }} := by
@@ -89,7 +89,7 @@ theorem wp_BoxGet2 (b : Box.t w64) :
 theorem wp_makeBox :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! makeBox)) (Val #()))
-    {{ RET #(Box.t.mk (W64 42)); True }} := by
+    {{ RET #(Box.mk (W64 42)); True }} := by
   wp_start
   wp_end
 

@@ -17,10 +17,10 @@ end pkg_id
 
 namespace strconv
 
-def NumError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def NumError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strconv.NumError" [])
 
-attribute [irreducible] NumError
+attribute [irreducible] NumError.ty
 
 axiom IntSize [FfiSyntax] [GoGlobalContext] : val
 
@@ -243,16 +243,14 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val isPrint16.init) (Val #()))))))))
 
-namespace NumError
-structure t [FfiSyntax] where
+structure NumError [FfiSyntax] where
   mk ::
   Func' : GoString
   Num' : GoString
   Err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end NumError
+instance NumError.zero_val [FfiSyntax] : ZeroVal NumError :=
+  ⟨NumError.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def NumError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Func" go.string),
@@ -270,14 +268,14 @@ instance equals_unfold_NumError [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType NumError.fields)
 
 class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying NumError.underlying NumError.t
-  underlying : go.UnderlyingDirectedEq NumError NumError.underlying
-  get_Func : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Func") #x (Val #(x.Func'))
-  set_Func : ∀ (x : NumError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Func") (PairV #x #y) (Val #(({ x with Func' := y } : NumError.t)))
-  get_Num : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Num") #x (Val #(x.Num'))
-  set_Num : ∀ (x : NumError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Num") (PairV #x #y) (Val #(({ x with Num' := y } : NumError.t)))
-  get_Err : ∀ (x : NumError.t), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : NumError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError.t)))
+  type_repr : go.TypeReprUnderlying NumError.underlying NumError
+  underlying : go.UnderlyingDirectedEq NumError.ty NumError.underlying
+  get_Func : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Func") #x (Val #(x.Func'))
+  set_Func : ∀ (x : NumError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Func") (PairV #x #y) (Val #(({ x with Func' := y } : NumError)))
+  get_Num : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Num") #x (Val #(x.Num'))
+  set_Num : ∀ (x : NumError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Num") (PairV #x #y) (Val #(({ x with Num' := y } : NumError)))
+  get_Err : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Err") #x (Val #(x.Err'))
+  set_Err : ∀ (x : NumError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError)))
 
 attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.underlying

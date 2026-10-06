@@ -102,7 +102,7 @@ later (see the file header). -/
 structure t [FfiSyntax] (PROP : Type) where
   mk ::
   Values : GMap interface.t interface.t
-  Deadline : Option time.Time.t
+  Deadline : Option time.Time
   Done_gn : ContextNames
   PDone : PROP
 end Context_desc
@@ -152,8 +152,8 @@ code only accesses with `c.mu` held (`children` and `cause`; `done` and `err`
 are `atomic.Value`s, also read without the lock). -/
 def cancelCtxLockInv (c : Loc) : IProp GF :=
   iprop(∃ (children : map.t) (cause : error.t),
-    "children" ∷ structFieldRef context.cancelCtx.t go!"children" c ↦ children ∗
-    "cause" ∷ structFieldRef context.cancelCtx.t go!"cause" c ↦ cause)
+    "children" ∷ structFieldRef context.cancelCtx go!"children" c ↦ children ∗
+    "cause" ∷ structFieldRef context.cancelCtx go!"cause" c ↦ cause)
 
 /-- `c` is a (shared) `*cancelCtx`. `atomic.Value` is implemented with
 `unsafe.Pointer` conversions that the model cannot verify, so the spec of
@@ -161,7 +161,7 @@ def cancelCtxLockInv (c : Loc) : IProp GF :=
 predicate. -/
 def isCancelCtx (c : Loc) : IProp GF :=
   iprop(
-  "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx.t go!"mu" c) (cancelCtxLockInv c) ∗
+  "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c) (cancelCtxLockInv c) ∗
   "#Hdone_Load" ∷
     □ (∀ Φ : val → IProp GF, True -∗
       ▷ (∀ ch : Option chan.t,
@@ -169,8 +169,8 @@ def isCancelCtx (c : Loc) : IProp GF :=
               | none => interface.nil
               | some ch => interface.mkOk
                   (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) #ch)) -∗
-      WP (App (Val (structFieldRef context.cancelCtx.t go!"done" c @!!
-        go.GoType.PointerType sync.atomic.Value @!! go!"Load")) (Val #())) {{ Φ }}))
+      WP (App (Val (structFieldRef context.cancelCtx go!"done" c @!!
+        go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #())) {{ Φ }}))
 
 instance isCancelCtx_pers (c : Loc) : Persistent (isCancelCtx (GF := GF) c) := by
   unfold isCancelCtx; infer_instance
@@ -180,7 +180,7 @@ valid one. -/
 def isCancelCtxAny (v : interface.t) : IProp GF :=
   match v with
   | interface.ok ii =>
-    if ii.ty = go.GoType.PointerType context.cancelCtx then
+    if ii.ty = go.GoType.PointerType context.cancelCtx.ty then
       iprop(∃ c : Loc, ⌜ii.v = #c⌝ ∗ isCancelCtx c)
     else iprop(True)
   | interface.nil => iprop(True)
@@ -227,7 +227,7 @@ def isContextDef (c : interface.t_ok) (s : Context_desc.t (IProp GF)) : IProp GF
   iprop(
   "#HDeadline" ∷
     □ (∀ Φ : val → IProp GF, True -∗
-      ▷ (True -∗ Φ (PairV #(s.Deadline.getD (zero_val time.Time.t))
+      ▷ (True -∗ Φ (PairV #(s.Deadline.getD (zero_val time.Time))
                           #(match s.Deadline with | none => false | some _ => true))) -∗
       WP (App (Val #(methods c.ty go!"Deadline" c.v)) (Val #())) {{ Φ }}) ∗
   "#HDone" ∷
@@ -448,7 +448,7 @@ theorem wp_Cause (ctx : interface.t_ok) (ctx_desc : Context_desc.t (IProp GF)) :
       wp_auto
       wp_end
     | ok ii =>
-      by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx
+      by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx.ty
       · simp only [isCancelCtxAny, hty, ↓reduceIte, decide_true]
         icases Hv with ⟨%cc, %hv, #Hcc⟩
         rw [hv]
@@ -519,7 +519,7 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
     simp only [Bool.false_eq_true, ↓reduceIte]
     ipureintro; trivial
   | ok ii =>
-    by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx
+    by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx.ty
     · simp only [isCancelCtxAny, hty, ↓reduceIte, _root_.decide_true]
       icases Hv with ⟨%c, %hv, #Hc⟩
       rw [hv]
@@ -562,8 +562,8 @@ theorem wp_propagateCancel (c : Loc) (parent : interface.t_ok)
     (parent_desc : Context_desc.t (IProp GF)) (child : interface.t_ok) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "Hparent" ∷ isContext parent parent_desc ∗
-        "Hc" ∷ c ↦ (zero_val context.cancelCtx.t) }}
-      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx @!! go!"propagateCancel"))
+        "Hc" ∷ c ↦ (zero_val context.cancelCtx) }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
         (Val #(interface.ok parent))) (Val #(interface.ok child)))
     {{ RET #(); True }} := by
   -- Still unprovable as stated (with `#HValue` the `parentCancelCtx` call is now covered):
@@ -620,11 +620,11 @@ instead of `some d`: Rocq's `Deadline := Some d` is false when the parent's dead
 is before `d`, as `WithDeadlineCause` then returns `WithCancel(parent)`, whose `Deadline()` is
 the parent's `cur`. -/
 theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
-    (d : time.Time.t) (cause : error.t) :
+    (d : time.Time) (cause : error.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (App (Val (@! context.WithDeadlineCause)) (Val #(interface.ok parent))) (Val #d))
         (Val #cause))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time.t),
+    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         ⌜d' = d ∨ parent_desc.Deadline = some d'⌝ ∗
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
@@ -639,10 +639,10 @@ theorem wp_WithDeadlineCause (parent : interface.t_ok) (parent_desc : Context_de
 
 /-- Lean deviations from Rocq: as for `wp_WithDeadlineCause`. -/
 theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
-    (d : time.Time.t) :
+    (d : time.Time) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (Val (@! context.WithDeadline)) (Val #(interface.ok parent))) (Val #d))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time.t),
+    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d' : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         ⌜d' = d ∨ parent_desc.Deadline = some d'⌝ ∗
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
@@ -658,10 +658,10 @@ theorem wp_WithDeadline (parent : interface.t_ok) (parent_desc : Context_desc.t 
 
 /-- Lean deviation from Rocq: no fixed Done channel `done'` (see `wp_WithCancel`). -/
 theorem wp_WithTimeout (parent : interface.t_ok) (parent_desc : Context_desc.t (IProp GF))
-    (timeout : time.Duration.t) :
+    (timeout : time.Duration) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
       (App (App (Val (@! context.WithTimeout)) (Val #(interface.ok parent))) (Val #(timeout)))
-    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d : time.Time.t),
+    {{ (ctx' : interface.t_ok) (γ' : ContextNames) (cancel : func.t) (d : time.Time),
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗

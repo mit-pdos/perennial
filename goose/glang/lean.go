@@ -288,6 +288,28 @@ func TypeImpl(name string) string {
 	return name + "ⁱᵐᵖˡ"
 }
 
+// TypeIdent is a (possibly qualified) reference to the type descriptor (a
+// go.GoType) of a Go named type. Rocq names the descriptor after the type; in Lean
+// the Go name is the type of the values (a structure for a struct type) and the
+// descriptor is X.ty.
+type TypeIdent string
+
+func (e TypeIdent) Coq(needs_paren bool) string { return GallinaIdent(e).Coq(needs_paren) }
+
+func (e TypeIdent) Lean(m LeanMode) string {
+	s := LeanTypeDesc(string(e))
+	if m == LeanExpr {
+		return eVal(s)
+	}
+	return s
+}
+
+// LeanTypeDesc is the Lean name of the type descriptor of the Go named type
+// `name` (see TypeIdent).
+func LeanTypeDesc(name string) string {
+	return LeanIdent(name) + ".ty"
+}
+
 // LeanEncodedName renders a generated name: the Lean form of a Rocq-style
 // encoded name (see leanEncoded), or the quoted name.
 func LeanEncodedName(s string) string {
@@ -1177,7 +1199,12 @@ func (d TypeDecl) LeanDecl() string {
 		// that instances for the aliased type apply
 		attr = "@[reducible] "
 	}
-	return fmt.Sprintf("%sdef %s %s%s : go.GoType :=\n  %s", attr, LeanIdent(d.Name), leanDeclParams, typeParams,
+	name := LeanIdent(d.Name)
+	if attr == "" || d.Alias {
+		// the descriptor of a named type (or alias), not an underlying type
+		name = LeanTypeDesc(d.Name)
+	}
+	return fmt.Sprintf("%sdef %s %s%s : go.GoType :=\n  %s", attr, name, leanDeclParams, typeParams,
 		indent(2, d.Body.Lean(LeanTerm)))
 }
 

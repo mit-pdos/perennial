@@ -19,22 +19,22 @@ end pkg_id
 
 namespace github_com.goose_lang.primitive.disk
 
-def Disk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Disk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.Disk" [])
 
-attribute [irreducible] Disk
+attribute [irreducible] Disk.ty
 
-def FileDisk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def FileDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.FileDisk" [])
 
-attribute [irreducible] FileDisk
+attribute [irreducible] FileDisk.ty
 
-def MemDisk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MemDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.MemDisk" [])
 
-attribute [irreducible] MemDisk
+attribute [irreducible] MemDisk.ty
 
-@[reducible] def Block [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def Block.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 axiom MemDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
@@ -81,27 +81,23 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val «_».init) (Val #()))))))))
 
-namespace Disk
-abbrev t [FfiSyntax] : Type := interface.t
-end Disk
+abbrev Disk [FfiSyntax] : Type := interface.t
 
 @[reducible] def Disk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block.ty])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block.ty] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block.ty] false []))])
 
 class Disk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Disk Disk.underlying
+  underlying : go.UnderlyingDirectedEq Disk.ty Disk.underlying
 
 attribute [instance] Disk.TypeAssumptions.underlying
 
-namespace FileDisk
-structure t [FfiSyntax] where
+structure FileDisk [FfiSyntax] where
   mk ::
   fd' : w64
   numBlocks' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end FileDisk
+instance FileDisk.zero_val [FfiSyntax] : ZeroVal FileDisk :=
+  ⟨FileDisk.mk zeroValDef zeroValDef⟩
 
 @[reducible] def FileDisk.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fd" go.int),
@@ -118,12 +114,12 @@ instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType FileDisk.fields)
 
 class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying FileDisk.underlying FileDisk.t
-  underlying : go.UnderlyingDirectedEq FileDisk FileDisk.underlying
-  get_fd : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"fd") #x (Val #(x.fd'))
-  set_fd : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk.t)))
-  get_numBlocks : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"numBlocks") #x (Val #(x.numBlocks'))
-  set_numBlocks : ∀ (x : FileDisk.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk.t)))
+  type_repr : go.TypeReprUnderlying FileDisk.underlying FileDisk
+  underlying : go.UnderlyingDirectedEq FileDisk.ty FileDisk.underlying
+  get_fd : ∀ (x : FileDisk), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"fd") #x (Val #(x.fd'))
+  set_fd : ∀ (x : FileDisk) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk)))
+  get_numBlocks : ∀ (x : FileDisk), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"numBlocks") #x (Val #(x.numBlocks'))
+  set_numBlocks : ∀ (x : FileDisk) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk)))
 
 attribute [instance] FileDisk.TypeAssumptions.type_repr
   FileDisk.TypeAssumptions.underlying
@@ -132,15 +128,13 @@ attribute [instance] FileDisk.TypeAssumptions.type_repr
   FileDisk.TypeAssumptions.get_numBlocks
   FileDisk.TypeAssumptions.set_numBlocks
 
-namespace MemDisk
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end MemDisk
+axiom MemDisk : Type
+axiom MemDisk.zero_val : ZeroVal MemDisk
+attribute [instance] MemDisk.zero_val
 
 class MemDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MemDisk.underlying MemDisk.t
-  underlying : go.UnderlyingDirectedEq MemDisk MemDisk.underlying
+  type_repr : go.TypeReprUnderlying MemDisk.underlying MemDisk
+  underlying : go.UnderlyingDirectedEq MemDisk.ty MemDisk.underlying
   isUnderlying : go.IsUnderlying MemDisk.underlying MemDisk.underlying
 
 attribute [instance] MemDisk.TypeAssumptions.type_repr

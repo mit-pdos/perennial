@@ -17,70 +17,70 @@ end pkg_id
 
 namespace github_com.prometheus.client_model.go
 
-def MetricType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MetricType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.MetricType" [])
 
-attribute [irreducible] MetricType
+attribute [irreducible] MetricType.ty
 
-def LabelPair [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def LabelPair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.LabelPair" [])
 
-attribute [irreducible] LabelPair
+attribute [irreducible] LabelPair.ty
 
-def Gauge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Gauge.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Gauge" [])
 
-attribute [irreducible] Gauge
+attribute [irreducible] Gauge.ty
 
-def Counter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Counter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Counter" [])
 
-attribute [irreducible] Counter
+attribute [irreducible] Counter.ty
 
-def Quantile [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Quantile.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Quantile" [])
 
-attribute [irreducible] Quantile
+attribute [irreducible] Quantile.ty
 
-def Summary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Summary.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Summary" [])
 
-attribute [irreducible] Summary
+attribute [irreducible] Summary.ty
 
-def Untyped [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Untyped.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Untyped" [])
 
-attribute [irreducible] Untyped
+attribute [irreducible] Untyped.ty
 
-def Histogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Histogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Histogram" [])
 
-attribute [irreducible] Histogram
+attribute [irreducible] Histogram.ty
 
-def Bucket [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Bucket.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Bucket" [])
 
-attribute [irreducible] Bucket
+attribute [irreducible] Bucket.ty
 
-def BucketSpan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def BucketSpan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.BucketSpan" [])
 
-attribute [irreducible] BucketSpan
+attribute [irreducible] BucketSpan.ty
 
-def Exemplar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Exemplar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Exemplar" [])
 
-attribute [irreducible] Exemplar
+attribute [irreducible] Exemplar.ty
 
-def Metric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Metric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.Metric" [])
 
-attribute [irreducible] Metric
+attribute [irreducible] Metric.ty
 
-def MetricFamily [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MetricFamily.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_model/go.MetricFamily" [])
 
-attribute [irreducible] MetricFamily
+attribute [irreducible] MetricFamily.ty
 
 axiom LabelPair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -203,192 +203,166 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val MetricType_name.init) (Val #()))))))))
 
-namespace MetricType
-abbrev t [FfiSyntax] : Type := w32
-end MetricType
+abbrev MetricType [FfiSyntax] : Type := w32
 
 @[reducible] def MetricType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
 class MetricType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq MetricType MetricType.underlying
+  underlying : go.UnderlyingDirectedEq MetricType.ty MetricType.underlying
 
 attribute [instance] MetricType.TypeAssumptions.underlying
 
-namespace LabelPair
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end LabelPair
+axiom LabelPair : Type
+axiom LabelPair.zero_val : ZeroVal LabelPair
+attribute [instance] LabelPair.zero_val
 
 class LabelPair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying LabelPair.underlying LabelPair.t
-  underlying : go.UnderlyingDirectedEq LabelPair LabelPair.underlying
+  type_repr : go.TypeReprUnderlying LabelPair.underlying LabelPair
+  underlying : go.UnderlyingDirectedEq LabelPair.ty LabelPair.underlying
   isUnderlying : go.IsUnderlying LabelPair.underlying LabelPair.underlying
 
 attribute [instance] LabelPair.TypeAssumptions.type_repr
   LabelPair.TypeAssumptions.underlying
   LabelPair.TypeAssumptions.isUnderlying
 
-namespace Gauge
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Gauge
+axiom Gauge : Type
+axiom Gauge.zero_val : ZeroVal Gauge
+attribute [instance] Gauge.zero_val
 
 class Gauge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Gauge.underlying Gauge.t
-  underlying : go.UnderlyingDirectedEq Gauge Gauge.underlying
+  type_repr : go.TypeReprUnderlying Gauge.underlying Gauge
+  underlying : go.UnderlyingDirectedEq Gauge.ty Gauge.underlying
   isUnderlying : go.IsUnderlying Gauge.underlying Gauge.underlying
 
 attribute [instance] Gauge.TypeAssumptions.type_repr
   Gauge.TypeAssumptions.underlying
   Gauge.TypeAssumptions.isUnderlying
 
-namespace Counter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Counter
+axiom Counter : Type
+axiom Counter.zero_val : ZeroVal Counter
+attribute [instance] Counter.zero_val
 
 class Counter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Counter.underlying Counter.t
-  underlying : go.UnderlyingDirectedEq Counter Counter.underlying
+  type_repr : go.TypeReprUnderlying Counter.underlying Counter
+  underlying : go.UnderlyingDirectedEq Counter.ty Counter.underlying
   isUnderlying : go.IsUnderlying Counter.underlying Counter.underlying
 
 attribute [instance] Counter.TypeAssumptions.type_repr
   Counter.TypeAssumptions.underlying
   Counter.TypeAssumptions.isUnderlying
 
-namespace Quantile
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Quantile
+axiom Quantile : Type
+axiom Quantile.zero_val : ZeroVal Quantile
+attribute [instance] Quantile.zero_val
 
 class Quantile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Quantile.underlying Quantile.t
-  underlying : go.UnderlyingDirectedEq Quantile Quantile.underlying
+  type_repr : go.TypeReprUnderlying Quantile.underlying Quantile
+  underlying : go.UnderlyingDirectedEq Quantile.ty Quantile.underlying
   isUnderlying : go.IsUnderlying Quantile.underlying Quantile.underlying
 
 attribute [instance] Quantile.TypeAssumptions.type_repr
   Quantile.TypeAssumptions.underlying
   Quantile.TypeAssumptions.isUnderlying
 
-namespace Summary
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Summary
+axiom Summary : Type
+axiom Summary.zero_val : ZeroVal Summary
+attribute [instance] Summary.zero_val
 
 class Summary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Summary.underlying Summary.t
-  underlying : go.UnderlyingDirectedEq Summary Summary.underlying
+  type_repr : go.TypeReprUnderlying Summary.underlying Summary
+  underlying : go.UnderlyingDirectedEq Summary.ty Summary.underlying
   isUnderlying : go.IsUnderlying Summary.underlying Summary.underlying
 
 attribute [instance] Summary.TypeAssumptions.type_repr
   Summary.TypeAssumptions.underlying
   Summary.TypeAssumptions.isUnderlying
 
-namespace Untyped
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Untyped
+axiom Untyped : Type
+axiom Untyped.zero_val : ZeroVal Untyped
+attribute [instance] Untyped.zero_val
 
 class Untyped.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Untyped.underlying Untyped.t
-  underlying : go.UnderlyingDirectedEq Untyped Untyped.underlying
+  type_repr : go.TypeReprUnderlying Untyped.underlying Untyped
+  underlying : go.UnderlyingDirectedEq Untyped.ty Untyped.underlying
   isUnderlying : go.IsUnderlying Untyped.underlying Untyped.underlying
 
 attribute [instance] Untyped.TypeAssumptions.type_repr
   Untyped.TypeAssumptions.underlying
   Untyped.TypeAssumptions.isUnderlying
 
-namespace Histogram
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Histogram
+axiom Histogram : Type
+axiom Histogram.zero_val : ZeroVal Histogram
+attribute [instance] Histogram.zero_val
 
 class Histogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Histogram.underlying Histogram.t
-  underlying : go.UnderlyingDirectedEq Histogram Histogram.underlying
+  type_repr : go.TypeReprUnderlying Histogram.underlying Histogram
+  underlying : go.UnderlyingDirectedEq Histogram.ty Histogram.underlying
   isUnderlying : go.IsUnderlying Histogram.underlying Histogram.underlying
 
 attribute [instance] Histogram.TypeAssumptions.type_repr
   Histogram.TypeAssumptions.underlying
   Histogram.TypeAssumptions.isUnderlying
 
-namespace Bucket
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Bucket
+axiom Bucket : Type
+axiom Bucket.zero_val : ZeroVal Bucket
+attribute [instance] Bucket.zero_val
 
 class Bucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Bucket.underlying Bucket.t
-  underlying : go.UnderlyingDirectedEq Bucket Bucket.underlying
+  type_repr : go.TypeReprUnderlying Bucket.underlying Bucket
+  underlying : go.UnderlyingDirectedEq Bucket.ty Bucket.underlying
   isUnderlying : go.IsUnderlying Bucket.underlying Bucket.underlying
 
 attribute [instance] Bucket.TypeAssumptions.type_repr
   Bucket.TypeAssumptions.underlying
   Bucket.TypeAssumptions.isUnderlying
 
-namespace BucketSpan
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end BucketSpan
+axiom BucketSpan : Type
+axiom BucketSpan.zero_val : ZeroVal BucketSpan
+attribute [instance] BucketSpan.zero_val
 
 class BucketSpan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying BucketSpan.underlying BucketSpan.t
-  underlying : go.UnderlyingDirectedEq BucketSpan BucketSpan.underlying
+  type_repr : go.TypeReprUnderlying BucketSpan.underlying BucketSpan
+  underlying : go.UnderlyingDirectedEq BucketSpan.ty BucketSpan.underlying
   isUnderlying : go.IsUnderlying BucketSpan.underlying BucketSpan.underlying
 
 attribute [instance] BucketSpan.TypeAssumptions.type_repr
   BucketSpan.TypeAssumptions.underlying
   BucketSpan.TypeAssumptions.isUnderlying
 
-namespace Exemplar
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Exemplar
+axiom Exemplar : Type
+axiom Exemplar.zero_val : ZeroVal Exemplar
+attribute [instance] Exemplar.zero_val
 
 class Exemplar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Exemplar.underlying Exemplar.t
-  underlying : go.UnderlyingDirectedEq Exemplar Exemplar.underlying
+  type_repr : go.TypeReprUnderlying Exemplar.underlying Exemplar
+  underlying : go.UnderlyingDirectedEq Exemplar.ty Exemplar.underlying
   isUnderlying : go.IsUnderlying Exemplar.underlying Exemplar.underlying
 
 attribute [instance] Exemplar.TypeAssumptions.type_repr
   Exemplar.TypeAssumptions.underlying
   Exemplar.TypeAssumptions.isUnderlying
 
-namespace Metric
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Metric
+axiom Metric : Type
+axiom Metric.zero_val : ZeroVal Metric
+attribute [instance] Metric.zero_val
 
 class Metric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Metric.underlying Metric.t
-  underlying : go.UnderlyingDirectedEq Metric Metric.underlying
+  type_repr : go.TypeReprUnderlying Metric.underlying Metric
+  underlying : go.UnderlyingDirectedEq Metric.ty Metric.underlying
   isUnderlying : go.IsUnderlying Metric.underlying Metric.underlying
 
 attribute [instance] Metric.TypeAssumptions.type_repr
   Metric.TypeAssumptions.underlying
   Metric.TypeAssumptions.isUnderlying
 
-namespace MetricFamily
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end MetricFamily
+axiom MetricFamily : Type
+axiom MetricFamily.zero_val : ZeroVal MetricFamily
+attribute [instance] MetricFamily.zero_val
 
 class MetricFamily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MetricFamily.underlying MetricFamily.t
-  underlying : go.UnderlyingDirectedEq MetricFamily MetricFamily.underlying
+  type_repr : go.TypeReprUnderlying MetricFamily.underlying MetricFamily
+  underlying : go.UnderlyingDirectedEq MetricFamily.ty MetricFamily.underlying
   isUnderlying : go.IsUnderlying MetricFamily.underlying MetricFamily.underlying
 
 attribute [instance] MetricFamily.TypeAssumptions.type_repr

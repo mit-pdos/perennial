@@ -1,5 +1,5 @@
 {{ define "LeanGallinaType" -}}
-{{- if .TypeParams }}({{.PkgName}}.{{.Name}}.t {{- range $param := .TypeParams }} {{$param}}'{{ end -}}){{ else }}{{.PkgName}}.{{.Name}}.t{{ end -}}
+{{- if .TypeParams }}({{.PkgName}}.{{.Name}} {{- range $param := .TypeParams }} {{$param}}'{{ end -}}){{ else }}{{.PkgName}}.{{.Name}}{{ end -}}
 {{- end -}}
 
 {{ define "LeanGoTypeImpl" -}}

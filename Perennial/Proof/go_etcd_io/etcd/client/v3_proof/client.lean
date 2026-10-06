@@ -41,7 +41,7 @@ variable [sem : go.Semantics]
 
 def isClientPub (cl : Loc) (_γ : Clientv3Names) : IProp GF :=
   iprop(∃ (kv : interface.t),
-    "KV" ∷ cl.[v3.Client.t, go!"KV"] ↦□ kv)
+    "KV" ∷ cl.[v3.Client, go!"KV"] ↦□ kv)
 
 end defs
 
@@ -63,14 +63,14 @@ axiom Client.wp_Do_Get [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : HeapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
     [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
-    (key : GoString) (client : Loc) (γ : Clientv3Names) (ctx : context.Context.t)
-    (op : v3.Op.t) :
+    (key : GoString) (client : Loc) (γ : Clientv3Names) (ctx : context.Context)
+    (op : v3.Op) :
   ⊢ ∀ Φ : val → IProp GF,
     (isClient client γ ∗
      isOp op (.Get { RangeRequest.default with key := key })) -∗
     (|={⊤ \ ↑N, ∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
         (key etcd[γ]↦{dq} val ={∅, ⊤ \ ↑N}=∗ Φ #())) -∗
-    WP (App (App (Val (client @!! v3.Client @!! go!"Do")) (Val #ctx)) (Val #op)) {{ Φ }}
+    WP (App (App (Val (client @!! v3.Client.ty @!! go!"Do")) (Val #ctx)) (Val #op)) {{ Φ }}
 
 axiom Client.wp_GetLogger [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
@@ -78,7 +78,7 @@ axiom Client.wp_GetLogger [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
     (client : Loc) (γ : Clientv3Names) :
   {{ isClient (GF := GF) client γ }}
-    (App (Val (client @!! go.GoType.PointerType v3.Client @!! go!"GetLogger")) (Val #()))
+    (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"GetLogger")) (Val #()))
   {{ (lg : Loc), RET #lg; True }}
 
 axiom Client.wp_Ctx [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
@@ -87,7 +87,7 @@ axiom Client.wp_Ctx [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
     (client : Loc) (γ : Clientv3Names) :
   {{ isClient (GF := GF) client γ }}
-    (App (Val (client @!! go.GoType.PointerType v3.Client @!! go!"Ctx")) (Val #()))
+    (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"Ctx")) (Val #()))
   {{ (ctx : interface.t_ok) (s : context.Context_desc.t (IProp GF)), RET #(interface.ok ctx);
       context.isContext ctx s }}
 
@@ -95,10 +95,10 @@ axiom Client.wp_Grant [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
     [hG : HeapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
     [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
-    (client : Loc) (γ : Clientv3Names) (ctx : context.Context.t) (ttl : w64) :
+    (client : Loc) (γ : Clientv3Names) (ctx : context.Context) (ttl : w64) :
   {{ isClient (GF := GF) client γ }}
-    (App (App (Val (client @!! go.GoType.PointerType v3.Client @!! go!"Grant")) (Val #ctx)) (Val #ttl))
-  {{ (resp_ptr : Loc) (resp : v3.LeaseGrantResponse.t) (err : error.t),
+    (App (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"Grant")) (Val #ctx)) (Val #ttl))
+  {{ (resp_ptr : Loc) (resp : v3.LeaseGrantResponse) (err : error.t),
       RET (PairV #resp_ptr #err);
       resp_ptr ↦ resp ∗
       if err = interface.nil then isEtcdLease γ resp.ID' else iprop(True) }}
@@ -110,7 +110,7 @@ axiom Client.wp_KeepAlive [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     (client : Loc) (γ : Clientv3Names) (ctx : interface.t_ok) (id : w64) :
   -- The precondition requires that this is only called on a `Grant`ed lease.
   {{ isClient (GF := GF) client γ ∗ isEtcdLease γ id }}
-    (App (App (Val (client @!! go.GoType.PointerType v3.Client @!! go!"KeepAlive"))
+    (App (App (Val (client @!! go.GoType.PointerType v3.Client.ty @!! go!"KeepAlive"))
       (Val #(interface.ok ctx))) (Val #id))
   {{ (kch : chan.t) (err : error.t), RET (PairV #kch #err);
       if err = interface.nil then

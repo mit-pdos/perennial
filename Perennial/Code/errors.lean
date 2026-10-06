@@ -17,15 +17,15 @@ end pkg_id
 
 namespace errors
 
-def errorString [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def errorString.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.errorString" [])
 
-attribute [irreducible] errorString
+attribute [irreducible] errorString.ty
 
-def joinError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def joinError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.joinError" [])
 
-attribute [irreducible] joinError
+attribute [irreducible] joinError.ty
 
 noncomputable def ErrUnsupported [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"errors.ErrUnsupported"
@@ -71,17 +71,17 @@ noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "text" (App (Val (GoInstruction (GoAlloc go.string))) (Var "text"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType errorString) go.error))) (App (Val (GoInstruction (GoAlloc errorString))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "text"))
-  (App (Val (GoInstruction (CompositeLiteral errorString))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType errorString.ty) go.error))) (App (Val (GoInstruction (GoAlloc errorString.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "text"))
+  (App (Val (GoInstruction (CompositeLiteral errorString.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
 
 /-- go: errors.go:73:23 -/
 noncomputable def errorString.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType errorString)))) (Var "e"))
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType errorString.ty)))) (Var "e"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef errorString go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType errorString)))) (Var "e")))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef errorString.ty go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType errorString.ty)))) (Var "e")))))))))
 
 /-- Unwrap returns the result of calling the Unwrap method on err, if err's
     type contains an Unwrap method returning error.
@@ -296,14 +296,12 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnsupported go.error)) (Val #()))))))))
 
-namespace errorString
-structure t [FfiSyntax] where
+structure errorString [FfiSyntax] where
   mk ::
   s' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end errorString
+instance errorString.zero_val [FfiSyntax] : ZeroVal errorString :=
+  ⟨errorString.mk zeroValDef⟩
 
 @[reducible] def errorString.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string)]
@@ -319,11 +317,11 @@ instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType errorString.fields)
 
 class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying errorString.underlying errorString.t
-  underlying : go.UnderlyingDirectedEq errorString errorString.underlying
-  get_s : ∀ (x : errorString.t), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : errorString.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorString.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString.t)))
-  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString) go!"Error" errorString.Error.impl
+  type_repr : go.TypeReprUnderlying errorString.underlying errorString
+  underlying : go.UnderlyingDirectedEq errorString.ty errorString.underlying
+  get_s : ∀ (x : errorString), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
+  set_s : ∀ (x : errorString) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorString.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString)))
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString.ty) go!"Error" errorString.Error.impl
 
 attribute [instance] errorString.TypeAssumptions.type_repr
   errorString.TypeAssumptions.underlying
@@ -331,14 +329,12 @@ attribute [instance] errorString.TypeAssumptions.type_repr
   errorString.TypeAssumptions.set_s
   errorString.TypeAssumptions.ptr_Error_unfold
 
-namespace joinError
-structure t [FfiSyntax] where
+structure joinError [FfiSyntax] where
   mk ::
   errs' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end joinError
+instance joinError.zero_val [FfiSyntax] : ZeroVal joinError :=
+  ⟨joinError.mk zeroValDef⟩
 
 @[reducible] def joinError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"errs" (go.GoType.SliceType go.error))]
@@ -354,10 +350,10 @@ instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType joinError.fields)
 
 class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying joinError.underlying joinError.t
-  underlying : go.UnderlyingDirectedEq joinError joinError.underlying
-  get_errs : ∀ (x : joinError.t), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
-  set_errs : ∀ (x : joinError.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError.t)))
+  type_repr : go.TypeReprUnderlying joinError.underlying joinError
+  underlying : go.UnderlyingDirectedEq joinError.ty joinError.underlying
+  get_errs : ∀ (x : joinError), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
+  set_errs : ∀ (x : joinError) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError)))
 
 attribute [instance] joinError.TypeAssumptions.type_repr
   joinError.TypeAssumptions.underlying

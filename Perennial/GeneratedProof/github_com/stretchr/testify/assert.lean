@@ -22,48 +22,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance labeledContent_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.labeledContent.t where
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.labeledContent where
   typedPointstoDef l v dq := iprop(
-    "label" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq ∗
-    "content" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq ∗
+    "label" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"label" l) v.label' dq ∗
+    "content" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"content" l) v.content' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance labeledContent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent.t github_com.stretchr.testify.assert.labeledContent.underlying := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.labeledContent github_com.stretchr.testify.assert.labeledContent.underlying := by
   solve_into_val_typed_struct
 
-instance labeledContent_access_load_label (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (dq : DFrac) :
+instance labeledContent_access_load_label (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"label" l) v.label' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"label" l) v.label' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance labeledContent_access_store_label (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (label' : GoString) :
+instance labeledContent_access_store_label (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent) (label' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"label" l) v.label' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"label" l) label' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with label' := label' } : github_com.stretchr.testify.assert.labeledContent.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"label" l) v.label' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"label" l) label' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with label' := label' } : github_com.stretchr.testify.assert.labeledContent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance labeledContent_access_load_content (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (dq : DFrac) :
+instance labeledContent_access_load_content (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"content" l) v.content' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"content" l) v.content' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance labeledContent_access_store_content (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent.t) (content' : GoString) :
+instance labeledContent_access_store_content (l : Loc) (v : github_com.stretchr.testify.assert.labeledContent) (content' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"content" l) v.content' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent.t go!"content" l) content' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with content' := content' } : github_com.stretchr.testify.assert.labeledContent.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"content" l) v.content' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.labeledContent go!"content" l) content' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with content' := content' } : github_com.stretchr.testify.assert.labeledContent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -79,31 +79,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance CollectT_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.CollectT.t where
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.CollectT where
   typedPointstoDef l v dq := iprop(
-    "errors" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq ∗
+    "errors" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) v.errors' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CollectT_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT.t github_com.stretchr.testify.assert.CollectT.underlying := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.CollectT github_com.stretchr.testify.assert.CollectT.underlying := by
   solve_into_val_typed_struct
 
-instance CollectT_access_load_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT.t) (dq : DFrac) :
+instance CollectT_access_load_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) v.errors' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) v.errors' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance CollectT_access_store_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT.t) (errors' : slice.t) :
+instance CollectT_access_store_errors (l : Loc) (v : github_com.stretchr.testify.assert.CollectT) (errors' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT.t go!"errors" l) v.errors' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT.t go!"errors" l) errors' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errors' := errors' } : github_com.stretchr.testify.assert.CollectT.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) v.errors' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.CollectT go!"errors" l) errors' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errors' := errors' } : github_com.stretchr.testify.assert.CollectT) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -119,31 +119,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : github_com.stretchr.testify.assert.Assumptions]
 
 instance Assertions_typed_pointsto :
-    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.Assertions.t where
+    TypedPointsto (GF := GF) github_com.stretchr.testify.assert.Assertions where
   typedPointstoDef l v dq := iprop(
-    "t" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq ∗
+    "t" ∷ typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions go!"t" l) v.t' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Assertions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions.t github_com.stretchr.testify.assert.Assertions.underlying := by
+    IntoValTypedUnderlying (GF := GF) github_com.stretchr.testify.assert.Assertions github_com.stretchr.testify.assert.Assertions.underlying := by
   solve_into_val_typed_struct
 
-instance Assertions_access_load_t (l : Loc) (v : github_com.stretchr.testify.assert.Assertions.t) (dq : DFrac) :
+instance Assertions_access_load_t (l : Loc) (v : github_com.stretchr.testify.assert.Assertions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions go!"t" l) v.t' dq)
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions go!"t" l) v.t' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Assertions_access_store_t (l : Loc) (v : github_com.stretchr.testify.assert.Assertions.t) (t' : github_com.stretchr.testify.assert.TestingT.t) :
+instance Assertions_access_store_t (l : Loc) (v : github_com.stretchr.testify.assert.Assertions) (t' : github_com.stretchr.testify.assert.TestingT) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions.t go!"t" l) v.t' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions.t go!"t" l) t' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with t' := t' } : github_com.stretchr.testify.assert.Assertions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions go!"t" l) v.t' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.stretchr.testify.assert.Assertions go!"t" l) t' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with t' := t' } : github_com.stretchr.testify.assert.Assertions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

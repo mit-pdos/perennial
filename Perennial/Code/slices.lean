@@ -18,15 +18,15 @@ end pkg_id
 
 namespace slices
 
-def sortedHint [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"slices.sortedHint" [])
 
-attribute [irreducible] sortedHint
+attribute [irreducible] sortedHint.ty
 
-def xorshift [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"slices.xorshift" [])
 
-attribute [irreducible] xorshift
+attribute [irreducible] xorshift.ty
 
 @[reducible] noncomputable def unknownHint [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
@@ -317,18 +317,18 @@ noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType xorshift)))) (Var "r"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType xorshift.ty)))) (Var "r"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))))))
+  (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(17 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(17 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(7 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(7 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(13 : Int)))))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(13 : Int)))))))))))))))
 
 /-- go: sort.go:188:6 -/
 noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -562,7 +562,7 @@ noncomputable def pdqsortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "hint" (App (Val (GoInstruction (GoAlloc sortedHint))) (App (Val (GoInstruction (GoZeroVal sortedHint))) (Val #())))
+  (Let "hint" (App (Val (GoInstruction (GoAlloc sortedHint.ty))) (App (Val (GoInstruction (GoZeroVal sortedHint.ty))) (Val #())))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
@@ -666,7 +666,7 @@ noncomputable def pdqsortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoTy
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "mid") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasBalanced")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasPartitioned")) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals sortedHint))) (Pair (App (Val (GoInstruction (GoLoad sortedHint))) (Var "hint")) (Val increasingHint))) (Val #false))
+  (If (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasBalanced")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasPartitioned")) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals sortedHint.ty))) (Pair (App (Val (GoInstruction (GoLoad sortedHint.ty))) (Var "hint")) (Val increasingHint))) (Val #false))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
@@ -678,13 +678,13 @@ noncomputable def pdqsortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoTy
   (Val #())))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals sortedHint))) (Pair (App (Val (GoInstruction (GoLoad sortedHint))) (Var "hint")) (Val decreasingHint))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals sortedHint.ty))) (Pair (App (Val (GoInstruction (GoLoad sortedHint.ty))) (Var "hint")) (Val decreasingHint))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val increasingHint)
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore sortedHint))) (Pair (Var "hint") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "hint") (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "pivot") (Var "$r0"))))))))
   (App (Val doExecute)
@@ -696,7 +696,7 @@ noncomputable def pdqsortCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore sortedHint))) (Pair (Var "hint") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "hint") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "pivot") (Var "$r0"))))))))))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasBalanced")))
@@ -1098,8 +1098,8 @@ noncomputable def breakPatternsCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : g
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (Val #(W64 8)))))
-  (Let "random" (App (Val (GoInstruction (GoAlloc xorshift))) (App (Val (GoInstruction (GoZeroVal xorshift))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.int xorshift))) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))
+  (Let "random" (App (Val (GoInstruction (GoAlloc xorshift.ty))) (App (Val (GoInstruction (GoZeroVal xorshift.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int xorshift.ty))) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "modulus" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "length"))
@@ -1111,7 +1111,7 @@ noncomputable def breakPatternsCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : g
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "idx")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (Val #(W64 4)))) (Val #(W64 2)))))) (Val #(W64 1)))))))) (Lam BAnon
   (Let "other" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType xorshift) go!"Next"))) (Var "random")) (Val #()))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (GoLoad go.uint))) (Var "modulus")) (Val #(W64 1)))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType xorshift.ty) go!"Next"))) (Var "random")) (Val #()))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (GoLoad go.uint))) (Var "modulus")) (Val #(W64 1)))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other")))))))
@@ -1136,7 +1136,7 @@ noncomputable def breakPatternsCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : g
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "modulus") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (Var "random") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (Var "random") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -1155,7 +1155,7 @@ noncomputable def choosePivotCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.
   (Lam "b"
   (Lam "cmp"
   (App (Val exceptionDo)
-  (Let "hint" (App (Val (GoInstruction (GoAlloc sortedHint))) (App (Val (GoInstruction (GoZeroVal sortedHint))) (Val #())))
+  (Let "hint" (App (Val (GoInstruction (GoAlloc sortedHint.ty))) (App (Val (GoInstruction (GoZeroVal sortedHint.ty))) (Val #())))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
@@ -1840,28 +1840,24 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.math.bits.initialize') (Val #())))))))
 
-namespace sortedHint
-abbrev t [FfiSyntax] : Type := w64
-end sortedHint
+abbrev sortedHint [FfiSyntax] : Type := w64
 
 @[reducible] def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq sortedHint sortedHint.underlying
+  underlying : go.UnderlyingDirectedEq sortedHint.ty sortedHint.underlying
 
 attribute [instance] sortedHint.TypeAssumptions.underlying
 
-namespace xorshift
-abbrev t [FfiSyntax] : Type := w64
-end xorshift
+abbrev xorshift [FfiSyntax] : Type := w64
 
 @[reducible] def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq xorshift xorshift.underlying
-  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift) go!"Next" xorshift.Next.impl
+  underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
   xorshift.TypeAssumptions.ptr_Next_unfold

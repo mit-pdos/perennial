@@ -33,116 +33,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance Election_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election where
   typedPointstoDef l v dq := iprop(
-    "session" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"session" l) v.session' dq ∗
-    "keyPrefix" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"keyPrefix" l) v.keyPrefix' dq ∗
-    "leaderKey" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderKey" l) v.leaderKey' dq ∗
-    "leaderRev" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderRev" l) v.leaderRev' dq ∗
-    "leaderSession" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderSession" l) v.leaderSession' dq ∗
-    "hdr" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"hdr" l) v.hdr' dq ∗
+    "session" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"session" l) v.session' dq ∗
+    "keyPrefix" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"keyPrefix" l) v.keyPrefix' dq ∗
+    "leaderKey" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderKey" l) v.leaderKey' dq ∗
+    "leaderRev" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderRev" l) v.leaderRev' dq ∗
+    "leaderSession" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderSession" l) v.leaderSession' dq ∗
+    "hdr" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"hdr" l) v.hdr' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Election_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election.t go_etcd_io.etcd.client.v3.concurrency.Election.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Election go_etcd_io.etcd.client.v3.concurrency.Election.underlying := by
   solve_into_val_typed_struct
 
-instance Election_access_load_session (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_session (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"session" l) v.session' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"session" l) v.session' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"session" l) v.session' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"session" l) v.session' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_session (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (session' : Loc) :
+instance Election_access_store_session (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (session' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"session" l) v.session' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"session" l) session' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with session' := session' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"session" l) v.session' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"session" l) session' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with session' := session' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_load_keyPrefix (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_keyPrefix (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"keyPrefix" l) v.keyPrefix' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"keyPrefix" l) v.keyPrefix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"keyPrefix" l) v.keyPrefix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"keyPrefix" l) v.keyPrefix' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_keyPrefix (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (keyPrefix' : GoString) :
+instance Election_access_store_keyPrefix (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (keyPrefix' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"keyPrefix" l) v.keyPrefix' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"keyPrefix" l) keyPrefix' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with keyPrefix' := keyPrefix' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"keyPrefix" l) v.keyPrefix' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"keyPrefix" l) keyPrefix' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with keyPrefix' := keyPrefix' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_load_leaderKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_leaderKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderKey" l) v.leaderKey' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderKey" l) v.leaderKey' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderKey" l) v.leaderKey' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderKey" l) v.leaderKey' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_leaderKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (leaderKey' : GoString) :
+instance Election_access_store_leaderKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (leaderKey' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderKey" l) v.leaderKey' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderKey" l) leaderKey' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderKey' := leaderKey' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderKey" l) v.leaderKey' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderKey" l) leaderKey' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderKey' := leaderKey' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_load_leaderRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_leaderRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderRev" l) v.leaderRev' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderRev" l) v.leaderRev' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderRev" l) v.leaderRev' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderRev" l) v.leaderRev' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_leaderRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (leaderRev' : w64) :
+instance Election_access_store_leaderRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (leaderRev' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderRev" l) v.leaderRev' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderRev" l) leaderRev' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderRev' := leaderRev' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderRev" l) v.leaderRev' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderRev" l) leaderRev' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderRev' := leaderRev' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_load_leaderSession (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_leaderSession (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderSession" l) v.leaderSession' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderSession" l) v.leaderSession' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderSession" l) v.leaderSession' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderSession" l) v.leaderSession' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_leaderSession (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (leaderSession' : Loc) :
+instance Election_access_store_leaderSession (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (leaderSession' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderSession" l) v.leaderSession' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"leaderSession" l) leaderSession' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderSession' := leaderSession' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderSession" l) v.leaderSession' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"leaderSession" l) leaderSession' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaderSession' := leaderSession' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_load_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (dq : DFrac) :
+instance Election_access_load_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"hdr" l) v.hdr' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"hdr" l) v.hdr' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"hdr" l) v.hdr' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"hdr" l) v.hdr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Election_access_store_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election.t) (hdr' : Loc) :
+instance Election_access_store_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Election) (hdr' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"hdr" l) v.hdr' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election.t go!"hdr" l) hdr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hdr' := hdr' } : go_etcd_io.etcd.client.v3.concurrency.Election.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"hdr" l) v.hdr' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Election go!"hdr" l) hdr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hdr' := hdr' } : go_etcd_io.etcd.client.v3.concurrency.Election) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -158,99 +158,99 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance Mutex_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex where
   typedPointstoDef l v dq := iprop(
-    "s" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"s" l) v.s' dq ∗
-    "pfx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"pfx" l) v.pfx' dq ∗
-    "myKey" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myKey" l) v.myKey' dq ∗
-    "myRev" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myRev" l) v.myRev' dq ∗
-    "hdr" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"hdr" l) v.hdr' dq ∗
+    "s" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"s" l) v.s' dq ∗
+    "pfx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"pfx" l) v.pfx' dq ∗
+    "myKey" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myKey" l) v.myKey' dq ∗
+    "myRev" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myRev" l) v.myRev' dq ∗
+    "hdr" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"hdr" l) v.hdr' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Mutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex.t go_etcd_io.etcd.client.v3.concurrency.Mutex.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Mutex go_etcd_io.etcd.client.v3.concurrency.Mutex.underlying := by
   solve_into_val_typed_struct
 
-instance Mutex_access_load_s (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
+instance Mutex_access_load_s (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"s" l) v.s' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"s" l) v.s' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_store_s (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (s' : Loc) :
+instance Mutex_access_store_s (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (s' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"s" l) v.s' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"s" l) s' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"s" l) v.s' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"s" l) s' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : go_etcd_io.etcd.client.v3.concurrency.Mutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_load_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
+instance Mutex_access_load_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"pfx" l) v.pfx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"pfx" l) v.pfx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"pfx" l) v.pfx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"pfx" l) v.pfx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_store_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (pfx' : GoString) :
+instance Mutex_access_store_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (pfx' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"pfx" l) v.pfx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"pfx" l) pfx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pfx' := pfx' } : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"pfx" l) v.pfx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"pfx" l) pfx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pfx' := pfx' } : go_etcd_io.etcd.client.v3.concurrency.Mutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_load_myKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
+instance Mutex_access_load_myKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myKey" l) v.myKey' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myKey" l) v.myKey' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myKey" l) v.myKey' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myKey" l) v.myKey' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_store_myKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (myKey' : GoString) :
+instance Mutex_access_store_myKey (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (myKey' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myKey" l) v.myKey' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myKey" l) myKey' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with myKey' := myKey' } : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myKey" l) v.myKey' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myKey" l) myKey' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with myKey' := myKey' } : go_etcd_io.etcd.client.v3.concurrency.Mutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_load_myRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
+instance Mutex_access_load_myRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myRev" l) v.myRev' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myRev" l) v.myRev' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myRev" l) v.myRev' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myRev" l) v.myRev' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_store_myRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (myRev' : w64) :
+instance Mutex_access_store_myRev (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (myRev' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myRev" l) v.myRev' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"myRev" l) myRev' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with myRev' := myRev' } : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myRev" l) v.myRev' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"myRev" l) myRev' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with myRev' := myRev' } : go_etcd_io.etcd.client.v3.concurrency.Mutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_load_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (dq : DFrac) :
+instance Mutex_access_load_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"hdr" l) v.hdr' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"hdr" l) v.hdr' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"hdr" l) v.hdr' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"hdr" l) v.hdr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Mutex_access_store_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (hdr' : Loc) :
+instance Mutex_access_store_hdr (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Mutex) (hdr' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"hdr" l) v.hdr' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex.t go!"hdr" l) hdr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hdr' := hdr' } : go_etcd_io.etcd.client.v3.concurrency.Mutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"hdr" l) v.hdr' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Mutex go!"hdr" l) hdr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hdr' := hdr' } : go_etcd_io.etcd.client.v3.concurrency.Mutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -266,31 +266,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance lockerMutex_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex where
   typedPointstoDef l v dq := iprop(
-    "Mutex" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go!"Mutex" l) v.Mutex' dq ∗
+    "Mutex" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex go!"Mutex" l) v.Mutex' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lockerMutex_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go_etcd_io.etcd.client.v3.concurrency.lockerMutex.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.lockerMutex go_etcd_io.etcd.client.v3.concurrency.lockerMutex.underlying := by
   solve_into_val_typed_struct
 
-instance lockerMutex_access_load_Mutex (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t) (dq : DFrac) :
+instance lockerMutex_access_load_Mutex (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.lockerMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go!"Mutex" l) v.Mutex' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex go!"Mutex" l) v.Mutex' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance lockerMutex_access_store_Mutex (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t) (Mutex' : Loc) :
+instance lockerMutex_access_store_Mutex (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.lockerMutex) (Mutex' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go!"Mutex" l) v.Mutex' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t go!"Mutex" l) Mutex' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := Mutex' } : go_etcd_io.etcd.client.v3.concurrency.lockerMutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex go!"Mutex" l) v.Mutex' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.lockerMutex go!"Mutex" l) Mutex' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := Mutex' } : go_etcd_io.etcd.client.v3.concurrency.lockerMutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -306,116 +306,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance Session_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session where
   typedPointstoDef l v dq := iprop(
-    "client" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"client" l) v.client' dq ∗
-    "opts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"opts" l) v.opts' dq ∗
-    "id" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"id" l) v.id' dq ∗
-    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"ctx" l) v.ctx' dq ∗
-    "cancel" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"cancel" l) v.cancel' dq ∗
-    "donec" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"donec" l) v.donec' dq ∗
+    "client" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"client" l) v.client' dq ∗
+    "opts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"opts" l) v.opts' dq ∗
+    "id" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"id" l) v.id' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"ctx" l) v.ctx' dq ∗
+    "cancel" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"cancel" l) v.cancel' dq ∗
+    "donec" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) v.donec' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Session_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session.t go_etcd_io.etcd.client.v3.concurrency.Session.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.Session go_etcd_io.etcd.client.v3.concurrency.Session.underlying := by
   solve_into_val_typed_struct
 
-instance Session_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"client" l) v.client' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"client" l) v.client' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"client" l) v.client' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"client" l) v.client' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (client' : Loc) :
+instance Session_access_store_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (client' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"client" l) v.client' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"client" l) client' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with client' := client' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"client" l) v.client' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"client" l) client' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with client' := client' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_load_opts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_opts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"opts" l) v.opts' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"opts" l) v.opts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"opts" l) v.opts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"opts" l) v.opts' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_opts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (opts' : Loc) :
+instance Session_access_store_opts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (opts' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"opts" l) v.opts' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"opts" l) opts' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with opts' := opts' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"opts" l) v.opts' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"opts" l) opts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with opts' := opts' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_load_id (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_id (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"id" l) v.id' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"id" l) v.id' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_id (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (id' : go_etcd_io.etcd.client.v3.LeaseID.t) :
+instance Session_access_store_id (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (id' : go_etcd_io.etcd.client.v3.LeaseID) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"id" l) v.id' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"id" l) id' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"id" l) v.id' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"id" l) id' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"ctx" l) v.ctx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"ctx" l) v.ctx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (ctx' : context.Context.t) :
+instance Session_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (ctx' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_load_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"cancel" l) v.cancel' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"cancel" l) v.cancel' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"cancel" l) v.cancel' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"cancel" l) v.cancel' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (cancel' : context.CancelFunc.t) :
+instance Session_access_store_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (cancel' : context.CancelFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"cancel" l) v.cancel' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"cancel" l) cancel' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancel' := cancel' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"cancel" l) v.cancel' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"cancel" l) cancel' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancel' := cancel' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_load_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (dq : DFrac) :
+instance Session_access_load_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"donec" l) v.donec' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"donec" l) v.donec' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) v.donec' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) v.donec' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Session_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session.t) (donec' : chan.t) :
+instance Session_access_store_donec (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.Session) (donec' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"donec" l) v.donec' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session.t go!"donec" l) donec' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with donec' := donec' } : go_etcd_io.etcd.client.v3.concurrency.Session.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) v.donec' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.Session go!"donec" l) donec' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with donec' := donec' } : go_etcd_io.etcd.client.v3.concurrency.Session) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -431,65 +431,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance sessionOptions_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions where
   typedPointstoDef l v dq := iprop(
-    "ttl" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ttl" l) v.ttl' dq ∗
-    "leaseID" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"leaseID" l) v.leaseID' dq ∗
-    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ctx" l) v.ctx' dq ∗
+    "ttl" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ttl" l) v.ttl' dq ∗
+    "leaseID" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"leaseID" l) v.leaseID' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ctx" l) v.ctx' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sessionOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go_etcd_io.etcd.client.v3.concurrency.sessionOptions.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.sessionOptions go_etcd_io.etcd.client.v3.concurrency.sessionOptions.underlying := by
   solve_into_val_typed_struct
 
-instance sessionOptions_access_load_ttl (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (dq : DFrac) :
+instance sessionOptions_access_load_ttl (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ttl" l) v.ttl' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ttl" l) v.ttl' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ttl" l) v.ttl' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ttl" l) v.ttl' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sessionOptions_access_store_ttl (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (ttl' : w64) :
+instance sessionOptions_access_store_ttl (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (ttl' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ttl" l) v.ttl' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ttl" l) ttl' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ttl' := ttl' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ttl" l) v.ttl' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ttl" l) ttl' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ttl' := ttl' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sessionOptions_access_load_leaseID (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (dq : DFrac) :
+instance sessionOptions_access_load_leaseID (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"leaseID" l) v.leaseID' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"leaseID" l) v.leaseID' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"leaseID" l) v.leaseID' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"leaseID" l) v.leaseID' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sessionOptions_access_store_leaseID (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (leaseID' : go_etcd_io.etcd.client.v3.LeaseID.t) :
+instance sessionOptions_access_store_leaseID (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (leaseID' : go_etcd_io.etcd.client.v3.LeaseID) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"leaseID" l) v.leaseID' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"leaseID" l) leaseID' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaseID' := leaseID' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"leaseID" l) v.leaseID' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"leaseID" l) leaseID' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leaseID' := leaseID' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sessionOptions_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (dq : DFrac) :
+instance sessionOptions_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ctx" l) v.ctx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ctx" l) v.ctx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sessionOptions_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (ctx' : context.Context.t) :
+instance sessionOptions_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (ctx' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.sessionOptions go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.sessionOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -505,31 +505,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stmError_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError where
   typedPointstoDef l v dq := iprop(
-    "err" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError.t go!"err" l) v.err' dq ∗
+    "err" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) v.err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError.t go_etcd_io.etcd.client.v3.concurrency.stmError.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmError go_etcd_io.etcd.client.v3.concurrency.stmError.underlying := by
   solve_into_val_typed_struct
 
-instance stmError_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError.t) (dq : DFrac) :
+instance stmError_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError.t go!"err" l) v.err' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError.t go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) v.err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmError_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError.t) (err' : error.t) :
+instance stmError_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmError) (err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError.t go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError.t go!"err" l) err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : go_etcd_io.etcd.client.v3.concurrency.stmError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) v.err' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmError go!"err" l) err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : go_etcd_io.etcd.client.v3.concurrency.stmError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -545,65 +545,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stmOptions_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions where
   typedPointstoDef l v dq := iprop(
-    "iso" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"iso" l) v.iso' dq ∗
-    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"ctx" l) v.ctx' dq ∗
-    "prefetch" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"prefetch" l) v.prefetch' dq ∗
+    "iso" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"iso" l) v.iso' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"ctx" l) v.ctx' dq ∗
+    "prefetch" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) v.prefetch' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go_etcd_io.etcd.client.v3.concurrency.stmOptions.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmOptions go_etcd_io.etcd.client.v3.concurrency.stmOptions.underlying := by
   solve_into_val_typed_struct
 
-instance stmOptions_access_load_iso (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (dq : DFrac) :
+instance stmOptions_access_load_iso (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"iso" l) v.iso' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"iso" l) v.iso' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"iso" l) v.iso' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"iso" l) v.iso' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_store_iso (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (iso' : go_etcd_io.etcd.client.v3.concurrency.Isolation.t) :
+instance stmOptions_access_store_iso (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (iso' : go_etcd_io.etcd.client.v3.concurrency.Isolation) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"iso" l) v.iso' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"iso" l) iso' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with iso' := iso' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"iso" l) v.iso' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"iso" l) iso' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with iso' := iso' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (dq : DFrac) :
+instance stmOptions_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"ctx" l) v.ctx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"ctx" l) v.ctx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (ctx' : context.Context.t) :
+instance stmOptions_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (ctx' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (dq : DFrac) :
+instance stmOptions_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"prefetch" l) v.prefetch' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"prefetch" l) v.prefetch' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) v.prefetch' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) v.prefetch' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmOptions_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (prefetch' : slice.t) :
+instance stmOptions_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (prefetch' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"prefetch" l) v.prefetch' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions.t go!"prefetch" l) prefetch' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefetch' := prefetch' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) v.prefetch' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmOptions go!"prefetch" l) prefetch' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefetch' := prefetch' } : go_etcd_io.etcd.client.v3.concurrency.stmOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -619,48 +619,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stmResponse_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse where
   typedPointstoDef l v dq := iprop(
-    "resp" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"resp" l) v.resp' dq ∗
-    "err" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"err" l) v.err' dq ∗
+    "resp" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"resp" l) v.resp' dq ∗
+    "err" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) v.err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmResponse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go_etcd_io.etcd.client.v3.concurrency.stmResponse.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmResponse go_etcd_io.etcd.client.v3.concurrency.stmResponse.underlying := by
   solve_into_val_typed_struct
 
-instance stmResponse_access_load_resp (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (dq : DFrac) :
+instance stmResponse_access_load_resp (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"resp" l) v.resp' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"resp" l) v.resp' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"resp" l) v.resp' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"resp" l) v.resp' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmResponse_access_store_resp (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (resp' : Loc) :
+instance stmResponse_access_store_resp (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (resp' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"resp" l) v.resp' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"resp" l) resp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with resp' := resp' } : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"resp" l) v.resp' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"resp" l) resp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with resp' := resp' } : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stmResponse_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (dq : DFrac) :
+instance stmResponse_access_load_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"err" l) v.err' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) v.err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmResponse_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (err' : error.t) :
+instance stmResponse_access_store_err (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse.t go!"err" l) err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : go_etcd_io.etcd.client.v3.concurrency.stmResponse.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) v.err' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmResponse go!"err" l) err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : go_etcd_io.etcd.client.v3.concurrency.stmResponse) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -676,116 +676,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stm_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm where
   typedPointstoDef l v dq := iprop(
-    "client" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"client" l) v.client' dq ∗
-    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"ctx" l) v.ctx' dq ∗
-    "rset" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"rset" l) v.rset' dq ∗
-    "wset" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"wset" l) v.wset' dq ∗
-    "getOpts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"getOpts" l) v.getOpts' dq ∗
-    "conflicts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"conflicts" l) v.conflicts' dq ∗
+    "client" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"client" l) v.client' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"ctx" l) v.ctx' dq ∗
+    "rset" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"rset" l) v.rset' dq ∗
+    "wset" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"wset" l) v.wset' dq ∗
+    "getOpts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) v.getOpts' dq ∗
+    "conflicts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) v.conflicts' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stm_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm.t go_etcd_io.etcd.client.v3.concurrency.stm.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stm go_etcd_io.etcd.client.v3.concurrency.stm.underlying := by
   solve_into_val_typed_struct
 
-instance stm_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"client" l) v.client' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"client" l) v.client' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"client" l) v.client' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"client" l) v.client' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (client' : Loc) :
+instance stm_access_store_client (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (client' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"client" l) v.client' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"client" l) client' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with client' := client' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"client" l) v.client' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"client" l) client' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with client' := client' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"ctx" l) v.ctx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"ctx" l) v.ctx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (ctx' : context.Context.t) :
+instance stm_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (ctx' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_load_rset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_rset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"rset" l) v.rset' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"rset" l) v.rset' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"rset" l) v.rset' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"rset" l) v.rset' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_rset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (rset' : go_etcd_io.etcd.client.v3.concurrency.readSet.t) :
+instance stm_access_store_rset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (rset' : go_etcd_io.etcd.client.v3.concurrency.readSet) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"rset" l) v.rset' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"rset" l) rset' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rset' := rset' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"rset" l) v.rset' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"rset" l) rset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rset' := rset' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_load_wset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_wset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"wset" l) v.wset' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"wset" l) v.wset' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"wset" l) v.wset' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"wset" l) v.wset' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_wset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (wset' : go_etcd_io.etcd.client.v3.concurrency.writeSet.t) :
+instance stm_access_store_wset (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (wset' : go_etcd_io.etcd.client.v3.concurrency.writeSet) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"wset" l) v.wset' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"wset" l) wset' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wset' := wset' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"wset" l) v.wset' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"wset" l) wset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wset' := wset' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_load_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"getOpts" l) v.getOpts' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"getOpts" l) v.getOpts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) v.getOpts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) v.getOpts' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (getOpts' : slice.t) :
+instance stm_access_store_getOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (getOpts' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"getOpts" l) v.getOpts' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"getOpts" l) getOpts' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with getOpts' := getOpts' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) v.getOpts' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"getOpts" l) getOpts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with getOpts' := getOpts' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_load_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (dq : DFrac) :
+instance stm_access_load_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"conflicts" l) v.conflicts' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"conflicts" l) v.conflicts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) v.conflicts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) v.conflicts' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stm_access_store_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm.t) (conflicts' : func.t) :
+instance stm_access_store_conflicts (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stm) (conflicts' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"conflicts" l) v.conflicts' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm.t go!"conflicts" l) conflicts' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with conflicts' := conflicts' } : go_etcd_io.etcd.client.v3.concurrency.stm.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) v.conflicts' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stm go!"conflicts" l) conflicts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with conflicts' := conflicts' } : go_etcd_io.etcd.client.v3.concurrency.stm) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -801,48 +801,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stmPut_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut where
   typedPointstoDef l v dq := iprop(
-    "val" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"val" l) v.val' dq ∗
-    "op" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"op" l) v.op' dq ∗
+    "val" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"val" l) v.val' dq ∗
+    "op" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"op" l) v.op' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmPut_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut.t go_etcd_io.etcd.client.v3.concurrency.stmPut.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmPut go_etcd_io.etcd.client.v3.concurrency.stmPut.underlying := by
   solve_into_val_typed_struct
 
-instance stmPut_access_load_val (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (dq : DFrac) :
+instance stmPut_access_load_val (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"val" l) v.val' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"val" l) v.val' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmPut_access_store_val (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (val' : GoString) :
+instance stmPut_access_store_val (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut) (val' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"val" l) v.val' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"val" l) val' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"val" l) v.val' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"val" l) val' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : go_etcd_io.etcd.client.v3.concurrency.stmPut) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stmPut_access_load_op (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (dq : DFrac) :
+instance stmPut_access_load_op (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"op" l) v.op' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"op" l) v.op' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"op" l) v.op' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"op" l) v.op' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmPut_access_store_op (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (op' : go_etcd_io.etcd.client.v3.Op.t) :
+instance stmPut_access_store_op (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmPut) (op' : go_etcd_io.etcd.client.v3.Op) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"op" l) v.op' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut.t go!"op" l) op' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with op' := op' } : go_etcd_io.etcd.client.v3.concurrency.stmPut.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"op" l) v.op' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmPut go!"op" l) op' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with op' := op' } : go_etcd_io.etcd.client.v3.concurrency.stmPut) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -858,48 +858,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.concurrency.Assumptions]
 
 instance stmSerializable_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable where
   typedPointstoDef l v dq := iprop(
-    "stm" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"stm" l) v.stm' dq ∗
-    "prefetch" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"prefetch" l) v.prefetch' dq ∗
+    "stm" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"stm" l) v.stm' dq ∗
+    "prefetch" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) v.prefetch' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stmSerializable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go_etcd_io.etcd.client.v3.concurrency.stmSerializable.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.concurrency.stmSerializable go_etcd_io.etcd.client.v3.concurrency.stmSerializable.underlying := by
   solve_into_val_typed_struct
 
-instance stmSerializable_access_load_stm (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (dq : DFrac) :
+instance stmSerializable_access_load_stm (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"stm" l) v.stm' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"stm" l) v.stm' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"stm" l) v.stm' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"stm" l) v.stm' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmSerializable_access_store_stm (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (stm' : go_etcd_io.etcd.client.v3.concurrency.stm.t) :
+instance stmSerializable_access_store_stm (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (stm' : go_etcd_io.etcd.client.v3.concurrency.stm) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"stm" l) v.stm' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"stm" l) stm' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stm' := stm' } : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"stm" l) v.stm' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"stm" l) stm' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stm' := stm' } : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stmSerializable_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (dq : DFrac) :
+instance stmSerializable_access_load_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"prefetch" l) v.prefetch' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"prefetch" l) v.prefetch' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) v.prefetch' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) v.prefetch' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stmSerializable_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (prefetch' : map.t) :
+instance stmSerializable_access_store_prefetch (l : Loc) (v : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (prefetch' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"prefetch" l) v.prefetch' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t go!"prefetch" l) prefetch' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefetch' := prefetch' } : go_etcd_io.etcd.client.v3.concurrency.stmSerializable.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) v.prefetch' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.concurrency.stmSerializable go!"prefetch" l) prefetch' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefetch' := prefetch' } : go_etcd_io.etcd.client.v3.concurrency.stmSerializable) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -19,10 +19,10 @@ end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.etcdserver.errors
 
-def DiscoveryError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def DiscoveryError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/errors.DiscoveryError" [])
 
-attribute [irreducible] DiscoveryError
+attribute [irreducible] DiscoveryError.ty
 
 noncomputable def ErrUnknownMethod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnknownMethod"
@@ -95,11 +95,11 @@ noncomputable def DiscoveryError.Error.impl [FfiSyntax] [GoGlobalContext] : val 
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "e" (App (Val (GoInstruction (GoAlloc DiscoveryError))) (Var "e"))
+  (Let "e" (App (Val (GoInstruction (GoAlloc DiscoveryError.ty))) (Var "e"))
   (App (Val doReturn)
   (Let "$a0" (Val #(go!"failed to %s discovery cluster (%v)"))
-  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.string go.any))) (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef DiscoveryError go!"Op"))) (Var "e"))))
-  (Let "$sl1" (App (Val (GoInstruction (Convert go.error go.any))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef DiscoveryError go!"Err"))) (Var "e"))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.string go.any))) (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef DiscoveryError.ty go!"Op"))) (Var "e"))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert go.error go.any))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef DiscoveryError.ty go!"Err"))) (Var "e"))))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0"))), (KeyedElement none (ElementExpression go.any (Var "$sl1")))]))))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
 
@@ -292,15 +292,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrKeyNotFound go.error)) (Val #()))))))))
 
-namespace DiscoveryError
-structure t [FfiSyntax] where
+structure DiscoveryError [FfiSyntax] where
   mk ::
   Op' : GoString
   Err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end DiscoveryError
+instance DiscoveryError.zero_val [FfiSyntax] : ZeroVal DiscoveryError :=
+  ⟨DiscoveryError.mk zeroValDef zeroValDef⟩
 
 @[reducible] def DiscoveryError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
@@ -317,15 +315,15 @@ instance equals_unfold_DiscoveryError [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType DiscoveryError.fields)
 
 class DiscoveryError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying DiscoveryError.underlying DiscoveryError.t
-  underlying : go.UnderlyingDirectedEq DiscoveryError DiscoveryError.underlying
-  get_Op : ∀ (x : DiscoveryError.t), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Op") #x (Val #(x.Op'))
-  set_Op : ∀ (x : DiscoveryError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : DiscoveryError.t)))
-  get_Err : ∀ (x : DiscoveryError.t), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : DiscoveryError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : DiscoveryError.t)))
-  Error_unfold : MethodUnfold DiscoveryError go!"Error" DiscoveryError.Error.impl
-  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DiscoveryError) go!"Error" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve DiscoveryError go!"Error"))) (App (Val (GoInstruction (GoLoad DiscoveryError))) (Var "$r"))))
+  type_repr : go.TypeReprUnderlying DiscoveryError.underlying DiscoveryError
+  underlying : go.UnderlyingDirectedEq DiscoveryError.ty DiscoveryError.underlying
+  get_Op : ∀ (x : DiscoveryError), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Op") #x (Val #(x.Op'))
+  set_Op : ∀ (x : DiscoveryError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : DiscoveryError)))
+  get_Err : ∀ (x : DiscoveryError), go.IsGoStepPureDetTagged under (StructFieldGet DiscoveryError.underlying go!"Err") #x (Val #(x.Err'))
+  set_Err : ∀ (x : DiscoveryError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet DiscoveryError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : DiscoveryError)))
+  Error_unfold : MethodUnfold DiscoveryError.ty go!"Error" DiscoveryError.Error.impl
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DiscoveryError.ty) go!"Error" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve DiscoveryError.ty go!"Error"))) (App (Val (GoInstruction (GoLoad DiscoveryError.ty))) (Var "$r"))))
 
 attribute [instance] DiscoveryError.TypeAssumptions.type_repr
   DiscoveryError.TypeAssumptions.underlying

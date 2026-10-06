@@ -23,630 +23,630 @@ end pkg_id
 
 namespace google_golang_org.grpc
 
-def BackoffConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def BackoffConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.BackoffConfig" [])
 
-attribute [irreducible] BackoffConfig
+attribute [irreducible] BackoffConfig.ty
 
-def ConnectParams [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ConnectParams.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ConnectParams" [])
 
-attribute [irreducible] ConnectParams
+attribute [irreducible] ConnectParams.ty
 
-def ccBalancerWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ccBalancerWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ccBalancerWrapper" [])
 
-attribute [irreducible] ccBalancerWrapper
+attribute [irreducible] ccBalancerWrapper.ty
 
-def acBalancerWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def acBalancerWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.acBalancerWrapper" [])
 
-attribute [irreducible] acBalancerWrapper
+attribute [irreducible] acBalancerWrapper.ty
 
-def healthData [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def healthData.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.healthData" [])
 
-attribute [irreducible] healthData
+attribute [irreducible] healthData.ty
 
-def refCountedProducer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def refCountedProducer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.refCountedProducer" [])
 
-attribute [irreducible] refCountedProducer
+attribute [irreducible] refCountedProducer.ty
 
-def defaultConfigSelector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def defaultConfigSelector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.defaultConfigSelector" [])
 
-attribute [irreducible] defaultConfigSelector
+attribute [irreducible] defaultConfigSelector.ty
 
-def idler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def idler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.idler" [])
 
-attribute [irreducible] idler
+attribute [irreducible] idler.ty
 
-def connectivityStateManager [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def connectivityStateManager.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.connectivityStateManager" [])
 
-attribute [irreducible] connectivityStateManager
+attribute [irreducible] connectivityStateManager.ty
 
-def ClientConnInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ClientConnInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ClientConnInterface" [])
 
-attribute [irreducible] ClientConnInterface
+attribute [irreducible] ClientConnInterface.ty
 
-def ClientConn [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ClientConn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ClientConn" [])
 
-attribute [irreducible] ClientConn
+attribute [irreducible] ClientConn.ty
 
-def addrConn [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def addrConn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.addrConn" [])
 
-attribute [irreducible] addrConn
+attribute [irreducible] addrConn.ty
 
-def securityLevelKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def securityLevelKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.securityLevelKey" [])
 
-attribute [irreducible] securityLevelKey
+attribute [irreducible] securityLevelKey.ty
 
-def retryThrottler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def retryThrottler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.retryThrottler" [])
 
-attribute [irreducible] retryThrottler
+attribute [irreducible] retryThrottler.ty
 
-def baseCodec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def baseCodec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.baseCodec" [])
 
-attribute [irreducible] baseCodec
+attribute [irreducible] baseCodec.ty
 
-def codecV0Bridge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def codecV0Bridge.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.codecV0Bridge" [])
 
-attribute [irreducible] codecV0Bridge
+attribute [irreducible] codecV0Bridge.ty
 
-def codecV1Bridge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def codecV1Bridge.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.codecV1Bridge" [])
 
-attribute [irreducible] codecV1Bridge
+attribute [irreducible] codecV1Bridge.ty
 
-def Codec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Codec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Codec" [])
 
-attribute [irreducible] Codec
+attribute [irreducible] Codec.ty
 
-def dialOptions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def dialOptions.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.dialOptions" [])
 
-attribute [irreducible] dialOptions
+attribute [irreducible] dialOptions.ty
 
-def DialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def DialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.DialOption" [])
 
-attribute [irreducible] DialOption
+attribute [irreducible] DialOption.ty
 
-def perTargetDialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def perTargetDialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.perTargetDialOption" [])
 
-attribute [irreducible] perTargetDialOption
+attribute [irreducible] perTargetDialOption.ty
 
-def EmptyDialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EmptyDialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.EmptyDialOption" [])
 
-attribute [irreducible] EmptyDialOption
+attribute [irreducible] EmptyDialOption.ty
 
-def disableGlobalDialOptions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def disableGlobalDialOptions.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.disableGlobalDialOptions" [])
 
-attribute [irreducible] disableGlobalDialOptions
+attribute [irreducible] disableGlobalDialOptions.ty
 
-def funcDialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def funcDialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.funcDialOption" [])
 
-attribute [irreducible] funcDialOption
+attribute [irreducible] funcDialOption.ty
 
-def joinDialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def joinDialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.joinDialOption" [])
 
-attribute [irreducible] joinDialOption
+attribute [irreducible] joinDialOption.ty
 
-def MaxHeaderListSizeDialOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MaxHeaderListSizeDialOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MaxHeaderListSizeDialOption" [])
 
-attribute [irreducible] MaxHeaderListSizeDialOption
+attribute [irreducible] MaxHeaderListSizeDialOption.ty
 
-def UnaryInvoker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnaryInvoker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.UnaryInvoker" [])
 
-attribute [irreducible] UnaryInvoker
+attribute [irreducible] UnaryInvoker.ty
 
-def UnaryClientInterceptor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnaryClientInterceptor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.UnaryClientInterceptor" [])
 
-attribute [irreducible] UnaryClientInterceptor
+attribute [irreducible] UnaryClientInterceptor.ty
 
-def Streamer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Streamer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Streamer" [])
 
-attribute [irreducible] Streamer
+attribute [irreducible] Streamer.ty
 
-def StreamClientInterceptor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StreamClientInterceptor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StreamClientInterceptor" [])
 
-attribute [irreducible] StreamClientInterceptor
+attribute [irreducible] StreamClientInterceptor.ty
 
-def UnaryServerInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnaryServerInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.UnaryServerInfo" [])
 
-attribute [irreducible] UnaryServerInfo
+attribute [irreducible] UnaryServerInfo.ty
 
-def UnaryHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnaryHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.UnaryHandler" [])
 
-attribute [irreducible] UnaryHandler
+attribute [irreducible] UnaryHandler.ty
 
-def UnaryServerInterceptor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnaryServerInterceptor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.UnaryServerInterceptor" [])
 
-attribute [irreducible] UnaryServerInterceptor
+attribute [irreducible] UnaryServerInterceptor.ty
 
-def StreamServerInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StreamServerInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StreamServerInfo" [])
 
-attribute [irreducible] StreamServerInfo
+attribute [irreducible] StreamServerInfo.ty
 
-def StreamServerInterceptor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StreamServerInterceptor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StreamServerInterceptor" [])
 
-attribute [irreducible] StreamServerInterceptor
+attribute [irreducible] StreamServerInterceptor.ty
 
-def pickerGeneration [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def pickerGeneration.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.pickerGeneration" [])
 
-attribute [irreducible] pickerGeneration
+attribute [irreducible] pickerGeneration.ty
 
-def pickerWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def pickerWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.pickerWrapper" [])
 
-attribute [irreducible] pickerWrapper
+attribute [irreducible] pickerWrapper.ty
 
-def pick [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def pick.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.pick" [])
 
-attribute [irreducible] pick
+attribute [irreducible] pick.ty
 
-def dropError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def dropError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.dropError" [])
 
-attribute [irreducible] dropError
+attribute [irreducible] dropError.ty
 
-def PreparedMsg [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PreparedMsg.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.PreparedMsg" [])
 
-attribute [irreducible] PreparedMsg
+attribute [irreducible] PreparedMsg.ty
 
-def ccResolverWrapper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ccResolverWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ccResolverWrapper" [])
 
-attribute [irreducible] ccResolverWrapper
+attribute [irreducible] ccResolverWrapper.ty
 
-def Compressor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Compressor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Compressor" [])
 
-attribute [irreducible] Compressor
+attribute [irreducible] Compressor.ty
 
-def gzipCompressor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def gzipCompressor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.gzipCompressor" [])
 
-attribute [irreducible] gzipCompressor
+attribute [irreducible] gzipCompressor.ty
 
-def Decompressor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Decompressor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Decompressor" [])
 
-attribute [irreducible] Decompressor
+attribute [irreducible] Decompressor.ty
 
-def gzipDecompressor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def gzipDecompressor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.gzipDecompressor" [])
 
-attribute [irreducible] gzipDecompressor
+attribute [irreducible] gzipDecompressor.ty
 
-def callInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def callInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.callInfo" [])
 
-attribute [irreducible] callInfo
+attribute [irreducible] callInfo.ty
 
-def CallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.CallOption" [])
 
-attribute [irreducible] CallOption
+attribute [irreducible] CallOption.ty
 
-def EmptyCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EmptyCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.EmptyCallOption" [])
 
-attribute [irreducible] EmptyCallOption
+attribute [irreducible] EmptyCallOption.ty
 
-def StaticMethodCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StaticMethodCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StaticMethodCallOption" [])
 
-attribute [irreducible] StaticMethodCallOption
+attribute [irreducible] StaticMethodCallOption.ty
 
-def HeaderCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def HeaderCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.HeaderCallOption" [])
 
-attribute [irreducible] HeaderCallOption
+attribute [irreducible] HeaderCallOption.ty
 
-def TrailerCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TrailerCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.TrailerCallOption" [])
 
-attribute [irreducible] TrailerCallOption
+attribute [irreducible] TrailerCallOption.ty
 
-def PeerCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PeerCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.PeerCallOption" [])
 
-attribute [irreducible] PeerCallOption
+attribute [irreducible] PeerCallOption.ty
 
-def FailFastCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def FailFastCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.FailFastCallOption" [])
 
-attribute [irreducible] FailFastCallOption
+attribute [irreducible] FailFastCallOption.ty
 
-def OnFinishCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def OnFinishCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.OnFinishCallOption" [])
 
-attribute [irreducible] OnFinishCallOption
+attribute [irreducible] OnFinishCallOption.ty
 
-def MaxRecvMsgSizeCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MaxRecvMsgSizeCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MaxRecvMsgSizeCallOption" [])
 
-attribute [irreducible] MaxRecvMsgSizeCallOption
+attribute [irreducible] MaxRecvMsgSizeCallOption.ty
 
-def AuthorityOverrideCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def AuthorityOverrideCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.AuthorityOverrideCallOption" [])
 
-attribute [irreducible] AuthorityOverrideCallOption
+attribute [irreducible] AuthorityOverrideCallOption.ty
 
-def MaxSendMsgSizeCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MaxSendMsgSizeCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MaxSendMsgSizeCallOption" [])
 
-attribute [irreducible] MaxSendMsgSizeCallOption
+attribute [irreducible] MaxSendMsgSizeCallOption.ty
 
-def PerRPCCredsCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PerRPCCredsCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.PerRPCCredsCallOption" [])
 
-attribute [irreducible] PerRPCCredsCallOption
+attribute [irreducible] PerRPCCredsCallOption.ty
 
-def CompressorCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CompressorCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.CompressorCallOption" [])
 
-attribute [irreducible] CompressorCallOption
+attribute [irreducible] CompressorCallOption.ty
 
-def acceptCompressorsCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def acceptCompressorsCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.acceptCompressorsCallOption" [])
 
-attribute [irreducible] acceptCompressorsCallOption
+attribute [irreducible] acceptCompressorsCallOption.ty
 
-def ContentSubtypeCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ContentSubtypeCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ContentSubtypeCallOption" [])
 
-attribute [irreducible] ContentSubtypeCallOption
+attribute [irreducible] ContentSubtypeCallOption.ty
 
-def ForceCodecCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ForceCodecCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ForceCodecCallOption" [])
 
-attribute [irreducible] ForceCodecCallOption
+attribute [irreducible] ForceCodecCallOption.ty
 
-def ForceCodecV2CallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ForceCodecV2CallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ForceCodecV2CallOption" [])
 
-attribute [irreducible] ForceCodecV2CallOption
+attribute [irreducible] ForceCodecV2CallOption.ty
 
-def CustomCodecCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CustomCodecCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.CustomCodecCallOption" [])
 
-attribute [irreducible] CustomCodecCallOption
+attribute [irreducible] CustomCodecCallOption.ty
 
-def MaxRetryRPCBufferSizeCallOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MaxRetryRPCBufferSizeCallOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MaxRetryRPCBufferSizeCallOption" [])
 
-attribute [irreducible] MaxRetryRPCBufferSizeCallOption
+attribute [irreducible] MaxRetryRPCBufferSizeCallOption.ty
 
-def payloadFormat [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def payloadFormat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.payloadFormat" [])
 
-attribute [irreducible] payloadFormat
+attribute [irreducible] payloadFormat.ty
 
-def streamReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def streamReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.streamReader" [])
 
-attribute [irreducible] streamReader
+attribute [irreducible] streamReader.ty
 
-def noCopy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noCopy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.noCopy" [])
 
-attribute [irreducible] noCopy
+attribute [irreducible] noCopy.ty
 
-def parser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def parser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.parser" [])
 
-attribute [irreducible] parser
+attribute [irreducible] parser.ty
 
-def payloadInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def payloadInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.payloadInfo" [])
 
-attribute [irreducible] payloadInfo
+attribute [irreducible] payloadInfo.ty
 
-def recvCompressor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def recvCompressor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.recvCompressor" [])
 
-attribute [irreducible] recvCompressor
+attribute [irreducible] recvCompressor.ty
 
-def rpcInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def rpcInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.rpcInfo" [])
 
-attribute [irreducible] rpcInfo
+attribute [irreducible] rpcInfo.ty
 
-def compressorInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def compressorInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.compressorInfo" [])
 
-attribute [irreducible] compressorInfo
+attribute [irreducible] compressorInfo.ty
 
-def rpcInfoContextKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def rpcInfoContextKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.rpcInfoContextKey" [])
 
-attribute [irreducible] rpcInfoContextKey
+attribute [irreducible] rpcInfoContextKey.ty
 
-def MethodHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MethodHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MethodHandler" [])
 
-attribute [irreducible] MethodHandler
+attribute [irreducible] MethodHandler.ty
 
-def MethodDesc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MethodDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MethodDesc" [])
 
-attribute [irreducible] MethodDesc
+attribute [irreducible] MethodDesc.ty
 
-def ServiceDesc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServiceDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServiceDesc" [])
 
-attribute [irreducible] ServiceDesc
+attribute [irreducible] ServiceDesc.ty
 
-def serviceInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def serviceInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.serviceInfo" [])
 
-attribute [irreducible] serviceInfo
+attribute [irreducible] serviceInfo.ty
 
-def Server [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Server.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Server" [])
 
-attribute [irreducible] Server
+attribute [irreducible] Server.ty
 
-def serverOptions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def serverOptions.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.serverOptions" [])
 
-attribute [irreducible] serverOptions
+attribute [irreducible] serverOptions.ty
 
-def ServerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServerOption" [])
 
-attribute [irreducible] ServerOption
+attribute [irreducible] ServerOption.ty
 
-def EmptyServerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EmptyServerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.EmptyServerOption" [])
 
-attribute [irreducible] EmptyServerOption
+attribute [irreducible] EmptyServerOption.ty
 
-def funcServerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def funcServerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.funcServerOption" [])
 
-attribute [irreducible] funcServerOption
+attribute [irreducible] funcServerOption.ty
 
-def joinServerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def joinServerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.joinServerOption" [])
 
-attribute [irreducible] joinServerOption
+attribute [irreducible] joinServerOption.ty
 
-def MaxHeaderListSizeServerOption [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MaxHeaderListSizeServerOption.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MaxHeaderListSizeServerOption" [])
 
-attribute [irreducible] MaxHeaderListSizeServerOption
+attribute [irreducible] MaxHeaderListSizeServerOption.ty
 
-def ServiceRegistrar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServiceRegistrar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServiceRegistrar" [])
 
-attribute [irreducible] ServiceRegistrar
+attribute [irreducible] ServiceRegistrar.ty
 
-def MethodInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MethodInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.MethodInfo" [])
 
-attribute [irreducible] MethodInfo
+attribute [irreducible] MethodInfo.ty
 
-def ServiceInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServiceInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServiceInfo" [])
 
-attribute [irreducible] ServiceInfo
+attribute [irreducible] ServiceInfo.ty
 
-def listenSocket [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def listenSocket.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.listenSocket" [])
 
-attribute [irreducible] listenSocket
+attribute [irreducible] listenSocket.ty
 
-def streamKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def streamKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.streamKey" [])
 
-attribute [irreducible] streamKey
+attribute [irreducible] streamKey.ty
 
-def ServerTransportStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerTransportStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServerTransportStream" [])
 
-attribute [irreducible] ServerTransportStream
+attribute [irreducible] ServerTransportStream.ty
 
-def serverKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def serverKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.serverKey" [])
 
-attribute [irreducible] serverKey
+attribute [irreducible] serverKey.ty
 
-def atomicSemaphore [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def atomicSemaphore.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.atomicSemaphore" [])
 
-attribute [irreducible] atomicSemaphore
+attribute [irreducible] atomicSemaphore.ty
 
-def ServiceConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServiceConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServiceConfig" [])
 
-attribute [irreducible] ServiceConfig
+attribute [irreducible] ServiceConfig.ty
 
-def healthCheckConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def healthCheckConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.healthCheckConfig" [])
 
-attribute [irreducible] healthCheckConfig
+attribute [irreducible] healthCheckConfig.ty
 
-def jsonRetryPolicy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def jsonRetryPolicy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.jsonRetryPolicy" [])
 
-attribute [irreducible] jsonRetryPolicy
+attribute [irreducible] jsonRetryPolicy.ty
 
-def retryThrottlingPolicy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def retryThrottlingPolicy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.retryThrottlingPolicy" [])
 
-attribute [irreducible] retryThrottlingPolicy
+attribute [irreducible] retryThrottlingPolicy.ty
 
-def jsonName [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def jsonName.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.jsonName" [])
 
-attribute [irreducible] jsonName
+attribute [irreducible] jsonName.ty
 
-def jsonMC [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def jsonMC.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.jsonMC" [])
 
-attribute [irreducible] jsonMC
+attribute [irreducible] jsonMC.ty
 
-def jsonSC [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def jsonSC.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.jsonSC" [])
 
-attribute [irreducible] jsonSC
+attribute [irreducible] jsonSC.ty
 
-def StreamHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StreamHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StreamHandler" [])
 
-attribute [irreducible] StreamHandler
+attribute [irreducible] StreamHandler.ty
 
-def StreamDesc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StreamDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.StreamDesc" [])
 
-attribute [irreducible] StreamDesc
+attribute [irreducible] StreamDesc.ty
 
-def Stream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Stream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.Stream" [])
 
-attribute [irreducible] Stream
+attribute [irreducible] Stream.ty
 
-def ClientStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ClientStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ClientStream" [])
 
-attribute [irreducible] ClientStream
+attribute [irreducible] ClientStream.ty
 
-def clientStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def clientStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.clientStream" [])
 
-attribute [irreducible] clientStream
+attribute [irreducible] clientStream.ty
 
-def replayOp [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def replayOp.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.replayOp" [])
 
-attribute [irreducible] replayOp
+attribute [irreducible] replayOp.ty
 
-def csAttempt [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def csAttempt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.csAttempt" [])
 
-attribute [irreducible] csAttempt
+attribute [irreducible] csAttempt.ty
 
-def addrConnStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def addrConnStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.addrConnStream" [])
 
-attribute [irreducible] addrConnStream
+attribute [irreducible] addrConnStream.ty
 
-def ServerStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServerStream" [])
 
-attribute [irreducible] ServerStream
+attribute [irreducible] ServerStream.ty
 
-def serverStream [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def serverStream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.serverStream" [])
 
-attribute [irreducible] serverStream
+attribute [irreducible] serverStream.ty
 
-def ServerStreamingClient [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
+def ServerStreamingClient.ty [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServerStreamingClient" [Res])
 
-attribute [irreducible] ServerStreamingClient
+attribute [irreducible] ServerStreamingClient.ty
 
-def ServerStreamingServer [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
+def ServerStreamingServer.ty [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ServerStreamingServer" [Res])
 
-attribute [irreducible] ServerStreamingServer
+attribute [irreducible] ServerStreamingServer.ty
 
-def ClientStreamingClient [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def ClientStreamingClient.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ClientStreamingClient" [Req, Res])
 
-attribute [irreducible] ClientStreamingClient
+attribute [irreducible] ClientStreamingClient.ty
 
-def ClientStreamingServer [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def ClientStreamingServer.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.ClientStreamingServer" [Req, Res])
 
-attribute [irreducible] ClientStreamingServer
+attribute [irreducible] ClientStreamingServer.ty
 
-def BidiStreamingClient [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def BidiStreamingClient.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.BidiStreamingClient" [Req, Res])
 
-attribute [irreducible] BidiStreamingClient
+attribute [irreducible] BidiStreamingClient.ty
 
-def BidiStreamingServer [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def BidiStreamingServer.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.BidiStreamingServer" [Req, Res])
 
-attribute [irreducible] BidiStreamingServer
+attribute [irreducible] BidiStreamingServer.ty
 
-def GenericClientStream [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def GenericClientStream.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.GenericClientStream" [Req, Res])
 
-attribute [irreducible] GenericClientStream
+attribute [irreducible] GenericClientStream.ty
 
-def GenericServerStream [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
+def GenericServerStream.ty [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.GenericServerStream" [Req, Res])
 
-attribute [irreducible] GenericServerStream
+attribute [irreducible] GenericServerStream.ty
 
-def traceEventLog [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def traceEventLog.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.traceEventLog" [])
 
-attribute [irreducible] traceEventLog
+attribute [irreducible] traceEventLog.ty
 
-def traceLog [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def traceLog.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.traceLog" [])
 
-attribute [irreducible] traceLog
+attribute [irreducible] traceLog.ty
 
-def traceInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def traceInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.traceInfo" [])
 
-attribute [irreducible] traceInfo
+attribute [irreducible] traceInfo.ty
 
-def firstLine [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def firstLine.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.firstLine" [])
 
-attribute [irreducible] firstLine
+attribute [irreducible] firstLine.ty
 
-def payload [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def payload.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.payload" [])
 
-attribute [irreducible] payload
+attribute [irreducible] payload.ty
 
-def fmtStringer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def fmtStringer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.fmtStringer" [])
 
-attribute [irreducible] fmtStringer
+attribute [irreducible] fmtStringer.ty
 
-def stringer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def stringer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc.stringer" [])
 
-attribute [irreducible] stringer
+attribute [irreducible] stringer.ty
 
 axiom ConnectParams.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -1655,17 +1655,15 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.io.initialize') (Val #()))))))))
 
-namespace BackoffConfig
-structure t [FfiSyntax] where
+structure BackoffConfig [FfiSyntax] where
   mk ::
-  MaxDelay' : _root_.Perennial.time.Duration.t
+  MaxDelay' : _root_.Perennial.time.Duration
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end BackoffConfig
+instance BackoffConfig.zero_val [FfiSyntax] : ZeroVal BackoffConfig :=
+  ⟨BackoffConfig.mk zeroValDef⟩
 
 @[reducible] def BackoffConfig.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"MaxDelay" _root_.Perennial.time.Duration)]
+  [(go.field_decl.FieldDecl go!"MaxDelay" _root_.Perennial.time.Duration.ty)]
 
 @[irreducible] def BackoffConfig.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   BackoffConfig.fieldsUnsealed
@@ -1678,102 +1676,90 @@ instance equals_unfold_BackoffConfig [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType BackoffConfig.fields)
 
 class BackoffConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying BackoffConfig.underlying BackoffConfig.t
-  underlying : go.UnderlyingDirectedEq BackoffConfig BackoffConfig.underlying
-  get_MaxDelay : ∀ (x : BackoffConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet BackoffConfig.underlying go!"MaxDelay") #x (Val #(x.MaxDelay'))
-  set_MaxDelay : ∀ (x : BackoffConfig.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet BackoffConfig.underlying go!"MaxDelay") (PairV #x #y) (Val #(({ x with MaxDelay' := y } : BackoffConfig.t)))
+  type_repr : go.TypeReprUnderlying BackoffConfig.underlying BackoffConfig
+  underlying : go.UnderlyingDirectedEq BackoffConfig.ty BackoffConfig.underlying
+  get_MaxDelay : ∀ (x : BackoffConfig), go.IsGoStepPureDetTagged under (StructFieldGet BackoffConfig.underlying go!"MaxDelay") #x (Val #(x.MaxDelay'))
+  set_MaxDelay : ∀ (x : BackoffConfig) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet BackoffConfig.underlying go!"MaxDelay") (PairV #x #y) (Val #(({ x with MaxDelay' := y } : BackoffConfig)))
 
 attribute [instance] BackoffConfig.TypeAssumptions.type_repr
   BackoffConfig.TypeAssumptions.underlying
   BackoffConfig.TypeAssumptions.get_MaxDelay
   BackoffConfig.TypeAssumptions.set_MaxDelay
 
-namespace ConnectParams
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ConnectParams
+axiom ConnectParams : Type
+axiom ConnectParams.zero_val : ZeroVal ConnectParams
+attribute [instance] ConnectParams.zero_val
 
 class ConnectParams.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ConnectParams.underlying ConnectParams.t
-  underlying : go.UnderlyingDirectedEq ConnectParams ConnectParams.underlying
+  type_repr : go.TypeReprUnderlying ConnectParams.underlying ConnectParams
+  underlying : go.UnderlyingDirectedEq ConnectParams.ty ConnectParams.underlying
   isUnderlying : go.IsUnderlying ConnectParams.underlying ConnectParams.underlying
 
 attribute [instance] ConnectParams.TypeAssumptions.type_repr
   ConnectParams.TypeAssumptions.underlying
   ConnectParams.TypeAssumptions.isUnderlying
 
-namespace ccBalancerWrapper
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ccBalancerWrapper
+axiom ccBalancerWrapper : Type
+axiom ccBalancerWrapper.zero_val : ZeroVal ccBalancerWrapper
+attribute [instance] ccBalancerWrapper.zero_val
 
 class ccBalancerWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ccBalancerWrapper.underlying ccBalancerWrapper.t
-  underlying : go.UnderlyingDirectedEq ccBalancerWrapper ccBalancerWrapper.underlying
+  type_repr : go.TypeReprUnderlying ccBalancerWrapper.underlying ccBalancerWrapper
+  underlying : go.UnderlyingDirectedEq ccBalancerWrapper.ty ccBalancerWrapper.underlying
   isUnderlying : go.IsUnderlying ccBalancerWrapper.underlying ccBalancerWrapper.underlying
 
 attribute [instance] ccBalancerWrapper.TypeAssumptions.type_repr
   ccBalancerWrapper.TypeAssumptions.underlying
   ccBalancerWrapper.TypeAssumptions.isUnderlying
 
-namespace acBalancerWrapper
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end acBalancerWrapper
+axiom acBalancerWrapper : Type
+axiom acBalancerWrapper.zero_val : ZeroVal acBalancerWrapper
+attribute [instance] acBalancerWrapper.zero_val
 
 class acBalancerWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying acBalancerWrapper.underlying acBalancerWrapper.t
-  underlying : go.UnderlyingDirectedEq acBalancerWrapper acBalancerWrapper.underlying
+  type_repr : go.TypeReprUnderlying acBalancerWrapper.underlying acBalancerWrapper
+  underlying : go.UnderlyingDirectedEq acBalancerWrapper.ty acBalancerWrapper.underlying
   isUnderlying : go.IsUnderlying acBalancerWrapper.underlying acBalancerWrapper.underlying
 
 attribute [instance] acBalancerWrapper.TypeAssumptions.type_repr
   acBalancerWrapper.TypeAssumptions.underlying
   acBalancerWrapper.TypeAssumptions.isUnderlying
 
-namespace healthData
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end healthData
+axiom healthData : Type
+axiom healthData.zero_val : ZeroVal healthData
+attribute [instance] healthData.zero_val
 
 class healthData.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying healthData.underlying healthData.t
-  underlying : go.UnderlyingDirectedEq healthData healthData.underlying
+  type_repr : go.TypeReprUnderlying healthData.underlying healthData
+  underlying : go.UnderlyingDirectedEq healthData.ty healthData.underlying
   isUnderlying : go.IsUnderlying healthData.underlying healthData.underlying
 
 attribute [instance] healthData.TypeAssumptions.type_repr
   healthData.TypeAssumptions.underlying
   healthData.TypeAssumptions.isUnderlying
 
-namespace refCountedProducer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end refCountedProducer
+axiom refCountedProducer : Type
+axiom refCountedProducer.zero_val : ZeroVal refCountedProducer
+attribute [instance] refCountedProducer.zero_val
 
 class refCountedProducer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying refCountedProducer.underlying refCountedProducer.t
-  underlying : go.UnderlyingDirectedEq refCountedProducer refCountedProducer.underlying
+  type_repr : go.TypeReprUnderlying refCountedProducer.underlying refCountedProducer
+  underlying : go.UnderlyingDirectedEq refCountedProducer.ty refCountedProducer.underlying
   isUnderlying : go.IsUnderlying refCountedProducer.underlying refCountedProducer.underlying
 
 attribute [instance] refCountedProducer.TypeAssumptions.type_repr
   refCountedProducer.TypeAssumptions.underlying
   refCountedProducer.TypeAssumptions.isUnderlying
 
-namespace defaultConfigSelector
-structure t [FfiSyntax] where
+structure defaultConfigSelector [FfiSyntax] where
   mk ::
   sc' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end defaultConfigSelector
+instance defaultConfigSelector.zero_val [FfiSyntax] : ZeroVal defaultConfigSelector :=
+  ⟨defaultConfigSelector.mk zeroValDef⟩
 
 @[reducible] def defaultConfigSelector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"sc" (go.GoType.PointerType ServiceConfig))]
+  [(go.field_decl.FieldDecl go!"sc" (go.GoType.PointerType ServiceConfig.ty))]
 
 @[irreducible] def defaultConfigSelector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   defaultConfigSelector.fieldsUnsealed
@@ -1786,92 +1772,80 @@ instance equals_unfold_defaultConfigSelector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType defaultConfigSelector.fields)
 
 class defaultConfigSelector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying defaultConfigSelector.underlying defaultConfigSelector.t
-  underlying : go.UnderlyingDirectedEq defaultConfigSelector defaultConfigSelector.underlying
-  get_sc : ∀ (x : defaultConfigSelector.t), go.IsGoStepPureDetTagged under (StructFieldGet defaultConfigSelector.underlying go!"sc") #x (Val #(x.sc'))
-  set_sc : ∀ (x : defaultConfigSelector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet defaultConfigSelector.underlying go!"sc") (PairV #x #y) (Val #(({ x with sc' := y } : defaultConfigSelector.t)))
+  type_repr : go.TypeReprUnderlying defaultConfigSelector.underlying defaultConfigSelector
+  underlying : go.UnderlyingDirectedEq defaultConfigSelector.ty defaultConfigSelector.underlying
+  get_sc : ∀ (x : defaultConfigSelector), go.IsGoStepPureDetTagged under (StructFieldGet defaultConfigSelector.underlying go!"sc") #x (Val #(x.sc'))
+  set_sc : ∀ (x : defaultConfigSelector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet defaultConfigSelector.underlying go!"sc") (PairV #x #y) (Val #(({ x with sc' := y } : defaultConfigSelector)))
 
 attribute [instance] defaultConfigSelector.TypeAssumptions.type_repr
   defaultConfigSelector.TypeAssumptions.underlying
   defaultConfigSelector.TypeAssumptions.get_sc
   defaultConfigSelector.TypeAssumptions.set_sc
 
-namespace ClientConn
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ClientConn
+axiom ClientConn : Type
+axiom ClientConn.zero_val : ZeroVal ClientConn
+attribute [instance] ClientConn.zero_val
 
 class ClientConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ClientConn.underlying ClientConn.t
-  underlying : go.UnderlyingDirectedEq ClientConn ClientConn.underlying
+  type_repr : go.TypeReprUnderlying ClientConn.underlying ClientConn
+  underlying : go.UnderlyingDirectedEq ClientConn.ty ClientConn.underlying
   isUnderlying : go.IsUnderlying ClientConn.underlying ClientConn.underlying
 
 attribute [instance] ClientConn.TypeAssumptions.type_repr
   ClientConn.TypeAssumptions.underlying
   ClientConn.TypeAssumptions.isUnderlying
 
-namespace idler
-abbrev t [FfiSyntax] : Type := ClientConn.t
-end idler
+abbrev idler [FfiSyntax] : Type := ClientConn
 
 @[reducible] def idler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  ClientConn
+  ClientConn.ty
 
 class idler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq idler idler.underlying
+  underlying : go.UnderlyingDirectedEq idler.ty idler.underlying
 
 attribute [instance] idler.TypeAssumptions.underlying
 
-namespace connectivityStateManager
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end connectivityStateManager
+axiom connectivityStateManager : Type
+axiom connectivityStateManager.zero_val : ZeroVal connectivityStateManager
+attribute [instance] connectivityStateManager.zero_val
 
 class connectivityStateManager.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying connectivityStateManager.underlying connectivityStateManager.t
-  underlying : go.UnderlyingDirectedEq connectivityStateManager connectivityStateManager.underlying
+  type_repr : go.TypeReprUnderlying connectivityStateManager.underlying connectivityStateManager
+  underlying : go.UnderlyingDirectedEq connectivityStateManager.ty connectivityStateManager.underlying
   isUnderlying : go.IsUnderlying connectivityStateManager.underlying connectivityStateManager.underlying
 
 attribute [instance] connectivityStateManager.TypeAssumptions.type_repr
   connectivityStateManager.TypeAssumptions.underlying
   connectivityStateManager.TypeAssumptions.isUnderlying
 
-namespace ClientConnInterface
-abbrev t [FfiSyntax] : Type := interface.t
-end ClientConnInterface
+abbrev ClientConnInterface [FfiSyntax] : Type := interface.t
 
 @[reducible] def ClientConnInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Invoke" (go.signature.Signature [_root_.Perennial.context.Context, go.string, go.any, go.any, (go.GoType.SliceType CallOption)] true [go.error])), (go.InterfaceElem.MethodElem go!"NewStream" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType StreamDesc), go.string, (go.GoType.SliceType CallOption)] true [ClientStream, go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Invoke" (go.signature.Signature [_root_.Perennial.context.Context.ty, go.string, go.any, go.any, (go.GoType.SliceType CallOption.ty)] true [go.error])), (go.InterfaceElem.MethodElem go!"NewStream" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType StreamDesc.ty), go.string, (go.GoType.SliceType CallOption.ty)] true [ClientStream.ty, go.error]))])
 
 class ClientConnInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ClientConnInterface ClientConnInterface.underlying
+  underlying : go.UnderlyingDirectedEq ClientConnInterface.ty ClientConnInterface.underlying
 
 attribute [instance] ClientConnInterface.TypeAssumptions.underlying
 
-namespace addrConn
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end addrConn
+axiom addrConn : Type
+axiom addrConn.zero_val : ZeroVal addrConn
+attribute [instance] addrConn.zero_val
 
 class addrConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying addrConn.underlying addrConn.t
-  underlying : go.UnderlyingDirectedEq addrConn addrConn.underlying
+  type_repr : go.TypeReprUnderlying addrConn.underlying addrConn
+  underlying : go.UnderlyingDirectedEq addrConn.ty addrConn.underlying
   isUnderlying : go.IsUnderlying addrConn.underlying addrConn.underlying
 
 attribute [instance] addrConn.TypeAssumptions.type_repr
   addrConn.TypeAssumptions.underlying
   addrConn.TypeAssumptions.isUnderlying
 
-namespace securityLevelKey
-structure t [FfiSyntax] where
+structure securityLevelKey [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end securityLevelKey
+instance securityLevelKey.zero_val [FfiSyntax] : ZeroVal securityLevelKey :=
+  ⟨securityLevelKey.mk⟩
 
 @[reducible] def securityLevelKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -1887,30 +1861,28 @@ instance equals_unfold_securityLevelKey [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType securityLevelKey.fields)
 
 class securityLevelKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying securityLevelKey.underlying securityLevelKey.t
-  underlying : go.UnderlyingDirectedEq securityLevelKey securityLevelKey.underlying
+  type_repr : go.TypeReprUnderlying securityLevelKey.underlying securityLevelKey
+  underlying : go.UnderlyingDirectedEq securityLevelKey.ty securityLevelKey.underlying
 
 attribute [instance] securityLevelKey.TypeAssumptions.type_repr
   securityLevelKey.TypeAssumptions.underlying
 
-namespace retryThrottler
-structure t [FfiSyntax] where
+structure retryThrottler [FfiSyntax] where
   mk ::
   max' : w64
   thresh' : w64
   ratio' : w64
-  mu' : _root_.Perennial.sync.Mutex.t
+  mu' : _root_.Perennial.sync.Mutex
   tokens' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end retryThrottler
+instance retryThrottler.zero_val [FfiSyntax] : ZeroVal retryThrottler :=
+  ⟨retryThrottler.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def retryThrottler.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"max" go.float64),
 (go.field_decl.FieldDecl go!"thresh" go.float64),
 (go.field_decl.FieldDecl go!"ratio" go.float64),
-(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"tokens" go.float64)]
 
 @[irreducible] def retryThrottler.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1924,18 +1896,18 @@ instance equals_unfold_retryThrottler [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType retryThrottler.fields)
 
 class retryThrottler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying retryThrottler.underlying retryThrottler.t
-  underlying : go.UnderlyingDirectedEq retryThrottler retryThrottler.underlying
-  get_max : ∀ (x : retryThrottler.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"max") #x (Val #(x.max'))
-  set_max : ∀ (x : retryThrottler.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"max") (PairV #x #y) (Val #(({ x with max' := y } : retryThrottler.t)))
-  get_thresh : ∀ (x : retryThrottler.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"thresh") #x (Val #(x.thresh'))
-  set_thresh : ∀ (x : retryThrottler.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"thresh") (PairV #x #y) (Val #(({ x with thresh' := y } : retryThrottler.t)))
-  get_ratio : ∀ (x : retryThrottler.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"ratio") #x (Val #(x.ratio'))
-  set_ratio : ∀ (x : retryThrottler.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"ratio") (PairV #x #y) (Val #(({ x with ratio' := y } : retryThrottler.t)))
-  get_mu : ∀ (x : retryThrottler.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : retryThrottler.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : retryThrottler.t)))
-  get_tokens : ∀ (x : retryThrottler.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"tokens") #x (Val #(x.tokens'))
-  set_tokens : ∀ (x : retryThrottler.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"tokens") (PairV #x #y) (Val #(({ x with tokens' := y } : retryThrottler.t)))
+  type_repr : go.TypeReprUnderlying retryThrottler.underlying retryThrottler
+  underlying : go.UnderlyingDirectedEq retryThrottler.ty retryThrottler.underlying
+  get_max : ∀ (x : retryThrottler), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"max") #x (Val #(x.max'))
+  set_max : ∀ (x : retryThrottler) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"max") (PairV #x #y) (Val #(({ x with max' := y } : retryThrottler)))
+  get_thresh : ∀ (x : retryThrottler), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"thresh") #x (Val #(x.thresh'))
+  set_thresh : ∀ (x : retryThrottler) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"thresh") (PairV #x #y) (Val #(({ x with thresh' := y } : retryThrottler)))
+  get_ratio : ∀ (x : retryThrottler), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"ratio") #x (Val #(x.ratio'))
+  set_ratio : ∀ (x : retryThrottler) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"ratio") (PairV #x #y) (Val #(({ x with ratio' := y } : retryThrottler)))
+  get_mu : ∀ (x : retryThrottler), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : retryThrottler) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : retryThrottler)))
+  get_tokens : ∀ (x : retryThrottler), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottler.underlying go!"tokens") #x (Val #(x.tokens'))
+  set_tokens : ∀ (x : retryThrottler) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottler.underlying go!"tokens") (PairV #x #y) (Val #(({ x with tokens' := y } : retryThrottler)))
 
 attribute [instance] retryThrottler.TypeAssumptions.type_repr
   retryThrottler.TypeAssumptions.underlying
@@ -1950,29 +1922,25 @@ attribute [instance] retryThrottler.TypeAssumptions.type_repr
   retryThrottler.TypeAssumptions.get_tokens
   retryThrottler.TypeAssumptions.set_tokens
 
-namespace baseCodec
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end baseCodec
+axiom baseCodec : Type
+axiom baseCodec.zero_val : ZeroVal baseCodec
+attribute [instance] baseCodec.zero_val
 
 class baseCodec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying baseCodec.underlying baseCodec.t
-  underlying : go.UnderlyingDirectedEq baseCodec baseCodec.underlying
+  type_repr : go.TypeReprUnderlying baseCodec.underlying baseCodec
+  underlying : go.UnderlyingDirectedEq baseCodec.ty baseCodec.underlying
   isUnderlying : go.IsUnderlying baseCodec.underlying baseCodec.underlying
 
 attribute [instance] baseCodec.TypeAssumptions.type_repr
   baseCodec.TypeAssumptions.underlying
   baseCodec.TypeAssumptions.isUnderlying
 
-namespace codecV0Bridge
-structure t [FfiSyntax] where
+structure codecV0Bridge [FfiSyntax] where
   mk ::
   codec' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end codecV0Bridge
+instance codecV0Bridge.zero_val [FfiSyntax] : ZeroVal codecV0Bridge :=
+  ⟨codecV0Bridge.mk zeroValDef⟩
 
 @[reducible] def codecV0Bridge.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"codec" (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Marshal" (go.signature.Signature [go.any] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.GoType.SliceType go.byte), go.any] false [go.error]))]))]
@@ -1988,28 +1956,26 @@ instance equals_unfold_codecV0Bridge [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType codecV0Bridge.fields)
 
 class codecV0Bridge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying codecV0Bridge.underlying codecV0Bridge.t
-  underlying : go.UnderlyingDirectedEq codecV0Bridge codecV0Bridge.underlying
-  get_codec : ∀ (x : codecV0Bridge.t), go.IsGoStepPureDetTagged under (StructFieldGet codecV0Bridge.underlying go!"codec") #x (Val #(x.codec'))
-  set_codec : ∀ (x : codecV0Bridge.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet codecV0Bridge.underlying go!"codec") (PairV #x #y) (Val #(({ x with codec' := y } : codecV0Bridge.t)))
+  type_repr : go.TypeReprUnderlying codecV0Bridge.underlying codecV0Bridge
+  underlying : go.UnderlyingDirectedEq codecV0Bridge.ty codecV0Bridge.underlying
+  get_codec : ∀ (x : codecV0Bridge), go.IsGoStepPureDetTagged under (StructFieldGet codecV0Bridge.underlying go!"codec") #x (Val #(x.codec'))
+  set_codec : ∀ (x : codecV0Bridge) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet codecV0Bridge.underlying go!"codec") (PairV #x #y) (Val #(({ x with codec' := y } : codecV0Bridge)))
 
 attribute [instance] codecV0Bridge.TypeAssumptions.type_repr
   codecV0Bridge.TypeAssumptions.underlying
   codecV0Bridge.TypeAssumptions.get_codec
   codecV0Bridge.TypeAssumptions.set_codec
 
-namespace codecV1Bridge
-structure t [FfiSyntax] where
+structure codecV1Bridge [FfiSyntax] where
   mk ::
-  codecV0Bridge' : codecV0Bridge.t
+  codecV0Bridge' : codecV0Bridge
   name' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end codecV1Bridge
+instance codecV1Bridge.zero_val [FfiSyntax] : ZeroVal codecV1Bridge :=
+  ⟨codecV1Bridge.mk zeroValDef zeroValDef⟩
 
 @[reducible] def codecV1Bridge.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"codecV0Bridge" codecV0Bridge),
+  [(go.field_decl.EmbeddedField go!"codecV0Bridge" codecV0Bridge.ty),
 (go.field_decl.FieldDecl go!"name" go.string)]
 
 @[irreducible] def codecV1Bridge.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -2023,12 +1989,12 @@ instance equals_unfold_codecV1Bridge [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType codecV1Bridge.fields)
 
 class codecV1Bridge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying codecV1Bridge.underlying codecV1Bridge.t
-  underlying : go.UnderlyingDirectedEq codecV1Bridge codecV1Bridge.underlying
-  get_codecV0Bridge : ∀ (x : codecV1Bridge.t), go.IsGoStepPureDetTagged under (StructFieldGet codecV1Bridge.underlying go!"codecV0Bridge") #x (Val #(x.codecV0Bridge'))
-  set_codecV0Bridge : ∀ (x : codecV1Bridge.t) (y : codecV0Bridge.t), go.IsGoStepPureDetTagged under (StructFieldSet codecV1Bridge.underlying go!"codecV0Bridge") (PairV #x #y) (Val #(({ x with codecV0Bridge' := y } : codecV1Bridge.t)))
-  get_name : ∀ (x : codecV1Bridge.t), go.IsGoStepPureDetTagged under (StructFieldGet codecV1Bridge.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : codecV1Bridge.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet codecV1Bridge.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : codecV1Bridge.t)))
+  type_repr : go.TypeReprUnderlying codecV1Bridge.underlying codecV1Bridge
+  underlying : go.UnderlyingDirectedEq codecV1Bridge.ty codecV1Bridge.underlying
+  get_codecV0Bridge : ∀ (x : codecV1Bridge), go.IsGoStepPureDetTagged under (StructFieldGet codecV1Bridge.underlying go!"codecV0Bridge") #x (Val #(x.codecV0Bridge'))
+  set_codecV0Bridge : ∀ (x : codecV1Bridge) (y : codecV0Bridge), go.IsGoStepPureDetTagged under (StructFieldSet codecV1Bridge.underlying go!"codecV0Bridge") (PairV #x #y) (Val #(({ x with codecV0Bridge' := y } : codecV1Bridge)))
+  get_name : ∀ (x : codecV1Bridge), go.IsGoStepPureDetTagged under (StructFieldGet codecV1Bridge.underlying go!"name") #x (Val #(x.name'))
+  set_name : ∀ (x : codecV1Bridge) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet codecV1Bridge.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : codecV1Bridge)))
 
 attribute [instance] codecV1Bridge.TypeAssumptions.type_repr
   codecV1Bridge.TypeAssumptions.underlying
@@ -2037,67 +2003,57 @@ attribute [instance] codecV1Bridge.TypeAssumptions.type_repr
   codecV1Bridge.TypeAssumptions.get_name
   codecV1Bridge.TypeAssumptions.set_name
 
-namespace Codec
-abbrev t [FfiSyntax] : Type := interface.t
-end Codec
+abbrev Codec [FfiSyntax] : Type := interface.t
 
 @[reducible] def Codec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Marshal" (go.signature.Signature [go.any] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.GoType.SliceType go.byte), go.any] false [go.error]))])
 
 class Codec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Codec Codec.underlying
+  underlying : go.UnderlyingDirectedEq Codec.ty Codec.underlying
 
 attribute [instance] Codec.TypeAssumptions.underlying
 
-namespace dialOptions
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end dialOptions
+axiom dialOptions : Type
+axiom dialOptions.zero_val : ZeroVal dialOptions
+attribute [instance] dialOptions.zero_val
 
 class dialOptions.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying dialOptions.underlying dialOptions.t
-  underlying : go.UnderlyingDirectedEq dialOptions dialOptions.underlying
+  type_repr : go.TypeReprUnderlying dialOptions.underlying dialOptions
+  underlying : go.UnderlyingDirectedEq dialOptions.ty dialOptions.underlying
   isUnderlying : go.IsUnderlying dialOptions.underlying dialOptions.underlying
 
 attribute [instance] dialOptions.TypeAssumptions.type_repr
   dialOptions.TypeAssumptions.underlying
   dialOptions.TypeAssumptions.isUnderlying
 
-namespace DialOption
-abbrev t [FfiSyntax] : Type := interface.t
-end DialOption
+abbrev DialOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def DialOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType dialOptions)] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType dialOptions.ty)] false []))])
 
 class DialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq DialOption DialOption.underlying
+  underlying : go.UnderlyingDirectedEq DialOption.ty DialOption.underlying
 
 attribute [instance] DialOption.TypeAssumptions.underlying
 
-namespace perTargetDialOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end perTargetDialOption
+axiom perTargetDialOption : Type
+axiom perTargetDialOption.zero_val : ZeroVal perTargetDialOption
+attribute [instance] perTargetDialOption.zero_val
 
 class perTargetDialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying perTargetDialOption.underlying perTargetDialOption.t
-  underlying : go.UnderlyingDirectedEq perTargetDialOption perTargetDialOption.underlying
+  type_repr : go.TypeReprUnderlying perTargetDialOption.underlying perTargetDialOption
+  underlying : go.UnderlyingDirectedEq perTargetDialOption.ty perTargetDialOption.underlying
   isUnderlying : go.IsUnderlying perTargetDialOption.underlying perTargetDialOption.underlying
 
 attribute [instance] perTargetDialOption.TypeAssumptions.type_repr
   perTargetDialOption.TypeAssumptions.underlying
   perTargetDialOption.TypeAssumptions.isUnderlying
 
-namespace EmptyDialOption
-structure t [FfiSyntax] where
+structure EmptyDialOption [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end EmptyDialOption
+instance EmptyDialOption.zero_val [FfiSyntax] : ZeroVal EmptyDialOption :=
+  ⟨EmptyDialOption.mk⟩
 
 @[reducible] def EmptyDialOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -2113,19 +2069,17 @@ instance equals_unfold_EmptyDialOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType EmptyDialOption.fields)
 
 class EmptyDialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EmptyDialOption.underlying EmptyDialOption.t
-  underlying : go.UnderlyingDirectedEq EmptyDialOption EmptyDialOption.underlying
+  type_repr : go.TypeReprUnderlying EmptyDialOption.underlying EmptyDialOption
+  underlying : go.UnderlyingDirectedEq EmptyDialOption.ty EmptyDialOption.underlying
 
 attribute [instance] EmptyDialOption.TypeAssumptions.type_repr
   EmptyDialOption.TypeAssumptions.underlying
 
-namespace disableGlobalDialOptions
-structure t [FfiSyntax] where
+structure disableGlobalDialOptions [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end disableGlobalDialOptions
+instance disableGlobalDialOptions.zero_val [FfiSyntax] : ZeroVal disableGlobalDialOptions :=
+  ⟨disableGlobalDialOptions.mk⟩
 
 @[reducible] def disableGlobalDialOptions.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -2141,23 +2095,21 @@ instance equals_unfold_disableGlobalDialOptions [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType disableGlobalDialOptions.fields)
 
 class disableGlobalDialOptions.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying disableGlobalDialOptions.underlying disableGlobalDialOptions.t
-  underlying : go.UnderlyingDirectedEq disableGlobalDialOptions disableGlobalDialOptions.underlying
+  type_repr : go.TypeReprUnderlying disableGlobalDialOptions.underlying disableGlobalDialOptions
+  underlying : go.UnderlyingDirectedEq disableGlobalDialOptions.ty disableGlobalDialOptions.underlying
 
 attribute [instance] disableGlobalDialOptions.TypeAssumptions.type_repr
   disableGlobalDialOptions.TypeAssumptions.underlying
 
-namespace funcDialOption
-structure t [FfiSyntax] where
+structure funcDialOption [FfiSyntax] where
   mk ::
   f' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end funcDialOption
+instance funcDialOption.zero_val [FfiSyntax] : ZeroVal funcDialOption :=
+  ⟨funcDialOption.mk zeroValDef⟩
 
 @[reducible] def funcDialOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType dialOptions)] false [])))]
+  [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType dialOptions.ty)] false [])))]
 
 @[irreducible] def funcDialOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   funcDialOption.fieldsUnsealed
@@ -2170,27 +2122,25 @@ instance equals_unfold_funcDialOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType funcDialOption.fields)
 
 class funcDialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying funcDialOption.underlying funcDialOption.t
-  underlying : go.UnderlyingDirectedEq funcDialOption funcDialOption.underlying
-  get_f : ∀ (x : funcDialOption.t), go.IsGoStepPureDetTagged under (StructFieldGet funcDialOption.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : funcDialOption.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet funcDialOption.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : funcDialOption.t)))
+  type_repr : go.TypeReprUnderlying funcDialOption.underlying funcDialOption
+  underlying : go.UnderlyingDirectedEq funcDialOption.ty funcDialOption.underlying
+  get_f : ∀ (x : funcDialOption), go.IsGoStepPureDetTagged under (StructFieldGet funcDialOption.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : funcDialOption) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet funcDialOption.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : funcDialOption)))
 
 attribute [instance] funcDialOption.TypeAssumptions.type_repr
   funcDialOption.TypeAssumptions.underlying
   funcDialOption.TypeAssumptions.get_f
   funcDialOption.TypeAssumptions.set_f
 
-namespace joinDialOption
-structure t [FfiSyntax] where
+structure joinDialOption [FfiSyntax] where
   mk ::
   opts' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end joinDialOption
+instance joinDialOption.zero_val [FfiSyntax] : ZeroVal joinDialOption :=
+  ⟨joinDialOption.mk zeroValDef⟩
 
 @[reducible] def joinDialOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"opts" (go.GoType.SliceType DialOption))]
+  [(go.field_decl.FieldDecl go!"opts" (go.GoType.SliceType DialOption.ty))]
 
 @[irreducible] def joinDialOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   joinDialOption.fieldsUnsealed
@@ -2203,24 +2153,22 @@ instance equals_unfold_joinDialOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType joinDialOption.fields)
 
 class joinDialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying joinDialOption.underlying joinDialOption.t
-  underlying : go.UnderlyingDirectedEq joinDialOption joinDialOption.underlying
-  get_opts : ∀ (x : joinDialOption.t), go.IsGoStepPureDetTagged under (StructFieldGet joinDialOption.underlying go!"opts") #x (Val #(x.opts'))
-  set_opts : ∀ (x : joinDialOption.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinDialOption.underlying go!"opts") (PairV #x #y) (Val #(({ x with opts' := y } : joinDialOption.t)))
+  type_repr : go.TypeReprUnderlying joinDialOption.underlying joinDialOption
+  underlying : go.UnderlyingDirectedEq joinDialOption.ty joinDialOption.underlying
+  get_opts : ∀ (x : joinDialOption), go.IsGoStepPureDetTagged under (StructFieldGet joinDialOption.underlying go!"opts") #x (Val #(x.opts'))
+  set_opts : ∀ (x : joinDialOption) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinDialOption.underlying go!"opts") (PairV #x #y) (Val #(({ x with opts' := y } : joinDialOption)))
 
 attribute [instance] joinDialOption.TypeAssumptions.type_repr
   joinDialOption.TypeAssumptions.underlying
   joinDialOption.TypeAssumptions.get_opts
   joinDialOption.TypeAssumptions.set_opts
 
-namespace MaxHeaderListSizeDialOption
-structure t [FfiSyntax] where
+structure MaxHeaderListSizeDialOption [FfiSyntax] where
   mk ::
   MaxHeaderListSize' : w32
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MaxHeaderListSizeDialOption
+instance MaxHeaderListSizeDialOption.zero_val [FfiSyntax] : ZeroVal MaxHeaderListSizeDialOption :=
+  ⟨MaxHeaderListSizeDialOption.mk zeroValDef⟩
 
 @[reducible] def MaxHeaderListSizeDialOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxHeaderListSize" go.uint32)]
@@ -2236,73 +2184,63 @@ instance equals_unfold_MaxHeaderListSizeDialOption [FfiSyntax] [GoGlobalContext]
   (go.GoType.StructType MaxHeaderListSizeDialOption.fields)
 
 class MaxHeaderListSizeDialOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MaxHeaderListSizeDialOption.underlying MaxHeaderListSizeDialOption.t
-  underlying : go.UnderlyingDirectedEq MaxHeaderListSizeDialOption MaxHeaderListSizeDialOption.underlying
-  get_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeDialOption.t), go.IsGoStepPureDetTagged under (StructFieldGet MaxHeaderListSizeDialOption.underlying go!"MaxHeaderListSize") #x (Val #(x.MaxHeaderListSize'))
-  set_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeDialOption.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet MaxHeaderListSizeDialOption.underlying go!"MaxHeaderListSize") (PairV #x #y) (Val #(({ x with MaxHeaderListSize' := y } : MaxHeaderListSizeDialOption.t)))
+  type_repr : go.TypeReprUnderlying MaxHeaderListSizeDialOption.underlying MaxHeaderListSizeDialOption
+  underlying : go.UnderlyingDirectedEq MaxHeaderListSizeDialOption.ty MaxHeaderListSizeDialOption.underlying
+  get_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeDialOption), go.IsGoStepPureDetTagged under (StructFieldGet MaxHeaderListSizeDialOption.underlying go!"MaxHeaderListSize") #x (Val #(x.MaxHeaderListSize'))
+  set_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeDialOption) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet MaxHeaderListSizeDialOption.underlying go!"MaxHeaderListSize") (PairV #x #y) (Val #(({ x with MaxHeaderListSize' := y } : MaxHeaderListSizeDialOption)))
 
 attribute [instance] MaxHeaderListSizeDialOption.TypeAssumptions.type_repr
   MaxHeaderListSizeDialOption.TypeAssumptions.underlying
   MaxHeaderListSizeDialOption.TypeAssumptions.get_MaxHeaderListSize
   MaxHeaderListSizeDialOption.TypeAssumptions.set_MaxHeaderListSize
 
-namespace UnaryInvoker
-abbrev t [FfiSyntax] : Type := func.t
-end UnaryInvoker
+abbrev UnaryInvoker [FfiSyntax] : Type := func.t
 
 @[reducible] def UnaryInvoker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, go.string, go.any, go.any, (go.GoType.PointerType ClientConn), (go.GoType.SliceType CallOption)] true [go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, go.string, go.any, go.any, (go.GoType.PointerType ClientConn.ty), (go.GoType.SliceType CallOption.ty)] true [go.error]))
 
 class UnaryInvoker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UnaryInvoker UnaryInvoker.underlying
+  underlying : go.UnderlyingDirectedEq UnaryInvoker.ty UnaryInvoker.underlying
 
 attribute [instance] UnaryInvoker.TypeAssumptions.underlying
 
-namespace UnaryClientInterceptor
-abbrev t [FfiSyntax] : Type := func.t
-end UnaryClientInterceptor
+abbrev UnaryClientInterceptor [FfiSyntax] : Type := func.t
 
 @[reducible] def UnaryClientInterceptor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, go.string, go.any, go.any, (go.GoType.PointerType ClientConn), UnaryInvoker, (go.GoType.SliceType CallOption)] true [go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, go.string, go.any, go.any, (go.GoType.PointerType ClientConn.ty), UnaryInvoker.ty, (go.GoType.SliceType CallOption.ty)] true [go.error]))
 
 class UnaryClientInterceptor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UnaryClientInterceptor UnaryClientInterceptor.underlying
+  underlying : go.UnderlyingDirectedEq UnaryClientInterceptor.ty UnaryClientInterceptor.underlying
 
 attribute [instance] UnaryClientInterceptor.TypeAssumptions.underlying
 
-namespace Streamer
-abbrev t [FfiSyntax] : Type := func.t
-end Streamer
+abbrev Streamer [FfiSyntax] : Type := func.t
 
 @[reducible] def Streamer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType StreamDesc), (go.GoType.PointerType ClientConn), go.string, (go.GoType.SliceType CallOption)] true [ClientStream, go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType StreamDesc.ty), (go.GoType.PointerType ClientConn.ty), go.string, (go.GoType.SliceType CallOption.ty)] true [ClientStream.ty, go.error]))
 
 class Streamer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Streamer Streamer.underlying
+  underlying : go.UnderlyingDirectedEq Streamer.ty Streamer.underlying
 
 attribute [instance] Streamer.TypeAssumptions.underlying
 
-namespace StreamClientInterceptor
-abbrev t [FfiSyntax] : Type := func.t
-end StreamClientInterceptor
+abbrev StreamClientInterceptor [FfiSyntax] : Type := func.t
 
 @[reducible] def StreamClientInterceptor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType StreamDesc), (go.GoType.PointerType ClientConn), go.string, Streamer, (go.GoType.SliceType CallOption)] true [ClientStream, go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType StreamDesc.ty), (go.GoType.PointerType ClientConn.ty), go.string, Streamer.ty, (go.GoType.SliceType CallOption.ty)] true [ClientStream.ty, go.error]))
 
 class StreamClientInterceptor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq StreamClientInterceptor StreamClientInterceptor.underlying
+  underlying : go.UnderlyingDirectedEq StreamClientInterceptor.ty StreamClientInterceptor.underlying
 
 attribute [instance] StreamClientInterceptor.TypeAssumptions.underlying
 
-namespace UnaryServerInfo
-structure t [FfiSyntax] where
+structure UnaryServerInfo [FfiSyntax] where
   mk ::
   Server' : interface.t
   FullMethod' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end UnaryServerInfo
+instance UnaryServerInfo.zero_val [FfiSyntax] : ZeroVal UnaryServerInfo :=
+  ⟨UnaryServerInfo.mk zeroValDef zeroValDef⟩
 
 @[reducible] def UnaryServerInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Server" go.any),
@@ -2319,12 +2257,12 @@ instance equals_unfold_UnaryServerInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType UnaryServerInfo.fields)
 
 class UnaryServerInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying UnaryServerInfo.underlying UnaryServerInfo.t
-  underlying : go.UnderlyingDirectedEq UnaryServerInfo UnaryServerInfo.underlying
-  get_Server : ∀ (x : UnaryServerInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet UnaryServerInfo.underlying go!"Server") #x (Val #(x.Server'))
-  set_Server : ∀ (x : UnaryServerInfo.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet UnaryServerInfo.underlying go!"Server") (PairV #x #y) (Val #(({ x with Server' := y } : UnaryServerInfo.t)))
-  get_FullMethod : ∀ (x : UnaryServerInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet UnaryServerInfo.underlying go!"FullMethod") #x (Val #(x.FullMethod'))
-  set_FullMethod : ∀ (x : UnaryServerInfo.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet UnaryServerInfo.underlying go!"FullMethod") (PairV #x #y) (Val #(({ x with FullMethod' := y } : UnaryServerInfo.t)))
+  type_repr : go.TypeReprUnderlying UnaryServerInfo.underlying UnaryServerInfo
+  underlying : go.UnderlyingDirectedEq UnaryServerInfo.ty UnaryServerInfo.underlying
+  get_Server : ∀ (x : UnaryServerInfo), go.IsGoStepPureDetTagged under (StructFieldGet UnaryServerInfo.underlying go!"Server") #x (Val #(x.Server'))
+  set_Server : ∀ (x : UnaryServerInfo) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet UnaryServerInfo.underlying go!"Server") (PairV #x #y) (Val #(({ x with Server' := y } : UnaryServerInfo)))
+  get_FullMethod : ∀ (x : UnaryServerInfo), go.IsGoStepPureDetTagged under (StructFieldGet UnaryServerInfo.underlying go!"FullMethod") #x (Val #(x.FullMethod'))
+  set_FullMethod : ∀ (x : UnaryServerInfo) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet UnaryServerInfo.underlying go!"FullMethod") (PairV #x #y) (Val #(({ x with FullMethod' := y } : UnaryServerInfo)))
 
 attribute [instance] UnaryServerInfo.TypeAssumptions.type_repr
   UnaryServerInfo.TypeAssumptions.underlying
@@ -2333,40 +2271,34 @@ attribute [instance] UnaryServerInfo.TypeAssumptions.type_repr
   UnaryServerInfo.TypeAssumptions.get_FullMethod
   UnaryServerInfo.TypeAssumptions.set_FullMethod
 
-namespace UnaryHandler
-abbrev t [FfiSyntax] : Type := func.t
-end UnaryHandler
+abbrev UnaryHandler [FfiSyntax] : Type := func.t
 
 @[reducible] def UnaryHandler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, go.any] false [go.any, go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, go.any] false [go.any, go.error]))
 
 class UnaryHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UnaryHandler UnaryHandler.underlying
+  underlying : go.UnderlyingDirectedEq UnaryHandler.ty UnaryHandler.underlying
 
 attribute [instance] UnaryHandler.TypeAssumptions.underlying
 
-namespace UnaryServerInterceptor
-abbrev t [FfiSyntax] : Type := func.t
-end UnaryServerInterceptor
+abbrev UnaryServerInterceptor [FfiSyntax] : Type := func.t
 
 @[reducible] def UnaryServerInterceptor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context, go.any, (go.GoType.PointerType UnaryServerInfo), UnaryHandler] false [go.any, go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.context.Context.ty, go.any, (go.GoType.PointerType UnaryServerInfo.ty), UnaryHandler.ty] false [go.any, go.error]))
 
 class UnaryServerInterceptor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UnaryServerInterceptor UnaryServerInterceptor.underlying
+  underlying : go.UnderlyingDirectedEq UnaryServerInterceptor.ty UnaryServerInterceptor.underlying
 
 attribute [instance] UnaryServerInterceptor.TypeAssumptions.underlying
 
-namespace StreamServerInfo
-structure t [FfiSyntax] where
+structure StreamServerInfo [FfiSyntax] where
   mk ::
   FullMethod' : GoString
   IsClientStream' : Bool
   IsServerStream' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end StreamServerInfo
+instance StreamServerInfo.zero_val [FfiSyntax] : ZeroVal StreamServerInfo :=
+  ⟨StreamServerInfo.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def StreamServerInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"FullMethod" go.string),
@@ -2384,14 +2316,14 @@ instance equals_unfold_StreamServerInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType StreamServerInfo.fields)
 
 class StreamServerInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying StreamServerInfo.underlying StreamServerInfo.t
-  underlying : go.UnderlyingDirectedEq StreamServerInfo StreamServerInfo.underlying
-  get_FullMethod : ∀ (x : StreamServerInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"FullMethod") #x (Val #(x.FullMethod'))
-  set_FullMethod : ∀ (x : StreamServerInfo.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"FullMethod") (PairV #x #y) (Val #(({ x with FullMethod' := y } : StreamServerInfo.t)))
-  get_IsClientStream : ∀ (x : StreamServerInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"IsClientStream") #x (Val #(x.IsClientStream'))
-  set_IsClientStream : ∀ (x : StreamServerInfo.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"IsClientStream") (PairV #x #y) (Val #(({ x with IsClientStream' := y } : StreamServerInfo.t)))
-  get_IsServerStream : ∀ (x : StreamServerInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"IsServerStream") #x (Val #(x.IsServerStream'))
-  set_IsServerStream : ∀ (x : StreamServerInfo.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"IsServerStream") (PairV #x #y) (Val #(({ x with IsServerStream' := y } : StreamServerInfo.t)))
+  type_repr : go.TypeReprUnderlying StreamServerInfo.underlying StreamServerInfo
+  underlying : go.UnderlyingDirectedEq StreamServerInfo.ty StreamServerInfo.underlying
+  get_FullMethod : ∀ (x : StreamServerInfo), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"FullMethod") #x (Val #(x.FullMethod'))
+  set_FullMethod : ∀ (x : StreamServerInfo) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"FullMethod") (PairV #x #y) (Val #(({ x with FullMethod' := y } : StreamServerInfo)))
+  get_IsClientStream : ∀ (x : StreamServerInfo), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"IsClientStream") #x (Val #(x.IsClientStream'))
+  set_IsClientStream : ∀ (x : StreamServerInfo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"IsClientStream") (PairV #x #y) (Val #(({ x with IsClientStream' := y } : StreamServerInfo)))
+  get_IsServerStream : ∀ (x : StreamServerInfo), go.IsGoStepPureDetTagged under (StructFieldGet StreamServerInfo.underlying go!"IsServerStream") #x (Val #(x.IsServerStream'))
+  set_IsServerStream : ∀ (x : StreamServerInfo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamServerInfo.underlying go!"IsServerStream") (PairV #x #y) (Val #(({ x with IsServerStream' := y } : StreamServerInfo)))
 
 attribute [instance] StreamServerInfo.TypeAssumptions.type_repr
   StreamServerInfo.TypeAssumptions.underlying
@@ -2402,44 +2334,38 @@ attribute [instance] StreamServerInfo.TypeAssumptions.type_repr
   StreamServerInfo.TypeAssumptions.get_IsServerStream
   StreamServerInfo.TypeAssumptions.set_IsServerStream
 
-namespace StreamServerInterceptor
-abbrev t [FfiSyntax] : Type := func.t
-end StreamServerInterceptor
+abbrev StreamServerInterceptor [FfiSyntax] : Type := func.t
 
 @[reducible] def StreamServerInterceptor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [go.any, ServerStream, (go.GoType.PointerType StreamServerInfo), StreamHandler] false [go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [go.any, ServerStream.ty, (go.GoType.PointerType StreamServerInfo.ty), StreamHandler.ty] false [go.error]))
 
 class StreamServerInterceptor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq StreamServerInterceptor StreamServerInterceptor.underlying
+  underlying : go.UnderlyingDirectedEq StreamServerInterceptor.ty StreamServerInterceptor.underlying
 
 attribute [instance] StreamServerInterceptor.TypeAssumptions.underlying
 
-namespace pickerGeneration
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end pickerGeneration
+axiom pickerGeneration : Type
+axiom pickerGeneration.zero_val : ZeroVal pickerGeneration
+attribute [instance] pickerGeneration.zero_val
 
 class pickerGeneration.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying pickerGeneration.underlying pickerGeneration.t
-  underlying : go.UnderlyingDirectedEq pickerGeneration pickerGeneration.underlying
+  type_repr : go.TypeReprUnderlying pickerGeneration.underlying pickerGeneration
+  underlying : go.UnderlyingDirectedEq pickerGeneration.ty pickerGeneration.underlying
   isUnderlying : go.IsUnderlying pickerGeneration.underlying pickerGeneration.underlying
 
 attribute [instance] pickerGeneration.TypeAssumptions.type_repr
   pickerGeneration.TypeAssumptions.underlying
   pickerGeneration.TypeAssumptions.isUnderlying
 
-namespace pickerWrapper
-structure t [FfiSyntax] where
+structure pickerWrapper [FfiSyntax] where
   mk ::
-  pickerGen' : (_root_.Perennial.sync.atomic.Pointer.t pickerGeneration.t)
+  pickerGen' : (_root_.Perennial.sync.atomic.Pointer pickerGeneration)
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end pickerWrapper
+instance pickerWrapper.zero_val [FfiSyntax] : ZeroVal pickerWrapper :=
+  ⟨pickerWrapper.mk zeroValDef⟩
 
 @[reducible] def pickerWrapper.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"pickerGen" (_root_.Perennial.sync.atomic.Pointer pickerGeneration))]
+  [(go.field_decl.FieldDecl go!"pickerGen" (_root_.Perennial.sync.atomic.Pointer.ty pickerGeneration.ty))]
 
 @[irreducible] def pickerWrapper.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   pickerWrapper.fieldsUnsealed
@@ -2452,39 +2378,35 @@ instance equals_unfold_pickerWrapper [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType pickerWrapper.fields)
 
 class pickerWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying pickerWrapper.underlying pickerWrapper.t
-  underlying : go.UnderlyingDirectedEq pickerWrapper pickerWrapper.underlying
-  get_pickerGen : ∀ (x : pickerWrapper.t), go.IsGoStepPureDetTagged under (StructFieldGet pickerWrapper.underlying go!"pickerGen") #x (Val #(x.pickerGen'))
-  set_pickerGen : ∀ (x : pickerWrapper.t) (y : (_root_.Perennial.sync.atomic.Pointer.t pickerGeneration.t)), go.IsGoStepPureDetTagged under (StructFieldSet pickerWrapper.underlying go!"pickerGen") (PairV #x #y) (Val #(({ x with pickerGen' := y } : pickerWrapper.t)))
+  type_repr : go.TypeReprUnderlying pickerWrapper.underlying pickerWrapper
+  underlying : go.UnderlyingDirectedEq pickerWrapper.ty pickerWrapper.underlying
+  get_pickerGen : ∀ (x : pickerWrapper), go.IsGoStepPureDetTagged under (StructFieldGet pickerWrapper.underlying go!"pickerGen") #x (Val #(x.pickerGen'))
+  set_pickerGen : ∀ (x : pickerWrapper) (y : (_root_.Perennial.sync.atomic.Pointer pickerGeneration)), go.IsGoStepPureDetTagged under (StructFieldSet pickerWrapper.underlying go!"pickerGen") (PairV #x #y) (Val #(({ x with pickerGen' := y } : pickerWrapper)))
 
 attribute [instance] pickerWrapper.TypeAssumptions.type_repr
   pickerWrapper.TypeAssumptions.underlying
   pickerWrapper.TypeAssumptions.get_pickerGen
   pickerWrapper.TypeAssumptions.set_pickerGen
 
-namespace pick
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end pick
+axiom pick : Type
+axiom pick.zero_val : ZeroVal pick
+attribute [instance] pick.zero_val
 
 class pick.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying pick.underlying pick.t
-  underlying : go.UnderlyingDirectedEq pick pick.underlying
+  type_repr : go.TypeReprUnderlying pick.underlying pick
+  underlying : go.UnderlyingDirectedEq pick.ty pick.underlying
   isUnderlying : go.IsUnderlying pick.underlying pick.underlying
 
 attribute [instance] pick.TypeAssumptions.type_repr
   pick.TypeAssumptions.underlying
   pick.TypeAssumptions.isUnderlying
 
-namespace dropError
-structure t [FfiSyntax] where
+structure dropError [FfiSyntax] where
   mk ::
   error' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end dropError
+instance dropError.zero_val [FfiSyntax] : ZeroVal dropError :=
+  ⟨dropError.mk zeroValDef⟩
 
 @[reducible] def dropError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"error" go.error)]
@@ -2500,69 +2422,61 @@ instance equals_unfold_dropError [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType dropError.fields)
 
 class dropError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying dropError.underlying dropError.t
-  underlying : go.UnderlyingDirectedEq dropError dropError.underlying
-  get_error : ∀ (x : dropError.t), go.IsGoStepPureDetTagged under (StructFieldGet dropError.underlying go!"error") #x (Val #(x.error'))
-  set_error : ∀ (x : dropError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet dropError.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dropError.t)))
+  type_repr : go.TypeReprUnderlying dropError.underlying dropError
+  underlying : go.UnderlyingDirectedEq dropError.ty dropError.underlying
+  get_error : ∀ (x : dropError), go.IsGoStepPureDetTagged under (StructFieldGet dropError.underlying go!"error") #x (Val #(x.error'))
+  set_error : ∀ (x : dropError) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet dropError.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dropError)))
 
 attribute [instance] dropError.TypeAssumptions.type_repr
   dropError.TypeAssumptions.underlying
   dropError.TypeAssumptions.get_error
   dropError.TypeAssumptions.set_error
 
-namespace PreparedMsg
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end PreparedMsg
+axiom PreparedMsg : Type
+axiom PreparedMsg.zero_val : ZeroVal PreparedMsg
+attribute [instance] PreparedMsg.zero_val
 
 class PreparedMsg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying PreparedMsg.underlying PreparedMsg.t
-  underlying : go.UnderlyingDirectedEq PreparedMsg PreparedMsg.underlying
+  type_repr : go.TypeReprUnderlying PreparedMsg.underlying PreparedMsg
+  underlying : go.UnderlyingDirectedEq PreparedMsg.ty PreparedMsg.underlying
   isUnderlying : go.IsUnderlying PreparedMsg.underlying PreparedMsg.underlying
 
 attribute [instance] PreparedMsg.TypeAssumptions.type_repr
   PreparedMsg.TypeAssumptions.underlying
   PreparedMsg.TypeAssumptions.isUnderlying
 
-namespace ccResolverWrapper
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ccResolverWrapper
+axiom ccResolverWrapper : Type
+axiom ccResolverWrapper.zero_val : ZeroVal ccResolverWrapper
+attribute [instance] ccResolverWrapper.zero_val
 
 class ccResolverWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ccResolverWrapper.underlying ccResolverWrapper.t
-  underlying : go.UnderlyingDirectedEq ccResolverWrapper ccResolverWrapper.underlying
+  type_repr : go.TypeReprUnderlying ccResolverWrapper.underlying ccResolverWrapper
+  underlying : go.UnderlyingDirectedEq ccResolverWrapper.ty ccResolverWrapper.underlying
   isUnderlying : go.IsUnderlying ccResolverWrapper.underlying ccResolverWrapper.underlying
 
 attribute [instance] ccResolverWrapper.TypeAssumptions.type_repr
   ccResolverWrapper.TypeAssumptions.underlying
   ccResolverWrapper.TypeAssumptions.isUnderlying
 
-namespace Compressor
-abbrev t [FfiSyntax] : Type := interface.t
-end Compressor
+abbrev Compressor [FfiSyntax] : Type := interface.t
 
 @[reducible] def Compressor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Do" (go.signature.Signature [_root_.Perennial.io.Writer, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"Type" (go.signature.Signature [] false [go.string]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Do" (go.signature.Signature [_root_.Perennial.io.Writer.ty, (go.GoType.SliceType go.byte)] false [go.error])), (go.InterfaceElem.MethodElem go!"Type" (go.signature.Signature [] false [go.string]))])
 
 class Compressor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Compressor Compressor.underlying
+  underlying : go.UnderlyingDirectedEq Compressor.ty Compressor.underlying
 
 attribute [instance] Compressor.TypeAssumptions.underlying
 
-namespace gzipCompressor
-structure t [FfiSyntax] where
+structure gzipCompressor [FfiSyntax] where
   mk ::
-  pool' : _root_.Perennial.sync.Pool.t
+  pool' : _root_.Perennial.sync.Pool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end gzipCompressor
+instance gzipCompressor.zero_val [FfiSyntax] : ZeroVal gzipCompressor :=
+  ⟨gzipCompressor.mk zeroValDef⟩
 
 @[reducible] def gzipCompressor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"pool" _root_.Perennial.sync.Pool)]
+  [(go.field_decl.FieldDecl go!"pool" _root_.Perennial.sync.Pool.ty)]
 
 @[irreducible] def gzipCompressor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   gzipCompressor.fieldsUnsealed
@@ -2575,39 +2489,35 @@ instance equals_unfold_gzipCompressor [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType gzipCompressor.fields)
 
 class gzipCompressor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying gzipCompressor.underlying gzipCompressor.t
-  underlying : go.UnderlyingDirectedEq gzipCompressor gzipCompressor.underlying
-  get_pool : ∀ (x : gzipCompressor.t), go.IsGoStepPureDetTagged under (StructFieldGet gzipCompressor.underlying go!"pool") #x (Val #(x.pool'))
-  set_pool : ∀ (x : gzipCompressor.t) (y : _root_.Perennial.sync.Pool.t), go.IsGoStepPureDetTagged under (StructFieldSet gzipCompressor.underlying go!"pool") (PairV #x #y) (Val #(({ x with pool' := y } : gzipCompressor.t)))
+  type_repr : go.TypeReprUnderlying gzipCompressor.underlying gzipCompressor
+  underlying : go.UnderlyingDirectedEq gzipCompressor.ty gzipCompressor.underlying
+  get_pool : ∀ (x : gzipCompressor), go.IsGoStepPureDetTagged under (StructFieldGet gzipCompressor.underlying go!"pool") #x (Val #(x.pool'))
+  set_pool : ∀ (x : gzipCompressor) (y : _root_.Perennial.sync.Pool), go.IsGoStepPureDetTagged under (StructFieldSet gzipCompressor.underlying go!"pool") (PairV #x #y) (Val #(({ x with pool' := y } : gzipCompressor)))
 
 attribute [instance] gzipCompressor.TypeAssumptions.type_repr
   gzipCompressor.TypeAssumptions.underlying
   gzipCompressor.TypeAssumptions.get_pool
   gzipCompressor.TypeAssumptions.set_pool
 
-namespace Decompressor
-abbrev t [FfiSyntax] : Type := interface.t
-end Decompressor
+abbrev Decompressor [FfiSyntax] : Type := interface.t
 
 @[reducible] def Decompressor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Do" (go.signature.Signature [_root_.Perennial.io.Reader] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"Type" (go.signature.Signature [] false [go.string]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Do" (go.signature.Signature [_root_.Perennial.io.Reader.ty] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"Type" (go.signature.Signature [] false [go.string]))])
 
 class Decompressor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Decompressor Decompressor.underlying
+  underlying : go.UnderlyingDirectedEq Decompressor.ty Decompressor.underlying
 
 attribute [instance] Decompressor.TypeAssumptions.underlying
 
-namespace gzipDecompressor
-structure t [FfiSyntax] where
+structure gzipDecompressor [FfiSyntax] where
   mk ::
-  pool' : _root_.Perennial.sync.Pool.t
+  pool' : _root_.Perennial.sync.Pool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end gzipDecompressor
+instance gzipDecompressor.zero_val [FfiSyntax] : ZeroVal gzipDecompressor :=
+  ⟨gzipDecompressor.mk zeroValDef⟩
 
 @[reducible] def gzipDecompressor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"pool" _root_.Perennial.sync.Pool)]
+  [(go.field_decl.FieldDecl go!"pool" _root_.Perennial.sync.Pool.ty)]
 
 @[irreducible] def gzipDecompressor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   gzipDecompressor.fieldsUnsealed
@@ -2620,50 +2530,44 @@ instance equals_unfold_gzipDecompressor [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType gzipDecompressor.fields)
 
 class gzipDecompressor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying gzipDecompressor.underlying gzipDecompressor.t
-  underlying : go.UnderlyingDirectedEq gzipDecompressor gzipDecompressor.underlying
-  get_pool : ∀ (x : gzipDecompressor.t), go.IsGoStepPureDetTagged under (StructFieldGet gzipDecompressor.underlying go!"pool") #x (Val #(x.pool'))
-  set_pool : ∀ (x : gzipDecompressor.t) (y : _root_.Perennial.sync.Pool.t), go.IsGoStepPureDetTagged under (StructFieldSet gzipDecompressor.underlying go!"pool") (PairV #x #y) (Val #(({ x with pool' := y } : gzipDecompressor.t)))
+  type_repr : go.TypeReprUnderlying gzipDecompressor.underlying gzipDecompressor
+  underlying : go.UnderlyingDirectedEq gzipDecompressor.ty gzipDecompressor.underlying
+  get_pool : ∀ (x : gzipDecompressor), go.IsGoStepPureDetTagged under (StructFieldGet gzipDecompressor.underlying go!"pool") #x (Val #(x.pool'))
+  set_pool : ∀ (x : gzipDecompressor) (y : _root_.Perennial.sync.Pool), go.IsGoStepPureDetTagged under (StructFieldSet gzipDecompressor.underlying go!"pool") (PairV #x #y) (Val #(({ x with pool' := y } : gzipDecompressor)))
 
 attribute [instance] gzipDecompressor.TypeAssumptions.type_repr
   gzipDecompressor.TypeAssumptions.underlying
   gzipDecompressor.TypeAssumptions.get_pool
   gzipDecompressor.TypeAssumptions.set_pool
 
-namespace callInfo
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end callInfo
+axiom callInfo : Type
+axiom callInfo.zero_val : ZeroVal callInfo
+attribute [instance] callInfo.zero_val
 
 class callInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying callInfo.underlying callInfo.t
-  underlying : go.UnderlyingDirectedEq callInfo callInfo.underlying
+  type_repr : go.TypeReprUnderlying callInfo.underlying callInfo
+  underlying : go.UnderlyingDirectedEq callInfo.ty callInfo.underlying
   isUnderlying : go.IsUnderlying callInfo.underlying callInfo.underlying
 
 attribute [instance] callInfo.TypeAssumptions.type_repr
   callInfo.TypeAssumptions.underlying
   callInfo.TypeAssumptions.isUnderlying
 
-namespace CallOption
-abbrev t [FfiSyntax] : Type := interface.t
-end CallOption
+abbrev CallOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def CallOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"after" (go.signature.Signature [(go.GoType.PointerType callInfo), (go.GoType.PointerType csAttempt)] false [])), (go.InterfaceElem.MethodElem go!"before" (go.signature.Signature [(go.GoType.PointerType callInfo)] false [go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"after" (go.signature.Signature [(go.GoType.PointerType callInfo.ty), (go.GoType.PointerType csAttempt.ty)] false [])), (go.InterfaceElem.MethodElem go!"before" (go.signature.Signature [(go.GoType.PointerType callInfo.ty)] false [go.error]))])
 
 class CallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq CallOption CallOption.underlying
+  underlying : go.UnderlyingDirectedEq CallOption.ty CallOption.underlying
 
 attribute [instance] CallOption.TypeAssumptions.underlying
 
-namespace EmptyCallOption
-structure t [FfiSyntax] where
+structure EmptyCallOption [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end EmptyCallOption
+instance EmptyCallOption.zero_val [FfiSyntax] : ZeroVal EmptyCallOption :=
+  ⟨EmptyCallOption.mk⟩
 
 @[reducible] def EmptyCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -2679,23 +2583,21 @@ instance equals_unfold_EmptyCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType EmptyCallOption.fields)
 
 class EmptyCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EmptyCallOption.underlying EmptyCallOption.t
-  underlying : go.UnderlyingDirectedEq EmptyCallOption EmptyCallOption.underlying
+  type_repr : go.TypeReprUnderlying EmptyCallOption.underlying EmptyCallOption
+  underlying : go.UnderlyingDirectedEq EmptyCallOption.ty EmptyCallOption.underlying
 
 attribute [instance] EmptyCallOption.TypeAssumptions.type_repr
   EmptyCallOption.TypeAssumptions.underlying
 
-namespace StaticMethodCallOption
-structure t [FfiSyntax] where
+structure StaticMethodCallOption [FfiSyntax] where
   mk ::
-  EmptyCallOption' : EmptyCallOption.t
+  EmptyCallOption' : EmptyCallOption
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end StaticMethodCallOption
+instance StaticMethodCallOption.zero_val [FfiSyntax] : ZeroVal StaticMethodCallOption :=
+  ⟨StaticMethodCallOption.mk zeroValDef⟩
 
 @[reducible] def StaticMethodCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"EmptyCallOption" EmptyCallOption)]
+  [(go.field_decl.EmbeddedField go!"EmptyCallOption" EmptyCallOption.ty)]
 
 @[irreducible] def StaticMethodCallOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StaticMethodCallOption.fieldsUnsealed
@@ -2708,69 +2610,61 @@ instance equals_unfold_StaticMethodCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType StaticMethodCallOption.fields)
 
 class StaticMethodCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying StaticMethodCallOption.underlying StaticMethodCallOption.t
-  underlying : go.UnderlyingDirectedEq StaticMethodCallOption StaticMethodCallOption.underlying
-  get_EmptyCallOption : ∀ (x : StaticMethodCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet StaticMethodCallOption.underlying go!"EmptyCallOption") #x (Val #(x.EmptyCallOption'))
-  set_EmptyCallOption : ∀ (x : StaticMethodCallOption.t) (y : EmptyCallOption.t), go.IsGoStepPureDetTagged under (StructFieldSet StaticMethodCallOption.underlying go!"EmptyCallOption") (PairV #x #y) (Val #(({ x with EmptyCallOption' := y } : StaticMethodCallOption.t)))
+  type_repr : go.TypeReprUnderlying StaticMethodCallOption.underlying StaticMethodCallOption
+  underlying : go.UnderlyingDirectedEq StaticMethodCallOption.ty StaticMethodCallOption.underlying
+  get_EmptyCallOption : ∀ (x : StaticMethodCallOption), go.IsGoStepPureDetTagged under (StructFieldGet StaticMethodCallOption.underlying go!"EmptyCallOption") #x (Val #(x.EmptyCallOption'))
+  set_EmptyCallOption : ∀ (x : StaticMethodCallOption) (y : EmptyCallOption), go.IsGoStepPureDetTagged under (StructFieldSet StaticMethodCallOption.underlying go!"EmptyCallOption") (PairV #x #y) (Val #(({ x with EmptyCallOption' := y } : StaticMethodCallOption)))
 
 attribute [instance] StaticMethodCallOption.TypeAssumptions.type_repr
   StaticMethodCallOption.TypeAssumptions.underlying
   StaticMethodCallOption.TypeAssumptions.get_EmptyCallOption
   StaticMethodCallOption.TypeAssumptions.set_EmptyCallOption
 
-namespace HeaderCallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end HeaderCallOption
+axiom HeaderCallOption : Type
+axiom HeaderCallOption.zero_val : ZeroVal HeaderCallOption
+attribute [instance] HeaderCallOption.zero_val
 
 class HeaderCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying HeaderCallOption.underlying HeaderCallOption.t
-  underlying : go.UnderlyingDirectedEq HeaderCallOption HeaderCallOption.underlying
+  type_repr : go.TypeReprUnderlying HeaderCallOption.underlying HeaderCallOption
+  underlying : go.UnderlyingDirectedEq HeaderCallOption.ty HeaderCallOption.underlying
   isUnderlying : go.IsUnderlying HeaderCallOption.underlying HeaderCallOption.underlying
 
 attribute [instance] HeaderCallOption.TypeAssumptions.type_repr
   HeaderCallOption.TypeAssumptions.underlying
   HeaderCallOption.TypeAssumptions.isUnderlying
 
-namespace TrailerCallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end TrailerCallOption
+axiom TrailerCallOption : Type
+axiom TrailerCallOption.zero_val : ZeroVal TrailerCallOption
+attribute [instance] TrailerCallOption.zero_val
 
 class TrailerCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying TrailerCallOption.underlying TrailerCallOption.t
-  underlying : go.UnderlyingDirectedEq TrailerCallOption TrailerCallOption.underlying
+  type_repr : go.TypeReprUnderlying TrailerCallOption.underlying TrailerCallOption
+  underlying : go.UnderlyingDirectedEq TrailerCallOption.ty TrailerCallOption.underlying
   isUnderlying : go.IsUnderlying TrailerCallOption.underlying TrailerCallOption.underlying
 
 attribute [instance] TrailerCallOption.TypeAssumptions.type_repr
   TrailerCallOption.TypeAssumptions.underlying
   TrailerCallOption.TypeAssumptions.isUnderlying
 
-namespace PeerCallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end PeerCallOption
+axiom PeerCallOption : Type
+axiom PeerCallOption.zero_val : ZeroVal PeerCallOption
+attribute [instance] PeerCallOption.zero_val
 
 class PeerCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying PeerCallOption.underlying PeerCallOption.t
-  underlying : go.UnderlyingDirectedEq PeerCallOption PeerCallOption.underlying
+  type_repr : go.TypeReprUnderlying PeerCallOption.underlying PeerCallOption
+  underlying : go.UnderlyingDirectedEq PeerCallOption.ty PeerCallOption.underlying
   isUnderlying : go.IsUnderlying PeerCallOption.underlying PeerCallOption.underlying
 
 attribute [instance] PeerCallOption.TypeAssumptions.type_repr
   PeerCallOption.TypeAssumptions.underlying
   PeerCallOption.TypeAssumptions.isUnderlying
 
-namespace FailFastCallOption
-structure t [FfiSyntax] where
+structure FailFastCallOption [FfiSyntax] where
   mk ::
   FailFast' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end FailFastCallOption
+instance FailFastCallOption.zero_val [FfiSyntax] : ZeroVal FailFastCallOption :=
+  ⟨FailFastCallOption.mk zeroValDef⟩
 
 @[reducible] def FailFastCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"FailFast" go.bool)]
@@ -2786,24 +2680,22 @@ instance equals_unfold_FailFastCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType FailFastCallOption.fields)
 
 class FailFastCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying FailFastCallOption.underlying FailFastCallOption.t
-  underlying : go.UnderlyingDirectedEq FailFastCallOption FailFastCallOption.underlying
-  get_FailFast : ∀ (x : FailFastCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet FailFastCallOption.underlying go!"FailFast") #x (Val #(x.FailFast'))
-  set_FailFast : ∀ (x : FailFastCallOption.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FailFastCallOption.underlying go!"FailFast") (PairV #x #y) (Val #(({ x with FailFast' := y } : FailFastCallOption.t)))
+  type_repr : go.TypeReprUnderlying FailFastCallOption.underlying FailFastCallOption
+  underlying : go.UnderlyingDirectedEq FailFastCallOption.ty FailFastCallOption.underlying
+  get_FailFast : ∀ (x : FailFastCallOption), go.IsGoStepPureDetTagged under (StructFieldGet FailFastCallOption.underlying go!"FailFast") #x (Val #(x.FailFast'))
+  set_FailFast : ∀ (x : FailFastCallOption) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FailFastCallOption.underlying go!"FailFast") (PairV #x #y) (Val #(({ x with FailFast' := y } : FailFastCallOption)))
 
 attribute [instance] FailFastCallOption.TypeAssumptions.type_repr
   FailFastCallOption.TypeAssumptions.underlying
   FailFastCallOption.TypeAssumptions.get_FailFast
   FailFastCallOption.TypeAssumptions.set_FailFast
 
-namespace OnFinishCallOption
-structure t [FfiSyntax] where
+structure OnFinishCallOption [FfiSyntax] where
   mk ::
   OnFinish' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end OnFinishCallOption
+instance OnFinishCallOption.zero_val [FfiSyntax] : ZeroVal OnFinishCallOption :=
+  ⟨OnFinishCallOption.mk zeroValDef⟩
 
 @[reducible] def OnFinishCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"OnFinish" (go.GoType.FunctionType (go.signature.Signature [go.error] false [])))]
@@ -2819,24 +2711,22 @@ instance equals_unfold_OnFinishCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType OnFinishCallOption.fields)
 
 class OnFinishCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying OnFinishCallOption.underlying OnFinishCallOption.t
-  underlying : go.UnderlyingDirectedEq OnFinishCallOption OnFinishCallOption.underlying
-  get_OnFinish : ∀ (x : OnFinishCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet OnFinishCallOption.underlying go!"OnFinish") #x (Val #(x.OnFinish'))
-  set_OnFinish : ∀ (x : OnFinishCallOption.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet OnFinishCallOption.underlying go!"OnFinish") (PairV #x #y) (Val #(({ x with OnFinish' := y } : OnFinishCallOption.t)))
+  type_repr : go.TypeReprUnderlying OnFinishCallOption.underlying OnFinishCallOption
+  underlying : go.UnderlyingDirectedEq OnFinishCallOption.ty OnFinishCallOption.underlying
+  get_OnFinish : ∀ (x : OnFinishCallOption), go.IsGoStepPureDetTagged under (StructFieldGet OnFinishCallOption.underlying go!"OnFinish") #x (Val #(x.OnFinish'))
+  set_OnFinish : ∀ (x : OnFinishCallOption) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet OnFinishCallOption.underlying go!"OnFinish") (PairV #x #y) (Val #(({ x with OnFinish' := y } : OnFinishCallOption)))
 
 attribute [instance] OnFinishCallOption.TypeAssumptions.type_repr
   OnFinishCallOption.TypeAssumptions.underlying
   OnFinishCallOption.TypeAssumptions.get_OnFinish
   OnFinishCallOption.TypeAssumptions.set_OnFinish
 
-namespace MaxRecvMsgSizeCallOption
-structure t [FfiSyntax] where
+structure MaxRecvMsgSizeCallOption [FfiSyntax] where
   mk ::
   MaxRecvMsgSize' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MaxRecvMsgSizeCallOption
+instance MaxRecvMsgSizeCallOption.zero_val [FfiSyntax] : ZeroVal MaxRecvMsgSizeCallOption :=
+  ⟨MaxRecvMsgSizeCallOption.mk zeroValDef⟩
 
 @[reducible] def MaxRecvMsgSizeCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxRecvMsgSize" go.int)]
@@ -2852,24 +2742,22 @@ instance equals_unfold_MaxRecvMsgSizeCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MaxRecvMsgSizeCallOption.fields)
 
 class MaxRecvMsgSizeCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MaxRecvMsgSizeCallOption.underlying MaxRecvMsgSizeCallOption.t
-  underlying : go.UnderlyingDirectedEq MaxRecvMsgSizeCallOption MaxRecvMsgSizeCallOption.underlying
-  get_MaxRecvMsgSize : ∀ (x : MaxRecvMsgSizeCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet MaxRecvMsgSizeCallOption.underlying go!"MaxRecvMsgSize") #x (Val #(x.MaxRecvMsgSize'))
-  set_MaxRecvMsgSize : ∀ (x : MaxRecvMsgSizeCallOption.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxRecvMsgSizeCallOption.underlying go!"MaxRecvMsgSize") (PairV #x #y) (Val #(({ x with MaxRecvMsgSize' := y } : MaxRecvMsgSizeCallOption.t)))
+  type_repr : go.TypeReprUnderlying MaxRecvMsgSizeCallOption.underlying MaxRecvMsgSizeCallOption
+  underlying : go.UnderlyingDirectedEq MaxRecvMsgSizeCallOption.ty MaxRecvMsgSizeCallOption.underlying
+  get_MaxRecvMsgSize : ∀ (x : MaxRecvMsgSizeCallOption), go.IsGoStepPureDetTagged under (StructFieldGet MaxRecvMsgSizeCallOption.underlying go!"MaxRecvMsgSize") #x (Val #(x.MaxRecvMsgSize'))
+  set_MaxRecvMsgSize : ∀ (x : MaxRecvMsgSizeCallOption) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxRecvMsgSizeCallOption.underlying go!"MaxRecvMsgSize") (PairV #x #y) (Val #(({ x with MaxRecvMsgSize' := y } : MaxRecvMsgSizeCallOption)))
 
 attribute [instance] MaxRecvMsgSizeCallOption.TypeAssumptions.type_repr
   MaxRecvMsgSizeCallOption.TypeAssumptions.underlying
   MaxRecvMsgSizeCallOption.TypeAssumptions.get_MaxRecvMsgSize
   MaxRecvMsgSizeCallOption.TypeAssumptions.set_MaxRecvMsgSize
 
-namespace AuthorityOverrideCallOption
-structure t [FfiSyntax] where
+structure AuthorityOverrideCallOption [FfiSyntax] where
   mk ::
   Authority' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end AuthorityOverrideCallOption
+instance AuthorityOverrideCallOption.zero_val [FfiSyntax] : ZeroVal AuthorityOverrideCallOption :=
+  ⟨AuthorityOverrideCallOption.mk zeroValDef⟩
 
 @[reducible] def AuthorityOverrideCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Authority" go.string)]
@@ -2885,24 +2773,22 @@ instance equals_unfold_AuthorityOverrideCallOption [FfiSyntax] [GoGlobalContext]
   (go.GoType.StructType AuthorityOverrideCallOption.fields)
 
 class AuthorityOverrideCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying AuthorityOverrideCallOption.underlying AuthorityOverrideCallOption.t
-  underlying : go.UnderlyingDirectedEq AuthorityOverrideCallOption AuthorityOverrideCallOption.underlying
-  get_Authority : ∀ (x : AuthorityOverrideCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet AuthorityOverrideCallOption.underlying go!"Authority") #x (Val #(x.Authority'))
-  set_Authority : ∀ (x : AuthorityOverrideCallOption.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet AuthorityOverrideCallOption.underlying go!"Authority") (PairV #x #y) (Val #(({ x with Authority' := y } : AuthorityOverrideCallOption.t)))
+  type_repr : go.TypeReprUnderlying AuthorityOverrideCallOption.underlying AuthorityOverrideCallOption
+  underlying : go.UnderlyingDirectedEq AuthorityOverrideCallOption.ty AuthorityOverrideCallOption.underlying
+  get_Authority : ∀ (x : AuthorityOverrideCallOption), go.IsGoStepPureDetTagged under (StructFieldGet AuthorityOverrideCallOption.underlying go!"Authority") #x (Val #(x.Authority'))
+  set_Authority : ∀ (x : AuthorityOverrideCallOption) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet AuthorityOverrideCallOption.underlying go!"Authority") (PairV #x #y) (Val #(({ x with Authority' := y } : AuthorityOverrideCallOption)))
 
 attribute [instance] AuthorityOverrideCallOption.TypeAssumptions.type_repr
   AuthorityOverrideCallOption.TypeAssumptions.underlying
   AuthorityOverrideCallOption.TypeAssumptions.get_Authority
   AuthorityOverrideCallOption.TypeAssumptions.set_Authority
 
-namespace MaxSendMsgSizeCallOption
-structure t [FfiSyntax] where
+structure MaxSendMsgSizeCallOption [FfiSyntax] where
   mk ::
   MaxSendMsgSize' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MaxSendMsgSizeCallOption
+instance MaxSendMsgSizeCallOption.zero_val [FfiSyntax] : ZeroVal MaxSendMsgSizeCallOption :=
+  ⟨MaxSendMsgSizeCallOption.mk zeroValDef⟩
 
 @[reducible] def MaxSendMsgSizeCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxSendMsgSize" go.int)]
@@ -2918,39 +2804,35 @@ instance equals_unfold_MaxSendMsgSizeCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MaxSendMsgSizeCallOption.fields)
 
 class MaxSendMsgSizeCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MaxSendMsgSizeCallOption.underlying MaxSendMsgSizeCallOption.t
-  underlying : go.UnderlyingDirectedEq MaxSendMsgSizeCallOption MaxSendMsgSizeCallOption.underlying
-  get_MaxSendMsgSize : ∀ (x : MaxSendMsgSizeCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet MaxSendMsgSizeCallOption.underlying go!"MaxSendMsgSize") #x (Val #(x.MaxSendMsgSize'))
-  set_MaxSendMsgSize : ∀ (x : MaxSendMsgSizeCallOption.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxSendMsgSizeCallOption.underlying go!"MaxSendMsgSize") (PairV #x #y) (Val #(({ x with MaxSendMsgSize' := y } : MaxSendMsgSizeCallOption.t)))
+  type_repr : go.TypeReprUnderlying MaxSendMsgSizeCallOption.underlying MaxSendMsgSizeCallOption
+  underlying : go.UnderlyingDirectedEq MaxSendMsgSizeCallOption.ty MaxSendMsgSizeCallOption.underlying
+  get_MaxSendMsgSize : ∀ (x : MaxSendMsgSizeCallOption), go.IsGoStepPureDetTagged under (StructFieldGet MaxSendMsgSizeCallOption.underlying go!"MaxSendMsgSize") #x (Val #(x.MaxSendMsgSize'))
+  set_MaxSendMsgSize : ∀ (x : MaxSendMsgSizeCallOption) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxSendMsgSizeCallOption.underlying go!"MaxSendMsgSize") (PairV #x #y) (Val #(({ x with MaxSendMsgSize' := y } : MaxSendMsgSizeCallOption)))
 
 attribute [instance] MaxSendMsgSizeCallOption.TypeAssumptions.type_repr
   MaxSendMsgSizeCallOption.TypeAssumptions.underlying
   MaxSendMsgSizeCallOption.TypeAssumptions.get_MaxSendMsgSize
   MaxSendMsgSizeCallOption.TypeAssumptions.set_MaxSendMsgSize
 
-namespace PerRPCCredsCallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end PerRPCCredsCallOption
+axiom PerRPCCredsCallOption : Type
+axiom PerRPCCredsCallOption.zero_val : ZeroVal PerRPCCredsCallOption
+attribute [instance] PerRPCCredsCallOption.zero_val
 
 class PerRPCCredsCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying PerRPCCredsCallOption.underlying PerRPCCredsCallOption.t
-  underlying : go.UnderlyingDirectedEq PerRPCCredsCallOption PerRPCCredsCallOption.underlying
+  type_repr : go.TypeReprUnderlying PerRPCCredsCallOption.underlying PerRPCCredsCallOption
+  underlying : go.UnderlyingDirectedEq PerRPCCredsCallOption.ty PerRPCCredsCallOption.underlying
   isUnderlying : go.IsUnderlying PerRPCCredsCallOption.underlying PerRPCCredsCallOption.underlying
 
 attribute [instance] PerRPCCredsCallOption.TypeAssumptions.type_repr
   PerRPCCredsCallOption.TypeAssumptions.underlying
   PerRPCCredsCallOption.TypeAssumptions.isUnderlying
 
-namespace CompressorCallOption
-structure t [FfiSyntax] where
+structure CompressorCallOption [FfiSyntax] where
   mk ::
   CompressorType' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end CompressorCallOption
+instance CompressorCallOption.zero_val [FfiSyntax] : ZeroVal CompressorCallOption :=
+  ⟨CompressorCallOption.mk zeroValDef⟩
 
 @[reducible] def CompressorCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"CompressorType" go.string)]
@@ -2966,24 +2848,22 @@ instance equals_unfold_CompressorCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CompressorCallOption.fields)
 
 class CompressorCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CompressorCallOption.underlying CompressorCallOption.t
-  underlying : go.UnderlyingDirectedEq CompressorCallOption CompressorCallOption.underlying
-  get_CompressorType : ∀ (x : CompressorCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet CompressorCallOption.underlying go!"CompressorType") #x (Val #(x.CompressorType'))
-  set_CompressorType : ∀ (x : CompressorCallOption.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet CompressorCallOption.underlying go!"CompressorType") (PairV #x #y) (Val #(({ x with CompressorType' := y } : CompressorCallOption.t)))
+  type_repr : go.TypeReprUnderlying CompressorCallOption.underlying CompressorCallOption
+  underlying : go.UnderlyingDirectedEq CompressorCallOption.ty CompressorCallOption.underlying
+  get_CompressorType : ∀ (x : CompressorCallOption), go.IsGoStepPureDetTagged under (StructFieldGet CompressorCallOption.underlying go!"CompressorType") #x (Val #(x.CompressorType'))
+  set_CompressorType : ∀ (x : CompressorCallOption) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet CompressorCallOption.underlying go!"CompressorType") (PairV #x #y) (Val #(({ x with CompressorType' := y } : CompressorCallOption)))
 
 attribute [instance] CompressorCallOption.TypeAssumptions.type_repr
   CompressorCallOption.TypeAssumptions.underlying
   CompressorCallOption.TypeAssumptions.get_CompressorType
   CompressorCallOption.TypeAssumptions.set_CompressorType
 
-namespace acceptCompressorsCallOption
-structure t [FfiSyntax] where
+structure acceptCompressorsCallOption [FfiSyntax] where
   mk ::
   names' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end acceptCompressorsCallOption
+instance acceptCompressorsCallOption.zero_val [FfiSyntax] : ZeroVal acceptCompressorsCallOption :=
+  ⟨acceptCompressorsCallOption.mk zeroValDef⟩
 
 @[reducible] def acceptCompressorsCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"names" (go.GoType.SliceType go.string))]
@@ -2999,24 +2879,22 @@ instance equals_unfold_acceptCompressorsCallOption [FfiSyntax] [GoGlobalContext]
   (go.GoType.StructType acceptCompressorsCallOption.fields)
 
 class acceptCompressorsCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying acceptCompressorsCallOption.underlying acceptCompressorsCallOption.t
-  underlying : go.UnderlyingDirectedEq acceptCompressorsCallOption acceptCompressorsCallOption.underlying
-  get_names : ∀ (x : acceptCompressorsCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet acceptCompressorsCallOption.underlying go!"names") #x (Val #(x.names'))
-  set_names : ∀ (x : acceptCompressorsCallOption.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet acceptCompressorsCallOption.underlying go!"names") (PairV #x #y) (Val #(({ x with names' := y } : acceptCompressorsCallOption.t)))
+  type_repr : go.TypeReprUnderlying acceptCompressorsCallOption.underlying acceptCompressorsCallOption
+  underlying : go.UnderlyingDirectedEq acceptCompressorsCallOption.ty acceptCompressorsCallOption.underlying
+  get_names : ∀ (x : acceptCompressorsCallOption), go.IsGoStepPureDetTagged under (StructFieldGet acceptCompressorsCallOption.underlying go!"names") #x (Val #(x.names'))
+  set_names : ∀ (x : acceptCompressorsCallOption) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet acceptCompressorsCallOption.underlying go!"names") (PairV #x #y) (Val #(({ x with names' := y } : acceptCompressorsCallOption)))
 
 attribute [instance] acceptCompressorsCallOption.TypeAssumptions.type_repr
   acceptCompressorsCallOption.TypeAssumptions.underlying
   acceptCompressorsCallOption.TypeAssumptions.get_names
   acceptCompressorsCallOption.TypeAssumptions.set_names
 
-namespace ContentSubtypeCallOption
-structure t [FfiSyntax] where
+structure ContentSubtypeCallOption [FfiSyntax] where
   mk ::
   ContentSubtype' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end ContentSubtypeCallOption
+instance ContentSubtypeCallOption.zero_val [FfiSyntax] : ZeroVal ContentSubtypeCallOption :=
+  ⟨ContentSubtypeCallOption.mk zeroValDef⟩
 
 @[reducible] def ContentSubtypeCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ContentSubtype" go.string)]
@@ -3032,57 +2910,51 @@ instance equals_unfold_ContentSubtypeCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType ContentSubtypeCallOption.fields)
 
 class ContentSubtypeCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ContentSubtypeCallOption.underlying ContentSubtypeCallOption.t
-  underlying : go.UnderlyingDirectedEq ContentSubtypeCallOption ContentSubtypeCallOption.underlying
-  get_ContentSubtype : ∀ (x : ContentSubtypeCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet ContentSubtypeCallOption.underlying go!"ContentSubtype") #x (Val #(x.ContentSubtype'))
-  set_ContentSubtype : ∀ (x : ContentSubtypeCallOption.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ContentSubtypeCallOption.underlying go!"ContentSubtype") (PairV #x #y) (Val #(({ x with ContentSubtype' := y } : ContentSubtypeCallOption.t)))
+  type_repr : go.TypeReprUnderlying ContentSubtypeCallOption.underlying ContentSubtypeCallOption
+  underlying : go.UnderlyingDirectedEq ContentSubtypeCallOption.ty ContentSubtypeCallOption.underlying
+  get_ContentSubtype : ∀ (x : ContentSubtypeCallOption), go.IsGoStepPureDetTagged under (StructFieldGet ContentSubtypeCallOption.underlying go!"ContentSubtype") #x (Val #(x.ContentSubtype'))
+  set_ContentSubtype : ∀ (x : ContentSubtypeCallOption) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ContentSubtypeCallOption.underlying go!"ContentSubtype") (PairV #x #y) (Val #(({ x with ContentSubtype' := y } : ContentSubtypeCallOption)))
 
 attribute [instance] ContentSubtypeCallOption.TypeAssumptions.type_repr
   ContentSubtypeCallOption.TypeAssumptions.underlying
   ContentSubtypeCallOption.TypeAssumptions.get_ContentSubtype
   ContentSubtypeCallOption.TypeAssumptions.set_ContentSubtype
 
-namespace ForceCodecCallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ForceCodecCallOption
+axiom ForceCodecCallOption : Type
+axiom ForceCodecCallOption.zero_val : ZeroVal ForceCodecCallOption
+attribute [instance] ForceCodecCallOption.zero_val
 
 class ForceCodecCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ForceCodecCallOption.underlying ForceCodecCallOption.t
-  underlying : go.UnderlyingDirectedEq ForceCodecCallOption ForceCodecCallOption.underlying
+  type_repr : go.TypeReprUnderlying ForceCodecCallOption.underlying ForceCodecCallOption
+  underlying : go.UnderlyingDirectedEq ForceCodecCallOption.ty ForceCodecCallOption.underlying
   isUnderlying : go.IsUnderlying ForceCodecCallOption.underlying ForceCodecCallOption.underlying
 
 attribute [instance] ForceCodecCallOption.TypeAssumptions.type_repr
   ForceCodecCallOption.TypeAssumptions.underlying
   ForceCodecCallOption.TypeAssumptions.isUnderlying
 
-namespace ForceCodecV2CallOption
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ForceCodecV2CallOption
+axiom ForceCodecV2CallOption : Type
+axiom ForceCodecV2CallOption.zero_val : ZeroVal ForceCodecV2CallOption
+attribute [instance] ForceCodecV2CallOption.zero_val
 
 class ForceCodecV2CallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ForceCodecV2CallOption.underlying ForceCodecV2CallOption.t
-  underlying : go.UnderlyingDirectedEq ForceCodecV2CallOption ForceCodecV2CallOption.underlying
+  type_repr : go.TypeReprUnderlying ForceCodecV2CallOption.underlying ForceCodecV2CallOption
+  underlying : go.UnderlyingDirectedEq ForceCodecV2CallOption.ty ForceCodecV2CallOption.underlying
   isUnderlying : go.IsUnderlying ForceCodecV2CallOption.underlying ForceCodecV2CallOption.underlying
 
 attribute [instance] ForceCodecV2CallOption.TypeAssumptions.type_repr
   ForceCodecV2CallOption.TypeAssumptions.underlying
   ForceCodecV2CallOption.TypeAssumptions.isUnderlying
 
-namespace CustomCodecCallOption
-structure t [FfiSyntax] where
+structure CustomCodecCallOption [FfiSyntax] where
   mk ::
-  Codec' : Codec.t
+  Codec' : Codec
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end CustomCodecCallOption
+instance CustomCodecCallOption.zero_val [FfiSyntax] : ZeroVal CustomCodecCallOption :=
+  ⟨CustomCodecCallOption.mk zeroValDef⟩
 
 @[reducible] def CustomCodecCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Codec" Codec)]
+  [(go.field_decl.FieldDecl go!"Codec" Codec.ty)]
 
 @[irreducible] def CustomCodecCallOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   CustomCodecCallOption.fieldsUnsealed
@@ -3095,24 +2967,22 @@ instance equals_unfold_CustomCodecCallOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CustomCodecCallOption.fields)
 
 class CustomCodecCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CustomCodecCallOption.underlying CustomCodecCallOption.t
-  underlying : go.UnderlyingDirectedEq CustomCodecCallOption CustomCodecCallOption.underlying
-  get_Codec : ∀ (x : CustomCodecCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet CustomCodecCallOption.underlying go!"Codec") #x (Val #(x.Codec'))
-  set_Codec : ∀ (x : CustomCodecCallOption.t) (y : Codec.t), go.IsGoStepPureDetTagged under (StructFieldSet CustomCodecCallOption.underlying go!"Codec") (PairV #x #y) (Val #(({ x with Codec' := y } : CustomCodecCallOption.t)))
+  type_repr : go.TypeReprUnderlying CustomCodecCallOption.underlying CustomCodecCallOption
+  underlying : go.UnderlyingDirectedEq CustomCodecCallOption.ty CustomCodecCallOption.underlying
+  get_Codec : ∀ (x : CustomCodecCallOption), go.IsGoStepPureDetTagged under (StructFieldGet CustomCodecCallOption.underlying go!"Codec") #x (Val #(x.Codec'))
+  set_Codec : ∀ (x : CustomCodecCallOption) (y : Codec), go.IsGoStepPureDetTagged under (StructFieldSet CustomCodecCallOption.underlying go!"Codec") (PairV #x #y) (Val #(({ x with Codec' := y } : CustomCodecCallOption)))
 
 attribute [instance] CustomCodecCallOption.TypeAssumptions.type_repr
   CustomCodecCallOption.TypeAssumptions.underlying
   CustomCodecCallOption.TypeAssumptions.get_Codec
   CustomCodecCallOption.TypeAssumptions.set_Codec
 
-namespace MaxRetryRPCBufferSizeCallOption
-structure t [FfiSyntax] where
+structure MaxRetryRPCBufferSizeCallOption [FfiSyntax] where
   mk ::
   MaxRetryRPCBufferSize' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MaxRetryRPCBufferSizeCallOption
+instance MaxRetryRPCBufferSizeCallOption.zero_val [FfiSyntax] : ZeroVal MaxRetryRPCBufferSizeCallOption :=
+  ⟨MaxRetryRPCBufferSizeCallOption.mk zeroValDef⟩
 
 @[reducible] def MaxRetryRPCBufferSizeCallOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxRetryRPCBufferSize" go.int)]
@@ -3128,50 +2998,44 @@ instance equals_unfold_MaxRetryRPCBufferSizeCallOption [FfiSyntax] [GoGlobalCont
   (go.GoType.StructType MaxRetryRPCBufferSizeCallOption.fields)
 
 class MaxRetryRPCBufferSizeCallOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MaxRetryRPCBufferSizeCallOption.underlying MaxRetryRPCBufferSizeCallOption.t
-  underlying : go.UnderlyingDirectedEq MaxRetryRPCBufferSizeCallOption MaxRetryRPCBufferSizeCallOption.underlying
-  get_MaxRetryRPCBufferSize : ∀ (x : MaxRetryRPCBufferSizeCallOption.t), go.IsGoStepPureDetTagged under (StructFieldGet MaxRetryRPCBufferSizeCallOption.underlying go!"MaxRetryRPCBufferSize") #x (Val #(x.MaxRetryRPCBufferSize'))
-  set_MaxRetryRPCBufferSize : ∀ (x : MaxRetryRPCBufferSizeCallOption.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxRetryRPCBufferSizeCallOption.underlying go!"MaxRetryRPCBufferSize") (PairV #x #y) (Val #(({ x with MaxRetryRPCBufferSize' := y } : MaxRetryRPCBufferSizeCallOption.t)))
+  type_repr : go.TypeReprUnderlying MaxRetryRPCBufferSizeCallOption.underlying MaxRetryRPCBufferSizeCallOption
+  underlying : go.UnderlyingDirectedEq MaxRetryRPCBufferSizeCallOption.ty MaxRetryRPCBufferSizeCallOption.underlying
+  get_MaxRetryRPCBufferSize : ∀ (x : MaxRetryRPCBufferSizeCallOption), go.IsGoStepPureDetTagged under (StructFieldGet MaxRetryRPCBufferSizeCallOption.underlying go!"MaxRetryRPCBufferSize") #x (Val #(x.MaxRetryRPCBufferSize'))
+  set_MaxRetryRPCBufferSize : ∀ (x : MaxRetryRPCBufferSizeCallOption) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MaxRetryRPCBufferSizeCallOption.underlying go!"MaxRetryRPCBufferSize") (PairV #x #y) (Val #(({ x with MaxRetryRPCBufferSize' := y } : MaxRetryRPCBufferSizeCallOption)))
 
 attribute [instance] MaxRetryRPCBufferSizeCallOption.TypeAssumptions.type_repr
   MaxRetryRPCBufferSizeCallOption.TypeAssumptions.underlying
   MaxRetryRPCBufferSizeCallOption.TypeAssumptions.get_MaxRetryRPCBufferSize
   MaxRetryRPCBufferSizeCallOption.TypeAssumptions.set_MaxRetryRPCBufferSize
 
-namespace payloadFormat
-abbrev t [FfiSyntax] : Type := w8
-end payloadFormat
+abbrev payloadFormat [FfiSyntax] : Type := w8
 
 @[reducible] def payloadFormat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint8
 
 class payloadFormat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq payloadFormat payloadFormat.underlying
+  underlying : go.UnderlyingDirectedEq payloadFormat.ty payloadFormat.underlying
 
 attribute [instance] payloadFormat.TypeAssumptions.underlying
 
-namespace streamReader
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end streamReader
+axiom streamReader : Type
+axiom streamReader.zero_val : ZeroVal streamReader
+attribute [instance] streamReader.zero_val
 
 class streamReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying streamReader.underlying streamReader.t
-  underlying : go.UnderlyingDirectedEq streamReader streamReader.underlying
+  type_repr : go.TypeReprUnderlying streamReader.underlying streamReader
+  underlying : go.UnderlyingDirectedEq streamReader.ty streamReader.underlying
   isUnderlying : go.IsUnderlying streamReader.underlying streamReader.underlying
 
 attribute [instance] streamReader.TypeAssumptions.type_repr
   streamReader.TypeAssumptions.underlying
   streamReader.TypeAssumptions.isUnderlying
 
-namespace noCopy
-structure t [FfiSyntax] where
+structure noCopy [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end noCopy
+instance noCopy.zero_val [FfiSyntax] : ZeroVal noCopy :=
+  ⟨noCopy.mk⟩
 
 @[reducible] def noCopy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3187,82 +3051,72 @@ instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noCopy.fields)
 
 class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy.t
-  underlying : go.UnderlyingDirectedEq noCopy noCopy.underlying
+  type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
+  underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
 
-namespace parser
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end parser
+axiom parser : Type
+axiom parser.zero_val : ZeroVal parser
+attribute [instance] parser.zero_val
 
 class parser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying parser.underlying parser.t
-  underlying : go.UnderlyingDirectedEq parser parser.underlying
+  type_repr : go.TypeReprUnderlying parser.underlying parser
+  underlying : go.UnderlyingDirectedEq parser.ty parser.underlying
   isUnderlying : go.IsUnderlying parser.underlying parser.underlying
 
 attribute [instance] parser.TypeAssumptions.type_repr
   parser.TypeAssumptions.underlying
   parser.TypeAssumptions.isUnderlying
 
-namespace payloadInfo
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end payloadInfo
+axiom payloadInfo : Type
+axiom payloadInfo.zero_val : ZeroVal payloadInfo
+attribute [instance] payloadInfo.zero_val
 
 class payloadInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying payloadInfo.underlying payloadInfo.t
-  underlying : go.UnderlyingDirectedEq payloadInfo payloadInfo.underlying
+  type_repr : go.TypeReprUnderlying payloadInfo.underlying payloadInfo
+  underlying : go.UnderlyingDirectedEq payloadInfo.ty payloadInfo.underlying
   isUnderlying : go.IsUnderlying payloadInfo.underlying payloadInfo.underlying
 
 attribute [instance] payloadInfo.TypeAssumptions.type_repr
   payloadInfo.TypeAssumptions.underlying
   payloadInfo.TypeAssumptions.isUnderlying
 
-namespace recvCompressor
-abbrev t [FfiSyntax] : Type := interface.t
-end recvCompressor
+abbrev recvCompressor [FfiSyntax] : Type := interface.t
 
 @[reducible] def recvCompressor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RecvCompress" (go.signature.Signature [] false [go.string]))])
 
 class recvCompressor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq recvCompressor recvCompressor.underlying
+  underlying : go.UnderlyingDirectedEq recvCompressor.ty recvCompressor.underlying
 
 attribute [instance] recvCompressor.TypeAssumptions.underlying
 
-namespace compressorInfo
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end compressorInfo
+axiom compressorInfo : Type
+axiom compressorInfo.zero_val : ZeroVal compressorInfo
+attribute [instance] compressorInfo.zero_val
 
 class compressorInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying compressorInfo.underlying compressorInfo.t
-  underlying : go.UnderlyingDirectedEq compressorInfo compressorInfo.underlying
+  type_repr : go.TypeReprUnderlying compressorInfo.underlying compressorInfo
+  underlying : go.UnderlyingDirectedEq compressorInfo.ty compressorInfo.underlying
   isUnderlying : go.IsUnderlying compressorInfo.underlying compressorInfo.underlying
 
 attribute [instance] compressorInfo.TypeAssumptions.type_repr
   compressorInfo.TypeAssumptions.underlying
   compressorInfo.TypeAssumptions.isUnderlying
 
-namespace rpcInfo
-structure t [FfiSyntax] where
+structure rpcInfo [FfiSyntax] where
   mk ::
   failfast' : Bool
-  preloaderInfo' : compressorInfo.t
+  preloaderInfo' : compressorInfo
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end rpcInfo
+instance rpcInfo.zero_val [FfiSyntax] : ZeroVal rpcInfo :=
+  ⟨rpcInfo.mk zeroValDef zeroValDef⟩
 
 @[reducible] def rpcInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"failfast" go.bool),
-(go.field_decl.FieldDecl go!"preloaderInfo" compressorInfo)]
+(go.field_decl.FieldDecl go!"preloaderInfo" compressorInfo.ty)]
 
 @[irreducible] def rpcInfo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   rpcInfo.fieldsUnsealed
@@ -3275,12 +3129,12 @@ instance equals_unfold_rpcInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType rpcInfo.fields)
 
 class rpcInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying rpcInfo.underlying rpcInfo.t
-  underlying : go.UnderlyingDirectedEq rpcInfo rpcInfo.underlying
-  get_failfast : ∀ (x : rpcInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet rpcInfo.underlying go!"failfast") #x (Val #(x.failfast'))
-  set_failfast : ∀ (x : rpcInfo.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet rpcInfo.underlying go!"failfast") (PairV #x #y) (Val #(({ x with failfast' := y } : rpcInfo.t)))
-  get_preloaderInfo : ∀ (x : rpcInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet rpcInfo.underlying go!"preloaderInfo") #x (Val #(x.preloaderInfo'))
-  set_preloaderInfo : ∀ (x : rpcInfo.t) (y : compressorInfo.t), go.IsGoStepPureDetTagged under (StructFieldSet rpcInfo.underlying go!"preloaderInfo") (PairV #x #y) (Val #(({ x with preloaderInfo' := y } : rpcInfo.t)))
+  type_repr : go.TypeReprUnderlying rpcInfo.underlying rpcInfo
+  underlying : go.UnderlyingDirectedEq rpcInfo.ty rpcInfo.underlying
+  get_failfast : ∀ (x : rpcInfo), go.IsGoStepPureDetTagged under (StructFieldGet rpcInfo.underlying go!"failfast") #x (Val #(x.failfast'))
+  set_failfast : ∀ (x : rpcInfo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet rpcInfo.underlying go!"failfast") (PairV #x #y) (Val #(({ x with failfast' := y } : rpcInfo)))
+  get_preloaderInfo : ∀ (x : rpcInfo), go.IsGoStepPureDetTagged under (StructFieldGet rpcInfo.underlying go!"preloaderInfo") #x (Val #(x.preloaderInfo'))
+  set_preloaderInfo : ∀ (x : rpcInfo) (y : compressorInfo), go.IsGoStepPureDetTagged under (StructFieldSet rpcInfo.underlying go!"preloaderInfo") (PairV #x #y) (Val #(({ x with preloaderInfo' := y } : rpcInfo)))
 
 attribute [instance] rpcInfo.TypeAssumptions.type_repr
   rpcInfo.TypeAssumptions.underlying
@@ -3289,13 +3143,11 @@ attribute [instance] rpcInfo.TypeAssumptions.type_repr
   rpcInfo.TypeAssumptions.get_preloaderInfo
   rpcInfo.TypeAssumptions.set_preloaderInfo
 
-namespace rpcInfoContextKey
-structure t [FfiSyntax] where
+structure rpcInfoContextKey [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end rpcInfoContextKey
+instance rpcInfoContextKey.zero_val [FfiSyntax] : ZeroVal rpcInfoContextKey :=
+  ⟨rpcInfoContextKey.mk⟩
 
 @[reducible] def rpcInfoContextKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3311,37 +3163,33 @@ instance equals_unfold_rpcInfoContextKey [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType rpcInfoContextKey.fields)
 
 class rpcInfoContextKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying rpcInfoContextKey.underlying rpcInfoContextKey.t
-  underlying : go.UnderlyingDirectedEq rpcInfoContextKey rpcInfoContextKey.underlying
+  type_repr : go.TypeReprUnderlying rpcInfoContextKey.underlying rpcInfoContextKey
+  underlying : go.UnderlyingDirectedEq rpcInfoContextKey.ty rpcInfoContextKey.underlying
 
 attribute [instance] rpcInfoContextKey.TypeAssumptions.type_repr
   rpcInfoContextKey.TypeAssumptions.underlying
 
-namespace MethodHandler
-abbrev t [FfiSyntax] : Type := func.t
-end MethodHandler
+abbrev MethodHandler [FfiSyntax] : Type := func.t
 
 @[reducible] def MethodHandler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [go.any, _root_.Perennial.context.Context, (go.GoType.FunctionType (go.signature.Signature [go.any] false [go.error])), UnaryServerInterceptor] false [go.any, go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [go.any, _root_.Perennial.context.Context.ty, (go.GoType.FunctionType (go.signature.Signature [go.any] false [go.error])), UnaryServerInterceptor.ty] false [go.any, go.error]))
 
 class MethodHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq MethodHandler MethodHandler.underlying
+  underlying : go.UnderlyingDirectedEq MethodHandler.ty MethodHandler.underlying
 
 attribute [instance] MethodHandler.TypeAssumptions.underlying
 
-namespace MethodDesc
-structure t [FfiSyntax] where
+structure MethodDesc [FfiSyntax] where
   mk ::
   MethodName' : GoString
-  Handler' : MethodHandler.t
+  Handler' : MethodHandler
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end MethodDesc
+instance MethodDesc.zero_val [FfiSyntax] : ZeroVal MethodDesc :=
+  ⟨MethodDesc.mk zeroValDef zeroValDef⟩
 
 @[reducible] def MethodDesc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MethodName" go.string),
-(go.field_decl.FieldDecl go!"Handler" MethodHandler)]
+(go.field_decl.FieldDecl go!"Handler" MethodHandler.ty)]
 
 @[irreducible] def MethodDesc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   MethodDesc.fieldsUnsealed
@@ -3354,12 +3202,12 @@ instance equals_unfold_MethodDesc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MethodDesc.fields)
 
 class MethodDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MethodDesc.underlying MethodDesc.t
-  underlying : go.UnderlyingDirectedEq MethodDesc MethodDesc.underlying
-  get_MethodName : ∀ (x : MethodDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet MethodDesc.underlying go!"MethodName") #x (Val #(x.MethodName'))
-  set_MethodName : ∀ (x : MethodDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet MethodDesc.underlying go!"MethodName") (PairV #x #y) (Val #(({ x with MethodName' := y } : MethodDesc.t)))
-  get_Handler : ∀ (x : MethodDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet MethodDesc.underlying go!"Handler") #x (Val #(x.Handler'))
-  set_Handler : ∀ (x : MethodDesc.t) (y : MethodHandler.t), go.IsGoStepPureDetTagged under (StructFieldSet MethodDesc.underlying go!"Handler") (PairV #x #y) (Val #(({ x with Handler' := y } : MethodDesc.t)))
+  type_repr : go.TypeReprUnderlying MethodDesc.underlying MethodDesc
+  underlying : go.UnderlyingDirectedEq MethodDesc.ty MethodDesc.underlying
+  get_MethodName : ∀ (x : MethodDesc), go.IsGoStepPureDetTagged under (StructFieldGet MethodDesc.underlying go!"MethodName") #x (Val #(x.MethodName'))
+  set_MethodName : ∀ (x : MethodDesc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet MethodDesc.underlying go!"MethodName") (PairV #x #y) (Val #(({ x with MethodName' := y } : MethodDesc)))
+  get_Handler : ∀ (x : MethodDesc), go.IsGoStepPureDetTagged under (StructFieldGet MethodDesc.underlying go!"Handler") #x (Val #(x.Handler'))
+  set_Handler : ∀ (x : MethodDesc) (y : MethodHandler), go.IsGoStepPureDetTagged under (StructFieldSet MethodDesc.underlying go!"Handler") (PairV #x #y) (Val #(({ x with Handler' := y } : MethodDesc)))
 
 attribute [instance] MethodDesc.TypeAssumptions.type_repr
   MethodDesc.TypeAssumptions.underlying
@@ -3368,8 +3216,7 @@ attribute [instance] MethodDesc.TypeAssumptions.type_repr
   MethodDesc.TypeAssumptions.get_Handler
   MethodDesc.TypeAssumptions.set_Handler
 
-namespace ServiceDesc
-structure t [FfiSyntax] where
+structure ServiceDesc [FfiSyntax] where
   mk ::
   ServiceName' : GoString
   HandlerType' : interface.t
@@ -3377,15 +3224,14 @@ structure t [FfiSyntax] where
   Streams' : slice.t
   Metadata' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end ServiceDesc
+instance ServiceDesc.zero_val [FfiSyntax] : ZeroVal ServiceDesc :=
+  ⟨ServiceDesc.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def ServiceDesc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ServiceName" go.string),
 (go.field_decl.FieldDecl go!"HandlerType" go.any),
-(go.field_decl.FieldDecl go!"Methods" (go.GoType.SliceType MethodDesc)),
-(go.field_decl.FieldDecl go!"Streams" (go.GoType.SliceType StreamDesc)),
+(go.field_decl.FieldDecl go!"Methods" (go.GoType.SliceType MethodDesc.ty)),
+(go.field_decl.FieldDecl go!"Streams" (go.GoType.SliceType StreamDesc.ty)),
 (go.field_decl.FieldDecl go!"Metadata" go.any)]
 
 @[irreducible] def ServiceDesc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -3399,18 +3245,18 @@ instance equals_unfold_ServiceDesc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType ServiceDesc.fields)
 
 class ServiceDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServiceDesc.underlying ServiceDesc.t
-  underlying : go.UnderlyingDirectedEq ServiceDesc ServiceDesc.underlying
-  get_ServiceName : ∀ (x : ServiceDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"ServiceName") #x (Val #(x.ServiceName'))
-  set_ServiceName : ∀ (x : ServiceDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"ServiceName") (PairV #x #y) (Val #(({ x with ServiceName' := y } : ServiceDesc.t)))
-  get_HandlerType : ∀ (x : ServiceDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"HandlerType") #x (Val #(x.HandlerType'))
-  set_HandlerType : ∀ (x : ServiceDesc.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"HandlerType") (PairV #x #y) (Val #(({ x with HandlerType' := y } : ServiceDesc.t)))
-  get_Methods : ∀ (x : ServiceDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Methods") #x (Val #(x.Methods'))
-  set_Methods : ∀ (x : ServiceDesc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Methods") (PairV #x #y) (Val #(({ x with Methods' := y } : ServiceDesc.t)))
-  get_Streams : ∀ (x : ServiceDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Streams") #x (Val #(x.Streams'))
-  set_Streams : ∀ (x : ServiceDesc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Streams") (PairV #x #y) (Val #(({ x with Streams' := y } : ServiceDesc.t)))
-  get_Metadata : ∀ (x : ServiceDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Metadata") #x (Val #(x.Metadata'))
-  set_Metadata : ∀ (x : ServiceDesc.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Metadata") (PairV #x #y) (Val #(({ x with Metadata' := y } : ServiceDesc.t)))
+  type_repr : go.TypeReprUnderlying ServiceDesc.underlying ServiceDesc
+  underlying : go.UnderlyingDirectedEq ServiceDesc.ty ServiceDesc.underlying
+  get_ServiceName : ∀ (x : ServiceDesc), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"ServiceName") #x (Val #(x.ServiceName'))
+  set_ServiceName : ∀ (x : ServiceDesc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"ServiceName") (PairV #x #y) (Val #(({ x with ServiceName' := y } : ServiceDesc)))
+  get_HandlerType : ∀ (x : ServiceDesc), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"HandlerType") #x (Val #(x.HandlerType'))
+  set_HandlerType : ∀ (x : ServiceDesc) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"HandlerType") (PairV #x #y) (Val #(({ x with HandlerType' := y } : ServiceDesc)))
+  get_Methods : ∀ (x : ServiceDesc), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Methods") #x (Val #(x.Methods'))
+  set_Methods : ∀ (x : ServiceDesc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Methods") (PairV #x #y) (Val #(({ x with Methods' := y } : ServiceDesc)))
+  get_Streams : ∀ (x : ServiceDesc), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Streams") #x (Val #(x.Streams'))
+  set_Streams : ∀ (x : ServiceDesc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Streams") (PairV #x #y) (Val #(({ x with Streams' := y } : ServiceDesc)))
+  get_Metadata : ∀ (x : ServiceDesc), go.IsGoStepPureDetTagged under (StructFieldGet ServiceDesc.underlying go!"Metadata") #x (Val #(x.Metadata'))
+  set_Metadata : ∀ (x : ServiceDesc) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceDesc.underlying go!"Metadata") (PairV #x #y) (Val #(({ x with Metadata' := y } : ServiceDesc)))
 
 attribute [instance] ServiceDesc.TypeAssumptions.type_repr
   ServiceDesc.TypeAssumptions.underlying
@@ -3425,22 +3271,20 @@ attribute [instance] ServiceDesc.TypeAssumptions.type_repr
   ServiceDesc.TypeAssumptions.get_Metadata
   ServiceDesc.TypeAssumptions.set_Metadata
 
-namespace serviceInfo
-structure t [FfiSyntax] where
+structure serviceInfo [FfiSyntax] where
   mk ::
   serviceImpl' : interface.t
   methods' : map.t
   streams' : map.t
   mdata' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end serviceInfo
+instance serviceInfo.zero_val [FfiSyntax] : ZeroVal serviceInfo :=
+  ⟨serviceInfo.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def serviceInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"serviceImpl" go.any),
-(go.field_decl.FieldDecl go!"methods" (go.GoType.MapType go.string (go.GoType.PointerType MethodDesc))),
-(go.field_decl.FieldDecl go!"streams" (go.GoType.MapType go.string (go.GoType.PointerType StreamDesc))),
+(go.field_decl.FieldDecl go!"methods" (go.GoType.MapType go.string (go.GoType.PointerType MethodDesc.ty))),
+(go.field_decl.FieldDecl go!"streams" (go.GoType.MapType go.string (go.GoType.PointerType StreamDesc.ty))),
 (go.field_decl.FieldDecl go!"mdata" go.any)]
 
 @[irreducible] def serviceInfo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -3454,16 +3298,16 @@ instance equals_unfold_serviceInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType serviceInfo.fields)
 
 class serviceInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying serviceInfo.underlying serviceInfo.t
-  underlying : go.UnderlyingDirectedEq serviceInfo serviceInfo.underlying
-  get_serviceImpl : ∀ (x : serviceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"serviceImpl") #x (Val #(x.serviceImpl'))
-  set_serviceImpl : ∀ (x : serviceInfo.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"serviceImpl") (PairV #x #y) (Val #(({ x with serviceImpl' := y } : serviceInfo.t)))
-  get_methods : ∀ (x : serviceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"methods") #x (Val #(x.methods'))
-  set_methods : ∀ (x : serviceInfo.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"methods") (PairV #x #y) (Val #(({ x with methods' := y } : serviceInfo.t)))
-  get_streams : ∀ (x : serviceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"streams") #x (Val #(x.streams'))
-  set_streams : ∀ (x : serviceInfo.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"streams") (PairV #x #y) (Val #(({ x with streams' := y } : serviceInfo.t)))
-  get_mdata : ∀ (x : serviceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"mdata") #x (Val #(x.mdata'))
-  set_mdata : ∀ (x : serviceInfo.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"mdata") (PairV #x #y) (Val #(({ x with mdata' := y } : serviceInfo.t)))
+  type_repr : go.TypeReprUnderlying serviceInfo.underlying serviceInfo
+  underlying : go.UnderlyingDirectedEq serviceInfo.ty serviceInfo.underlying
+  get_serviceImpl : ∀ (x : serviceInfo), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"serviceImpl") #x (Val #(x.serviceImpl'))
+  set_serviceImpl : ∀ (x : serviceInfo) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"serviceImpl") (PairV #x #y) (Val #(({ x with serviceImpl' := y } : serviceInfo)))
+  get_methods : ∀ (x : serviceInfo), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"methods") #x (Val #(x.methods'))
+  set_methods : ∀ (x : serviceInfo) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"methods") (PairV #x #y) (Val #(({ x with methods' := y } : serviceInfo)))
+  get_streams : ∀ (x : serviceInfo), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"streams") #x (Val #(x.streams'))
+  set_streams : ∀ (x : serviceInfo) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"streams") (PairV #x #y) (Val #(({ x with streams' := y } : serviceInfo)))
+  get_mdata : ∀ (x : serviceInfo), go.IsGoStepPureDetTagged under (StructFieldGet serviceInfo.underlying go!"mdata") #x (Val #(x.mdata'))
+  set_mdata : ∀ (x : serviceInfo) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet serviceInfo.underlying go!"mdata") (PairV #x #y) (Val #(({ x with mdata' := y } : serviceInfo)))
 
 attribute [instance] serviceInfo.TypeAssumptions.type_repr
   serviceInfo.TypeAssumptions.underlying
@@ -3476,55 +3320,47 @@ attribute [instance] serviceInfo.TypeAssumptions.type_repr
   serviceInfo.TypeAssumptions.get_mdata
   serviceInfo.TypeAssumptions.set_mdata
 
-namespace Server
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Server
+axiom Server : Type
+axiom Server.zero_val : ZeroVal Server
+attribute [instance] Server.zero_val
 
 class Server.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Server.underlying Server.t
-  underlying : go.UnderlyingDirectedEq Server Server.underlying
+  type_repr : go.TypeReprUnderlying Server.underlying Server
+  underlying : go.UnderlyingDirectedEq Server.ty Server.underlying
   isUnderlying : go.IsUnderlying Server.underlying Server.underlying
 
 attribute [instance] Server.TypeAssumptions.type_repr
   Server.TypeAssumptions.underlying
   Server.TypeAssumptions.isUnderlying
 
-namespace serverOptions
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end serverOptions
+axiom serverOptions : Type
+axiom serverOptions.zero_val : ZeroVal serverOptions
+attribute [instance] serverOptions.zero_val
 
 class serverOptions.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying serverOptions.underlying serverOptions.t
-  underlying : go.UnderlyingDirectedEq serverOptions serverOptions.underlying
+  type_repr : go.TypeReprUnderlying serverOptions.underlying serverOptions
+  underlying : go.UnderlyingDirectedEq serverOptions.ty serverOptions.underlying
   isUnderlying : go.IsUnderlying serverOptions.underlying serverOptions.underlying
 
 attribute [instance] serverOptions.TypeAssumptions.type_repr
   serverOptions.TypeAssumptions.underlying
   serverOptions.TypeAssumptions.isUnderlying
 
-namespace ServerOption
-abbrev t [FfiSyntax] : Type := interface.t
-end ServerOption
+abbrev ServerOption [FfiSyntax] : Type := interface.t
 
 @[reducible] def ServerOption.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType serverOptions)] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType serverOptions.ty)] false []))])
 
 class ServerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ServerOption ServerOption.underlying
+  underlying : go.UnderlyingDirectedEq ServerOption.ty ServerOption.underlying
 
 attribute [instance] ServerOption.TypeAssumptions.underlying
 
-namespace EmptyServerOption
-structure t [FfiSyntax] where
+structure EmptyServerOption [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end EmptyServerOption
+instance EmptyServerOption.zero_val [FfiSyntax] : ZeroVal EmptyServerOption :=
+  ⟨EmptyServerOption.mk⟩
 
 @[reducible] def EmptyServerOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3540,23 +3376,21 @@ instance equals_unfold_EmptyServerOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType EmptyServerOption.fields)
 
 class EmptyServerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EmptyServerOption.underlying EmptyServerOption.t
-  underlying : go.UnderlyingDirectedEq EmptyServerOption EmptyServerOption.underlying
+  type_repr : go.TypeReprUnderlying EmptyServerOption.underlying EmptyServerOption
+  underlying : go.UnderlyingDirectedEq EmptyServerOption.ty EmptyServerOption.underlying
 
 attribute [instance] EmptyServerOption.TypeAssumptions.type_repr
   EmptyServerOption.TypeAssumptions.underlying
 
-namespace funcServerOption
-structure t [FfiSyntax] where
+structure funcServerOption [FfiSyntax] where
   mk ::
   f' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end funcServerOption
+instance funcServerOption.zero_val [FfiSyntax] : ZeroVal funcServerOption :=
+  ⟨funcServerOption.mk zeroValDef⟩
 
 @[reducible] def funcServerOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType serverOptions)] false [])))]
+  [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType serverOptions.ty)] false [])))]
 
 @[irreducible] def funcServerOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   funcServerOption.fieldsUnsealed
@@ -3569,27 +3403,25 @@ instance equals_unfold_funcServerOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType funcServerOption.fields)
 
 class funcServerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying funcServerOption.underlying funcServerOption.t
-  underlying : go.UnderlyingDirectedEq funcServerOption funcServerOption.underlying
-  get_f : ∀ (x : funcServerOption.t), go.IsGoStepPureDetTagged under (StructFieldGet funcServerOption.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : funcServerOption.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet funcServerOption.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : funcServerOption.t)))
+  type_repr : go.TypeReprUnderlying funcServerOption.underlying funcServerOption
+  underlying : go.UnderlyingDirectedEq funcServerOption.ty funcServerOption.underlying
+  get_f : ∀ (x : funcServerOption), go.IsGoStepPureDetTagged under (StructFieldGet funcServerOption.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : funcServerOption) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet funcServerOption.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : funcServerOption)))
 
 attribute [instance] funcServerOption.TypeAssumptions.type_repr
   funcServerOption.TypeAssumptions.underlying
   funcServerOption.TypeAssumptions.get_f
   funcServerOption.TypeAssumptions.set_f
 
-namespace joinServerOption
-structure t [FfiSyntax] where
+structure joinServerOption [FfiSyntax] where
   mk ::
   opts' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end joinServerOption
+instance joinServerOption.zero_val [FfiSyntax] : ZeroVal joinServerOption :=
+  ⟨joinServerOption.mk zeroValDef⟩
 
 @[reducible] def joinServerOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"opts" (go.GoType.SliceType ServerOption))]
+  [(go.field_decl.FieldDecl go!"opts" (go.GoType.SliceType ServerOption.ty))]
 
 @[irreducible] def joinServerOption.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   joinServerOption.fieldsUnsealed
@@ -3602,24 +3434,22 @@ instance equals_unfold_joinServerOption [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType joinServerOption.fields)
 
 class joinServerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying joinServerOption.underlying joinServerOption.t
-  underlying : go.UnderlyingDirectedEq joinServerOption joinServerOption.underlying
-  get_opts : ∀ (x : joinServerOption.t), go.IsGoStepPureDetTagged under (StructFieldGet joinServerOption.underlying go!"opts") #x (Val #(x.opts'))
-  set_opts : ∀ (x : joinServerOption.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinServerOption.underlying go!"opts") (PairV #x #y) (Val #(({ x with opts' := y } : joinServerOption.t)))
+  type_repr : go.TypeReprUnderlying joinServerOption.underlying joinServerOption
+  underlying : go.UnderlyingDirectedEq joinServerOption.ty joinServerOption.underlying
+  get_opts : ∀ (x : joinServerOption), go.IsGoStepPureDetTagged under (StructFieldGet joinServerOption.underlying go!"opts") #x (Val #(x.opts'))
+  set_opts : ∀ (x : joinServerOption) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet joinServerOption.underlying go!"opts") (PairV #x #y) (Val #(({ x with opts' := y } : joinServerOption)))
 
 attribute [instance] joinServerOption.TypeAssumptions.type_repr
   joinServerOption.TypeAssumptions.underlying
   joinServerOption.TypeAssumptions.get_opts
   joinServerOption.TypeAssumptions.set_opts
 
-namespace MaxHeaderListSizeServerOption
-structure t [FfiSyntax] where
+structure MaxHeaderListSizeServerOption [FfiSyntax] where
   mk ::
   MaxHeaderListSize' : w32
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MaxHeaderListSizeServerOption
+instance MaxHeaderListSizeServerOption.zero_val [FfiSyntax] : ZeroVal MaxHeaderListSizeServerOption :=
+  ⟨MaxHeaderListSizeServerOption.mk zeroValDef⟩
 
 @[reducible] def MaxHeaderListSizeServerOption.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxHeaderListSize" go.uint32)]
@@ -3635,38 +3465,34 @@ instance equals_unfold_MaxHeaderListSizeServerOption [FfiSyntax] [GoGlobalContex
   (go.GoType.StructType MaxHeaderListSizeServerOption.fields)
 
 class MaxHeaderListSizeServerOption.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MaxHeaderListSizeServerOption.underlying MaxHeaderListSizeServerOption.t
-  underlying : go.UnderlyingDirectedEq MaxHeaderListSizeServerOption MaxHeaderListSizeServerOption.underlying
-  get_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeServerOption.t), go.IsGoStepPureDetTagged under (StructFieldGet MaxHeaderListSizeServerOption.underlying go!"MaxHeaderListSize") #x (Val #(x.MaxHeaderListSize'))
-  set_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeServerOption.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet MaxHeaderListSizeServerOption.underlying go!"MaxHeaderListSize") (PairV #x #y) (Val #(({ x with MaxHeaderListSize' := y } : MaxHeaderListSizeServerOption.t)))
+  type_repr : go.TypeReprUnderlying MaxHeaderListSizeServerOption.underlying MaxHeaderListSizeServerOption
+  underlying : go.UnderlyingDirectedEq MaxHeaderListSizeServerOption.ty MaxHeaderListSizeServerOption.underlying
+  get_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeServerOption), go.IsGoStepPureDetTagged under (StructFieldGet MaxHeaderListSizeServerOption.underlying go!"MaxHeaderListSize") #x (Val #(x.MaxHeaderListSize'))
+  set_MaxHeaderListSize : ∀ (x : MaxHeaderListSizeServerOption) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet MaxHeaderListSizeServerOption.underlying go!"MaxHeaderListSize") (PairV #x #y) (Val #(({ x with MaxHeaderListSize' := y } : MaxHeaderListSizeServerOption)))
 
 attribute [instance] MaxHeaderListSizeServerOption.TypeAssumptions.type_repr
   MaxHeaderListSizeServerOption.TypeAssumptions.underlying
   MaxHeaderListSizeServerOption.TypeAssumptions.get_MaxHeaderListSize
   MaxHeaderListSizeServerOption.TypeAssumptions.set_MaxHeaderListSize
 
-namespace ServiceRegistrar
-abbrev t [FfiSyntax] : Type := interface.t
-end ServiceRegistrar
+abbrev ServiceRegistrar [FfiSyntax] : Type := interface.t
 
 @[reducible] def ServiceRegistrar.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RegisterService" (go.signature.Signature [(go.GoType.PointerType ServiceDesc), go.any] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RegisterService" (go.signature.Signature [(go.GoType.PointerType ServiceDesc.ty), go.any] false []))])
 
 class ServiceRegistrar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ServiceRegistrar ServiceRegistrar.underlying
+  underlying : go.UnderlyingDirectedEq ServiceRegistrar.ty ServiceRegistrar.underlying
 
 attribute [instance] ServiceRegistrar.TypeAssumptions.underlying
 
-namespace MethodInfo
-structure t [FfiSyntax] where
+structure MethodInfo [FfiSyntax] where
   mk ::
   Name' : GoString
   IsClientStream' : Bool
   IsServerStream' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end MethodInfo
+instance MethodInfo.zero_val [FfiSyntax] : ZeroVal MethodInfo :=
+  ⟨MethodInfo.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def MethodInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
@@ -3684,14 +3510,14 @@ instance equals_unfold_MethodInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MethodInfo.fields)
 
 class MethodInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MethodInfo.underlying MethodInfo.t
-  underlying : go.UnderlyingDirectedEq MethodInfo MethodInfo.underlying
-  get_Name : ∀ (x : MethodInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : MethodInfo.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : MethodInfo.t)))
-  get_IsClientStream : ∀ (x : MethodInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"IsClientStream") #x (Val #(x.IsClientStream'))
-  set_IsClientStream : ∀ (x : MethodInfo.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"IsClientStream") (PairV #x #y) (Val #(({ x with IsClientStream' := y } : MethodInfo.t)))
-  get_IsServerStream : ∀ (x : MethodInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"IsServerStream") #x (Val #(x.IsServerStream'))
-  set_IsServerStream : ∀ (x : MethodInfo.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"IsServerStream") (PairV #x #y) (Val #(({ x with IsServerStream' := y } : MethodInfo.t)))
+  type_repr : go.TypeReprUnderlying MethodInfo.underlying MethodInfo
+  underlying : go.UnderlyingDirectedEq MethodInfo.ty MethodInfo.underlying
+  get_Name : ∀ (x : MethodInfo), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : MethodInfo) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : MethodInfo)))
+  get_IsClientStream : ∀ (x : MethodInfo), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"IsClientStream") #x (Val #(x.IsClientStream'))
+  set_IsClientStream : ∀ (x : MethodInfo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"IsClientStream") (PairV #x #y) (Val #(({ x with IsClientStream' := y } : MethodInfo)))
+  get_IsServerStream : ∀ (x : MethodInfo), go.IsGoStepPureDetTagged under (StructFieldGet MethodInfo.underlying go!"IsServerStream") #x (Val #(x.IsServerStream'))
+  set_IsServerStream : ∀ (x : MethodInfo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet MethodInfo.underlying go!"IsServerStream") (PairV #x #y) (Val #(({ x with IsServerStream' := y } : MethodInfo)))
 
 attribute [instance] MethodInfo.TypeAssumptions.type_repr
   MethodInfo.TypeAssumptions.underlying
@@ -3702,18 +3528,16 @@ attribute [instance] MethodInfo.TypeAssumptions.type_repr
   MethodInfo.TypeAssumptions.get_IsServerStream
   MethodInfo.TypeAssumptions.set_IsServerStream
 
-namespace ServiceInfo
-structure t [FfiSyntax] where
+structure ServiceInfo [FfiSyntax] where
   mk ::
   Methods' : slice.t
   Metadata' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end ServiceInfo
+instance ServiceInfo.zero_val [FfiSyntax] : ZeroVal ServiceInfo :=
+  ⟨ServiceInfo.mk zeroValDef zeroValDef⟩
 
 @[reducible] def ServiceInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Methods" (go.GoType.SliceType MethodInfo)),
+  [(go.field_decl.FieldDecl go!"Methods" (go.GoType.SliceType MethodInfo.ty)),
 (go.field_decl.FieldDecl go!"Metadata" go.any)]
 
 @[irreducible] def ServiceInfo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -3727,12 +3551,12 @@ instance equals_unfold_ServiceInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType ServiceInfo.fields)
 
 class ServiceInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServiceInfo.underlying ServiceInfo.t
-  underlying : go.UnderlyingDirectedEq ServiceInfo ServiceInfo.underlying
-  get_Methods : ∀ (x : ServiceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceInfo.underlying go!"Methods") #x (Val #(x.Methods'))
-  set_Methods : ∀ (x : ServiceInfo.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceInfo.underlying go!"Methods") (PairV #x #y) (Val #(({ x with Methods' := y } : ServiceInfo.t)))
-  get_Metadata : ∀ (x : ServiceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet ServiceInfo.underlying go!"Metadata") #x (Val #(x.Metadata'))
-  set_Metadata : ∀ (x : ServiceInfo.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceInfo.underlying go!"Metadata") (PairV #x #y) (Val #(({ x with Metadata' := y } : ServiceInfo.t)))
+  type_repr : go.TypeReprUnderlying ServiceInfo.underlying ServiceInfo
+  underlying : go.UnderlyingDirectedEq ServiceInfo.ty ServiceInfo.underlying
+  get_Methods : ∀ (x : ServiceInfo), go.IsGoStepPureDetTagged under (StructFieldGet ServiceInfo.underlying go!"Methods") #x (Val #(x.Methods'))
+  set_Methods : ∀ (x : ServiceInfo) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceInfo.underlying go!"Methods") (PairV #x #y) (Val #(({ x with Methods' := y } : ServiceInfo)))
+  get_Metadata : ∀ (x : ServiceInfo), go.IsGoStepPureDetTagged under (StructFieldGet ServiceInfo.underlying go!"Metadata") #x (Val #(x.Metadata'))
+  set_Metadata : ∀ (x : ServiceInfo) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet ServiceInfo.underlying go!"Metadata") (PairV #x #y) (Val #(({ x with Metadata' := y } : ServiceInfo)))
 
 attribute [instance] ServiceInfo.TypeAssumptions.type_repr
   ServiceInfo.TypeAssumptions.underlying
@@ -3741,28 +3565,24 @@ attribute [instance] ServiceInfo.TypeAssumptions.type_repr
   ServiceInfo.TypeAssumptions.get_Metadata
   ServiceInfo.TypeAssumptions.set_Metadata
 
-namespace listenSocket
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end listenSocket
+axiom listenSocket : Type
+axiom listenSocket.zero_val : ZeroVal listenSocket
+attribute [instance] listenSocket.zero_val
 
 class listenSocket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying listenSocket.underlying listenSocket.t
-  underlying : go.UnderlyingDirectedEq listenSocket listenSocket.underlying
+  type_repr : go.TypeReprUnderlying listenSocket.underlying listenSocket
+  underlying : go.UnderlyingDirectedEq listenSocket.ty listenSocket.underlying
   isUnderlying : go.IsUnderlying listenSocket.underlying listenSocket.underlying
 
 attribute [instance] listenSocket.TypeAssumptions.type_repr
   listenSocket.TypeAssumptions.underlying
   listenSocket.TypeAssumptions.isUnderlying
 
-namespace streamKey
-structure t [FfiSyntax] where
+structure streamKey [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end streamKey
+instance streamKey.zero_val [FfiSyntax] : ZeroVal streamKey :=
+  ⟨streamKey.mk⟩
 
 @[reducible] def streamKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3778,34 +3598,30 @@ instance equals_unfold_streamKey [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType streamKey.fields)
 
 class streamKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying streamKey.underlying streamKey.t
-  underlying : go.UnderlyingDirectedEq streamKey streamKey.underlying
+  type_repr : go.TypeReprUnderlying streamKey.underlying streamKey
+  underlying : go.UnderlyingDirectedEq streamKey.ty streamKey.underlying
 
 attribute [instance] streamKey.TypeAssumptions.type_repr
   streamKey.TypeAssumptions.underlying
 
-namespace ServerTransportStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerTransportStream
+axiom ServerTransportStream : Type
+axiom ServerTransportStream.zero_val : ZeroVal ServerTransportStream
+attribute [instance] ServerTransportStream.zero_val
 
 class ServerTransportStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerTransportStream.underlying ServerTransportStream.t
-  underlying : go.UnderlyingDirectedEq ServerTransportStream ServerTransportStream.underlying
+  type_repr : go.TypeReprUnderlying ServerTransportStream.underlying ServerTransportStream
+  underlying : go.UnderlyingDirectedEq ServerTransportStream.ty ServerTransportStream.underlying
   isUnderlying : go.IsUnderlying ServerTransportStream.underlying ServerTransportStream.underlying
 
 attribute [instance] ServerTransportStream.TypeAssumptions.type_repr
   ServerTransportStream.TypeAssumptions.underlying
   ServerTransportStream.TypeAssumptions.isUnderlying
 
-namespace serverKey
-structure t [FfiSyntax] where
+structure serverKey [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end serverKey
+instance serverKey.zero_val [FfiSyntax] : ZeroVal serverKey :=
+  ⟨serverKey.mk⟩
 
 @[reducible] def serverKey.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3821,24 +3637,22 @@ instance equals_unfold_serverKey [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType serverKey.fields)
 
 class serverKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying serverKey.underlying serverKey.t
-  underlying : go.UnderlyingDirectedEq serverKey serverKey.underlying
+  type_repr : go.TypeReprUnderlying serverKey.underlying serverKey
+  underlying : go.UnderlyingDirectedEq serverKey.ty serverKey.underlying
 
 attribute [instance] serverKey.TypeAssumptions.type_repr
   serverKey.TypeAssumptions.underlying
 
-namespace atomicSemaphore
-structure t [FfiSyntax] where
+structure atomicSemaphore [FfiSyntax] where
   mk ::
-  n' : _root_.Perennial.sync.atomic.Int64.t
+  n' : _root_.Perennial.sync.atomic.Int64
   wait' : chan.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end atomicSemaphore
+instance atomicSemaphore.zero_val [FfiSyntax] : ZeroVal atomicSemaphore :=
+  ⟨atomicSemaphore.mk zeroValDef zeroValDef⟩
 
 @[reducible] def atomicSemaphore.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"n" _root_.Perennial.sync.atomic.Int64),
+  [(go.field_decl.FieldDecl go!"n" _root_.Perennial.sync.atomic.Int64.ty),
 (go.field_decl.FieldDecl go!"wait" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
 @[irreducible] def atomicSemaphore.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -3852,12 +3666,12 @@ instance equals_unfold_atomicSemaphore [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType atomicSemaphore.fields)
 
 class atomicSemaphore.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying atomicSemaphore.underlying atomicSemaphore.t
-  underlying : go.UnderlyingDirectedEq atomicSemaphore atomicSemaphore.underlying
-  get_n : ∀ (x : atomicSemaphore.t), go.IsGoStepPureDetTagged under (StructFieldGet atomicSemaphore.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : atomicSemaphore.t) (y : _root_.Perennial.sync.atomic.Int64.t), go.IsGoStepPureDetTagged under (StructFieldSet atomicSemaphore.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : atomicSemaphore.t)))
-  get_wait : ∀ (x : atomicSemaphore.t), go.IsGoStepPureDetTagged under (StructFieldGet atomicSemaphore.underlying go!"wait") #x (Val #(x.wait'))
-  set_wait : ∀ (x : atomicSemaphore.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet atomicSemaphore.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : atomicSemaphore.t)))
+  type_repr : go.TypeReprUnderlying atomicSemaphore.underlying atomicSemaphore
+  underlying : go.UnderlyingDirectedEq atomicSemaphore.ty atomicSemaphore.underlying
+  get_n : ∀ (x : atomicSemaphore), go.IsGoStepPureDetTagged under (StructFieldGet atomicSemaphore.underlying go!"n") #x (Val #(x.n'))
+  set_n : ∀ (x : atomicSemaphore) (y : _root_.Perennial.sync.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet atomicSemaphore.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : atomicSemaphore)))
+  get_wait : ∀ (x : atomicSemaphore), go.IsGoStepPureDetTagged under (StructFieldGet atomicSemaphore.underlying go!"wait") #x (Val #(x.wait'))
+  set_wait : ∀ (x : atomicSemaphore) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet atomicSemaphore.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : atomicSemaphore)))
 
 attribute [instance] atomicSemaphore.TypeAssumptions.type_repr
   atomicSemaphore.TypeAssumptions.underlying
@@ -3866,29 +3680,25 @@ attribute [instance] atomicSemaphore.TypeAssumptions.type_repr
   atomicSemaphore.TypeAssumptions.get_wait
   atomicSemaphore.TypeAssumptions.set_wait
 
-namespace ServiceConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServiceConfig
+axiom ServiceConfig : Type
+axiom ServiceConfig.zero_val : ZeroVal ServiceConfig
+attribute [instance] ServiceConfig.zero_val
 
 class ServiceConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServiceConfig.underlying ServiceConfig.t
-  underlying : go.UnderlyingDirectedEq ServiceConfig ServiceConfig.underlying
+  type_repr : go.TypeReprUnderlying ServiceConfig.underlying ServiceConfig
+  underlying : go.UnderlyingDirectedEq ServiceConfig.ty ServiceConfig.underlying
   isUnderlying : go.IsUnderlying ServiceConfig.underlying ServiceConfig.underlying
 
 attribute [instance] ServiceConfig.TypeAssumptions.type_repr
   ServiceConfig.TypeAssumptions.underlying
   ServiceConfig.TypeAssumptions.isUnderlying
 
-namespace healthCheckConfig
-structure t [FfiSyntax] where
+structure healthCheckConfig [FfiSyntax] where
   mk ::
   ServiceName' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end healthCheckConfig
+instance healthCheckConfig.zero_val [FfiSyntax] : ZeroVal healthCheckConfig :=
+  ⟨healthCheckConfig.mk zeroValDef⟩
 
 @[reducible] def healthCheckConfig.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ServiceName" go.string)]
@@ -3904,40 +3714,36 @@ instance equals_unfold_healthCheckConfig [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType healthCheckConfig.fields)
 
 class healthCheckConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying healthCheckConfig.underlying healthCheckConfig.t
-  underlying : go.UnderlyingDirectedEq healthCheckConfig healthCheckConfig.underlying
-  get_ServiceName : ∀ (x : healthCheckConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet healthCheckConfig.underlying go!"ServiceName") #x (Val #(x.ServiceName'))
-  set_ServiceName : ∀ (x : healthCheckConfig.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet healthCheckConfig.underlying go!"ServiceName") (PairV #x #y) (Val #(({ x with ServiceName' := y } : healthCheckConfig.t)))
+  type_repr : go.TypeReprUnderlying healthCheckConfig.underlying healthCheckConfig
+  underlying : go.UnderlyingDirectedEq healthCheckConfig.ty healthCheckConfig.underlying
+  get_ServiceName : ∀ (x : healthCheckConfig), go.IsGoStepPureDetTagged under (StructFieldGet healthCheckConfig.underlying go!"ServiceName") #x (Val #(x.ServiceName'))
+  set_ServiceName : ∀ (x : healthCheckConfig) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet healthCheckConfig.underlying go!"ServiceName") (PairV #x #y) (Val #(({ x with ServiceName' := y } : healthCheckConfig)))
 
 attribute [instance] healthCheckConfig.TypeAssumptions.type_repr
   healthCheckConfig.TypeAssumptions.underlying
   healthCheckConfig.TypeAssumptions.get_ServiceName
   healthCheckConfig.TypeAssumptions.set_ServiceName
 
-namespace jsonRetryPolicy
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end jsonRetryPolicy
+axiom jsonRetryPolicy : Type
+axiom jsonRetryPolicy.zero_val : ZeroVal jsonRetryPolicy
+attribute [instance] jsonRetryPolicy.zero_val
 
 class jsonRetryPolicy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying jsonRetryPolicy.underlying jsonRetryPolicy.t
-  underlying : go.UnderlyingDirectedEq jsonRetryPolicy jsonRetryPolicy.underlying
+  type_repr : go.TypeReprUnderlying jsonRetryPolicy.underlying jsonRetryPolicy
+  underlying : go.UnderlyingDirectedEq jsonRetryPolicy.ty jsonRetryPolicy.underlying
   isUnderlying : go.IsUnderlying jsonRetryPolicy.underlying jsonRetryPolicy.underlying
 
 attribute [instance] jsonRetryPolicy.TypeAssumptions.type_repr
   jsonRetryPolicy.TypeAssumptions.underlying
   jsonRetryPolicy.TypeAssumptions.isUnderlying
 
-namespace retryThrottlingPolicy
-structure t [FfiSyntax] where
+structure retryThrottlingPolicy [FfiSyntax] where
   mk ::
   MaxTokens' : w64
   TokenRatio' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end retryThrottlingPolicy
+instance retryThrottlingPolicy.zero_val [FfiSyntax] : ZeroVal retryThrottlingPolicy :=
+  ⟨retryThrottlingPolicy.mk zeroValDef zeroValDef⟩
 
 @[reducible] def retryThrottlingPolicy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"MaxTokens" go.float64),
@@ -3954,12 +3760,12 @@ instance equals_unfold_retryThrottlingPolicy [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType retryThrottlingPolicy.fields)
 
 class retryThrottlingPolicy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying retryThrottlingPolicy.underlying retryThrottlingPolicy.t
-  underlying : go.UnderlyingDirectedEq retryThrottlingPolicy retryThrottlingPolicy.underlying
-  get_MaxTokens : ∀ (x : retryThrottlingPolicy.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottlingPolicy.underlying go!"MaxTokens") #x (Val #(x.MaxTokens'))
-  set_MaxTokens : ∀ (x : retryThrottlingPolicy.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottlingPolicy.underlying go!"MaxTokens") (PairV #x #y) (Val #(({ x with MaxTokens' := y } : retryThrottlingPolicy.t)))
-  get_TokenRatio : ∀ (x : retryThrottlingPolicy.t), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottlingPolicy.underlying go!"TokenRatio") #x (Val #(x.TokenRatio'))
-  set_TokenRatio : ∀ (x : retryThrottlingPolicy.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottlingPolicy.underlying go!"TokenRatio") (PairV #x #y) (Val #(({ x with TokenRatio' := y } : retryThrottlingPolicy.t)))
+  type_repr : go.TypeReprUnderlying retryThrottlingPolicy.underlying retryThrottlingPolicy
+  underlying : go.UnderlyingDirectedEq retryThrottlingPolicy.ty retryThrottlingPolicy.underlying
+  get_MaxTokens : ∀ (x : retryThrottlingPolicy), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottlingPolicy.underlying go!"MaxTokens") #x (Val #(x.MaxTokens'))
+  set_MaxTokens : ∀ (x : retryThrottlingPolicy) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottlingPolicy.underlying go!"MaxTokens") (PairV #x #y) (Val #(({ x with MaxTokens' := y } : retryThrottlingPolicy)))
+  get_TokenRatio : ∀ (x : retryThrottlingPolicy), go.IsGoStepPureDetTagged under (StructFieldGet retryThrottlingPolicy.underlying go!"TokenRatio") #x (Val #(x.TokenRatio'))
+  set_TokenRatio : ∀ (x : retryThrottlingPolicy) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet retryThrottlingPolicy.underlying go!"TokenRatio") (PairV #x #y) (Val #(({ x with TokenRatio' := y } : retryThrottlingPolicy)))
 
 attribute [instance] retryThrottlingPolicy.TypeAssumptions.type_repr
   retryThrottlingPolicy.TypeAssumptions.underlying
@@ -3968,15 +3774,13 @@ attribute [instance] retryThrottlingPolicy.TypeAssumptions.type_repr
   retryThrottlingPolicy.TypeAssumptions.get_TokenRatio
   retryThrottlingPolicy.TypeAssumptions.set_TokenRatio
 
-namespace jsonName
-structure t [FfiSyntax] where
+structure jsonName [FfiSyntax] where
   mk ::
   Service' : GoString
   Method' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end jsonName
+instance jsonName.zero_val [FfiSyntax] : ZeroVal jsonName :=
+  ⟨jsonName.mk zeroValDef zeroValDef⟩
 
 @[reducible] def jsonName.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Service" go.string),
@@ -3993,12 +3797,12 @@ instance equals_unfold_jsonName [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType jsonName.fields)
 
 class jsonName.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying jsonName.underlying jsonName.t
-  underlying : go.UnderlyingDirectedEq jsonName jsonName.underlying
-  get_Service : ∀ (x : jsonName.t), go.IsGoStepPureDetTagged under (StructFieldGet jsonName.underlying go!"Service") #x (Val #(x.Service'))
-  set_Service : ∀ (x : jsonName.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet jsonName.underlying go!"Service") (PairV #x #y) (Val #(({ x with Service' := y } : jsonName.t)))
-  get_Method : ∀ (x : jsonName.t), go.IsGoStepPureDetTagged under (StructFieldGet jsonName.underlying go!"Method") #x (Val #(x.Method'))
-  set_Method : ∀ (x : jsonName.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet jsonName.underlying go!"Method") (PairV #x #y) (Val #(({ x with Method' := y } : jsonName.t)))
+  type_repr : go.TypeReprUnderlying jsonName.underlying jsonName
+  underlying : go.UnderlyingDirectedEq jsonName.ty jsonName.underlying
+  get_Service : ∀ (x : jsonName), go.IsGoStepPureDetTagged under (StructFieldGet jsonName.underlying go!"Service") #x (Val #(x.Service'))
+  set_Service : ∀ (x : jsonName) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet jsonName.underlying go!"Service") (PairV #x #y) (Val #(({ x with Service' := y } : jsonName)))
+  get_Method : ∀ (x : jsonName), go.IsGoStepPureDetTagged under (StructFieldGet jsonName.underlying go!"Method") #x (Val #(x.Method'))
+  set_Method : ∀ (x : jsonName) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet jsonName.underlying go!"Method") (PairV #x #y) (Val #(({ x with Method' := y } : jsonName)))
 
 attribute [instance] jsonName.TypeAssumptions.type_repr
   jsonName.TypeAssumptions.underlying
@@ -4007,63 +3811,55 @@ attribute [instance] jsonName.TypeAssumptions.type_repr
   jsonName.TypeAssumptions.get_Method
   jsonName.TypeAssumptions.set_Method
 
-namespace jsonMC
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end jsonMC
+axiom jsonMC : Type
+axiom jsonMC.zero_val : ZeroVal jsonMC
+attribute [instance] jsonMC.zero_val
 
 class jsonMC.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying jsonMC.underlying jsonMC.t
-  underlying : go.UnderlyingDirectedEq jsonMC jsonMC.underlying
+  type_repr : go.TypeReprUnderlying jsonMC.underlying jsonMC
+  underlying : go.UnderlyingDirectedEq jsonMC.ty jsonMC.underlying
   isUnderlying : go.IsUnderlying jsonMC.underlying jsonMC.underlying
 
 attribute [instance] jsonMC.TypeAssumptions.type_repr
   jsonMC.TypeAssumptions.underlying
   jsonMC.TypeAssumptions.isUnderlying
 
-namespace jsonSC
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end jsonSC
+axiom jsonSC : Type
+axiom jsonSC.zero_val : ZeroVal jsonSC
+attribute [instance] jsonSC.zero_val
 
 class jsonSC.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying jsonSC.underlying jsonSC.t
-  underlying : go.UnderlyingDirectedEq jsonSC jsonSC.underlying
+  type_repr : go.TypeReprUnderlying jsonSC.underlying jsonSC
+  underlying : go.UnderlyingDirectedEq jsonSC.ty jsonSC.underlying
   isUnderlying : go.IsUnderlying jsonSC.underlying jsonSC.underlying
 
 attribute [instance] jsonSC.TypeAssumptions.type_repr
   jsonSC.TypeAssumptions.underlying
   jsonSC.TypeAssumptions.isUnderlying
 
-namespace StreamHandler
-abbrev t [FfiSyntax] : Type := func.t
-end StreamHandler
+abbrev StreamHandler [FfiSyntax] : Type := func.t
 
 @[reducible] def StreamHandler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [go.any, ServerStream] false [go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [go.any, ServerStream.ty] false [go.error]))
 
 class StreamHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq StreamHandler StreamHandler.underlying
+  underlying : go.UnderlyingDirectedEq StreamHandler.ty StreamHandler.underlying
 
 attribute [instance] StreamHandler.TypeAssumptions.underlying
 
-namespace StreamDesc
-structure t [FfiSyntax] where
+structure StreamDesc [FfiSyntax] where
   mk ::
   StreamName' : GoString
-  Handler' : StreamHandler.t
+  Handler' : StreamHandler
   ServerStreams' : Bool
   ClientStreams' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end StreamDesc
+instance StreamDesc.zero_val [FfiSyntax] : ZeroVal StreamDesc :=
+  ⟨StreamDesc.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def StreamDesc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"StreamName" go.string),
-(go.field_decl.FieldDecl go!"Handler" StreamHandler),
+(go.field_decl.FieldDecl go!"Handler" StreamHandler.ty),
 (go.field_decl.FieldDecl go!"ServerStreams" go.bool),
 (go.field_decl.FieldDecl go!"ClientStreams" go.bool)]
 
@@ -4078,16 +3874,16 @@ instance equals_unfold_StreamDesc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType StreamDesc.fields)
 
 class StreamDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying StreamDesc.underlying StreamDesc.t
-  underlying : go.UnderlyingDirectedEq StreamDesc StreamDesc.underlying
-  get_StreamName : ∀ (x : StreamDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"StreamName") #x (Val #(x.StreamName'))
-  set_StreamName : ∀ (x : StreamDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"StreamName") (PairV #x #y) (Val #(({ x with StreamName' := y } : StreamDesc.t)))
-  get_Handler : ∀ (x : StreamDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"Handler") #x (Val #(x.Handler'))
-  set_Handler : ∀ (x : StreamDesc.t) (y : StreamHandler.t), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"Handler") (PairV #x #y) (Val #(({ x with Handler' := y } : StreamDesc.t)))
-  get_ServerStreams : ∀ (x : StreamDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"ServerStreams") #x (Val #(x.ServerStreams'))
-  set_ServerStreams : ∀ (x : StreamDesc.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"ServerStreams") (PairV #x #y) (Val #(({ x with ServerStreams' := y } : StreamDesc.t)))
-  get_ClientStreams : ∀ (x : StreamDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"ClientStreams") #x (Val #(x.ClientStreams'))
-  set_ClientStreams : ∀ (x : StreamDesc.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"ClientStreams") (PairV #x #y) (Val #(({ x with ClientStreams' := y } : StreamDesc.t)))
+  type_repr : go.TypeReprUnderlying StreamDesc.underlying StreamDesc
+  underlying : go.UnderlyingDirectedEq StreamDesc.ty StreamDesc.underlying
+  get_StreamName : ∀ (x : StreamDesc), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"StreamName") #x (Val #(x.StreamName'))
+  set_StreamName : ∀ (x : StreamDesc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"StreamName") (PairV #x #y) (Val #(({ x with StreamName' := y } : StreamDesc)))
+  get_Handler : ∀ (x : StreamDesc), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"Handler") #x (Val #(x.Handler'))
+  set_Handler : ∀ (x : StreamDesc) (y : StreamHandler), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"Handler") (PairV #x #y) (Val #(({ x with Handler' := y } : StreamDesc)))
+  get_ServerStreams : ∀ (x : StreamDesc), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"ServerStreams") #x (Val #(x.ServerStreams'))
+  set_ServerStreams : ∀ (x : StreamDesc) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"ServerStreams") (PairV #x #y) (Val #(({ x with ServerStreams' := y } : StreamDesc)))
+  get_ClientStreams : ∀ (x : StreamDesc), go.IsGoStepPureDetTagged under (StructFieldGet StreamDesc.underlying go!"ClientStreams") #x (Val #(x.ClientStreams'))
+  set_ClientStreams : ∀ (x : StreamDesc) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StreamDesc.underlying go!"ClientStreams") (PairV #x #y) (Val #(({ x with ClientStreams' := y } : StreamDesc)))
 
 attribute [instance] StreamDesc.TypeAssumptions.type_repr
   StreamDesc.TypeAssumptions.underlying
@@ -4100,60 +3896,52 @@ attribute [instance] StreamDesc.TypeAssumptions.type_repr
   StreamDesc.TypeAssumptions.get_ClientStreams
   StreamDesc.TypeAssumptions.set_ClientStreams
 
-namespace Stream
-abbrev t [FfiSyntax] : Type := interface.t
-end Stream
+abbrev Stream [FfiSyntax] : Type := interface.t
 
 @[reducible] def Stream.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Context" (go.signature.Signature [] false [_root_.Perennial.context.Context])), (go.InterfaceElem.MethodElem go!"RecvMsg" (go.signature.Signature [go.any] false [go.error])), (go.InterfaceElem.MethodElem go!"SendMsg" (go.signature.Signature [go.any] false [go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Context" (go.signature.Signature [] false [_root_.Perennial.context.Context.ty])), (go.InterfaceElem.MethodElem go!"RecvMsg" (go.signature.Signature [go.any] false [go.error])), (go.InterfaceElem.MethodElem go!"SendMsg" (go.signature.Signature [go.any] false [go.error]))])
 
 class Stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Stream Stream.underlying
+  underlying : go.UnderlyingDirectedEq Stream.ty Stream.underlying
 
 attribute [instance] Stream.TypeAssumptions.underlying
 
-namespace ClientStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ClientStream
+axiom ClientStream : Type
+axiom ClientStream.zero_val : ZeroVal ClientStream
+attribute [instance] ClientStream.zero_val
 
 class ClientStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ClientStream.underlying ClientStream.t
-  underlying : go.UnderlyingDirectedEq ClientStream ClientStream.underlying
+  type_repr : go.TypeReprUnderlying ClientStream.underlying ClientStream
+  underlying : go.UnderlyingDirectedEq ClientStream.ty ClientStream.underlying
   isUnderlying : go.IsUnderlying ClientStream.underlying ClientStream.underlying
 
 attribute [instance] ClientStream.TypeAssumptions.type_repr
   ClientStream.TypeAssumptions.underlying
   ClientStream.TypeAssumptions.isUnderlying
 
-namespace clientStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end clientStream
+axiom clientStream : Type
+axiom clientStream.zero_val : ZeroVal clientStream
+attribute [instance] clientStream.zero_val
 
 class clientStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying clientStream.underlying clientStream.t
-  underlying : go.UnderlyingDirectedEq clientStream clientStream.underlying
+  type_repr : go.TypeReprUnderlying clientStream.underlying clientStream
+  underlying : go.UnderlyingDirectedEq clientStream.ty clientStream.underlying
   isUnderlying : go.IsUnderlying clientStream.underlying clientStream.underlying
 
 attribute [instance] clientStream.TypeAssumptions.type_repr
   clientStream.TypeAssumptions.underlying
   clientStream.TypeAssumptions.isUnderlying
 
-namespace replayOp
-structure t [FfiSyntax] where
+structure replayOp [FfiSyntax] where
   mk ::
   op' : func.t
   cleanup' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end replayOp
+instance replayOp.zero_val [FfiSyntax] : ZeroVal replayOp :=
+  ⟨replayOp.mk zeroValDef zeroValDef⟩
 
 @[reducible] def replayOp.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"op" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType csAttempt)] false [go.error]))),
+  [(go.field_decl.FieldDecl go!"op" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType csAttempt.ty)] false [go.error]))),
 (go.field_decl.FieldDecl go!"cleanup" (go.GoType.FunctionType (go.signature.Signature [] false [])))]
 
 @[irreducible] def replayOp.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -4167,12 +3955,12 @@ instance equals_unfold_replayOp [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType replayOp.fields)
 
 class replayOp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying replayOp.underlying replayOp.t
-  underlying : go.UnderlyingDirectedEq replayOp replayOp.underlying
-  get_op : ∀ (x : replayOp.t), go.IsGoStepPureDetTagged under (StructFieldGet replayOp.underlying go!"op") #x (Val #(x.op'))
-  set_op : ∀ (x : replayOp.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet replayOp.underlying go!"op") (PairV #x #y) (Val #(({ x with op' := y } : replayOp.t)))
-  get_cleanup : ∀ (x : replayOp.t), go.IsGoStepPureDetTagged under (StructFieldGet replayOp.underlying go!"cleanup") #x (Val #(x.cleanup'))
-  set_cleanup : ∀ (x : replayOp.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet replayOp.underlying go!"cleanup") (PairV #x #y) (Val #(({ x with cleanup' := y } : replayOp.t)))
+  type_repr : go.TypeReprUnderlying replayOp.underlying replayOp
+  underlying : go.UnderlyingDirectedEq replayOp.ty replayOp.underlying
+  get_op : ∀ (x : replayOp), go.IsGoStepPureDetTagged under (StructFieldGet replayOp.underlying go!"op") #x (Val #(x.op'))
+  set_op : ∀ (x : replayOp) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet replayOp.underlying go!"op") (PairV #x #y) (Val #(({ x with op' := y } : replayOp)))
+  get_cleanup : ∀ (x : replayOp), go.IsGoStepPureDetTagged under (StructFieldGet replayOp.underlying go!"cleanup") #x (Val #(x.cleanup'))
+  set_cleanup : ∀ (x : replayOp) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet replayOp.underlying go!"cleanup") (PairV #x #y) (Val #(({ x with cleanup' := y } : replayOp)))
 
 attribute [instance] replayOp.TypeAssumptions.type_repr
   replayOp.TypeAssumptions.underlying
@@ -4181,149 +3969,127 @@ attribute [instance] replayOp.TypeAssumptions.type_repr
   replayOp.TypeAssumptions.get_cleanup
   replayOp.TypeAssumptions.set_cleanup
 
-namespace csAttempt
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end csAttempt
+axiom csAttempt : Type
+axiom csAttempt.zero_val : ZeroVal csAttempt
+attribute [instance] csAttempt.zero_val
 
 class csAttempt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying csAttempt.underlying csAttempt.t
-  underlying : go.UnderlyingDirectedEq csAttempt csAttempt.underlying
+  type_repr : go.TypeReprUnderlying csAttempt.underlying csAttempt
+  underlying : go.UnderlyingDirectedEq csAttempt.ty csAttempt.underlying
   isUnderlying : go.IsUnderlying csAttempt.underlying csAttempt.underlying
 
 attribute [instance] csAttempt.TypeAssumptions.type_repr
   csAttempt.TypeAssumptions.underlying
   csAttempt.TypeAssumptions.isUnderlying
 
-namespace addrConnStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end addrConnStream
+axiom addrConnStream : Type
+axiom addrConnStream.zero_val : ZeroVal addrConnStream
+attribute [instance] addrConnStream.zero_val
 
 class addrConnStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying addrConnStream.underlying addrConnStream.t
-  underlying : go.UnderlyingDirectedEq addrConnStream addrConnStream.underlying
+  type_repr : go.TypeReprUnderlying addrConnStream.underlying addrConnStream
+  underlying : go.UnderlyingDirectedEq addrConnStream.ty addrConnStream.underlying
   isUnderlying : go.IsUnderlying addrConnStream.underlying addrConnStream.underlying
 
 attribute [instance] addrConnStream.TypeAssumptions.type_repr
   addrConnStream.TypeAssumptions.underlying
   addrConnStream.TypeAssumptions.isUnderlying
 
-namespace ServerStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerStream
+axiom ServerStream : Type
+axiom ServerStream.zero_val : ZeroVal ServerStream
+attribute [instance] ServerStream.zero_val
 
 class ServerStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerStream.underlying ServerStream.t
-  underlying : go.UnderlyingDirectedEq ServerStream ServerStream.underlying
+  type_repr : go.TypeReprUnderlying ServerStream.underlying ServerStream
+  underlying : go.UnderlyingDirectedEq ServerStream.ty ServerStream.underlying
   isUnderlying : go.IsUnderlying ServerStream.underlying ServerStream.underlying
 
 attribute [instance] ServerStream.TypeAssumptions.type_repr
   ServerStream.TypeAssumptions.underlying
   ServerStream.TypeAssumptions.isUnderlying
 
-namespace serverStream
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end serverStream
+axiom serverStream : Type
+axiom serverStream.zero_val : ZeroVal serverStream
+attribute [instance] serverStream.zero_val
 
 class serverStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying serverStream.underlying serverStream.t
-  underlying : go.UnderlyingDirectedEq serverStream serverStream.underlying
+  type_repr : go.TypeReprUnderlying serverStream.underlying serverStream
+  underlying : go.UnderlyingDirectedEq serverStream.ty serverStream.underlying
   isUnderlying : go.IsUnderlying serverStream.underlying serverStream.underlying
 
 attribute [instance] serverStream.TypeAssumptions.type_repr
   serverStream.TypeAssumptions.underlying
   serverStream.TypeAssumptions.isUnderlying
 
-namespace ServerStreamingClient
-abbrev t [FfiSyntax] (Res : Type) : Type := interface.t
-end ServerStreamingClient
+abbrev ServerStreamingClient [FfiSyntax] (Res : Type) : Type := interface.t
 
 @[reducible] def ServerStreamingClient.underlying [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream.ty)])])
 
 class ServerStreamingClient.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Res : go.GoType), go.UnderlyingDirectedEq (ServerStreamingClient Res) (ServerStreamingClient.underlying Res)
+  underlying : ∀ (Res : go.GoType), go.UnderlyingDirectedEq (ServerStreamingClient.ty Res) (ServerStreamingClient.underlying Res)
 
 attribute [instance] ServerStreamingClient.TypeAssumptions.underlying
 
-namespace ServerStreamingServer
-abbrev t [FfiSyntax] (Res : Type) : Type := interface.t
-end ServerStreamingServer
+abbrev ServerStreamingServer [FfiSyntax] (Res : Type) : Type := interface.t
 
 @[reducible] def ServerStreamingServer.underlying [FfiSyntax] [GoGlobalContext] (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream.ty)])])
 
 class ServerStreamingServer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Res : go.GoType), go.UnderlyingDirectedEq (ServerStreamingServer Res) (ServerStreamingServer.underlying Res)
+  underlying : ∀ (Res : go.GoType), go.UnderlyingDirectedEq (ServerStreamingServer.ty Res) (ServerStreamingServer.underlying Res)
 
 attribute [instance] ServerStreamingServer.TypeAssumptions.underlying
 
-namespace ClientStreamingClient
-abbrev t [FfiSyntax] (Req Res : Type) : Type := interface.t
-end ClientStreamingClient
+abbrev ClientStreamingClient [FfiSyntax] (Req Res : Type) : Type := interface.t
 
 @[reducible] def ClientStreamingClient.underlying [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CloseAndRecv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Req)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CloseAndRecv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Req)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream.ty)])])
 
 class ClientStreamingClient.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (ClientStreamingClient Req Res) (ClientStreamingClient.underlying Req Res)
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (ClientStreamingClient.ty Req Res) (ClientStreamingClient.underlying Req Res)
 
 attribute [instance] ClientStreamingClient.TypeAssumptions.underlying
 
-namespace ClientStreamingServer
-abbrev t [FfiSyntax] (Req Res : Type) : Type := interface.t
-end ClientStreamingServer
+abbrev ClientStreamingServer [FfiSyntax] (Req Res : Type) : Type := interface.t
 
 @[reducible] def ClientStreamingServer.underlying [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Req), go.error])), (go.InterfaceElem.MethodElem go!"SendAndClose" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Req), go.error])), (go.InterfaceElem.MethodElem go!"SendAndClose" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream.ty)])])
 
 class ClientStreamingServer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (ClientStreamingServer Req Res) (ClientStreamingServer.underlying Req Res)
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (ClientStreamingServer.ty Req Res) (ClientStreamingServer.underlying Req Res)
 
 attribute [instance] ClientStreamingServer.TypeAssumptions.underlying
 
-namespace BidiStreamingClient
-abbrev t [FfiSyntax] (Req Res : Type) : Type := interface.t
-end BidiStreamingClient
+abbrev BidiStreamingClient [FfiSyntax] (Req Res : Type) : Type := interface.t
 
 @[reducible] def BidiStreamingClient.underlying [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Req)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Res), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Req)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ClientStream.ty)])])
 
 class BidiStreamingClient.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (BidiStreamingClient Req Res) (BidiStreamingClient.underlying Req Res)
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (BidiStreamingClient.ty Req Res) (BidiStreamingClient.underlying Req Res)
 
 attribute [instance] BidiStreamingClient.TypeAssumptions.underlying
 
-namespace BidiStreamingServer
-abbrev t [FfiSyntax] (Req Res : Type) : Type := interface.t
-end BidiStreamingServer
+abbrev BidiStreamingServer [FfiSyntax] (Req Res : Type) : Type := interface.t
 
 @[reducible] def BidiStreamingServer.underlying [FfiSyntax] [GoGlobalContext] (Req : go.GoType) (Res : go.GoType) : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Req), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Recv" (go.signature.Signature [] false [(go.GoType.PointerType Req), go.error])), (go.InterfaceElem.MethodElem go!"Send" (go.signature.Signature [(go.GoType.PointerType Res)] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ServerStream.ty)])])
 
 class BidiStreamingServer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (BidiStreamingServer Req Res) (BidiStreamingServer.underlying Req Res)
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (BidiStreamingServer.ty Req Res) (BidiStreamingServer.underlying Req Res)
 
 attribute [instance] BidiStreamingServer.TypeAssumptions.underlying
 
-namespace GenericClientStream
-structure t [FfiSyntax] (Req Res : Type) where
+structure GenericClientStream [FfiSyntax] (Req Res : Type) where
   mk ::
-  ClientStream' : ClientStream.t
+  ClientStream' : ClientStream
 
-instance zero_val [FfiSyntax] {Req Res : Type} [ZeroVal Req] [ZeroVal Res] : ZeroVal (t Req Res) :=
-  ⟨t.mk zeroValDef⟩
-end GenericClientStream
+instance GenericClientStream.zero_val [FfiSyntax] {Req Res : Type} [ZeroVal Req] [ZeroVal Res] : ZeroVal (GenericClientStream Req Res) :=
+  ⟨GenericClientStream.mk zeroValDef⟩
 
 @[reducible] def GenericClientStream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (Req Res : go.GoType) : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"ClientStream" ClientStream)]
+  [(go.field_decl.EmbeddedField go!"ClientStream" ClientStream.ty)]
 
 @[irreducible] def GenericClientStream.fields [FfiSyntax] [GoGlobalContext] (Req Res : go.GoType) : List go.field_decl :=
   (GenericClientStream.fieldsUnsealed Req Res)
@@ -4336,27 +4102,25 @@ instance equals_unfold_GenericClientStream [FfiSyntax] [GoGlobalContext] (Req Re
   (go.GoType.StructType (GenericClientStream.fields Req Res))
 
 class GenericClientStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (Req Res : go.GoType) (Req' Res' : Type) [ZeroVal Req'] [TypeRepr Req Req'] [ZeroVal Res'] [TypeRepr Res Res'], go.TypeReprUnderlying (GenericClientStream.underlying Req Res) (GenericClientStream.t Req' Res')
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (GenericClientStream Req Res) (GenericClientStream.underlying Req Res)
-  get_ClientStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericClientStream.t Req' Res')), go.IsGoStepPureDetTagged under (StructFieldGet (GenericClientStream.underlying Req Res) go!"ClientStream") #x (Val #(x.ClientStream'))
-  set_ClientStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericClientStream.t Req' Res')) (y : ClientStream.t), go.IsGoStepPureDetTagged under (StructFieldSet (GenericClientStream.underlying Req Res) go!"ClientStream") (PairV #x #y) (Val #(({ x with ClientStream' := y } : (GenericClientStream.t Req' Res'))))
+  type_repr : ∀ (Req Res : go.GoType) (Req' Res' : Type) [ZeroVal Req'] [TypeRepr Req Req'] [ZeroVal Res'] [TypeRepr Res Res'], go.TypeReprUnderlying (GenericClientStream.underlying Req Res) (GenericClientStream Req' Res')
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (GenericClientStream.ty Req Res) (GenericClientStream.underlying Req Res)
+  get_ClientStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericClientStream Req' Res')), go.IsGoStepPureDetTagged under (StructFieldGet (GenericClientStream.underlying Req Res) go!"ClientStream") #x (Val #(x.ClientStream'))
+  set_ClientStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericClientStream Req' Res')) (y : ClientStream), go.IsGoStepPureDetTagged under (StructFieldSet (GenericClientStream.underlying Req Res) go!"ClientStream") (PairV #x #y) (Val #(({ x with ClientStream' := y } : (GenericClientStream Req' Res'))))
 
 attribute [instance] GenericClientStream.TypeAssumptions.type_repr
   GenericClientStream.TypeAssumptions.underlying
   GenericClientStream.TypeAssumptions.get_ClientStream
   GenericClientStream.TypeAssumptions.set_ClientStream
 
-namespace GenericServerStream
-structure t [FfiSyntax] (Req Res : Type) where
+structure GenericServerStream [FfiSyntax] (Req Res : Type) where
   mk ::
-  ServerStream' : ServerStream.t
+  ServerStream' : ServerStream
 
-instance zero_val [FfiSyntax] {Req Res : Type} [ZeroVal Req] [ZeroVal Res] : ZeroVal (t Req Res) :=
-  ⟨t.mk zeroValDef⟩
-end GenericServerStream
+instance GenericServerStream.zero_val [FfiSyntax] {Req Res : Type} [ZeroVal Req] [ZeroVal Res] : ZeroVal (GenericServerStream Req Res) :=
+  ⟨GenericServerStream.mk zeroValDef⟩
 
 @[reducible] def GenericServerStream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (Req Res : go.GoType) : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"ServerStream" ServerStream)]
+  [(go.field_decl.EmbeddedField go!"ServerStream" ServerStream.ty)]
 
 @[irreducible] def GenericServerStream.fields [FfiSyntax] [GoGlobalContext] (Req Res : go.GoType) : List go.field_decl :=
   (GenericServerStream.fieldsUnsealed Req Res)
@@ -4369,68 +4133,60 @@ instance equals_unfold_GenericServerStream [FfiSyntax] [GoGlobalContext] (Req Re
   (go.GoType.StructType (GenericServerStream.fields Req Res))
 
 class GenericServerStream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (Req Res : go.GoType) (Req' Res' : Type) [ZeroVal Req'] [TypeRepr Req Req'] [ZeroVal Res'] [TypeRepr Res Res'], go.TypeReprUnderlying (GenericServerStream.underlying Req Res) (GenericServerStream.t Req' Res')
-  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (GenericServerStream Req Res) (GenericServerStream.underlying Req Res)
-  get_ServerStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericServerStream.t Req' Res')), go.IsGoStepPureDetTagged under (StructFieldGet (GenericServerStream.underlying Req Res) go!"ServerStream") #x (Val #(x.ServerStream'))
-  set_ServerStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericServerStream.t Req' Res')) (y : ServerStream.t), go.IsGoStepPureDetTagged under (StructFieldSet (GenericServerStream.underlying Req Res) go!"ServerStream") (PairV #x #y) (Val #(({ x with ServerStream' := y } : (GenericServerStream.t Req' Res'))))
+  type_repr : ∀ (Req Res : go.GoType) (Req' Res' : Type) [ZeroVal Req'] [TypeRepr Req Req'] [ZeroVal Res'] [TypeRepr Res Res'], go.TypeReprUnderlying (GenericServerStream.underlying Req Res) (GenericServerStream Req' Res')
+  underlying : ∀ (Req Res : go.GoType), go.UnderlyingDirectedEq (GenericServerStream.ty Req Res) (GenericServerStream.underlying Req Res)
+  get_ServerStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericServerStream Req' Res')), go.IsGoStepPureDetTagged under (StructFieldGet (GenericServerStream.underlying Req Res) go!"ServerStream") #x (Val #(x.ServerStream'))
+  set_ServerStream : ∀ (Req Res : go.GoType) (Req' Res' : Type) (x : (GenericServerStream Req' Res')) (y : ServerStream), go.IsGoStepPureDetTagged under (StructFieldSet (GenericServerStream.underlying Req Res) go!"ServerStream") (PairV #x #y) (Val #(({ x with ServerStream' := y } : (GenericServerStream Req' Res'))))
 
 attribute [instance] GenericServerStream.TypeAssumptions.type_repr
   GenericServerStream.TypeAssumptions.underlying
   GenericServerStream.TypeAssumptions.get_ServerStream
   GenericServerStream.TypeAssumptions.set_ServerStream
 
-namespace traceEventLog
-abbrev t [FfiSyntax] : Type := interface.t
-end traceEventLog
+abbrev traceEventLog [FfiSyntax] : Type := interface.t
 
 @[reducible] def traceEventLog.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Finish" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Printf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true []))])
 
 class traceEventLog.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq traceEventLog traceEventLog.underlying
+  underlying : go.UnderlyingDirectedEq traceEventLog.ty traceEventLog.underlying
 
 attribute [instance] traceEventLog.TypeAssumptions.underlying
 
-namespace traceLog
-abbrev t [FfiSyntax] : Type := interface.t
-end traceLog
+abbrev traceLog [FfiSyntax] : Type := interface.t
 
 @[reducible] def traceLog.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Finish" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"LazyLog" (go.signature.Signature [_root_.Perennial.fmt.Stringer, go.bool] false [])), (go.InterfaceElem.MethodElem go!"LazyPrintf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"SetError" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"SetMaxEvents" (go.signature.Signature [go.int] false [])), (go.InterfaceElem.MethodElem go!"SetRecycler" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.any] false []))] false [])), (go.InterfaceElem.MethodElem go!"SetTraceInfo" (go.signature.Signature [go.uint64, go.uint64] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Finish" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"LazyLog" (go.signature.Signature [_root_.Perennial.fmt.Stringer.ty, go.bool] false [])), (go.InterfaceElem.MethodElem go!"LazyPrintf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"SetError" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"SetMaxEvents" (go.signature.Signature [go.int] false [])), (go.InterfaceElem.MethodElem go!"SetRecycler" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.any] false []))] false [])), (go.InterfaceElem.MethodElem go!"SetTraceInfo" (go.signature.Signature [go.uint64, go.uint64] false []))])
 
 class traceLog.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq traceLog traceLog.underlying
+  underlying : go.UnderlyingDirectedEq traceLog.ty traceLog.underlying
 
 attribute [instance] traceLog.TypeAssumptions.underlying
 
-namespace firstLine
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end firstLine
+axiom firstLine : Type
+axiom firstLine.zero_val : ZeroVal firstLine
+attribute [instance] firstLine.zero_val
 
 class firstLine.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying firstLine.underlying firstLine.t
-  underlying : go.UnderlyingDirectedEq firstLine firstLine.underlying
+  type_repr : go.TypeReprUnderlying firstLine.underlying firstLine
+  underlying : go.UnderlyingDirectedEq firstLine.ty firstLine.underlying
   isUnderlying : go.IsUnderlying firstLine.underlying firstLine.underlying
 
 attribute [instance] firstLine.TypeAssumptions.type_repr
   firstLine.TypeAssumptions.underlying
   firstLine.TypeAssumptions.isUnderlying
 
-namespace traceInfo
-structure t [FfiSyntax] where
+structure traceInfo [FfiSyntax] where
   mk ::
-  tr' : traceLog.t
-  firstLine' : firstLine.t
+  tr' : traceLog
+  firstLine' : firstLine
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end traceInfo
+instance traceInfo.zero_val [FfiSyntax] : ZeroVal traceInfo :=
+  ⟨traceInfo.mk zeroValDef zeroValDef⟩
 
 @[reducible] def traceInfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"tr" traceLog),
-(go.field_decl.FieldDecl go!"firstLine" firstLine)]
+  [(go.field_decl.FieldDecl go!"tr" traceLog.ty),
+(go.field_decl.FieldDecl go!"firstLine" firstLine.ty)]
 
 @[irreducible] def traceInfo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   traceInfo.fieldsUnsealed
@@ -4443,12 +4199,12 @@ instance equals_unfold_traceInfo [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType traceInfo.fields)
 
 class traceInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying traceInfo.underlying traceInfo.t
-  underlying : go.UnderlyingDirectedEq traceInfo traceInfo.underlying
-  get_tr : ∀ (x : traceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet traceInfo.underlying go!"tr") #x (Val #(x.tr'))
-  set_tr : ∀ (x : traceInfo.t) (y : traceLog.t), go.IsGoStepPureDetTagged under (StructFieldSet traceInfo.underlying go!"tr") (PairV #x #y) (Val #(({ x with tr' := y } : traceInfo.t)))
-  get_firstLine : ∀ (x : traceInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet traceInfo.underlying go!"firstLine") #x (Val #(x.firstLine'))
-  set_firstLine : ∀ (x : traceInfo.t) (y : firstLine.t), go.IsGoStepPureDetTagged under (StructFieldSet traceInfo.underlying go!"firstLine") (PairV #x #y) (Val #(({ x with firstLine' := y } : traceInfo.t)))
+  type_repr : go.TypeReprUnderlying traceInfo.underlying traceInfo
+  underlying : go.UnderlyingDirectedEq traceInfo.ty traceInfo.underlying
+  get_tr : ∀ (x : traceInfo), go.IsGoStepPureDetTagged under (StructFieldGet traceInfo.underlying go!"tr") #x (Val #(x.tr'))
+  set_tr : ∀ (x : traceInfo) (y : traceLog), go.IsGoStepPureDetTagged under (StructFieldSet traceInfo.underlying go!"tr") (PairV #x #y) (Val #(({ x with tr' := y } : traceInfo)))
+  get_firstLine : ∀ (x : traceInfo), go.IsGoStepPureDetTagged under (StructFieldGet traceInfo.underlying go!"firstLine") #x (Val #(x.firstLine'))
+  set_firstLine : ∀ (x : traceInfo) (y : firstLine), go.IsGoStepPureDetTagged under (StructFieldSet traceInfo.underlying go!"firstLine") (PairV #x #y) (Val #(({ x with firstLine' := y } : traceInfo)))
 
 attribute [instance] traceInfo.TypeAssumptions.type_repr
   traceInfo.TypeAssumptions.underlying
@@ -4457,15 +4213,13 @@ attribute [instance] traceInfo.TypeAssumptions.type_repr
   traceInfo.TypeAssumptions.get_firstLine
   traceInfo.TypeAssumptions.set_firstLine
 
-namespace payload
-structure t [FfiSyntax] where
+structure payload [FfiSyntax] where
   mk ::
   sent' : Bool
   msg' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end payload
+instance payload.zero_val [FfiSyntax] : ZeroVal payload :=
+  ⟨payload.mk zeroValDef zeroValDef⟩
 
 @[reducible] def payload.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sent" go.bool),
@@ -4482,12 +4236,12 @@ instance equals_unfold_payload [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType payload.fields)
 
 class payload.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying payload.underlying payload.t
-  underlying : go.UnderlyingDirectedEq payload payload.underlying
-  get_sent : ∀ (x : payload.t), go.IsGoStepPureDetTagged under (StructFieldGet payload.underlying go!"sent") #x (Val #(x.sent'))
-  set_sent : ∀ (x : payload.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet payload.underlying go!"sent") (PairV #x #y) (Val #(({ x with sent' := y } : payload.t)))
-  get_msg : ∀ (x : payload.t), go.IsGoStepPureDetTagged under (StructFieldGet payload.underlying go!"msg") #x (Val #(x.msg'))
-  set_msg : ∀ (x : payload.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet payload.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : payload.t)))
+  type_repr : go.TypeReprUnderlying payload.underlying payload
+  underlying : go.UnderlyingDirectedEq payload.ty payload.underlying
+  get_sent : ∀ (x : payload), go.IsGoStepPureDetTagged under (StructFieldGet payload.underlying go!"sent") #x (Val #(x.sent'))
+  set_sent : ∀ (x : payload) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet payload.underlying go!"sent") (PairV #x #y) (Val #(({ x with sent' := y } : payload)))
+  get_msg : ∀ (x : payload), go.IsGoStepPureDetTagged under (StructFieldGet payload.underlying go!"msg") #x (Val #(x.msg'))
+  set_msg : ∀ (x : payload) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet payload.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : payload)))
 
 attribute [instance] payload.TypeAssumptions.type_repr
   payload.TypeAssumptions.underlying
@@ -4496,15 +4250,13 @@ attribute [instance] payload.TypeAssumptions.type_repr
   payload.TypeAssumptions.get_msg
   payload.TypeAssumptions.set_msg
 
-namespace fmtStringer
-structure t [FfiSyntax] where
+structure fmtStringer [FfiSyntax] where
   mk ::
   format' : GoString
   a' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end fmtStringer
+instance fmtStringer.zero_val [FfiSyntax] : ZeroVal fmtStringer :=
+  ⟨fmtStringer.mk zeroValDef zeroValDef⟩
 
 @[reducible] def fmtStringer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"format" go.string),
@@ -4521,12 +4273,12 @@ instance equals_unfold_fmtStringer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType fmtStringer.fields)
 
 class fmtStringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying fmtStringer.underlying fmtStringer.t
-  underlying : go.UnderlyingDirectedEq fmtStringer fmtStringer.underlying
-  get_format : ∀ (x : fmtStringer.t), go.IsGoStepPureDetTagged under (StructFieldGet fmtStringer.underlying go!"format") #x (Val #(x.format'))
-  set_format : ∀ (x : fmtStringer.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet fmtStringer.underlying go!"format") (PairV #x #y) (Val #(({ x with format' := y } : fmtStringer.t)))
-  get_a : ∀ (x : fmtStringer.t), go.IsGoStepPureDetTagged under (StructFieldGet fmtStringer.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : fmtStringer.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet fmtStringer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : fmtStringer.t)))
+  type_repr : go.TypeReprUnderlying fmtStringer.underlying fmtStringer
+  underlying : go.UnderlyingDirectedEq fmtStringer.ty fmtStringer.underlying
+  get_format : ∀ (x : fmtStringer), go.IsGoStepPureDetTagged under (StructFieldGet fmtStringer.underlying go!"format") #x (Val #(x.format'))
+  set_format : ∀ (x : fmtStringer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet fmtStringer.underlying go!"format") (PairV #x #y) (Val #(({ x with format' := y } : fmtStringer)))
+  get_a : ∀ (x : fmtStringer), go.IsGoStepPureDetTagged under (StructFieldGet fmtStringer.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : fmtStringer) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet fmtStringer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : fmtStringer)))
 
 attribute [instance] fmtStringer.TypeAssumptions.type_repr
   fmtStringer.TypeAssumptions.underlying
@@ -4535,15 +4287,13 @@ attribute [instance] fmtStringer.TypeAssumptions.type_repr
   fmtStringer.TypeAssumptions.get_a
   fmtStringer.TypeAssumptions.set_a
 
-namespace stringer
-abbrev t [FfiSyntax] : Type := GoString
-end stringer
+abbrev stringer [FfiSyntax] : Type := GoString
 
 @[reducible] def stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class stringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq stringer stringer.underlying
+  underlying : go.UnderlyingDirectedEq stringer.ty stringer.underlying
 
 attribute [instance] stringer.TypeAssumptions.underlying
 

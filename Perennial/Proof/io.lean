@@ -38,9 +38,9 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
-  wp_apply wp_GlobalAlloc (V := sync.Pool.t) blackHolePool sync.Pool as _
+  wp_apply wp_GlobalAlloc (V := sync.Pool) blackHolePool sync.Pool.ty as _
   repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
-  wp_apply wp_GlobalAlloc (V := interface.t) Discard Writer as _
+  wp_apply wp_GlobalAlloc (V := interface.t) Discard Writer.ty as _
   repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
   wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩

@@ -35,180 +35,180 @@ end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.etcdserver
 
-def serverVersionAdapter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def serverVersionAdapter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.serverVersionAdapter" [])
 
-attribute [irreducible] serverVersionAdapter
+attribute [irreducible] serverVersionAdapter.ty
 
-def bootstrappedServer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedServer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedServer" [])
 
-attribute [irreducible] bootstrappedServer
+attribute [irreducible] bootstrappedServer.ty
 
-def bootstrappedStorage [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedStorage.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedStorage" [])
 
-attribute [irreducible] bootstrappedStorage
+attribute [irreducible] bootstrappedStorage.ty
 
-def bootstrappedBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedBackend.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedBackend" [])
 
-attribute [irreducible] bootstrappedBackend
+attribute [irreducible] bootstrappedBackend.ty
 
-def bootstrappedCluster [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedCluster.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedCluster" [])
 
-attribute [irreducible] bootstrappedCluster
+attribute [irreducible] bootstrappedCluster.ty
 
-def bootstrappedRaft [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedRaft.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedRaft" [])
 
-attribute [irreducible] bootstrappedRaft
+attribute [irreducible] bootstrappedRaft.ty
 
-def snapshotMetadata [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def snapshotMetadata.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.snapshotMetadata" [])
 
-attribute [irreducible] snapshotMetadata
+attribute [irreducible] snapshotMetadata.ty
 
-def bootstrappedWAL [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bootstrappedWAL.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.bootstrappedWAL" [])
 
-attribute [irreducible] bootstrappedWAL
+attribute [irreducible] bootstrappedWAL.ty
 
-def CorruptionChecker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CorruptionChecker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.CorruptionChecker" [])
 
-attribute [irreducible] CorruptionChecker
+attribute [irreducible] CorruptionChecker.ty
 
-def corruptionChecker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def corruptionChecker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.corruptionChecker" [])
 
-attribute [irreducible] corruptionChecker
+attribute [irreducible] corruptionChecker.ty
 
-def Hasher [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Hasher.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.Hasher" [])
 
-attribute [irreducible] Hasher
+attribute [irreducible] Hasher.ty
 
-def hasherAdapter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def hasherAdapter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.hasherAdapter" [])
 
-attribute [irreducible] hasherAdapter
+attribute [irreducible] hasherAdapter.ty
 
-def peerInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def peerInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.peerInfo" [])
 
-attribute [irreducible] peerInfo
+attribute [irreducible] peerInfo.ty
 
-def peerHashKVResp [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def peerHashKVResp.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.peerHashKVResp" [])
 
-attribute [irreducible] peerHashKVResp
+attribute [irreducible] peerHashKVResp.ty
 
-def hashKVHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def hashKVHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.hashKVHandler" [])
 
-attribute [irreducible] hashKVHandler
+attribute [irreducible] hashKVHandler.ty
 
-def toApply [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def toApply.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.toApply" [])
 
-attribute [irreducible] toApply
+attribute [irreducible] toApply.ty
 
-def raftNode [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def raftNode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.raftNode" [])
 
-attribute [irreducible] raftNode
+attribute [irreducible] raftNode.ty
 
-def raftNodeConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def raftNodeConfig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.raftNodeConfig" [])
 
-attribute [irreducible] raftNodeConfig
+attribute [irreducible] raftNodeConfig.ty
 
-def Response [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Response.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.Response" [])
 
-attribute [irreducible] Response
+attribute [irreducible] Response.ty
 
-def ServerV2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerV2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.ServerV2" [])
 
-attribute [irreducible] ServerV2
+attribute [irreducible] ServerV2.ty
 
-def ServerV3 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerV3.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.ServerV3" [])
 
-attribute [irreducible] ServerV3
+attribute [irreducible] ServerV3.ty
 
-def Server [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Server.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.Server" [])
 
-attribute [irreducible] Server
+attribute [irreducible] Server.ty
 
-def EtcdServer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EtcdServer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.EtcdServer" [])
 
-attribute [irreducible] EtcdServer
+attribute [irreducible] EtcdServer.ty
 
-def ServerPeer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerPeer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.ServerPeer" [])
 
-attribute [irreducible] ServerPeer
+attribute [irreducible] ServerPeer.ty
 
-def ServerPeerV2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ServerPeerV2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.ServerPeerV2" [])
 
-attribute [irreducible] ServerPeerV2
+attribute [irreducible] ServerPeerV2.ty
 
-def downgradeEnabledHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def downgradeEnabledHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.downgradeEnabledHandler" [])
 
-attribute [irreducible] downgradeEnabledHandler
+attribute [irreducible] downgradeEnabledHandler.ty
 
-def etcdProgress [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def etcdProgress.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.etcdProgress" [])
 
-attribute [irreducible] etcdProgress
+attribute [irreducible] etcdProgress.ty
 
-def raftReadyHandler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def raftReadyHandler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.raftReadyHandler" [])
 
-attribute [irreducible] raftReadyHandler
+attribute [irreducible] raftReadyHandler.ty
 
-def confChangeResponse [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def confChangeResponse.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.confChangeResponse" [])
 
-attribute [irreducible] confChangeResponse
+attribute [irreducible] confChangeResponse.ty
 
-def AccessController [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def AccessController.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.AccessController" [])
 
-attribute [irreducible] AccessController
+attribute [irreducible] AccessController.ty
 
-def notifier [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def notifier.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.notifier" [])
 
-attribute [irreducible] notifier
+attribute [irreducible] notifier.ty
 
-def RaftKV [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def RaftKV.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.RaftKV" [])
 
-attribute [irreducible] RaftKV
+attribute [irreducible] RaftKV.ty
 
-def Lessor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Lessor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.Lessor" [])
 
-attribute [irreducible] Lessor
+attribute [irreducible] Lessor.ty
 
-def Authenticator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Authenticator.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.Authenticator" [])
 
-attribute [irreducible] Authenticator
+attribute [irreducible] Authenticator.ty
 
-def zapRaftLogger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def zapRaftLogger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver.zapRaftLogger" [])
 
-attribute [irreducible] zapRaftLogger
+attribute [irreducible] zapRaftLogger.ty
 
 axiom bootstrappedServer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -618,19 +618,19 @@ noncomputable def EtcdServer.Put.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "r"
   (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EtcdServer)))) (Var "s"))
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest)))) (Var "r"))
-  (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context))) (Var "ctx"))
-  (Let "span" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty)))) (Var "r"))
+  (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context.ty))) (Var "ctx"))
+  (Let "span" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Val #())))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
   (Let "$a1" (Val #(go!"put"))
-  (Let "$a2" (Let "$sl0" (App (Val (GoInstruction (Convert _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartEventOption _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption))) (Let "$a0" (Let "$sl0" (Let "$a0" (Val #(go!"key"))
-  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) go!"GetKey"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest)))) (Var "r"))) (Val #())))
+  (Let "$a2" (Let "$sl0" (App (Val (GoInstruction (Convert _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartEventOption.ty _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption.ty))) (Let "$a0" (Let "$sl0" (Let "$a0" (Val #(go!"key"))
+  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty) go!"GetKey"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty)))) (Var "r"))) (Val #())))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.go_opentelemetry_io.otel.«attribute».String []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType _root_.Perennial.go_opentelemetry_io.otel.«attribute».KeyValue)))) (LiteralValue [(KeyedElement none (ElementExpression _root_.Perennial.go_opentelemetry_io.otel.«attribute».KeyValue (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType _root_.Perennial.go_opentelemetry_io.otel.«attribute».KeyValue.ty)))) (LiteralValue [(KeyedElement none (ElementExpression _root_.Perennial.go_opentelemetry_io.otel.«attribute».KeyValue.ty (Var "$sl0")))])))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.go_opentelemetry_io.otel.trace.WithAttributes []))) (Val #())) (Var "$a0"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption)))) (LiteralValue [(KeyedElement none (ElementExpression _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption (Var "$sl0")))])))
-  (App (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Tracer go!"Start"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Tracer))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.Tracer))) (Val #())))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption.ty)))) (LiteralValue [(KeyedElement none (ElementExpression _root_.Perennial.go_opentelemetry_io.otel.trace.SpanStartOption.ty (Var "$sl0")))])))
+  (App (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Tracer.ty go!"Start"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Tracer.ty))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.Tracer))) (Val #())))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -638,17 +638,17 @@ noncomputable def EtcdServer.Put.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
-  (Let "$a1" (App (Val (GoInstruction (Convert _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey go.any))) (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey))) (LiteralValue [])))
-  (Let "$a2" (App (Val (GoInstruction (Convert _root_.Perennial.time.Time go.any))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Now []))) (Val #())) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
+  (Let "$a1" (App (Val (GoInstruction (Convert _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.ty go.any))) (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.StartTimeKey.ty))) (LiteralValue [])))
+  (Let "$a2" (App (Val (GoInstruction (Convert _root_.Perennial.time.Time.ty go.any))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Now []))) (Val #())) (Val #())))
   (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.context.WithValue []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
-  (Let "resp" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.gogo.protobuf.proto.Message))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.gogo.protobuf.proto.Message))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
-  (Let "$a1" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest)))) (Var "r"))
-  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest))) (LiteralValue [(KeyedElement (some (KeyField go!"Put")) (ElementExpression (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest) (Var "$v0")))])))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"raftRequest"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Var "$a0")) (Var "$a1"))))
+  (Let "resp" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.gogo.protobuf.proto.Message.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.gogo.protobuf.proto.Message.ty))) (Val #())))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
+  (Let "$a1" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty)))) (Var "r"))
+  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Put")) (ElementExpression (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty) (Var "$v0")))])))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"raftRequest"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -657,29 +657,29 @@ noncomputable def EtcdServer.Put.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse)))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.gogo.protobuf.proto.Message))) (Var "resp"))) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.ty)))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.gogo.protobuf.proto.Message.ty))) (Var "resp"))) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.gogo.protobuf.proto.Message))) (Pair (Var "resp") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.gogo.protobuf.proto.Message.ty))) (Pair (Var "resp") (Var "$r0"))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "ctx") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context.ty))) (Pair (Var "ctx") (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$a0" (Val #slice.nil)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span go!"End"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Var "span")))
+  (Let "$f" (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty go!"End"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Var "span")))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Pair (Var "span") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Pair (Var "span") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "ctx") (Var "$r0")))))))))))))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context.ty))) (Pair (Var "ctx") (Var "$r0")))))))))))))))))))
 
 /-- go: v3_server.go:925:22 -/
 noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -688,31 +688,31 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (Lam "r"
   (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EtcdServer)))) (Var "s"))
-  (Let "r" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest))) (Var "r"))
-  (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context))) (Var "ctx"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty))) (Var "r"))
+  (Let "ctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context.ty))) (Var "ctx"))
   (Let "ai" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"getAppliedIndex"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"getAppliedIndex"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ci" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"getCommittedIndex"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"getCommittedIndex"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader))) (Let "$v0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.idutil.Generator) go!"Next"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.idutil.Generator)))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"reqIDGen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))))) (Val #()))
-  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader))) (LiteralValue [(KeyedElement (some (KeyField go!"ID")) (ElementExpression go.uint64 (Var "$v0")))]))))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty))) (Let "$v0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.idutil.Generator.ty) go!"Next"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.idutil.Generator.ty)))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"reqIDGen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))))) (Val #()))
+  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"ID")) (ElementExpression go.uint64 (Var "$v0")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "reqType" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Let "$r0" (Let "$a0" (Var "r")
   (App (App (Val (GoInstruction (FuncResolve getRequestType []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "start" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.time.Time))) (Val #())))
+  (Let "start" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.time.Time.ty))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Now []))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest) go!"Marshal"))) (Var "r")) (Val #()))
+  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty) go!"Marshal"))) (Var "r")) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -722,17 +722,17 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"ID"))) (Var "r")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"ID"))) (Var "r")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait go!"Register"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty go!"Register"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))))) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "cancel" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.CancelFunc))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.context.CancelFunc))) (Val #())))
-  (Let "cctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.context.Context))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
-  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.config.ServerConfig) go!"ReqTimeout"))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"Cfg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s")))) (Val #()))
+  (Let "cancel" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.CancelFunc.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.context.CancelFunc.ty))) (Val #())))
+  (Let "cctx" (App (Val (GoInstruction (GoAlloc _root_.Perennial.context.Context.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.context.Context.ty))) (Val #())))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
+  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.config.ServerConfig.ty) go!"ReqTimeout"))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"Cfg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s")))) (Val #()))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.context.WithTimeout []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -741,69 +741,69 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "span" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
+  (Let "span" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.go_opentelemetry_io.otel.trace.SpanFromContext []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "cctx"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "cctx"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "data"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raftNode) go!"Propose"))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"r"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s")))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raftNode.ty) go!"Propose"))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"r"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s")))) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Var "ch"))
-  (Let "$ch1" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.context.Context go!"Done"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "cctx"))) (Val #()))
-  (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))))
+  (Let "$ch1" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.context.Context.ty go!"Done"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "cctx"))) (Val #()))
+  (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase go.any (Var "$ch0")) (Lam "$recvVal"
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Let "$r0" (Fst (Var "$recvVal"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (App (Val doExecute)
   (Let "$a0" (Val #(go!"Receive raft result"))
   (Let "$a1" (Val #slice.nil)
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span go!"AddEvent"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Var "span"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty go!"AddEvent"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Var "span"))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))),
   (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch1")) (Lam "$recvVal"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (Let "$a0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.context.Context go!"Err"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "cctx"))) (Val #()))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "start"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"parseProposeCtxErr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Var "$a0")) (Var "$a1"))))))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (Let "$a0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.context.Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "cctx"))) (Val #()))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (Var "start"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"parseProposeCtxErr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))
   (Let "$a1" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait go!"Trigger"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty go!"Trigger"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter))) (App (Val (GoInstruction (GlobalVarAddr proposalsFailed))) (Val #())))) (Val #())))))),
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter.ty go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter.ty))) (App (Val (GoInstruction (GlobalVarAddr proposalsFailed))) (Val #())))) (Val #())))))),
   (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch2")) (Lam "$recvVal"
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrStopped))) (Val #())))))))])))))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrStopped))) (Val #())))))))])))))))
   (App (Val doExecute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge go!"Dec"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge))) (App (Val (GoInstruction (GlobalVarAddr proposalsPending))) (Val #()))))
+  (Let "$f" (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge.ty go!"Dec"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge.ty))) (App (Val (GoInstruction (GlobalVarAddr proposalsPending))) (Val #()))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge))) (App (Val (GoInstruction (GlobalVarAddr proposalsPending))) (Val #())))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge.ty go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Gauge.ty))) (App (Val (GoInstruction (GlobalVarAddr proposalsPending))) (Val #())))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))
   (Let "$a1" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait go!"Trigger"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty go!"Trigger"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.etcd.pkg.v3.wait.Wait.ty))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter))) (App (Val (GoInstruction (GlobalVarAddr proposalsFailed))) (Val #())))) (Val #()))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter.ty go!"Inc"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.prometheus.client_golang.prometheus.Counter.ty))) (App (Val (GoInstruction (GlobalVarAddr proposalsFailed))) (Val #())))) (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -811,23 +811,23 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (App (Val doExecute)
   (Let "$a0" (Val #(go!"Send raft proposal"))
   (Let "$a1" (Val #slice.nil)
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span go!"AddEvent"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Var "span"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty go!"AddEvent"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Var "span"))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.go_opentelemetry_io.otel.trace.Span))) (Pair (Var "span") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.go_opentelemetry_io.otel.trace.Span.ty))) (Pair (Var "span") (Var "$r0")))))))))
   (App (Val doExecute)
-  (Let "$f" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.CancelFunc))) (Var "cancel"))
+  (Let "$f" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.CancelFunc.ty))) (Var "cancel"))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.context.CancelFunc))) (Pair (Var "cancel") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.context.CancelFunc.ty))) (Pair (Var "cancel") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context))) (Pair (Var "cctx") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.context.Context.ty))) (Pair (Var "cctx") (Var "$r0"))))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Pair (Var "ch") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (Val #(W64 0)))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader go!"ID"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"Header"))) (Var "r")))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty go!"ID"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"Header"))) (Var "r")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "id") (Var "$r0")))))
   (App (Val doExecute)
@@ -835,14 +835,14 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "id") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "data"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoLoad go.uint))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.config.ServerConfig go!"MaxRequestBytes"))) (App (Val (GoInstruction (StructFieldRef EtcdServer go!"Cfg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s")))))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoLoad go.uint))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.config.ServerConfig.ty go!"MaxRequestBytes"))) (App (Val (GoInstruction (StructFieldRef EtcdServer.ty go!"Cfg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s")))))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrRequestTooLarge))) (Val #())))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrRequestTooLarge))) (Val #())))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -859,13 +859,13 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration go!"Seconds"))) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time))) (Var "start"))
+  (Let "$a0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration.ty go!"Seconds"))) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (Var "start"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Since []))) (Val #())) (Var "$a0")))) (Val #()))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Observer go!"Observe"))) (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.string))) (Var "reqType"))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.prometheus.client_golang.prometheus.Observer.ty go!"Observe"))) (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.string))) (Var "reqType"))
   (Let "$sl1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "success"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strconv.FormatBool []))) (Val #())) (Var "$a0")))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$sl0"))), (KeyedElement none (ElementExpression go.string (Var "$sl1")))]))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_golang.prometheus.HistogramVec) go!"WithLabelValues"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_golang.prometheus.HistogramVec)))) (App (Val (GoInstruction (GlobalVarAddr requestDurationSec))) (Val #())))) (Var "$a0")))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_golang.prometheus.HistogramVec.ty) go!"WithLabelValues"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_golang.prometheus.HistogramVec.ty)))) (App (Val (GoInstruction (GlobalVarAddr requestDurationSec))) (Val #())))) (Var "$a0")))) (Var "$a0"))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "success") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
@@ -873,14 +873,14 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.time.Time))) (Pair (Var "start") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.time.Time.ty))) (Pair (Var "start") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "reqType") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"Authenticate"))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest)))) (Val UntypedNil)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.ty)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"Authenticate"))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalAuthenticateRequest.ty)))) (Val UntypedNil)))))
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
-  (Let "authInfo" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context))) (Var "ctx"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"AuthInfoFromCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Var "$a0")))
+  (Let "authInfo" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Val #())))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.context.Context.ty))) (Var "ctx"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"AuthInfoFromCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -888,37 +888,37 @@ noncomputable def EtcdServer.processInternalRaftRequestOnce.impl [FfiSyntax] [Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Var "authInfo")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Val UntypedNil))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo go!"Username"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Var "authInfo"))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Var "authInfo")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty go!"Username"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Var "authInfo"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo go!"Revision"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Var "authInfo"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty go!"Revision"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Var "authInfo"))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader go!"AuthRevision"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"Header"))) (Var "r")))) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty go!"AuthRevision"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"Header"))) (Var "r")))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader go!"Username"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"Header"))) (Var "r")))) (Var "$r0"))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty go!"Username"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty)))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"Header"))) (Var "r")))) (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo)))) (Pair (Var "authInfo") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.auth.AuthInfo.ty)))) (Pair (Var "authInfo") (Var "$r0"))))))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader)))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest go!"Header"))) (Var "r")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RequestHeader.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.InternalRaftRequest.ty go!"Header"))) (Var "r")) (Var "$r0"))))))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "ai"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "ci"))
   (Let "$a2" (Var "r")
   (Let "$a3" (Let "$a0" (Val _root_.Perennial.go_etcd_io.etcd.server.v3.features.PriorityRequest)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer) go!"FeatureEnabled"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer)))) (Var "s"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType EtcdServer.ty) go!"FeatureEnabled"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EtcdServer.ty)))) (Var "s"))) (Var "$a0")))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve exceedsRequestLimit []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrTooManyRequests))) (Val #())))))
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.Result.ty)))) (Val UntypedNil)) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.errors.ErrTooManyRequests))) (Val #())))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -1061,17 +1061,15 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.go_opentelemetry_io.otel.trace.initialize') (Val #()))))))))
 
-namespace serverVersionAdapter
-structure t [FfiSyntax] where
+structure serverVersionAdapter [FfiSyntax] where
   mk ::
   EtcdServer' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end serverVersionAdapter
+instance serverVersionAdapter.zero_val [FfiSyntax] : ZeroVal serverVersionAdapter :=
+  ⟨serverVersionAdapter.mk zeroValDef⟩
 
 @[reducible] def serverVersionAdapter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"EtcdServer" (go.GoType.PointerType EtcdServer))]
+  [(go.field_decl.EmbeddedField go!"EtcdServer" (go.GoType.PointerType EtcdServer.ty))]
 
 @[irreducible] def serverVersionAdapter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   serverVersionAdapter.fieldsUnsealed
@@ -1084,44 +1082,40 @@ instance equals_unfold_serverVersionAdapter [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType serverVersionAdapter.fields)
 
 class serverVersionAdapter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying serverVersionAdapter.underlying serverVersionAdapter.t
-  underlying : go.UnderlyingDirectedEq serverVersionAdapter serverVersionAdapter.underlying
-  get_EtcdServer : ∀ (x : serverVersionAdapter.t), go.IsGoStepPureDetTagged under (StructFieldGet serverVersionAdapter.underlying go!"EtcdServer") #x (Val #(x.EtcdServer'))
-  set_EtcdServer : ∀ (x : serverVersionAdapter.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet serverVersionAdapter.underlying go!"EtcdServer") (PairV #x #y) (Val #(({ x with EtcdServer' := y } : serverVersionAdapter.t)))
+  type_repr : go.TypeReprUnderlying serverVersionAdapter.underlying serverVersionAdapter
+  underlying : go.UnderlyingDirectedEq serverVersionAdapter.ty serverVersionAdapter.underlying
+  get_EtcdServer : ∀ (x : serverVersionAdapter), go.IsGoStepPureDetTagged under (StructFieldGet serverVersionAdapter.underlying go!"EtcdServer") #x (Val #(x.EtcdServer'))
+  set_EtcdServer : ∀ (x : serverVersionAdapter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet serverVersionAdapter.underlying go!"EtcdServer") (PairV #x #y) (Val #(({ x with EtcdServer' := y } : serverVersionAdapter)))
 
 attribute [instance] serverVersionAdapter.TypeAssumptions.type_repr
   serverVersionAdapter.TypeAssumptions.underlying
   serverVersionAdapter.TypeAssumptions.get_EtcdServer
   serverVersionAdapter.TypeAssumptions.set_EtcdServer
 
-namespace bootstrappedServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end bootstrappedServer
+axiom bootstrappedServer : Type
+axiom bootstrappedServer.zero_val : ZeroVal bootstrappedServer
+attribute [instance] bootstrappedServer.zero_val
 
 class bootstrappedServer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedServer.underlying bootstrappedServer.t
-  underlying : go.UnderlyingDirectedEq bootstrappedServer bootstrappedServer.underlying
+  type_repr : go.TypeReprUnderlying bootstrappedServer.underlying bootstrappedServer
+  underlying : go.UnderlyingDirectedEq bootstrappedServer.ty bootstrappedServer.underlying
   isUnderlying : go.IsUnderlying bootstrappedServer.underlying bootstrappedServer.underlying
 
 attribute [instance] bootstrappedServer.TypeAssumptions.type_repr
   bootstrappedServer.TypeAssumptions.underlying
   bootstrappedServer.TypeAssumptions.isUnderlying
 
-namespace bootstrappedStorage
-structure t [FfiSyntax] where
+structure bootstrappedStorage [FfiSyntax] where
   mk ::
   backend' : Loc
   wal' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end bootstrappedStorage
+instance bootstrappedStorage.zero_val [FfiSyntax] : ZeroVal bootstrappedStorage :=
+  ⟨bootstrappedStorage.mk zeroValDef zeroValDef⟩
 
 @[reducible] def bootstrappedStorage.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"backend" (go.GoType.PointerType bootstrappedBackend)),
-(go.field_decl.FieldDecl go!"wal" (go.GoType.PointerType bootstrappedWAL))]
+  [(go.field_decl.FieldDecl go!"backend" (go.GoType.PointerType bootstrappedBackend.ty)),
+(go.field_decl.FieldDecl go!"wal" (go.GoType.PointerType bootstrappedWAL.ty))]
 
 @[irreducible] def bootstrappedStorage.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   bootstrappedStorage.fieldsUnsealed
@@ -1134,12 +1128,12 @@ instance equals_unfold_bootstrappedStorage [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType bootstrappedStorage.fields)
 
 class bootstrappedStorage.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedStorage.underlying bootstrappedStorage.t
-  underlying : go.UnderlyingDirectedEq bootstrappedStorage bootstrappedStorage.underlying
-  get_backend : ∀ (x : bootstrappedStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet bootstrappedStorage.underlying go!"backend") #x (Val #(x.backend'))
-  set_backend : ∀ (x : bootstrappedStorage.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bootstrappedStorage.underlying go!"backend") (PairV #x #y) (Val #(({ x with backend' := y } : bootstrappedStorage.t)))
-  get_wal : ∀ (x : bootstrappedStorage.t), go.IsGoStepPureDetTagged under (StructFieldGet bootstrappedStorage.underlying go!"wal") #x (Val #(x.wal'))
-  set_wal : ∀ (x : bootstrappedStorage.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bootstrappedStorage.underlying go!"wal") (PairV #x #y) (Val #(({ x with wal' := y } : bootstrappedStorage.t)))
+  type_repr : go.TypeReprUnderlying bootstrappedStorage.underlying bootstrappedStorage
+  underlying : go.UnderlyingDirectedEq bootstrappedStorage.ty bootstrappedStorage.underlying
+  get_backend : ∀ (x : bootstrappedStorage), go.IsGoStepPureDetTagged under (StructFieldGet bootstrappedStorage.underlying go!"backend") #x (Val #(x.backend'))
+  set_backend : ∀ (x : bootstrappedStorage) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bootstrappedStorage.underlying go!"backend") (PairV #x #y) (Val #(({ x with backend' := y } : bootstrappedStorage)))
+  get_wal : ∀ (x : bootstrappedStorage), go.IsGoStepPureDetTagged under (StructFieldGet bootstrappedStorage.underlying go!"wal") #x (Val #(x.wal'))
+  set_wal : ∀ (x : bootstrappedStorage) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bootstrappedStorage.underlying go!"wal") (PairV #x #y) (Val #(({ x with wal' := y } : bootstrappedStorage)))
 
 attribute [instance] bootstrappedStorage.TypeAssumptions.type_repr
   bootstrappedStorage.TypeAssumptions.underlying
@@ -1148,167 +1142,145 @@ attribute [instance] bootstrappedStorage.TypeAssumptions.type_repr
   bootstrappedStorage.TypeAssumptions.get_wal
   bootstrappedStorage.TypeAssumptions.set_wal
 
-namespace bootstrappedBackend
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end bootstrappedBackend
+axiom bootstrappedBackend : Type
+axiom bootstrappedBackend.zero_val : ZeroVal bootstrappedBackend
+attribute [instance] bootstrappedBackend.zero_val
 
 class bootstrappedBackend.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedBackend.underlying bootstrappedBackend.t
-  underlying : go.UnderlyingDirectedEq bootstrappedBackend bootstrappedBackend.underlying
+  type_repr : go.TypeReprUnderlying bootstrappedBackend.underlying bootstrappedBackend
+  underlying : go.UnderlyingDirectedEq bootstrappedBackend.ty bootstrappedBackend.underlying
   isUnderlying : go.IsUnderlying bootstrappedBackend.underlying bootstrappedBackend.underlying
 
 attribute [instance] bootstrappedBackend.TypeAssumptions.type_repr
   bootstrappedBackend.TypeAssumptions.underlying
   bootstrappedBackend.TypeAssumptions.isUnderlying
 
-namespace bootstrappedCluster
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end bootstrappedCluster
+axiom bootstrappedCluster : Type
+axiom bootstrappedCluster.zero_val : ZeroVal bootstrappedCluster
+attribute [instance] bootstrappedCluster.zero_val
 
 class bootstrappedCluster.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedCluster.underlying bootstrappedCluster.t
-  underlying : go.UnderlyingDirectedEq bootstrappedCluster bootstrappedCluster.underlying
+  type_repr : go.TypeReprUnderlying bootstrappedCluster.underlying bootstrappedCluster
+  underlying : go.UnderlyingDirectedEq bootstrappedCluster.ty bootstrappedCluster.underlying
   isUnderlying : go.IsUnderlying bootstrappedCluster.underlying bootstrappedCluster.underlying
 
 attribute [instance] bootstrappedCluster.TypeAssumptions.type_repr
   bootstrappedCluster.TypeAssumptions.underlying
   bootstrappedCluster.TypeAssumptions.isUnderlying
 
-namespace bootstrappedRaft
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end bootstrappedRaft
+axiom bootstrappedRaft : Type
+axiom bootstrappedRaft.zero_val : ZeroVal bootstrappedRaft
+attribute [instance] bootstrappedRaft.zero_val
 
 class bootstrappedRaft.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedRaft.underlying bootstrappedRaft.t
-  underlying : go.UnderlyingDirectedEq bootstrappedRaft bootstrappedRaft.underlying
+  type_repr : go.TypeReprUnderlying bootstrappedRaft.underlying bootstrappedRaft
+  underlying : go.UnderlyingDirectedEq bootstrappedRaft.ty bootstrappedRaft.underlying
   isUnderlying : go.IsUnderlying bootstrappedRaft.underlying bootstrappedRaft.underlying
 
 attribute [instance] bootstrappedRaft.TypeAssumptions.type_repr
   bootstrappedRaft.TypeAssumptions.underlying
   bootstrappedRaft.TypeAssumptions.isUnderlying
 
-namespace snapshotMetadata
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end snapshotMetadata
+axiom snapshotMetadata : Type
+axiom snapshotMetadata.zero_val : ZeroVal snapshotMetadata
+attribute [instance] snapshotMetadata.zero_val
 
 class snapshotMetadata.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying snapshotMetadata.underlying snapshotMetadata.t
-  underlying : go.UnderlyingDirectedEq snapshotMetadata snapshotMetadata.underlying
+  type_repr : go.TypeReprUnderlying snapshotMetadata.underlying snapshotMetadata
+  underlying : go.UnderlyingDirectedEq snapshotMetadata.ty snapshotMetadata.underlying
   isUnderlying : go.IsUnderlying snapshotMetadata.underlying snapshotMetadata.underlying
 
 attribute [instance] snapshotMetadata.TypeAssumptions.type_repr
   snapshotMetadata.TypeAssumptions.underlying
   snapshotMetadata.TypeAssumptions.isUnderlying
 
-namespace bootstrappedWAL
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end bootstrappedWAL
+axiom bootstrappedWAL : Type
+axiom bootstrappedWAL.zero_val : ZeroVal bootstrappedWAL
+attribute [instance] bootstrappedWAL.zero_val
 
 class bootstrappedWAL.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bootstrappedWAL.underlying bootstrappedWAL.t
-  underlying : go.UnderlyingDirectedEq bootstrappedWAL bootstrappedWAL.underlying
+  type_repr : go.TypeReprUnderlying bootstrappedWAL.underlying bootstrappedWAL
+  underlying : go.UnderlyingDirectedEq bootstrappedWAL.ty bootstrappedWAL.underlying
   isUnderlying : go.IsUnderlying bootstrappedWAL.underlying bootstrappedWAL.underlying
 
 attribute [instance] bootstrappedWAL.TypeAssumptions.type_repr
   bootstrappedWAL.TypeAssumptions.underlying
   bootstrappedWAL.TypeAssumptions.isUnderlying
 
-namespace CorruptionChecker
-abbrev t [FfiSyntax] : Type := interface.t
-end CorruptionChecker
+abbrev CorruptionChecker [FfiSyntax] : Type := interface.t
 
 @[reducible] def CorruptionChecker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CompactHashCheck" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"InitialCheck" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"PeriodicCheck" (go.signature.Signature [] false [go.error]))])
 
 class CorruptionChecker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq CorruptionChecker CorruptionChecker.underlying
+  underlying : go.UnderlyingDirectedEq CorruptionChecker.ty CorruptionChecker.underlying
 
 attribute [instance] CorruptionChecker.TypeAssumptions.underlying
 
-namespace corruptionChecker
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end corruptionChecker
+axiom corruptionChecker : Type
+axiom corruptionChecker.zero_val : ZeroVal corruptionChecker
+attribute [instance] corruptionChecker.zero_val
 
 class corruptionChecker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying corruptionChecker.underlying corruptionChecker.t
-  underlying : go.UnderlyingDirectedEq corruptionChecker corruptionChecker.underlying
+  type_repr : go.TypeReprUnderlying corruptionChecker.underlying corruptionChecker
+  underlying : go.UnderlyingDirectedEq corruptionChecker.ty corruptionChecker.underlying
   isUnderlying : go.IsUnderlying corruptionChecker.underlying corruptionChecker.underlying
 
 attribute [instance] corruptionChecker.TypeAssumptions.type_repr
   corruptionChecker.TypeAssumptions.underlying
   corruptionChecker.TypeAssumptions.isUnderlying
 
-namespace Hasher
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Hasher
+axiom Hasher : Type
+axiom Hasher.zero_val : ZeroVal Hasher
+attribute [instance] Hasher.zero_val
 
 class Hasher.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Hasher.underlying Hasher.t
-  underlying : go.UnderlyingDirectedEq Hasher Hasher.underlying
+  type_repr : go.TypeReprUnderlying Hasher.underlying Hasher
+  underlying : go.UnderlyingDirectedEq Hasher.ty Hasher.underlying
   isUnderlying : go.IsUnderlying Hasher.underlying Hasher.underlying
 
 attribute [instance] Hasher.TypeAssumptions.type_repr
   Hasher.TypeAssumptions.underlying
   Hasher.TypeAssumptions.isUnderlying
 
-namespace hasherAdapter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end hasherAdapter
+axiom hasherAdapter : Type
+axiom hasherAdapter.zero_val : ZeroVal hasherAdapter
+attribute [instance] hasherAdapter.zero_val
 
 class hasherAdapter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying hasherAdapter.underlying hasherAdapter.t
-  underlying : go.UnderlyingDirectedEq hasherAdapter hasherAdapter.underlying
+  type_repr : go.TypeReprUnderlying hasherAdapter.underlying hasherAdapter
+  underlying : go.UnderlyingDirectedEq hasherAdapter.ty hasherAdapter.underlying
   isUnderlying : go.IsUnderlying hasherAdapter.underlying hasherAdapter.underlying
 
 attribute [instance] hasherAdapter.TypeAssumptions.type_repr
   hasherAdapter.TypeAssumptions.underlying
   hasherAdapter.TypeAssumptions.isUnderlying
 
-namespace peerInfo
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end peerInfo
+axiom peerInfo : Type
+axiom peerInfo.zero_val : ZeroVal peerInfo
+attribute [instance] peerInfo.zero_val
 
 class peerInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying peerInfo.underlying peerInfo.t
-  underlying : go.UnderlyingDirectedEq peerInfo peerInfo.underlying
+  type_repr : go.TypeReprUnderlying peerInfo.underlying peerInfo
+  underlying : go.UnderlyingDirectedEq peerInfo.ty peerInfo.underlying
   isUnderlying : go.IsUnderlying peerInfo.underlying peerInfo.underlying
 
 attribute [instance] peerInfo.TypeAssumptions.type_repr
   peerInfo.TypeAssumptions.underlying
   peerInfo.TypeAssumptions.isUnderlying
 
-namespace peerHashKVResp
-structure t [FfiSyntax] where
+structure peerHashKVResp [FfiSyntax] where
   mk ::
-  peerInfo' : peerInfo.t
+  peerInfo' : peerInfo
   resp' : Loc
   err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end peerHashKVResp
+instance peerHashKVResp.zero_val [FfiSyntax] : ZeroVal peerHashKVResp :=
+  ⟨peerHashKVResp.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def peerHashKVResp.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"peerInfo" peerInfo),
-(go.field_decl.FieldDecl go!"resp" (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse)),
+  [(go.field_decl.EmbeddedField go!"peerInfo" peerInfo.ty),
+(go.field_decl.FieldDecl go!"resp" (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.HashKVResponse.ty)),
 (go.field_decl.FieldDecl go!"err" go.error)]
 
 @[irreducible] def peerHashKVResp.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1322,14 +1294,14 @@ instance equals_unfold_peerHashKVResp [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType peerHashKVResp.fields)
 
 class peerHashKVResp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying peerHashKVResp.underlying peerHashKVResp.t
-  underlying : go.UnderlyingDirectedEq peerHashKVResp peerHashKVResp.underlying
-  get_peerInfo : ∀ (x : peerHashKVResp.t), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"peerInfo") #x (Val #(x.peerInfo'))
-  set_peerInfo : ∀ (x : peerHashKVResp.t) (y : peerInfo.t), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"peerInfo") (PairV #x #y) (Val #(({ x with peerInfo' := y } : peerHashKVResp.t)))
-  get_resp : ∀ (x : peerHashKVResp.t), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"resp") #x (Val #(x.resp'))
-  set_resp : ∀ (x : peerHashKVResp.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"resp") (PairV #x #y) (Val #(({ x with resp' := y } : peerHashKVResp.t)))
-  get_err : ∀ (x : peerHashKVResp.t), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : peerHashKVResp.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : peerHashKVResp.t)))
+  type_repr : go.TypeReprUnderlying peerHashKVResp.underlying peerHashKVResp
+  underlying : go.UnderlyingDirectedEq peerHashKVResp.ty peerHashKVResp.underlying
+  get_peerInfo : ∀ (x : peerHashKVResp), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"peerInfo") #x (Val #(x.peerInfo'))
+  set_peerInfo : ∀ (x : peerHashKVResp) (y : peerInfo), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"peerInfo") (PairV #x #y) (Val #(({ x with peerInfo' := y } : peerHashKVResp)))
+  get_resp : ∀ (x : peerHashKVResp), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"resp") #x (Val #(x.resp'))
+  set_resp : ∀ (x : peerHashKVResp) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"resp") (PairV #x #y) (Val #(({ x with resp' := y } : peerHashKVResp)))
+  get_err : ∀ (x : peerHashKVResp), go.IsGoStepPureDetTagged under (StructFieldGet peerHashKVResp.underlying go!"err") #x (Val #(x.err'))
+  set_err : ∀ (x : peerHashKVResp) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet peerHashKVResp.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : peerHashKVResp)))
 
 attribute [instance] peerHashKVResp.TypeAssumptions.type_repr
   peerHashKVResp.TypeAssumptions.underlying
@@ -1340,36 +1312,32 @@ attribute [instance] peerHashKVResp.TypeAssumptions.type_repr
   peerHashKVResp.TypeAssumptions.get_err
   peerHashKVResp.TypeAssumptions.set_err
 
-namespace hashKVHandler
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end hashKVHandler
+axiom hashKVHandler : Type
+axiom hashKVHandler.zero_val : ZeroVal hashKVHandler
+attribute [instance] hashKVHandler.zero_val
 
 class hashKVHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying hashKVHandler.underlying hashKVHandler.t
-  underlying : go.UnderlyingDirectedEq hashKVHandler hashKVHandler.underlying
+  type_repr : go.TypeReprUnderlying hashKVHandler.underlying hashKVHandler
+  underlying : go.UnderlyingDirectedEq hashKVHandler.ty hashKVHandler.underlying
   isUnderlying : go.IsUnderlying hashKVHandler.underlying hashKVHandler.underlying
 
 attribute [instance] hashKVHandler.TypeAssumptions.type_repr
   hashKVHandler.TypeAssumptions.underlying
   hashKVHandler.TypeAssumptions.isUnderlying
 
-namespace toApply
-structure t [FfiSyntax] where
+structure toApply [FfiSyntax] where
   mk ::
   entries' : slice.t
-  snapshot' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t
+  snapshot' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot
   notifyc' : chan.t
   raftAdvancedC' : chan.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end toApply
+instance toApply.zero_val [FfiSyntax] : ZeroVal toApply :=
+  ⟨toApply.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def toApply.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"entries" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry)),
-(go.field_decl.FieldDecl go!"snapshot" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot),
+  [(go.field_decl.FieldDecl go!"entries" (go.GoType.SliceType _root_.Perennial.go_etcd_io.raft.v3.raftpb.Entry.ty)),
+(go.field_decl.FieldDecl go!"snapshot" _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.ty),
 (go.field_decl.FieldDecl go!"notifyc" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))),
 (go.field_decl.FieldDecl go!"raftAdvancedC" (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType [])))]
 
@@ -1384,16 +1352,16 @@ instance equals_unfold_toApply [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType toApply.fields)
 
 class toApply.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying toApply.underlying toApply.t
-  underlying : go.UnderlyingDirectedEq toApply toApply.underlying
-  get_entries : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"entries") #x (Val #(x.entries'))
-  set_entries : ∀ (x : toApply.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : toApply.t)))
-  get_snapshot : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"snapshot") #x (Val #(x.snapshot'))
-  set_snapshot : ∀ (x : toApply.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : toApply.t)))
-  get_notifyc : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"notifyc") #x (Val #(x.notifyc'))
-  set_notifyc : ∀ (x : toApply.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"notifyc") (PairV #x #y) (Val #(({ x with notifyc' := y } : toApply.t)))
-  get_raftAdvancedC : ∀ (x : toApply.t), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"raftAdvancedC") #x (Val #(x.raftAdvancedC'))
-  set_raftAdvancedC : ∀ (x : toApply.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"raftAdvancedC") (PairV #x #y) (Val #(({ x with raftAdvancedC' := y } : toApply.t)))
+  type_repr : go.TypeReprUnderlying toApply.underlying toApply
+  underlying : go.UnderlyingDirectedEq toApply.ty toApply.underlying
+  get_entries : ∀ (x : toApply), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"entries") #x (Val #(x.entries'))
+  set_entries : ∀ (x : toApply) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : toApply)))
+  get_snapshot : ∀ (x : toApply), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"snapshot") #x (Val #(x.snapshot'))
+  set_snapshot : ∀ (x : toApply) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.Snapshot), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"snapshot") (PairV #x #y) (Val #(({ x with snapshot' := y } : toApply)))
+  get_notifyc : ∀ (x : toApply), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"notifyc") #x (Val #(x.notifyc'))
+  set_notifyc : ∀ (x : toApply) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"notifyc") (PairV #x #y) (Val #(({ x with notifyc' := y } : toApply)))
+  get_raftAdvancedC : ∀ (x : toApply), go.IsGoStepPureDetTagged under (StructFieldGet toApply.underlying go!"raftAdvancedC") #x (Val #(x.raftAdvancedC'))
+  set_raftAdvancedC : ∀ (x : toApply) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet toApply.underlying go!"raftAdvancedC") (PairV #x #y) (Val #(({ x with raftAdvancedC' := y } : toApply)))
 
 attribute [instance] toApply.TypeAssumptions.type_repr
   toApply.TypeAssumptions.underlying
@@ -1406,20 +1374,18 @@ attribute [instance] toApply.TypeAssumptions.type_repr
   toApply.TypeAssumptions.get_raftAdvancedC
   toApply.TypeAssumptions.set_raftAdvancedC
 
-namespace raftNode
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end raftNode
+axiom raftNode : Type
+axiom raftNode.zero_val : ZeroVal raftNode
+attribute [instance] raftNode.zero_val
 
 class raftNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying raftNode.underlying raftNode.t
-  underlying : go.UnderlyingDirectedEq raftNode raftNode.underlying
+  type_repr : go.TypeReprUnderlying raftNode.underlying raftNode
+  underlying : go.UnderlyingDirectedEq raftNode.ty raftNode.underlying
   isUnderlying : go.IsUnderlying raftNode.underlying raftNode.underlying
-  Propose_unfold : MethodUnfold raftNode go!"Propose" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve raftNodeConfig go!"Propose"))) (App (Val (GoInstruction (StructFieldGet raftNode go!"raftNodeConfig"))) (Var "$r"))))
-  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType raftNode) go!"Propose" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raftNodeConfig) go!"Propose"))) (App (Val (GoInstruction (StructFieldRef raftNode go!"raftNodeConfig"))) (Var "$r"))))
+  Propose_unfold : MethodUnfold raftNode.ty go!"Propose" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve raftNodeConfig.ty go!"Propose"))) (App (Val (GoInstruction (StructFieldGet raftNode.ty go!"raftNodeConfig"))) (Var "$r"))))
+  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType raftNode.ty) go!"Propose" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType raftNodeConfig.ty) go!"Propose"))) (App (Val (GoInstruction (StructFieldRef raftNode.ty go!"raftNodeConfig"))) (Var "$r"))))
 
 attribute [instance] raftNode.TypeAssumptions.type_repr
   raftNode.TypeAssumptions.underlying
@@ -1427,20 +1393,18 @@ attribute [instance] raftNode.TypeAssumptions.type_repr
   raftNode.TypeAssumptions.Propose_unfold
   raftNode.TypeAssumptions.ptr_Propose_unfold
 
-namespace raftNodeConfig
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end raftNodeConfig
+axiom raftNodeConfig : Type
+axiom raftNodeConfig.zero_val : ZeroVal raftNodeConfig
+attribute [instance] raftNodeConfig.zero_val
 
 class raftNodeConfig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying raftNodeConfig.underlying raftNodeConfig.t
-  underlying : go.UnderlyingDirectedEq raftNodeConfig raftNodeConfig.underlying
+  type_repr : go.TypeReprUnderlying raftNodeConfig.underlying raftNodeConfig
+  underlying : go.UnderlyingDirectedEq raftNodeConfig.ty raftNodeConfig.underlying
   isUnderlying : go.IsUnderlying raftNodeConfig.underlying raftNodeConfig.underlying
-  Propose_unfold : MethodUnfold raftNodeConfig go!"Propose" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.raft.v3.Node go!"Propose"))) (App (Val (GoInstruction (StructFieldGet raftNodeConfig go!"Node"))) (Var "$r"))))
-  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType raftNodeConfig) go!"Propose" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.raft.v3.Node go!"Propose"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.raft.v3.Node))) (App (Val (GoInstruction (StructFieldRef raftNodeConfig go!"Node"))) (Var "$r")))))
+  Propose_unfold : MethodUnfold raftNodeConfig.ty go!"Propose" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.raft.v3.Node.ty go!"Propose"))) (App (Val (GoInstruction (StructFieldGet raftNodeConfig.ty go!"Node"))) (Var "$r"))))
+  ptr_Propose_unfold : MethodUnfold (go.GoType.PointerType raftNodeConfig.ty) go!"Propose" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve _root_.Perennial.go_etcd_io.raft.v3.Node.ty go!"Propose"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.raft.v3.Node.ty))) (App (Val (GoInstruction (StructFieldRef raftNodeConfig.ty go!"Node"))) (Var "$r")))))
 
 attribute [instance] raftNodeConfig.TypeAssumptions.type_repr
   raftNodeConfig.TypeAssumptions.underlying
@@ -1448,75 +1412,65 @@ attribute [instance] raftNodeConfig.TypeAssumptions.type_repr
   raftNodeConfig.TypeAssumptions.Propose_unfold
   raftNodeConfig.TypeAssumptions.ptr_Propose_unfold
 
-namespace Response
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Response
+axiom Response : Type
+axiom Response.zero_val : ZeroVal Response
+attribute [instance] Response.zero_val
 
 class Response.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Response.underlying Response.t
-  underlying : go.UnderlyingDirectedEq Response Response.underlying
+  type_repr : go.TypeReprUnderlying Response.underlying Response
+  underlying : go.UnderlyingDirectedEq Response.ty Response.underlying
   isUnderlying : go.IsUnderlying Response.underlying Response.underlying
 
 attribute [instance] Response.TypeAssumptions.type_repr
   Response.TypeAssumptions.underlying
   Response.TypeAssumptions.isUnderlying
 
-namespace ServerV2
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerV2
+axiom ServerV2 : Type
+axiom ServerV2.zero_val : ZeroVal ServerV2
+attribute [instance] ServerV2.zero_val
 
 class ServerV2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerV2.underlying ServerV2.t
-  underlying : go.UnderlyingDirectedEq ServerV2 ServerV2.underlying
+  type_repr : go.TypeReprUnderlying ServerV2.underlying ServerV2
+  underlying : go.UnderlyingDirectedEq ServerV2.ty ServerV2.underlying
   isUnderlying : go.IsUnderlying ServerV2.underlying ServerV2.underlying
 
 attribute [instance] ServerV2.TypeAssumptions.type_repr
   ServerV2.TypeAssumptions.underlying
   ServerV2.TypeAssumptions.isUnderlying
 
-namespace ServerV3
-abbrev t [FfiSyntax] : Type := interface.t
-end ServerV3
+abbrev ServerV3 [FfiSyntax] : Type := interface.t
 
 @[reducible] def ServerV3.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Server)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Server.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter.ty)])])
 
 class ServerV3.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ServerV3 ServerV3.underlying
+  underlying : go.UnderlyingDirectedEq ServerV3.ty ServerV3.underlying
 
 attribute [instance] ServerV3.TypeAssumptions.underlying
 
-namespace Server
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Server
+axiom Server : Type
+axiom Server.zero_val : ZeroVal Server
+attribute [instance] Server.zero_val
 
 class Server.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Server.underlying Server.t
-  underlying : go.UnderlyingDirectedEq Server Server.underlying
+  type_repr : go.TypeReprUnderlying Server.underlying Server
+  underlying : go.UnderlyingDirectedEq Server.ty Server.underlying
   isUnderlying : go.IsUnderlying Server.underlying Server.underlying
 
 attribute [instance] Server.TypeAssumptions.type_repr
   Server.TypeAssumptions.underlying
   Server.TypeAssumptions.isUnderlying
 
-namespace EtcdServer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end EtcdServer
+axiom EtcdServer : Type
+axiom EtcdServer.zero_val : ZeroVal EtcdServer
+attribute [instance] EtcdServer.zero_val
 
 class EtcdServer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EtcdServer.underlying EtcdServer.t
-  underlying : go.UnderlyingDirectedEq EtcdServer EtcdServer.underlying
+  type_repr : go.TypeReprUnderlying EtcdServer.underlying EtcdServer
+  underlying : go.UnderlyingDirectedEq EtcdServer.ty EtcdServer.underlying
   isUnderlying : go.IsUnderlying EtcdServer.underlying EtcdServer.underlying
-  ptr_Put_unfold : MethodUnfold (go.GoType.PointerType EtcdServer) go!"Put" EtcdServer.Put.impl
-  ptr_processInternalRaftRequestOnce_unfold : MethodUnfold (go.GoType.PointerType EtcdServer) go!"processInternalRaftRequestOnce" EtcdServer.processInternalRaftRequestOnce.impl
+  ptr_Put_unfold : MethodUnfold (go.GoType.PointerType EtcdServer.ty) go!"Put" EtcdServer.Put.impl
+  ptr_processInternalRaftRequestOnce_unfold : MethodUnfold (go.GoType.PointerType EtcdServer.ty) go!"processInternalRaftRequestOnce" EtcdServer.processInternalRaftRequestOnce.impl
 
 attribute [instance] EtcdServer.TypeAssumptions.type_repr
   EtcdServer.TypeAssumptions.underlying
@@ -1524,66 +1478,58 @@ attribute [instance] EtcdServer.TypeAssumptions.type_repr
   EtcdServer.TypeAssumptions.ptr_Put_unfold
   EtcdServer.TypeAssumptions.ptr_processInternalRaftRequestOnce_unfold
 
-namespace ServerPeer
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerPeer
+axiom ServerPeer : Type
+axiom ServerPeer.zero_val : ZeroVal ServerPeer
+attribute [instance] ServerPeer.zero_val
 
 class ServerPeer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerPeer.underlying ServerPeer.t
-  underlying : go.UnderlyingDirectedEq ServerPeer ServerPeer.underlying
+  type_repr : go.TypeReprUnderlying ServerPeer.underlying ServerPeer
+  underlying : go.UnderlyingDirectedEq ServerPeer.ty ServerPeer.underlying
   isUnderlying : go.IsUnderlying ServerPeer.underlying ServerPeer.underlying
 
 attribute [instance] ServerPeer.TypeAssumptions.type_repr
   ServerPeer.TypeAssumptions.underlying
   ServerPeer.TypeAssumptions.isUnderlying
 
-namespace ServerPeerV2
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end ServerPeerV2
+axiom ServerPeerV2 : Type
+axiom ServerPeerV2.zero_val : ZeroVal ServerPeerV2
+attribute [instance] ServerPeerV2.zero_val
 
 class ServerPeerV2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ServerPeerV2.underlying ServerPeerV2.t
-  underlying : go.UnderlyingDirectedEq ServerPeerV2 ServerPeerV2.underlying
+  type_repr : go.TypeReprUnderlying ServerPeerV2.underlying ServerPeerV2
+  underlying : go.UnderlyingDirectedEq ServerPeerV2.ty ServerPeerV2.underlying
   isUnderlying : go.IsUnderlying ServerPeerV2.underlying ServerPeerV2.underlying
 
 attribute [instance] ServerPeerV2.TypeAssumptions.type_repr
   ServerPeerV2.TypeAssumptions.underlying
   ServerPeerV2.TypeAssumptions.isUnderlying
 
-namespace downgradeEnabledHandler
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end downgradeEnabledHandler
+axiom downgradeEnabledHandler : Type
+axiom downgradeEnabledHandler.zero_val : ZeroVal downgradeEnabledHandler
+attribute [instance] downgradeEnabledHandler.zero_val
 
 class downgradeEnabledHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying downgradeEnabledHandler.underlying downgradeEnabledHandler.t
-  underlying : go.UnderlyingDirectedEq downgradeEnabledHandler downgradeEnabledHandler.underlying
+  type_repr : go.TypeReprUnderlying downgradeEnabledHandler.underlying downgradeEnabledHandler
+  underlying : go.UnderlyingDirectedEq downgradeEnabledHandler.ty downgradeEnabledHandler.underlying
   isUnderlying : go.IsUnderlying downgradeEnabledHandler.underlying downgradeEnabledHandler.underlying
 
 attribute [instance] downgradeEnabledHandler.TypeAssumptions.type_repr
   downgradeEnabledHandler.TypeAssumptions.underlying
   downgradeEnabledHandler.TypeAssumptions.isUnderlying
 
-namespace etcdProgress
-structure t [FfiSyntax] where
+structure etcdProgress [FfiSyntax] where
   mk ::
-  confState' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.t
+  confState' : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState
   diskSnapshotIndex' : w64
   memorySnapshotIndex' : w64
   appliedt' : w64
   appliedi' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end etcdProgress
+instance etcdProgress.zero_val [FfiSyntax] : ZeroVal etcdProgress :=
+  ⟨etcdProgress.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def etcdProgress.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"confState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState),
+  [(go.field_decl.FieldDecl go!"confState" _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.ty),
 (go.field_decl.FieldDecl go!"diskSnapshotIndex" go.uint64),
 (go.field_decl.FieldDecl go!"memorySnapshotIndex" go.uint64),
 (go.field_decl.FieldDecl go!"appliedt" go.uint64),
@@ -1600,18 +1546,18 @@ instance equals_unfold_etcdProgress [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType etcdProgress.fields)
 
 class etcdProgress.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying etcdProgress.underlying etcdProgress.t
-  underlying : go.UnderlyingDirectedEq etcdProgress etcdProgress.underlying
-  get_confState : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"confState") #x (Val #(x.confState'))
-  set_confState : ∀ (x : etcdProgress.t) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState.t), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"confState") (PairV #x #y) (Val #(({ x with confState' := y } : etcdProgress.t)))
-  get_diskSnapshotIndex : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"diskSnapshotIndex") #x (Val #(x.diskSnapshotIndex'))
-  set_diskSnapshotIndex : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"diskSnapshotIndex") (PairV #x #y) (Val #(({ x with diskSnapshotIndex' := y } : etcdProgress.t)))
-  get_memorySnapshotIndex : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"memorySnapshotIndex") #x (Val #(x.memorySnapshotIndex'))
-  set_memorySnapshotIndex : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"memorySnapshotIndex") (PairV #x #y) (Val #(({ x with memorySnapshotIndex' := y } : etcdProgress.t)))
-  get_appliedt : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"appliedt") #x (Val #(x.appliedt'))
-  set_appliedt : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"appliedt") (PairV #x #y) (Val #(({ x with appliedt' := y } : etcdProgress.t)))
-  get_appliedi : ∀ (x : etcdProgress.t), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"appliedi") #x (Val #(x.appliedi'))
-  set_appliedi : ∀ (x : etcdProgress.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"appliedi") (PairV #x #y) (Val #(({ x with appliedi' := y } : etcdProgress.t)))
+  type_repr : go.TypeReprUnderlying etcdProgress.underlying etcdProgress
+  underlying : go.UnderlyingDirectedEq etcdProgress.ty etcdProgress.underlying
+  get_confState : ∀ (x : etcdProgress), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"confState") #x (Val #(x.confState'))
+  set_confState : ∀ (x : etcdProgress) (y : _root_.Perennial.go_etcd_io.raft.v3.raftpb.ConfState), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"confState") (PairV #x #y) (Val #(({ x with confState' := y } : etcdProgress)))
+  get_diskSnapshotIndex : ∀ (x : etcdProgress), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"diskSnapshotIndex") #x (Val #(x.diskSnapshotIndex'))
+  set_diskSnapshotIndex : ∀ (x : etcdProgress) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"diskSnapshotIndex") (PairV #x #y) (Val #(({ x with diskSnapshotIndex' := y } : etcdProgress)))
+  get_memorySnapshotIndex : ∀ (x : etcdProgress), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"memorySnapshotIndex") #x (Val #(x.memorySnapshotIndex'))
+  set_memorySnapshotIndex : ∀ (x : etcdProgress) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"memorySnapshotIndex") (PairV #x #y) (Val #(({ x with memorySnapshotIndex' := y } : etcdProgress)))
+  get_appliedt : ∀ (x : etcdProgress), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"appliedt") #x (Val #(x.appliedt'))
+  set_appliedt : ∀ (x : etcdProgress) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"appliedt") (PairV #x #y) (Val #(({ x with appliedt' := y } : etcdProgress)))
+  get_appliedi : ∀ (x : etcdProgress), go.IsGoStepPureDetTagged under (StructFieldGet etcdProgress.underlying go!"appliedi") #x (Val #(x.appliedi'))
+  set_appliedi : ∀ (x : etcdProgress) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet etcdProgress.underlying go!"appliedi") (PairV #x #y) (Val #(({ x with appliedi' := y } : etcdProgress)))
 
 attribute [instance] etcdProgress.TypeAssumptions.type_repr
   etcdProgress.TypeAssumptions.underlying
@@ -1626,17 +1572,15 @@ attribute [instance] etcdProgress.TypeAssumptions.type_repr
   etcdProgress.TypeAssumptions.get_appliedi
   etcdProgress.TypeAssumptions.set_appliedi
 
-namespace raftReadyHandler
-structure t [FfiSyntax] where
+structure raftReadyHandler [FfiSyntax] where
   mk ::
   getLead' : func.t
   updateLead' : func.t
   updateLeadership' : func.t
   updateCommittedIndex' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end raftReadyHandler
+instance raftReadyHandler.zero_val [FfiSyntax] : ZeroVal raftReadyHandler :=
+  ⟨raftReadyHandler.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def raftReadyHandler.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"getLead" (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))),
@@ -1655,16 +1599,16 @@ instance equals_unfold_raftReadyHandler [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType raftReadyHandler.fields)
 
 class raftReadyHandler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying raftReadyHandler.underlying raftReadyHandler.t
-  underlying : go.UnderlyingDirectedEq raftReadyHandler raftReadyHandler.underlying
-  get_getLead : ∀ (x : raftReadyHandler.t), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"getLead") #x (Val #(x.getLead'))
-  set_getLead : ∀ (x : raftReadyHandler.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"getLead") (PairV #x #y) (Val #(({ x with getLead' := y } : raftReadyHandler.t)))
-  get_updateLead : ∀ (x : raftReadyHandler.t), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateLead") #x (Val #(x.updateLead'))
-  set_updateLead : ∀ (x : raftReadyHandler.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateLead") (PairV #x #y) (Val #(({ x with updateLead' := y } : raftReadyHandler.t)))
-  get_updateLeadership : ∀ (x : raftReadyHandler.t), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateLeadership") #x (Val #(x.updateLeadership'))
-  set_updateLeadership : ∀ (x : raftReadyHandler.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateLeadership") (PairV #x #y) (Val #(({ x with updateLeadership' := y } : raftReadyHandler.t)))
-  get_updateCommittedIndex : ∀ (x : raftReadyHandler.t), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateCommittedIndex") #x (Val #(x.updateCommittedIndex'))
-  set_updateCommittedIndex : ∀ (x : raftReadyHandler.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateCommittedIndex") (PairV #x #y) (Val #(({ x with updateCommittedIndex' := y } : raftReadyHandler.t)))
+  type_repr : go.TypeReprUnderlying raftReadyHandler.underlying raftReadyHandler
+  underlying : go.UnderlyingDirectedEq raftReadyHandler.ty raftReadyHandler.underlying
+  get_getLead : ∀ (x : raftReadyHandler), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"getLead") #x (Val #(x.getLead'))
+  set_getLead : ∀ (x : raftReadyHandler) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"getLead") (PairV #x #y) (Val #(({ x with getLead' := y } : raftReadyHandler)))
+  get_updateLead : ∀ (x : raftReadyHandler), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateLead") #x (Val #(x.updateLead'))
+  set_updateLead : ∀ (x : raftReadyHandler) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateLead") (PairV #x #y) (Val #(({ x with updateLead' := y } : raftReadyHandler)))
+  get_updateLeadership : ∀ (x : raftReadyHandler), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateLeadership") #x (Val #(x.updateLeadership'))
+  set_updateLeadership : ∀ (x : raftReadyHandler) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateLeadership") (PairV #x #y) (Val #(({ x with updateLeadership' := y } : raftReadyHandler)))
+  get_updateCommittedIndex : ∀ (x : raftReadyHandler), go.IsGoStepPureDetTagged under (StructFieldGet raftReadyHandler.underlying go!"updateCommittedIndex") #x (Val #(x.updateCommittedIndex'))
+  set_updateCommittedIndex : ∀ (x : raftReadyHandler) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet raftReadyHandler.underlying go!"updateCommittedIndex") (PairV #x #y) (Val #(({ x with updateCommittedIndex' := y } : raftReadyHandler)))
 
 attribute [instance] raftReadyHandler.TypeAssumptions.type_repr
   raftReadyHandler.TypeAssumptions.underlying
@@ -1677,37 +1621,33 @@ attribute [instance] raftReadyHandler.TypeAssumptions.type_repr
   raftReadyHandler.TypeAssumptions.get_updateCommittedIndex
   raftReadyHandler.TypeAssumptions.set_updateCommittedIndex
 
-namespace confChangeResponse
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end confChangeResponse
+axiom confChangeResponse : Type
+axiom confChangeResponse.zero_val : ZeroVal confChangeResponse
+attribute [instance] confChangeResponse.zero_val
 
 class confChangeResponse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying confChangeResponse.underlying confChangeResponse.t
-  underlying : go.UnderlyingDirectedEq confChangeResponse confChangeResponse.underlying
+  type_repr : go.TypeReprUnderlying confChangeResponse.underlying confChangeResponse
+  underlying : go.UnderlyingDirectedEq confChangeResponse.ty confChangeResponse.underlying
   isUnderlying : go.IsUnderlying confChangeResponse.underlying confChangeResponse.underlying
 
 attribute [instance] confChangeResponse.TypeAssumptions.type_repr
   confChangeResponse.TypeAssumptions.underlying
   confChangeResponse.TypeAssumptions.isUnderlying
 
-namespace AccessController
-structure t [FfiSyntax] where
+structure AccessController [FfiSyntax] where
   mk ::
-  corsMu' : _root_.Perennial.sync.RWMutex.t
+  corsMu' : _root_.Perennial.sync.RWMutex
   CORS' : map.t
-  hostWhitelistMu' : _root_.Perennial.sync.RWMutex.t
+  hostWhitelistMu' : _root_.Perennial.sync.RWMutex
   HostWhitelist' : map.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end AccessController
+instance AccessController.zero_val [FfiSyntax] : ZeroVal AccessController :=
+  ⟨AccessController.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def AccessController.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"corsMu" _root_.Perennial.sync.RWMutex),
+  [(go.field_decl.FieldDecl go!"corsMu" _root_.Perennial.sync.RWMutex.ty),
 (go.field_decl.FieldDecl go!"CORS" (go.GoType.MapType go.string (go.GoType.StructType []))),
-(go.field_decl.FieldDecl go!"hostWhitelistMu" _root_.Perennial.sync.RWMutex),
+(go.field_decl.FieldDecl go!"hostWhitelistMu" _root_.Perennial.sync.RWMutex.ty),
 (go.field_decl.FieldDecl go!"HostWhitelist" (go.GoType.MapType go.string (go.GoType.StructType [])))]
 
 @[irreducible] def AccessController.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1721,16 +1661,16 @@ instance equals_unfold_AccessController [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType AccessController.fields)
 
 class AccessController.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying AccessController.underlying AccessController.t
-  underlying : go.UnderlyingDirectedEq AccessController AccessController.underlying
-  get_corsMu : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"corsMu") #x (Val #(x.corsMu'))
-  set_corsMu : ∀ (x : AccessController.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"corsMu") (PairV #x #y) (Val #(({ x with corsMu' := y } : AccessController.t)))
-  get_CORS : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"CORS") #x (Val #(x.CORS'))
-  set_CORS : ∀ (x : AccessController.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"CORS") (PairV #x #y) (Val #(({ x with CORS' := y } : AccessController.t)))
-  get_hostWhitelistMu : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"hostWhitelistMu") #x (Val #(x.hostWhitelistMu'))
-  set_hostWhitelistMu : ∀ (x : AccessController.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"hostWhitelistMu") (PairV #x #y) (Val #(({ x with hostWhitelistMu' := y } : AccessController.t)))
-  get_HostWhitelist : ∀ (x : AccessController.t), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"HostWhitelist") #x (Val #(x.HostWhitelist'))
-  set_HostWhitelist : ∀ (x : AccessController.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"HostWhitelist") (PairV #x #y) (Val #(({ x with HostWhitelist' := y } : AccessController.t)))
+  type_repr : go.TypeReprUnderlying AccessController.underlying AccessController
+  underlying : go.UnderlyingDirectedEq AccessController.ty AccessController.underlying
+  get_corsMu : ∀ (x : AccessController), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"corsMu") #x (Val #(x.corsMu'))
+  set_corsMu : ∀ (x : AccessController) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"corsMu") (PairV #x #y) (Val #(({ x with corsMu' := y } : AccessController)))
+  get_CORS : ∀ (x : AccessController), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"CORS") #x (Val #(x.CORS'))
+  set_CORS : ∀ (x : AccessController) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"CORS") (PairV #x #y) (Val #(({ x with CORS' := y } : AccessController)))
+  get_hostWhitelistMu : ∀ (x : AccessController), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"hostWhitelistMu") #x (Val #(x.hostWhitelistMu'))
+  set_hostWhitelistMu : ∀ (x : AccessController) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"hostWhitelistMu") (PairV #x #y) (Val #(({ x with hostWhitelistMu' := y } : AccessController)))
+  get_HostWhitelist : ∀ (x : AccessController), go.IsGoStepPureDetTagged under (StructFieldGet AccessController.underlying go!"HostWhitelist") #x (Val #(x.HostWhitelist'))
+  set_HostWhitelist : ∀ (x : AccessController) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet AccessController.underlying go!"HostWhitelist") (PairV #x #y) (Val #(({ x with HostWhitelist' := y } : AccessController)))
 
 attribute [instance] AccessController.TypeAssumptions.type_repr
   AccessController.TypeAssumptions.underlying
@@ -1743,15 +1683,13 @@ attribute [instance] AccessController.TypeAssumptions.type_repr
   AccessController.TypeAssumptions.get_HostWhitelist
   AccessController.TypeAssumptions.set_HostWhitelist
 
-namespace notifier
-structure t [FfiSyntax] where
+structure notifier [FfiSyntax] where
   mk ::
   c' : chan.t
   err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end notifier
+instance notifier.zero_val [FfiSyntax] : ZeroVal notifier :=
+  ⟨notifier.mk zeroValDef zeroValDef⟩
 
 @[reducible] def notifier.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"c" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))),
@@ -1768,12 +1706,12 @@ instance equals_unfold_notifier [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType notifier.fields)
 
 class notifier.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying notifier.underlying notifier.t
-  underlying : go.UnderlyingDirectedEq notifier notifier.underlying
-  get_c : ∀ (x : notifier.t), go.IsGoStepPureDetTagged under (StructFieldGet notifier.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : notifier.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet notifier.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : notifier.t)))
-  get_err : ∀ (x : notifier.t), go.IsGoStepPureDetTagged under (StructFieldGet notifier.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : notifier.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet notifier.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : notifier.t)))
+  type_repr : go.TypeReprUnderlying notifier.underlying notifier
+  underlying : go.UnderlyingDirectedEq notifier.ty notifier.underlying
+  get_c : ∀ (x : notifier), go.IsGoStepPureDetTagged under (StructFieldGet notifier.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : notifier) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet notifier.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : notifier)))
+  get_err : ∀ (x : notifier), go.IsGoStepPureDetTagged under (StructFieldGet notifier.underlying go!"err") #x (Val #(x.err'))
+  set_err : ∀ (x : notifier) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet notifier.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : notifier)))
 
 attribute [instance] notifier.TypeAssumptions.type_repr
   notifier.TypeAssumptions.underlying
@@ -1782,54 +1720,46 @@ attribute [instance] notifier.TypeAssumptions.type_repr
   notifier.TypeAssumptions.get_err
   notifier.TypeAssumptions.set_err
 
-namespace RaftKV
-abbrev t [FfiSyntax] : Type := interface.t
-end RaftKV
+abbrev RaftKV [FfiSyntax] : Type := interface.t
 
 @[reducible] def RaftKV.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Compact" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse), go.error])), (go.InterfaceElem.MethodElem go!"DeleteRange" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse), go.error])), (go.InterfaceElem.MethodElem go!"Put" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse), go.error])), (go.InterfaceElem.MethodElem go!"Range" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse), go.error])), (go.InterfaceElem.MethodElem go!"Txn" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse), go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Compact" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.CompactionRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.CompactionResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"DeleteRange" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.DeleteRangeResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"Put" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.PutResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"Range" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.RangeResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"Txn" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.TxnResponse.ty), go.error]))])
 
 class RaftKV.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq RaftKV RaftKV.underlying
+  underlying : go.UnderlyingDirectedEq RaftKV.ty RaftKV.underlying
 
 attribute [instance] RaftKV.TypeAssumptions.underlying
 
-namespace Lessor
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Lessor
+axiom Lessor : Type
+axiom Lessor.zero_val : ZeroVal Lessor
+attribute [instance] Lessor.zero_val
 
 class Lessor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Lessor.underlying Lessor.t
-  underlying : go.UnderlyingDirectedEq Lessor Lessor.underlying
+  type_repr : go.TypeReprUnderlying Lessor.underlying Lessor
+  underlying : go.UnderlyingDirectedEq Lessor.ty Lessor.underlying
   isUnderlying : go.IsUnderlying Lessor.underlying Lessor.underlying
 
 attribute [instance] Lessor.TypeAssumptions.type_repr
   Lessor.TypeAssumptions.underlying
   Lessor.TypeAssumptions.isUnderlying
 
-namespace Authenticator
-abbrev t [FfiSyntax] : Type := interface.t
-end Authenticator
+abbrev Authenticator [FfiSyntax] : Type := interface.t
 
 @[reducible] def Authenticator.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AuthDisable" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthDisableRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthDisableResponse), go.error])), (go.InterfaceElem.MethodElem go!"AuthEnable" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthEnableRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthEnableResponse), go.error])), (go.InterfaceElem.MethodElem go!"AuthStatus" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthStatusRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthStatusResponse), go.error])), (go.InterfaceElem.MethodElem go!"Authenticate" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleAdd" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleDelete" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleGet" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleGrantPermission" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleList" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse), go.error])), (go.InterfaceElem.MethodElem go!"RoleRevokePermission" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserAdd" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserChangePassword" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserDelete" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserGet" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserGrantRole" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserList" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse), go.error])), (go.InterfaceElem.MethodElem go!"UserRevokeRole" (go.signature.Signature [_root_.Perennial.context.Context, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleRequest)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse), go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AuthDisable" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthDisableRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthDisableResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"AuthEnable" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthEnableRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthEnableResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"AuthStatus" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthStatusRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthStatusResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"Authenticate" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthenticateResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleAdd" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleAddResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleDelete" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleDeleteResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleGet" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleGrantPermission" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleList" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleListResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"RoleRevokePermission" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleRevokePermissionResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserAdd" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserChangePassword" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserChangePasswordResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserDelete" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserDeleteResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserGet" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGetResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserGrantRole" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserGrantRoleResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserList" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserListResponse.ty), go.error])), (go.InterfaceElem.MethodElem go!"UserRevokeRole" (go.signature.Signature [_root_.Perennial.context.Context.ty, (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleRequest.ty)] false [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserRevokeRoleResponse.ty), go.error]))])
 
 class Authenticator.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Authenticator Authenticator.underlying
+  underlying : go.UnderlyingDirectedEq Authenticator.ty Authenticator.underlying
 
 attribute [instance] Authenticator.TypeAssumptions.underlying
 
-namespace zapRaftLogger
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end zapRaftLogger
+axiom zapRaftLogger : Type
+axiom zapRaftLogger.zero_val : ZeroVal zapRaftLogger
+attribute [instance] zapRaftLogger.zero_val
 
 class zapRaftLogger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying zapRaftLogger.underlying zapRaftLogger.t
-  underlying : go.UnderlyingDirectedEq zapRaftLogger zapRaftLogger.underlying
+  type_repr : go.TypeReprUnderlying zapRaftLogger.underlying zapRaftLogger
+  underlying : go.UnderlyingDirectedEq zapRaftLogger.ty zapRaftLogger.underlying
   isUnderlying : go.IsUnderlying zapRaftLogger.underlying zapRaftLogger.underlying
 
 attribute [instance] zapRaftLogger.TypeAssumptions.type_repr

@@ -119,7 +119,7 @@ theorem init (wg : Loc) (γwg : WaitGroupNames) :
 theorem WaitGroup.wp_Add (P' : IProp GF) (wg : Loc) (P : IProp GF) (num_added : w32) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder wg num_added P ∗
         ⌜sint.Z num_added < 2 ^ 31 - 1⌝ }}
-      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Add")) (Val #(W64 1)))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Add")) (Val #(W64 1)))
     {{ RET #(); ownAdder wg (num_added + W32 1) iprop(P ∗ P') ∗ ownDone wg P' }} := by
   wp_start_folded as ⟨Ha, %Hoverflow⟩
   simp only [ownAdder_unseal, ownAdderDef]
@@ -185,7 +185,7 @@ theorem WaitGroup.wp_Add (P' : IProp GF) (wg : Loc) (P : IProp GF) (num_added : 
 
 theorem WaitGroup.wp_Done (P : IProp GF) (wg : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownDone wg P ∗ P }}
-      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Done")) (Val #()))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Done")) (Val #()))
     {{ RET #(); True }} := by
   wp_start_folded as ⟨Ha, HP⟩
   simp only [ownDone_unseal, ownDoneDef]
@@ -227,7 +227,7 @@ theorem WaitGroup.wp_Done (P : IProp GF) (wg : Loc) :
 
 theorem WaitGroup.wp_Wait (P : IProp GF) (n : w32) (wg : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder wg n P }}
-      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Wait")) (Val #()))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Wait")) (Val #()))
     {{ RET #(); ▷ P ∗ ownAdder wg (W32 0) iprop(True) }} := by
   wp_start_folded as Ha
   iapply wp_fupd

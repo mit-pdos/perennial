@@ -21,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-instance Result.countable [FfiSyntax] : Pos.Countable Result.t :=
+instance Result.countable [FfiSyntax] : Pos.Countable Result :=
   .ofInjective (fun r => Pos.Countable.encode (r.value', r.primary_won'))
     (by rintro ⟨a, b⟩ ⟨c, d⟩ h; have h := Pos.encode_inj h; simp_all)
 
@@ -321,14 +321,14 @@ theorem wp_HelloWorldWithTimeout :
   ipureintro
   rcases Hres with h | h <;> simp [h]
 
-theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Duration.t)
+theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Duration)
     (errStr_ptr' : Loc) (done_ch : chan.t) (γdone : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ownBroadcastChan done_ch γdone iprop(True) .Unknown ∗
         errStr_ptr' ↦ go!"" }}
       (App (App (App (App (Val (@! CancellableHedgedRequest)) (Val #query)) (Val #hedgeThreshold))
         (Val #errStr_ptr')) (Val #done_ch))
-    {{ (v : GoString) (b : Bool), RET #(Result.t.mk v b);
+    {{ (v : GoString) (b : Bool), RET #(Result.mk v b);
         -- primary won, or the hedged request won
         iprop(⌜(v = query ++ go!"_primary.html" ∧ b = true) ∨
           (v = query ++ go!"_secondary.html" ∧ b = false)⌝) ∨
@@ -342,10 +342,10 @@ theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Du
   wp_pures
   wp_alloc errStr_ptr as errStr
   wp_auto
-  wp_apply chan.wp_make2 (V := Result.t) $$ [] as %c %γc ⟨#Hc_chan, -, Hc_own⟩
+  wp_apply chan.wp_make2 (V := Result) $$ [] as %c %γc ⟨#Hc_chan, -, Hc_own⟩
   · ipureintro; decide
-  imod start_bag (fun (v : Result.t) => iprop(⌜v = Result.t.mk (query ++ go!"_primary.html") true ∨
-      v = Result.t.mk (query ++ go!"_secondary.html") false⌝)) _ c γc trivial $$ Hc_chan Hc_own
+  imod start_bag (fun (v : Result) => iprop(⌜v = Result.mk (query ++ go!"_primary.html") true ∨
+      v = Result.mk (query ++ go!"_secondary.html") false⌝)) _ c γc trivial $$ Hc_chan Hc_own
     with #Hch
   ipersist query
   ipersist c
@@ -366,7 +366,7 @@ theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Du
   isplit
   · -- the primary responded before the hedge threshold
     dsimp only [chan.blockingClausePre]
-    iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
+    iexists Result, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
     isplitr
     · ipureintro; rfl
     iframe Hc_chan
@@ -382,7 +382,7 @@ theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Du
   · -- the hedge threshold fired: launch the secondary and wait again
     dsimp only [chan.blockingClausePre]
     ihave #Hhedge_chan := is_bag_is_chan _ _ _ $$ Hhedge
-    iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, hedge_ch, γhedge
+    iexists time.Time, inferInstance, inferInstance, inferInstance, inferInstance, hedge_ch, γhedge
     isplitr
     · ipureintro; rfl
     iframe Hhedge_chan
@@ -401,7 +401,7 @@ theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Du
     iapply BigAndL.bigAndL_cons.2
     isplit
     · dsimp only [chan.blockingClausePre]
-      iexists Result.t, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
+      iexists Result, inferInstance, inferInstance, inferInstance, inferInstance, c, γc
       isplitr
       · ipureintro; rfl
       iframe Hc_chan

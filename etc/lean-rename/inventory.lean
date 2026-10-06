@@ -33,5 +33,9 @@ def main (args : List String) : IO Unit := do
     if n.hasMacroScopes || isPrivateName n then continue
     let k := kindOf env ci
     let r ← (Prod.fst <$> ((resultSort ci.type).run' {} |>.toIO ctx {env})) <|> pure "?"
-    out := out.push s!"{m}\t{n}\t{k}\t{r}"
+    -- head constant of the result type (e.g. `Perennial.go.GoType` for type descriptors)
+    let hd : MetaM String := forallTelescope ci.type fun _ b =>
+      pure (b.getAppFn.constName?.map toString |>.getD "")
+    let h ← (Prod.fst <$> (hd.run' {} |>.toIO ctx {env})) <|> pure ""
+    out := out.push s!"{m}\t{n}\t{k}\t{r}\t{h}"
   IO.println (String.intercalate "\n" out.toList)

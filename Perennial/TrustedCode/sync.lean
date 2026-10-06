@@ -115,14 +115,10 @@ def copyChecker.check.impl : val :=
 
 end code
 
-namespace copyChecker
-/-- Lean addition: see `«copyCheckerⁱᵐᵖˡ»`. -/
-abbrev t := Loc
-end copyChecker
+/-- Lean addition: see `copyChecker.underlying`. -/
+abbrev copyChecker := Loc
 
-namespace Mutex
-abbrev t := Bool
-end Mutex
+abbrev Mutex := Bool
 
 end sync
 

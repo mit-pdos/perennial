@@ -22,48 +22,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance Builder_typed_pointsto :
-    TypedPointsto (GF := GF) strings.Builder.t where
+    TypedPointsto (GF := GF) strings.Builder where
   typedPointstoDef l v dq := iprop(
-    "addr" ∷ typedPointsto (structFieldRef strings.Builder.t go!"addr" l) v.addr' dq ∗
-    "buf" ∷ typedPointsto (structFieldRef strings.Builder.t go!"buf" l) v.buf' dq ∗
+    "addr" ∷ typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq ∗
+    "buf" ∷ typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Builder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Builder.t strings.Builder.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.Builder strings.Builder.underlying := by
   solve_into_val_typed_struct
 
-instance Builder_access_load_addr (l : Loc) (v : strings.Builder.t) (dq : DFrac) :
+instance Builder_access_load_addr (l : Loc) (v : strings.Builder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Builder.t go!"addr" l) v.addr' dq)
-      (typedPointsto (structFieldRef strings.Builder.t go!"addr" l) v.addr' dq)
+      (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq)
+      (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_addr (l : Loc) (v : strings.Builder.t) (addr' : Loc) :
+instance Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Builder.t go!"addr" l) v.addr' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.Builder.t go!"addr" l) addr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with addr' := addr' } : strings.Builder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Builder go!"addr" l) addr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with addr' := addr' } : strings.Builder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Builder_access_load_buf (l : Loc) (v : strings.Builder.t) (dq : DFrac) :
+instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Builder.t go!"buf" l) v.buf' dq)
-      (typedPointsto (structFieldRef strings.Builder.t go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_buf (l : Loc) (v : strings.Builder.t) (buf' : slice.t) :
+instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Builder.t go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.Builder.t go!"buf" l) buf' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : strings.Builder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Builder go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : strings.Builder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -79,65 +79,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance Reader_typed_pointsto :
-    TypedPointsto (GF := GF) strings.Reader.t where
+    TypedPointsto (GF := GF) strings.Reader where
   typedPointstoDef l v dq := iprop(
-    "s" ∷ typedPointsto (structFieldRef strings.Reader.t go!"s" l) v.s' dq ∗
-    "i" ∷ typedPointsto (structFieldRef strings.Reader.t go!"i" l) v.i' dq ∗
-    "prevRune" ∷ typedPointsto (structFieldRef strings.Reader.t go!"prevRune" l) v.prevRune' dq ∗
+    "s" ∷ typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq ∗
+    "i" ∷ typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' dq ∗
+    "prevRune" ∷ typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Reader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Reader.t strings.Reader.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.Reader strings.Reader.underlying := by
   solve_into_val_typed_struct
 
-instance Reader_access_load_s (l : Loc) (v : strings.Reader.t) (dq : DFrac) :
+instance Reader_access_load_s (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"s" l) v.s' dq)
-      (typedPointsto (structFieldRef strings.Reader.t go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : strings.Reader.t) (s' : GoString) :
+instance Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"s" l) v.s' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.Reader.t go!"s" l) s' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : strings.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Reader go!"s" l) s' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : strings.Reader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_i (l : Loc) (v : strings.Reader.t) (dq : DFrac) :
+instance Reader_access_load_i (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"i" l) v.i' dq)
-      (typedPointsto (structFieldRef strings.Reader.t go!"i" l) v.i' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : Loc) (v : strings.Reader.t) (i' : w64) :
+instance Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"i" l) v.i' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.Reader.t go!"i" l) i' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with i' := i' } : strings.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Reader go!"i" l) i' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with i' := i' } : strings.Reader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader.t) (dq : DFrac) :
+instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"prevRune" l) v.prevRune' dq)
-      (typedPointsto (structFieldRef strings.Reader.t go!"prevRune" l) v.prevRune' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' dq)
+      (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : Loc) (v : strings.Reader.t) (prevRune' : w64) :
+instance Reader_access_store_prevRune (l : Loc) (v : strings.Reader) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.Reader.t go!"prevRune" l) v.prevRune' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.Reader.t go!"prevRune" l) prevRune' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prevRune' := prevRune' } : strings.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) prevRune' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prevRune' := prevRune' } : strings.Reader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -153,11 +153,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance Replacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.Replacer.t :=
+    TypedPointsto (GF := GF) strings.Replacer :=
   sorry -- Rocq: Admitted
 
 instance Replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Replacer.t strings.Replacer.underlying :=
+    IntoValTypedUnderlying (GF := GF) strings.Replacer strings.Replacer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -172,11 +172,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance replacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.replacer.t :=
+    TypedPointsto (GF := GF) strings.replacer :=
   sorry -- Rocq: Admitted
 
 instance replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.replacer.t strings.replacer.underlying :=
+    IntoValTypedUnderlying (GF := GF) strings.replacer strings.replacer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -191,99 +191,99 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance trieNode_typed_pointsto :
-    TypedPointsto (GF := GF) strings.trieNode.t where
+    TypedPointsto (GF := GF) strings.trieNode where
   typedPointstoDef l v dq := iprop(
-    "value" ∷ typedPointsto (structFieldRef strings.trieNode.t go!"value" l) v.value' dq ∗
-    "priority" ∷ typedPointsto (structFieldRef strings.trieNode.t go!"priority" l) v.priority' dq ∗
-    "prefix'" ∷ typedPointsto (structFieldRef strings.trieNode.t go!"prefix" l) v.prefix' dq ∗
-    "next" ∷ typedPointsto (structFieldRef strings.trieNode.t go!"next" l) v.next' dq ∗
-    "table" ∷ typedPointsto (structFieldRef strings.trieNode.t go!"table" l) v.table' dq ∗
+    "value" ∷ typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq ∗
+    "priority" ∷ typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' dq ∗
+    "prefix'" ∷ typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' dq ∗
+    "next" ∷ typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' dq ∗
+    "table" ∷ typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance trieNode_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.trieNode.t strings.trieNode.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.trieNode strings.trieNode.underlying := by
   solve_into_val_typed_struct
 
-instance trieNode_access_load_value (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
+instance trieNode_access_load_value (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"value" l) v.value' dq)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_value (l : Loc) (v : strings.trieNode.t) (value' : GoString) :
+instance trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"value" l) v.value' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.trieNode.t go!"value" l) value' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : strings.trieNode.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.trieNode go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : strings.trieNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
+instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"priority" l) v.priority' dq)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"priority" l) v.priority' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode.t) (priority' : w64) :
+instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priority' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"priority" l) v.priority' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.trieNode.t go!"priority" l) priority' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with priority' := priority' } : strings.trieNode.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.trieNode go!"priority" l) priority' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with priority' := priority' } : strings.trieNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
+instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"prefix" l) v.prefix' dq)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"prefix" l) v.prefix' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode.t) (prefix' : GoString) :
+instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"prefix" l) v.prefix' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.trieNode.t go!"prefix" l) prefix' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefix' := prefix' } : strings.trieNode.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) prefix' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefix' := prefix' } : strings.trieNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_next (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
+instance trieNode_access_load_next (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"next" l) v.next' dq)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"next" l) v.next' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_next (l : Loc) (v : strings.trieNode.t) (next' : Loc) :
+instance trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"next" l) v.next' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.trieNode.t go!"next" l) next' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with next' := next' } : strings.trieNode.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.trieNode go!"next" l) next' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with next' := next' } : strings.trieNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_table (l : Loc) (v : strings.trieNode.t) (dq : DFrac) :
+instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"table" l) v.table' dq)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"table" l) v.table' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' dq)
+      (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_table (l : Loc) (v : strings.trieNode.t) (table' : slice.t) :
+instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.trieNode.t go!"table" l) v.table' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.trieNode.t go!"table" l) table' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with table' := table' } : strings.trieNode.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.trieNode go!"table" l) table' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with table' := table' } : strings.trieNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -299,65 +299,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance genericReplacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.genericReplacer.t where
+    TypedPointsto (GF := GF) strings.genericReplacer where
   typedPointstoDef l v dq := iprop(
-    "root" ∷ typedPointsto (structFieldRef strings.genericReplacer.t go!"root" l) v.root' dq ∗
-    "tableSize" ∷ typedPointsto (structFieldRef strings.genericReplacer.t go!"tableSize" l) v.tableSize' dq ∗
-    "mapping" ∷ typedPointsto (structFieldRef strings.genericReplacer.t go!"mapping" l) v.mapping' dq ∗
+    "root" ∷ typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq ∗
+    "tableSize" ∷ typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' dq ∗
+    "mapping" ∷ typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance genericReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.genericReplacer.t strings.genericReplacer.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.genericReplacer strings.genericReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer.t) (dq : DFrac) :
+instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"root" l) v.root' dq)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"root" l) v.root' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer.t) (root' : strings.trieNode.t) :
+instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : strings.genericReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) root' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : strings.genericReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericReplacer.t) (dq : DFrac) :
+instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"tableSize" l) v.tableSize' dq)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"tableSize" l) v.tableSize' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer.t) (tableSize' : w64) :
+instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer) (tableSize' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"tableSize" l) v.tableSize' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"tableSize" l) tableSize' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tableSize' := tableSize' } : strings.genericReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) tableSize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tableSize' := tableSize' } : strings.genericReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericReplacer.t) (dq : DFrac) :
+instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"mapping" l) v.mapping' dq)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"mapping" l) v.mapping' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' dq)
+      (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer.t) (mapping' : (array.t w8 256)) :
+instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (array.t w8 256)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"mapping" l) v.mapping' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.genericReplacer.t go!"mapping" l) mapping' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mapping' := mapping' } : strings.genericReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) mapping' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mapping' := mapping' } : strings.genericReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -373,11 +373,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance stringWriter_typed_pointsto :
-    TypedPointsto (GF := GF) strings.stringWriter.t :=
+    TypedPointsto (GF := GF) strings.stringWriter :=
   sorry -- Rocq: Admitted
 
 instance stringWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.stringWriter.t strings.stringWriter.underlying :=
+    IntoValTypedUnderlying (GF := GF) strings.stringWriter strings.stringWriter.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -392,48 +392,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance singleStringReplacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.singleStringReplacer.t where
+    TypedPointsto (GF := GF) strings.singleStringReplacer where
   typedPointstoDef l v dq := iprop(
-    "finder" ∷ typedPointsto (structFieldRef strings.singleStringReplacer.t go!"finder" l) v.finder' dq ∗
-    "value" ∷ typedPointsto (structFieldRef strings.singleStringReplacer.t go!"value" l) v.value' dq ∗
+    "finder" ∷ typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq ∗
+    "value" ∷ typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance singleStringReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.singleStringReplacer.t strings.singleStringReplacer.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.singleStringReplacer strings.singleStringReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleStringReplacer.t) (dq : DFrac) :
+instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"finder" l) v.finder' dq)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"finder" l) v.finder' dq)
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq)
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer.t) (finder' : Loc) :
+instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer) (finder' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"finder" l) v.finder' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"finder" l) finder' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with finder' := finder' } : strings.singleStringReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) finder' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with finder' := finder' } : strings.singleStringReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStringReplacer.t) (dq : DFrac) :
+instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"value" l) v.value' dq)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer.t) (value' : GoString) :
+instance singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"value" l) v.value' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.singleStringReplacer.t go!"value" l) value' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : strings.singleStringReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : strings.singleStringReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -449,48 +449,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance byteStringReplacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.byteStringReplacer.t where
+    TypedPointsto (GF := GF) strings.byteStringReplacer where
   typedPointstoDef l v dq := iprop(
-    "replacements" ∷ typedPointsto (structFieldRef strings.byteStringReplacer.t go!"replacements" l) v.replacements' dq ∗
-    "toReplace" ∷ typedPointsto (structFieldRef strings.byteStringReplacer.t go!"toReplace" l) v.toReplace' dq ∗
+    "replacements" ∷ typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq ∗
+    "toReplace" ∷ typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance byteStringReplacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.byteStringReplacer.t strings.byteStringReplacer.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.byteStringReplacer strings.byteStringReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byteStringReplacer.t) (dq : DFrac) :
+instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"replacements" l) v.replacements' dq)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"replacements" l) v.replacements' dq)
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq)
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer.t) (replacements' : (array.t slice.t 256)) :
+instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (array.t slice.t 256)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"replacements" l) v.replacements' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"replacements" l) replacements' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with replacements' := replacements' } : strings.byteStringReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) replacements' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with replacements' := replacements' } : strings.byteStringReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStringReplacer.t) (dq : DFrac) :
+instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"toReplace" l) v.toReplace' dq)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"toReplace" l) v.toReplace' dq)
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' dq)
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer.t) (toReplace' : slice.t) :
+instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"toReplace" l) v.toReplace' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.byteStringReplacer.t go!"toReplace" l) toReplace' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with toReplace' := toReplace' } : strings.byteStringReplacer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) toReplace' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with toReplace' := toReplace' } : strings.byteStringReplacer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -506,65 +506,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 instance stringFinder_typed_pointsto :
-    TypedPointsto (GF := GF) strings.stringFinder.t where
+    TypedPointsto (GF := GF) strings.stringFinder where
   typedPointstoDef l v dq := iprop(
-    "pattern" ∷ typedPointsto (structFieldRef strings.stringFinder.t go!"pattern" l) v.pattern' dq ∗
-    "badCharSkip" ∷ typedPointsto (structFieldRef strings.stringFinder.t go!"badCharSkip" l) v.badCharSkip' dq ∗
-    "goodSuffixSkip" ∷ typedPointsto (structFieldRef strings.stringFinder.t go!"goodSuffixSkip" l) v.goodSuffixSkip' dq ∗
+    "pattern" ∷ typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq ∗
+    "badCharSkip" ∷ typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' dq ∗
+    "goodSuffixSkip" ∷ typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stringFinder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.stringFinder.t strings.stringFinder.underlying := by
+    IntoValTypedUnderlying (GF := GF) strings.stringFinder strings.stringFinder.underlying := by
   solve_into_val_typed_struct
 
-instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder.t) (dq : DFrac) :
+instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"pattern" l) v.pattern' dq)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"pattern" l) v.pattern' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder.t) (pattern' : GoString) :
+instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) (pattern' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"pattern" l) v.pattern' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"pattern" l) pattern' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pattern' := pattern' } : strings.stringFinder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) pattern' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pattern' := pattern' } : strings.stringFinder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinder.t) (dq : DFrac) :
+instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"badCharSkip" l) v.badCharSkip' dq)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"badCharSkip" l) v.badCharSkip' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder.t) (badCharSkip' : (array.t w64 256)) :
+instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (array.t w64 256)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"badCharSkip" l) v.badCharSkip' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"badCharSkip" l) badCharSkip' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with badCharSkip' := badCharSkip' } : strings.stringFinder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) badCharSkip' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with badCharSkip' := badCharSkip' } : strings.stringFinder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFinder.t) (dq : DFrac) :
+instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
+      (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder.t) (goodSuffixSkip' : slice.t) :
+instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"goodSuffixSkip" l) v.goodSuffixSkip' (DFrac.own 1))
-      (typedPointsto (structFieldRef strings.stringFinder.t go!"goodSuffixSkip" l) goodSuffixSkip' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with goodSuffixSkip' := goodSuffixSkip' } : strings.stringFinder.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) goodSuffixSkip' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with goodSuffixSkip' := goodSuffixSkip' } : strings.stringFinder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

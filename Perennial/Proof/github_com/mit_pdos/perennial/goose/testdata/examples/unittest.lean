@@ -228,9 +228,9 @@ theorem wp_testSwitchMultiple (x : w64) :
   · iapply HΦ; ipureintro; word
   iapply HΦ; ipureintro; word
 
-theorem Point.wp_IgnoreReceiver (p : Point.t) :
+theorem Point.wp_IgnoreReceiver (p : Point) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
-      (App (Val (p @!! Point @!! go!"IgnoreReceiver")) (Val #()))
+      (App (Val (p @!! Point.ty @!! go!"IgnoreReceiver")) (Val #()))
     {{ RET #(go!"ok"); True }} := by
   wp_start
   wp_end
@@ -252,7 +252,7 @@ theorem wp_NamedMapAssignment :
     {{ (m : Loc), RET #m; m ↦$ ({[W64 1 := true]} : GMap w64 Bool) }} := by
   wp_start
   wp_auto
-  rw [go.make1_underlying, go.is_underlying (t := MapWrapper)]
+  rw [go.make1_underlying, go.is_underlying (t := MapWrapper.ty)]
   wp_apply (wp_map_make1 (K := w64) (V := Bool)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   rw [GMap.insert_empty]
@@ -284,7 +284,7 @@ theorem wp_testConversionLiteral :
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   have hs : SafeMapKey (GF := GF) go.any
-      (interface.mkOk withInterface #(withInterface.t.mk interface.nil)) :=
+      (interface.mkOk withInterface.ty #(withInterface.mk interface.nil)) :=
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
@@ -295,7 +295,7 @@ theorem wp_testConversionLiteral :
 theorem wp_useNilField :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useNilField)) (Val #()))
-    {{ (l : Loc), RET #l; l ↦ containsPointer.t.mk null }} := by
+    {{ (l : Loc), RET #l; l ↦ containsPointer.mk null }} := by
   wp_start
   wp_alloc x as Hx
   wp_auto
@@ -377,7 +377,7 @@ theorem wp_intSliceLoop (s : slice.t) (xs : List w64) :
   · iapply HΦ
     iframe
 
-theorem wp_useEmbeddedMethod (d : embedD.t) (b : embedB.t) :
+theorem wp_useEmbeddedMethod (d : embedD) (b : embedB) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ d.embedC'.embedB' ↦ b }}
       (App (Val (@! useEmbeddedMethod)) (Val #d))
     {{ RET #true; True }} := by

@@ -17,45 +17,45 @@ end pkg_id
 
 namespace sort
 
-def Interface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Interface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Interface" [])
 
-attribute [irreducible] Interface
+attribute [irreducible] Interface.ty
 
-def sortedHint [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.sortedHint" [])
 
-attribute [irreducible] sortedHint
+attribute [irreducible] sortedHint.ty
 
-def xorshift [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.xorshift" [])
 
-attribute [irreducible] xorshift
+attribute [irreducible] xorshift.ty
 
-def lessSwap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def lessSwap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.lessSwap" [])
 
-attribute [irreducible] lessSwap
+attribute [irreducible] lessSwap.ty
 
-def reverse [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def reverse.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.reverse" [])
 
-attribute [irreducible] reverse
+attribute [irreducible] reverse.ty
 
-def IntSlice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def IntSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.IntSlice" [])
 
-attribute [irreducible] IntSlice
+attribute [irreducible] IntSlice.ty
 
-def Float64Slice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Float64Slice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Float64Slice" [])
 
-attribute [irreducible] Float64Slice
+attribute [irreducible] Float64Slice.ty
 
-def StringSlice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def StringSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.StringSlice" [])
 
-attribute [irreducible] StringSlice
+attribute [irreducible] StringSlice.ty
 
 @[reducible] noncomputable def unknownHint [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
@@ -408,18 +408,18 @@ noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType xorshift)))) (Var "r"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType xorshift.ty)))) (Var "r"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))))))
+  (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(17 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(17 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(7 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(7 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(13 : Int)))))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(13 : Int)))))))))))))))
 
 instance info' : PkgInfo pkg_id.sort where
   pkgImportedPkgs := []
@@ -433,53 +433,45 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-namespace Interface
-abbrev t [FfiSyntax] : Type := interface.t
-end Interface
+abbrev Interface [FfiSyntax] : Type := interface.t
 
 @[reducible] def Interface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
 
 class Interface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Interface Interface.underlying
+  underlying : go.UnderlyingDirectedEq Interface.ty Interface.underlying
 
 attribute [instance] Interface.TypeAssumptions.underlying
 
-namespace sortedHint
-abbrev t [FfiSyntax] : Type := w64
-end sortedHint
+abbrev sortedHint [FfiSyntax] : Type := w64
 
 @[reducible] def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq sortedHint sortedHint.underlying
+  underlying : go.UnderlyingDirectedEq sortedHint.ty sortedHint.underlying
 
 attribute [instance] sortedHint.TypeAssumptions.underlying
 
-namespace xorshift
-abbrev t [FfiSyntax] : Type := w64
-end xorshift
+abbrev xorshift [FfiSyntax] : Type := w64
 
 @[reducible] def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq xorshift xorshift.underlying
-  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift) go!"Next" xorshift.Next.impl
+  underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
   xorshift.TypeAssumptions.ptr_Next_unfold
 
-namespace lessSwap
-structure t [FfiSyntax] where
+structure lessSwap [FfiSyntax] where
   mk ::
   Less' : func.t
   Swap' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end lessSwap
+instance lessSwap.zero_val [FfiSyntax] : ZeroVal lessSwap :=
+  ⟨lessSwap.mk zeroValDef zeroValDef⟩
 
 @[reducible] def lessSwap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Less" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
@@ -496,12 +488,12 @@ instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType lessSwap.fields)
 
 class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap.t
-  underlying : go.UnderlyingDirectedEq lessSwap lessSwap.underlying
-  get_Less : ∀ (x : lessSwap.t), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
-  set_Less : ∀ (x : lessSwap.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap.t)))
-  get_Swap : ∀ (x : lessSwap.t), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
-  set_Swap : ∀ (x : lessSwap.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap.t)))
+  type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap
+  underlying : go.UnderlyingDirectedEq lessSwap.ty lessSwap.underlying
+  get_Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
+  set_Less : ∀ (x : lessSwap) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
+  get_Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
+  set_Swap : ∀ (x : lessSwap) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
 
 attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.underlying
@@ -510,17 +502,15 @@ attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.get_Swap
   lessSwap.TypeAssumptions.set_Swap
 
-namespace reverse
-structure t [FfiSyntax] where
+structure reverse [FfiSyntax] where
   mk ::
-  Interface' : Interface.t
+  Interface' : Interface
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end reverse
+instance reverse.zero_val [FfiSyntax] : ZeroVal reverse :=
+  ⟨reverse.mk zeroValDef⟩
 
 @[reducible] def reverse.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Interface" Interface)]
+  [(go.field_decl.EmbeddedField go!"Interface" Interface.ty)]
 
 @[irreducible] def reverse.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   reverse.fieldsUnsealed
@@ -533,49 +523,43 @@ instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType reverse.fields)
 
 class reverse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying reverse.underlying reverse.t
-  underlying : go.UnderlyingDirectedEq reverse reverse.underlying
-  get_Interface : ∀ (x : reverse.t), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
-  set_Interface : ∀ (x : reverse.t) (y : Interface.t), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse.t)))
+  type_repr : go.TypeReprUnderlying reverse.underlying reverse
+  underlying : go.UnderlyingDirectedEq reverse.ty reverse.underlying
+  get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
+  set_Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
 
 attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.underlying
   reverse.TypeAssumptions.get_Interface
   reverse.TypeAssumptions.set_Interface
 
-namespace IntSlice
-abbrev t [FfiSyntax] : Type := slice.t
-end IntSlice
+abbrev IntSlice [FfiSyntax] : Type := slice.t
 
 @[reducible] def IntSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.int)
 
 class IntSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq IntSlice IntSlice.underlying
+  underlying : go.UnderlyingDirectedEq IntSlice.ty IntSlice.underlying
 
 attribute [instance] IntSlice.TypeAssumptions.underlying
 
-namespace Float64Slice
-abbrev t [FfiSyntax] : Type := slice.t
-end Float64Slice
+abbrev Float64Slice [FfiSyntax] : Type := slice.t
 
 @[reducible] def Float64Slice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.float64)
 
 class Float64Slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Float64Slice Float64Slice.underlying
+  underlying : go.UnderlyingDirectedEq Float64Slice.ty Float64Slice.underlying
 
 attribute [instance] Float64Slice.TypeAssumptions.underlying
 
-namespace StringSlice
-abbrev t [FfiSyntax] : Type := slice.t
-end StringSlice
+abbrev StringSlice [FfiSyntax] : Type := slice.t
 
 @[reducible] def StringSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
 class StringSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq StringSlice StringSlice.underlying
+  underlying : go.UnderlyingDirectedEq StringSlice.ty StringSlice.underlying
 
 attribute [instance] StringSlice.TypeAssumptions.underlying
 

@@ -31,7 +31,7 @@ local notation "raft" => pkg_id.go_etcd_io.raft.v3
 /-- Rocq `is_Node`. -/
 def is_Node (γ : RaftNames) (n : interface.t_ok) : IProp GF :=
   iprop(∃ n_ptr : Loc,
-    "%Hn" ∷ ⌜n = interface.mk (go.GoType.PointerType v3.node) #n_ptr⌝ ∗
+    "%Hn" ∷ ⌜n = interface.mk (go.GoType.PointerType v3.node.ty) #n_ptr⌝ ∗
     "#Hnode" ∷ is_node γ n_ptr)
 
 instance is_Node_pers (γ : RaftNames) (n : interface.t_ok) :

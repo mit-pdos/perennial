@@ -20,435 +20,435 @@ end pkg_id
 
 namespace github_com.prometheus.client_golang.prometheus
 
-def Collector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Collector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Collector" [])
 
-attribute [irreducible] Collector
+attribute [irreducible] Collector.ty
 
-def selfCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def selfCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.selfCollector" [])
 
-attribute [irreducible] selfCollector
+attribute [irreducible] selfCollector.ty
 
-def collectorMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def collectorMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.collectorMetric" [])
 
-attribute [irreducible] collectorMetric
+attribute [irreducible] collectorMetric.ty
 
-def CollectorFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CollectorFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.CollectorFunc" [])
 
-attribute [irreducible] CollectorFunc
+attribute [irreducible] CollectorFunc.ty
 
-def Counter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Counter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Counter" [])
 
-attribute [irreducible] Counter
+attribute [irreducible] Counter.ty
 
-def ExemplarAdder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ExemplarAdder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ExemplarAdder" [])
 
-attribute [irreducible] ExemplarAdder
+attribute [irreducible] ExemplarAdder.ty
 
-def CounterOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CounterOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.CounterOpts" [])
 
-attribute [irreducible] CounterOpts
+attribute [irreducible] CounterOpts.ty
 
-def CounterVecOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CounterVecOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.CounterVecOpts" [])
 
-attribute [irreducible] CounterVecOpts
+attribute [irreducible] CounterVecOpts.ty
 
-def counter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def counter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.counter" [])
 
-attribute [irreducible] counter
+attribute [irreducible] counter.ty
 
-def CounterVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CounterVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.CounterVec" [])
 
-attribute [irreducible] CounterVec
+attribute [irreducible] CounterVec.ty
 
-def CounterFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CounterFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.CounterFunc" [])
 
-attribute [irreducible] CounterFunc
+attribute [irreducible] CounterFunc.ty
 
-def Desc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Desc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Desc" [])
 
-attribute [irreducible] Desc
+attribute [irreducible] Desc.ty
 
-def expvarCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def expvarCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.expvarCollector" [])
 
-attribute [irreducible] expvarCollector
+attribute [irreducible] expvarCollector.ty
 
-def Gauge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Gauge.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Gauge" [])
 
-attribute [irreducible] Gauge
+attribute [irreducible] Gauge.ty
 
-def GaugeOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def GaugeOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.GaugeOpts" [])
 
-attribute [irreducible] GaugeOpts
+attribute [irreducible] GaugeOpts.ty
 
-def GaugeVecOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def GaugeVecOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.GaugeVecOpts" [])
 
-attribute [irreducible] GaugeVecOpts
+attribute [irreducible] GaugeVecOpts.ty
 
-def gauge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def gauge.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.gauge" [])
 
-attribute [irreducible] gauge
+attribute [irreducible] gauge.ty
 
-def GaugeVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def GaugeVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.GaugeVec" [])
 
-attribute [irreducible] GaugeVec
+attribute [irreducible] GaugeVec.ty
 
-def GaugeFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def GaugeFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.GaugeFunc" [])
 
-attribute [irreducible] GaugeFunc
+attribute [irreducible] GaugeFunc.ty
 
-def baseGoCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def baseGoCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.baseGoCollector" [])
 
-attribute [irreducible] baseGoCollector
+attribute [irreducible] baseGoCollector.ty
 
-def memStatsMetrics [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def memStatsMetrics.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.memStatsMetrics" [])
 
-attribute [irreducible] memStatsMetrics
+attribute [irreducible] memStatsMetrics.ty
 
-def goCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def goCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.goCollector" [])
 
-attribute [irreducible] goCollector
+attribute [irreducible] goCollector.ty
 
-def rmMetricDesc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def rmMetricDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.rmMetricDesc" [])
 
-attribute [irreducible] rmMetricDesc
+attribute [irreducible] rmMetricDesc.ty
 
-def batchHistogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def batchHistogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.batchHistogram" [])
 
-attribute [irreducible] batchHistogram
+attribute [irreducible] batchHistogram.ty
 
-def Histogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Histogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Histogram" [])
 
-attribute [irreducible] Histogram
+attribute [irreducible] Histogram.ty
 
-def HistogramOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def HistogramOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.HistogramOpts" [])
 
-attribute [irreducible] HistogramOpts
+attribute [irreducible] HistogramOpts.ty
 
-def HistogramVecOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def HistogramVecOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.HistogramVecOpts" [])
 
-attribute [irreducible] HistogramVecOpts
+attribute [irreducible] HistogramVecOpts.ty
 
-def histogramCounts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def histogramCounts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.histogramCounts" [])
 
-attribute [irreducible] histogramCounts
+attribute [irreducible] histogramCounts.ty
 
-def histogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def histogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.histogram" [])
 
-attribute [irreducible] histogram
+attribute [irreducible] histogram.ty
 
-def HistogramVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def HistogramVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.HistogramVec" [])
 
-attribute [irreducible] HistogramVec
+attribute [irreducible] HistogramVec.ty
 
-def constHistogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def constHistogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.constHistogram" [])
 
-attribute [irreducible] constHistogram
+attribute [irreducible] constHistogram.ty
 
-def buckSort [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def buckSort.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.buckSort" [])
 
-attribute [irreducible] buckSort
+attribute [irreducible] buckSort.ty
 
-def nativeExemplars [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def nativeExemplars.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.nativeExemplars" [])
 
-attribute [irreducible] nativeExemplars
+attribute [irreducible] nativeExemplars.ty
 
-def constNativeHistogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def constNativeHistogram.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.constNativeHistogram" [])
 
-attribute [irreducible] constNativeHistogram
+attribute [irreducible] constNativeHistogram.ty
 
-def Labels [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Labels.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Labels" [])
 
-attribute [irreducible] Labels
+attribute [irreducible] Labels.ty
 
-def LabelConstraint [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def LabelConstraint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.LabelConstraint" [])
 
-attribute [irreducible] LabelConstraint
+attribute [irreducible] LabelConstraint.ty
 
-def ConstrainedLabel [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ConstrainedLabel.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ConstrainedLabel" [])
 
-attribute [irreducible] ConstrainedLabel
+attribute [irreducible] ConstrainedLabel.ty
 
-def ConstrainableLabels [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ConstrainableLabels.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ConstrainableLabels" [])
 
-attribute [irreducible] ConstrainableLabels
+attribute [irreducible] ConstrainableLabels.ty
 
-def ConstrainedLabels [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ConstrainedLabels.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ConstrainedLabels" [])
 
-attribute [irreducible] ConstrainedLabels
+attribute [irreducible] ConstrainedLabels.ty
 
-def UnconstrainedLabels [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UnconstrainedLabels.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.UnconstrainedLabels" [])
 
-attribute [irreducible] UnconstrainedLabels
+attribute [irreducible] UnconstrainedLabels.ty
 
-def compiledLabels [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def compiledLabels.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.compiledLabels" [])
 
-attribute [irreducible] compiledLabels
+attribute [irreducible] compiledLabels.ty
 
-def Metric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Metric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Metric" [])
 
-attribute [irreducible] Metric
+attribute [irreducible] Metric.ty
 
-def Opts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Opts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Opts" [])
 
-attribute [irreducible] Opts
+attribute [irreducible] Opts.ty
 
-def invalidMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def invalidMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.invalidMetric" [])
 
-attribute [irreducible] invalidMetric
+attribute [irreducible] invalidMetric.ty
 
-def timestampedMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def timestampedMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.timestampedMetric" [])
 
-attribute [irreducible] timestampedMetric
+attribute [irreducible] timestampedMetric.ty
 
-def withExemplarsMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def withExemplarsMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.withExemplarsMetric" [])
 
-attribute [irreducible] withExemplarsMetric
+attribute [irreducible] withExemplarsMetric.ty
 
-def Exemplar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Exemplar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Exemplar" [])
 
-attribute [irreducible] Exemplar
+attribute [irreducible] Exemplar.ty
 
-def Observer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Observer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Observer" [])
 
-attribute [irreducible] Observer
+attribute [irreducible] Observer.ty
 
-def ObserverFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ObserverFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ObserverFunc" [])
 
-attribute [irreducible] ObserverFunc
+attribute [irreducible] ObserverFunc.ty
 
-def ObserverVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ObserverVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ObserverVec" [])
 
-attribute [irreducible] ObserverVec
+attribute [irreducible] ObserverVec.ty
 
-def ExemplarObserver [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ExemplarObserver.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ExemplarObserver" [])
 
-attribute [irreducible] ExemplarObserver
+attribute [irreducible] ExemplarObserver.ty
 
-def processCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def processCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.processCollector" [])
 
-attribute [irreducible] processCollector
+attribute [irreducible] processCollector.ty
 
-def ProcessCollectorOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ProcessCollectorOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ProcessCollectorOpts" [])
 
-attribute [irreducible] ProcessCollectorOpts
+attribute [irreducible] ProcessCollectorOpts.ty
 
-def Registerer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Registerer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Registerer" [])
 
-attribute [irreducible] Registerer
+attribute [irreducible] Registerer.ty
 
-def Gatherer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Gatherer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Gatherer" [])
 
-attribute [irreducible] Gatherer
+attribute [irreducible] Gatherer.ty
 
-def GathererFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def GathererFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.GathererFunc" [])
 
-attribute [irreducible] GathererFunc
+attribute [irreducible] GathererFunc.ty
 
-def AlreadyRegisteredError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def AlreadyRegisteredError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.AlreadyRegisteredError" [])
 
-attribute [irreducible] AlreadyRegisteredError
+attribute [irreducible] AlreadyRegisteredError.ty
 
-def MultiError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MultiError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.MultiError" [])
 
-attribute [irreducible] MultiError
+attribute [irreducible] MultiError.ty
 
-def Registry [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Registry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Registry" [])
 
-attribute [irreducible] Registry
+attribute [irreducible] Registry.ty
 
-def Gatherers [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Gatherers.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Gatherers" [])
 
-attribute [irreducible] Gatherers
+attribute [irreducible] Gatherers.ty
 
-def MultiTRegistry [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MultiTRegistry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.MultiTRegistry" [])
 
-attribute [irreducible] MultiTRegistry
+attribute [irreducible] MultiTRegistry.ty
 
-def TransactionalGatherer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TransactionalGatherer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.TransactionalGatherer" [])
 
-attribute [irreducible] TransactionalGatherer
+attribute [irreducible] TransactionalGatherer.ty
 
-def noTransactionGatherer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noTransactionGatherer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.noTransactionGatherer" [])
 
-attribute [irreducible] noTransactionGatherer
+attribute [irreducible] noTransactionGatherer.ty
 
-def Summary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Summary.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Summary" [])
 
-attribute [irreducible] Summary
+attribute [irreducible] Summary.ty
 
-def SummaryOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SummaryOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.SummaryOpts" [])
 
-attribute [irreducible] SummaryOpts
+attribute [irreducible] SummaryOpts.ty
 
-def SummaryVecOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SummaryVecOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.SummaryVecOpts" [])
 
-attribute [irreducible] SummaryVecOpts
+attribute [irreducible] SummaryVecOpts.ty
 
-def summary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def summary.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.summary" [])
 
-attribute [irreducible] summary
+attribute [irreducible] summary.ty
 
-def summaryCounts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def summaryCounts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.summaryCounts" [])
 
-attribute [irreducible] summaryCounts
+attribute [irreducible] summaryCounts.ty
 
-def noObjectivesSummary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def noObjectivesSummary.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.noObjectivesSummary" [])
 
-attribute [irreducible] noObjectivesSummary
+attribute [irreducible] noObjectivesSummary.ty
 
-def quantSort [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def quantSort.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.quantSort" [])
 
-attribute [irreducible] quantSort
+attribute [irreducible] quantSort.ty
 
-def SummaryVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def SummaryVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.SummaryVec" [])
 
-attribute [irreducible] SummaryVec
+attribute [irreducible] SummaryVec.ty
 
-def constSummary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def constSummary.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.constSummary" [])
 
-attribute [irreducible] constSummary
+attribute [irreducible] constSummary.ty
 
-def Timer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Timer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.Timer" [])
 
-attribute [irreducible] Timer
+attribute [irreducible] Timer.ty
 
-def UntypedOpts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UntypedOpts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.UntypedOpts" [])
 
-attribute [irreducible] UntypedOpts
+attribute [irreducible] UntypedOpts.ty
 
-def UntypedFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def UntypedFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.UntypedFunc" [])
 
-attribute [irreducible] UntypedFunc
+attribute [irreducible] UntypedFunc.ty
 
-def ValueType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ValueType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.ValueType" [])
 
-attribute [irreducible] ValueType
+attribute [irreducible] ValueType.ty
 
-def valueFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def valueFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.valueFunc" [])
 
-attribute [irreducible] valueFunc
+attribute [irreducible] valueFunc.ty
 
-def constMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def constMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.constMetric" [])
 
-attribute [irreducible] constMetric
+attribute [irreducible] constMetric.ty
 
-def MetricVec [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def MetricVec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.MetricVec" [])
 
-attribute [irreducible] MetricVec
+attribute [irreducible] MetricVec.ty
 
-def metricWithLabelValues [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def metricWithLabelValues.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.metricWithLabelValues" [])
 
-attribute [irreducible] metricWithLabelValues
+attribute [irreducible] metricWithLabelValues.ty
 
-def curriedLabelValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def curriedLabelValue.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.curriedLabelValue" [])
 
-attribute [irreducible] curriedLabelValue
+attribute [irreducible] curriedLabelValue.ty
 
-def metricMap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def metricMap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.metricMap" [])
 
-attribute [irreducible] metricMap
+attribute [irreducible] metricMap.ty
 
-def v2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def v2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.v2" [])
 
-attribute [irreducible] v2
+attribute [irreducible] v2.ty
 
-def wrappingRegisterer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def wrappingRegisterer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.wrappingRegisterer" [])
 
-attribute [irreducible] wrappingRegisterer
+attribute [irreducible] wrappingRegisterer.ty
 
-def wrappingCollector [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def wrappingCollector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.wrappingCollector" [])
 
-attribute [irreducible] wrappingCollector
+attribute [irreducible] wrappingCollector.ty
 
-def wrappingMetric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def wrappingMetric.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/prometheus/client_golang/prometheus.wrappingMetric" [])
 
-attribute [irreducible] wrappingMetric
+attribute [irreducible] wrappingMetric.ty
 
 axiom counter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -1023,41 +1023,35 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
-namespace Collector
-abbrev t [FfiSyntax] : Type := interface.t
-end Collector
+abbrev Collector [FfiSyntax] : Type := interface.t
 
 @[reducible] def Collector.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Collect" (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric)] false [])), (go.InterfaceElem.MethodElem go!"Describe" (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly (go.GoType.PointerType Desc))] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Collect" (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric.ty)] false [])), (go.InterfaceElem.MethodElem go!"Describe" (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly (go.GoType.PointerType Desc.ty))] false []))])
 
 class Collector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Collector Collector.underlying
+  underlying : go.UnderlyingDirectedEq Collector.ty Collector.underlying
 
 attribute [instance] Collector.TypeAssumptions.underlying
 
-namespace Metric
-abbrev t [FfiSyntax] : Type := interface.t
-end Metric
+abbrev Metric [FfiSyntax] : Type := interface.t
 
 @[reducible] def Metric.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Desc" (go.signature.Signature [] false [(go.GoType.PointerType Desc)])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Metric)] false [go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Desc" (go.signature.Signature [] false [(go.GoType.PointerType Desc.ty)])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Metric.ty)] false [go.error]))])
 
 class Metric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Metric Metric.underlying
+  underlying : go.UnderlyingDirectedEq Metric.ty Metric.underlying
 
 attribute [instance] Metric.TypeAssumptions.underlying
 
-namespace selfCollector
-structure t [FfiSyntax] where
+structure selfCollector [FfiSyntax] where
   mk ::
-  self' : Metric.t
+  self' : Metric
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end selfCollector
+instance selfCollector.zero_val [FfiSyntax] : ZeroVal selfCollector :=
+  ⟨selfCollector.mk zeroValDef⟩
 
 @[reducible] def selfCollector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"self" Metric)]
+  [(go.field_decl.FieldDecl go!"self" Metric.ty)]
 
 @[irreducible] def selfCollector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   selfCollector.fieldsUnsealed
@@ -1070,97 +1064,85 @@ instance equals_unfold_selfCollector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType selfCollector.fields)
 
 class selfCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying selfCollector.underlying selfCollector.t
-  underlying : go.UnderlyingDirectedEq selfCollector selfCollector.underlying
-  get_self : ∀ (x : selfCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet selfCollector.underlying go!"self") #x (Val #(x.self'))
-  set_self : ∀ (x : selfCollector.t) (y : Metric.t), go.IsGoStepPureDetTagged under (StructFieldSet selfCollector.underlying go!"self") (PairV #x #y) (Val #(({ x with self' := y } : selfCollector.t)))
+  type_repr : go.TypeReprUnderlying selfCollector.underlying selfCollector
+  underlying : go.UnderlyingDirectedEq selfCollector.ty selfCollector.underlying
+  get_self : ∀ (x : selfCollector), go.IsGoStepPureDetTagged under (StructFieldGet selfCollector.underlying go!"self") #x (Val #(x.self'))
+  set_self : ∀ (x : selfCollector) (y : Metric), go.IsGoStepPureDetTagged under (StructFieldSet selfCollector.underlying go!"self") (PairV #x #y) (Val #(({ x with self' := y } : selfCollector)))
 
 attribute [instance] selfCollector.TypeAssumptions.type_repr
   selfCollector.TypeAssumptions.underlying
   selfCollector.TypeAssumptions.get_self
   selfCollector.TypeAssumptions.set_self
 
-namespace collectorMetric
-abbrev t [FfiSyntax] : Type := interface.t
-end collectorMetric
+abbrev collectorMetric [FfiSyntax] : Type := interface.t
 
 @[reducible] def collectorMetric.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class collectorMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq collectorMetric collectorMetric.underlying
+  underlying : go.UnderlyingDirectedEq collectorMetric.ty collectorMetric.underlying
 
 attribute [instance] collectorMetric.TypeAssumptions.underlying
 
-namespace CollectorFunc
-abbrev t [FfiSyntax] : Type := func.t
-end CollectorFunc
+abbrev CollectorFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def CollectorFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric)] false []))
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric.ty)] false []))
 
 class CollectorFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq CollectorFunc CollectorFunc.underlying
+  underlying : go.UnderlyingDirectedEq CollectorFunc.ty CollectorFunc.underlying
 
 attribute [instance] CollectorFunc.TypeAssumptions.underlying
 
-namespace Counter
-abbrev t [FfiSyntax] : Type := interface.t
-end Counter
+abbrev Counter [FfiSyntax] : Type := interface.t
 
 @[reducible] def Counter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Add" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"Inc" (go.signature.Signature [] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Add" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"Inc" (go.signature.Signature [] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class Counter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Counter Counter.underlying
+  underlying : go.UnderlyingDirectedEq Counter.ty Counter.underlying
 
 attribute [instance] Counter.TypeAssumptions.underlying
 
-namespace ExemplarAdder
-abbrev t [FfiSyntax] : Type := interface.t
-end ExemplarAdder
+abbrev ExemplarAdder [FfiSyntax] : Type := interface.t
 
 @[reducible] def ExemplarAdder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AddWithExemplar" (go.signature.Signature [go.float64, Labels] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AddWithExemplar" (go.signature.Signature [go.float64, Labels.ty] false []))])
 
 class ExemplarAdder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ExemplarAdder ExemplarAdder.underlying
+  underlying : go.UnderlyingDirectedEq ExemplarAdder.ty ExemplarAdder.underlying
 
 attribute [instance] ExemplarAdder.TypeAssumptions.underlying
 
-namespace Labels
-abbrev t [FfiSyntax] : Type := map.t
-end Labels
+abbrev Labels [FfiSyntax] : Type := map.t
 
 @[reducible] def Labels.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.MapType go.string go.string)
 
 class Labels.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Labels Labels.underlying
+  underlying : go.UnderlyingDirectedEq Labels.ty Labels.underlying
 
 attribute [instance] Labels.TypeAssumptions.underlying
 
-namespace Opts
-structure t [FfiSyntax] where
+structure Opts [FfiSyntax] where
   mk ::
   Namespace' : GoString
   Subsystem' : GoString
   Name' : GoString
   Help' : GoString
-  ConstLabels' : Labels.t
+  ConstLabels' : Labels
   now' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Opts
+instance Opts.zero_val [FfiSyntax] : ZeroVal Opts :=
+  ⟨Opts.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Opts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Namespace" go.string),
 (go.field_decl.FieldDecl go!"Subsystem" go.string),
 (go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"Help" go.string),
-(go.field_decl.FieldDecl go!"ConstLabels" Labels),
-(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time])))]
+(go.field_decl.FieldDecl go!"ConstLabels" Labels.ty),
+(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time.ty])))]
 
 @[irreducible] def Opts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Opts.fieldsUnsealed
@@ -1173,20 +1155,20 @@ instance equals_unfold_Opts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Opts.fields)
 
 class Opts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Opts.underlying Opts.t
-  underlying : go.UnderlyingDirectedEq Opts Opts.underlying
-  get_Namespace : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Namespace") #x (Val #(x.Namespace'))
-  set_Namespace : ∀ (x : Opts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : Opts.t)))
-  get_Subsystem : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
-  set_Subsystem : ∀ (x : Opts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : Opts.t)))
-  get_Name : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : Opts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : Opts.t)))
-  get_Help : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Help") #x (Val #(x.Help'))
-  set_Help : ∀ (x : Opts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : Opts.t)))
-  get_ConstLabels : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
-  set_ConstLabels : ∀ (x : Opts.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : Opts.t)))
-  get_now : ∀ (x : Opts.t), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"now") #x (Val #(x.now'))
-  set_now : ∀ (x : Opts.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : Opts.t)))
+  type_repr : go.TypeReprUnderlying Opts.underlying Opts
+  underlying : go.UnderlyingDirectedEq Opts.ty Opts.underlying
+  get_Namespace : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Namespace") #x (Val #(x.Namespace'))
+  set_Namespace : ∀ (x : Opts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : Opts)))
+  get_Subsystem : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
+  set_Subsystem : ∀ (x : Opts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : Opts)))
+  get_Name : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : Opts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : Opts)))
+  get_Help : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"Help") #x (Val #(x.Help'))
+  set_Help : ∀ (x : Opts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : Opts)))
+  get_ConstLabels : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
+  set_ConstLabels : ∀ (x : Opts) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : Opts)))
+  get_now : ∀ (x : Opts), go.IsGoStepPureDetTagged under (StructFieldGet Opts.underlying go!"now") #x (Val #(x.now'))
+  set_now : ∀ (x : Opts) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet Opts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : Opts)))
 
 attribute [instance] Opts.TypeAssumptions.type_repr
   Opts.TypeAssumptions.underlying
@@ -1203,43 +1185,37 @@ attribute [instance] Opts.TypeAssumptions.type_repr
   Opts.TypeAssumptions.get_now
   Opts.TypeAssumptions.set_now
 
-namespace CounterOpts
-abbrev t [FfiSyntax] : Type := Opts.t
-end CounterOpts
+abbrev CounterOpts [FfiSyntax] : Type := Opts
 
 @[reducible] def CounterOpts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  Opts
+  Opts.ty
 
 class CounterOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq CounterOpts CounterOpts.underlying
+  underlying : go.UnderlyingDirectedEq CounterOpts.ty CounterOpts.underlying
 
 attribute [instance] CounterOpts.TypeAssumptions.underlying
 
-namespace ConstrainableLabels
-abbrev t [FfiSyntax] : Type := interface.t
-end ConstrainableLabels
+abbrev ConstrainableLabels [FfiSyntax] : Type := interface.t
 
 @[reducible] def ConstrainableLabels.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"compile" (go.signature.Signature [] false [(go.GoType.PointerType compiledLabels)])), (go.InterfaceElem.MethodElem go!"labelNames" (go.signature.Signature [] false [(go.GoType.SliceType go.string)]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"compile" (go.signature.Signature [] false [(go.GoType.PointerType compiledLabels.ty)])), (go.InterfaceElem.MethodElem go!"labelNames" (go.signature.Signature [] false [(go.GoType.SliceType go.string)]))])
 
 class ConstrainableLabels.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ConstrainableLabels ConstrainableLabels.underlying
+  underlying : go.UnderlyingDirectedEq ConstrainableLabels.ty ConstrainableLabels.underlying
 
 attribute [instance] ConstrainableLabels.TypeAssumptions.underlying
 
-namespace CounterVecOpts
-structure t [FfiSyntax] where
+structure CounterVecOpts [FfiSyntax] where
   mk ::
-  CounterOpts' : CounterOpts.t
-  VariableLabels' : ConstrainableLabels.t
+  CounterOpts' : CounterOpts
+  VariableLabels' : ConstrainableLabels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end CounterVecOpts
+instance CounterVecOpts.zero_val [FfiSyntax] : ZeroVal CounterVecOpts :=
+  ⟨CounterVecOpts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def CounterVecOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"CounterOpts" CounterOpts),
-(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels)]
+  [(go.field_decl.EmbeddedField go!"CounterOpts" CounterOpts.ty),
+(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels.ty)]
 
 @[irreducible] def CounterVecOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   CounterVecOpts.fieldsUnsealed
@@ -1252,12 +1228,12 @@ instance equals_unfold_CounterVecOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CounterVecOpts.fields)
 
 class CounterVecOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CounterVecOpts.underlying CounterVecOpts.t
-  underlying : go.UnderlyingDirectedEq CounterVecOpts CounterVecOpts.underlying
-  get_CounterOpts : ∀ (x : CounterVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet CounterVecOpts.underlying go!"CounterOpts") #x (Val #(x.CounterOpts'))
-  set_CounterOpts : ∀ (x : CounterVecOpts.t) (y : CounterOpts.t), go.IsGoStepPureDetTagged under (StructFieldSet CounterVecOpts.underlying go!"CounterOpts") (PairV #x #y) (Val #(({ x with CounterOpts' := y } : CounterVecOpts.t)))
-  get_VariableLabels : ∀ (x : CounterVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet CounterVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
-  set_VariableLabels : ∀ (x : CounterVecOpts.t) (y : ConstrainableLabels.t), go.IsGoStepPureDetTagged under (StructFieldSet CounterVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : CounterVecOpts.t)))
+  type_repr : go.TypeReprUnderlying CounterVecOpts.underlying CounterVecOpts
+  underlying : go.UnderlyingDirectedEq CounterVecOpts.ty CounterVecOpts.underlying
+  get_CounterOpts : ∀ (x : CounterVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet CounterVecOpts.underlying go!"CounterOpts") #x (Val #(x.CounterOpts'))
+  set_CounterOpts : ∀ (x : CounterVecOpts) (y : CounterOpts), go.IsGoStepPureDetTagged under (StructFieldSet CounterVecOpts.underlying go!"CounterOpts") (PairV #x #y) (Val #(({ x with CounterOpts' := y } : CounterVecOpts)))
+  get_VariableLabels : ∀ (x : CounterVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet CounterVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
+  set_VariableLabels : ∀ (x : CounterVecOpts) (y : ConstrainableLabels), go.IsGoStepPureDetTagged under (StructFieldSet CounterVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : CounterVecOpts)))
 
 attribute [instance] CounterVecOpts.TypeAssumptions.type_repr
   CounterVecOpts.TypeAssumptions.underlying
@@ -1266,32 +1242,28 @@ attribute [instance] CounterVecOpts.TypeAssumptions.type_repr
   CounterVecOpts.TypeAssumptions.get_VariableLabels
   CounterVecOpts.TypeAssumptions.set_VariableLabels
 
-namespace counter
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end counter
+axiom counter : Type
+axiom counter.zero_val : ZeroVal counter
+attribute [instance] counter.zero_val
 
 class counter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying counter.underlying counter.t
-  underlying : go.UnderlyingDirectedEq counter counter.underlying
+  type_repr : go.TypeReprUnderlying counter.underlying counter
+  underlying : go.UnderlyingDirectedEq counter.ty counter.underlying
   isUnderlying : go.IsUnderlying counter.underlying counter.underlying
 
 attribute [instance] counter.TypeAssumptions.type_repr
   counter.TypeAssumptions.underlying
   counter.TypeAssumptions.isUnderlying
 
-namespace CounterVec
-structure t [FfiSyntax] where
+structure CounterVec [FfiSyntax] where
   mk ::
   MetricVec' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end CounterVec
+instance CounterVec.zero_val [FfiSyntax] : ZeroVal CounterVec :=
+  ⟨CounterVec.mk zeroValDef⟩
 
 @[reducible] def CounterVec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec))]
+  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec.ty))]
 
 @[irreducible] def CounterVec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   CounterVec.fieldsUnsealed
@@ -1304,30 +1276,27 @@ instance equals_unfold_CounterVec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CounterVec.fields)
 
 class CounterVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CounterVec.underlying CounterVec.t
-  underlying : go.UnderlyingDirectedEq CounterVec CounterVec.underlying
-  get_MetricVec : ∀ (x : CounterVec.t), go.IsGoStepPureDetTagged under (StructFieldGet CounterVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
-  set_MetricVec : ∀ (x : CounterVec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet CounterVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : CounterVec.t)))
+  type_repr : go.TypeReprUnderlying CounterVec.underlying CounterVec
+  underlying : go.UnderlyingDirectedEq CounterVec.ty CounterVec.underlying
+  get_MetricVec : ∀ (x : CounterVec), go.IsGoStepPureDetTagged under (StructFieldGet CounterVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
+  set_MetricVec : ∀ (x : CounterVec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet CounterVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : CounterVec)))
 
 attribute [instance] CounterVec.TypeAssumptions.type_repr
   CounterVec.TypeAssumptions.underlying
   CounterVec.TypeAssumptions.get_MetricVec
   CounterVec.TypeAssumptions.set_MetricVec
 
-namespace CounterFunc
-abbrev t [FfiSyntax] : Type := interface.t
-end CounterFunc
+abbrev CounterFunc [FfiSyntax] : Type := interface.t
 
 @[reducible] def CounterFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class CounterFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq CounterFunc CounterFunc.underlying
+  underlying : go.UnderlyingDirectedEq CounterFunc.ty CounterFunc.underlying
 
 attribute [instance] CounterFunc.TypeAssumptions.underlying
 
-namespace Desc
-structure t [FfiSyntax] where
+structure Desc [FfiSyntax] where
   mk ::
   fqName' : GoString
   help' : GoString
@@ -1337,15 +1306,14 @@ structure t [FfiSyntax] where
   dimHash' : w64
   err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Desc
+instance Desc.zero_val [FfiSyntax] : ZeroVal Desc :=
+  ⟨Desc.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Desc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fqName" go.string),
 (go.field_decl.FieldDecl go!"help" go.string),
-(go.field_decl.FieldDecl go!"constLabelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair))),
-(go.field_decl.FieldDecl go!"variableLabels" (go.GoType.PointerType compiledLabels)),
+(go.field_decl.FieldDecl go!"constLabelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair.ty))),
+(go.field_decl.FieldDecl go!"variableLabels" (go.GoType.PointerType compiledLabels.ty)),
 (go.field_decl.FieldDecl go!"id" go.uint64),
 (go.field_decl.FieldDecl go!"dimHash" go.uint64),
 (go.field_decl.FieldDecl go!"err" go.error)]
@@ -1361,22 +1329,22 @@ instance equals_unfold_Desc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Desc.fields)
 
 class Desc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Desc.underlying Desc.t
-  underlying : go.UnderlyingDirectedEq Desc Desc.underlying
-  get_fqName : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"fqName") #x (Val #(x.fqName'))
-  set_fqName : ∀ (x : Desc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"fqName") (PairV #x #y) (Val #(({ x with fqName' := y } : Desc.t)))
-  get_help : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"help") #x (Val #(x.help'))
-  set_help : ∀ (x : Desc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"help") (PairV #x #y) (Val #(({ x with help' := y } : Desc.t)))
-  get_constLabelPairs : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"constLabelPairs") #x (Val #(x.constLabelPairs'))
-  set_constLabelPairs : ∀ (x : Desc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"constLabelPairs") (PairV #x #y) (Val #(({ x with constLabelPairs' := y } : Desc.t)))
-  get_variableLabels : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"variableLabels") #x (Val #(x.variableLabels'))
-  set_variableLabels : ∀ (x : Desc.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"variableLabels") (PairV #x #y) (Val #(({ x with variableLabels' := y } : Desc.t)))
-  get_id : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"id") #x (Val #(x.id'))
-  set_id : ∀ (x : Desc.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : Desc.t)))
-  get_dimHash : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"dimHash") #x (Val #(x.dimHash'))
-  set_dimHash : ∀ (x : Desc.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"dimHash") (PairV #x #y) (Val #(({ x with dimHash' := y } : Desc.t)))
-  get_err : ∀ (x : Desc.t), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : Desc.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : Desc.t)))
+  type_repr : go.TypeReprUnderlying Desc.underlying Desc
+  underlying : go.UnderlyingDirectedEq Desc.ty Desc.underlying
+  get_fqName : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"fqName") #x (Val #(x.fqName'))
+  set_fqName : ∀ (x : Desc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"fqName") (PairV #x #y) (Val #(({ x with fqName' := y } : Desc)))
+  get_help : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"help") #x (Val #(x.help'))
+  set_help : ∀ (x : Desc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"help") (PairV #x #y) (Val #(({ x with help' := y } : Desc)))
+  get_constLabelPairs : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"constLabelPairs") #x (Val #(x.constLabelPairs'))
+  set_constLabelPairs : ∀ (x : Desc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"constLabelPairs") (PairV #x #y) (Val #(({ x with constLabelPairs' := y } : Desc)))
+  get_variableLabels : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"variableLabels") #x (Val #(x.variableLabels'))
+  set_variableLabels : ∀ (x : Desc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"variableLabels") (PairV #x #y) (Val #(({ x with variableLabels' := y } : Desc)))
+  get_id : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"id") #x (Val #(x.id'))
+  set_id : ∀ (x : Desc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : Desc)))
+  get_dimHash : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"dimHash") #x (Val #(x.dimHash'))
+  set_dimHash : ∀ (x : Desc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"dimHash") (PairV #x #y) (Val #(({ x with dimHash' := y } : Desc)))
+  get_err : ∀ (x : Desc), go.IsGoStepPureDetTagged under (StructFieldGet Desc.underlying go!"err") #x (Val #(x.err'))
+  set_err : ∀ (x : Desc) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet Desc.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : Desc)))
 
 attribute [instance] Desc.TypeAssumptions.type_repr
   Desc.TypeAssumptions.underlying
@@ -1395,17 +1363,15 @@ attribute [instance] Desc.TypeAssumptions.type_repr
   Desc.TypeAssumptions.get_err
   Desc.TypeAssumptions.set_err
 
-namespace expvarCollector
-structure t [FfiSyntax] where
+structure expvarCollector [FfiSyntax] where
   mk ::
   exports' : map.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end expvarCollector
+instance expvarCollector.zero_val [FfiSyntax] : ZeroVal expvarCollector :=
+  ⟨expvarCollector.mk zeroValDef⟩
 
 @[reducible] def expvarCollector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"exports" (go.GoType.MapType go.string (go.GoType.PointerType Desc)))]
+  [(go.field_decl.FieldDecl go!"exports" (go.GoType.MapType go.string (go.GoType.PointerType Desc.ty)))]
 
 @[irreducible] def expvarCollector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   expvarCollector.fieldsUnsealed
@@ -1418,53 +1384,47 @@ instance equals_unfold_expvarCollector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType expvarCollector.fields)
 
 class expvarCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying expvarCollector.underlying expvarCollector.t
-  underlying : go.UnderlyingDirectedEq expvarCollector expvarCollector.underlying
-  get_exports : ∀ (x : expvarCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet expvarCollector.underlying go!"exports") #x (Val #(x.exports'))
-  set_exports : ∀ (x : expvarCollector.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet expvarCollector.underlying go!"exports") (PairV #x #y) (Val #(({ x with exports' := y } : expvarCollector.t)))
+  type_repr : go.TypeReprUnderlying expvarCollector.underlying expvarCollector
+  underlying : go.UnderlyingDirectedEq expvarCollector.ty expvarCollector.underlying
+  get_exports : ∀ (x : expvarCollector), go.IsGoStepPureDetTagged under (StructFieldGet expvarCollector.underlying go!"exports") #x (Val #(x.exports'))
+  set_exports : ∀ (x : expvarCollector) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet expvarCollector.underlying go!"exports") (PairV #x #y) (Val #(({ x with exports' := y } : expvarCollector)))
 
 attribute [instance] expvarCollector.TypeAssumptions.type_repr
   expvarCollector.TypeAssumptions.underlying
   expvarCollector.TypeAssumptions.get_exports
   expvarCollector.TypeAssumptions.set_exports
 
-namespace Gauge
-abbrev t [FfiSyntax] : Type := interface.t
-end Gauge
+abbrev Gauge [FfiSyntax] : Type := interface.t
 
 @[reducible] def Gauge.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Add" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"Dec" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Inc" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Set" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"SetToCurrentTime" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Sub" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Add" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"Dec" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Inc" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Set" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.MethodElem go!"SetToCurrentTime" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Sub" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class Gauge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Gauge Gauge.underlying
+  underlying : go.UnderlyingDirectedEq Gauge.ty Gauge.underlying
 
 attribute [instance] Gauge.TypeAssumptions.underlying
 
-namespace GaugeOpts
-abbrev t [FfiSyntax] : Type := Opts.t
-end GaugeOpts
+abbrev GaugeOpts [FfiSyntax] : Type := Opts
 
 @[reducible] def GaugeOpts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  Opts
+  Opts.ty
 
 class GaugeOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq GaugeOpts GaugeOpts.underlying
+  underlying : go.UnderlyingDirectedEq GaugeOpts.ty GaugeOpts.underlying
 
 attribute [instance] GaugeOpts.TypeAssumptions.underlying
 
-namespace GaugeVecOpts
-structure t [FfiSyntax] where
+structure GaugeVecOpts [FfiSyntax] where
   mk ::
-  GaugeOpts' : GaugeOpts.t
-  VariableLabels' : ConstrainableLabels.t
+  GaugeOpts' : GaugeOpts
+  VariableLabels' : ConstrainableLabels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end GaugeVecOpts
+instance GaugeVecOpts.zero_val [FfiSyntax] : ZeroVal GaugeVecOpts :=
+  ⟨GaugeVecOpts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def GaugeVecOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"GaugeOpts" GaugeOpts),
-(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels)]
+  [(go.field_decl.EmbeddedField go!"GaugeOpts" GaugeOpts.ty),
+(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels.ty)]
 
 @[irreducible] def GaugeVecOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   GaugeVecOpts.fieldsUnsealed
@@ -1477,12 +1437,12 @@ instance equals_unfold_GaugeVecOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType GaugeVecOpts.fields)
 
 class GaugeVecOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying GaugeVecOpts.underlying GaugeVecOpts.t
-  underlying : go.UnderlyingDirectedEq GaugeVecOpts GaugeVecOpts.underlying
-  get_GaugeOpts : ∀ (x : GaugeVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVecOpts.underlying go!"GaugeOpts") #x (Val #(x.GaugeOpts'))
-  set_GaugeOpts : ∀ (x : GaugeVecOpts.t) (y : GaugeOpts.t), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVecOpts.underlying go!"GaugeOpts") (PairV #x #y) (Val #(({ x with GaugeOpts' := y } : GaugeVecOpts.t)))
-  get_VariableLabels : ∀ (x : GaugeVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
-  set_VariableLabels : ∀ (x : GaugeVecOpts.t) (y : ConstrainableLabels.t), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : GaugeVecOpts.t)))
+  type_repr : go.TypeReprUnderlying GaugeVecOpts.underlying GaugeVecOpts
+  underlying : go.UnderlyingDirectedEq GaugeVecOpts.ty GaugeVecOpts.underlying
+  get_GaugeOpts : ∀ (x : GaugeVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVecOpts.underlying go!"GaugeOpts") #x (Val #(x.GaugeOpts'))
+  set_GaugeOpts : ∀ (x : GaugeVecOpts) (y : GaugeOpts), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVecOpts.underlying go!"GaugeOpts") (PairV #x #y) (Val #(({ x with GaugeOpts' := y } : GaugeVecOpts)))
+  get_VariableLabels : ∀ (x : GaugeVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
+  set_VariableLabels : ∀ (x : GaugeVecOpts) (y : ConstrainableLabels), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : GaugeVecOpts)))
 
 attribute [instance] GaugeVecOpts.TypeAssumptions.type_repr
   GaugeVecOpts.TypeAssumptions.underlying
@@ -1491,23 +1451,21 @@ attribute [instance] GaugeVecOpts.TypeAssumptions.type_repr
   GaugeVecOpts.TypeAssumptions.get_VariableLabels
   GaugeVecOpts.TypeAssumptions.set_VariableLabels
 
-namespace gauge
-structure t [FfiSyntax] where
+structure gauge [FfiSyntax] where
   mk ::
   valBits' : w64
-  selfCollector' : selfCollector.t
+  selfCollector' : selfCollector
   desc' : Loc
   labelPairs' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end gauge
+instance gauge.zero_val [FfiSyntax] : ZeroVal gauge :=
+  ⟨gauge.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def gauge.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"valBits" go.uint64),
-(go.field_decl.EmbeddedField go!"selfCollector" selfCollector),
-(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair)))]
+(go.field_decl.EmbeddedField go!"selfCollector" selfCollector.ty),
+(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair.ty)))]
 
 @[irreducible] def gauge.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   gauge.fieldsUnsealed
@@ -1520,16 +1478,16 @@ instance equals_unfold_gauge [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType gauge.fields)
 
 class gauge.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying gauge.underlying gauge.t
-  underlying : go.UnderlyingDirectedEq gauge gauge.underlying
-  get_valBits : ∀ (x : gauge.t), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"valBits") #x (Val #(x.valBits'))
-  set_valBits : ∀ (x : gauge.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"valBits") (PairV #x #y) (Val #(({ x with valBits' := y } : gauge.t)))
-  get_selfCollector : ∀ (x : gauge.t), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
-  set_selfCollector : ∀ (x : gauge.t) (y : selfCollector.t), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : gauge.t)))
-  get_desc : ∀ (x : gauge.t), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : gauge.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : gauge.t)))
-  get_labelPairs : ∀ (x : gauge.t), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
-  set_labelPairs : ∀ (x : gauge.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : gauge.t)))
+  type_repr : go.TypeReprUnderlying gauge.underlying gauge
+  underlying : go.UnderlyingDirectedEq gauge.ty gauge.underlying
+  get_valBits : ∀ (x : gauge), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"valBits") #x (Val #(x.valBits'))
+  set_valBits : ∀ (x : gauge) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"valBits") (PairV #x #y) (Val #(({ x with valBits' := y } : gauge)))
+  get_selfCollector : ∀ (x : gauge), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
+  set_selfCollector : ∀ (x : gauge) (y : selfCollector), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : gauge)))
+  get_desc : ∀ (x : gauge), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : gauge) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : gauge)))
+  get_labelPairs : ∀ (x : gauge), go.IsGoStepPureDetTagged under (StructFieldGet gauge.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
+  set_labelPairs : ∀ (x : gauge) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet gauge.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : gauge)))
 
 attribute [instance] gauge.TypeAssumptions.type_repr
   gauge.TypeAssumptions.underlying
@@ -1542,17 +1500,15 @@ attribute [instance] gauge.TypeAssumptions.type_repr
   gauge.TypeAssumptions.get_labelPairs
   gauge.TypeAssumptions.set_labelPairs
 
-namespace GaugeVec
-structure t [FfiSyntax] where
+structure GaugeVec [FfiSyntax] where
   mk ::
   MetricVec' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end GaugeVec
+instance GaugeVec.zero_val [FfiSyntax] : ZeroVal GaugeVec :=
+  ⟨GaugeVec.mk zeroValDef⟩
 
 @[reducible] def GaugeVec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec))]
+  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec.ty))]
 
 @[irreducible] def GaugeVec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   GaugeVec.fieldsUnsealed
@@ -1565,30 +1521,27 @@ instance equals_unfold_GaugeVec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType GaugeVec.fields)
 
 class GaugeVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying GaugeVec.underlying GaugeVec.t
-  underlying : go.UnderlyingDirectedEq GaugeVec GaugeVec.underlying
-  get_MetricVec : ∀ (x : GaugeVec.t), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
-  set_MetricVec : ∀ (x : GaugeVec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : GaugeVec.t)))
+  type_repr : go.TypeReprUnderlying GaugeVec.underlying GaugeVec
+  underlying : go.UnderlyingDirectedEq GaugeVec.ty GaugeVec.underlying
+  get_MetricVec : ∀ (x : GaugeVec), go.IsGoStepPureDetTagged under (StructFieldGet GaugeVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
+  set_MetricVec : ∀ (x : GaugeVec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet GaugeVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : GaugeVec)))
 
 attribute [instance] GaugeVec.TypeAssumptions.type_repr
   GaugeVec.TypeAssumptions.underlying
   GaugeVec.TypeAssumptions.get_MetricVec
   GaugeVec.TypeAssumptions.set_MetricVec
 
-namespace GaugeFunc
-abbrev t [FfiSyntax] : Type := interface.t
-end GaugeFunc
+abbrev GaugeFunc [FfiSyntax] : Type := interface.t
 
 @[reducible] def GaugeFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class GaugeFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq GaugeFunc GaugeFunc.underlying
+  underlying : go.UnderlyingDirectedEq GaugeFunc.ty GaugeFunc.underlying
 
 attribute [instance] GaugeFunc.TypeAssumptions.underlying
 
-namespace baseGoCollector
-structure t [FfiSyntax] where
+structure baseGoCollector [FfiSyntax] where
   mk ::
   goroutinesDesc' : Loc
   threadsDesc' : Loc
@@ -1596,16 +1549,15 @@ structure t [FfiSyntax] where
   gcLastTimeDesc' : Loc
   goInfoDesc' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end baseGoCollector
+instance baseGoCollector.zero_val [FfiSyntax] : ZeroVal baseGoCollector :=
+  ⟨baseGoCollector.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def baseGoCollector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"goroutinesDesc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"threadsDesc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"gcDesc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"gcLastTimeDesc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"goInfoDesc" (go.GoType.PointerType Desc))]
+  [(go.field_decl.FieldDecl go!"goroutinesDesc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"threadsDesc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"gcDesc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"gcLastTimeDesc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"goInfoDesc" (go.GoType.PointerType Desc.ty))]
 
 @[irreducible] def baseGoCollector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   baseGoCollector.fieldsUnsealed
@@ -1618,18 +1570,18 @@ instance equals_unfold_baseGoCollector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType baseGoCollector.fields)
 
 class baseGoCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying baseGoCollector.underlying baseGoCollector.t
-  underlying : go.UnderlyingDirectedEq baseGoCollector baseGoCollector.underlying
-  get_goroutinesDesc : ∀ (x : baseGoCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"goroutinesDesc") #x (Val #(x.goroutinesDesc'))
-  set_goroutinesDesc : ∀ (x : baseGoCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"goroutinesDesc") (PairV #x #y) (Val #(({ x with goroutinesDesc' := y } : baseGoCollector.t)))
-  get_threadsDesc : ∀ (x : baseGoCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"threadsDesc") #x (Val #(x.threadsDesc'))
-  set_threadsDesc : ∀ (x : baseGoCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"threadsDesc") (PairV #x #y) (Val #(({ x with threadsDesc' := y } : baseGoCollector.t)))
-  get_gcDesc : ∀ (x : baseGoCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"gcDesc") #x (Val #(x.gcDesc'))
-  set_gcDesc : ∀ (x : baseGoCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"gcDesc") (PairV #x #y) (Val #(({ x with gcDesc' := y } : baseGoCollector.t)))
-  get_gcLastTimeDesc : ∀ (x : baseGoCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"gcLastTimeDesc") #x (Val #(x.gcLastTimeDesc'))
-  set_gcLastTimeDesc : ∀ (x : baseGoCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"gcLastTimeDesc") (PairV #x #y) (Val #(({ x with gcLastTimeDesc' := y } : baseGoCollector.t)))
-  get_goInfoDesc : ∀ (x : baseGoCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"goInfoDesc") #x (Val #(x.goInfoDesc'))
-  set_goInfoDesc : ∀ (x : baseGoCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"goInfoDesc") (PairV #x #y) (Val #(({ x with goInfoDesc' := y } : baseGoCollector.t)))
+  type_repr : go.TypeReprUnderlying baseGoCollector.underlying baseGoCollector
+  underlying : go.UnderlyingDirectedEq baseGoCollector.ty baseGoCollector.underlying
+  get_goroutinesDesc : ∀ (x : baseGoCollector), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"goroutinesDesc") #x (Val #(x.goroutinesDesc'))
+  set_goroutinesDesc : ∀ (x : baseGoCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"goroutinesDesc") (PairV #x #y) (Val #(({ x with goroutinesDesc' := y } : baseGoCollector)))
+  get_threadsDesc : ∀ (x : baseGoCollector), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"threadsDesc") #x (Val #(x.threadsDesc'))
+  set_threadsDesc : ∀ (x : baseGoCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"threadsDesc") (PairV #x #y) (Val #(({ x with threadsDesc' := y } : baseGoCollector)))
+  get_gcDesc : ∀ (x : baseGoCollector), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"gcDesc") #x (Val #(x.gcDesc'))
+  set_gcDesc : ∀ (x : baseGoCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"gcDesc") (PairV #x #y) (Val #(({ x with gcDesc' := y } : baseGoCollector)))
+  get_gcLastTimeDesc : ∀ (x : baseGoCollector), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"gcLastTimeDesc") #x (Val #(x.gcLastTimeDesc'))
+  set_gcLastTimeDesc : ∀ (x : baseGoCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"gcLastTimeDesc") (PairV #x #y) (Val #(({ x with gcLastTimeDesc' := y } : baseGoCollector)))
+  get_goInfoDesc : ∀ (x : baseGoCollector), go.IsGoStepPureDetTagged under (StructFieldGet baseGoCollector.underlying go!"goInfoDesc") #x (Val #(x.goInfoDesc'))
+  set_goInfoDesc : ∀ (x : baseGoCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet baseGoCollector.underlying go!"goInfoDesc") (PairV #x #y) (Val #(({ x with goInfoDesc' := y } : baseGoCollector)))
 
 attribute [instance] baseGoCollector.TypeAssumptions.type_repr
   baseGoCollector.TypeAssumptions.underlying
@@ -1644,71 +1596,63 @@ attribute [instance] baseGoCollector.TypeAssumptions.type_repr
   baseGoCollector.TypeAssumptions.get_goInfoDesc
   baseGoCollector.TypeAssumptions.set_goInfoDesc
 
-namespace memStatsMetrics
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end memStatsMetrics
+axiom memStatsMetrics : Type
+axiom memStatsMetrics.zero_val : ZeroVal memStatsMetrics
+attribute [instance] memStatsMetrics.zero_val
 
 class memStatsMetrics.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying memStatsMetrics.underlying memStatsMetrics.t
-  underlying : go.UnderlyingDirectedEq memStatsMetrics memStatsMetrics.underlying
+  type_repr : go.TypeReprUnderlying memStatsMetrics.underlying memStatsMetrics
+  underlying : go.UnderlyingDirectedEq memStatsMetrics.ty memStatsMetrics.underlying
   isUnderlying : go.IsUnderlying memStatsMetrics.underlying memStatsMetrics.underlying
 
 attribute [instance] memStatsMetrics.TypeAssumptions.type_repr
   memStatsMetrics.TypeAssumptions.underlying
   memStatsMetrics.TypeAssumptions.isUnderlying
 
-namespace goCollector
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end goCollector
+axiom goCollector : Type
+axiom goCollector.zero_val : ZeroVal goCollector
+attribute [instance] goCollector.zero_val
 
 class goCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying goCollector.underlying goCollector.t
-  underlying : go.UnderlyingDirectedEq goCollector goCollector.underlying
+  type_repr : go.TypeReprUnderlying goCollector.underlying goCollector
+  underlying : go.UnderlyingDirectedEq goCollector.ty goCollector.underlying
   isUnderlying : go.IsUnderlying goCollector.underlying goCollector.underlying
 
 attribute [instance] goCollector.TypeAssumptions.type_repr
   goCollector.TypeAssumptions.underlying
   goCollector.TypeAssumptions.isUnderlying
 
-namespace rmMetricDesc
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end rmMetricDesc
+axiom rmMetricDesc : Type
+axiom rmMetricDesc.zero_val : ZeroVal rmMetricDesc
+attribute [instance] rmMetricDesc.zero_val
 
 class rmMetricDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying rmMetricDesc.underlying rmMetricDesc.t
-  underlying : go.UnderlyingDirectedEq rmMetricDesc rmMetricDesc.underlying
+  type_repr : go.TypeReprUnderlying rmMetricDesc.underlying rmMetricDesc
+  underlying : go.UnderlyingDirectedEq rmMetricDesc.ty rmMetricDesc.underlying
   isUnderlying : go.IsUnderlying rmMetricDesc.underlying rmMetricDesc.underlying
 
 attribute [instance] rmMetricDesc.TypeAssumptions.type_repr
   rmMetricDesc.TypeAssumptions.underlying
   rmMetricDesc.TypeAssumptions.isUnderlying
 
-namespace batchHistogram
-structure t [FfiSyntax] where
+structure batchHistogram [FfiSyntax] where
   mk ::
-  selfCollector' : selfCollector.t
+  selfCollector' : selfCollector
   desc' : Loc
   hasSum' : Bool
-  mu' : _root_.Perennial.sync.Mutex.t
+  mu' : _root_.Perennial.sync.Mutex
   buckets' : slice.t
   counts' : slice.t
   sum' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end batchHistogram
+instance batchHistogram.zero_val [FfiSyntax] : ZeroVal batchHistogram :=
+  ⟨batchHistogram.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def batchHistogram.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"selfCollector" selfCollector),
-(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
+  [(go.field_decl.EmbeddedField go!"selfCollector" selfCollector.ty),
+(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
 (go.field_decl.FieldDecl go!"hasSum" go.bool),
-(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"buckets" (go.GoType.SliceType go.float64)),
 (go.field_decl.FieldDecl go!"counts" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"sum" go.float64)]
@@ -1724,22 +1668,22 @@ instance equals_unfold_batchHistogram [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType batchHistogram.fields)
 
 class batchHistogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying batchHistogram.underlying batchHistogram.t
-  underlying : go.UnderlyingDirectedEq batchHistogram batchHistogram.underlying
-  get_selfCollector : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
-  set_selfCollector : ∀ (x : batchHistogram.t) (y : selfCollector.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : batchHistogram.t)))
-  get_desc : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : batchHistogram.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : batchHistogram.t)))
-  get_hasSum : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"hasSum") #x (Val #(x.hasSum'))
-  set_hasSum : ∀ (x : batchHistogram.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"hasSum") (PairV #x #y) (Val #(({ x with hasSum' := y } : batchHistogram.t)))
-  get_mu : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : batchHistogram.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : batchHistogram.t)))
-  get_buckets : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"buckets") #x (Val #(x.buckets'))
-  set_buckets : ∀ (x : batchHistogram.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : batchHistogram.t)))
-  get_counts : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"counts") #x (Val #(x.counts'))
-  set_counts : ∀ (x : batchHistogram.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"counts") (PairV #x #y) (Val #(({ x with counts' := y } : batchHistogram.t)))
-  get_sum : ∀ (x : batchHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"sum") #x (Val #(x.sum'))
-  set_sum : ∀ (x : batchHistogram.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"sum") (PairV #x #y) (Val #(({ x with sum' := y } : batchHistogram.t)))
+  type_repr : go.TypeReprUnderlying batchHistogram.underlying batchHistogram
+  underlying : go.UnderlyingDirectedEq batchHistogram.ty batchHistogram.underlying
+  get_selfCollector : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
+  set_selfCollector : ∀ (x : batchHistogram) (y : selfCollector), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : batchHistogram)))
+  get_desc : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : batchHistogram) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : batchHistogram)))
+  get_hasSum : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"hasSum") #x (Val #(x.hasSum'))
+  set_hasSum : ∀ (x : batchHistogram) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"hasSum") (PairV #x #y) (Val #(({ x with hasSum' := y } : batchHistogram)))
+  get_mu : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : batchHistogram) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : batchHistogram)))
+  get_buckets : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"buckets") #x (Val #(x.buckets'))
+  set_buckets : ∀ (x : batchHistogram) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : batchHistogram)))
+  get_counts : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"counts") #x (Val #(x.counts'))
+  set_counts : ∀ (x : batchHistogram) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"counts") (PairV #x #y) (Val #(({ x with counts' := y } : batchHistogram)))
+  get_sum : ∀ (x : batchHistogram), go.IsGoStepPureDetTagged under (StructFieldGet batchHistogram.underlying go!"sum") #x (Val #(x.sum'))
+  set_sum : ∀ (x : batchHistogram) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet batchHistogram.underlying go!"sum") (PairV #x #y) (Val #(({ x with sum' := y } : batchHistogram)))
 
 attribute [instance] batchHistogram.TypeAssumptions.type_repr
   batchHistogram.TypeAssumptions.underlying
@@ -1758,57 +1702,53 @@ attribute [instance] batchHistogram.TypeAssumptions.type_repr
   batchHistogram.TypeAssumptions.get_sum
   batchHistogram.TypeAssumptions.set_sum
 
-namespace Histogram
-abbrev t [FfiSyntax] : Type := interface.t
-end Histogram
+abbrev Histogram [FfiSyntax] : Type := interface.t
 
 @[reducible] def Histogram.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Observe" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Observe" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class Histogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Histogram Histogram.underlying
+  underlying : go.UnderlyingDirectedEq Histogram.ty Histogram.underlying
 
 attribute [instance] Histogram.TypeAssumptions.underlying
 
-namespace HistogramOpts
-structure t [FfiSyntax] where
+structure HistogramOpts [FfiSyntax] where
   mk ::
   Namespace' : GoString
   Subsystem' : GoString
   Name' : GoString
   Help' : GoString
-  ConstLabels' : Labels.t
+  ConstLabels' : Labels
   Buckets' : slice.t
   NativeHistogramBucketFactor' : w64
   NativeHistogramZeroThreshold' : w64
   NativeHistogramMaxBucketNumber' : w32
-  NativeHistogramMinResetDuration' : _root_.Perennial.time.Duration.t
+  NativeHistogramMinResetDuration' : _root_.Perennial.time.Duration
   NativeHistogramMaxZeroThreshold' : w64
   NativeHistogramMaxExemplars' : w64
-  NativeHistogramExemplarTTL' : _root_.Perennial.time.Duration.t
+  NativeHistogramExemplarTTL' : _root_.Perennial.time.Duration
   now' : func.t
   afterFunc' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end HistogramOpts
+instance HistogramOpts.zero_val [FfiSyntax] : ZeroVal HistogramOpts :=
+  ⟨HistogramOpts.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def HistogramOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Namespace" go.string),
 (go.field_decl.FieldDecl go!"Subsystem" go.string),
 (go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"Help" go.string),
-(go.field_decl.FieldDecl go!"ConstLabels" Labels),
+(go.field_decl.FieldDecl go!"ConstLabels" Labels.ty),
 (go.field_decl.FieldDecl go!"Buckets" (go.GoType.SliceType go.float64)),
 (go.field_decl.FieldDecl go!"NativeHistogramBucketFactor" go.float64),
 (go.field_decl.FieldDecl go!"NativeHistogramZeroThreshold" go.float64),
 (go.field_decl.FieldDecl go!"NativeHistogramMaxBucketNumber" go.uint32),
-(go.field_decl.FieldDecl go!"NativeHistogramMinResetDuration" _root_.Perennial.time.Duration),
+(go.field_decl.FieldDecl go!"NativeHistogramMinResetDuration" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"NativeHistogramMaxZeroThreshold" go.float64),
 (go.field_decl.FieldDecl go!"NativeHistogramMaxExemplars" go.int),
-(go.field_decl.FieldDecl go!"NativeHistogramExemplarTTL" _root_.Perennial.time.Duration),
-(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time]))),
-(go.field_decl.FieldDecl go!"afterFunc" (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.time.Duration, (go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.PointerType _root_.Perennial.time.Timer)])))]
+(go.field_decl.FieldDecl go!"NativeHistogramExemplarTTL" _root_.Perennial.time.Duration.ty),
+(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time.ty]))),
+(go.field_decl.FieldDecl go!"afterFunc" (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.time.Duration.ty, (go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.PointerType _root_.Perennial.time.Timer.ty)])))]
 
 @[irreducible] def HistogramOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   HistogramOpts.fieldsUnsealed
@@ -1821,38 +1761,38 @@ instance equals_unfold_HistogramOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType HistogramOpts.fields)
 
 class HistogramOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying HistogramOpts.underlying HistogramOpts.t
-  underlying : go.UnderlyingDirectedEq HistogramOpts HistogramOpts.underlying
-  get_Namespace : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
-  set_Namespace : ∀ (x : HistogramOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : HistogramOpts.t)))
-  get_Subsystem : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
-  set_Subsystem : ∀ (x : HistogramOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : HistogramOpts.t)))
-  get_Name : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : HistogramOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : HistogramOpts.t)))
-  get_Help : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Help") #x (Val #(x.Help'))
-  set_Help : ∀ (x : HistogramOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : HistogramOpts.t)))
-  get_ConstLabels : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
-  set_ConstLabels : ∀ (x : HistogramOpts.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : HistogramOpts.t)))
-  get_Buckets : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Buckets") #x (Val #(x.Buckets'))
-  set_Buckets : ∀ (x : HistogramOpts.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Buckets") (PairV #x #y) (Val #(({ x with Buckets' := y } : HistogramOpts.t)))
-  get_NativeHistogramBucketFactor : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramBucketFactor") #x (Val #(x.NativeHistogramBucketFactor'))
-  set_NativeHistogramBucketFactor : ∀ (x : HistogramOpts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramBucketFactor") (PairV #x #y) (Val #(({ x with NativeHistogramBucketFactor' := y } : HistogramOpts.t)))
-  get_NativeHistogramZeroThreshold : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramZeroThreshold") #x (Val #(x.NativeHistogramZeroThreshold'))
-  set_NativeHistogramZeroThreshold : ∀ (x : HistogramOpts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramZeroThreshold") (PairV #x #y) (Val #(({ x with NativeHistogramZeroThreshold' := y } : HistogramOpts.t)))
-  get_NativeHistogramMaxBucketNumber : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxBucketNumber") #x (Val #(x.NativeHistogramMaxBucketNumber'))
-  set_NativeHistogramMaxBucketNumber : ∀ (x : HistogramOpts.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxBucketNumber") (PairV #x #y) (Val #(({ x with NativeHistogramMaxBucketNumber' := y } : HistogramOpts.t)))
-  get_NativeHistogramMinResetDuration : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMinResetDuration") #x (Val #(x.NativeHistogramMinResetDuration'))
-  set_NativeHistogramMinResetDuration : ∀ (x : HistogramOpts.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMinResetDuration") (PairV #x #y) (Val #(({ x with NativeHistogramMinResetDuration' := y } : HistogramOpts.t)))
-  get_NativeHistogramMaxZeroThreshold : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxZeroThreshold") #x (Val #(x.NativeHistogramMaxZeroThreshold'))
-  set_NativeHistogramMaxZeroThreshold : ∀ (x : HistogramOpts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxZeroThreshold") (PairV #x #y) (Val #(({ x with NativeHistogramMaxZeroThreshold' := y } : HistogramOpts.t)))
-  get_NativeHistogramMaxExemplars : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxExemplars") #x (Val #(x.NativeHistogramMaxExemplars'))
-  set_NativeHistogramMaxExemplars : ∀ (x : HistogramOpts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxExemplars") (PairV #x #y) (Val #(({ x with NativeHistogramMaxExemplars' := y } : HistogramOpts.t)))
-  get_NativeHistogramExemplarTTL : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramExemplarTTL") #x (Val #(x.NativeHistogramExemplarTTL'))
-  set_NativeHistogramExemplarTTL : ∀ (x : HistogramOpts.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramExemplarTTL") (PairV #x #y) (Val #(({ x with NativeHistogramExemplarTTL' := y } : HistogramOpts.t)))
-  get_now : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"now") #x (Val #(x.now'))
-  set_now : ∀ (x : HistogramOpts.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : HistogramOpts.t)))
-  get_afterFunc : ∀ (x : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"afterFunc") #x (Val #(x.afterFunc'))
-  set_afterFunc : ∀ (x : HistogramOpts.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"afterFunc") (PairV #x #y) (Val #(({ x with afterFunc' := y } : HistogramOpts.t)))
+  type_repr : go.TypeReprUnderlying HistogramOpts.underlying HistogramOpts
+  underlying : go.UnderlyingDirectedEq HistogramOpts.ty HistogramOpts.underlying
+  get_Namespace : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
+  set_Namespace : ∀ (x : HistogramOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : HistogramOpts)))
+  get_Subsystem : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
+  set_Subsystem : ∀ (x : HistogramOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : HistogramOpts)))
+  get_Name : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : HistogramOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : HistogramOpts)))
+  get_Help : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Help") #x (Val #(x.Help'))
+  set_Help : ∀ (x : HistogramOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : HistogramOpts)))
+  get_ConstLabels : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
+  set_ConstLabels : ∀ (x : HistogramOpts) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : HistogramOpts)))
+  get_Buckets : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"Buckets") #x (Val #(x.Buckets'))
+  set_Buckets : ∀ (x : HistogramOpts) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"Buckets") (PairV #x #y) (Val #(({ x with Buckets' := y } : HistogramOpts)))
+  get_NativeHistogramBucketFactor : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramBucketFactor") #x (Val #(x.NativeHistogramBucketFactor'))
+  set_NativeHistogramBucketFactor : ∀ (x : HistogramOpts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramBucketFactor") (PairV #x #y) (Val #(({ x with NativeHistogramBucketFactor' := y } : HistogramOpts)))
+  get_NativeHistogramZeroThreshold : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramZeroThreshold") #x (Val #(x.NativeHistogramZeroThreshold'))
+  set_NativeHistogramZeroThreshold : ∀ (x : HistogramOpts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramZeroThreshold") (PairV #x #y) (Val #(({ x with NativeHistogramZeroThreshold' := y } : HistogramOpts)))
+  get_NativeHistogramMaxBucketNumber : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxBucketNumber") #x (Val #(x.NativeHistogramMaxBucketNumber'))
+  set_NativeHistogramMaxBucketNumber : ∀ (x : HistogramOpts) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxBucketNumber") (PairV #x #y) (Val #(({ x with NativeHistogramMaxBucketNumber' := y } : HistogramOpts)))
+  get_NativeHistogramMinResetDuration : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMinResetDuration") #x (Val #(x.NativeHistogramMinResetDuration'))
+  set_NativeHistogramMinResetDuration : ∀ (x : HistogramOpts) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMinResetDuration") (PairV #x #y) (Val #(({ x with NativeHistogramMinResetDuration' := y } : HistogramOpts)))
+  get_NativeHistogramMaxZeroThreshold : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxZeroThreshold") #x (Val #(x.NativeHistogramMaxZeroThreshold'))
+  set_NativeHistogramMaxZeroThreshold : ∀ (x : HistogramOpts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxZeroThreshold") (PairV #x #y) (Val #(({ x with NativeHistogramMaxZeroThreshold' := y } : HistogramOpts)))
+  get_NativeHistogramMaxExemplars : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramMaxExemplars") #x (Val #(x.NativeHistogramMaxExemplars'))
+  set_NativeHistogramMaxExemplars : ∀ (x : HistogramOpts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramMaxExemplars") (PairV #x #y) (Val #(({ x with NativeHistogramMaxExemplars' := y } : HistogramOpts)))
+  get_NativeHistogramExemplarTTL : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"NativeHistogramExemplarTTL") #x (Val #(x.NativeHistogramExemplarTTL'))
+  set_NativeHistogramExemplarTTL : ∀ (x : HistogramOpts) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"NativeHistogramExemplarTTL") (PairV #x #y) (Val #(({ x with NativeHistogramExemplarTTL' := y } : HistogramOpts)))
+  get_now : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"now") #x (Val #(x.now'))
+  set_now : ∀ (x : HistogramOpts) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : HistogramOpts)))
+  get_afterFunc : ∀ (x : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramOpts.underlying go!"afterFunc") #x (Val #(x.afterFunc'))
+  set_afterFunc : ∀ (x : HistogramOpts) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramOpts.underlying go!"afterFunc") (PairV #x #y) (Val #(({ x with afterFunc' := y } : HistogramOpts)))
 
 attribute [instance] HistogramOpts.TypeAssumptions.type_repr
   HistogramOpts.TypeAssumptions.underlying
@@ -1887,19 +1827,17 @@ attribute [instance] HistogramOpts.TypeAssumptions.type_repr
   HistogramOpts.TypeAssumptions.get_afterFunc
   HistogramOpts.TypeAssumptions.set_afterFunc
 
-namespace HistogramVecOpts
-structure t [FfiSyntax] where
+structure HistogramVecOpts [FfiSyntax] where
   mk ::
-  HistogramOpts' : HistogramOpts.t
-  VariableLabels' : ConstrainableLabels.t
+  HistogramOpts' : HistogramOpts
+  VariableLabels' : ConstrainableLabels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end HistogramVecOpts
+instance HistogramVecOpts.zero_val [FfiSyntax] : ZeroVal HistogramVecOpts :=
+  ⟨HistogramVecOpts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def HistogramVecOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"HistogramOpts" HistogramOpts),
-(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels)]
+  [(go.field_decl.EmbeddedField go!"HistogramOpts" HistogramOpts.ty),
+(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels.ty)]
 
 @[irreducible] def HistogramVecOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   HistogramVecOpts.fieldsUnsealed
@@ -1912,12 +1850,12 @@ instance equals_unfold_HistogramVecOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType HistogramVecOpts.fields)
 
 class HistogramVecOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying HistogramVecOpts.underlying HistogramVecOpts.t
-  underlying : go.UnderlyingDirectedEq HistogramVecOpts HistogramVecOpts.underlying
-  get_HistogramOpts : ∀ (x : HistogramVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVecOpts.underlying go!"HistogramOpts") #x (Val #(x.HistogramOpts'))
-  set_HistogramOpts : ∀ (x : HistogramVecOpts.t) (y : HistogramOpts.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVecOpts.underlying go!"HistogramOpts") (PairV #x #y) (Val #(({ x with HistogramOpts' := y } : HistogramVecOpts.t)))
-  get_VariableLabels : ∀ (x : HistogramVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
-  set_VariableLabels : ∀ (x : HistogramVecOpts.t) (y : ConstrainableLabels.t), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : HistogramVecOpts.t)))
+  type_repr : go.TypeReprUnderlying HistogramVecOpts.underlying HistogramVecOpts
+  underlying : go.UnderlyingDirectedEq HistogramVecOpts.ty HistogramVecOpts.underlying
+  get_HistogramOpts : ∀ (x : HistogramVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVecOpts.underlying go!"HistogramOpts") #x (Val #(x.HistogramOpts'))
+  set_HistogramOpts : ∀ (x : HistogramVecOpts) (y : HistogramOpts), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVecOpts.underlying go!"HistogramOpts") (PairV #x #y) (Val #(({ x with HistogramOpts' := y } : HistogramVecOpts)))
+  get_VariableLabels : ∀ (x : HistogramVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
+  set_VariableLabels : ∀ (x : HistogramVecOpts) (y : ConstrainableLabels), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : HistogramVecOpts)))
 
 attribute [instance] HistogramVecOpts.TypeAssumptions.type_repr
   HistogramVecOpts.TypeAssumptions.underlying
@@ -1926,8 +1864,7 @@ attribute [instance] HistogramVecOpts.TypeAssumptions.type_repr
   HistogramVecOpts.TypeAssumptions.get_VariableLabels
   HistogramVecOpts.TypeAssumptions.set_VariableLabels
 
-namespace histogramCounts
-structure t [FfiSyntax] where
+structure histogramCounts [FfiSyntax] where
   mk ::
   sumBits' : w64
   count' : w64
@@ -1936,12 +1873,11 @@ structure t [FfiSyntax] where
   nativeHistogramSchema' : w32
   nativeHistogramBucketsNumber' : w32
   buckets' : slice.t
-  nativeHistogramBucketsPositive' : _root_.Perennial.sync.Map.t
-  nativeHistogramBucketsNegative' : _root_.Perennial.sync.Map.t
+  nativeHistogramBucketsPositive' : _root_.Perennial.sync.Map
+  nativeHistogramBucketsNegative' : _root_.Perennial.sync.Map
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end histogramCounts
+instance histogramCounts.zero_val [FfiSyntax] : ZeroVal histogramCounts :=
+  ⟨histogramCounts.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def histogramCounts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sumBits" go.uint64),
@@ -1951,8 +1887,8 @@ end histogramCounts
 (go.field_decl.FieldDecl go!"nativeHistogramSchema" go.int32),
 (go.field_decl.FieldDecl go!"nativeHistogramBucketsNumber" go.uint32),
 (go.field_decl.FieldDecl go!"buckets" (go.GoType.SliceType go.uint64)),
-(go.field_decl.FieldDecl go!"nativeHistogramBucketsPositive" _root_.Perennial.sync.Map),
-(go.field_decl.FieldDecl go!"nativeHistogramBucketsNegative" _root_.Perennial.sync.Map)]
+(go.field_decl.FieldDecl go!"nativeHistogramBucketsPositive" _root_.Perennial.sync.Map.ty),
+(go.field_decl.FieldDecl go!"nativeHistogramBucketsNegative" _root_.Perennial.sync.Map.ty)]
 
 @[irreducible] def histogramCounts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   histogramCounts.fieldsUnsealed
@@ -1965,26 +1901,26 @@ instance equals_unfold_histogramCounts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType histogramCounts.fields)
 
 class histogramCounts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying histogramCounts.underlying histogramCounts.t
-  underlying : go.UnderlyingDirectedEq histogramCounts histogramCounts.underlying
-  get_sumBits : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"sumBits") #x (Val #(x.sumBits'))
-  set_sumBits : ∀ (x : histogramCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"sumBits") (PairV #x #y) (Val #(({ x with sumBits' := y } : histogramCounts.t)))
-  get_count : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"count") #x (Val #(x.count'))
-  set_count : ∀ (x : histogramCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : histogramCounts.t)))
-  get_nativeHistogramZeroBucket : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramZeroBucket") #x (Val #(x.nativeHistogramZeroBucket'))
-  set_nativeHistogramZeroBucket : ∀ (x : histogramCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramZeroBucket") (PairV #x #y) (Val #(({ x with nativeHistogramZeroBucket' := y } : histogramCounts.t)))
-  get_nativeHistogramZeroThresholdBits : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramZeroThresholdBits") #x (Val #(x.nativeHistogramZeroThresholdBits'))
-  set_nativeHistogramZeroThresholdBits : ∀ (x : histogramCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramZeroThresholdBits") (PairV #x #y) (Val #(({ x with nativeHistogramZeroThresholdBits' := y } : histogramCounts.t)))
-  get_nativeHistogramSchema : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramSchema") #x (Val #(x.nativeHistogramSchema'))
-  set_nativeHistogramSchema : ∀ (x : histogramCounts.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramSchema") (PairV #x #y) (Val #(({ x with nativeHistogramSchema' := y } : histogramCounts.t)))
-  get_nativeHistogramBucketsNumber : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsNumber") #x (Val #(x.nativeHistogramBucketsNumber'))
-  set_nativeHistogramBucketsNumber : ∀ (x : histogramCounts.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsNumber") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsNumber' := y } : histogramCounts.t)))
-  get_buckets : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"buckets") #x (Val #(x.buckets'))
-  set_buckets : ∀ (x : histogramCounts.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : histogramCounts.t)))
-  get_nativeHistogramBucketsPositive : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsPositive") #x (Val #(x.nativeHistogramBucketsPositive'))
-  set_nativeHistogramBucketsPositive : ∀ (x : histogramCounts.t) (y : _root_.Perennial.sync.Map.t), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsPositive") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsPositive' := y } : histogramCounts.t)))
-  get_nativeHistogramBucketsNegative : ∀ (x : histogramCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsNegative") #x (Val #(x.nativeHistogramBucketsNegative'))
-  set_nativeHistogramBucketsNegative : ∀ (x : histogramCounts.t) (y : _root_.Perennial.sync.Map.t), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsNegative") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsNegative' := y } : histogramCounts.t)))
+  type_repr : go.TypeReprUnderlying histogramCounts.underlying histogramCounts
+  underlying : go.UnderlyingDirectedEq histogramCounts.ty histogramCounts.underlying
+  get_sumBits : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"sumBits") #x (Val #(x.sumBits'))
+  set_sumBits : ∀ (x : histogramCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"sumBits") (PairV #x #y) (Val #(({ x with sumBits' := y } : histogramCounts)))
+  get_count : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"count") #x (Val #(x.count'))
+  set_count : ∀ (x : histogramCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : histogramCounts)))
+  get_nativeHistogramZeroBucket : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramZeroBucket") #x (Val #(x.nativeHistogramZeroBucket'))
+  set_nativeHistogramZeroBucket : ∀ (x : histogramCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramZeroBucket") (PairV #x #y) (Val #(({ x with nativeHistogramZeroBucket' := y } : histogramCounts)))
+  get_nativeHistogramZeroThresholdBits : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramZeroThresholdBits") #x (Val #(x.nativeHistogramZeroThresholdBits'))
+  set_nativeHistogramZeroThresholdBits : ∀ (x : histogramCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramZeroThresholdBits") (PairV #x #y) (Val #(({ x with nativeHistogramZeroThresholdBits' := y } : histogramCounts)))
+  get_nativeHistogramSchema : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramSchema") #x (Val #(x.nativeHistogramSchema'))
+  set_nativeHistogramSchema : ∀ (x : histogramCounts) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramSchema") (PairV #x #y) (Val #(({ x with nativeHistogramSchema' := y } : histogramCounts)))
+  get_nativeHistogramBucketsNumber : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsNumber") #x (Val #(x.nativeHistogramBucketsNumber'))
+  set_nativeHistogramBucketsNumber : ∀ (x : histogramCounts) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsNumber") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsNumber' := y } : histogramCounts)))
+  get_buckets : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"buckets") #x (Val #(x.buckets'))
+  set_buckets : ∀ (x : histogramCounts) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : histogramCounts)))
+  get_nativeHistogramBucketsPositive : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsPositive") #x (Val #(x.nativeHistogramBucketsPositive'))
+  set_nativeHistogramBucketsPositive : ∀ (x : histogramCounts) (y : _root_.Perennial.sync.Map), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsPositive") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsPositive' := y } : histogramCounts)))
+  get_nativeHistogramBucketsNegative : ∀ (x : histogramCounts), go.IsGoStepPureDetTagged under (StructFieldGet histogramCounts.underlying go!"nativeHistogramBucketsNegative") #x (Val #(x.nativeHistogramBucketsNegative'))
+  set_nativeHistogramBucketsNegative : ∀ (x : histogramCounts) (y : _root_.Perennial.sync.Map), go.IsGoStepPureDetTagged under (StructFieldSet histogramCounts.underlying go!"nativeHistogramBucketsNegative") (PairV #x #y) (Val #(({ x with nativeHistogramBucketsNegative' := y } : histogramCounts)))
 
 attribute [instance] histogramCounts.TypeAssumptions.type_repr
   histogramCounts.TypeAssumptions.underlying
@@ -2007,32 +1943,28 @@ attribute [instance] histogramCounts.TypeAssumptions.type_repr
   histogramCounts.TypeAssumptions.get_nativeHistogramBucketsNegative
   histogramCounts.TypeAssumptions.set_nativeHistogramBucketsNegative
 
-namespace histogram
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end histogram
+axiom histogram : Type
+axiom histogram.zero_val : ZeroVal histogram
+attribute [instance] histogram.zero_val
 
 class histogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying histogram.underlying histogram.t
-  underlying : go.UnderlyingDirectedEq histogram histogram.underlying
+  type_repr : go.TypeReprUnderlying histogram.underlying histogram
+  underlying : go.UnderlyingDirectedEq histogram.ty histogram.underlying
   isUnderlying : go.IsUnderlying histogram.underlying histogram.underlying
 
 attribute [instance] histogram.TypeAssumptions.type_repr
   histogram.TypeAssumptions.underlying
   histogram.TypeAssumptions.isUnderlying
 
-namespace HistogramVec
-structure t [FfiSyntax] where
+structure HistogramVec [FfiSyntax] where
   mk ::
   MetricVec' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end HistogramVec
+instance HistogramVec.zero_val [FfiSyntax] : ZeroVal HistogramVec :=
+  ⟨HistogramVec.mk zeroValDef⟩
 
 @[reducible] def HistogramVec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec))]
+  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec.ty))]
 
 @[irreducible] def HistogramVec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   HistogramVec.fieldsUnsealed
@@ -2045,58 +1977,52 @@ instance equals_unfold_HistogramVec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType HistogramVec.fields)
 
 class HistogramVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying HistogramVec.underlying HistogramVec.t
-  underlying : go.UnderlyingDirectedEq HistogramVec HistogramVec.underlying
-  get_MetricVec : ∀ (x : HistogramVec.t), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
-  set_MetricVec : ∀ (x : HistogramVec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : HistogramVec.t)))
+  type_repr : go.TypeReprUnderlying HistogramVec.underlying HistogramVec
+  underlying : go.UnderlyingDirectedEq HistogramVec.ty HistogramVec.underlying
+  get_MetricVec : ∀ (x : HistogramVec), go.IsGoStepPureDetTagged under (StructFieldGet HistogramVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
+  set_MetricVec : ∀ (x : HistogramVec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet HistogramVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : HistogramVec)))
 
 attribute [instance] HistogramVec.TypeAssumptions.type_repr
   HistogramVec.TypeAssumptions.underlying
   HistogramVec.TypeAssumptions.get_MetricVec
   HistogramVec.TypeAssumptions.set_MetricVec
 
-namespace constHistogram
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end constHistogram
+axiom constHistogram : Type
+axiom constHistogram.zero_val : ZeroVal constHistogram
+attribute [instance] constHistogram.zero_val
 
 class constHistogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying constHistogram.underlying constHistogram.t
-  underlying : go.UnderlyingDirectedEq constHistogram constHistogram.underlying
+  type_repr : go.TypeReprUnderlying constHistogram.underlying constHistogram
+  underlying : go.UnderlyingDirectedEq constHistogram.ty constHistogram.underlying
   isUnderlying : go.IsUnderlying constHistogram.underlying constHistogram.underlying
 
 attribute [instance] constHistogram.TypeAssumptions.type_repr
   constHistogram.TypeAssumptions.underlying
   constHistogram.TypeAssumptions.isUnderlying
 
-namespace buckSort
-abbrev t [FfiSyntax] : Type := slice.t
-end buckSort
+abbrev buckSort [FfiSyntax] : Type := slice.t
 
 @[reducible] def buckSort.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Bucket))
+  (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Bucket.ty))
 
 class buckSort.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq buckSort buckSort.underlying
+  underlying : go.UnderlyingDirectedEq buckSort.ty buckSort.underlying
 
 attribute [instance] buckSort.TypeAssumptions.underlying
 
-namespace nativeExemplars
-structure t [FfiSyntax] where
+structure nativeExemplars [FfiSyntax] where
   mk ::
-  Mutex' : _root_.Perennial.sync.Mutex.t
-  ttl' : _root_.Perennial.time.Duration.t
+  Mutex' : _root_.Perennial.sync.Mutex
+  ttl' : _root_.Perennial.time.Duration
   exemplars' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end nativeExemplars
+instance nativeExemplars.zero_val [FfiSyntax] : ZeroVal nativeExemplars :=
+  ⟨nativeExemplars.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def nativeExemplars.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex),
-(go.field_decl.FieldDecl go!"ttl" _root_.Perennial.time.Duration),
-(go.field_decl.FieldDecl go!"exemplars" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Exemplar)))]
+  [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex.ty),
+(go.field_decl.FieldDecl go!"ttl" _root_.Perennial.time.Duration.ty),
+(go.field_decl.FieldDecl go!"exemplars" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Exemplar.ty)))]
 
 @[irreducible] def nativeExemplars.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nativeExemplars.fieldsUnsealed
@@ -2109,14 +2035,14 @@ instance equals_unfold_nativeExemplars [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType nativeExemplars.fields)
 
 class nativeExemplars.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying nativeExemplars.underlying nativeExemplars.t
-  underlying : go.UnderlyingDirectedEq nativeExemplars nativeExemplars.underlying
-  get_Mutex : ∀ (x : nativeExemplars.t), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"Mutex") #x (Val #(x.Mutex'))
-  set_Mutex : ∀ (x : nativeExemplars.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : nativeExemplars.t)))
-  get_ttl : ∀ (x : nativeExemplars.t), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"ttl") #x (Val #(x.ttl'))
-  set_ttl : ∀ (x : nativeExemplars.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"ttl") (PairV #x #y) (Val #(({ x with ttl' := y } : nativeExemplars.t)))
-  get_exemplars : ∀ (x : nativeExemplars.t), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"exemplars") #x (Val #(x.exemplars'))
-  set_exemplars : ∀ (x : nativeExemplars.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"exemplars") (PairV #x #y) (Val #(({ x with exemplars' := y } : nativeExemplars.t)))
+  type_repr : go.TypeReprUnderlying nativeExemplars.underlying nativeExemplars
+  underlying : go.UnderlyingDirectedEq nativeExemplars.ty nativeExemplars.underlying
+  get_Mutex : ∀ (x : nativeExemplars), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"Mutex") #x (Val #(x.Mutex'))
+  set_Mutex : ∀ (x : nativeExemplars) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : nativeExemplars)))
+  get_ttl : ∀ (x : nativeExemplars), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"ttl") #x (Val #(x.ttl'))
+  set_ttl : ∀ (x : nativeExemplars) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"ttl") (PairV #x #y) (Val #(({ x with ttl' := y } : nativeExemplars)))
+  get_exemplars : ∀ (x : nativeExemplars), go.IsGoStepPureDetTagged under (StructFieldGet nativeExemplars.underlying go!"exemplars") #x (Val #(x.exemplars'))
+  set_exemplars : ∀ (x : nativeExemplars) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet nativeExemplars.underlying go!"exemplars") (PairV #x #y) (Val #(({ x with exemplars' := y } : nativeExemplars)))
 
 attribute [instance] nativeExemplars.TypeAssumptions.type_repr
   nativeExemplars.TypeAssumptions.underlying
@@ -2127,21 +2053,19 @@ attribute [instance] nativeExemplars.TypeAssumptions.type_repr
   nativeExemplars.TypeAssumptions.get_exemplars
   nativeExemplars.TypeAssumptions.set_exemplars
 
-namespace constNativeHistogram
-structure t [FfiSyntax] where
+structure constNativeHistogram [FfiSyntax] where
   mk ::
   desc' : Loc
-  Histogram' : _root_.Perennial.github_com.prometheus.client_model.go.Histogram.t
+  Histogram' : _root_.Perennial.github_com.prometheus.client_model.go.Histogram
   labelPairs' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end constNativeHistogram
+instance constNativeHistogram.zero_val [FfiSyntax] : ZeroVal constNativeHistogram :=
+  ⟨constNativeHistogram.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def constNativeHistogram.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
-(go.field_decl.EmbeddedField go!"Histogram" _root_.Perennial.github_com.prometheus.client_model.go.Histogram),
-(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair)))]
+  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.EmbeddedField go!"Histogram" _root_.Perennial.github_com.prometheus.client_model.go.Histogram.ty),
+(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair.ty)))]
 
 @[irreducible] def constNativeHistogram.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   constNativeHistogram.fieldsUnsealed
@@ -2154,14 +2078,14 @@ instance equals_unfold_constNativeHistogram [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType constNativeHistogram.fields)
 
 class constNativeHistogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying constNativeHistogram.underlying constNativeHistogram.t
-  underlying : go.UnderlyingDirectedEq constNativeHistogram constNativeHistogram.underlying
-  get_desc : ∀ (x : constNativeHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : constNativeHistogram.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : constNativeHistogram.t)))
-  get_Histogram : ∀ (x : constNativeHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"Histogram") #x (Val #(x.Histogram'))
-  set_Histogram : ∀ (x : constNativeHistogram.t) (y : _root_.Perennial.github_com.prometheus.client_model.go.Histogram.t), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"Histogram") (PairV #x #y) (Val #(({ x with Histogram' := y } : constNativeHistogram.t)))
-  get_labelPairs : ∀ (x : constNativeHistogram.t), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
-  set_labelPairs : ∀ (x : constNativeHistogram.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : constNativeHistogram.t)))
+  type_repr : go.TypeReprUnderlying constNativeHistogram.underlying constNativeHistogram
+  underlying : go.UnderlyingDirectedEq constNativeHistogram.ty constNativeHistogram.underlying
+  get_desc : ∀ (x : constNativeHistogram), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : constNativeHistogram) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : constNativeHistogram)))
+  get_Histogram : ∀ (x : constNativeHistogram), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"Histogram") #x (Val #(x.Histogram'))
+  set_Histogram : ∀ (x : constNativeHistogram) (y : _root_.Perennial.github_com.prometheus.client_model.go.Histogram), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"Histogram") (PairV #x #y) (Val #(({ x with Histogram' := y } : constNativeHistogram)))
+  get_labelPairs : ∀ (x : constNativeHistogram), go.IsGoStepPureDetTagged under (StructFieldGet constNativeHistogram.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
+  set_labelPairs : ∀ (x : constNativeHistogram) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet constNativeHistogram.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : constNativeHistogram)))
 
 attribute [instance] constNativeHistogram.TypeAssumptions.type_repr
   constNativeHistogram.TypeAssumptions.underlying
@@ -2172,31 +2096,27 @@ attribute [instance] constNativeHistogram.TypeAssumptions.type_repr
   constNativeHistogram.TypeAssumptions.get_labelPairs
   constNativeHistogram.TypeAssumptions.set_labelPairs
 
-namespace LabelConstraint
-abbrev t [FfiSyntax] : Type := func.t
-end LabelConstraint
+abbrev LabelConstraint [FfiSyntax] : Type := func.t
 
 @[reducible] def LabelConstraint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))
 
 class LabelConstraint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq LabelConstraint LabelConstraint.underlying
+  underlying : go.UnderlyingDirectedEq LabelConstraint.ty LabelConstraint.underlying
 
 attribute [instance] LabelConstraint.TypeAssumptions.underlying
 
-namespace ConstrainedLabel
-structure t [FfiSyntax] where
+structure ConstrainedLabel [FfiSyntax] where
   mk ::
   Name' : GoString
-  Constraint' : LabelConstraint.t
+  Constraint' : LabelConstraint
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end ConstrainedLabel
+instance ConstrainedLabel.zero_val [FfiSyntax] : ZeroVal ConstrainedLabel :=
+  ⟨ConstrainedLabel.mk zeroValDef zeroValDef⟩
 
 @[reducible] def ConstrainedLabel.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"Constraint" LabelConstraint)]
+(go.field_decl.FieldDecl go!"Constraint" LabelConstraint.ty)]
 
 @[irreducible] def ConstrainedLabel.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ConstrainedLabel.fieldsUnsealed
@@ -2209,12 +2129,12 @@ instance equals_unfold_ConstrainedLabel [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType ConstrainedLabel.fields)
 
 class ConstrainedLabel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ConstrainedLabel.underlying ConstrainedLabel.t
-  underlying : go.UnderlyingDirectedEq ConstrainedLabel ConstrainedLabel.underlying
-  get_Name : ∀ (x : ConstrainedLabel.t), go.IsGoStepPureDetTagged under (StructFieldGet ConstrainedLabel.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : ConstrainedLabel.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ConstrainedLabel.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : ConstrainedLabel.t)))
-  get_Constraint : ∀ (x : ConstrainedLabel.t), go.IsGoStepPureDetTagged under (StructFieldGet ConstrainedLabel.underlying go!"Constraint") #x (Val #(x.Constraint'))
-  set_Constraint : ∀ (x : ConstrainedLabel.t) (y : LabelConstraint.t), go.IsGoStepPureDetTagged under (StructFieldSet ConstrainedLabel.underlying go!"Constraint") (PairV #x #y) (Val #(({ x with Constraint' := y } : ConstrainedLabel.t)))
+  type_repr : go.TypeReprUnderlying ConstrainedLabel.underlying ConstrainedLabel
+  underlying : go.UnderlyingDirectedEq ConstrainedLabel.ty ConstrainedLabel.underlying
+  get_Name : ∀ (x : ConstrainedLabel), go.IsGoStepPureDetTagged under (StructFieldGet ConstrainedLabel.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : ConstrainedLabel) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ConstrainedLabel.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : ConstrainedLabel)))
+  get_Constraint : ∀ (x : ConstrainedLabel), go.IsGoStepPureDetTagged under (StructFieldGet ConstrainedLabel.underlying go!"Constraint") #x (Val #(x.Constraint'))
+  set_Constraint : ∀ (x : ConstrainedLabel) (y : LabelConstraint), go.IsGoStepPureDetTagged under (StructFieldSet ConstrainedLabel.underlying go!"Constraint") (PairV #x #y) (Val #(({ x with Constraint' := y } : ConstrainedLabel)))
 
 attribute [instance] ConstrainedLabel.TypeAssumptions.type_repr
   ConstrainedLabel.TypeAssumptions.underlying
@@ -2223,43 +2143,37 @@ attribute [instance] ConstrainedLabel.TypeAssumptions.type_repr
   ConstrainedLabel.TypeAssumptions.get_Constraint
   ConstrainedLabel.TypeAssumptions.set_Constraint
 
-namespace ConstrainedLabels
-abbrev t [FfiSyntax] : Type := slice.t
-end ConstrainedLabels
+abbrev ConstrainedLabels [FfiSyntax] : Type := slice.t
 
 @[reducible] def ConstrainedLabels.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType ConstrainedLabel)
+  (go.GoType.SliceType ConstrainedLabel.ty)
 
 class ConstrainedLabels.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ConstrainedLabels ConstrainedLabels.underlying
+  underlying : go.UnderlyingDirectedEq ConstrainedLabels.ty ConstrainedLabels.underlying
 
 attribute [instance] ConstrainedLabels.TypeAssumptions.underlying
 
-namespace UnconstrainedLabels
-abbrev t [FfiSyntax] : Type := slice.t
-end UnconstrainedLabels
+abbrev UnconstrainedLabels [FfiSyntax] : Type := slice.t
 
 @[reducible] def UnconstrainedLabels.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
 class UnconstrainedLabels.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UnconstrainedLabels UnconstrainedLabels.underlying
+  underlying : go.UnderlyingDirectedEq UnconstrainedLabels.ty UnconstrainedLabels.underlying
 
 attribute [instance] UnconstrainedLabels.TypeAssumptions.underlying
 
-namespace compiledLabels
-structure t [FfiSyntax] where
+structure compiledLabels [FfiSyntax] where
   mk ::
   names' : slice.t
   labelConstraints' : map.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end compiledLabels
+instance compiledLabels.zero_val [FfiSyntax] : ZeroVal compiledLabels :=
+  ⟨compiledLabels.mk zeroValDef zeroValDef⟩
 
 @[reducible] def compiledLabels.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"names" (go.GoType.SliceType go.string)),
-(go.field_decl.FieldDecl go!"labelConstraints" (go.GoType.MapType go.string LabelConstraint))]
+(go.field_decl.FieldDecl go!"labelConstraints" (go.GoType.MapType go.string LabelConstraint.ty))]
 
 @[irreducible] def compiledLabels.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   compiledLabels.fieldsUnsealed
@@ -2272,12 +2186,12 @@ instance equals_unfold_compiledLabels [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType compiledLabels.fields)
 
 class compiledLabels.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying compiledLabels.underlying compiledLabels.t
-  underlying : go.UnderlyingDirectedEq compiledLabels compiledLabels.underlying
-  get_names : ∀ (x : compiledLabels.t), go.IsGoStepPureDetTagged under (StructFieldGet compiledLabels.underlying go!"names") #x (Val #(x.names'))
-  set_names : ∀ (x : compiledLabels.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet compiledLabels.underlying go!"names") (PairV #x #y) (Val #(({ x with names' := y } : compiledLabels.t)))
-  get_labelConstraints : ∀ (x : compiledLabels.t), go.IsGoStepPureDetTagged under (StructFieldGet compiledLabels.underlying go!"labelConstraints") #x (Val #(x.labelConstraints'))
-  set_labelConstraints : ∀ (x : compiledLabels.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet compiledLabels.underlying go!"labelConstraints") (PairV #x #y) (Val #(({ x with labelConstraints' := y } : compiledLabels.t)))
+  type_repr : go.TypeReprUnderlying compiledLabels.underlying compiledLabels
+  underlying : go.UnderlyingDirectedEq compiledLabels.ty compiledLabels.underlying
+  get_names : ∀ (x : compiledLabels), go.IsGoStepPureDetTagged under (StructFieldGet compiledLabels.underlying go!"names") #x (Val #(x.names'))
+  set_names : ∀ (x : compiledLabels) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet compiledLabels.underlying go!"names") (PairV #x #y) (Val #(({ x with names' := y } : compiledLabels)))
+  get_labelConstraints : ∀ (x : compiledLabels), go.IsGoStepPureDetTagged under (StructFieldGet compiledLabels.underlying go!"labelConstraints") #x (Val #(x.labelConstraints'))
+  set_labelConstraints : ∀ (x : compiledLabels) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet compiledLabels.underlying go!"labelConstraints") (PairV #x #y) (Val #(({ x with labelConstraints' := y } : compiledLabels)))
 
 attribute [instance] compiledLabels.TypeAssumptions.type_repr
   compiledLabels.TypeAssumptions.underlying
@@ -2286,18 +2200,16 @@ attribute [instance] compiledLabels.TypeAssumptions.type_repr
   compiledLabels.TypeAssumptions.get_labelConstraints
   compiledLabels.TypeAssumptions.set_labelConstraints
 
-namespace invalidMetric
-structure t [FfiSyntax] where
+structure invalidMetric [FfiSyntax] where
   mk ::
   desc' : Loc
   err' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end invalidMetric
+instance invalidMetric.zero_val [FfiSyntax] : ZeroVal invalidMetric :=
+  ⟨invalidMetric.mk zeroValDef zeroValDef⟩
 
 @[reducible] def invalidMetric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
+  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
 (go.field_decl.FieldDecl go!"err" go.error)]
 
 @[irreducible] def invalidMetric.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -2311,12 +2223,12 @@ instance equals_unfold_invalidMetric [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType invalidMetric.fields)
 
 class invalidMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying invalidMetric.underlying invalidMetric.t
-  underlying : go.UnderlyingDirectedEq invalidMetric invalidMetric.underlying
-  get_desc : ∀ (x : invalidMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet invalidMetric.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : invalidMetric.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet invalidMetric.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : invalidMetric.t)))
-  get_err : ∀ (x : invalidMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet invalidMetric.underlying go!"err") #x (Val #(x.err'))
-  set_err : ∀ (x : invalidMetric.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet invalidMetric.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : invalidMetric.t)))
+  type_repr : go.TypeReprUnderlying invalidMetric.underlying invalidMetric
+  underlying : go.UnderlyingDirectedEq invalidMetric.ty invalidMetric.underlying
+  get_desc : ∀ (x : invalidMetric), go.IsGoStepPureDetTagged under (StructFieldGet invalidMetric.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : invalidMetric) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet invalidMetric.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : invalidMetric)))
+  get_err : ∀ (x : invalidMetric), go.IsGoStepPureDetTagged under (StructFieldGet invalidMetric.underlying go!"err") #x (Val #(x.err'))
+  set_err : ∀ (x : invalidMetric) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet invalidMetric.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : invalidMetric)))
 
 attribute [instance] invalidMetric.TypeAssumptions.type_repr
   invalidMetric.TypeAssumptions.underlying
@@ -2325,19 +2237,17 @@ attribute [instance] invalidMetric.TypeAssumptions.type_repr
   invalidMetric.TypeAssumptions.get_err
   invalidMetric.TypeAssumptions.set_err
 
-namespace timestampedMetric
-structure t [FfiSyntax] where
+structure timestampedMetric [FfiSyntax] where
   mk ::
-  Metric' : Metric.t
-  t' : _root_.Perennial.time.Time.t
+  Metric' : Metric
+  t' : _root_.Perennial.time.Time
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end timestampedMetric
+instance timestampedMetric.zero_val [FfiSyntax] : ZeroVal timestampedMetric :=
+  ⟨timestampedMetric.mk zeroValDef zeroValDef⟩
 
 @[reducible] def timestampedMetric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Metric" Metric),
-(go.field_decl.FieldDecl go!"t" _root_.Perennial.time.Time)]
+  [(go.field_decl.EmbeddedField go!"Metric" Metric.ty),
+(go.field_decl.FieldDecl go!"t" _root_.Perennial.time.Time.ty)]
 
 @[irreducible] def timestampedMetric.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   timestampedMetric.fieldsUnsealed
@@ -2350,12 +2260,12 @@ instance equals_unfold_timestampedMetric [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType timestampedMetric.fields)
 
 class timestampedMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying timestampedMetric.underlying timestampedMetric.t
-  underlying : go.UnderlyingDirectedEq timestampedMetric timestampedMetric.underlying
-  get_Metric : ∀ (x : timestampedMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet timestampedMetric.underlying go!"Metric") #x (Val #(x.Metric'))
-  set_Metric : ∀ (x : timestampedMetric.t) (y : Metric.t), go.IsGoStepPureDetTagged under (StructFieldSet timestampedMetric.underlying go!"Metric") (PairV #x #y) (Val #(({ x with Metric' := y } : timestampedMetric.t)))
-  get_t : ∀ (x : timestampedMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet timestampedMetric.underlying go!"t") #x (Val #(x.t'))
-  set_t : ∀ (x : timestampedMetric.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet timestampedMetric.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : timestampedMetric.t)))
+  type_repr : go.TypeReprUnderlying timestampedMetric.underlying timestampedMetric
+  underlying : go.UnderlyingDirectedEq timestampedMetric.ty timestampedMetric.underlying
+  get_Metric : ∀ (x : timestampedMetric), go.IsGoStepPureDetTagged under (StructFieldGet timestampedMetric.underlying go!"Metric") #x (Val #(x.Metric'))
+  set_Metric : ∀ (x : timestampedMetric) (y : Metric), go.IsGoStepPureDetTagged under (StructFieldSet timestampedMetric.underlying go!"Metric") (PairV #x #y) (Val #(({ x with Metric' := y } : timestampedMetric)))
+  get_t : ∀ (x : timestampedMetric), go.IsGoStepPureDetTagged under (StructFieldGet timestampedMetric.underlying go!"t") #x (Val #(x.t'))
+  set_t : ∀ (x : timestampedMetric) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet timestampedMetric.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : timestampedMetric)))
 
 attribute [instance] timestampedMetric.TypeAssumptions.type_repr
   timestampedMetric.TypeAssumptions.underlying
@@ -2364,19 +2274,17 @@ attribute [instance] timestampedMetric.TypeAssumptions.type_repr
   timestampedMetric.TypeAssumptions.get_t
   timestampedMetric.TypeAssumptions.set_t
 
-namespace withExemplarsMetric
-structure t [FfiSyntax] where
+structure withExemplarsMetric [FfiSyntax] where
   mk ::
-  Metric' : Metric.t
+  Metric' : Metric
   exemplars' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end withExemplarsMetric
+instance withExemplarsMetric.zero_val [FfiSyntax] : ZeroVal withExemplarsMetric :=
+  ⟨withExemplarsMetric.mk zeroValDef zeroValDef⟩
 
 @[reducible] def withExemplarsMetric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"Metric" Metric),
-(go.field_decl.FieldDecl go!"exemplars" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Exemplar)))]
+  [(go.field_decl.EmbeddedField go!"Metric" Metric.ty),
+(go.field_decl.FieldDecl go!"exemplars" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Exemplar.ty)))]
 
 @[irreducible] def withExemplarsMetric.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   withExemplarsMetric.fieldsUnsealed
@@ -2389,12 +2297,12 @@ instance equals_unfold_withExemplarsMetric [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType withExemplarsMetric.fields)
 
 class withExemplarsMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying withExemplarsMetric.underlying withExemplarsMetric.t
-  underlying : go.UnderlyingDirectedEq withExemplarsMetric withExemplarsMetric.underlying
-  get_Metric : ∀ (x : withExemplarsMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet withExemplarsMetric.underlying go!"Metric") #x (Val #(x.Metric'))
-  set_Metric : ∀ (x : withExemplarsMetric.t) (y : Metric.t), go.IsGoStepPureDetTagged under (StructFieldSet withExemplarsMetric.underlying go!"Metric") (PairV #x #y) (Val #(({ x with Metric' := y } : withExemplarsMetric.t)))
-  get_exemplars : ∀ (x : withExemplarsMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet withExemplarsMetric.underlying go!"exemplars") #x (Val #(x.exemplars'))
-  set_exemplars : ∀ (x : withExemplarsMetric.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet withExemplarsMetric.underlying go!"exemplars") (PairV #x #y) (Val #(({ x with exemplars' := y } : withExemplarsMetric.t)))
+  type_repr : go.TypeReprUnderlying withExemplarsMetric.underlying withExemplarsMetric
+  underlying : go.UnderlyingDirectedEq withExemplarsMetric.ty withExemplarsMetric.underlying
+  get_Metric : ∀ (x : withExemplarsMetric), go.IsGoStepPureDetTagged under (StructFieldGet withExemplarsMetric.underlying go!"Metric") #x (Val #(x.Metric'))
+  set_Metric : ∀ (x : withExemplarsMetric) (y : Metric), go.IsGoStepPureDetTagged under (StructFieldSet withExemplarsMetric.underlying go!"Metric") (PairV #x #y) (Val #(({ x with Metric' := y } : withExemplarsMetric)))
+  get_exemplars : ∀ (x : withExemplarsMetric), go.IsGoStepPureDetTagged under (StructFieldGet withExemplarsMetric.underlying go!"exemplars") #x (Val #(x.exemplars'))
+  set_exemplars : ∀ (x : withExemplarsMetric) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet withExemplarsMetric.underlying go!"exemplars") (PairV #x #y) (Val #(({ x with exemplars' := y } : withExemplarsMetric)))
 
 attribute [instance] withExemplarsMetric.TypeAssumptions.type_repr
   withExemplarsMetric.TypeAssumptions.underlying
@@ -2403,21 +2311,19 @@ attribute [instance] withExemplarsMetric.TypeAssumptions.type_repr
   withExemplarsMetric.TypeAssumptions.get_exemplars
   withExemplarsMetric.TypeAssumptions.set_exemplars
 
-namespace Exemplar
-structure t [FfiSyntax] where
+structure Exemplar [FfiSyntax] where
   mk ::
   Value' : w64
-  Labels' : Labels.t
-  Timestamp' : _root_.Perennial.time.Time.t
+  Labels' : Labels
+  Timestamp' : _root_.Perennial.time.Time
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end Exemplar
+instance Exemplar.zero_val [FfiSyntax] : ZeroVal Exemplar :=
+  ⟨Exemplar.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Exemplar.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.float64),
-(go.field_decl.FieldDecl go!"Labels" Labels),
-(go.field_decl.FieldDecl go!"Timestamp" _root_.Perennial.time.Time)]
+(go.field_decl.FieldDecl go!"Labels" Labels.ty),
+(go.field_decl.FieldDecl go!"Timestamp" _root_.Perennial.time.Time.ty)]
 
 @[irreducible] def Exemplar.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Exemplar.fieldsUnsealed
@@ -2430,14 +2336,14 @@ instance equals_unfold_Exemplar [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Exemplar.fields)
 
 class Exemplar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Exemplar.underlying Exemplar.t
-  underlying : go.UnderlyingDirectedEq Exemplar Exemplar.underlying
-  get_Value : ∀ (x : Exemplar.t), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : Exemplar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Exemplar.t)))
-  get_Labels : ∀ (x : Exemplar.t), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Labels") #x (Val #(x.Labels'))
-  set_Labels : ∀ (x : Exemplar.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Labels") (PairV #x #y) (Val #(({ x with Labels' := y } : Exemplar.t)))
-  get_Timestamp : ∀ (x : Exemplar.t), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Timestamp") #x (Val #(x.Timestamp'))
-  set_Timestamp : ∀ (x : Exemplar.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Timestamp") (PairV #x #y) (Val #(({ x with Timestamp' := y } : Exemplar.t)))
+  type_repr : go.TypeReprUnderlying Exemplar.underlying Exemplar
+  underlying : go.UnderlyingDirectedEq Exemplar.ty Exemplar.underlying
+  get_Value : ∀ (x : Exemplar), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Value") #x (Val #(x.Value'))
+  set_Value : ∀ (x : Exemplar) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Exemplar)))
+  get_Labels : ∀ (x : Exemplar), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Labels") #x (Val #(x.Labels'))
+  set_Labels : ∀ (x : Exemplar) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Labels") (PairV #x #y) (Val #(({ x with Labels' := y } : Exemplar)))
+  get_Timestamp : ∀ (x : Exemplar), go.IsGoStepPureDetTagged under (StructFieldGet Exemplar.underlying go!"Timestamp") #x (Val #(x.Timestamp'))
+  set_Timestamp : ∀ (x : Exemplar) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet Exemplar.underlying go!"Timestamp") (PairV #x #y) (Val #(({ x with Timestamp' := y } : Exemplar)))
 
 attribute [instance] Exemplar.TypeAssumptions.type_repr
   Exemplar.TypeAssumptions.underlying
@@ -2448,56 +2354,47 @@ attribute [instance] Exemplar.TypeAssumptions.type_repr
   Exemplar.TypeAssumptions.get_Timestamp
   Exemplar.TypeAssumptions.set_Timestamp
 
-namespace Observer
-abbrev t [FfiSyntax] : Type := interface.t
-end Observer
+abbrev Observer [FfiSyntax] : Type := interface.t
 
 @[reducible] def Observer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Observe" (go.signature.Signature [go.float64] false []))])
 
 class Observer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Observer Observer.underlying
+  underlying : go.UnderlyingDirectedEq Observer.ty Observer.underlying
 
 attribute [instance] Observer.TypeAssumptions.underlying
 
-namespace ObserverFunc
-abbrev t [FfiSyntax] : Type := func.t
-end ObserverFunc
+abbrev ObserverFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def ObserverFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.float64] false []))
 
 class ObserverFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ObserverFunc ObserverFunc.underlying
+  underlying : go.UnderlyingDirectedEq ObserverFunc.ty ObserverFunc.underlying
 
 attribute [instance] ObserverFunc.TypeAssumptions.underlying
 
-namespace ObserverVec
-abbrev t [FfiSyntax] : Type := interface.t
-end ObserverVec
+abbrev ObserverVec [FfiSyntax] : Type := interface.t
 
 @[reducible] def ObserverVec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CurryWith" (go.signature.Signature [Labels] false [ObserverVec, go.error])), (go.InterfaceElem.MethodElem go!"GetMetricWith" (go.signature.Signature [Labels] false [Observer, go.error])), (go.InterfaceElem.MethodElem go!"GetMetricWithLabelValues" (go.signature.Signature [(go.GoType.SliceType go.string)] true [Observer, go.error])), (go.InterfaceElem.MethodElem go!"MustCurryWith" (go.signature.Signature [Labels] false [ObserverVec])), (go.InterfaceElem.MethodElem go!"With" (go.signature.Signature [Labels] false [Observer])), (go.InterfaceElem.MethodElem go!"WithLabelValues" (go.signature.Signature [(go.GoType.SliceType go.string)] true [Observer])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CurryWith" (go.signature.Signature [Labels.ty] false [ObserverVec.ty, go.error])), (go.InterfaceElem.MethodElem go!"GetMetricWith" (go.signature.Signature [Labels.ty] false [Observer.ty, go.error])), (go.InterfaceElem.MethodElem go!"GetMetricWithLabelValues" (go.signature.Signature [(go.GoType.SliceType go.string)] true [Observer.ty, go.error])), (go.InterfaceElem.MethodElem go!"MustCurryWith" (go.signature.Signature [Labels.ty] false [ObserverVec.ty])), (go.InterfaceElem.MethodElem go!"With" (go.signature.Signature [Labels.ty] false [Observer.ty])), (go.InterfaceElem.MethodElem go!"WithLabelValues" (go.signature.Signature [(go.GoType.SliceType go.string)] true [Observer.ty])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class ObserverVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ObserverVec ObserverVec.underlying
+  underlying : go.UnderlyingDirectedEq ObserverVec.ty ObserverVec.underlying
 
 attribute [instance] ObserverVec.TypeAssumptions.underlying
 
-namespace ExemplarObserver
-abbrev t [FfiSyntax] : Type := interface.t
-end ExemplarObserver
+abbrev ExemplarObserver [FfiSyntax] : Type := interface.t
 
 @[reducible] def ExemplarObserver.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ObserveWithExemplar" (go.signature.Signature [go.float64, Labels] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ObserveWithExemplar" (go.signature.Signature [go.float64, Labels.ty] false []))])
 
 class ExemplarObserver.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ExemplarObserver ExemplarObserver.underlying
+  underlying : go.UnderlyingDirectedEq ExemplarObserver.ty ExemplarObserver.underlying
 
 attribute [instance] ExemplarObserver.TypeAssumptions.underlying
 
-namespace processCollector
-structure t [FfiSyntax] where
+structure processCollector [FfiSyntax] where
   mk ::
   collectFn' : func.t
   describeFn' : func.t
@@ -2513,24 +2410,23 @@ structure t [FfiSyntax] where
   inBytes' : Loc
   outBytes' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end processCollector
+instance processCollector.zero_val [FfiSyntax] : ZeroVal processCollector :=
+  ⟨processCollector.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def processCollector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"collectFn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric)] false []))),
-(go.field_decl.FieldDecl go!"describeFn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly (go.GoType.PointerType Desc))] false []))),
+  [(go.field_decl.FieldDecl go!"collectFn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly Metric.ty)] false []))),
+(go.field_decl.FieldDecl go!"describeFn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendonly (go.GoType.PointerType Desc.ty))] false []))),
 (go.field_decl.FieldDecl go!"pidFn" (go.GoType.FunctionType (go.signature.Signature [] false [go.int, go.error]))),
 (go.field_decl.FieldDecl go!"reportErrors" go.bool),
-(go.field_decl.FieldDecl go!"cpuTotal" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"openFDs" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"maxFDs" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"vsize" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"maxVsize" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"rss" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"startTime" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"inBytes" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"outBytes" (go.GoType.PointerType Desc))]
+(go.field_decl.FieldDecl go!"cpuTotal" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"openFDs" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"maxFDs" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"vsize" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"maxVsize" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"rss" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"startTime" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"inBytes" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"outBytes" (go.GoType.PointerType Desc.ty))]
 
 @[irreducible] def processCollector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   processCollector.fieldsUnsealed
@@ -2543,34 +2439,34 @@ instance equals_unfold_processCollector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType processCollector.fields)
 
 class processCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying processCollector.underlying processCollector.t
-  underlying : go.UnderlyingDirectedEq processCollector processCollector.underlying
-  get_collectFn : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"collectFn") #x (Val #(x.collectFn'))
-  set_collectFn : ∀ (x : processCollector.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"collectFn") (PairV #x #y) (Val #(({ x with collectFn' := y } : processCollector.t)))
-  get_describeFn : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"describeFn") #x (Val #(x.describeFn'))
-  set_describeFn : ∀ (x : processCollector.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"describeFn") (PairV #x #y) (Val #(({ x with describeFn' := y } : processCollector.t)))
-  get_pidFn : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"pidFn") #x (Val #(x.pidFn'))
-  set_pidFn : ∀ (x : processCollector.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"pidFn") (PairV #x #y) (Val #(({ x with pidFn' := y } : processCollector.t)))
-  get_reportErrors : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"reportErrors") #x (Val #(x.reportErrors'))
-  set_reportErrors : ∀ (x : processCollector.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"reportErrors") (PairV #x #y) (Val #(({ x with reportErrors' := y } : processCollector.t)))
-  get_cpuTotal : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"cpuTotal") #x (Val #(x.cpuTotal'))
-  set_cpuTotal : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"cpuTotal") (PairV #x #y) (Val #(({ x with cpuTotal' := y } : processCollector.t)))
-  get_openFDs : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"openFDs") #x (Val #(x.openFDs'))
-  set_openFDs : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"openFDs") (PairV #x #y) (Val #(({ x with openFDs' := y } : processCollector.t)))
-  get_maxFDs : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"maxFDs") #x (Val #(x.maxFDs'))
-  set_maxFDs : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"maxFDs") (PairV #x #y) (Val #(({ x with maxFDs' := y } : processCollector.t)))
-  get_vsize : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"vsize") #x (Val #(x.vsize'))
-  set_vsize : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"vsize") (PairV #x #y) (Val #(({ x with vsize' := y } : processCollector.t)))
-  get_maxVsize : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"maxVsize") #x (Val #(x.maxVsize'))
-  set_maxVsize : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"maxVsize") (PairV #x #y) (Val #(({ x with maxVsize' := y } : processCollector.t)))
-  get_rss : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"rss") #x (Val #(x.rss'))
-  set_rss : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"rss") (PairV #x #y) (Val #(({ x with rss' := y } : processCollector.t)))
-  get_startTime : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"startTime") #x (Val #(x.startTime'))
-  set_startTime : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"startTime") (PairV #x #y) (Val #(({ x with startTime' := y } : processCollector.t)))
-  get_inBytes : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"inBytes") #x (Val #(x.inBytes'))
-  set_inBytes : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"inBytes") (PairV #x #y) (Val #(({ x with inBytes' := y } : processCollector.t)))
-  get_outBytes : ∀ (x : processCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"outBytes") #x (Val #(x.outBytes'))
-  set_outBytes : ∀ (x : processCollector.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"outBytes") (PairV #x #y) (Val #(({ x with outBytes' := y } : processCollector.t)))
+  type_repr : go.TypeReprUnderlying processCollector.underlying processCollector
+  underlying : go.UnderlyingDirectedEq processCollector.ty processCollector.underlying
+  get_collectFn : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"collectFn") #x (Val #(x.collectFn'))
+  set_collectFn : ∀ (x : processCollector) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"collectFn") (PairV #x #y) (Val #(({ x with collectFn' := y } : processCollector)))
+  get_describeFn : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"describeFn") #x (Val #(x.describeFn'))
+  set_describeFn : ∀ (x : processCollector) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"describeFn") (PairV #x #y) (Val #(({ x with describeFn' := y } : processCollector)))
+  get_pidFn : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"pidFn") #x (Val #(x.pidFn'))
+  set_pidFn : ∀ (x : processCollector) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"pidFn") (PairV #x #y) (Val #(({ x with pidFn' := y } : processCollector)))
+  get_reportErrors : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"reportErrors") #x (Val #(x.reportErrors'))
+  set_reportErrors : ∀ (x : processCollector) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"reportErrors") (PairV #x #y) (Val #(({ x with reportErrors' := y } : processCollector)))
+  get_cpuTotal : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"cpuTotal") #x (Val #(x.cpuTotal'))
+  set_cpuTotal : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"cpuTotal") (PairV #x #y) (Val #(({ x with cpuTotal' := y } : processCollector)))
+  get_openFDs : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"openFDs") #x (Val #(x.openFDs'))
+  set_openFDs : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"openFDs") (PairV #x #y) (Val #(({ x with openFDs' := y } : processCollector)))
+  get_maxFDs : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"maxFDs") #x (Val #(x.maxFDs'))
+  set_maxFDs : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"maxFDs") (PairV #x #y) (Val #(({ x with maxFDs' := y } : processCollector)))
+  get_vsize : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"vsize") #x (Val #(x.vsize'))
+  set_vsize : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"vsize") (PairV #x #y) (Val #(({ x with vsize' := y } : processCollector)))
+  get_maxVsize : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"maxVsize") #x (Val #(x.maxVsize'))
+  set_maxVsize : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"maxVsize") (PairV #x #y) (Val #(({ x with maxVsize' := y } : processCollector)))
+  get_rss : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"rss") #x (Val #(x.rss'))
+  set_rss : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"rss") (PairV #x #y) (Val #(({ x with rss' := y } : processCollector)))
+  get_startTime : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"startTime") #x (Val #(x.startTime'))
+  set_startTime : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"startTime") (PairV #x #y) (Val #(({ x with startTime' := y } : processCollector)))
+  get_inBytes : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"inBytes") #x (Val #(x.inBytes'))
+  set_inBytes : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"inBytes") (PairV #x #y) (Val #(({ x with inBytes' := y } : processCollector)))
+  get_outBytes : ∀ (x : processCollector), go.IsGoStepPureDetTagged under (StructFieldGet processCollector.underlying go!"outBytes") #x (Val #(x.outBytes'))
+  set_outBytes : ∀ (x : processCollector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet processCollector.underlying go!"outBytes") (PairV #x #y) (Val #(({ x with outBytes' := y } : processCollector)))
 
 attribute [instance] processCollector.TypeAssumptions.type_repr
   processCollector.TypeAssumptions.underlying
@@ -2601,16 +2497,14 @@ attribute [instance] processCollector.TypeAssumptions.type_repr
   processCollector.TypeAssumptions.get_outBytes
   processCollector.TypeAssumptions.set_outBytes
 
-namespace ProcessCollectorOpts
-structure t [FfiSyntax] where
+structure ProcessCollectorOpts [FfiSyntax] where
   mk ::
   PidFn' : func.t
   Namespace' : GoString
   ReportErrors' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end ProcessCollectorOpts
+instance ProcessCollectorOpts.zero_val [FfiSyntax] : ZeroVal ProcessCollectorOpts :=
+  ⟨ProcessCollectorOpts.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def ProcessCollectorOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"PidFn" (go.GoType.FunctionType (go.signature.Signature [] false [go.int, go.error]))),
@@ -2628,14 +2522,14 @@ instance equals_unfold_ProcessCollectorOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType ProcessCollectorOpts.fields)
 
 class ProcessCollectorOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ProcessCollectorOpts.underlying ProcessCollectorOpts.t
-  underlying : go.UnderlyingDirectedEq ProcessCollectorOpts ProcessCollectorOpts.underlying
-  get_PidFn : ∀ (x : ProcessCollectorOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"PidFn") #x (Val #(x.PidFn'))
-  set_PidFn : ∀ (x : ProcessCollectorOpts.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"PidFn") (PairV #x #y) (Val #(({ x with PidFn' := y } : ProcessCollectorOpts.t)))
-  get_Namespace : ∀ (x : ProcessCollectorOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
-  set_Namespace : ∀ (x : ProcessCollectorOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : ProcessCollectorOpts.t)))
-  get_ReportErrors : ∀ (x : ProcessCollectorOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"ReportErrors") #x (Val #(x.ReportErrors'))
-  set_ReportErrors : ∀ (x : ProcessCollectorOpts.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"ReportErrors") (PairV #x #y) (Val #(({ x with ReportErrors' := y } : ProcessCollectorOpts.t)))
+  type_repr : go.TypeReprUnderlying ProcessCollectorOpts.underlying ProcessCollectorOpts
+  underlying : go.UnderlyingDirectedEq ProcessCollectorOpts.ty ProcessCollectorOpts.underlying
+  get_PidFn : ∀ (x : ProcessCollectorOpts), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"PidFn") #x (Val #(x.PidFn'))
+  set_PidFn : ∀ (x : ProcessCollectorOpts) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"PidFn") (PairV #x #y) (Val #(({ x with PidFn' := y } : ProcessCollectorOpts)))
+  get_Namespace : ∀ (x : ProcessCollectorOpts), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
+  set_Namespace : ∀ (x : ProcessCollectorOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : ProcessCollectorOpts)))
+  get_ReportErrors : ∀ (x : ProcessCollectorOpts), go.IsGoStepPureDetTagged under (StructFieldGet ProcessCollectorOpts.underlying go!"ReportErrors") #x (Val #(x.ReportErrors'))
+  set_ReportErrors : ∀ (x : ProcessCollectorOpts) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ProcessCollectorOpts.underlying go!"ReportErrors") (PairV #x #y) (Val #(({ x with ReportErrors' := y } : ProcessCollectorOpts)))
 
 attribute [instance] ProcessCollectorOpts.TypeAssumptions.type_repr
   ProcessCollectorOpts.TypeAssumptions.underlying
@@ -2646,55 +2540,47 @@ attribute [instance] ProcessCollectorOpts.TypeAssumptions.type_repr
   ProcessCollectorOpts.TypeAssumptions.get_ReportErrors
   ProcessCollectorOpts.TypeAssumptions.set_ReportErrors
 
-namespace Registerer
-abbrev t [FfiSyntax] : Type := interface.t
-end Registerer
+abbrev Registerer [FfiSyntax] : Type := interface.t
 
 @[reducible] def Registerer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"MustRegister" (go.signature.Signature [(go.GoType.SliceType Collector)] true [])), (go.InterfaceElem.MethodElem go!"Register" (go.signature.Signature [Collector] false [go.error])), (go.InterfaceElem.MethodElem go!"Unregister" (go.signature.Signature [Collector] false [go.bool]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"MustRegister" (go.signature.Signature [(go.GoType.SliceType Collector.ty)] true [])), (go.InterfaceElem.MethodElem go!"Register" (go.signature.Signature [Collector.ty] false [go.error])), (go.InterfaceElem.MethodElem go!"Unregister" (go.signature.Signature [Collector.ty] false [go.bool]))])
 
 class Registerer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Registerer Registerer.underlying
+  underlying : go.UnderlyingDirectedEq Registerer.ty Registerer.underlying
 
 attribute [instance] Registerer.TypeAssumptions.underlying
 
-namespace Gatherer
-abbrev t [FfiSyntax] : Type := interface.t
-end Gatherer
+abbrev Gatherer [FfiSyntax] : Type := interface.t
 
 @[reducible] def Gatherer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Gather" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily)), go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Gather" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily.ty)), go.error]))])
 
 class Gatherer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Gatherer Gatherer.underlying
+  underlying : go.UnderlyingDirectedEq Gatherer.ty Gatherer.underlying
 
 attribute [instance] Gatherer.TypeAssumptions.underlying
 
-namespace GathererFunc
-abbrev t [FfiSyntax] : Type := func.t
-end GathererFunc
+abbrev GathererFunc [FfiSyntax] : Type := func.t
 
 @[reducible] def GathererFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily)), go.error]))
+  (go.GoType.FunctionType (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily.ty)), go.error]))
 
 class GathererFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq GathererFunc GathererFunc.underlying
+  underlying : go.UnderlyingDirectedEq GathererFunc.ty GathererFunc.underlying
 
 attribute [instance] GathererFunc.TypeAssumptions.underlying
 
-namespace AlreadyRegisteredError
-structure t [FfiSyntax] where
+structure AlreadyRegisteredError [FfiSyntax] where
   mk ::
-  ExistingCollector' : Collector.t
-  NewCollector' : Collector.t
+  ExistingCollector' : Collector
+  NewCollector' : Collector
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end AlreadyRegisteredError
+instance AlreadyRegisteredError.zero_val [FfiSyntax] : ZeroVal AlreadyRegisteredError :=
+  ⟨AlreadyRegisteredError.mk zeroValDef zeroValDef⟩
 
 @[reducible] def AlreadyRegisteredError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"ExistingCollector" Collector),
-(go.field_decl.FieldDecl go!"NewCollector" Collector)]
+  [(go.field_decl.FieldDecl go!"ExistingCollector" Collector.ty),
+(go.field_decl.FieldDecl go!"NewCollector" Collector.ty)]
 
 @[irreducible] def AlreadyRegisteredError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   AlreadyRegisteredError.fieldsUnsealed
@@ -2707,12 +2593,12 @@ instance equals_unfold_AlreadyRegisteredError [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType AlreadyRegisteredError.fields)
 
 class AlreadyRegisteredError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying AlreadyRegisteredError.underlying AlreadyRegisteredError.t
-  underlying : go.UnderlyingDirectedEq AlreadyRegisteredError AlreadyRegisteredError.underlying
-  get_ExistingCollector : ∀ (x : AlreadyRegisteredError.t), go.IsGoStepPureDetTagged under (StructFieldGet AlreadyRegisteredError.underlying go!"ExistingCollector") #x (Val #(x.ExistingCollector'))
-  set_ExistingCollector : ∀ (x : AlreadyRegisteredError.t) (y : Collector.t), go.IsGoStepPureDetTagged under (StructFieldSet AlreadyRegisteredError.underlying go!"ExistingCollector") (PairV #x #y) (Val #(({ x with ExistingCollector' := y } : AlreadyRegisteredError.t)))
-  get_NewCollector : ∀ (x : AlreadyRegisteredError.t), go.IsGoStepPureDetTagged under (StructFieldGet AlreadyRegisteredError.underlying go!"NewCollector") #x (Val #(x.NewCollector'))
-  set_NewCollector : ∀ (x : AlreadyRegisteredError.t) (y : Collector.t), go.IsGoStepPureDetTagged under (StructFieldSet AlreadyRegisteredError.underlying go!"NewCollector") (PairV #x #y) (Val #(({ x with NewCollector' := y } : AlreadyRegisteredError.t)))
+  type_repr : go.TypeReprUnderlying AlreadyRegisteredError.underlying AlreadyRegisteredError
+  underlying : go.UnderlyingDirectedEq AlreadyRegisteredError.ty AlreadyRegisteredError.underlying
+  get_ExistingCollector : ∀ (x : AlreadyRegisteredError), go.IsGoStepPureDetTagged under (StructFieldGet AlreadyRegisteredError.underlying go!"ExistingCollector") #x (Val #(x.ExistingCollector'))
+  set_ExistingCollector : ∀ (x : AlreadyRegisteredError) (y : Collector), go.IsGoStepPureDetTagged under (StructFieldSet AlreadyRegisteredError.underlying go!"ExistingCollector") (PairV #x #y) (Val #(({ x with ExistingCollector' := y } : AlreadyRegisteredError)))
+  get_NewCollector : ∀ (x : AlreadyRegisteredError), go.IsGoStepPureDetTagged under (StructFieldGet AlreadyRegisteredError.underlying go!"NewCollector") #x (Val #(x.NewCollector'))
+  set_NewCollector : ∀ (x : AlreadyRegisteredError) (y : Collector), go.IsGoStepPureDetTagged under (StructFieldSet AlreadyRegisteredError.underlying go!"NewCollector") (PairV #x #y) (Val #(({ x with NewCollector' := y } : AlreadyRegisteredError)))
 
 attribute [instance] AlreadyRegisteredError.TypeAssumptions.type_repr
   AlreadyRegisteredError.TypeAssumptions.underlying
@@ -2721,38 +2607,34 @@ attribute [instance] AlreadyRegisteredError.TypeAssumptions.type_repr
   AlreadyRegisteredError.TypeAssumptions.get_NewCollector
   AlreadyRegisteredError.TypeAssumptions.set_NewCollector
 
-namespace MultiError
-abbrev t [FfiSyntax] : Type := slice.t
-end MultiError
+abbrev MultiError [FfiSyntax] : Type := slice.t
 
 @[reducible] def MultiError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.error)
 
 class MultiError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq MultiError MultiError.underlying
+  underlying : go.UnderlyingDirectedEq MultiError.ty MultiError.underlying
 
 attribute [instance] MultiError.TypeAssumptions.underlying
 
-namespace Registry
-structure t [FfiSyntax] where
+structure Registry [FfiSyntax] where
   mk ::
-  mtx' : _root_.Perennial.sync.RWMutex.t
+  mtx' : _root_.Perennial.sync.RWMutex
   collectorsByID' : map.t
   descIDs' : map.t
   dimHashesByName' : map.t
   uncheckedCollectors' : slice.t
   pedanticChecksEnabled' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Registry
+instance Registry.zero_val [FfiSyntax] : ZeroVal Registry :=
+  ⟨Registry.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Registry.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mtx" _root_.Perennial.sync.RWMutex),
-(go.field_decl.FieldDecl go!"collectorsByID" (go.GoType.MapType go.uint64 Collector)),
+  [(go.field_decl.FieldDecl go!"mtx" _root_.Perennial.sync.RWMutex.ty),
+(go.field_decl.FieldDecl go!"collectorsByID" (go.GoType.MapType go.uint64 Collector.ty)),
 (go.field_decl.FieldDecl go!"descIDs" (go.GoType.MapType go.uint64 (go.GoType.StructType []))),
 (go.field_decl.FieldDecl go!"dimHashesByName" (go.GoType.MapType go.string go.uint64)),
-(go.field_decl.FieldDecl go!"uncheckedCollectors" (go.GoType.SliceType Collector)),
+(go.field_decl.FieldDecl go!"uncheckedCollectors" (go.GoType.SliceType Collector.ty)),
 (go.field_decl.FieldDecl go!"pedanticChecksEnabled" go.bool)]
 
 @[irreducible] def Registry.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -2766,20 +2648,20 @@ instance equals_unfold_Registry [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Registry.fields)
 
 class Registry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Registry.underlying Registry.t
-  underlying : go.UnderlyingDirectedEq Registry Registry.underlying
-  get_mtx : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"mtx") #x (Val #(x.mtx'))
-  set_mtx : ∀ (x : Registry.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"mtx") (PairV #x #y) (Val #(({ x with mtx' := y } : Registry.t)))
-  get_collectorsByID : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"collectorsByID") #x (Val #(x.collectorsByID'))
-  set_collectorsByID : ∀ (x : Registry.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"collectorsByID") (PairV #x #y) (Val #(({ x with collectorsByID' := y } : Registry.t)))
-  get_descIDs : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"descIDs") #x (Val #(x.descIDs'))
-  set_descIDs : ∀ (x : Registry.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"descIDs") (PairV #x #y) (Val #(({ x with descIDs' := y } : Registry.t)))
-  get_dimHashesByName : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"dimHashesByName") #x (Val #(x.dimHashesByName'))
-  set_dimHashesByName : ∀ (x : Registry.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"dimHashesByName") (PairV #x #y) (Val #(({ x with dimHashesByName' := y } : Registry.t)))
-  get_uncheckedCollectors : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"uncheckedCollectors") #x (Val #(x.uncheckedCollectors'))
-  set_uncheckedCollectors : ∀ (x : Registry.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"uncheckedCollectors") (PairV #x #y) (Val #(({ x with uncheckedCollectors' := y } : Registry.t)))
-  get_pedanticChecksEnabled : ∀ (x : Registry.t), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"pedanticChecksEnabled") #x (Val #(x.pedanticChecksEnabled'))
-  set_pedanticChecksEnabled : ∀ (x : Registry.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"pedanticChecksEnabled") (PairV #x #y) (Val #(({ x with pedanticChecksEnabled' := y } : Registry.t)))
+  type_repr : go.TypeReprUnderlying Registry.underlying Registry
+  underlying : go.UnderlyingDirectedEq Registry.ty Registry.underlying
+  get_mtx : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"mtx") #x (Val #(x.mtx'))
+  set_mtx : ∀ (x : Registry) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"mtx") (PairV #x #y) (Val #(({ x with mtx' := y } : Registry)))
+  get_collectorsByID : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"collectorsByID") #x (Val #(x.collectorsByID'))
+  set_collectorsByID : ∀ (x : Registry) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"collectorsByID") (PairV #x #y) (Val #(({ x with collectorsByID' := y } : Registry)))
+  get_descIDs : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"descIDs") #x (Val #(x.descIDs'))
+  set_descIDs : ∀ (x : Registry) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"descIDs") (PairV #x #y) (Val #(({ x with descIDs' := y } : Registry)))
+  get_dimHashesByName : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"dimHashesByName") #x (Val #(x.dimHashesByName'))
+  set_dimHashesByName : ∀ (x : Registry) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"dimHashesByName") (PairV #x #y) (Val #(({ x with dimHashesByName' := y } : Registry)))
+  get_uncheckedCollectors : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"uncheckedCollectors") #x (Val #(x.uncheckedCollectors'))
+  set_uncheckedCollectors : ∀ (x : Registry) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"uncheckedCollectors") (PairV #x #y) (Val #(({ x with uncheckedCollectors' := y } : Registry)))
+  get_pedanticChecksEnabled : ∀ (x : Registry), go.IsGoStepPureDetTagged under (StructFieldGet Registry.underlying go!"pedanticChecksEnabled") #x (Val #(x.pedanticChecksEnabled'))
+  set_pedanticChecksEnabled : ∀ (x : Registry) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Registry.underlying go!"pedanticChecksEnabled") (PairV #x #y) (Val #(({ x with pedanticChecksEnabled' := y } : Registry)))
 
 attribute [instance] Registry.TypeAssumptions.type_repr
   Registry.TypeAssumptions.underlying
@@ -2796,29 +2678,25 @@ attribute [instance] Registry.TypeAssumptions.type_repr
   Registry.TypeAssumptions.get_pedanticChecksEnabled
   Registry.TypeAssumptions.set_pedanticChecksEnabled
 
-namespace Gatherers
-abbrev t [FfiSyntax] : Type := slice.t
-end Gatherers
+abbrev Gatherers [FfiSyntax] : Type := slice.t
 
 @[reducible] def Gatherers.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType Gatherer)
+  (go.GoType.SliceType Gatherer.ty)
 
 class Gatherers.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Gatherers Gatherers.underlying
+  underlying : go.UnderlyingDirectedEq Gatherers.ty Gatherers.underlying
 
 attribute [instance] Gatherers.TypeAssumptions.underlying
 
-namespace MultiTRegistry
-structure t [FfiSyntax] where
+structure MultiTRegistry [FfiSyntax] where
   mk ::
   tGatherers' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end MultiTRegistry
+instance MultiTRegistry.zero_val [FfiSyntax] : ZeroVal MultiTRegistry :=
+  ⟨MultiTRegistry.mk zeroValDef⟩
 
 @[reducible] def MultiTRegistry.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"tGatherers" (go.GoType.SliceType TransactionalGatherer))]
+  [(go.field_decl.FieldDecl go!"tGatherers" (go.GoType.SliceType TransactionalGatherer.ty))]
 
 @[irreducible] def MultiTRegistry.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   MultiTRegistry.fieldsUnsealed
@@ -2831,39 +2709,35 @@ instance equals_unfold_MultiTRegistry [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MultiTRegistry.fields)
 
 class MultiTRegistry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MultiTRegistry.underlying MultiTRegistry.t
-  underlying : go.UnderlyingDirectedEq MultiTRegistry MultiTRegistry.underlying
-  get_tGatherers : ∀ (x : MultiTRegistry.t), go.IsGoStepPureDetTagged under (StructFieldGet MultiTRegistry.underlying go!"tGatherers") #x (Val #(x.tGatherers'))
-  set_tGatherers : ∀ (x : MultiTRegistry.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MultiTRegistry.underlying go!"tGatherers") (PairV #x #y) (Val #(({ x with tGatherers' := y } : MultiTRegistry.t)))
+  type_repr : go.TypeReprUnderlying MultiTRegistry.underlying MultiTRegistry
+  underlying : go.UnderlyingDirectedEq MultiTRegistry.ty MultiTRegistry.underlying
+  get_tGatherers : ∀ (x : MultiTRegistry), go.IsGoStepPureDetTagged under (StructFieldGet MultiTRegistry.underlying go!"tGatherers") #x (Val #(x.tGatherers'))
+  set_tGatherers : ∀ (x : MultiTRegistry) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MultiTRegistry.underlying go!"tGatherers") (PairV #x #y) (Val #(({ x with tGatherers' := y } : MultiTRegistry)))
 
 attribute [instance] MultiTRegistry.TypeAssumptions.type_repr
   MultiTRegistry.TypeAssumptions.underlying
   MultiTRegistry.TypeAssumptions.get_tGatherers
   MultiTRegistry.TypeAssumptions.set_tGatherers
 
-namespace TransactionalGatherer
-abbrev t [FfiSyntax] : Type := interface.t
-end TransactionalGatherer
+abbrev TransactionalGatherer [FfiSyntax] : Type := interface.t
 
 @[reducible] def TransactionalGatherer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Gather" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily)), (go.GoType.FunctionType (go.signature.Signature [] false [])), go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Gather" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.MetricFamily.ty)), (go.GoType.FunctionType (go.signature.Signature [] false [])), go.error]))])
 
 class TransactionalGatherer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TransactionalGatherer TransactionalGatherer.underlying
+  underlying : go.UnderlyingDirectedEq TransactionalGatherer.ty TransactionalGatherer.underlying
 
 attribute [instance] TransactionalGatherer.TypeAssumptions.underlying
 
-namespace noTransactionGatherer
-structure t [FfiSyntax] where
+structure noTransactionGatherer [FfiSyntax] where
   mk ::
-  g' : Gatherer.t
+  g' : Gatherer
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end noTransactionGatherer
+instance noTransactionGatherer.zero_val [FfiSyntax] : ZeroVal noTransactionGatherer :=
+  ⟨noTransactionGatherer.mk zeroValDef⟩
 
 @[reducible] def noTransactionGatherer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"g" Gatherer)]
+  [(go.field_decl.FieldDecl go!"g" Gatherer.ty)]
 
 @[irreducible] def noTransactionGatherer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noTransactionGatherer.fieldsUnsealed
@@ -2876,57 +2750,53 @@ instance equals_unfold_noTransactionGatherer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType noTransactionGatherer.fields)
 
 class noTransactionGatherer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noTransactionGatherer.underlying noTransactionGatherer.t
-  underlying : go.UnderlyingDirectedEq noTransactionGatherer noTransactionGatherer.underlying
-  get_g : ∀ (x : noTransactionGatherer.t), go.IsGoStepPureDetTagged under (StructFieldGet noTransactionGatherer.underlying go!"g") #x (Val #(x.g'))
-  set_g : ∀ (x : noTransactionGatherer.t) (y : Gatherer.t), go.IsGoStepPureDetTagged under (StructFieldSet noTransactionGatherer.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : noTransactionGatherer.t)))
+  type_repr : go.TypeReprUnderlying noTransactionGatherer.underlying noTransactionGatherer
+  underlying : go.UnderlyingDirectedEq noTransactionGatherer.ty noTransactionGatherer.underlying
+  get_g : ∀ (x : noTransactionGatherer), go.IsGoStepPureDetTagged under (StructFieldGet noTransactionGatherer.underlying go!"g") #x (Val #(x.g'))
+  set_g : ∀ (x : noTransactionGatherer) (y : Gatherer), go.IsGoStepPureDetTagged under (StructFieldSet noTransactionGatherer.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : noTransactionGatherer)))
 
 attribute [instance] noTransactionGatherer.TypeAssumptions.type_repr
   noTransactionGatherer.TypeAssumptions.underlying
   noTransactionGatherer.TypeAssumptions.get_g
   noTransactionGatherer.TypeAssumptions.set_g
 
-namespace Summary
-abbrev t [FfiSyntax] : Type := interface.t
-end Summary
+abbrev Summary [FfiSyntax] : Type := interface.t
 
 @[reducible] def Summary.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Observe" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Observe" (go.signature.Signature [go.float64] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class Summary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Summary Summary.underlying
+  underlying : go.UnderlyingDirectedEq Summary.ty Summary.underlying
 
 attribute [instance] Summary.TypeAssumptions.underlying
 
-namespace SummaryOpts
-structure t [FfiSyntax] where
+structure SummaryOpts [FfiSyntax] where
   mk ::
   Namespace' : GoString
   Subsystem' : GoString
   Name' : GoString
   Help' : GoString
-  ConstLabels' : Labels.t
+  ConstLabels' : Labels
   Objectives' : map.t
-  MaxAge' : _root_.Perennial.time.Duration.t
+  MaxAge' : _root_.Perennial.time.Duration
   AgeBuckets' : w32
   BufCap' : w32
   now' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end SummaryOpts
+instance SummaryOpts.zero_val [FfiSyntax] : ZeroVal SummaryOpts :=
+  ⟨SummaryOpts.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def SummaryOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Namespace" go.string),
 (go.field_decl.FieldDecl go!"Subsystem" go.string),
 (go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"Help" go.string),
-(go.field_decl.FieldDecl go!"ConstLabels" Labels),
+(go.field_decl.FieldDecl go!"ConstLabels" Labels.ty),
 (go.field_decl.FieldDecl go!"Objectives" (go.GoType.MapType go.float64 go.float64)),
-(go.field_decl.FieldDecl go!"MaxAge" _root_.Perennial.time.Duration),
+(go.field_decl.FieldDecl go!"MaxAge" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"AgeBuckets" go.uint32),
 (go.field_decl.FieldDecl go!"BufCap" go.uint32),
-(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time])))]
+(go.field_decl.FieldDecl go!"now" (go.GoType.FunctionType (go.signature.Signature [] false [_root_.Perennial.time.Time.ty])))]
 
 @[irreducible] def SummaryOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SummaryOpts.fieldsUnsealed
@@ -2939,28 +2809,28 @@ instance equals_unfold_SummaryOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType SummaryOpts.fields)
 
 class SummaryOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SummaryOpts.underlying SummaryOpts.t
-  underlying : go.UnderlyingDirectedEq SummaryOpts SummaryOpts.underlying
-  get_Namespace : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
-  set_Namespace : ∀ (x : SummaryOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : SummaryOpts.t)))
-  get_Subsystem : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
-  set_Subsystem : ∀ (x : SummaryOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : SummaryOpts.t)))
-  get_Name : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : SummaryOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : SummaryOpts.t)))
-  get_Help : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Help") #x (Val #(x.Help'))
-  set_Help : ∀ (x : SummaryOpts.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : SummaryOpts.t)))
-  get_ConstLabels : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
-  set_ConstLabels : ∀ (x : SummaryOpts.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : SummaryOpts.t)))
-  get_Objectives : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Objectives") #x (Val #(x.Objectives'))
-  set_Objectives : ∀ (x : SummaryOpts.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Objectives") (PairV #x #y) (Val #(({ x with Objectives' := y } : SummaryOpts.t)))
-  get_MaxAge : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"MaxAge") #x (Val #(x.MaxAge'))
-  set_MaxAge : ∀ (x : SummaryOpts.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"MaxAge") (PairV #x #y) (Val #(({ x with MaxAge' := y } : SummaryOpts.t)))
-  get_AgeBuckets : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"AgeBuckets") #x (Val #(x.AgeBuckets'))
-  set_AgeBuckets : ∀ (x : SummaryOpts.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"AgeBuckets") (PairV #x #y) (Val #(({ x with AgeBuckets' := y } : SummaryOpts.t)))
-  get_BufCap : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"BufCap") #x (Val #(x.BufCap'))
-  set_BufCap : ∀ (x : SummaryOpts.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"BufCap") (PairV #x #y) (Val #(({ x with BufCap' := y } : SummaryOpts.t)))
-  get_now : ∀ (x : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"now") #x (Val #(x.now'))
-  set_now : ∀ (x : SummaryOpts.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : SummaryOpts.t)))
+  type_repr : go.TypeReprUnderlying SummaryOpts.underlying SummaryOpts
+  underlying : go.UnderlyingDirectedEq SummaryOpts.ty SummaryOpts.underlying
+  get_Namespace : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Namespace") #x (Val #(x.Namespace'))
+  set_Namespace : ∀ (x : SummaryOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Namespace") (PairV #x #y) (Val #(({ x with Namespace' := y } : SummaryOpts)))
+  get_Subsystem : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Subsystem") #x (Val #(x.Subsystem'))
+  set_Subsystem : ∀ (x : SummaryOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Subsystem") (PairV #x #y) (Val #(({ x with Subsystem' := y } : SummaryOpts)))
+  get_Name : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : SummaryOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : SummaryOpts)))
+  get_Help : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Help") #x (Val #(x.Help'))
+  set_Help : ∀ (x : SummaryOpts) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Help") (PairV #x #y) (Val #(({ x with Help' := y } : SummaryOpts)))
+  get_ConstLabels : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"ConstLabels") #x (Val #(x.ConstLabels'))
+  set_ConstLabels : ∀ (x : SummaryOpts) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"ConstLabels") (PairV #x #y) (Val #(({ x with ConstLabels' := y } : SummaryOpts)))
+  get_Objectives : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"Objectives") #x (Val #(x.Objectives'))
+  set_Objectives : ∀ (x : SummaryOpts) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"Objectives") (PairV #x #y) (Val #(({ x with Objectives' := y } : SummaryOpts)))
+  get_MaxAge : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"MaxAge") #x (Val #(x.MaxAge'))
+  set_MaxAge : ∀ (x : SummaryOpts) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"MaxAge") (PairV #x #y) (Val #(({ x with MaxAge' := y } : SummaryOpts)))
+  get_AgeBuckets : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"AgeBuckets") #x (Val #(x.AgeBuckets'))
+  set_AgeBuckets : ∀ (x : SummaryOpts) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"AgeBuckets") (PairV #x #y) (Val #(({ x with AgeBuckets' := y } : SummaryOpts)))
+  get_BufCap : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"BufCap") #x (Val #(x.BufCap'))
+  set_BufCap : ∀ (x : SummaryOpts) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"BufCap") (PairV #x #y) (Val #(({ x with BufCap' := y } : SummaryOpts)))
+  get_now : ∀ (x : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryOpts.underlying go!"now") #x (Val #(x.now'))
+  set_now : ∀ (x : SummaryOpts) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryOpts.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : SummaryOpts)))
 
 attribute [instance] SummaryOpts.TypeAssumptions.type_repr
   SummaryOpts.TypeAssumptions.underlying
@@ -2985,19 +2855,17 @@ attribute [instance] SummaryOpts.TypeAssumptions.type_repr
   SummaryOpts.TypeAssumptions.get_now
   SummaryOpts.TypeAssumptions.set_now
 
-namespace SummaryVecOpts
-structure t [FfiSyntax] where
+structure SummaryVecOpts [FfiSyntax] where
   mk ::
-  SummaryOpts' : SummaryOpts.t
-  VariableLabels' : ConstrainableLabels.t
+  SummaryOpts' : SummaryOpts
+  VariableLabels' : ConstrainableLabels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end SummaryVecOpts
+instance SummaryVecOpts.zero_val [FfiSyntax] : ZeroVal SummaryVecOpts :=
+  ⟨SummaryVecOpts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def SummaryVecOpts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"SummaryOpts" SummaryOpts),
-(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels)]
+  [(go.field_decl.EmbeddedField go!"SummaryOpts" SummaryOpts.ty),
+(go.field_decl.FieldDecl go!"VariableLabels" ConstrainableLabels.ty)]
 
 @[irreducible] def SummaryVecOpts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SummaryVecOpts.fieldsUnsealed
@@ -3010,12 +2878,12 @@ instance equals_unfold_SummaryVecOpts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType SummaryVecOpts.fields)
 
 class SummaryVecOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SummaryVecOpts.underlying SummaryVecOpts.t
-  underlying : go.UnderlyingDirectedEq SummaryVecOpts SummaryVecOpts.underlying
-  get_SummaryOpts : ∀ (x : SummaryVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVecOpts.underlying go!"SummaryOpts") #x (Val #(x.SummaryOpts'))
-  set_SummaryOpts : ∀ (x : SummaryVecOpts.t) (y : SummaryOpts.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVecOpts.underlying go!"SummaryOpts") (PairV #x #y) (Val #(({ x with SummaryOpts' := y } : SummaryVecOpts.t)))
-  get_VariableLabels : ∀ (x : SummaryVecOpts.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
-  set_VariableLabels : ∀ (x : SummaryVecOpts.t) (y : ConstrainableLabels.t), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : SummaryVecOpts.t)))
+  type_repr : go.TypeReprUnderlying SummaryVecOpts.underlying SummaryVecOpts
+  underlying : go.UnderlyingDirectedEq SummaryVecOpts.ty SummaryVecOpts.underlying
+  get_SummaryOpts : ∀ (x : SummaryVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVecOpts.underlying go!"SummaryOpts") #x (Val #(x.SummaryOpts'))
+  set_SummaryOpts : ∀ (x : SummaryVecOpts) (y : SummaryOpts), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVecOpts.underlying go!"SummaryOpts") (PairV #x #y) (Val #(({ x with SummaryOpts' := y } : SummaryVecOpts)))
+  get_VariableLabels : ∀ (x : SummaryVecOpts), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVecOpts.underlying go!"VariableLabels") #x (Val #(x.VariableLabels'))
+  set_VariableLabels : ∀ (x : SummaryVecOpts) (y : ConstrainableLabels), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVecOpts.underlying go!"VariableLabels") (PairV #x #y) (Val #(({ x with VariableLabels' := y } : SummaryVecOpts)))
 
 attribute [instance] SummaryVecOpts.TypeAssumptions.type_repr
   SummaryVecOpts.TypeAssumptions.underlying
@@ -3024,30 +2892,26 @@ attribute [instance] SummaryVecOpts.TypeAssumptions.type_repr
   SummaryVecOpts.TypeAssumptions.get_VariableLabels
   SummaryVecOpts.TypeAssumptions.set_VariableLabels
 
-namespace summary
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end summary
+axiom summary : Type
+axiom summary.zero_val : ZeroVal summary
+attribute [instance] summary.zero_val
 
 class summary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying summary.underlying summary.t
-  underlying : go.UnderlyingDirectedEq summary summary.underlying
+  type_repr : go.TypeReprUnderlying summary.underlying summary
+  underlying : go.UnderlyingDirectedEq summary.ty summary.underlying
   isUnderlying : go.IsUnderlying summary.underlying summary.underlying
 
 attribute [instance] summary.TypeAssumptions.type_repr
   summary.TypeAssumptions.underlying
   summary.TypeAssumptions.isUnderlying
 
-namespace summaryCounts
-structure t [FfiSyntax] where
+structure summaryCounts [FfiSyntax] where
   mk ::
   sumBits' : w64
   count' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end summaryCounts
+instance summaryCounts.zero_val [FfiSyntax] : ZeroVal summaryCounts :=
+  ⟨summaryCounts.mk zeroValDef zeroValDef⟩
 
 @[reducible] def summaryCounts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sumBits" go.uint64),
@@ -3064,12 +2928,12 @@ instance equals_unfold_summaryCounts [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType summaryCounts.fields)
 
 class summaryCounts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying summaryCounts.underlying summaryCounts.t
-  underlying : go.UnderlyingDirectedEq summaryCounts summaryCounts.underlying
-  get_sumBits : ∀ (x : summaryCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet summaryCounts.underlying go!"sumBits") #x (Val #(x.sumBits'))
-  set_sumBits : ∀ (x : summaryCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet summaryCounts.underlying go!"sumBits") (PairV #x #y) (Val #(({ x with sumBits' := y } : summaryCounts.t)))
-  get_count : ∀ (x : summaryCounts.t), go.IsGoStepPureDetTagged under (StructFieldGet summaryCounts.underlying go!"count") #x (Val #(x.count'))
-  set_count : ∀ (x : summaryCounts.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet summaryCounts.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : summaryCounts.t)))
+  type_repr : go.TypeReprUnderlying summaryCounts.underlying summaryCounts
+  underlying : go.UnderlyingDirectedEq summaryCounts.ty summaryCounts.underlying
+  get_sumBits : ∀ (x : summaryCounts), go.IsGoStepPureDetTagged under (StructFieldGet summaryCounts.underlying go!"sumBits") #x (Val #(x.sumBits'))
+  set_sumBits : ∀ (x : summaryCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet summaryCounts.underlying go!"sumBits") (PairV #x #y) (Val #(({ x with sumBits' := y } : summaryCounts)))
+  get_count : ∀ (x : summaryCounts), go.IsGoStepPureDetTagged under (StructFieldGet summaryCounts.underlying go!"count") #x (Val #(x.count'))
+  set_count : ∀ (x : summaryCounts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet summaryCounts.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : summaryCounts)))
 
 attribute [instance] summaryCounts.TypeAssumptions.type_repr
   summaryCounts.TypeAssumptions.underlying
@@ -3078,44 +2942,38 @@ attribute [instance] summaryCounts.TypeAssumptions.type_repr
   summaryCounts.TypeAssumptions.get_count
   summaryCounts.TypeAssumptions.set_count
 
-namespace noObjectivesSummary
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end noObjectivesSummary
+axiom noObjectivesSummary : Type
+axiom noObjectivesSummary.zero_val : ZeroVal noObjectivesSummary
+attribute [instance] noObjectivesSummary.zero_val
 
 class noObjectivesSummary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying noObjectivesSummary.underlying noObjectivesSummary.t
-  underlying : go.UnderlyingDirectedEq noObjectivesSummary noObjectivesSummary.underlying
+  type_repr : go.TypeReprUnderlying noObjectivesSummary.underlying noObjectivesSummary
+  underlying : go.UnderlyingDirectedEq noObjectivesSummary.ty noObjectivesSummary.underlying
   isUnderlying : go.IsUnderlying noObjectivesSummary.underlying noObjectivesSummary.underlying
 
 attribute [instance] noObjectivesSummary.TypeAssumptions.type_repr
   noObjectivesSummary.TypeAssumptions.underlying
   noObjectivesSummary.TypeAssumptions.isUnderlying
 
-namespace quantSort
-abbrev t [FfiSyntax] : Type := slice.t
-end quantSort
+abbrev quantSort [FfiSyntax] : Type := slice.t
 
 @[reducible] def quantSort.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Quantile))
+  (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Quantile.ty))
 
 class quantSort.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq quantSort quantSort.underlying
+  underlying : go.UnderlyingDirectedEq quantSort.ty quantSort.underlying
 
 attribute [instance] quantSort.TypeAssumptions.underlying
 
-namespace SummaryVec
-structure t [FfiSyntax] where
+structure SummaryVec [FfiSyntax] where
   mk ::
   MetricVec' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end SummaryVec
+instance SummaryVec.zero_val [FfiSyntax] : ZeroVal SummaryVec :=
+  ⟨SummaryVec.mk zeroValDef⟩
 
 @[reducible] def SummaryVec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec))]
+  [(go.field_decl.EmbeddedField go!"MetricVec" (go.GoType.PointerType MetricVec.ty))]
 
 @[irreducible] def SummaryVec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SummaryVec.fieldsUnsealed
@@ -3128,44 +2986,40 @@ instance equals_unfold_SummaryVec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType SummaryVec.fields)
 
 class SummaryVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SummaryVec.underlying SummaryVec.t
-  underlying : go.UnderlyingDirectedEq SummaryVec SummaryVec.underlying
-  get_MetricVec : ∀ (x : SummaryVec.t), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
-  set_MetricVec : ∀ (x : SummaryVec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : SummaryVec.t)))
+  type_repr : go.TypeReprUnderlying SummaryVec.underlying SummaryVec
+  underlying : go.UnderlyingDirectedEq SummaryVec.ty SummaryVec.underlying
+  get_MetricVec : ∀ (x : SummaryVec), go.IsGoStepPureDetTagged under (StructFieldGet SummaryVec.underlying go!"MetricVec") #x (Val #(x.MetricVec'))
+  set_MetricVec : ∀ (x : SummaryVec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet SummaryVec.underlying go!"MetricVec") (PairV #x #y) (Val #(({ x with MetricVec' := y } : SummaryVec)))
 
 attribute [instance] SummaryVec.TypeAssumptions.type_repr
   SummaryVec.TypeAssumptions.underlying
   SummaryVec.TypeAssumptions.get_MetricVec
   SummaryVec.TypeAssumptions.set_MetricVec
 
-namespace constSummary
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end constSummary
+axiom constSummary : Type
+axiom constSummary.zero_val : ZeroVal constSummary
+attribute [instance] constSummary.zero_val
 
 class constSummary.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying constSummary.underlying constSummary.t
-  underlying : go.UnderlyingDirectedEq constSummary constSummary.underlying
+  type_repr : go.TypeReprUnderlying constSummary.underlying constSummary
+  underlying : go.UnderlyingDirectedEq constSummary.ty constSummary.underlying
   isUnderlying : go.IsUnderlying constSummary.underlying constSummary.underlying
 
 attribute [instance] constSummary.TypeAssumptions.type_repr
   constSummary.TypeAssumptions.underlying
   constSummary.TypeAssumptions.isUnderlying
 
-namespace Timer
-structure t [FfiSyntax] where
+structure Timer [FfiSyntax] where
   mk ::
-  begin' : _root_.Perennial.time.Time.t
-  observer' : Observer.t
+  begin' : _root_.Perennial.time.Time
+  observer' : Observer
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Timer
+instance Timer.zero_val [FfiSyntax] : ZeroVal Timer :=
+  ⟨Timer.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Timer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"begin" _root_.Perennial.time.Time),
-(go.field_decl.FieldDecl go!"observer" Observer)]
+  [(go.field_decl.FieldDecl go!"begin" _root_.Perennial.time.Time.ty),
+(go.field_decl.FieldDecl go!"observer" Observer.ty)]
 
 @[irreducible] def Timer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Timer.fieldsUnsealed
@@ -3178,12 +3032,12 @@ instance equals_unfold_Timer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Timer.fields)
 
 class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Timer.underlying Timer.t
-  underlying : go.UnderlyingDirectedEq Timer Timer.underlying
-  get_begin : ∀ (x : Timer.t), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"begin") #x (Val #(x.begin'))
-  set_begin : ∀ (x : Timer.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"begin") (PairV #x #y) (Val #(({ x with begin' := y } : Timer.t)))
-  get_observer : ∀ (x : Timer.t), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"observer") #x (Val #(x.observer'))
-  set_observer : ∀ (x : Timer.t) (y : Observer.t), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"observer") (PairV #x #y) (Val #(({ x with observer' := y } : Timer.t)))
+  type_repr : go.TypeReprUnderlying Timer.underlying Timer
+  underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
+  get_begin : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"begin") #x (Val #(x.begin'))
+  set_begin : ∀ (x : Timer) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"begin") (PairV #x #y) (Val #(({ x with begin' := y } : Timer)))
+  get_observer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"observer") #x (Val #(x.observer'))
+  set_observer : ∀ (x : Timer) (y : Observer), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"observer") (PairV #x #y) (Val #(({ x with observer' := y } : Timer)))
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
@@ -3192,61 +3046,53 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.get_observer
   Timer.TypeAssumptions.set_observer
 
-namespace UntypedOpts
-abbrev t [FfiSyntax] : Type := Opts.t
-end UntypedOpts
+abbrev UntypedOpts [FfiSyntax] : Type := Opts
 
 @[reducible] def UntypedOpts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  Opts
+  Opts.ty
 
 class UntypedOpts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UntypedOpts UntypedOpts.underlying
+  underlying : go.UnderlyingDirectedEq UntypedOpts.ty UntypedOpts.underlying
 
 attribute [instance] UntypedOpts.TypeAssumptions.underlying
 
-namespace UntypedFunc
-abbrev t [FfiSyntax] : Type := interface.t
-end UntypedFunc
+abbrev UntypedFunc [FfiSyntax] : Type := interface.t
 
 @[reducible] def UntypedFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Metric.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Collector.ty)])])
 
 class UntypedFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq UntypedFunc UntypedFunc.underlying
+  underlying : go.UnderlyingDirectedEq UntypedFunc.ty UntypedFunc.underlying
 
 attribute [instance] UntypedFunc.TypeAssumptions.underlying
 
-namespace ValueType
-abbrev t [FfiSyntax] : Type := w64
-end ValueType
+abbrev ValueType [FfiSyntax] : Type := w64
 
 @[reducible] def ValueType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class ValueType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ValueType ValueType.underlying
+  underlying : go.UnderlyingDirectedEq ValueType.ty ValueType.underlying
 
 attribute [instance] ValueType.TypeAssumptions.underlying
 
-namespace valueFunc
-structure t [FfiSyntax] where
+structure valueFunc [FfiSyntax] where
   mk ::
-  selfCollector' : selfCollector.t
+  selfCollector' : selfCollector
   desc' : Loc
-  valType' : ValueType.t
+  valType' : ValueType
   function' : func.t
   labelPairs' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end valueFunc
+instance valueFunc.zero_val [FfiSyntax] : ZeroVal valueFunc :=
+  ⟨valueFunc.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def valueFunc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"selfCollector" selfCollector),
-(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"valType" ValueType),
+  [(go.field_decl.EmbeddedField go!"selfCollector" selfCollector.ty),
+(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"valType" ValueType.ty),
 (go.field_decl.FieldDecl go!"function" (go.GoType.FunctionType (go.signature.Signature [] false [go.float64]))),
-(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair)))]
+(go.field_decl.FieldDecl go!"labelPairs" (go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.LabelPair.ty)))]
 
 @[irreducible] def valueFunc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   valueFunc.fieldsUnsealed
@@ -3259,18 +3105,18 @@ instance equals_unfold_valueFunc [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType valueFunc.fields)
 
 class valueFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying valueFunc.underlying valueFunc.t
-  underlying : go.UnderlyingDirectedEq valueFunc valueFunc.underlying
-  get_selfCollector : ∀ (x : valueFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
-  set_selfCollector : ∀ (x : valueFunc.t) (y : selfCollector.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : valueFunc.t)))
-  get_desc : ∀ (x : valueFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : valueFunc.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : valueFunc.t)))
-  get_valType : ∀ (x : valueFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"valType") #x (Val #(x.valType'))
-  set_valType : ∀ (x : valueFunc.t) (y : ValueType.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"valType") (PairV #x #y) (Val #(({ x with valType' := y } : valueFunc.t)))
-  get_function : ∀ (x : valueFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"function") #x (Val #(x.function'))
-  set_function : ∀ (x : valueFunc.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"function") (PairV #x #y) (Val #(({ x with function' := y } : valueFunc.t)))
-  get_labelPairs : ∀ (x : valueFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
-  set_labelPairs : ∀ (x : valueFunc.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : valueFunc.t)))
+  type_repr : go.TypeReprUnderlying valueFunc.underlying valueFunc
+  underlying : go.UnderlyingDirectedEq valueFunc.ty valueFunc.underlying
+  get_selfCollector : ∀ (x : valueFunc), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"selfCollector") #x (Val #(x.selfCollector'))
+  set_selfCollector : ∀ (x : valueFunc) (y : selfCollector), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"selfCollector") (PairV #x #y) (Val #(({ x with selfCollector' := y } : valueFunc)))
+  get_desc : ∀ (x : valueFunc), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : valueFunc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : valueFunc)))
+  get_valType : ∀ (x : valueFunc), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"valType") #x (Val #(x.valType'))
+  set_valType : ∀ (x : valueFunc) (y : ValueType), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"valType") (PairV #x #y) (Val #(({ x with valType' := y } : valueFunc)))
+  get_function : ∀ (x : valueFunc), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"function") #x (Val #(x.function'))
+  set_function : ∀ (x : valueFunc) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"function") (PairV #x #y) (Val #(({ x with function' := y } : valueFunc)))
+  get_labelPairs : ∀ (x : valueFunc), go.IsGoStepPureDetTagged under (StructFieldGet valueFunc.underlying go!"labelPairs") #x (Val #(x.labelPairs'))
+  set_labelPairs : ∀ (x : valueFunc) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet valueFunc.underlying go!"labelPairs") (PairV #x #y) (Val #(({ x with labelPairs' := y } : valueFunc)))
 
 attribute [instance] valueFunc.TypeAssumptions.type_repr
   valueFunc.TypeAssumptions.underlying
@@ -3285,19 +3131,17 @@ attribute [instance] valueFunc.TypeAssumptions.type_repr
   valueFunc.TypeAssumptions.get_labelPairs
   valueFunc.TypeAssumptions.set_labelPairs
 
-namespace constMetric
-structure t [FfiSyntax] where
+structure constMetric [FfiSyntax] where
   mk ::
   desc' : Loc
   metric' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end constMetric
+instance constMetric.zero_val [FfiSyntax] : ZeroVal constMetric :=
+  ⟨constMetric.mk zeroValDef zeroValDef⟩
 
 @[reducible] def constMetric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"metric" (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Metric))]
+  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"metric" (go.GoType.PointerType _root_.Perennial.github_com.prometheus.client_model.go.Metric.ty))]
 
 @[irreducible] def constMetric.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   constMetric.fieldsUnsealed
@@ -3310,12 +3154,12 @@ instance equals_unfold_constMetric [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType constMetric.fields)
 
 class constMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying constMetric.underlying constMetric.t
-  underlying : go.UnderlyingDirectedEq constMetric constMetric.underlying
-  get_desc : ∀ (x : constMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet constMetric.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : constMetric.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constMetric.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : constMetric.t)))
-  get_metric : ∀ (x : constMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet constMetric.underlying go!"metric") #x (Val #(x.metric'))
-  set_metric : ∀ (x : constMetric.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constMetric.underlying go!"metric") (PairV #x #y) (Val #(({ x with metric' := y } : constMetric.t)))
+  type_repr : go.TypeReprUnderlying constMetric.underlying constMetric
+  underlying : go.UnderlyingDirectedEq constMetric.ty constMetric.underlying
+  get_desc : ∀ (x : constMetric), go.IsGoStepPureDetTagged under (StructFieldGet constMetric.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : constMetric) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constMetric.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : constMetric)))
+  get_metric : ∀ (x : constMetric), go.IsGoStepPureDetTagged under (StructFieldGet constMetric.underlying go!"metric") #x (Val #(x.metric'))
+  set_metric : ∀ (x : constMetric) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet constMetric.underlying go!"metric") (PairV #x #y) (Val #(({ x with metric' := y } : constMetric)))
 
 attribute [instance] constMetric.TypeAssumptions.type_repr
   constMetric.TypeAssumptions.underlying
@@ -3324,21 +3168,19 @@ attribute [instance] constMetric.TypeAssumptions.type_repr
   constMetric.TypeAssumptions.get_metric
   constMetric.TypeAssumptions.set_metric
 
-namespace MetricVec
-structure t [FfiSyntax] where
+structure MetricVec [FfiSyntax] where
   mk ::
   metricMap' : Loc
   curry' : slice.t
   hashAdd' : func.t
   hashAddByte' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end MetricVec
+instance MetricVec.zero_val [FfiSyntax] : ZeroVal MetricVec :=
+  ⟨MetricVec.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def MetricVec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"metricMap" (go.GoType.PointerType metricMap)),
-(go.field_decl.FieldDecl go!"curry" (go.GoType.SliceType curriedLabelValue)),
+  [(go.field_decl.EmbeddedField go!"metricMap" (go.GoType.PointerType metricMap.ty)),
+(go.field_decl.FieldDecl go!"curry" (go.GoType.SliceType curriedLabelValue.ty)),
 (go.field_decl.FieldDecl go!"hashAdd" (go.GoType.FunctionType (go.signature.Signature [go.uint64, go.string] false [go.uint64]))),
 (go.field_decl.FieldDecl go!"hashAddByte" (go.GoType.FunctionType (go.signature.Signature [go.uint64, go.byte] false [go.uint64])))]
 
@@ -3353,16 +3195,16 @@ instance equals_unfold_MetricVec [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType MetricVec.fields)
 
 class MetricVec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying MetricVec.underlying MetricVec.t
-  underlying : go.UnderlyingDirectedEq MetricVec MetricVec.underlying
-  get_metricMap : ∀ (x : MetricVec.t), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"metricMap") #x (Val #(x.metricMap'))
-  set_metricMap : ∀ (x : MetricVec.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"metricMap") (PairV #x #y) (Val #(({ x with metricMap' := y } : MetricVec.t)))
-  get_curry : ∀ (x : MetricVec.t), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"curry") #x (Val #(x.curry'))
-  set_curry : ∀ (x : MetricVec.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"curry") (PairV #x #y) (Val #(({ x with curry' := y } : MetricVec.t)))
-  get_hashAdd : ∀ (x : MetricVec.t), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"hashAdd") #x (Val #(x.hashAdd'))
-  set_hashAdd : ∀ (x : MetricVec.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"hashAdd") (PairV #x #y) (Val #(({ x with hashAdd' := y } : MetricVec.t)))
-  get_hashAddByte : ∀ (x : MetricVec.t), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"hashAddByte") #x (Val #(x.hashAddByte'))
-  set_hashAddByte : ∀ (x : MetricVec.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"hashAddByte") (PairV #x #y) (Val #(({ x with hashAddByte' := y } : MetricVec.t)))
+  type_repr : go.TypeReprUnderlying MetricVec.underlying MetricVec
+  underlying : go.UnderlyingDirectedEq MetricVec.ty MetricVec.underlying
+  get_metricMap : ∀ (x : MetricVec), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"metricMap") #x (Val #(x.metricMap'))
+  set_metricMap : ∀ (x : MetricVec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"metricMap") (PairV #x #y) (Val #(({ x with metricMap' := y } : MetricVec)))
+  get_curry : ∀ (x : MetricVec), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"curry") #x (Val #(x.curry'))
+  set_curry : ∀ (x : MetricVec) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"curry") (PairV #x #y) (Val #(({ x with curry' := y } : MetricVec)))
+  get_hashAdd : ∀ (x : MetricVec), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"hashAdd") #x (Val #(x.hashAdd'))
+  set_hashAdd : ∀ (x : MetricVec) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"hashAdd") (PairV #x #y) (Val #(({ x with hashAdd' := y } : MetricVec)))
+  get_hashAddByte : ∀ (x : MetricVec), go.IsGoStepPureDetTagged under (StructFieldGet MetricVec.underlying go!"hashAddByte") #x (Val #(x.hashAddByte'))
+  set_hashAddByte : ∀ (x : MetricVec) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet MetricVec.underlying go!"hashAddByte") (PairV #x #y) (Val #(({ x with hashAddByte' := y } : MetricVec)))
 
 attribute [instance] MetricVec.TypeAssumptions.type_repr
   MetricVec.TypeAssumptions.underlying
@@ -3375,19 +3217,17 @@ attribute [instance] MetricVec.TypeAssumptions.type_repr
   MetricVec.TypeAssumptions.get_hashAddByte
   MetricVec.TypeAssumptions.set_hashAddByte
 
-namespace metricWithLabelValues
-structure t [FfiSyntax] where
+structure metricWithLabelValues [FfiSyntax] where
   mk ::
   values' : slice.t
-  metric' : Metric.t
+  metric' : Metric
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end metricWithLabelValues
+instance metricWithLabelValues.zero_val [FfiSyntax] : ZeroVal metricWithLabelValues :=
+  ⟨metricWithLabelValues.mk zeroValDef zeroValDef⟩
 
 @[reducible] def metricWithLabelValues.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"values" (go.GoType.SliceType go.string)),
-(go.field_decl.FieldDecl go!"metric" Metric)]
+(go.field_decl.FieldDecl go!"metric" Metric.ty)]
 
 @[irreducible] def metricWithLabelValues.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   metricWithLabelValues.fieldsUnsealed
@@ -3400,12 +3240,12 @@ instance equals_unfold_metricWithLabelValues [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType metricWithLabelValues.fields)
 
 class metricWithLabelValues.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying metricWithLabelValues.underlying metricWithLabelValues.t
-  underlying : go.UnderlyingDirectedEq metricWithLabelValues metricWithLabelValues.underlying
-  get_values : ∀ (x : metricWithLabelValues.t), go.IsGoStepPureDetTagged under (StructFieldGet metricWithLabelValues.underlying go!"values") #x (Val #(x.values'))
-  set_values : ∀ (x : metricWithLabelValues.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet metricWithLabelValues.underlying go!"values") (PairV #x #y) (Val #(({ x with values' := y } : metricWithLabelValues.t)))
-  get_metric : ∀ (x : metricWithLabelValues.t), go.IsGoStepPureDetTagged under (StructFieldGet metricWithLabelValues.underlying go!"metric") #x (Val #(x.metric'))
-  set_metric : ∀ (x : metricWithLabelValues.t) (y : Metric.t), go.IsGoStepPureDetTagged under (StructFieldSet metricWithLabelValues.underlying go!"metric") (PairV #x #y) (Val #(({ x with metric' := y } : metricWithLabelValues.t)))
+  type_repr : go.TypeReprUnderlying metricWithLabelValues.underlying metricWithLabelValues
+  underlying : go.UnderlyingDirectedEq metricWithLabelValues.ty metricWithLabelValues.underlying
+  get_values : ∀ (x : metricWithLabelValues), go.IsGoStepPureDetTagged under (StructFieldGet metricWithLabelValues.underlying go!"values") #x (Val #(x.values'))
+  set_values : ∀ (x : metricWithLabelValues) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet metricWithLabelValues.underlying go!"values") (PairV #x #y) (Val #(({ x with values' := y } : metricWithLabelValues)))
+  get_metric : ∀ (x : metricWithLabelValues), go.IsGoStepPureDetTagged under (StructFieldGet metricWithLabelValues.underlying go!"metric") #x (Val #(x.metric'))
+  set_metric : ∀ (x : metricWithLabelValues) (y : Metric), go.IsGoStepPureDetTagged under (StructFieldSet metricWithLabelValues.underlying go!"metric") (PairV #x #y) (Val #(({ x with metric' := y } : metricWithLabelValues)))
 
 attribute [instance] metricWithLabelValues.TypeAssumptions.type_repr
   metricWithLabelValues.TypeAssumptions.underlying
@@ -3414,15 +3254,13 @@ attribute [instance] metricWithLabelValues.TypeAssumptions.type_repr
   metricWithLabelValues.TypeAssumptions.get_metric
   metricWithLabelValues.TypeAssumptions.set_metric
 
-namespace curriedLabelValue
-structure t [FfiSyntax] where
+structure curriedLabelValue [FfiSyntax] where
   mk ::
   index' : w64
   value' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end curriedLabelValue
+instance curriedLabelValue.zero_val [FfiSyntax] : ZeroVal curriedLabelValue :=
+  ⟨curriedLabelValue.mk zeroValDef zeroValDef⟩
 
 @[reducible] def curriedLabelValue.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" go.int),
@@ -3439,12 +3277,12 @@ instance equals_unfold_curriedLabelValue [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType curriedLabelValue.fields)
 
 class curriedLabelValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying curriedLabelValue.underlying curriedLabelValue.t
-  underlying : go.UnderlyingDirectedEq curriedLabelValue curriedLabelValue.underlying
-  get_index : ∀ (x : curriedLabelValue.t), go.IsGoStepPureDetTagged under (StructFieldGet curriedLabelValue.underlying go!"index") #x (Val #(x.index'))
-  set_index : ∀ (x : curriedLabelValue.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet curriedLabelValue.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : curriedLabelValue.t)))
-  get_value : ∀ (x : curriedLabelValue.t), go.IsGoStepPureDetTagged under (StructFieldGet curriedLabelValue.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : curriedLabelValue.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet curriedLabelValue.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : curriedLabelValue.t)))
+  type_repr : go.TypeReprUnderlying curriedLabelValue.underlying curriedLabelValue
+  underlying : go.UnderlyingDirectedEq curriedLabelValue.ty curriedLabelValue.underlying
+  get_index : ∀ (x : curriedLabelValue), go.IsGoStepPureDetTagged under (StructFieldGet curriedLabelValue.underlying go!"index") #x (Val #(x.index'))
+  set_index : ∀ (x : curriedLabelValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet curriedLabelValue.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : curriedLabelValue)))
+  get_value : ∀ (x : curriedLabelValue), go.IsGoStepPureDetTagged under (StructFieldGet curriedLabelValue.underlying go!"value") #x (Val #(x.value'))
+  set_value : ∀ (x : curriedLabelValue) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet curriedLabelValue.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : curriedLabelValue)))
 
 attribute [instance] curriedLabelValue.TypeAssumptions.type_repr
   curriedLabelValue.TypeAssumptions.underlying
@@ -3453,23 +3291,21 @@ attribute [instance] curriedLabelValue.TypeAssumptions.type_repr
   curriedLabelValue.TypeAssumptions.get_value
   curriedLabelValue.TypeAssumptions.set_value
 
-namespace metricMap
-structure t [FfiSyntax] where
+structure metricMap [FfiSyntax] where
   mk ::
-  mtx' : _root_.Perennial.sync.RWMutex.t
+  mtx' : _root_.Perennial.sync.RWMutex
   metrics' : map.t
   desc' : Loc
   newMetric' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end metricMap
+instance metricMap.zero_val [FfiSyntax] : ZeroVal metricMap :=
+  ⟨metricMap.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def metricMap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mtx" _root_.Perennial.sync.RWMutex),
-(go.field_decl.FieldDecl go!"metrics" (go.GoType.MapType go.uint64 (go.GoType.SliceType metricWithLabelValues))),
-(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc)),
-(go.field_decl.FieldDecl go!"newMetric" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.string)] true [Metric])))]
+  [(go.field_decl.FieldDecl go!"mtx" _root_.Perennial.sync.RWMutex.ty),
+(go.field_decl.FieldDecl go!"metrics" (go.GoType.MapType go.uint64 (go.GoType.SliceType metricWithLabelValues.ty))),
+(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType Desc.ty)),
+(go.field_decl.FieldDecl go!"newMetric" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.string)] true [Metric.ty])))]
 
 @[irreducible] def metricMap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   metricMap.fieldsUnsealed
@@ -3482,16 +3318,16 @@ instance equals_unfold_metricMap [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType metricMap.fields)
 
 class metricMap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying metricMap.underlying metricMap.t
-  underlying : go.UnderlyingDirectedEq metricMap metricMap.underlying
-  get_mtx : ∀ (x : metricMap.t), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"mtx") #x (Val #(x.mtx'))
-  set_mtx : ∀ (x : metricMap.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"mtx") (PairV #x #y) (Val #(({ x with mtx' := y } : metricMap.t)))
-  get_metrics : ∀ (x : metricMap.t), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"metrics") #x (Val #(x.metrics'))
-  set_metrics : ∀ (x : metricMap.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"metrics") (PairV #x #y) (Val #(({ x with metrics' := y } : metricMap.t)))
-  get_desc : ∀ (x : metricMap.t), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"desc") #x (Val #(x.desc'))
-  set_desc : ∀ (x : metricMap.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : metricMap.t)))
-  get_newMetric : ∀ (x : metricMap.t), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"newMetric") #x (Val #(x.newMetric'))
-  set_newMetric : ∀ (x : metricMap.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"newMetric") (PairV #x #y) (Val #(({ x with newMetric' := y } : metricMap.t)))
+  type_repr : go.TypeReprUnderlying metricMap.underlying metricMap
+  underlying : go.UnderlyingDirectedEq metricMap.ty metricMap.underlying
+  get_mtx : ∀ (x : metricMap), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"mtx") #x (Val #(x.mtx'))
+  set_mtx : ∀ (x : metricMap) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"mtx") (PairV #x #y) (Val #(({ x with mtx' := y } : metricMap)))
+  get_metrics : ∀ (x : metricMap), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"metrics") #x (Val #(x.metrics'))
+  set_metrics : ∀ (x : metricMap) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"metrics") (PairV #x #y) (Val #(({ x with metrics' := y } : metricMap)))
+  get_desc : ∀ (x : metricMap), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"desc") #x (Val #(x.desc'))
+  set_desc : ∀ (x : metricMap) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : metricMap)))
+  get_newMetric : ∀ (x : metricMap), go.IsGoStepPureDetTagged under (StructFieldGet metricMap.underlying go!"newMetric") #x (Val #(x.newMetric'))
+  set_newMetric : ∀ (x : metricMap) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet metricMap.underlying go!"newMetric") (PairV #x #y) (Val #(({ x with newMetric' := y } : metricMap)))
 
 attribute [instance] metricMap.TypeAssumptions.type_repr
   metricMap.TypeAssumptions.underlying
@@ -3504,13 +3340,11 @@ attribute [instance] metricMap.TypeAssumptions.type_repr
   metricMap.TypeAssumptions.get_newMetric
   metricMap.TypeAssumptions.set_newMetric
 
-namespace v2
-structure t [FfiSyntax] where
+structure v2 [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end v2
+instance v2.zero_val [FfiSyntax] : ZeroVal v2 :=
+  ⟨v2.mk⟩
 
 @[reducible] def v2.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -3526,27 +3360,25 @@ instance equals_unfold_v2 [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType v2.fields)
 
 class v2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying v2.underlying v2.t
-  underlying : go.UnderlyingDirectedEq v2 v2.underlying
+  type_repr : go.TypeReprUnderlying v2.underlying v2
+  underlying : go.UnderlyingDirectedEq v2.ty v2.underlying
 
 attribute [instance] v2.TypeAssumptions.type_repr
   v2.TypeAssumptions.underlying
 
-namespace wrappingRegisterer
-structure t [FfiSyntax] where
+structure wrappingRegisterer [FfiSyntax] where
   mk ::
-  wrappedRegisterer' : Registerer.t
+  wrappedRegisterer' : Registerer
   prefix' : GoString
-  labels' : Labels.t
+  labels' : Labels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end wrappingRegisterer
+instance wrappingRegisterer.zero_val [FfiSyntax] : ZeroVal wrappingRegisterer :=
+  ⟨wrappingRegisterer.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def wrappingRegisterer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"wrappedRegisterer" Registerer),
+  [(go.field_decl.FieldDecl go!"wrappedRegisterer" Registerer.ty),
 (go.field_decl.FieldDecl go!"prefix" go.string),
-(go.field_decl.FieldDecl go!"labels" Labels)]
+(go.field_decl.FieldDecl go!"labels" Labels.ty)]
 
 @[irreducible] def wrappingRegisterer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   wrappingRegisterer.fieldsUnsealed
@@ -3559,14 +3391,14 @@ instance equals_unfold_wrappingRegisterer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType wrappingRegisterer.fields)
 
 class wrappingRegisterer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying wrappingRegisterer.underlying wrappingRegisterer.t
-  underlying : go.UnderlyingDirectedEq wrappingRegisterer wrappingRegisterer.underlying
-  get_wrappedRegisterer : ∀ (x : wrappingRegisterer.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"wrappedRegisterer") #x (Val #(x.wrappedRegisterer'))
-  set_wrappedRegisterer : ∀ (x : wrappingRegisterer.t) (y : Registerer.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"wrappedRegisterer") (PairV #x #y) (Val #(({ x with wrappedRegisterer' := y } : wrappingRegisterer.t)))
-  get_prefix : ∀ (x : wrappingRegisterer.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"prefix") #x (Val #(x.prefix'))
-  set_prefix : ∀ (x : wrappingRegisterer.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingRegisterer.t)))
-  get_labels : ∀ (x : wrappingRegisterer.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"labels") #x (Val #(x.labels'))
-  set_labels : ∀ (x : wrappingRegisterer.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingRegisterer.t)))
+  type_repr : go.TypeReprUnderlying wrappingRegisterer.underlying wrappingRegisterer
+  underlying : go.UnderlyingDirectedEq wrappingRegisterer.ty wrappingRegisterer.underlying
+  get_wrappedRegisterer : ∀ (x : wrappingRegisterer), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"wrappedRegisterer") #x (Val #(x.wrappedRegisterer'))
+  set_wrappedRegisterer : ∀ (x : wrappingRegisterer) (y : Registerer), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"wrappedRegisterer") (PairV #x #y) (Val #(({ x with wrappedRegisterer' := y } : wrappingRegisterer)))
+  get_prefix : ∀ (x : wrappingRegisterer), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"prefix") #x (Val #(x.prefix'))
+  set_prefix : ∀ (x : wrappingRegisterer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingRegisterer)))
+  get_labels : ∀ (x : wrappingRegisterer), go.IsGoStepPureDetTagged under (StructFieldGet wrappingRegisterer.underlying go!"labels") #x (Val #(x.labels'))
+  set_labels : ∀ (x : wrappingRegisterer) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet wrappingRegisterer.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingRegisterer)))
 
 attribute [instance] wrappingRegisterer.TypeAssumptions.type_repr
   wrappingRegisterer.TypeAssumptions.underlying
@@ -3577,21 +3409,19 @@ attribute [instance] wrappingRegisterer.TypeAssumptions.type_repr
   wrappingRegisterer.TypeAssumptions.get_labels
   wrappingRegisterer.TypeAssumptions.set_labels
 
-namespace wrappingCollector
-structure t [FfiSyntax] where
+structure wrappingCollector [FfiSyntax] where
   mk ::
-  wrappedCollector' : Collector.t
+  wrappedCollector' : Collector
   prefix' : GoString
-  labels' : Labels.t
+  labels' : Labels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end wrappingCollector
+instance wrappingCollector.zero_val [FfiSyntax] : ZeroVal wrappingCollector :=
+  ⟨wrappingCollector.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def wrappingCollector.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"wrappedCollector" Collector),
+  [(go.field_decl.FieldDecl go!"wrappedCollector" Collector.ty),
 (go.field_decl.FieldDecl go!"prefix" go.string),
-(go.field_decl.FieldDecl go!"labels" Labels)]
+(go.field_decl.FieldDecl go!"labels" Labels.ty)]
 
 @[irreducible] def wrappingCollector.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   wrappingCollector.fieldsUnsealed
@@ -3604,14 +3434,14 @@ instance equals_unfold_wrappingCollector [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType wrappingCollector.fields)
 
 class wrappingCollector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying wrappingCollector.underlying wrappingCollector.t
-  underlying : go.UnderlyingDirectedEq wrappingCollector wrappingCollector.underlying
-  get_wrappedCollector : ∀ (x : wrappingCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"wrappedCollector") #x (Val #(x.wrappedCollector'))
-  set_wrappedCollector : ∀ (x : wrappingCollector.t) (y : Collector.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"wrappedCollector") (PairV #x #y) (Val #(({ x with wrappedCollector' := y } : wrappingCollector.t)))
-  get_prefix : ∀ (x : wrappingCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"prefix") #x (Val #(x.prefix'))
-  set_prefix : ∀ (x : wrappingCollector.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingCollector.t)))
-  get_labels : ∀ (x : wrappingCollector.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"labels") #x (Val #(x.labels'))
-  set_labels : ∀ (x : wrappingCollector.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingCollector.t)))
+  type_repr : go.TypeReprUnderlying wrappingCollector.underlying wrappingCollector
+  underlying : go.UnderlyingDirectedEq wrappingCollector.ty wrappingCollector.underlying
+  get_wrappedCollector : ∀ (x : wrappingCollector), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"wrappedCollector") #x (Val #(x.wrappedCollector'))
+  set_wrappedCollector : ∀ (x : wrappingCollector) (y : Collector), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"wrappedCollector") (PairV #x #y) (Val #(({ x with wrappedCollector' := y } : wrappingCollector)))
+  get_prefix : ∀ (x : wrappingCollector), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"prefix") #x (Val #(x.prefix'))
+  set_prefix : ∀ (x : wrappingCollector) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingCollector)))
+  get_labels : ∀ (x : wrappingCollector), go.IsGoStepPureDetTagged under (StructFieldGet wrappingCollector.underlying go!"labels") #x (Val #(x.labels'))
+  set_labels : ∀ (x : wrappingCollector) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet wrappingCollector.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingCollector)))
 
 attribute [instance] wrappingCollector.TypeAssumptions.type_repr
   wrappingCollector.TypeAssumptions.underlying
@@ -3622,21 +3452,19 @@ attribute [instance] wrappingCollector.TypeAssumptions.type_repr
   wrappingCollector.TypeAssumptions.get_labels
   wrappingCollector.TypeAssumptions.set_labels
 
-namespace wrappingMetric
-structure t [FfiSyntax] where
+structure wrappingMetric [FfiSyntax] where
   mk ::
-  wrappedMetric' : Metric.t
+  wrappedMetric' : Metric
   prefix' : GoString
-  labels' : Labels.t
+  labels' : Labels
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end wrappingMetric
+instance wrappingMetric.zero_val [FfiSyntax] : ZeroVal wrappingMetric :=
+  ⟨wrappingMetric.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def wrappingMetric.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"wrappedMetric" Metric),
+  [(go.field_decl.FieldDecl go!"wrappedMetric" Metric.ty),
 (go.field_decl.FieldDecl go!"prefix" go.string),
-(go.field_decl.FieldDecl go!"labels" Labels)]
+(go.field_decl.FieldDecl go!"labels" Labels.ty)]
 
 @[irreducible] def wrappingMetric.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   wrappingMetric.fieldsUnsealed
@@ -3649,14 +3477,14 @@ instance equals_unfold_wrappingMetric [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType wrappingMetric.fields)
 
 class wrappingMetric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying wrappingMetric.underlying wrappingMetric.t
-  underlying : go.UnderlyingDirectedEq wrappingMetric wrappingMetric.underlying
-  get_wrappedMetric : ∀ (x : wrappingMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"wrappedMetric") #x (Val #(x.wrappedMetric'))
-  set_wrappedMetric : ∀ (x : wrappingMetric.t) (y : Metric.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"wrappedMetric") (PairV #x #y) (Val #(({ x with wrappedMetric' := y } : wrappingMetric.t)))
-  get_prefix : ∀ (x : wrappingMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"prefix") #x (Val #(x.prefix'))
-  set_prefix : ∀ (x : wrappingMetric.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingMetric.t)))
-  get_labels : ∀ (x : wrappingMetric.t), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"labels") #x (Val #(x.labels'))
-  set_labels : ∀ (x : wrappingMetric.t) (y : Labels.t), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingMetric.t)))
+  type_repr : go.TypeReprUnderlying wrappingMetric.underlying wrappingMetric
+  underlying : go.UnderlyingDirectedEq wrappingMetric.ty wrappingMetric.underlying
+  get_wrappedMetric : ∀ (x : wrappingMetric), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"wrappedMetric") #x (Val #(x.wrappedMetric'))
+  set_wrappedMetric : ∀ (x : wrappingMetric) (y : Metric), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"wrappedMetric") (PairV #x #y) (Val #(({ x with wrappedMetric' := y } : wrappingMetric)))
+  get_prefix : ∀ (x : wrappingMetric), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"prefix") #x (Val #(x.prefix'))
+  set_prefix : ∀ (x : wrappingMetric) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : wrappingMetric)))
+  get_labels : ∀ (x : wrappingMetric), go.IsGoStepPureDetTagged under (StructFieldGet wrappingMetric.underlying go!"labels") #x (Val #(x.labels'))
+  set_labels : ∀ (x : wrappingMetric) (y : Labels), go.IsGoStepPureDetTagged under (StructFieldSet wrappingMetric.underlying go!"labels") (PairV #x #y) (Val #(({ x with labels' := y } : wrappingMetric)))
 
 attribute [instance] wrappingMetric.TypeAssumptions.type_repr
   wrappingMetric.TypeAssumptions.underlying

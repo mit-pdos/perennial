@@ -124,7 +124,7 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : Loc) (γ : sync.
     sync.isWaitGroup wg_ptr γ N ∗ sync.ownWaitGroup γ ctr ={⊤}=∗
     [∗list] P ∈ (List.replicate (sint.Z ctr).toNat
         iprop(∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync -∗ Φ #() -∗
-          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
+          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup.ty @!! go!"Done")) (Val #()))
             {{ Φ }})), P := by
   iintro ⟨#His, Hctr⟩
   by_cases hpos : ¬ sint.Z ctr > 0
@@ -147,7 +147,7 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : Loc) (γ : sync.
   have one : ⊢ sync.isWaitGroup wg_ptr γ N -∗ inv N' iprop(∃ c : w32, sync.ownWaitGroup γ c ∗ ownTokAuth γt (sint.Z c).toNat) -∗
       ownToks γt 1 -∗
       (∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync -∗ Φ #() -∗
-          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
+          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup.ty @!! go!"Done")) (Val #()))
             {{ Φ }}) := by
     iintro #His #Hinv Htok %Φ #Hinit HΦ
     wp_apply_core sync.WaitGroup.wp_Done wg_ptr γ N $$ [] [-]
@@ -182,7 +182,7 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : Loc) (γ : sync.
     · iapply one $$ His Hinv Htok
     · iapply IH $$ Htoks
 
-def ownLeaseKey (lk : leaseKey.t) (_γ : LeasingKVNames) (_key : GoString) : IProp GF :=
+def ownLeaseKey (lk : leaseKey) (_γ : LeasingKVNames) (_key : GoString) : IProp GF :=
   iprop(
   "Hwaitc" ∷ (⌜lk.waitc' = chan.nil⌝ ∨
               ∃ γlk, ownBroadcastChan lk.waitc' γlk iprop(True) .Unknown) ∗
@@ -191,13 +191,13 @@ def ownLeaseKey (lk : leaseKey.t) (_γ : LeasingKVNames) (_key : GoString) : IPr
 
 def ownLeaseCacheLocked (lc : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
   iprop(∃ (entries_ptr : Loc) (entries : GMap GoString Loc) (revokes_ptr : Loc)
-      (revokes : GMap GoString time.Time.t) (entries_ready : Bool),
-    "entries_ptr" ∷ lc.[leaseCache.t, go!"entries"] ↦{DFrac.own q} entries_ptr ∗
+      (revokes : GMap GoString time.Time) (entries_ready : Bool),
+    "entries_ptr" ∷ lc.[leaseCache, go!"entries"] ↦{DFrac.own q} entries_ptr ∗
     "entries" ∷ (if entries_ready then entries_ptr ↦${DFrac.own q} entries
                  else iprop(⌜entries_ptr = null ∧ entries = ∅⌝)) ∗
     "Hentries" ∷ ([∗map] key ↦ lk_ptr ∈ entries,
       ∃ lk, lk_ptr ↦{DFrac.own q} lk ∗ ownLeaseKey lk γ key) ∗
-    "revokes_ptr" ∷ lc.[leaseCache.t, go!"revokes"] ↦{DFrac.own q} revokes_ptr ∗
+    "revokes_ptr" ∷ lc.[leaseCache, go!"revokes"] ↦{DFrac.own q} revokes_ptr ∗
     "revokes" ∷ revokes_ptr ↦${DFrac.own q} revokes ∗
     "Hentries_ready" ∷ dghostVar γ.entriesReadyGn
       (if entries_ready then DFrac.discard else DFrac.own q) entries_ready)
@@ -209,32 +209,32 @@ def isEntriesReady (γ : LeasingKVNames) : IProp GF :=
 /-- Proposition guarded by `lkv.leases.mu`. -/
 def ownLeasingKVLocked (lkv : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
   iprop(∃ (sessionc : chan.t) (session : Loc) (γsession : ChanNames),
-    "sessionc" ∷ lkv.[leasingKV.t, go!"sessionc"] ↦{DFrac.own q.half} sessionc ∗
+    "sessionc" ∷ lkv.[leasingKV, go!"sessionc"] ↦{DFrac.own q.half} sessionc ∗
     "#Hsessionc" ∷ ownBroadcastChan sessionc γsession (isEntriesReady γ) .Unknown ∗
-    "session" ∷ lkv.[leasingKV.t, go!"session"] ↦{DFrac.own q.half} session ∗
+    "session" ∷ lkv.[leasingKV, go!"session"] ↦{DFrac.own q.half} session ∗
     "#Hsession" ∷ (if session = null then iprop(True)
                    else ∃ lease, isSession session γ.etcdGn lease) ∗
-    "Hleases" ∷ ownLeaseCacheLocked (lkv.[leasingKV.t, go!"leases"]) γ q)
+    "Hleases" ∷ ownLeaseCacheLocked (lkv.[leasingKV, go!"leases"]) γ q)
 
 /-- This is owned by the background thread running `monitorSession`. -/
 def ownLeasingKVMonitorSession (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
   iprop(∃ (session : Loc) (sessionc : chan.t) («open» : Bool) (γsessionc : ChanNames),
-    "session" ∷ lkv.[leasingKV.t, go!"session"] ↦{DFrac.own (1 : Qp).half} session ∗
+    "session" ∷ lkv.[leasingKV, go!"session"] ↦{DFrac.own (1 : Qp).half} session ∗
     "#Hsession" ∷ (if session = null then iprop(True)
                    else ∃ lease, isSession session γ.etcdGn lease) ∗
-    "sessionc" ∷ lkv.[leasingKV.t, go!"sessionc"] ↦{DFrac.own (1 : Qp).half} sessionc ∗
+    "sessionc" ∷ lkv.[leasingKV, go!"sessionc"] ↦{DFrac.own (1 : Qp).half} sessionc ∗
     "Hsessionc" ∷ ownBroadcastChan sessionc γsessionc (isEntriesReady γ)
       (if «open» then .Pending else .Done))
 
 /-- Almost persistent. -/
 def ownLeasingKVDef (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
   iprop(∃ (cl : Loc) (ctx : interface.t_ok) (ctx_st : context.Context_desc.t (IProp GF)),
-    "#cl" ∷ lkv.[leasingKV.t, go!"cl"] ↦□ cl ∗
+    "#cl" ∷ lkv.[leasingKV, go!"cl"] ↦□ cl ∗
     "#Hcl" ∷ isClient cl γ.etcdGn ∗
-    "#ctx" ∷ lkv.[leasingKV.t, go!"ctx"] ↦□ (interface.ok ctx) ∗
+    "#ctx" ∷ lkv.[leasingKV, go!"ctx"] ↦□ (interface.ok ctx) ∗
     "#Hctx" ∷ context.isContext ctx ctx_st ∗
-    "#session_opts" ∷ lkv.[leasingKV.t, go!"sessionOpts"] ↦□ slice.nil ∗
-    "Hmu" ∷ sync.ownRWMutex (lkv.[leasingKV.t, go!"leases"].[leaseCache.t, go!"mu"])
+    "#session_opts" ∷ lkv.[leasingKV, go!"sessionOpts"] ↦□ slice.nil ∗
+    "Hmu" ∷ sync.ownRWMutex (lkv.[leasingKV, go!"leases"].[leaseCache, go!"mu"])
       (ownLeasingKVLocked lkv γ))
 /-- (Rocq: `Opaque ownLeasingKV`) -/
 @[irreducible] def ownLeasingKV (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
@@ -242,7 +242,7 @@ def ownLeasingKVDef (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
 theorem ownLeasingKV_unseal : @ownLeasingKV = @ownLeasingKVDef := by
   funext; with_unfolding_all rfl
 
-instance ownLeaseKey_persistent (lk : leaseKey.t) (γ : LeasingKVNames) (key : GoString) :
+instance ownLeaseKey_persistent (lk : leaseKey) (γ : LeasingKVNames) (key : GoString) :
     Persistent (ownLeaseKey (GF := GF) lk γ key) := by
   unfold ownLeaseKey; simp only [named]; infer_instance
 

@@ -42,7 +42,7 @@ theorem wp_testStructConstructions : TestFunOk (GF := GF) testStructConstruction
   · -- Rocq: Admitted ("how to combine typedPointsto to get sum of fractions?")
     subst h
     iexfalso
-    rw [typedPointsto_unseal_eq p4_ptr (_ : TwoInts.t), typedPointsto_unseal_eq p4_ptr (_ : TwoInts.t)]
+    rw [typedPointsto_unseal_eq p4_ptr (_ : TwoInts), typedPointsto_unseal_eq p4_ptr (_ : TwoInts)]
     simp only [TypedPointsto.typedPointstoDef]
     icases p4 with ⟨⟨Hx, _⟩, _⟩
     icases «$r0» with ⟨⟨Hx', _⟩, _⟩

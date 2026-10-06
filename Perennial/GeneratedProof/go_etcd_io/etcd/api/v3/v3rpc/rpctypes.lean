@@ -24,48 +24,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.Assumptions]
 
 instance EtcdError_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError where
   typedPointstoDef l v dq := iprop(
-    "code" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq ∗
-    "desc" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq ∗
+    "code" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"code" l) v.code' dq ∗
+    "desc" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"desc" l) v.desc' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EtcdError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.underlying := by
   solve_into_val_typed_struct
 
-instance EtcdError_access_load_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
+instance EtcdError_access_load_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"code" l) v.code' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"code" l) v.code' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_store_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (code' : google_golang_org.grpc.codes.Code.t) :
+instance EtcdError_access_store_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (code' : google_golang_org.grpc.codes.Code) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) code' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"code" l) v.code' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"code" l) code' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_load_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
+instance EtcdError_access_load_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"desc" l) v.desc' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"desc" l) v.desc' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_store_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (desc' : GoString) :
+instance EtcdError_access_store_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (desc' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) desc' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"desc" l) v.desc' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError go!"desc" l) desc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -81,7 +81,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.Assumptions]
 
 instance TokenFieldNameGRPCKey_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -89,7 +89,7 @@ instance TokenFieldNameGRPCKey_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TokenFieldNameGRPCKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.underlying := by
   solve_into_val_typed_struct
 
 end def_

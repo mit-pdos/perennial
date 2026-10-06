@@ -18,10 +18,10 @@ end pkg_id
 
 namespace go_etcd_io.raft.v3.confchange
 
-def Changer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Changer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/raft/v3/confchange.Changer" [])
 
-attribute [irreducible] Changer
+attribute [irreducible] Changer.ty
 
 noncomputable def checkInvariants [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.checkInvariants"
@@ -74,18 +74,16 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.raft.v3.tracker.initialize') (Val #())))))))
 
-namespace Changer
-structure t [FfiSyntax] where
+structure Changer [FfiSyntax] where
   mk ::
-  Tracker' : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t
+  Tracker' : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker
   LastIndex' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Changer
+instance Changer.zero_val [FfiSyntax] : ZeroVal Changer :=
+  ⟨Changer.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Changer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Tracker" _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker),
+  [(go.field_decl.FieldDecl go!"Tracker" _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.ty),
 (go.field_decl.FieldDecl go!"LastIndex" go.uint64)]
 
 @[irreducible] def Changer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -99,12 +97,12 @@ instance equals_unfold_Changer [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Changer.fields)
 
 class Changer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Changer.underlying Changer.t
-  underlying : go.UnderlyingDirectedEq Changer Changer.underlying
-  get_Tracker : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"Tracker") #x (Val #(x.Tracker'))
-  set_Tracker : ∀ (x : Changer.t) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"Tracker") (PairV #x #y) (Val #(({ x with Tracker' := y } : Changer.t)))
-  get_LastIndex : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"LastIndex") #x (Val #(x.LastIndex'))
-  set_LastIndex : ∀ (x : Changer.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"LastIndex") (PairV #x #y) (Val #(({ x with LastIndex' := y } : Changer.t)))
+  type_repr : go.TypeReprUnderlying Changer.underlying Changer
+  underlying : go.UnderlyingDirectedEq Changer.ty Changer.underlying
+  get_Tracker : ∀ (x : Changer), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"Tracker") #x (Val #(x.Tracker'))
+  set_Tracker : ∀ (x : Changer) (y : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"Tracker") (PairV #x #y) (Val #(({ x with Tracker' := y } : Changer)))
+  get_LastIndex : ∀ (x : Changer), go.IsGoStepPureDetTagged under (StructFieldGet Changer.underlying go!"LastIndex") #x (Val #(x.LastIndex'))
+  set_LastIndex : ∀ (x : Changer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Changer.underlying go!"LastIndex") (PairV #x #y) (Val #(({ x with LastIndex' := y } : Changer)))
 
 attribute [instance] Changer.TypeAssumptions.type_repr
   Changer.TypeAssumptions.underlying

@@ -63,13 +63,9 @@ def Mutex.Unlock.impl : val :=
 
 end code
 
-namespace Mutex
-abbrev t := Bool
-end Mutex
+abbrev Mutex := Bool
 
-namespace ProphId
-abbrev t := Perennial.proph_id
-end ProphId
+abbrev ProphId := Perennial.proph_id
 
 end github_com.goose_lang.primitive
 

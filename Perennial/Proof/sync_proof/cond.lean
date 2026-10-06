@@ -41,8 +41,8 @@ variable [package_sem : sync.Assumptions]
 (`null`) and fully owned by the invariant, or has been set (by the first
 `check`) to its own address, after which it never changes. -/
 abbrev copyCheckerInv (c : Loc) : IProp GF :=
-  iprop(typedPointsto c (null : copyChecker.t) (DFrac.own 1) ∨
-    typedPointsto c (c : copyChecker.t) DFrac.discard)
+  iprop(typedPointsto c (null : copyChecker) (DFrac.own 1) ∨
+    typedPointsto c (c : copyChecker) DFrac.discard)
 
 /-- Lean addition (see the module docstring). -/
 def copyCheckerN : Namespace := nroot.@"copyChecker"
@@ -59,13 +59,13 @@ instance isCopyChecker_persistent (c : Loc) : Persistent (isCopyChecker (GF := G
 /-- This means `c` is a condvar with underlying Locker `m`. -/
 def isCondDef (c : Loc) (m : interface.t_ok) : IProp GF :=
   iprop("#Hi" ∷ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
-    "#Hc" ∷ typedPointsto (structFieldRef Cond.t go!"L" c) (interface.ok m) DFrac.discard ∗
+    "#Hc" ∷ typedPointsto (structFieldRef Cond go!"L" c) (interface.ok m) DFrac.discard ∗
     -- FIXME (Rocq): not accurate to assume it never changes, there should be an
     -- unknown notifyList struct in an invariant
-    "#Hnotify" ∷ typedPointsto (structFieldRef Cond.t go!"notify" c)
-      (zero_val notifyList.t) DFrac.discard ∗
+    "#Hnotify" ∷ typedPointsto (structFieldRef Cond go!"notify" c)
+      (zero_val notifyList) DFrac.discard ∗
     -- Lean: Rocq has `c.[Cond.t, "checker"] ↦□ zero_val copyChecker.t`, which `check` breaks.
-    "#Hchecker" ∷ isCopyChecker (structFieldRef Cond.t go!"checker" c))
+    "#Hchecker" ∷ isCopyChecker (structFieldRef Cond go!"checker" c))
 @[irreducible] def isCond (c : Loc) (m : interface.t_ok) : IProp GF := isCondDef c m
 theorem isCond_unseal : @isCond = @isCondDef := by funext; with_unfolding_all rfl
 
@@ -97,7 +97,7 @@ theorem wp_NewCond (m : interface.t_ok) :
 which is false for the zero checker: `check` CASes it to `c`). -/
 theorem copyChecker.wp_check (c : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isCopyChecker (GF := GF) c }}
-      (App (Val (c @!! go.GoType.PointerType copyChecker @!! go!"check")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType copyChecker.ty @!! go!"check")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as #Hinv
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef
@@ -149,7 +149,7 @@ theorem copyChecker.wp_check (c : Loc) :
     iapply HΦ
     itrivial
 
-theorem wp_runtime_notifyListAdd (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+theorem wp_runtime_notifyListAdd (l : Loc) (l_v : notifyList) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListAdd)) (Val #l))
     {{ (x : w32), RET #x; typedPointsto (GF := GF) l l_v dq }} := by
@@ -157,21 +157,21 @@ theorem wp_runtime_notifyListAdd (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
   wp_apply wp_ArbitraryInt as %x _
   wp_end
 
-theorem wp_runtime_notifyListNotifyOne (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+theorem wp_runtime_notifyListNotifyOne (l : Loc) (l_v : notifyList) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListNotifyOne)) (Val #l))
     {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_end
 
-theorem wp_runtime_notifyListNotifyAll (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+theorem wp_runtime_notifyListNotifyAll (l : Loc) (l_v : notifyList) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListNotifyAll)) (Val #l))
     {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_end
 
-theorem wp_runtime_notifyListWait (l : Loc) (l_v : notifyList.t) (t : w32) (dq : DFrac) :
+theorem wp_runtime_notifyListWait (l : Loc) (l_v : notifyList) (t : w32) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (App (Val (@! runtime_notifyListWait)) (Val #l)) (Val #t))
     {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
@@ -180,7 +180,7 @@ theorem wp_runtime_notifyListWait (l : Loc) (l_v : notifyList.t) (t : w32) (dq :
 
 theorem Cond.wp_Signal (c : Loc) (lk : interface.t_ok) :
     {{ isCond (GF := GF) c lk }}
-      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Signal")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Signal")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as H
   simp only [isCond_unseal, isCondDef]
@@ -192,7 +192,7 @@ theorem Cond.wp_Signal (c : Loc) (lk : interface.t_ok) :
 
 theorem Cond.wp_Broadcast (c : Loc) (lk : interface.t_ok) :
     {{ isCond (GF := GF) c lk }}
-      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Broadcast")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Broadcast")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as H
   simp only [isCond_unseal, isCondDef]
@@ -204,7 +204,7 @@ theorem Cond.wp_Broadcast (c : Loc) (lk : interface.t_ok) :
 
 theorem Cond.wp_Wait (c : Loc) (m : interface.t_ok) (R : IProp GF) :
     {{ isCond c m ∗ isLocker m R ∗ R }}
-      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Wait")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Wait")) (Val #()))
     {{ RET #(); R }} := by
   wp_start as ⟨H, #Hlock, HR⟩
   simp only [isCond_unseal, isCondDef]

@@ -19,15 +19,15 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 
-def LockedStack [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def LockedStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.LockedStack" [])
 
-attribute [irreducible] LockedStack
+attribute [irreducible] LockedStack.ty
 
-def EliminationStack [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def EliminationStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.EliminationStack" [])
 
-attribute [irreducible] EliminationStack
+attribute [irreducible] EliminationStack.ty
 
 @[reducible] noncomputable def timeout [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 10000)
@@ -43,72 +43,72 @@ noncomputable def NewLockedStack.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc LockedStack))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.string)]))) (Val #())) (Val #(W64 0)))
-  (App (Val (GoInstruction (CompositeLiteral LockedStack))) (LiteralValue [(KeyedElement (some (KeyField go!"stack")) (ElementExpression (go.GoType.SliceType go.string) (Var "$v0")))])))))))
+  (App (Val (GoInstruction (GoAlloc LockedStack.ty))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.string)]))) (Val #())) (Val #(W64 0)))
+  (App (Val (GoInstruction (CompositeLiteral LockedStack.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"stack")) (ElementExpression (go.GoType.SliceType go.string) (Var "$v0")))])))))))
 
 /-- go: elimination_stack.go:18:23 -/
 noncomputable def LockedStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType LockedStack)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType LockedStack.ty)))) (Var "s"))
   (Let "value" (App (Val (GoInstruction (GoAlloc go.string))) (Var "value"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.string))) (Var "value"))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #()))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #()))))))))))
 
 /-- go: elimination_stack.go:24:23 -/
 noncomputable def LockedStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType LockedStack)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType LockedStack.ty)))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "last" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "last")))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "last")))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType go.string)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "last")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "v")) (Val #true)))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "v") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "last") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s"))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"stack"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (Val #(go!"")) (Val #false)))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #()))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (Var "s")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #()))))))))
 
 /-- NewEliminationStack constructs a new elimination stack
     using a fresh LockedStack and a small default timeout.
@@ -118,9 +118,9 @@ noncomputable def NewEliminationStack.impl [FfiSyntax] [GoGlobalContext] : val :
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc EliminationStack))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve NewLockedStack []))) (Val #())) (Val #()))
+  (App (Val (GoInstruction (GoAlloc EliminationStack.ty))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve NewLockedStack []))) (Val #())) (Val #()))
   (Let "$v1" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv go.string)]))) (Val #())) (Val #()))
-  (App (Val (GoInstruction (CompositeLiteral EliminationStack))) (LiteralValue [(KeyedElement (some (KeyField go!"base")) (ElementExpression (go.GoType.PointerType LockedStack) (Var "$v0"))), (KeyedElement (some (KeyField go!"exchanger")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral EliminationStack.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"base")) (ElementExpression (go.GoType.PointerType LockedStack.ty) (Var "$v0"))), (KeyedElement (some (KeyField go!"exchanger")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1")))]))))))))
 
 /-- Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
@@ -129,7 +129,7 @@ noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EliminationStack)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))
   (Let "value" (App (Val (GoInstruction (GoAlloc go.string))) (Var "value"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -137,14 +137,14 @@ noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "value"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LockedStack) go!"Push"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (App (Val (GoInstruction (StructFieldRef EliminationStack go!"base"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack)))) (Var "s"))))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LockedStack.ty) go!"Push"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"base"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))) (Var "$a0"))))))
   (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "value"))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack)))) (Var "s"))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
   (Let "$ch1" (Let "$a0" (Val timeout)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.string (Var "$ch0") (Var "$v0")) (App (Val doReturn)
   (Val #()))),
-  (CommClause (RecvCase _root_.Perennial.time.Time (Var "$ch1")) (Lam "$recvVal"
+  (CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch1")) (Lam "$recvVal"
   (App (Val doExecute)
   (Val #()))))]))))))))))))
 
@@ -155,14 +155,14 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EliminationStack)))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LockedStack) go!"Pop"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack)))) (App (Val (GoInstruction (StructFieldRef EliminationStack go!"base"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack)))) (Var "s"))))) (Val #()))
+  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LockedStack.ty) go!"Pop"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"base"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack)))) (Var "s"))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
   (Let "$ch1" (Let "$a0" (Val timeout)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase go.string (Var "$ch0")) (Lam "$recvVal"
@@ -173,7 +173,7 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
   (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "v")) (Val #true)))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "v") (Var "$r0"))))))))),
-  (CommClause (RecvCase _root_.Perennial.time.Time (Var "$ch1")) (Lam "$recvVal"
+  (CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch1")) (Lam "$recvVal"
   (App (Val doExecute)
   (Val #()))))])))))))))
 
@@ -190,18 +190,16 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
-namespace LockedStack
-structure t [FfiSyntax] where
+structure LockedStack [FfiSyntax] where
   mk ::
-  mu' : _root_.Perennial.sync.Mutex.t
+  mu' : _root_.Perennial.sync.Mutex
   stack' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end LockedStack
+instance LockedStack.zero_val [FfiSyntax] : ZeroVal LockedStack :=
+  ⟨LockedStack.mk zeroValDef zeroValDef⟩
 
 @[reducible] def LockedStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"stack" (go.GoType.SliceType go.string))]
 
 @[irreducible] def LockedStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -215,14 +213,14 @@ instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType LockedStack.fields)
 
 class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack.t
-  underlying : go.UnderlyingDirectedEq LockedStack LockedStack.underlying
-  get_mu : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : LockedStack.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack.t)))
-  get_stack : ∀ (x : LockedStack.t), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
-  set_stack : ∀ (x : LockedStack.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack.t)))
-  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Pop" LockedStack.Pop.impl
-  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack) go!"Push" LockedStack.Push.impl
+  type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack
+  underlying : go.UnderlyingDirectedEq LockedStack.ty LockedStack.underlying
+  get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
+  get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
+  set_stack : ∀ (x : LockedStack) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
+  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Pop" LockedStack.Pop.impl
+  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Push" LockedStack.Push.impl
 
 attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.underlying
@@ -233,18 +231,16 @@ attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.ptr_Pop_unfold
   LockedStack.TypeAssumptions.ptr_Push_unfold
 
-namespace EliminationStack
-structure t [FfiSyntax] where
+structure EliminationStack [FfiSyntax] where
   mk ::
   base' : Loc
   exchanger' : chan.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end EliminationStack
+instance EliminationStack.zero_val [FfiSyntax] : ZeroVal EliminationStack :=
+  ⟨EliminationStack.mk zeroValDef zeroValDef⟩
 
 @[reducible] def EliminationStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType LockedStack)),
+  [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType LockedStack.ty)),
 (go.field_decl.FieldDecl go!"exchanger" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
 @[irreducible] def EliminationStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -258,14 +254,14 @@ instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType EliminationStack.fields)
 
 class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack.t
-  underlying : go.UnderlyingDirectedEq EliminationStack EliminationStack.underlying
-  get_base : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
-  set_base : ∀ (x : EliminationStack.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack.t)))
-  get_exchanger : ∀ (x : EliminationStack.t), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
-  set_exchanger : ∀ (x : EliminationStack.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack.t)))
-  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Pop" EliminationStack.Pop.impl
-  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack) go!"Push" EliminationStack.Push.impl
+  type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack
+  underlying : go.UnderlyingDirectedEq EliminationStack.ty EliminationStack.underlying
+  get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
+  set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
+  get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
+  set_exchanger : ∀ (x : EliminationStack) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
+  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Pop" EliminationStack.Pop.impl
+  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Push" EliminationStack.Push.impl
 
 attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.underlying

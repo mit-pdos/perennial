@@ -332,57 +332,57 @@ def chanPhys (s : ChanPhysState V) : IProp GF :=
   match s with
   | .Closed [] =>
       iprop(∃ (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 6) ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 6) ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Closed drain =>
       iprop(∃ (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 6) ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 6) ∗
         "slice" ∷ slice_val ↦* drain ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Buffered buff =>
       iprop(∃ (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 0) ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 0) ∗
         "slice" ∷ slice_val ↦* buff ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .Idle =>
       iprop(∃ (v0 : V) (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 1) ∗
-        "v" ∷ ch.[channel.Channel.t V, go!"v"] ↦ v0 ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 1) ∗
+        "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .SndWait v =>
       iprop(∃ (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 2) ∗
-        "v" ∷ ch.[channel.Channel.t V, go!"v"] ↦ v ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 2) ∗
+        "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .RcvWait =>
       iprop(∃ (v0 : V) (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 3) ∗
-        "v" ∷ ch.[channel.Channel.t V, go!"v"] ↦ v0 ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 3) ∗
+        "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .SndDone v =>
       iprop(∃ (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 4) ∗
-        "v" ∷ ch.[channel.Channel.t V, go!"v"] ↦ v ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 4) ∗
+        "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
   | .RcvDone =>
       iprop(∃ (v0 : V) (slice_val : slice.t),
-        "state" ∷ ch.[channel.Channel.t V, go!"state"] ↦ (W64 5) ∗
-        "v" ∷ ch.[channel.Channel.t V, go!"v"] ↦ v0 ∗
+        "state" ∷ ch.[channel.Channel V, go!"state"] ↦ (W64 5) ∗
+        "v" ∷ ch.[channel.Channel V, go!"v"] ↦ v0 ∗
         "slice" ∷ slice_val ↦* ([] : List V) ∗
         "slice_cap" ∷ ownSliceCap V slice_val (DFrac.own 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, go!"buffer"] ↦ slice_val)
+        "buffer" ∷ ch.[channel.Channel V, go!"buffer"] ↦ slice_val)
 
 /-- Bundles together offer-related ghost state for atomic operations. -/
 def savedOffer (q : Qp) (lock_val : Option (OfferLock V))
@@ -453,8 +453,8 @@ theorem chanInvInner_intro (s : ChanPhysState V) :
 
 def isChanDef : IProp GF :=
   iprop(∃ (mu_loc : Loc),
-    "#cap" ∷ ch.[channel.Channel.t V, go!"cap"] ↦□ γ.chanCap ∗
-    "#mu" ∷ ch.[channel.Channel.t V, go!"mu"] ↦□ mu_loc ∗
+    "#cap" ∷ ch.[channel.Channel V, go!"cap"] ↦□ γ.chanCap ∗
+    "#mu" ∷ ch.[channel.Channel V, go!"mu"] ↦□ mu_loc ∗
     "#lock" ∷ isLock mu_loc (chanInvInner ch γ V) ∗
     "%Hnotnull" ∷ ⌜ch ≠ chan.nil⌝ ∗
     "%Hcap" ∷ ⌜0 ≤ sint.Z γ.chanCap⌝)

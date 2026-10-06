@@ -90,10 +90,10 @@ variable [sem : go.Semantics]
 
 def waitR (_id' : w64) (v : interface.t) : IProp GF :=
   iprop(⌜v = interface.nil⌝ ∨
-    ∃ (res_ptr : Loc) (res : apply.Result.t),
-      ⌜v = interface.mkOk apply.Result #res_ptr⌝ ∗ res_ptr ↦ res)
+    ∃ (res_ptr : Loc) (res : apply.Result),
+      ⌜v = interface.mkOk apply.Result.ty #res_ptr⌝ ∗ res_ptr ↦ res)
 
-def isSimpleRequest (r : api.v3.etcdserverpb.InternalRaftRequest.t) : IProp GF :=
+def isSimpleRequest (r : api.v3.etcdserverpb.InternalRaftRequest) : IProp GF :=
   iprop(
   "%HAuthenticate" ∷ ⌜r.Authenticate' = null⌝ ∗
   "%HID" ∷ ⌜r.ID' = W64 0⌝ ∗
@@ -120,15 +120,15 @@ axiom ownEtcdServer_access [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
   ⊢ ownEtcdServer (GF := GF) s γ -∗
     ∃ (reqIDGen : Loc) (MaxRequestBytes : w64) (w : interface.t_ok)
       (γw : WaitParams GF) (rn : interface.t_ok),
-      "#reqIDGen" ∷ s.[etcdserver.EtcdServer.t, go!"reqIDGen"] ↦□ reqIDGen ∗
+      "#reqIDGen" ∷ s.[etcdserver.EtcdServer, go!"reqIDGen"] ↦□ reqIDGen ∗
       "#HreqIDGen" ∷ isGenerator reqIDGen (ownID γ) ∗
       "#Cfg_MaxRequestBytes" ∷
-        s.[etcdserver.EtcdServer.t, go!"Cfg"].[config.ServerConfig.t, go!"MaxRequestBytes"] ↦□
+        s.[etcdserver.EtcdServer, go!"Cfg"].[config.ServerConfig, go!"MaxRequestBytes"] ↦□
           MaxRequestBytes ∗
-      "#w" ∷ s.[etcdserver.EtcdServer.t, go!"w"] ↦□ (interface.ok w) ∗
+      "#w" ∷ s.[etcdserver.EtcdServer, go!"w"] ↦□ (interface.ok w) ∗
       "#Hinternal" ∷ isEtcdServerInternal s γ ∗
-      "#raftNode" ∷ s.[etcdserver.EtcdServer.t, go!"r"].[etcdserver.raftNode.t, go!"raftNodeConfig"]
-         .[etcdserver.raftNodeConfig.t, go!"Node"] ↦□ (interface.ok rn) ∗
+      "#raftNode" ∷ s.[etcdserver.EtcdServer, go!"r"].[etcdserver.raftNode, go!"raftNodeConfig"]
+         .[etcdserver.raftNodeConfig, go!"Node"] ↦□ (interface.ok rn) ∗
       "#Hr" ∷ is_Node (raftGn γ) rn ∗
       "Hw" ∷ ownWait γw w waitR ∗
       "Hclose" ∷ (ownWait γw w waitR -∗ ownEtcdServer s γ)
@@ -164,7 +164,7 @@ axiom EtcdServer.wp_getAppliedIndex [ext : FfiSyntax] [ffi : FfiModel] [FfiInter
     (s : Loc) (γ : EtcdServerNames) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       isEtcdServerInternal s γ }}
-    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"getAppliedIndex")) (Val #()))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer.ty @!! go!"getAppliedIndex")) (Val #()))
   {{ (a : w64), RET #a; True }}
 
 axiom EtcdServer.wp_getCommittedIndex [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
@@ -173,7 +173,7 @@ axiom EtcdServer.wp_getCommittedIndex [ext : FfiSyntax] [ffi : FfiModel] [FfiInt
     (s : Loc) (γ : EtcdServerNames) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       isEtcdServerInternal s γ }}
-    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"getCommittedIndex")) (Val #()))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer.ty @!! go!"getCommittedIndex")) (Val #()))
   {{ (a : w64), RET #a; True }}
 
 axiom EtcdServer.wp_AuthInfoFromCtx [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
@@ -184,12 +184,12 @@ axiom EtcdServer.wp_AuthInfoFromCtx [ext : FfiSyntax] [ffi : FfiModel] [FfiInter
     (ctx_desc : context.Context_desc.t (IProp GF)) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       ownEtcdServer s γ ∗ context.isContext ctx ctx_desc }}
-    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"AuthInfoFromCtx"))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer.ty @!! go!"AuthInfoFromCtx"))
       (Val #(interface.ok ctx)))
   {{ (a_ptr : Loc) (err : interface.t), RET (PairV #a_ptr #err);
       ownEtcdServer s γ ∗
       if a_ptr = null then iprop(True)
-      else ∃ (a : auth.AuthInfo.t), a_ptr ↦ a }}
+      else ∃ (a : auth.AuthInfo), a_ptr ↦ a }}
 
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -220,13 +220,13 @@ calls). The call to `Next` itself needs no premise. -/
 theorem EtcdServer.wp_processInternalRaftRequestOnce (Hbound : receiptBound GF ≤ 2 ^ 48)
     (s : Loc) (γ : EtcdServerNames)
     (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
-    (req : api.v3.etcdserverpb.InternalRaftRequest.t) (req_abs : InternalRaftRequestC) :
+    (req : api.v3.etcdserverpb.InternalRaftRequest) (req_abs : InternalRaftRequestC) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
         "Hsrv" ∷ ownEtcdServer s γ ∗
         "req" ∷ ownInternalRaftRequest req req_abs ∗
         "#Hsimple" ∷ isSimpleRequest req ∗
         "#Hctx" ∷ context.isContext ctx ctx_desc }}
-      (App (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer
+      (App (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer.ty
           @!! go!"processInternalRaftRequestOnce")) (Val #(interface.ok ctx))) (Val #req))
     {{ (a : Loc) (err : interface.t), RET (PairV #a #err); ownEtcdServer s γ }} := by
   -- Unprovable: calls opaque packages (prometheus, otel `SpanFromContext`, `strconv.FormatBool`) and `context.WithTimeout` (unprovable).

@@ -18,15 +18,15 @@ end pkg_id
 
 namespace internal.synctest
 
-def Association [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Association.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Association" [])
 
-attribute [irreducible] Association
+attribute [irreducible] Association.ty
 
-def Bubble [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Bubble.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Bubble" [])
 
-attribute [irreducible] Bubble
+attribute [irreducible] Bubble.ty
 
 axiom Unbubbled [FfiSyntax] [GoGlobalContext] : val
 
@@ -85,26 +85,22 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-namespace Association
-abbrev t [FfiSyntax] : Type := w64
-end Association
+abbrev Association [FfiSyntax] : Type := w64
 
 @[reducible] def Association.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class Association.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Association Association.underlying
+  underlying : go.UnderlyingDirectedEq Association.ty Association.underlying
 
 attribute [instance] Association.TypeAssumptions.underlying
 
-namespace Bubble
-structure t [FfiSyntax] where
+structure Bubble [FfiSyntax] where
   mk ::
   b' : interface.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end Bubble
+instance Bubble.zero_val [FfiSyntax] : ZeroVal Bubble :=
+  ⟨Bubble.mk zeroValDef⟩
 
 @[reducible] def Bubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" go.any)]
@@ -120,10 +116,10 @@ instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Bubble.fields)
 
 class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Bubble.underlying Bubble.t
-  underlying : go.UnderlyingDirectedEq Bubble Bubble.underlying
-  get_b : ∀ (x : Bubble.t), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Bubble.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble.t)))
+  type_repr : go.TypeReprUnderlying Bubble.underlying Bubble
+  underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
+  get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : Bubble) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
 
 attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.underlying

@@ -22,11 +22,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.config.Assumptions]
 
 instance ServerConfig_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig :=
   sorry -- Rocq: Admitted
 
 instance ServerConfig_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig.t go_etcd_io.etcd.server.v3.config.ServerConfig.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig go_etcd_io.etcd.server.v3.config.ServerConfig.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

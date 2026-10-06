@@ -226,14 +226,14 @@ def jhP (done_b : Bool) (P : IProp GF) : IProp GF := if done_b then P else iprop
 
 abbrev jhInv (l : Loc) (P : IProp GF) : IProp GF :=
   iprop(∃ done_b : Bool,
-    "done_b" ∷ typedPointsto (structFieldRef JoinHandle.t go!"done" l) done_b (DFrac.own 1) ∗
+    "done_b" ∷ typedPointsto (structFieldRef JoinHandle go!"done" l) done_b (DFrac.own 1) ∗
     "HP" ∷ jhP done_b P)
 
 def isJoinHandle (l : Loc) (P : IProp GF) : IProp GF :=
   iprop(∃ (mu_l cond_l : Loc),
-    "#mu" ∷ typedPointsto (structFieldRef JoinHandle.t go!"mu" l) mu_l DFrac.discard ∗
-    "#cond" ∷ typedPointsto (structFieldRef JoinHandle.t go!"cond" l) cond_l DFrac.discard ∗
-    "#Hcond" ∷ sync.isCond cond_l (interface.mk (go.GoType.PointerType sync.Mutex) #mu_l) ∗
+    "#mu" ∷ typedPointsto (structFieldRef JoinHandle go!"mu" l) mu_l DFrac.discard ∗
+    "#cond" ∷ typedPointsto (structFieldRef JoinHandle go!"cond" l) cond_l DFrac.discard ∗
+    "#Hcond" ∷ sync.isCond cond_l (interface.mk (go.GoType.PointerType sync.Mutex.ty) #mu_l) ∗
     "#Hlock" ∷ sync.isMutex mu_l (jhInv l P))
 
 instance isJoinHandle_persistent (l : Loc) (P : IProp GF) :
@@ -262,7 +262,7 @@ theorem wp_newJoinHandle (P : IProp GF) :
 
 theorem JoinHandle.wp_finish (l : Loc) (P : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ isJoinHandle l P ∗ P }}
-      (App (Val (l @!! go.GoType.PointerType JoinHandle @!! go!"finish")) (Val #()))
+      (App (Val (l @!! go.GoType.PointerType JoinHandle.ty @!! go!"finish")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hhandle, HPin⟩
   unfold isJoinHandle
@@ -302,7 +302,7 @@ theorem wp_Spawn (P : IProp GF) (f : func.t) :
 
 theorem JoinHandle.wp_Join (l : Loc) (P : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std ∗ isJoinHandle l P }}
-      (App (Val (l @!! go.GoType.PointerType JoinHandle @!! go!"Join")) (Val #()))
+      (App (Val (l @!! go.GoType.PointerType JoinHandle.ty @!! go!"Join")) (Val #()))
     {{ RET #(); P }} := by
   wp_start as #Hjh
   unfold isJoinHandle
@@ -312,7 +312,7 @@ theorem JoinHandle.wp_Join (l : Loc) (P : IProp GF) :
   iNamed Hinv
   ihave HI : (∃ done_b : Bool,
       "locked" ∷ sync.ownMutex mu_l ∗
-      "done" ∷ typedPointsto (structFieldRef JoinHandle.t go!"done" l) done_b (DFrac.own 1) ∗
+      "done" ∷ typedPointsto (structFieldRef JoinHandle go!"done" l) done_b (DFrac.own 1) ∗
       "HP" ∷ jhP done_b P : IProp GF) $$ [Hlocked done_b HP]
   · iexists done_b; iframe
   wp_for HI

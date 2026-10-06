@@ -41,65 +41,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.Assumptions]
 
 instance Status_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.Status.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.Status where
   typedPointstoDef l v dq := iprop(
-    "BasicStatus" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' dq ∗
-    "Config" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' dq ∗
-    "Progress" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' dq ∗
+    "BasicStatus" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"BasicStatus" l) v.BasicStatus' dq ∗
+    "Config" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Config" l) v.Config' dq ∗
+    "Progress" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) v.Progress' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Status_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Status.t go_etcd_io.raft.v3.Status.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.Status go_etcd_io.raft.v3.Status.underlying := by
   solve_into_val_typed_struct
 
-instance Status_access_load_BasicStatus (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (dq : DFrac) :
+instance Status_access_load_BasicStatus (l : Loc) (v : go_etcd_io.raft.v3.Status) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"BasicStatus" l) v.BasicStatus' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"BasicStatus" l) v.BasicStatus' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Status_access_store_BasicStatus (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (BasicStatus' : go_etcd_io.raft.v3.BasicStatus.t) :
+instance Status_access_store_BasicStatus (l : Loc) (v : go_etcd_io.raft.v3.Status) (BasicStatus' : go_etcd_io.raft.v3.BasicStatus) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) v.BasicStatus' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"BasicStatus" l) BasicStatus' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with BasicStatus' := BasicStatus' } : go_etcd_io.raft.v3.Status.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"BasicStatus" l) v.BasicStatus' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"BasicStatus" l) BasicStatus' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with BasicStatus' := BasicStatus' } : go_etcd_io.raft.v3.Status) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Status_access_load_Config (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (dq : DFrac) :
+instance Status_access_load_Config (l : Loc) (v : go_etcd_io.raft.v3.Status) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Config" l) v.Config' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Config" l) v.Config' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Status_access_store_Config (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (Config' : go_etcd_io.raft.v3.tracker.Config.t) :
+instance Status_access_store_Config (l : Loc) (v : go_etcd_io.raft.v3.Status) (Config' : go_etcd_io.raft.v3.tracker.Config) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Config" l) v.Config' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Config" l) Config' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Config' := Config' } : go_etcd_io.raft.v3.Status.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Config" l) v.Config' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Config" l) Config' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Config' := Config' } : go_etcd_io.raft.v3.Status) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Status_access_load_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (dq : DFrac) :
+instance Status_access_load_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) v.Progress' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) v.Progress' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Status_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status.t) (Progress' : map.t) :
+instance Status_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.Status) (Progress' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Progress" l) v.Progress' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status.t go!"Progress" l) Progress' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Progress' := Progress' } : go_etcd_io.raft.v3.Status.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) v.Progress' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.Status go!"Progress" l) Progress' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Progress' := Progress' } : go_etcd_io.raft.v3.Status) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

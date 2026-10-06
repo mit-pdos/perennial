@@ -17,15 +17,15 @@ end pkg_id
 
 namespace internal.runtime.sys
 
-def nih [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def nih.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.nih" [])
 
-attribute [irreducible] nih
+attribute [irreducible] nih.ty
 
-def NotInHeap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def NotInHeap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.NotInHeap" [])
 
-attribute [irreducible] NotInHeap
+attribute [irreducible] NotInHeap.ty
 
 axiom StackGuardMultiplier [FfiSyntax] [GoGlobalContext] : val
 
@@ -142,13 +142,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val deBruijn32tab.init) (Val #()))))))))
 
-namespace nih
-structure t [FfiSyntax] where
+structure nih [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end nih
+instance nih.zero_val [FfiSyntax] : ZeroVal nih :=
+  ⟨nih.mk⟩
 
 @[reducible] def nih.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -164,23 +162,21 @@ instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType nih.fields)
 
 class nih.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying nih.underlying nih.t
-  underlying : go.UnderlyingDirectedEq nih nih.underlying
+  type_repr : go.TypeReprUnderlying nih.underlying nih
+  underlying : go.UnderlyingDirectedEq nih.ty nih.underlying
 
 attribute [instance] nih.TypeAssumptions.type_repr
   nih.TypeAssumptions.underlying
 
-namespace NotInHeap
-structure t [FfiSyntax] where
+structure NotInHeap [FfiSyntax] where
   mk ::
-  _0' : nih.t
+  _0' : nih
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end NotInHeap
+instance NotInHeap.zero_val [FfiSyntax] : ZeroVal NotInHeap :=
+  ⟨NotInHeap.mk zeroValDef⟩
 
 @[reducible] def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" nih)]
+  [(go.field_decl.FieldDecl go!"_0" nih.ty)]
 
 @[irreducible] def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NotInHeap.fieldsUnsealed
@@ -193,10 +189,10 @@ instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType NotInHeap.fields)
 
 class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap.t
-  underlying : go.UnderlyingDirectedEq NotInHeap NotInHeap.underlying
-  get__0 : ∀ (x : NotInHeap.t), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : NotInHeap.t) (y : nih.t), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap.t)))
+  type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap
+  underlying : go.UnderlyingDirectedEq NotInHeap.ty NotInHeap.underlying
+  get__0 : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_0") #x (Val #(x._0'))
+  set__0 : ∀ (x : NotInHeap) (y : nih), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap)))
 
 attribute [instance] NotInHeap.TypeAssumptions.type_repr
   NotInHeap.TypeAssumptions.underlying

@@ -233,11 +233,12 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Chan:
 		return "chan.t"
 	case *types.Named:
-		base := glang.ToIdent(t.Obj().Name()) + ".t"
+		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
-			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(base)
+			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(glang.ToIdent(t.Obj().Name()))
 		} else {
-			base = glang.LeanQuote(base)
+			// universe types (error) are modeled by the framework
+			base = glang.LeanQuote(glang.ToIdent(t.Obj().Name()) + ".t")
 		}
 		if t.TypeArgs().Len() > 0 {
 			var params []string

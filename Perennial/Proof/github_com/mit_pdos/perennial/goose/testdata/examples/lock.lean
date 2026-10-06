@@ -43,10 +43,10 @@ variable [sem : go.Semantics] [package_sem : lock.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
-def isLock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) : IProp GF :=
+def isLock (γ : LockChannelNames) (l : Lock) (R : IProp GF) : IProp GF :=
   iprop("#Hlock_chan" ∷ isLockChannel Unit γ l.ch' R)
 
-instance isLock_persistent (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+instance isLock_persistent (γ : LockChannelNames) (l : Lock) (R : IProp GF) :
     Persistent (isLock γ l R) := by
   unfold isLock; infer_instance
 
@@ -55,7 +55,7 @@ set_option goose.wp.extras true
 theorem wp_NewLock (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ▷ R }}
       (App (Val (@! NewLock)) (Val #()))
-    {{ (γ : LockChannelNames) (l : Lock.t), RET #l; isLock γ l R }} := by
+    {{ (γ : LockChannelNames) (l : Lock), RET #l; isLock γ l R }} := by
   wp_start as HR
   iapply wp_fupd
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γch ⟨#Hchan, %Hcap, Hoc⟩
@@ -66,9 +66,9 @@ theorem wp_NewLock (R : IProp GF) :
   unfold isLock
   iexact Hislock
 
-theorem Lock.wp_Lock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+theorem Lock.wp_Lock (γ : LockChannelNames) (l : Lock) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
-      (App (Val (l @!! Lock @!! go!"Lock")) (Val #()))
+      (App (Val (l @!! Lock.ty @!! go!"Lock")) (Val #()))
     {{ RET #(); R }} := by
   wp_start as #Hl
   unfold isLock
@@ -76,9 +76,9 @@ theorem Lock.wp_Lock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
   wp_apply wp_lock_channel_lock (t := go.GoType.StructType []) γ l.ch' () R $$ Hl as HR
   iapply HΦ $$ HR
 
-theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R ∗ R }}
-      (App (Val (l @!! Lock @!! go!"Unlock")) (Val #()))
+      (App (Val (l @!! Lock.ty @!! go!"Unlock")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hl, HR⟩
   unfold isLock
@@ -87,9 +87,9 @@ theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
   iapply HΦ
   itrivial
 
-theorem Lock.wp_TryLock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
+theorem Lock.wp_TryLock (γ : LockChannelNames) (l : Lock) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
-      (App (Val (l @!! Lock @!! go!"TryLock")) (Val #()))
+      (App (Val (l @!! Lock.ty @!! go!"TryLock")) (Val #()))
     {{ (b : Bool), RET #b; if b then R else True }} := by
   wp_start as #Hl
   unfold isLock
@@ -114,10 +114,10 @@ theorem Lock.wp_TryLock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
     simp only [Bool.false_eq_true, ↓reduceIte]
     itrivial
 
-theorem Lock.wp_LockWithTimeout (γ : LockChannelNames) (l : Lock.t) (R : IProp GF)
-    (d : time.Duration.t) :
+theorem Lock.wp_LockWithTimeout (γ : LockChannelNames) (l : Lock) (R : IProp GF)
+    (d : time.Duration) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isLock γ l R }}
-      (App (Val (l @!! Lock @!! go!"LockWithTimeout")) (Val #d))
+      (App (Val (l @!! Lock.ty @!! go!"LockWithTimeout")) (Val #d))
     {{ (b : Bool), RET #b; if b then R else True }} := by
   wp_start as #Hl
   unfold isLock
@@ -143,7 +143,7 @@ theorem Lock.wp_LockWithTimeout (γ : LockChannelNames) (l : Lock.t) (R : IProp 
     iexact HR
   iapply BigAndL.bigAndL_singleton.2
   simp only [chan.blockingClausePre]
-  iexists time.Time.t, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
+  iexists time.Time, inferInstance, inferInstance, inferInstance, inferInstance, after_ch, γafter
   isplitr
   · ipureintro; rfl
   isplitr

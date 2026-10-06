@@ -87,7 +87,7 @@ def MsgProp : w32 := W32 2
 
 /-- `Pos.Countable` for `msgWithResult` (needed for a bag of them), through an
 injection into nested pairs of its fields (Lean addition). -/
-instance msgWithResult_countable : Pos.Countable v3.msgWithResult.t :=
+instance msgWithResult_countable : Pos.Countable v3.msgWithResult :=
   .ofInjective (fun pm =>
       let m := pm.m'
       Pos.Countable.encode ((m.Type', m.To', m.From', m.Term', m.LogTerm', m.Index', m.Entries'),
@@ -109,8 +109,8 @@ Lean deviations: Rocq has `"Hentries" ∷ pm.m'.Entries' ↦* [data_sl]` (a slic
 (full ownership, which `Propose` does not have: its precondition is
 `data_sl ↦*□ data`). Here `Entries` is a one-element slice of an `Entry` whose
 `Data` is `data_sl`, and `data_sl ↦*□ data`. -/
-def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult.t) : IProp GF :=
-  iprop(∃ (data_sl : slice.t) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry.t),
+def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult) : IProp GF :=
+  iprop(∃ (data_sl : slice.t) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry),
     "Hmsg" ∷ ⌜pm.m'.Type' = MsgProp⌝ ∗
     "%He" ∷ ⌜e.Data' = data_sl⌝ ∗
     "Hentries" ∷ pm.m'.Entries' ↦* [e] ∗
@@ -131,19 +131,19 @@ Lean deviations:
 * `"#Hadvancec"`: Rocq `isChan n.advancec' γa unit ∗ inv nroot (∃ s, ownChan γa unit s)`,
   which allows a closed `advancec` (then the send in `Advance` panics); here a
   bag (`isChanBag`, whose invariant excludes `Closed`) with trivial payload. -/
-def isNodeInner (γraft : RaftNames) (n : v3.node.t) : IProp GF :=
+def isNodeInner (γraft : RaftNames) (n : v3.node) : IProp GF :=
   iprop(∃ (γp γa γd : ChanNames),
-    "#Hpropc" ∷ isChanBag (V := v3.msgWithResult.t) γp n.propc' (ownProposeMessage γraft) ∗
+    "#Hpropc" ∷ isChanBag (V := v3.msgWithResult) γp n.propc' (ownProposeMessage γraft) ∗
     "#Hadvancec" ∷ isChanBag (V := Unit) γa n.advancec' (fun _ => iprop(True)) ∗
     "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) broadcast.t.Unknown)
 
 /-- Rocq `is_node`. -/
 def is_node (γraft : RaftNames) (n : Loc) : IProp GF :=
-  iprop(∃ nd : v3.node.t,
+  iprop(∃ nd : v3.node,
     "n_ptr" ∷ n ↦□ nd ∗
     "Hinner" ∷ isNodeInner γraft nd)
 
-instance isNodeInner_pers (γraft : RaftNames) (n : v3.node.t) :
+instance isNodeInner_pers (γraft : RaftNames) (n : v3.node) :
     Persistent (isNodeInner (GF := GF) γraft n) := by
   unfold isNodeInner; infer_instance
 
@@ -153,7 +153,7 @@ instance is_node_pers (γraft : RaftNames) (n : Loc) :
 
 theorem node.wp_Ready (γraft : RaftNames) (n : Loc) :
     {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
-      (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Ready")) (Val #()))
+      (App (Val (n @!! go.GoType.PointerType v3.node.ty @!! go!"Ready")) (Val #()))
     {{ (ready : chan.t), RET #ready; True }} := by
   wp_start as Hpre
   iNamed Hpre
@@ -163,7 +163,7 @@ theorem node.wp_Ready (γraft : RaftNames) (n : Loc) :
 
 theorem node.wp_Advance (γraft : RaftNames) (n : Loc) :
     {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
-      (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Advance")) (Val #()))
+      (App (Val (n @!! go.GoType.PointerType v3.node.ty @!! go!"Advance")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as Hpre
   iNamed Hpre
@@ -210,14 +210,14 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
         "#data_sl" ∷ data_sl ↦*□ data ∗
         "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
           (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
-      (App (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Propose"))
+      (App (App (Val (n @!! go.GoType.PointerType v3.node.ty @!! go!"Propose"))
         (Val #(interface.ok ctx))) (Val #data_sl))
     {{ (err : interface.t), RET #err; if err = interface.nil then True else True }} := by
   wp_start as ⟨#Hctx, #Hnode, #data_sl, Hupd⟩
   wp_auto
   wp_bind (App (Val (GoInstruction (CompositeLiteral _))) (Val (LiteralValueV _)))
-  iapply wp_slice_literal (V := v3.raftpb.Entry.t) (t := v3.raftpb.Entry)
-    [{ (zero_val v3.raftpb.Entry.t) with Data' := data_sl }]
+  iapply wp_slice_literal (V := v3.raftpb.Entry) (t := v3.raftpb.Entry.ty)
+    [{ (zero_val v3.raftpb.Entry) with Data' := data_sl }]
   wp_auto
   isplitl []
   · ipureintro; rfl
@@ -250,7 +250,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
   isplit
   · -- send the proposal on `propc`
     simp only [chan.blockingClausePre]
-    iexists v3.msgWithResult.t, inferInstance, inferInstance, inferInstance, inferInstance,
+    iexists v3.msgWithResult, inferInstance, inferInstance, inferInstance, inferInstance,
       nd.propc', γp, _
     isplit
     · ipureintro; exact ⟨rfl, rfl⟩

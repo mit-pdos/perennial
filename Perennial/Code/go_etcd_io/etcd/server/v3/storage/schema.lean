@@ -19,80 +19,80 @@ end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.storage.schema
 
-def action [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def action.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.action" [])
 
-attribute [irreducible] action
+attribute [irreducible] action.ty
 
-def setKeyAction [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def setKeyAction.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.setKeyAction" [])
 
-attribute [irreducible] setKeyAction
+attribute [irreducible] setKeyAction.ty
 
-def deleteKeyAction [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def deleteKeyAction.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.deleteKeyAction" [])
 
-attribute [irreducible] deleteKeyAction
+attribute [irreducible] deleteKeyAction.ty
 
-def ActionList [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def ActionList.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.ActionList" [])
 
-attribute [irreducible] ActionList
+attribute [irreducible] ActionList.ty
 
-def AlarmBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def AlarmBackend.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.AlarmBackend" [])
 
-attribute [irreducible] AlarmBackend
+attribute [irreducible] AlarmBackend.ty
 
-def alarmBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def alarmBackend.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.alarmBackend" [])
 
-attribute [irreducible] alarmBackend
+attribute [irreducible] alarmBackend.ty
 
-def authBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def authBackend.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBackend" [])
 
-attribute [irreducible] authBackend
+attribute [irreducible] authBackend.ty
 
-def authReadTx [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def authReadTx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authReadTx" [])
 
-attribute [irreducible] authReadTx
+attribute [irreducible] authReadTx.ty
 
-def authBatchTx [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def authBatchTx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBatchTx" [])
 
-attribute [irreducible] authBatchTx
+attribute [irreducible] authBatchTx.ty
 
-def bucket [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def bucket.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.bucket" [])
 
-attribute [irreducible] bucket
+attribute [irreducible] bucket.ty
 
-def schemaChange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def schemaChange.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChange" [])
 
-attribute [irreducible] schemaChange
+attribute [irreducible] schemaChange.ty
 
-def simpleSchemaChange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def simpleSchemaChange.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.simpleSchemaChange" [])
 
-attribute [irreducible] simpleSchemaChange
+attribute [irreducible] simpleSchemaChange.ty
 
-def membershipBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def membershipBackend.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.membershipBackend" [])
 
-attribute [irreducible] membershipBackend
+attribute [irreducible] membershipBackend.ty
 
-def migrationPlan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def migrationPlan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationPlan" [])
 
-attribute [irreducible] migrationPlan
+attribute [irreducible] migrationPlan.ty
 
-def migrationStep [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def migrationStep.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationStep" [])
 
-attribute [irreducible] migrationStep
+attribute [irreducible] migrationStep.ty
 
 axiom alarmBackend.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -573,31 +573,27 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.initialize') (Val #()))))))))
 
-namespace action
-abbrev t [FfiSyntax] : Type := interface.t
-end action
+abbrev action [FfiSyntax] : Type := interface.t
 
 @[reducible] def action.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"unsafeDo" (go.signature.Signature [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.UnsafeReadWriter] false [action, go.error]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"unsafeDo" (go.signature.Signature [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.UnsafeReadWriter.ty] false [action.ty, go.error]))])
 
 class action.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq action action.underlying
+  underlying : go.UnderlyingDirectedEq action.ty action.underlying
 
 attribute [instance] action.TypeAssumptions.underlying
 
-namespace setKeyAction
-structure t [FfiSyntax] where
+structure setKeyAction [FfiSyntax] where
   mk ::
-  Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t
+  Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket
   FieldName' : slice.t
   FieldValue' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end setKeyAction
+instance setKeyAction.zero_val [FfiSyntax] : ZeroVal setKeyAction :=
+  ⟨setKeyAction.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def setKeyAction.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket),
+  [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.ty),
 (go.field_decl.FieldDecl go!"FieldName" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"FieldValue" (go.GoType.SliceType go.byte))]
 
@@ -612,14 +608,14 @@ instance equals_unfold_setKeyAction [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType setKeyAction.fields)
 
 class setKeyAction.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying setKeyAction.underlying setKeyAction.t
-  underlying : go.UnderlyingDirectedEq setKeyAction setKeyAction.underlying
-  get_Bucket : ∀ (x : setKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"Bucket") #x (Val #(x.Bucket'))
-  set_Bucket : ∀ (x : setKeyAction.t) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"Bucket") (PairV #x #y) (Val #(({ x with Bucket' := y } : setKeyAction.t)))
-  get_FieldName : ∀ (x : setKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"FieldName") #x (Val #(x.FieldName'))
-  set_FieldName : ∀ (x : setKeyAction.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"FieldName") (PairV #x #y) (Val #(({ x with FieldName' := y } : setKeyAction.t)))
-  get_FieldValue : ∀ (x : setKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"FieldValue") #x (Val #(x.FieldValue'))
-  set_FieldValue : ∀ (x : setKeyAction.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"FieldValue") (PairV #x #y) (Val #(({ x with FieldValue' := y } : setKeyAction.t)))
+  type_repr : go.TypeReprUnderlying setKeyAction.underlying setKeyAction
+  underlying : go.UnderlyingDirectedEq setKeyAction.ty setKeyAction.underlying
+  get_Bucket : ∀ (x : setKeyAction), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"Bucket") #x (Val #(x.Bucket'))
+  set_Bucket : ∀ (x : setKeyAction) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"Bucket") (PairV #x #y) (Val #(({ x with Bucket' := y } : setKeyAction)))
+  get_FieldName : ∀ (x : setKeyAction), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"FieldName") #x (Val #(x.FieldName'))
+  set_FieldName : ∀ (x : setKeyAction) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"FieldName") (PairV #x #y) (Val #(({ x with FieldName' := y } : setKeyAction)))
+  get_FieldValue : ∀ (x : setKeyAction), go.IsGoStepPureDetTagged under (StructFieldGet setKeyAction.underlying go!"FieldValue") #x (Val #(x.FieldValue'))
+  set_FieldValue : ∀ (x : setKeyAction) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet setKeyAction.underlying go!"FieldValue") (PairV #x #y) (Val #(({ x with FieldValue' := y } : setKeyAction)))
 
 attribute [instance] setKeyAction.TypeAssumptions.type_repr
   setKeyAction.TypeAssumptions.underlying
@@ -630,18 +626,16 @@ attribute [instance] setKeyAction.TypeAssumptions.type_repr
   setKeyAction.TypeAssumptions.get_FieldValue
   setKeyAction.TypeAssumptions.set_FieldValue
 
-namespace deleteKeyAction
-structure t [FfiSyntax] where
+structure deleteKeyAction [FfiSyntax] where
   mk ::
-  Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t
+  Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket
   FieldName' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end deleteKeyAction
+instance deleteKeyAction.zero_val [FfiSyntax] : ZeroVal deleteKeyAction :=
+  ⟨deleteKeyAction.mk zeroValDef zeroValDef⟩
 
 @[reducible] def deleteKeyAction.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket),
+  [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.ty),
 (go.field_decl.FieldDecl go!"FieldName" (go.GoType.SliceType go.byte))]
 
 @[irreducible] def deleteKeyAction.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -655,12 +649,12 @@ instance equals_unfold_deleteKeyAction [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType deleteKeyAction.fields)
 
 class deleteKeyAction.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying deleteKeyAction.underlying deleteKeyAction.t
-  underlying : go.UnderlyingDirectedEq deleteKeyAction deleteKeyAction.underlying
-  get_Bucket : ∀ (x : deleteKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet deleteKeyAction.underlying go!"Bucket") #x (Val #(x.Bucket'))
-  set_Bucket : ∀ (x : deleteKeyAction.t) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t), go.IsGoStepPureDetTagged under (StructFieldSet deleteKeyAction.underlying go!"Bucket") (PairV #x #y) (Val #(({ x with Bucket' := y } : deleteKeyAction.t)))
-  get_FieldName : ∀ (x : deleteKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet deleteKeyAction.underlying go!"FieldName") #x (Val #(x.FieldName'))
-  set_FieldName : ∀ (x : deleteKeyAction.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet deleteKeyAction.underlying go!"FieldName") (PairV #x #y) (Val #(({ x with FieldName' := y } : deleteKeyAction.t)))
+  type_repr : go.TypeReprUnderlying deleteKeyAction.underlying deleteKeyAction
+  underlying : go.UnderlyingDirectedEq deleteKeyAction.ty deleteKeyAction.underlying
+  get_Bucket : ∀ (x : deleteKeyAction), go.IsGoStepPureDetTagged under (StructFieldGet deleteKeyAction.underlying go!"Bucket") #x (Val #(x.Bucket'))
+  set_Bucket : ∀ (x : deleteKeyAction) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket), go.IsGoStepPureDetTagged under (StructFieldSet deleteKeyAction.underlying go!"Bucket") (PairV #x #y) (Val #(({ x with Bucket' := y } : deleteKeyAction)))
+  get_FieldName : ∀ (x : deleteKeyAction), go.IsGoStepPureDetTagged under (StructFieldGet deleteKeyAction.underlying go!"FieldName") #x (Val #(x.FieldName'))
+  set_FieldName : ∀ (x : deleteKeyAction) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet deleteKeyAction.underlying go!"FieldName") (PairV #x #y) (Val #(({ x with FieldName' := y } : deleteKeyAction)))
 
 attribute [instance] deleteKeyAction.TypeAssumptions.type_repr
   deleteKeyAction.TypeAssumptions.underlying
@@ -669,103 +663,89 @@ attribute [instance] deleteKeyAction.TypeAssumptions.type_repr
   deleteKeyAction.TypeAssumptions.get_FieldName
   deleteKeyAction.TypeAssumptions.set_FieldName
 
-namespace ActionList
-abbrev t [FfiSyntax] : Type := slice.t
-end ActionList
+abbrev ActionList [FfiSyntax] : Type := slice.t
 
 @[reducible] def ActionList.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType action)
+  (go.GoType.SliceType action.ty)
 
 class ActionList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq ActionList ActionList.underlying
+  underlying : go.UnderlyingDirectedEq ActionList.ty ActionList.underlying
 
 attribute [instance] ActionList.TypeAssumptions.underlying
 
-namespace AlarmBackend
-abbrev t [FfiSyntax] : Type := interface.t
-end AlarmBackend
+abbrev AlarmBackend [FfiSyntax] : Type := interface.t
 
 @[reducible] def AlarmBackend.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CreateAlarmBucket" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"ForceCommit" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"GetAllAlarms" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)), go.error])), (go.InterfaceElem.MethodElem go!"MustDeleteAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false [])), (go.InterfaceElem.MethodElem go!"MustPutAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CreateAlarmBucket" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"ForceCommit" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"GetAllAlarms" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.ty)), go.error])), (go.InterfaceElem.MethodElem go!"MustDeleteAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.ty)] false [])), (go.InterfaceElem.MethodElem go!"MustPutAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember.ty)] false []))])
 
 class AlarmBackend.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq AlarmBackend AlarmBackend.underlying
+  underlying : go.UnderlyingDirectedEq AlarmBackend.ty AlarmBackend.underlying
 
 attribute [instance] AlarmBackend.TypeAssumptions.underlying
 
-namespace alarmBackend
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end alarmBackend
+axiom alarmBackend : Type
+axiom alarmBackend.zero_val : ZeroVal alarmBackend
+attribute [instance] alarmBackend.zero_val
 
 class alarmBackend.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying alarmBackend.underlying alarmBackend.t
-  underlying : go.UnderlyingDirectedEq alarmBackend alarmBackend.underlying
+  type_repr : go.TypeReprUnderlying alarmBackend.underlying alarmBackend
+  underlying : go.UnderlyingDirectedEq alarmBackend.ty alarmBackend.underlying
   isUnderlying : go.IsUnderlying alarmBackend.underlying alarmBackend.underlying
 
 attribute [instance] alarmBackend.TypeAssumptions.type_repr
   alarmBackend.TypeAssumptions.underlying
   alarmBackend.TypeAssumptions.isUnderlying
 
-namespace authBackend
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end authBackend
+axiom authBackend : Type
+axiom authBackend.zero_val : ZeroVal authBackend
+attribute [instance] authBackend.zero_val
 
 class authBackend.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying authBackend.underlying authBackend.t
-  underlying : go.UnderlyingDirectedEq authBackend authBackend.underlying
+  type_repr : go.TypeReprUnderlying authBackend.underlying authBackend
+  underlying : go.UnderlyingDirectedEq authBackend.ty authBackend.underlying
   isUnderlying : go.IsUnderlying authBackend.underlying authBackend.underlying
 
 attribute [instance] authBackend.TypeAssumptions.type_repr
   authBackend.TypeAssumptions.underlying
   authBackend.TypeAssumptions.isUnderlying
 
-namespace authReadTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end authReadTx
+axiom authReadTx : Type
+axiom authReadTx.zero_val : ZeroVal authReadTx
+attribute [instance] authReadTx.zero_val
 
 class authReadTx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying authReadTx.underlying authReadTx.t
-  underlying : go.UnderlyingDirectedEq authReadTx authReadTx.underlying
+  type_repr : go.TypeReprUnderlying authReadTx.underlying authReadTx
+  underlying : go.UnderlyingDirectedEq authReadTx.ty authReadTx.underlying
   isUnderlying : go.IsUnderlying authReadTx.underlying authReadTx.underlying
 
 attribute [instance] authReadTx.TypeAssumptions.type_repr
   authReadTx.TypeAssumptions.underlying
   authReadTx.TypeAssumptions.isUnderlying
 
-namespace authBatchTx
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end authBatchTx
+axiom authBatchTx : Type
+axiom authBatchTx.zero_val : ZeroVal authBatchTx
+attribute [instance] authBatchTx.zero_val
 
 class authBatchTx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying authBatchTx.underlying authBatchTx.t
-  underlying : go.UnderlyingDirectedEq authBatchTx authBatchTx.underlying
+  type_repr : go.TypeReprUnderlying authBatchTx.underlying authBatchTx
+  underlying : go.UnderlyingDirectedEq authBatchTx.ty authBatchTx.underlying
   isUnderlying : go.IsUnderlying authBatchTx.underlying authBatchTx.underlying
 
 attribute [instance] authBatchTx.TypeAssumptions.type_repr
   authBatchTx.TypeAssumptions.underlying
   authBatchTx.TypeAssumptions.isUnderlying
 
-namespace bucket
-structure t [FfiSyntax] where
+structure bucket [FfiSyntax] where
   mk ::
-  id' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID.t
+  id' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID
   name' : slice.t
   safeRangeBucket' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end bucket
+instance bucket.zero_val [FfiSyntax] : ZeroVal bucket :=
+  ⟨bucket.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def bucket.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"id" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID),
+  [(go.field_decl.FieldDecl go!"id" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID.ty),
 (go.field_decl.FieldDecl go!"name" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"safeRangeBucket" go.bool)]
 
@@ -780,14 +760,14 @@ instance equals_unfold_bucket [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType bucket.fields)
 
 class bucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying bucket.underlying bucket.t
-  underlying : go.UnderlyingDirectedEq bucket bucket.underlying
-  get_id : ∀ (x : bucket.t), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"id") #x (Val #(x.id'))
-  set_id : ∀ (x : bucket.t) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID.t), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : bucket.t)))
-  get_name : ∀ (x : bucket.t), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : bucket.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : bucket.t)))
-  get_safeRangeBucket : ∀ (x : bucket.t), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"safeRangeBucket") #x (Val #(x.safeRangeBucket'))
-  set_safeRangeBucket : ∀ (x : bucket.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"safeRangeBucket") (PairV #x #y) (Val #(({ x with safeRangeBucket' := y } : bucket.t)))
+  type_repr : go.TypeReprUnderlying bucket.underlying bucket
+  underlying : go.UnderlyingDirectedEq bucket.ty bucket.underlying
+  get_id : ∀ (x : bucket), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"id") #x (Val #(x.id'))
+  set_id : ∀ (x : bucket) (y : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : bucket)))
+  get_name : ∀ (x : bucket), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"name") #x (Val #(x.name'))
+  set_name : ∀ (x : bucket) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : bucket)))
+  get_safeRangeBucket : ∀ (x : bucket), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"safeRangeBucket") #x (Val #(x.safeRangeBucket'))
+  set_safeRangeBucket : ∀ (x : bucket) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"safeRangeBucket") (PairV #x #y) (Val #(({ x with safeRangeBucket' := y } : bucket)))
 
 attribute [instance] bucket.TypeAssumptions.type_repr
   bucket.TypeAssumptions.underlying
@@ -798,31 +778,27 @@ attribute [instance] bucket.TypeAssumptions.type_repr
   bucket.TypeAssumptions.get_safeRangeBucket
   bucket.TypeAssumptions.set_safeRangeBucket
 
-namespace schemaChange
-abbrev t [FfiSyntax] : Type := interface.t
-end schemaChange
+abbrev schemaChange [FfiSyntax] : Type := interface.t
 
 @[reducible] def schemaChange.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"downgradeAction" (go.signature.Signature [] false [action])), (go.InterfaceElem.MethodElem go!"upgradeAction" (go.signature.Signature [] false [action]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"downgradeAction" (go.signature.Signature [] false [action.ty])), (go.InterfaceElem.MethodElem go!"upgradeAction" (go.signature.Signature [] false [action.ty]))])
 
 class schemaChange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq schemaChange schemaChange.underlying
+  underlying : go.UnderlyingDirectedEq schemaChange.ty schemaChange.underlying
 
 attribute [instance] schemaChange.TypeAssumptions.underlying
 
-namespace simpleSchemaChange
-structure t [FfiSyntax] where
+structure simpleSchemaChange [FfiSyntax] where
   mk ::
-  upgrade' : action.t
-  downgrade' : action.t
+  upgrade' : action
+  downgrade' : action
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end simpleSchemaChange
+instance simpleSchemaChange.zero_val [FfiSyntax] : ZeroVal simpleSchemaChange :=
+  ⟨simpleSchemaChange.mk zeroValDef zeroValDef⟩
 
 @[reducible] def simpleSchemaChange.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"upgrade" action),
-(go.field_decl.FieldDecl go!"downgrade" action)]
+  [(go.field_decl.FieldDecl go!"upgrade" action.ty),
+(go.field_decl.FieldDecl go!"downgrade" action.ty)]
 
 @[irreducible] def simpleSchemaChange.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   simpleSchemaChange.fieldsUnsealed
@@ -835,12 +811,12 @@ instance equals_unfold_simpleSchemaChange [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType simpleSchemaChange.fields)
 
 class simpleSchemaChange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying simpleSchemaChange.underlying simpleSchemaChange.t
-  underlying : go.UnderlyingDirectedEq simpleSchemaChange simpleSchemaChange.underlying
-  get_upgrade : ∀ (x : simpleSchemaChange.t), go.IsGoStepPureDetTagged under (StructFieldGet simpleSchemaChange.underlying go!"upgrade") #x (Val #(x.upgrade'))
-  set_upgrade : ∀ (x : simpleSchemaChange.t) (y : action.t), go.IsGoStepPureDetTagged under (StructFieldSet simpleSchemaChange.underlying go!"upgrade") (PairV #x #y) (Val #(({ x with upgrade' := y } : simpleSchemaChange.t)))
-  get_downgrade : ∀ (x : simpleSchemaChange.t), go.IsGoStepPureDetTagged under (StructFieldGet simpleSchemaChange.underlying go!"downgrade") #x (Val #(x.downgrade'))
-  set_downgrade : ∀ (x : simpleSchemaChange.t) (y : action.t), go.IsGoStepPureDetTagged under (StructFieldSet simpleSchemaChange.underlying go!"downgrade") (PairV #x #y) (Val #(({ x with downgrade' := y } : simpleSchemaChange.t)))
+  type_repr : go.TypeReprUnderlying simpleSchemaChange.underlying simpleSchemaChange
+  underlying : go.UnderlyingDirectedEq simpleSchemaChange.ty simpleSchemaChange.underlying
+  get_upgrade : ∀ (x : simpleSchemaChange), go.IsGoStepPureDetTagged under (StructFieldGet simpleSchemaChange.underlying go!"upgrade") #x (Val #(x.upgrade'))
+  set_upgrade : ∀ (x : simpleSchemaChange) (y : action), go.IsGoStepPureDetTagged under (StructFieldSet simpleSchemaChange.underlying go!"upgrade") (PairV #x #y) (Val #(({ x with upgrade' := y } : simpleSchemaChange)))
+  get_downgrade : ∀ (x : simpleSchemaChange), go.IsGoStepPureDetTagged under (StructFieldGet simpleSchemaChange.underlying go!"downgrade") #x (Val #(x.downgrade'))
+  set_downgrade : ∀ (x : simpleSchemaChange) (y : action), go.IsGoStepPureDetTagged under (StructFieldSet simpleSchemaChange.underlying go!"downgrade") (PairV #x #y) (Val #(({ x with downgrade' := y } : simpleSchemaChange)))
 
 attribute [instance] simpleSchemaChange.TypeAssumptions.type_repr
   simpleSchemaChange.TypeAssumptions.underlying
@@ -849,42 +825,36 @@ attribute [instance] simpleSchemaChange.TypeAssumptions.type_repr
   simpleSchemaChange.TypeAssumptions.get_downgrade
   simpleSchemaChange.TypeAssumptions.set_downgrade
 
-namespace membershipBackend
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end membershipBackend
+axiom membershipBackend : Type
+axiom membershipBackend.zero_val : ZeroVal membershipBackend
+attribute [instance] membershipBackend.zero_val
 
 class membershipBackend.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying membershipBackend.underlying membershipBackend.t
-  underlying : go.UnderlyingDirectedEq membershipBackend membershipBackend.underlying
+  type_repr : go.TypeReprUnderlying membershipBackend.underlying membershipBackend
+  underlying : go.UnderlyingDirectedEq membershipBackend.ty membershipBackend.underlying
   isUnderlying : go.IsUnderlying membershipBackend.underlying membershipBackend.underlying
 
 attribute [instance] membershipBackend.TypeAssumptions.type_repr
   membershipBackend.TypeAssumptions.underlying
   membershipBackend.TypeAssumptions.isUnderlying
 
-namespace migrationPlan
-abbrev t [FfiSyntax] : Type := slice.t
-end migrationPlan
+abbrev migrationPlan [FfiSyntax] : Type := slice.t
 
 @[reducible] def migrationPlan.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType migrationStep)
+  (go.GoType.SliceType migrationStep.ty)
 
 class migrationPlan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq migrationPlan migrationPlan.underlying
+  underlying : go.UnderlyingDirectedEq migrationPlan.ty migrationPlan.underlying
 
 attribute [instance] migrationPlan.TypeAssumptions.underlying
 
-namespace migrationStep
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end migrationStep
+axiom migrationStep : Type
+axiom migrationStep.zero_val : ZeroVal migrationStep
+attribute [instance] migrationStep.zero_val
 
 class migrationStep.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying migrationStep.underlying migrationStep.t
-  underlying : go.UnderlyingDirectedEq migrationStep migrationStep.underlying
+  type_repr : go.TypeReprUnderlying migrationStep.underlying migrationStep
+  underlying : go.UnderlyingDirectedEq migrationStep.ty migrationStep.underlying
   isUnderlying : go.IsUnderlying migrationStep.underlying migrationStep.underlying
 
 attribute [instance] migrationStep.TypeAssumptions.type_repr

@@ -20,10 +20,10 @@ end pkg_id
 
 namespace go_etcd_io.etcd.pkg.v3.idutil
 
-def Generator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Generator.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/idutil.Generator" [])
 
-attribute [irreducible] Generator
+attribute [irreducible] Generator.ty
 
 @[reducible] noncomputable def tsLen [FfiSyntax] [GoGlobalContext] : val :=
   #(40 : Int)
@@ -45,13 +45,13 @@ noncomputable def NewGenerator.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "memberID"
   (Lam "now"
   (App (Val exceptionDo)
-  (Let "now" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time))) (Var "now"))
+  (Let "now" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time.ty))) (Var "now"))
   (Let "memberID" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "memberID"))
   (Let "prefix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "memberID"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val suffixLen))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "unixMilli" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.time.Time) go!"UnixNano"))) (Var "now")) (Val #()))) (App (Val (GoInstruction (Convert _root_.Perennial.time.Duration go.uint64))) (App (Val (GoInstruction (GoOp GoDiv _root_.Perennial.time.Duration))) (Pair (Val _root_.Perennial.time.Millisecond) (Val _root_.Perennial.time.Nanosecond))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.time.Time.ty) go!"UnixNano"))) (Var "now")) (Val #()))) (App (Val (GoInstruction (Convert _root_.Perennial.time.Duration.ty go.uint64))) (App (Val (GoInstruction (GoOp GoDiv _root_.Perennial.time.Duration.ty))) (Pair (Val _root_.Perennial.time.Millisecond) (Val _root_.Perennial.time.Nanosecond))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "suffix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "unixMilli"))
@@ -59,9 +59,9 @@ noncomputable def NewGenerator.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve lowbit []))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val cntLen))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc Generator))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "prefix"))
+  (App (Val (GoInstruction (GoAlloc Generator.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "prefix"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
-  (App (Val (GoInstruction (CompositeLiteral Generator))) (LiteralValue [(KeyedElement (some (KeyField go!"prefix")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"suffix")) (ElementExpression go.uint64 (Var "$v1")))]))))))))
+  (App (Val (GoInstruction (CompositeLiteral Generator.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"prefix")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"suffix")) (ElementExpression go.uint64 (Var "$v1")))]))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "suffix") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -76,14 +76,14 @@ noncomputable def Generator.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
   (App (Val exceptionDo)
-  (Let "g" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Generator)))) (Var "g"))
+  (Let "g" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Generator.ty)))) (Var "g"))
   (Let "suffix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Generator go!"suffix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator)))) (Var "g")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Generator.ty go!"suffix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator.ty)))) (Var "g")))
   (Let "$a1" (Val #(W64 1))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Generator go!"prefix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator)))) (Var "g")))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Generator.ty go!"prefix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator.ty)))) (Var "g")))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
   (Let "$a1" (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val suffixLen))
   (App (App (App (Val (GoInstruction (FuncResolve lowbit []))) (Val #())) (Var "$a0")) (Var "$a1"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -120,15 +120,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
-namespace Generator
-structure t [FfiSyntax] where
+structure Generator [FfiSyntax] where
   mk ::
   prefix' : w64
   suffix' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end Generator
+instance Generator.zero_val [FfiSyntax] : ZeroVal Generator :=
+  ⟨Generator.mk zeroValDef zeroValDef⟩
 
 @[reducible] def Generator.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prefix" go.uint64),
@@ -145,13 +143,13 @@ instance equals_unfold_Generator [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Generator.fields)
 
 class Generator.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Generator.underlying Generator.t
-  underlying : go.UnderlyingDirectedEq Generator Generator.underlying
-  get_prefix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"prefix") #x (Val #(x.prefix'))
-  set_prefix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : Generator.t)))
-  get_suffix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"suffix") #x (Val #(x.suffix'))
-  set_suffix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"suffix") (PairV #x #y) (Val #(({ x with suffix' := y } : Generator.t)))
-  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Generator) go!"Next" Generator.Next.impl
+  type_repr : go.TypeReprUnderlying Generator.underlying Generator
+  underlying : go.UnderlyingDirectedEq Generator.ty Generator.underlying
+  get_prefix : ∀ (x : Generator), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"prefix") #x (Val #(x.prefix'))
+  set_prefix : ∀ (x : Generator) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : Generator)))
+  get_suffix : ∀ (x : Generator), go.IsGoStepPureDetTagged under (StructFieldGet Generator.underlying go!"suffix") #x (Val #(x.suffix'))
+  set_suffix : ∀ (x : Generator) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Generator.underlying go!"suffix") (PairV #x #y) (Val #(({ x with suffix' := y } : Generator)))
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Generator.ty) go!"Next" Generator.Next.impl
 
 attribute [instance] Generator.TypeAssumptions.type_repr
   Generator.TypeAssumptions.underlying

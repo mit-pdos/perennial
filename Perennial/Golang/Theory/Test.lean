@@ -372,21 +372,19 @@ end proofs2
 
 /-! ### A struct, in the shape goose generates (with the template changes
 described in the porting notes: `[ext] [ffi]` instance binders, `heapGS hlc GF`,
-named field conjuncts, and `@[reducible]` `'fds_unsealed`/`ⁱᵐᵖˡ` definitions). -/
+named field conjuncts, and `@[reducible]` `fieldsUnsealed`/`underlying` definitions). -/
 
 noncomputable section
 namespace testpkg
 
-def pt [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.pt" [])
-attribute [irreducible] pt
+def pt.ty [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.pt" [])
+attribute [irreducible] pt.ty
 
-namespace pt
-structure t [FfiSyntax] where
+structure pt [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
-instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef zeroValDef⟩
-end pt
+instance pt.zero_val [FfiSyntax] : ZeroVal pt := ⟨pt.mk zeroValDef zeroValDef⟩
 
 @[reducible] def pt.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64), (go.field_decl.FieldDecl go!"y" go.uint64)]
@@ -396,12 +394,12 @@ instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt.fields
 @[reducible] def pt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt.fields)
 
 class pt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying pt.underlying pt.t
-  underlying : go.UnderlyingDirectedEq pt pt.underlying
-  get_x : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt.t)))
-  get_y : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : pt.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt.t)))
+  type_repr : go.TypeReprUnderlying pt.underlying pt
+  underlying : go.UnderlyingDirectedEq pt.ty pt.underlying
+  get_x : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt)))
+  get_y : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt)))
 attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying pt.TypeAssumptions.get_x
   pt.TypeAssumptions.set_x pt.TypeAssumptions.get_y pt.TypeAssumptions.set_y
 
@@ -411,57 +409,57 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : pt.TypeAssumptions]
 
-instance pt_typed_pointsto : TypedPointsto (GF := GF) pt.t where
+instance pt_typed_pointsto : TypedPointsto (GF := GF) pt where
   typedPointstoDef l v dq := iprop(
-    "x" ∷ typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq ∗
-    "y" ∷ typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq ∗
+    "x" ∷ typedPointsto (structFieldRef pt go!"x" l) v.x' dq ∗
+    "y" ∷ typedPointsto (structFieldRef pt go!"y" l) v.y' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance pt_access_load_x (l : Loc) (v : pt.t) (dq : DFrac) :
+instance pt_access_load_x (l : Loc) (v : pt) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq)
-      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef pt go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef pt go!"x" l) v.x' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance pt_access_store_x (l : Loc) (v : pt.t) (x' : w64) :
+instance pt_access_store_x (l : Loc) (v : pt) (x' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' (DFrac.own 1))
-      (typedPointsto (structFieldRef pt.t go!"x" l) x' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : pt.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef pt go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef pt go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : pt) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance pt_access_load_y (l : Loc) (v : pt.t) (dq : DFrac) :
+instance pt_access_load_y (l : Loc) (v : pt) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq)
-      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq)
+      (typedPointsto (structFieldRef pt go!"y" l) v.y' dq)
+      (typedPointsto (structFieldRef pt go!"y" l) v.y' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance pt_access_store_y (l : Loc) (v : pt.t) (y' : w64) :
+instance pt_access_store_y (l : Loc) (v : pt) (y' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' (DFrac.own 1))
-      (typedPointsto (structFieldRef pt.t go!"y" l) y' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with y' := y' } : pt.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef pt go!"y" l) v.y' (DFrac.own 1))
+      (typedPointsto (structFieldRef pt go!"y" l) y' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with y' := y' } : pt) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance pt_into_val_typed : IntoValTypedUnderlying (GF := GF) pt.t pt.underlying := by
+instance pt_into_val_typed : IntoValTypedUnderlying (GF := GF) pt pt.underlying := by
   solve_into_val_typed_struct
 
-example (l : Loc) (v : pt.t) :
+example (l : Loc) (v : pt) :
     {{ (l ↦ v : IProp GF) }}
-      gl(let: "a" := ![go.uint64] (StructFieldRef pt "x" #l) in
-         StructFieldRef pt "y" #l <-[go.uint64] "a" ;; ![go.uint64] (StructFieldRef pt "y" #l))
-    {{ RET #v.x'; l ↦ ({ v with y' := v.x' } : pt.t) }} := by
+      gl(let: "a" := ![go.uint64] (StructFieldRef pt.ty "x" #l) in
+         StructFieldRef pt.ty "y" #l <-[go.uint64] "a" ;; ![go.uint64] (StructFieldRef pt.ty "y" #l))
+    {{ RET #v.x'; l ↦ ({ v with y' := v.x' } : pt) }} := by
   iintro %Φ Hl HΦ
   wp_auto
   iapply HΦ $$ Hl
 
 /-- Projections of the zero value of a struct are reduced (extras). -/
-example (Φ : val → IProp GF) : Φ #(0 : w64) ⊢ WP (Val #((zero_val pt.t).x')) {{ Φ }} := by
+example (Φ : val → IProp GF) : Φ #(0 : w64) ⊢ WP (Val #((zero_val pt).x')) {{ Φ }} := by
   iintro H
   wp_pures
   iexact H
@@ -477,15 +475,13 @@ end
 noncomputable section
 namespace testpkg
 
-def ub [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.ub" [])
-attribute [irreducible] ub
+def ub.ty [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.ub" [])
+attribute [irreducible] ub.ty
 
-namespace ub
-structure t [FfiSyntax] where
+structure ub [FfiSyntax] where
   mk ::
   p' : w64
-instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef⟩
-end ub
+instance ub.zero_val [FfiSyntax] : ZeroVal ub := ⟨ub.mk zeroValDef⟩
 
 @[reducible] def ub.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" go.uintptr)]
@@ -495,10 +491,10 @@ instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub.fields
 @[reducible] def ub.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub.fields)
 
 class ub.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying ub.underlying ub.t
-  underlying : go.UnderlyingDirectedEq ub ub.underlying
-  get_p : ∀ (x : ub.t), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : ub.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ub.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub.t)))
+  type_repr : go.TypeReprUnderlying ub.underlying ub
+  underlying : go.UnderlyingDirectedEq ub.ty ub.underlying
+  get_p : ∀ (x : ub), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
+  set_p : ∀ (x : ub) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ub.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub)))
 attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
   ub.TypeAssumptions.get_p ub.TypeAssumptions.set_p
 
@@ -508,38 +504,38 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : ub.TypeAssumptions]
 
-instance ub_typed_pointsto : TypedPointsto (GF := GF) ub.t where
+instance ub_typed_pointsto : TypedPointsto (GF := GF) ub where
   typedPointstoDef l v dq := iprop(
-    "p" ∷ typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq ∗
+    "p" ∷ typedPointsto (structFieldRef ub go!"p" l) v.p' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance ub_access_load_p (l : Loc) (v : ub.t) (dq : DFrac) :
+instance ub_access_load_p (l : Loc) (v : ub) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq)
-      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef ub go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef ub go!"p" l) v.p' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance ub_access_store_p (l : Loc) (v : ub.t) (p' : w64) :
+instance ub_access_store_p (l : Loc) (v : ub) (p' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' (DFrac.own 1))
-      (typedPointsto (structFieldRef ub.t go!"p" l) p' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : ub.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef ub go!"p" l) v.p' (DFrac.own 1))
+      (typedPointsto (structFieldRef ub go!"p" l) p' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : ub) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub.t ub.underlying := by
+instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub ub.underlying := by
   solve_into_val_typed_struct
 
 /-- Load, increment and store the `uintptr` field. -/
-example (l : Loc) (v : ub.t) :
+example (l : Loc) (v : ub) :
     {{ (l ↦ v : IProp GF) }}
-      gl(StructFieldRef ub "p" #l <-[go.uintptr]
-           (![go.uintptr] (StructFieldRef ub "p" #l) +⟨go.uintptr⟩ #(W64 1)) ;;
-         ![go.uintptr] (StructFieldRef ub "p" #l))
-    {{ RET #(v.p' + W64 1); l ↦ ({ v with p' := v.p' + W64 1 } : ub.t) }} := by
+      gl(StructFieldRef ub.ty "p" #l <-[go.uintptr]
+           (![go.uintptr] (StructFieldRef ub.ty "p" #l) +⟨go.uintptr⟩ #(W64 1)) ;;
+         ![go.uintptr] (StructFieldRef ub.ty "p" #l))
+    {{ RET #(v.p' + W64 1); l ↦ ({ v with p' := v.p' + W64 1 } : ub) }} := by
   iintro %Φ Hl HΦ
   wp_auto
   iapply HΦ $$ Hl

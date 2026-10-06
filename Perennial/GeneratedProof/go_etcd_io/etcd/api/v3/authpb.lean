@@ -22,82 +22,82 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.authpb.Assumptions]
 
 instance UserAddOptions_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions where
   typedPointstoDef l v dq := iprop(
-    "NoPassword" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"NoPassword" l) v.NoPassword' dq ∗
-    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
-    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
-    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
+    "NoPassword" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"NoPassword" l) v.NoPassword' dq ∗
+    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
+    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
+    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UserAddOptions_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go_etcd_io.etcd.api.v3.authpb.UserAddOptions.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.UserAddOptions go_etcd_io.etcd.api.v3.authpb.UserAddOptions.underlying := by
   solve_into_val_typed_struct
 
-instance UserAddOptions_access_load_NoPassword (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (dq : DFrac) :
+instance UserAddOptions_access_load_NoPassword (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"NoPassword" l) v.NoPassword' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"NoPassword" l) v.NoPassword' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"NoPassword" l) v.NoPassword' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"NoPassword" l) v.NoPassword' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_store_NoPassword (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (NoPassword' : Bool) :
+instance UserAddOptions_access_store_NoPassword (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (NoPassword' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"NoPassword" l) v.NoPassword' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"NoPassword" l) NoPassword' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with NoPassword' := NoPassword' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"NoPassword" l) v.NoPassword' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"NoPassword" l) NoPassword' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with NoPassword' := NoPassword' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (dq : DFrac) :
+instance UserAddOptions_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (XXX_NoUnkeyedLiteral' : Unit) :
+instance UserAddOptions_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (XXX_NoUnkeyedLiteral' : Unit) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (dq : DFrac) :
+instance UserAddOptions_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (XXX_unrecognized' : slice.t) :
+instance UserAddOptions_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (XXX_unrecognized' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (dq : DFrac) :
+instance UserAddOptions_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_sizecache" l) v.XXX_sizecache' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UserAddOptions_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (XXX_sizecache' : w32) :
+instance UserAddOptions_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (XXX_sizecache' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.UserAddOptions go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.UserAddOptions) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -113,133 +113,133 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.authpb.Assumptions]
 
 instance User_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.User.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.User where
   typedPointstoDef l v dq := iprop(
-    "Name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Name" l) v.Name' dq ∗
-    "Password" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Password" l) v.Password' dq ∗
-    "Roles" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Roles" l) v.Roles' dq ∗
-    "Options" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Options" l) v.Options' dq ∗
-    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
-    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
-    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
+    "Name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) v.Name' dq ∗
+    "Password" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) v.Password' dq ∗
+    "Roles" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) v.Roles' dq ∗
+    "Options" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Options" l) v.Options' dq ∗
+    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
+    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
+    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance User_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.User.t go_etcd_io.etcd.api.v3.authpb.User.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.User go_etcd_io.etcd.api.v3.authpb.User.underlying := by
   solve_into_val_typed_struct
 
-instance User_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Name" l) v.Name' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) v.Name' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (Name' : slice.t) :
+instance User_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Name' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Name" l) v.Name' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Name" l) Name' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) v.Name' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Name" l) Name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Password" l) v.Password' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Password" l) v.Password' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) v.Password' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) v.Password' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (Password' : slice.t) :
+instance User_access_store_Password (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Password' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Password" l) v.Password' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Password" l) Password' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Password' := Password' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) v.Password' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Password" l) Password' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Password' := Password' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Roles" l) v.Roles' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Roles" l) v.Roles' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) v.Roles' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) v.Roles' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (Roles' : slice.t) :
+instance User_access_store_Roles (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Roles' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Roles" l) v.Roles' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Roles" l) Roles' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Roles' := Roles' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) v.Roles' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Roles" l) Roles' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Roles' := Roles' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_Options (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_Options (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Options" l) v.Options' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Options" l) v.Options' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Options" l) v.Options' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Options" l) v.Options' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_Options (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (Options' : Loc) :
+instance User_access_store_Options (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (Options' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Options" l) v.Options' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"Options" l) Options' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Options' := Options' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Options" l) v.Options' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"Options" l) Options' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Options' := Options' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (XXX_NoUnkeyedLiteral' : Unit) :
+instance User_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (XXX_NoUnkeyedLiteral' : Unit) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (XXX_unrecognized' : slice.t) :
+instance User_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (XXX_unrecognized' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (dq : DFrac) :
+instance User_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_sizecache" l) v.XXX_sizecache' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance User_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User.t) (XXX_sizecache' : w32) :
+instance User_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.User) (XXX_sizecache' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User.t go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.User.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.User go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.User) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -255,116 +255,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.authpb.Assumptions]
 
 instance Permission_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission where
   typedPointstoDef l v dq := iprop(
-    "PermType" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"PermType" l) v.PermType' dq ∗
-    "Key" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"Key" l) v.Key' dq ∗
-    "RangeEnd" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"RangeEnd" l) v.RangeEnd' dq ∗
-    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
-    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
-    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
+    "PermType" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"PermType" l) v.PermType' dq ∗
+    "Key" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) v.Key' dq ∗
+    "RangeEnd" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) v.RangeEnd' dq ∗
+    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
+    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
+    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Permission_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission.t go_etcd_io.etcd.api.v3.authpb.Permission.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Permission go_etcd_io.etcd.api.v3.authpb.Permission.underlying := by
   solve_into_val_typed_struct
 
-instance Permission_access_load_PermType (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_PermType (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"PermType" l) v.PermType' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"PermType" l) v.PermType' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"PermType" l) v.PermType' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"PermType" l) v.PermType' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_PermType (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (PermType' : go_etcd_io.etcd.api.v3.authpb.Permission_Type.t) :
+instance Permission_access_store_PermType (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (PermType' : go_etcd_io.etcd.api.v3.authpb.Permission_Type) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"PermType" l) v.PermType' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"PermType" l) PermType' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PermType' := PermType' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"PermType" l) v.PermType' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"PermType" l) PermType' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PermType' := PermType' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"Key" l) v.Key' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"Key" l) v.Key' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) v.Key' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) v.Key' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (Key' : slice.t) :
+instance Permission_access_store_Key (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (Key' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"Key" l) v.Key' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"Key" l) Key' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Key' := Key' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) v.Key' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"Key" l) Key' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Key' := Key' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_load_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"RangeEnd" l) v.RangeEnd' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"RangeEnd" l) v.RangeEnd' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) v.RangeEnd' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) v.RangeEnd' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (RangeEnd' : slice.t) :
+instance Permission_access_store_RangeEnd (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (RangeEnd' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"RangeEnd" l) v.RangeEnd' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"RangeEnd" l) RangeEnd' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with RangeEnd' := RangeEnd' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) v.RangeEnd' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"RangeEnd" l) RangeEnd' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with RangeEnd' := RangeEnd' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (XXX_NoUnkeyedLiteral' : Unit) :
+instance Permission_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (XXX_NoUnkeyedLiteral' : Unit) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (XXX_unrecognized' : slice.t) :
+instance Permission_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (XXX_unrecognized' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (dq : DFrac) :
+instance Permission_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_sizecache" l) v.XXX_sizecache' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Permission_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission.t) (XXX_sizecache' : w32) :
+instance Permission_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Permission) (XXX_sizecache' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission.t go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.Permission.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Permission go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.Permission) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -380,99 +380,99 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.authpb.Assumptions]
 
 instance Role_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role where
   typedPointstoDef l v dq := iprop(
-    "Name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"Name" l) v.Name' dq ∗
-    "KeyPermission" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"KeyPermission" l) v.KeyPermission' dq ∗
-    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
-    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
-    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
+    "Name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) v.Name' dq ∗
+    "KeyPermission" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) v.KeyPermission' dq ∗
+    "XXX_NoUnkeyedLiteral" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq ∗
+    "XXX_unrecognized" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) v.XXX_unrecognized' dq ∗
+    "XXX_sizecache" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_sizecache" l) v.XXX_sizecache' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Role_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role.t go_etcd_io.etcd.api.v3.authpb.Role.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.authpb.Role go_etcd_io.etcd.api.v3.authpb.Role.underlying := by
   solve_into_val_typed_struct
 
-instance Role_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :
+instance Role_access_load_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"Name" l) v.Name' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) v.Name' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (Name' : slice.t) :
+instance Role_access_store_Name (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (Name' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"Name" l) v.Name' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"Name" l) Name' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : go_etcd_io.etcd.api.v3.authpb.Role.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) v.Name' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"Name" l) Name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : go_etcd_io.etcd.api.v3.authpb.Role) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_load_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :
+instance Role_access_load_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"KeyPermission" l) v.KeyPermission' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"KeyPermission" l) v.KeyPermission' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) v.KeyPermission' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) v.KeyPermission' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (KeyPermission' : slice.t) :
+instance Role_access_store_KeyPermission (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (KeyPermission' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"KeyPermission" l) v.KeyPermission' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"KeyPermission" l) KeyPermission' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with KeyPermission' := KeyPermission' } : go_etcd_io.etcd.api.v3.authpb.Role.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) v.KeyPermission' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"KeyPermission" l) KeyPermission' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with KeyPermission' := KeyPermission' } : go_etcd_io.etcd.api.v3.authpb.Role) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :
+instance Role_access_load_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (XXX_NoUnkeyedLiteral' : Unit) :
+instance Role_access_store_XXX_NoUnkeyedLiteral (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (XXX_NoUnkeyedLiteral' : Unit) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.Role.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_NoUnkeyedLiteral" l) v.XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_NoUnkeyedLiteral" l) XXX_NoUnkeyedLiteral' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_NoUnkeyedLiteral' := XXX_NoUnkeyedLiteral' } : go_etcd_io.etcd.api.v3.authpb.Role) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :
+instance Role_access_load_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) v.XXX_unrecognized' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (XXX_unrecognized' : slice.t) :
+instance Role_access_store_XXX_unrecognized (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (XXX_unrecognized' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.Role.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) v.XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_unrecognized" l) XXX_unrecognized' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_unrecognized' := XXX_unrecognized' } : go_etcd_io.etcd.api.v3.authpb.Role) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (dq : DFrac) :
+instance Role_access_load_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_sizecache" l) v.XXX_sizecache' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_sizecache" l) v.XXX_sizecache' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Role_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role.t) (XXX_sizecache' : w32) :
+instance Role_access_store_XXX_sizecache (l : Loc) (v : go_etcd_io.etcd.api.v3.authpb.Role) (XXX_sizecache' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role.t go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.Role.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_sizecache" l) v.XXX_sizecache' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.authpb.Role go!"XXX_sizecache" l) XXX_sizecache' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with XXX_sizecache' := XXX_sizecache' } : go_etcd_io.etcd.api.v3.authpb.Role) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

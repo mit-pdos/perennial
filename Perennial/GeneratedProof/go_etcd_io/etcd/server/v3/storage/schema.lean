@@ -24,65 +24,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance setKeyAction_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction where
   typedPointstoDef l v dq := iprop(
-    "Bucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"Bucket" l) v.Bucket' dq ∗
-    "FieldName" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldName" l) v.FieldName' dq ∗
-    "FieldValue" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldValue" l) v.FieldValue' dq ∗
+    "Bucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"Bucket" l) v.Bucket' dq ∗
+    "FieldName" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) v.FieldName' dq ∗
+    "FieldValue" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) v.FieldValue' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance setKeyAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.underlying := by
   solve_into_val_typed_struct
 
-instance setKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (dq : DFrac) :
+instance setKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"Bucket" l) v.Bucket' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"Bucket" l) v.Bucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"Bucket" l) v.Bucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"Bucket" l) v.Bucket' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_store_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (Bucket' : go_etcd_io.etcd.server.v3.storage.backend.Bucket.t) :
+instance setKeyAction_access_store_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (Bucket' : go_etcd_io.etcd.server.v3.storage.backend.Bucket) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"Bucket" l) v.Bucket' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"Bucket" l) Bucket' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Bucket' := Bucket' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"Bucket" l) v.Bucket' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"Bucket" l) Bucket' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Bucket' := Bucket' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (dq : DFrac) :
+instance setKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldName" l) v.FieldName' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldName" l) v.FieldName' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) v.FieldName' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) v.FieldName' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (FieldName' : slice.t) :
+instance setKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldName' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldName" l) v.FieldName' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldName" l) FieldName' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldName' := FieldName' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) v.FieldName' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldName" l) FieldName' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldName' := FieldName' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_load_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (dq : DFrac) :
+instance setKeyAction_access_load_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldValue" l) v.FieldValue' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldValue" l) v.FieldValue' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) v.FieldValue' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) v.FieldValue' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance setKeyAction_access_store_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (FieldValue' : slice.t) :
+instance setKeyAction_access_store_FieldValue (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (FieldValue' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldValue" l) v.FieldValue' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t go!"FieldValue" l) FieldValue' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldValue' := FieldValue' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) v.FieldValue' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.setKeyAction go!"FieldValue" l) FieldValue' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldValue' := FieldValue' } : go_etcd_io.etcd.server.v3.storage.schema.setKeyAction) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -98,48 +98,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance deleteKeyAction_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction where
   typedPointstoDef l v dq := iprop(
-    "Bucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"Bucket" l) v.Bucket' dq ∗
-    "FieldName" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"FieldName" l) v.FieldName' dq ∗
+    "Bucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"Bucket" l) v.Bucket' dq ∗
+    "FieldName" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) v.FieldName' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance deleteKeyAction_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.underlying := by
   solve_into_val_typed_struct
 
-instance deleteKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (dq : DFrac) :
+instance deleteKeyAction_access_load_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"Bucket" l) v.Bucket' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"Bucket" l) v.Bucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"Bucket" l) v.Bucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"Bucket" l) v.Bucket' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance deleteKeyAction_access_store_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (Bucket' : go_etcd_io.etcd.server.v3.storage.backend.Bucket.t) :
+instance deleteKeyAction_access_store_Bucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (Bucket' : go_etcd_io.etcd.server.v3.storage.backend.Bucket) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"Bucket" l) v.Bucket' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"Bucket" l) Bucket' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Bucket' := Bucket' } : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"Bucket" l) v.Bucket' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"Bucket" l) Bucket' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Bucket' := Bucket' } : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance deleteKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (dq : DFrac) :
+instance deleteKeyAction_access_load_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"FieldName" l) v.FieldName' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"FieldName" l) v.FieldName' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) v.FieldName' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) v.FieldName' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance deleteKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (FieldName' : slice.t) :
+instance deleteKeyAction_access_store_FieldName (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (FieldName' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"FieldName" l) v.FieldName' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t go!"FieldName" l) FieldName' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldName' := FieldName' } : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) v.FieldName' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction go!"FieldName" l) FieldName' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldName' := FieldName' } : go_etcd_io.etcd.server.v3.storage.schema.deleteKeyAction) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -155,11 +155,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance alarmBackend_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend :=
   sorry -- Rocq: Admitted
 
 instance alarmBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.t go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -174,11 +174,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authBackend_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend :=
   sorry -- Rocq: Admitted
 
 instance authBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend.t go_etcd_io.etcd.server.v3.storage.schema.authBackend.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend go_etcd_io.etcd.server.v3.storage.schema.authBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -193,11 +193,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authReadTx_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx :=
   sorry -- Rocq: Admitted
 
 instance authReadTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx.t go_etcd_io.etcd.server.v3.storage.schema.authReadTx.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx go_etcd_io.etcd.server.v3.storage.schema.authReadTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -212,11 +212,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authBatchTx_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx :=
   sorry -- Rocq: Admitted
 
 instance authBatchTx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.t go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -231,65 +231,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance bucket_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket where
   typedPointstoDef l v dq := iprop(
-    "id" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"id" l) v.id' dq ∗
-    "name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"name" l) v.name' dq ∗
-    "safeRangeBucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"safeRangeBucket" l) v.safeRangeBucket' dq ∗
+    "id" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"id" l) v.id' dq ∗
+    "name" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) v.name' dq ∗
+    "safeRangeBucket" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"safeRangeBucket" l) v.safeRangeBucket' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance bucket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket.t go_etcd_io.etcd.server.v3.storage.schema.bucket.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.bucket go_etcd_io.etcd.server.v3.storage.schema.bucket.underlying := by
   solve_into_val_typed_struct
 
-instance bucket_access_load_id (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (dq : DFrac) :
+instance bucket_access_load_id (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"id" l) v.id' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"id" l) v.id' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance bucket_access_store_id (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (id' : go_etcd_io.etcd.server.v3.storage.backend.BucketID.t) :
+instance bucket_access_store_id (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (id' : go_etcd_io.etcd.server.v3.storage.backend.BucketID) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"id" l) v.id' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"id" l) id' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"id" l) v.id' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"id" l) id' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.etcd.server.v3.storage.schema.bucket) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance bucket_access_load_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (dq : DFrac) :
+instance bucket_access_load_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"name" l) v.name' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"name" l) v.name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) v.name' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) v.name' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance bucket_access_store_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (name' : slice.t) :
+instance bucket_access_store_name (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (name' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"name" l) v.name' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"name" l) name' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) v.name' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"name" l) name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : go_etcd_io.etcd.server.v3.storage.schema.bucket) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance bucket_access_load_safeRangeBucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (dq : DFrac) :
+instance bucket_access_load_safeRangeBucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"safeRangeBucket" l) v.safeRangeBucket' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"safeRangeBucket" l) v.safeRangeBucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"safeRangeBucket" l) v.safeRangeBucket' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"safeRangeBucket" l) v.safeRangeBucket' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance bucket_access_store_safeRangeBucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (safeRangeBucket' : Bool) :
+instance bucket_access_store_safeRangeBucket (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.bucket) (safeRangeBucket' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"safeRangeBucket" l) v.safeRangeBucket' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket.t go!"safeRangeBucket" l) safeRangeBucket' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with safeRangeBucket' := safeRangeBucket' } : go_etcd_io.etcd.server.v3.storage.schema.bucket.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"safeRangeBucket" l) v.safeRangeBucket' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.bucket go!"safeRangeBucket" l) safeRangeBucket' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with safeRangeBucket' := safeRangeBucket' } : go_etcd_io.etcd.server.v3.storage.schema.bucket) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -305,48 +305,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance simpleSchemaChange_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange where
   typedPointstoDef l v dq := iprop(
-    "upgrade" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq ∗
-    "downgrade" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq ∗
+    "upgrade" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"upgrade" l) v.upgrade' dq ∗
+    "downgrade" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"downgrade" l) v.downgrade' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance simpleSchemaChange_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.underlying := by
   solve_into_val_typed_struct
 
-instance simpleSchemaChange_access_load_upgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (dq : DFrac) :
+instance simpleSchemaChange_access_load_upgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"upgrade" l) v.upgrade' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"upgrade" l) v.upgrade' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance simpleSchemaChange_access_store_upgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (upgrade' : go_etcd_io.etcd.server.v3.storage.schema.action.t) :
+instance simpleSchemaChange_access_store_upgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (upgrade' : go_etcd_io.etcd.server.v3.storage.schema.action) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) v.upgrade' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"upgrade" l) upgrade' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with upgrade' := upgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"upgrade" l) v.upgrade' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"upgrade" l) upgrade' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with upgrade' := upgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance simpleSchemaChange_access_load_downgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (dq : DFrac) :
+instance simpleSchemaChange_access_load_downgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"downgrade" l) v.downgrade' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"downgrade" l) v.downgrade' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance simpleSchemaChange_access_store_downgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (downgrade' : go_etcd_io.etcd.server.v3.storage.schema.action.t) :
+instance simpleSchemaChange_access_store_downgrade (l : Loc) (v : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (downgrade' : go_etcd_io.etcd.server.v3.storage.schema.action) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) v.downgrade' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t go!"downgrade" l) downgrade' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with downgrade' := downgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"downgrade" l) v.downgrade' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange go!"downgrade" l) downgrade' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with downgrade' := downgrade' } : go_etcd_io.etcd.server.v3.storage.schema.simpleSchemaChange) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -362,11 +362,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance membershipBackend_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend :=
   sorry -- Rocq: Admitted
 
 instance membershipBackend_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.t go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -381,11 +381,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance migrationStep_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep :=
   sorry -- Rocq: Admitted
 
 instance migrationStep_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep.t go_etcd_io.etcd.server.v3.storage.schema.migrationStep.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep go_etcd_io.etcd.server.v3.storage.schema.migrationStep.underlying :=
   sorry -- Rocq: Admitted
 
 end def_

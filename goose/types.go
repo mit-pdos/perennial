@@ -43,7 +43,7 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 		// unification.
 		ctx.out.typeNamedDecls = append(ctx.out.typeNamedDecls,
 			glang.LeanVerbatim(fmt.Sprintf("#[global] Opaque %s.", glang.ToIdent(typeName)),
-				fmt.Sprintf("attribute [irreducible] %s", glang.LeanIdent(typeName))),
+				fmt.Sprintf("attribute [irreducible] %s", glang.LeanTypeDesc(typeName))),
 		)
 	}
 
@@ -561,11 +561,11 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 		}
 		if t.TypeArgs().Len() != 0 {
 			return glang.CallExpr{
-				MethodName: glang.GallinaIdent(ctx.qualifiedName(t.Obj())),
+				MethodName: glang.TypeIdent(ctx.qualifiedName(t.Obj())),
 				Args:       ctx.convertTypeArgsToGlang(n, t.TypeArgs()),
 			}
 		} else {
-			return glang.GallinaIdent(ctx.qualifiedName(t.Obj()))
+			return glang.TypeIdent(ctx.qualifiedName(t.Obj()))
 		}
 	case *types.Alias:
 		if t.Obj().Pkg() == nil {
@@ -577,11 +577,11 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 		}
 		if t.TypeArgs().Len() != 0 {
 			return glang.CallExpr{
-				MethodName: glang.GallinaIdent(ctx.qualifiedName(t.Obj())),
+				MethodName: glang.TypeIdent(ctx.qualifiedName(t.Obj())),
 				Args:       ctx.convertTypeArgsToGlang(n, t.TypeArgs()),
 			}
 		} else {
-			return glang.GallinaIdent(ctx.qualifiedName(t.Obj()))
+			return glang.TypeIdent(ctx.qualifiedName(t.Obj()))
 		}
 
 	case *types.Map:
@@ -652,7 +652,7 @@ type structTypeInfo struct {
 }
 
 func (ctx *Ctx) structInfoToGlangType(info structTypeInfo) glang.Expr {
-	return glang.GallinaIdent(info.name)
+	return glang.TypeIdent(info.name)
 }
 
 func (ctx *Ctx) getStructInfo(t types.Type) (structTypeInfo, bool) {

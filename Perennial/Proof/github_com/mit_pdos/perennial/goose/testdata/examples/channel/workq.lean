@@ -209,10 +209,10 @@ def ownTaskAuth (γ : WorkqNames) (remaining_docs : GMap Nat (Option GoString)) 
 
 def word_count (doc : GoString) : Nat := (strings.splitFields doc).length
 
-def isTasksDone (γ : WorkqNames) (sh : shared.t) : IProp GF :=
+def isTasksDone (γ : WorkqNames) (sh : shared) : IProp GF :=
   sync.atomic.ownInt64 sh.total' DFrac.discard (W64 ((γ.docs.map word_count).sum : Int))
 
-def coordinatorInv (γ : WorkqNames) (sh : shared.t) (γdone : ChanNames) : IProp GF :=
+def coordinatorInv (γ : WorkqNames) (sh : shared) (γdone : ChanNames) : IProp GF :=
   iprop(∃ (remaining_docs : GMap Nat (Option GoString)) (remainingv : w64),
     "H" ∷ (if remainingv = W64 0 then iprop(True)
            else iprop(∃ totalv : w64,
@@ -225,13 +225,13 @@ def coordinatorInv (γ : WorkqNames) (sh : shared.t) (γdone : ChanNames) : IPro
     "%Hdocs_agree" ∷ ⌜∀ (i : Nat) (v : Option GoString), remaining_docs !! i = some v →
         match v with | some doc => γ.docs[i]? = some doc | none => True⌝)
 
-def isCoordinator (γ : WorkqNames) (sh : shared.t) : IProp GF :=
+def isCoordinator (γ : WorkqNames) (sh : shared) : IProp GF :=
   iprop(∃ γdone : ChanNames,
     "#Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Unknown ∗
     "#Hdone_is" ∷ isChan sh.done' γdone Unit ∗
     "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone))
 
-instance isCoordinator_persistent (γ : WorkqNames) (sh : shared.t) :
+instance isCoordinator_persistent (γ : WorkqNames) (sh : shared) :
     Persistent (isCoordinator (GF := GF) γ sh) := by
   unfold isCoordinator; infer_instance
 
@@ -240,7 +240,7 @@ def stealReplyPred (γ : WorkqNames) (maybe_req : Loc) : IProp GF :=
   else iprop(∃ req : GoString, maybe_req ↦ req ∗ ownTask γ req)
 
 def isWorker (γ : WorkqNames) (w : Loc) : IProp GF :=
-  iprop(∃ (wv : Worker.t) (γsteal γqueue : ChanNames),
+  iprop(∃ (wv : Worker) (γsteal γqueue : ChanNames),
     "#w" ∷ w ↦□ wv ∗
     "#Hqueue" ∷ isChanBag γqueue wv.queue' (ownTask (GF := GF) γ) ∗
     "#Hsteal" ∷ isChanBag γsteal wv.steal'
@@ -251,7 +251,7 @@ instance isWorker_persistent (γ : WorkqNames) (w : Loc) :
     Persistent (isWorker (GF := GF) γ w) := by
   unfold isWorker; infer_instance
 
-instance isTasksDone_persistent (γ : WorkqNames) (sh : shared.t) :
+instance isTasksDone_persistent (γ : WorkqNames) (sh : shared) :
     Persistent (isTasksDone (GF := GF) γ sh) := by
   unfold isTasksDone
   exact as_dfractional_persistent (Φ := fun dq => sync.atomic.ownInt64 (GF := GF) sh.total' dq
@@ -259,12 +259,12 @@ instance isTasksDone_persistent (γ : WorkqNames) (sh : shared.t) :
 
 set_option goose.wp.extras true
 
-theorem Worker.wp_process (γ : WorkqNames) (w : Loc) (doc : GoString) (sh : shared.t) :
+theorem Worker.wp_process (γ : WorkqNames) (w : Loc) (doc : GoString) (sh : shared) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#Hw" ∷ isWorker γ w ∗
         "#Hcoord" ∷ isCoordinator γ sh ∗
         "Hdoc" ∷ ownTask γ doc }}
-      (App (App (Val (w @!! go.GoType.PointerType Worker @!! go!"process")) (Val #doc)) (Val #sh))
+      (App (App (Val (w @!! go.GoType.PointerType Worker.ty @!! go!"process")) (Val #doc)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hcoord, Hdoc⟩
   wp_auto
@@ -403,12 +403,12 @@ theorem Worker.wp_process (γ : WorkqNames) (w : Loc) (doc : GoString) (sh : sha
     · iapply HΦ
       itrivial
 
-theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared.t) :
+theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#Hw" ∷ isWorker γ w ∗
         "#Hneighbor" ∷ isWorker γ neighbor ∗
         "#Hcoord" ∷ isCoordinator γ sh }}
-      (App (App (Val (w @!! go.GoType.PointerType Worker @!! go!"run")) (Val #neighbor)) (Val #sh))
+      (App (App (Val (w @!! go.GoType.PointerType Worker.ty @!! go!"run")) (Val #neighbor)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hneighbor, #Hcoord⟩
   iNamed Hw
@@ -653,7 +653,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
     simp only [Hi.1, hP, and_self, ↓reduceIte]
     irename «$r0» => Hwr
     imod (typedPointsto_dfractional (GF := GF) «$r0_ptr»
-      ({ queue' := queue, steal' := steal } : Worker.t)).dfractional_persist _ $$ Hwr with #Hwr
+      ({ queue' := queue, steal' := steal } : Worker)).dfractional_persist _ $$ Hwr with #Hwr
     simp only [Hif, ↓reduceIte]
     imod start_bag (ownTask (GF := GF) ⟨docs, γtask_gn⟩) _ queue γqueue (by trivial)
       $$ Hq_is Hq_own with #Hqueue
@@ -691,7 +691,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
       · simp only [List.mem_singleton] at Hw
         subst Hw
         unfold isWorker
-        iexists ({ queue' := queue, steal' := steal } : Worker.t), γsteal, γqueue
+        iexists ({ queue' := queue, steal' := steal } : Worker), γsteal, γqueue
         iframe #
     · ipureintro
       simp only [sint.nat, sint.Z, hi1, List.length_append, List.length_singleton]
@@ -760,13 +760,13 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
   ihave Hrem : sync.atomic.ownInt64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
-    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64.t) =
+    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
       zero_val _ from rfl]
     iexact «$v0»
   ihave Htot : sync.atomic.ownInt64 (GF := GF) «$v1_ptr» (DFrac.own 1) (W64 0) $$ [«$v1»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
-    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64.t) =
+    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
       zero_val _ from rfl]
     iexact «$v1»
   wp_apply chan.wp_make1 (V := Unit) as %done %γdone ⟨#Hdone_is, %Hdcap, Hdone⟩

@@ -25,48 +25,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.pkg.v3.idutil.Assumptions]
 
 instance Generator_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.idutil.Generator.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.idutil.Generator where
   typedPointstoDef l v dq := iprop(
-    "prefix'" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' dq ∗
-    "suffix" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' dq ∗
+    "prefix'" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"prefix" l) v.prefix' dq ∗
+    "suffix" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"suffix" l) v.suffix' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Generator_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.idutil.Generator.t go_etcd_io.etcd.pkg.v3.idutil.Generator.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.idutil.Generator go_etcd_io.etcd.pkg.v3.idutil.Generator.underlying := by
   solve_into_val_typed_struct
 
-instance Generator_access_load_prefix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (dq : DFrac) :
+instance Generator_access_load_prefix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"prefix" l) v.prefix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"prefix" l) v.prefix' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Generator_access_store_prefix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (prefix' : w64) :
+instance Generator_access_store_prefix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator) (prefix' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) v.prefix' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"prefix" l) prefix' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"prefix" l) v.prefix' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"prefix" l) prefix' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefix' := prefix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Generator_access_load_suffix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (dq : DFrac) :
+instance Generator_access_load_suffix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' dq)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"suffix" l) v.suffix' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"suffix" l) v.suffix' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Generator_access_store_suffix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (suffix' : w64) :
+instance Generator_access_store_suffix (l : Loc) (v : go_etcd_io.etcd.pkg.v3.idutil.Generator) (suffix' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) v.suffix' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator.t go!"suffix" l) suffix' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with suffix' := suffix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"suffix" l) v.suffix' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.pkg.v3.idutil.Generator go!"suffix" l) suffix' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with suffix' := suffix' } : go_etcd_io.etcd.pkg.v3.idutil.Generator) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

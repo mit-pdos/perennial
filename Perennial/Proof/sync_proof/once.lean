@@ -34,8 +34,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
-abbrev OnceDone (o : Loc) : Loc := structFieldRef Once.t go!"done" o
-abbrev OnceM (o : Loc) : Loc := structFieldRef Once.t go!"m" o
+abbrev OnceDone (o : Loc) : Loc := structFieldRef Once go!"done" o
+abbrev OnceM (o : Loc) : Loc := structFieldRef Once go!"m" o
 
 abbrev OnceInv (o : Loc) (Q : IProp GF) : IProp GF :=
   iprop(∃ done : Bool,
@@ -66,12 +66,12 @@ theorem ownBool_halves (u : Loc) (b : Bool) :
   exact h
 
 theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
-    typedPointsto (GF := GF) o (zero_val Once.t) (DFrac.own 1) ∗ P ⊢ |={E}=> isOnce o P Q := by
+    typedPointsto (GF := GF) o (zero_val Once) (DFrac.own 1) ∗ P ⊢ |={E}=> isOnce o P Q := by
   iintro ⟨Ho, HP⟩
   rw [isOnce_unseal]; unfold isOnceDef
   iStructNamed Ho
-  have hz : (zero_val sync.atomic.Bool'.t) =
-      ({ _0' := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool'.t) := rfl
+  have hz : (zero_val sync.atomic.Bool') =
+      ({ _0' := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool') := rfl
   ihave Hd := (ownBool_halves (OnceDone (GF := GF) o) false).1 $$ [done]
   · simp only [sync.atomic.ownBool_unseal, sync.atomic.ownBoolDef]
     rw [← hz]; iexact done
@@ -92,7 +92,7 @@ theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
 theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : func.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
-      (App (Val (o @!! go.GoType.PointerType Once @!! go!"doSlow")) (Val #f))
+      (App (Val (o @!! go.GoType.PointerType Once.ty @!! go!"doSlow")) (Val #f))
     {{ RET #(); Q }} := by
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]
@@ -163,7 +163,7 @@ theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : func.t) :
 theorem Once.wp_Do (o : Loc) (P Q : IProp GF) (f : func.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
-      (App (Val (o @!! go.GoType.PointerType Once @!! go!"Do")) (Val #f))
+      (App (Val (o @!! go.GoType.PointerType Once.ty @!! go!"Do")) (Val #f))
     {{ RET #(); Q }} := by
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]

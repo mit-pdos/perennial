@@ -57,7 +57,7 @@ axiom BTree.wp_Clone [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] 
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) (t : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items (DFrac.own 1) }}
-      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"Clone")) (Val #()))
+      (App (Val (t @!! go.GoType.PointerType (BTree.ty T) @!! go!"Clone")) (Val #()))
     {{ (t' : Loc), RET #t';
        ownBTree t is_item less items (DFrac.own 1) ∗
        ownBTree t' is_item less items (DFrac.own 1) }}
@@ -68,7 +68,7 @@ axiom BTree.wp_Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [T
     (t : Loc) (key_item : T') (key : V) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items dq ∗ is_item key_item key }}
-      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"Get")) (Val #key_item))
+      (App (Val (t @!! go.GoType.PointerType (BTree.ty T) @!! go!"Get")) (Val #key_item))
     {{ (item : T') (found : Bool), RET (PairV #item #found);
        ownBTree t is_item less items dq ∗
        (match found with
@@ -83,7 +83,7 @@ axiom BTree.wp_ReplaceOrInsert [package_sem : btree.Assumptions] {T' : Type} [Ze
     (t : Loc) (item : T') (itv : V) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items (DFrac.own 1) ∗ is_item item itv }}
-      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"ReplaceOrInsert")) (Val #item))
+      (App (Val (t @!! go.GoType.PointerType (BTree.ty T) @!! go!"ReplaceOrInsert")) (Val #item))
     {{ (old_item : T') (found : Bool) (items' : List V), RET (PairV #old_item #found);
        ownBTree t is_item less items' (DFrac.own 1) }}
 

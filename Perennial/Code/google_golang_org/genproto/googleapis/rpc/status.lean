@@ -17,10 +17,10 @@ end pkg_id
 
 namespace google_golang_org.genproto.googleapis.rpc.status
 
-def Status [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Status.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/genproto/googleapis/rpc/status.Status" [])
 
-attribute [irreducible] Status
+attribute [irreducible] Status.ty
 
 axiom Status.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -85,15 +85,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_rawDesc.init) (Val #()))))))))
 
-namespace Status
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Status
+axiom Status : Type
+axiom Status.zero_val : ZeroVal Status
+attribute [instance] Status.zero_val
 
 class Status.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Status.underlying Status.t
-  underlying : go.UnderlyingDirectedEq Status Status.underlying
+  type_repr : go.TypeReprUnderlying Status.underlying Status
+  underlying : go.UnderlyingDirectedEq Status.ty Status.underlying
   isUnderlying : go.IsUnderlying Status.underlying Status.underlying
 
 attribute [instance] Status.TypeAssumptions.type_repr

@@ -17,10 +17,10 @@ end pkg_id
 
 namespace google_golang_org.grpc.codes
 
-def Code [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Code.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"google.golang.org/grpc/codes.Code" [])
 
-attribute [irreducible] Code
+attribute [irreducible] Code.ty
 
 axiom OK [FfiSyntax] [GoGlobalContext] : val
 
@@ -89,15 +89,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val strToCode.init) (Val #())))))))
 
-namespace Code
-abbrev t [FfiSyntax] : Type := w32
-end Code
+abbrev Code [FfiSyntax] : Type := w32
 
 @[reducible] def Code.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
 class Code.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq Code Code.underlying
+  underlying : go.UnderlyingDirectedEq Code.ty Code.underlying
 
 attribute [instance] Code.TypeAssumptions.underlying
 

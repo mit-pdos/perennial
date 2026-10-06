@@ -17,20 +17,20 @@ end pkg_id
 
 namespace crypto.ed25519
 
-def PublicKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PublicKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PublicKey" [])
 
-attribute [irreducible] PublicKey
+attribute [irreducible] PublicKey.ty
 
-def PrivateKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PrivateKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PrivateKey" [])
 
-attribute [irreducible] PrivateKey
+attribute [irreducible] PrivateKey.ty
 
-def Options [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Options.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.Options" [])
 
-attribute [irreducible] Options
+attribute [irreducible] Options.ty
 
 axiom Options.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -83,39 +83,33 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val cryptocustomrand.init) (Val #())))))))
 
-namespace PublicKey
-abbrev t [FfiSyntax] : Type := slice.t
-end PublicKey
+abbrev PublicKey [FfiSyntax] : Type := slice.t
 
 @[reducible] def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 class PublicKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq PublicKey PublicKey.underlying
+  underlying : go.UnderlyingDirectedEq PublicKey.ty PublicKey.underlying
 
 attribute [instance] PublicKey.TypeAssumptions.underlying
 
-namespace PrivateKey
-abbrev t [FfiSyntax] : Type := slice.t
-end PrivateKey
+abbrev PrivateKey [FfiSyntax] : Type := slice.t
 
 @[reducible] def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 class PrivateKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq PrivateKey PrivateKey.underlying
+  underlying : go.UnderlyingDirectedEq PrivateKey.ty PrivateKey.underlying
 
 attribute [instance] PrivateKey.TypeAssumptions.underlying
 
-namespace Options
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end Options
+axiom Options : Type
+axiom Options.zero_val : ZeroVal Options
+attribute [instance] Options.zero_val
 
 class Options.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Options.underlying Options.t
-  underlying : go.UnderlyingDirectedEq Options Options.underlying
+  type_repr : go.TypeReprUnderlying Options.underlying Options
+  underlying : go.UnderlyingDirectedEq Options.ty Options.underlying
   isUnderlying : go.IsUnderlying Options.underlying Options.underlying
 
 attribute [instance] Options.TypeAssumptions.type_repr

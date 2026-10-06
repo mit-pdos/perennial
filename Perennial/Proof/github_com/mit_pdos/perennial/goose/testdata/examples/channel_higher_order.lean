@@ -22,8 +22,8 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-instance request_countable [FfiSyntax] : Pos.Countable request.t :=
-  countableOfLeftInverse (fun r : request.t => (r.f', r.result')) (fun p => ⟨p.1, p.2⟩)
+instance request_countable [FfiSyntax] : Pos.Countable request :=
+  countableOfLeftInverse (fun r : request => (r.f', r.result')) (fun p => ⟨p.1, p.2⟩)
     (fun _ => rfl)
 
 section proof
@@ -34,12 +34,12 @@ variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-def doRequest (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
+def doRequest (r : request) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
   iprop("Hf" ∷ WP (App (Val #r.f') (Val #())) {{ fun v => iprop(∃ s : GoString, ⌜v = #s⌝ ∗ Q s) }} ∗
     "#Hfut" ∷ isFuture GoString γfut r.result' ∗
     "Hpromise" ∷ Fulfill (V := GoString) γfut Q)
 
-def awaitRequest (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
+def awaitRequest (r : request) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
   iprop("#Hfut" ∷ isFuture GoString γfut r.result' ∗
     "HAwait" ∷ Await (V := GoString) γfut [Q])
 
@@ -49,7 +49,7 @@ theorem wp_mkRequest (f : func.t) (Q : GoString → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         WP (App (Val #f) (Val #())) {{ fun v => iprop(∃ s : GoString, ⌜v = #s⌝ ∗ Q s) }} }}
       (App (Val (@! mkRequest)) (Val #f))
-    {{ (γfut : FutureNames) (r : request.t), RET #r;
+    {{ (γfut : FutureNames) (r : request), RET #r;
         doRequest r γfut Q ∗ awaitRequest r γfut Q }} := by
   wp_start as Hf
   wp_auto
@@ -65,7 +65,7 @@ theorem wp_mkRequest (f : func.t) (Q : GoString → IProp GF) :
   iframe # ∗
 
 omit package_sem in
-theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) :
+theorem wp_get_response (r : request) (γfut : FutureNames) (Q : GoString → IProp GF) :
     {{ awaitRequest r γfut Q }}
       (App (Val (chan.receive go.string)) (Val #r.result'))
     {{ (s : GoString), RET (PairV #s #true); Q s }} := by
@@ -86,7 +86,7 @@ theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : GoString → 
 
 
 def isRequestChan (γ : ChanNames) (ch : Loc) : IProp GF :=
-  isChanBag (V := request.t) γ ch (fun r => iprop(∃ γfut Q, doRequest r γfut Q))
+  isChanBag (V := request) γ ch (fun r => iprop(∃ γfut Q, doRequest r γfut Q))
 
 instance isRequestChan_pers (γ : ChanNames) (ch : Loc) :
     Persistent (isRequestChan (GF := GF) γ ch) := by
@@ -99,10 +99,10 @@ theorem wp_ho_worker (γ : ChanNames) (ch : Loc) :
   wp_start as #His
   unfold isRequestChan at *
   wp_auto
-  ihave HI : (∃ r0 : request.t, "r" ∷ r_ptr ↦ r0 : IProp GF) $$ [r]
+  ihave HI : (∃ r0 : request, "r" ∷ r_ptr ↦ r0 : IProp GF) $$ [r]
   · iexists _; iexact r
   wp_for HI
-  wp_apply wp_bag_receive (t := request) γ ch _ $$ His as %rq Hreq
+  wp_apply wp_bag_receive (t := request.ty) γ ch _ $$ His as %rq Hreq
   icases Hreq with ⟨%γfut, %Q, Hreq⟩
   unfold doRequest
   iNamed Hreq
@@ -126,7 +126,7 @@ theorem wp_HigherOrderExample :
   wp_start
   wp_auto
   iapply wp_fupd
-  wp_apply chan.wp_make1 (V := request.t) $$ [] as %req_ch %γ ⟨#His, %Hcap, Hown⟩
+  wp_apply chan.wp_make1 (V := request) $$ [] as %req_ch %γ ⟨#His, %Hcap, Hown⟩
   imod start_bag (fun r => iprop(∃ γfut Q, doRequest r γfut Q)) _ req_ch γ trivial $$ His Hown
     with #Hch
   ihave #Hreqs : isRequestChan γ req_ch $$ []
@@ -150,11 +150,11 @@ theorem wp_HigherOrderExample :
   · wp_auto
     iexists _
     ipureintro; exact ⟨rfl, rfl⟩
-  wp_apply wp_bag_send (t := request) γ req_ch r1 _ $$ [$Hch Hdo1]
+  wp_apply wp_bag_send (t := request.ty) γ req_ch r1 _ $$ [$Hch Hdo1]
   · iexists _, _; iexact Hdo1
-  wp_apply wp_bag_send (t := request) γ req_ch r2 _ $$ [$Hch Hdo2]
+  wp_apply wp_bag_send (t := request.ty) γ req_ch r2 _ $$ [$Hch Hdo2]
   · iexists _, _; iexact Hdo2
-  wp_apply wp_bag_send (t := request) γ req_ch r3 _ $$ [$Hch Hdo3]
+  wp_apply wp_bag_send (t := request.ty) γ req_ch r3 _ $$ [$Hch Hdo3]
   · iexists _, _; iexact Hdo3
   wp_apply wp_get_response r1 γfut1 _ $$ Hawait1 as %s1 %Hs1
   wp_apply wp_get_response r2 γfut2 _ $$ Hawait2 as %s2 %Hs2

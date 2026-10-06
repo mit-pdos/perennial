@@ -37,9 +37,9 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   repeat (wp_apply wp_GlobalAlloc (V := interface.t) _ go.error as _)
-  wp_apply wp_GlobalAlloc (V := sync.Pool.t) ssFree sync.Pool as _
+  wp_apply wp_GlobalAlloc (V := sync.Pool) ssFree sync.Pool.ty as _
   wp_apply wp_GlobalAlloc (V := slice.t) space _ as _
-  wp_apply wp_GlobalAlloc (V := sync.Pool.t) ppFree sync.Pool as _
+  wp_apply wp_GlobalAlloc (V := sync.Pool) ppFree sync.Pool.ty as _
   wp_apply sync.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   wp_apply io.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩

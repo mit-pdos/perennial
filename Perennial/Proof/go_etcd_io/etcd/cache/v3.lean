@@ -128,7 +128,7 @@ axiom ringBuffer.wp_PeekOldest [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi
     (r : Loc) (buf : List V) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.cache.v3 ∗
       ownRingBuffer r is_item rev_item buf }}
-    (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer T) @!! go!"PeekOldest")) (Val #()))
+    (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer.ty T) @!! go!"PeekOldest")) (Val #()))
   {{ RET #((buf.map rev_item).headD (W64 0)); ownRingBuffer r is_item rev_item buf }}
 
 /-- Rocq's `let iterItemvs := ...` in `ringBuffer.wp_DescendLessOrEqual`: the
@@ -156,7 +156,7 @@ axiom ringBuffer.wp_DescendLessOrEqual [ext : FfiSyntax] [ffi : FfiModel] [FfiIn
             Ψ #«continue») -∗
         WP (App (App (Val #iter) (Val #(rev_item itemv))) (Val #item)) {{ Ψ }})) -∗
     (ownRingBuffer r is_item rev_item buf -∗ P (iterItemvs rev_item pivot buf).length -∗ Φ #()) -∗
-    (WP (App (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer T) @!! go!"DescendLessOrEqual"))
+    (WP (App (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer.ty T) @!! go!"DescendLessOrEqual"))
       (Val #pivot)) (Val #iter)) {{ Φ }})
 
 /-! ### Store -/
@@ -244,7 +244,7 @@ local notation "pkg" => pkg_id.go_etcd_io.etcd.cache.v3
 
 def isSnapshotItem (l : Loc) (s : Snap) : IProp GF :=
   iprop(∃ (tree : Loc),
-    "#snapshot" ∷ l ↦□ (cache.v3.snapshot.t.mk s.1 tree) ∗
+    "#snapshot" ∷ l ↦□ (cache.v3.snapshot.mk s.1 tree) ∗
     "#tree" ∷ ownBTree tree isKvItem LessKvItem (s.2.map Sum.inr) DFrac.discard)
 
 instance isSnapshotItem_pers (l : Loc) (s : Snap) : Persistent (isSnapshotItem (GF := GF) l s) := by
@@ -253,13 +253,13 @@ instance isSnapshotItem_pers (l : Loc) (s : Snap) : Persistent (isSnapshotItem (
 /-- Cannot be persistent because of RWMutex. -/
 def ownStore (s : Loc) (γstore : StoreNames) («prefix» : GoString) : IProp GF :=
   iprop(
-  "Hmu" ∷ sync.ownRWMutex (s.[cache.v3.store.t, go!"mu"])
-    (fun q => iprop(∃ (snapshot : cache.v3.snapshot.t) (kvs_ordered : List KeyValue.t)
+  "Hmu" ∷ sync.ownRWMutex (s.[cache.v3.store, go!"mu"])
+    (fun q => iprop(∃ (snapshot : cache.v3.snapshot) (kvs_ordered : List KeyValue.t)
         (history : List Snap),
-       "latest" ∷ s.[cache.v3.store.t, go!"latest"] ↦ snapshot ∗
+       "latest" ∷ s.[cache.v3.store, go!"latest"] ↦ snapshot ∗
        "latest_tree" ∷ ownBTree snapshot.tree' isKvItem LessKvItem (kvs_ordered.map Sum.inr)
          (DFrac.own q) ∗
-       "history" ∷ ownRingBuffer (s.[cache.v3.store.t, go!"history"])
+       "history" ∷ ownRingBuffer (s.[cache.v3.store, go!"history"])
          isSnapshotItem revSnapshotItem history ∗
        "Hrev" ∷ monoNatAuthOwn γstore.latestRevGn 1 (sint.nat snapshot.rev') ∗
        "#Hhistory" ∷ (∀ (revision : w64) (i : Nat) (s : Snap),
@@ -274,7 +274,7 @@ def ownStore (s : Loc) (γstore : StoreNames) («prefix» : GoString) : IProp GF
 -- (`ownCache` and the `structure` below come before the proofs: the kernel check
 -- of a `structure` waits for the proofs elaborated asynchronously before it)
 def ownCache (c_ptr : Loc) : IProp GF :=
-  iprop(∃ (c : cache.v3.Cache.t) (γstore : StoreNames),
+  iprop(∃ (c : cache.v3.Cache) (γstore : StoreNames),
     "c" ∷ c_ptr ↦ c ∗
     "store" ∷ ownStore c.store' γstore c.prefix')
 
@@ -289,28 +289,28 @@ store's) representation predicate and gives it back, with an arbitrary result; t
 structure CacheGetCalleeSpecs : Prop where
   wp_Cache_WaitReady : ∀ (c : Loc) (ctx : interface.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
+      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache.ty @!! go!"WaitReady")) (Val #ctx))
     {{ (err : error.t), RET #err; ownCache c }}
-  wp_Cache_validateGet : ∀ (c : Loc) (key : GoString) (op : client.v3.Op.t)
+  wp_Cache_validateGet : ∀ (c : Loc) (key : GoString) (op : client.v3.Op)
       (req : RangeRequest.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c ∗ isOp op (.Get req) }}
-      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
+      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache.ty @!! go!"validateGet")) (Val #key))
         (Val #op))
     {{ (pred : func.t) (err : error.t), RET (PairV #pred #err); ownCache c }}
   wp_Cache_serverRevision : ∀ (c : Loc) (ctx : interface.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
+      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache.ty @!! go!"serverRevision")) (Val #ctx))
     {{ (rev : w64) (err : error.t), RET (PairV #rev #err); ownCache c }}
   wp_Cache_waitTillRevision : ∀ (c : Loc) (ctx : interface.t) (rev : w64),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
+      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache.ty @!! go!"waitTillRevision"))
         (Val #ctx)) (Val #rev))
     {{ (err : error.t), RET #err; ownCache c }}
   wp_store_Get : ∀ (s : Loc) (γstore : StoreNames) («prefix» : GoString)
       (start_sl end_sl : slice.t) (start_key end_key : List w8) (rev : w64),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownStore s γstore «prefix» ∗
         start_sl ↦*□ start_key ∗ end_sl ↦*□ end_key }}
-      (App (App (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
+      (App (App (App (Val (s @!! go.GoType.PointerType cache.v3.store.ty @!! go!"Get")) (Val #start_sl))
         (Val #end_sl)) (Val #rev))
     {{ (kvs : slice.t) (latest_rev : w64) (err : error.t),
         RET (PairV (PairV #kvs #latest_rev) #err); ownStore s γstore «prefix» }}
@@ -320,7 +320,7 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : Loc) (γstore : StoreNames) (re
     («prefix» : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hs" ∷ ownStore s γstore «prefix» ∗
         "#Hlb" ∷ monoNatLbOwn γstore.latestRevGn rev_lb }}
-      (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"getSnapshot")) (Val #rev))
+      (App (Val (s @!! go.GoType.PointerType cache.v3.store.ty @!! go!"getSnapshot")) (Val #rev))
     {{ (snap_ptr : Loc) (latest_rev : w64) (err : error.t),
         RET (PairV (PairV #snap_ptr #latest_rev) #err);
         ownStore s γstore «prefix» ∗
@@ -364,7 +364,7 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : Loc) (γstore : StoreNames) (re
   wp_bind (If _ _ _)
   iapply (wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗
       rev_ptr ↦ (if rev = W64 0 then snapshot.rev' else rev) ∗
-      s.[cache.v3.store.t, go!"latest"] ↦ snapshot ∗ s_ptr ↦ s))) $$ [rev latest s]
+      s.[cache.v3.store, go!"latest"] ↦ snapshot ∗ s_ptr ↦ s))) $$ [rev latest s]
   · wp_if_destruct
     · try simp only [↓reduceIte]
       iframe
@@ -387,7 +387,7 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : Loc) (γstore : StoreNames) (re
     fun _ _ => by rw [go.intoVal_unfold func.t]]
   wp_bind (App (App (Val #(methods _ _ _)) (Val _)) (Val _))
   iapply (wp_wand (Φ := fun v => iprop(⌜v = #()⌝ ∗
-      ownRingBuffer (s.[cache.v3.store.t, go!"history"]) isSnapshotItem revSnapshotItem history ∗
+      ownRingBuffer (s.[cache.v3.store, go!"history"]) isSnapshotItem revSnapshotItem history ∗
       (targetSnapshot_ptr ↦ (zero_val Loc) ∨
        ∃ (item : Loc) (itemv : Snap), targetSnapshot_ptr ↦ item ∗ isSnapshotItem item itemv ∗
          ⌜(iterItemvs revSnapshotItem r history)[0]? = some itemv⌝)))) $$ [history targetSnapshot]
@@ -467,7 +467,7 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : Loc) (γstore : StoreNames) (re
 
 theorem store.wp_LatestRev (s : Loc) (γstore : StoreNames) («prefix» : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownStore s γstore «prefix» }}
-      (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"LatestRev")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType cache.v3.store.ty @!! go!"LatestRev")) (Val #()))
     {{ (r : w64), RET #r; ownStore s γstore «prefix» }} := by
   wp_start as Hs
   wp_apply wp_with_defer as %defer defer
@@ -487,12 +487,12 @@ satisfies the client-supplied `isOpOptions opts pfx fk` (not both `WithPrefix` a
 untranslated callees (`CacheGetCalleeSpecs`) as a hypothesis. -/
 theorem Cache.wp_Get (Hspecs : CacheGetCalleeSpecs (GF := GF))
     (c : Loc) (ctx : interface.t) (key : GoString) (opts_sl : slice.t)
-    (opts : List client.v3.OpOption.t) (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
+    (opts : List client.v3.OpOption) (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "opts_sl" ∷ opts_sl ↦* opts ∗
         "#Hopts" ∷ isOpOptions opts pfx fk ∗
         "cache" ∷ ownCache c }}
-      (App (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
+      (App (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache.ty @!! go!"Get")) (Val #ctx))
         (Val #key)) (Val #opts_sl))
     {{ (resp : Loc) (err : error.t), RET (PairV #resp #err); True }} := by
   wp_start as ⟨opts_sl, #Hopts, cache⟩

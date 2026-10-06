@@ -24,11 +24,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance watchClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient :=
   sorry -- Rocq: Admitted
 
 instance watchClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.t go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -43,11 +43,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance WatchServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer :=
   sorry -- Rocq: Admitted
 
 instance WatchServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -62,7 +62,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance UnimplementedWatchServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -70,7 +70,7 @@ instance UnimplementedWatchServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedWatchServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedWatchServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -85,11 +85,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance LeaseClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient :=
   sorry -- Rocq: Admitted
 
 instance LeaseClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -104,11 +104,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance leaseClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient :=
   sorry -- Rocq: Admitted
 
 instance leaseClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.t go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -123,11 +123,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance LeaseServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer :=
   sorry -- Rocq: Admitted
 
 instance LeaseServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -142,7 +142,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance UnimplementedLeaseServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -150,7 +150,7 @@ instance UnimplementedLeaseServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedLeaseServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedLeaseServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -165,11 +165,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance ClusterClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient :=
   sorry -- Rocq: Admitted
 
 instance ClusterClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -184,11 +184,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance clusterClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient :=
   sorry -- Rocq: Admitted
 
 instance clusterClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.t go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -203,11 +203,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance ClusterServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer :=
   sorry -- Rocq: Admitted
 
 instance ClusterServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -222,7 +222,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance UnimplementedClusterServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -230,7 +230,7 @@ instance UnimplementedClusterServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedClusterServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedClusterServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -245,11 +245,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance MaintenanceClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient :=
   sorry -- Rocq: Admitted
 
 instance MaintenanceClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -264,11 +264,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance maintenanceClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient :=
   sorry -- Rocq: Admitted
 
 instance maintenanceClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.t go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -283,11 +283,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance MaintenanceServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer :=
   sorry -- Rocq: Admitted
 
 instance MaintenanceServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -302,7 +302,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance UnimplementedMaintenanceServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -310,7 +310,7 @@ instance UnimplementedMaintenanceServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedMaintenanceServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedMaintenanceServer.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -325,11 +325,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient :=
   sorry -- Rocq: Admitted
 
 instance AuthClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -344,11 +344,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance authClient_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient :=
   sorry -- Rocq: Admitted
 
 instance authClient_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient.t go_etcd_io.etcd.api.v3.etcdserverpb.authClient.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient go_etcd_io.etcd.api.v3.etcdserverpb.authClient.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -363,11 +363,11 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.t :=
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer :=
   sorry -- Rocq: Admitted
 
 instance AuthServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.underlying :=
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.underlying :=
   sorry -- Rocq: Admitted
 
 end def_
@@ -382,7 +382,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance UnimplementedAuthServer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.t where
+    TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -390,7 +390,7 @@ instance UnimplementedAuthServer_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnimplementedAuthServer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.t go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer go_etcd_io.etcd.api.v3.etcdserverpb.UnimplementedAuthServer.underlying := by
   solve_into_val_typed_struct
 
 end def_

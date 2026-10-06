@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance deadlineExceededError_typed_pointsto :
-    TypedPointsto (GF := GF) context.deadlineExceededError.t where
+    TypedPointsto (GF := GF) context.deadlineExceededError where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -34,7 +34,7 @@ instance deadlineExceededError_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance deadlineExceededError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.deadlineExceededError.t context.deadlineExceededError.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.deadlineExceededError context.deadlineExceededError.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -49,7 +49,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance emptyCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.emptyCtx.t where
+    TypedPointsto (GF := GF) context.emptyCtx where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -57,7 +57,7 @@ instance emptyCtx_typed_pointsto :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance emptyCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.emptyCtx.t context.emptyCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.emptyCtx context.emptyCtx.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -72,31 +72,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance backgroundCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.backgroundCtx.t where
+    TypedPointsto (GF := GF) context.backgroundCtx where
   typedPointstoDef l v dq := iprop(
-    "emptyCtx" ∷ typedPointsto (structFieldRef context.backgroundCtx.t go!"emptyCtx" l) v.emptyCtx' dq ∗
+    "emptyCtx" ∷ typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance backgroundCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.backgroundCtx.t context.backgroundCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.backgroundCtx context.backgroundCtx.underlying := by
   solve_into_val_typed_struct
 
-instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context.backgroundCtx.t) (dq : DFrac) :
+instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context.backgroundCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.backgroundCtx.t go!"emptyCtx" l) v.emptyCtx' dq)
-      (typedPointsto (structFieldRef context.backgroundCtx.t go!"emptyCtx" l) v.emptyCtx' dq)
+      (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq)
+      (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance backgroundCtx_access_store_emptyCtx (l : Loc) (v : context.backgroundCtx.t) (emptyCtx' : context.emptyCtx.t) :
+instance backgroundCtx_access_store_emptyCtx (l : Loc) (v : context.backgroundCtx) (emptyCtx' : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.backgroundCtx.t go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.backgroundCtx.t go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with emptyCtx' := emptyCtx' } : context.backgroundCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with emptyCtx' := emptyCtx' } : context.backgroundCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -112,31 +112,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance todoCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.todoCtx.t where
+    TypedPointsto (GF := GF) context.todoCtx where
   typedPointstoDef l v dq := iprop(
-    "emptyCtx" ∷ typedPointsto (structFieldRef context.todoCtx.t go!"emptyCtx" l) v.emptyCtx' dq ∗
+    "emptyCtx" ∷ typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance todoCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.todoCtx.t context.todoCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.todoCtx context.todoCtx.underlying := by
   solve_into_val_typed_struct
 
-instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoCtx.t) (dq : DFrac) :
+instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.todoCtx.t go!"emptyCtx" l) v.emptyCtx' dq)
-      (typedPointsto (structFieldRef context.todoCtx.t go!"emptyCtx" l) v.emptyCtx' dq)
+      (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq)
+      (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance todoCtx_access_store_emptyCtx (l : Loc) (v : context.todoCtx.t) (emptyCtx' : context.emptyCtx.t) :
+instance todoCtx_access_store_emptyCtx (l : Loc) (v : context.todoCtx) (emptyCtx' : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.todoCtx.t go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.todoCtx.t go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with emptyCtx' := emptyCtx' } : context.todoCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with emptyCtx' := emptyCtx' } : context.todoCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -152,116 +152,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance cancelCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.cancelCtx.t where
+    TypedPointsto (GF := GF) context.cancelCtx where
   typedPointstoDef l v dq := iprop(
-    "Context" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"Context" l) v.Context' dq ∗
-    "mu" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"mu" l) v.mu' dq ∗
-    "done" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"done" l) v.done' dq ∗
-    "children" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"children" l) v.children' dq ∗
-    "err" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"err" l) v.err' dq ∗
-    "cause" ∷ typedPointsto (structFieldRef context.cancelCtx.t go!"cause" l) v.cause' dq ∗
+    "Context" ∷ typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' dq ∗
+    "done" ∷ typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' dq ∗
+    "children" ∷ typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' dq ∗
+    "err" ∷ typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' dq ∗
+    "cause" ∷ typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance cancelCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.cancelCtx.t context.cancelCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.cancelCtx context.cancelCtx.underlying := by
   solve_into_val_typed_struct
 
-instance cancelCtx_access_load_Context (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_Context (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"Context" l) v.Context' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_Context (l : Loc) (v : context.cancelCtx.t) (Context' : context.Context.t) :
+instance cancelCtx_access_store_Context (l : Loc) (v : context.cancelCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"Context" l) v.Context' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"Context" l) Context' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) Context' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"mu" l) v.mu' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx.t) (mu' : sync.Mutex.t) :
+instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (mu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_load_done (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_done (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"done" l) v.done' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx.t) (done' : sync.atomic.Value.t) :
+instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (done' : sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"done" l) done' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"done" l) done' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_load_children (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_children (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"children" l) v.children' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"children" l) v.children' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx.t) (children' : map.t) :
+instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (children' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"children" l) v.children' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"children" l) children' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with children' := children' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"children" l) children' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with children' := children' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"err" l) v.err' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx.t) (err' : sync.atomic.Value.t) :
+instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (err' : sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"err" l) err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"err" l) err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_load_cause (l : Loc) (v : context.cancelCtx.t) (dq : DFrac) :
+instance cancelCtx_access_load_cause (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"cause" l) v.cause' dq)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"cause" l) v.cause' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' dq)
+      (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx.t) (cause' : error.t) :
+instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (cause' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"cause" l) v.cause' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.cancelCtx.t go!"cause" l) cause' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cause' := cause' } : context.cancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) cause' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cause' := cause' } : context.cancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -277,65 +277,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance afterFuncCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.afterFuncCtx.t where
+    TypedPointsto (GF := GF) context.afterFuncCtx where
   typedPointstoDef l v dq := iprop(
-    "cancelCtx" ∷ typedPointsto (structFieldRef context.afterFuncCtx.t go!"cancelCtx" l) v.cancelCtx' dq ∗
-    "once" ∷ typedPointsto (structFieldRef context.afterFuncCtx.t go!"once" l) v.once' dq ∗
-    "f" ∷ typedPointsto (structFieldRef context.afterFuncCtx.t go!"f" l) v.f' dq ∗
+    "cancelCtx" ∷ typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq ∗
+    "once" ∷ typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' dq ∗
+    "f" ∷ typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance afterFuncCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.afterFuncCtx.t context.afterFuncCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.afterFuncCtx context.afterFuncCtx.underlying := by
   solve_into_val_typed_struct
 
-instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context.afterFuncCtx.t) (dq : DFrac) :
+instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"cancelCtx" l) v.cancelCtx' dq)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"cancelCtx" l) v.cancelCtx' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_cancelCtx (l : Loc) (v : context.afterFuncCtx.t) (cancelCtx' : context.cancelCtx.t) :
+instance afterFuncCtx_access_store_cancelCtx (l : Loc) (v : context.afterFuncCtx) (cancelCtx' : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancelCtx' := cancelCtx' } : context.afterFuncCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancelCtx' := cancelCtx' } : context.afterFuncCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_load_once (l : Loc) (v : context.afterFuncCtx.t) (dq : DFrac) :
+instance afterFuncCtx_access_load_once (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"once" l) v.once' dq)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx.t) (once' : sync.Once.t) :
+instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"once" l) once' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : context.afterFuncCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) once' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : context.afterFuncCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFuncCtx.t) (dq : DFrac) :
+instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"f" l) v.f' dq)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx.t) (f' : func.t) :
+instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (f' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.afterFuncCtx.t go!"f" l) f' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : context.afterFuncCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) f' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : context.afterFuncCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -351,48 +351,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance stopCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.stopCtx.t where
+    TypedPointsto (GF := GF) context.stopCtx where
   typedPointstoDef l v dq := iprop(
-    "Context" ∷ typedPointsto (structFieldRef context.stopCtx.t go!"Context" l) v.Context' dq ∗
-    "stop" ∷ typedPointsto (structFieldRef context.stopCtx.t go!"stop" l) v.stop' dq ∗
+    "Context" ∷ typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq ∗
+    "stop" ∷ typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stopCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.stopCtx.t context.stopCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.stopCtx context.stopCtx.underlying := by
   solve_into_val_typed_struct
 
-instance stopCtx_access_load_Context (l : Loc) (v : context.stopCtx.t) (dq : DFrac) :
+instance stopCtx_access_load_Context (l : Loc) (v : context.stopCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"Context" l) v.Context' dq)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_store_Context (l : Loc) (v : context.stopCtx.t) (Context' : context.Context.t) :
+instance stopCtx_access_store_Context (l : Loc) (v : context.stopCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"Context" l) v.Context' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.stopCtx.t go!"Context" l) Context' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.stopCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.stopCtx go!"Context" l) Context' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.stopCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx.t) (dq : DFrac) :
+instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"stop" l) v.stop' dq)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"stop" l) v.stop' dq)
+      (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' dq)
+      (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx.t) (stop' : func.t) :
+instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (stop' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.stopCtx.t go!"stop" l) v.stop' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.stopCtx.t go!"stop" l) stop' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stop' := stop' } : context.stopCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.stopCtx go!"stop" l) stop' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stop' := stop' } : context.stopCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -408,31 +408,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance withoutCancelCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.withoutCancelCtx.t where
+    TypedPointsto (GF := GF) context.withoutCancelCtx where
   typedPointstoDef l v dq := iprop(
-    "c" ∷ typedPointsto (structFieldRef context.withoutCancelCtx.t go!"c" l) v.c' dq ∗
+    "c" ∷ typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance withoutCancelCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.withoutCancelCtx.t context.withoutCancelCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.withoutCancelCtx context.withoutCancelCtx.underlying := by
   solve_into_val_typed_struct
 
-instance withoutCancelCtx_access_load_c (l : Loc) (v : context.withoutCancelCtx.t) (dq : DFrac) :
+instance withoutCancelCtx_access_load_c (l : Loc) (v : context.withoutCancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.withoutCancelCtx.t go!"c" l) v.c' dq)
-      (typedPointsto (structFieldRef context.withoutCancelCtx.t go!"c" l) v.c' dq)
+      (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq)
+      (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance withoutCancelCtx_access_store_c (l : Loc) (v : context.withoutCancelCtx.t) (c' : context.Context.t) :
+instance withoutCancelCtx_access_store_c (l : Loc) (v : context.withoutCancelCtx) (c' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.withoutCancelCtx.t go!"c" l) v.c' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.withoutCancelCtx.t go!"c" l) c' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : context.withoutCancelCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) c' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : context.withoutCancelCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -448,65 +448,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance timerCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.timerCtx.t where
+    TypedPointsto (GF := GF) context.timerCtx where
   typedPointstoDef l v dq := iprop(
-    "cancelCtx" ∷ typedPointsto (structFieldRef context.timerCtx.t go!"cancelCtx" l) v.cancelCtx' dq ∗
-    "timer" ∷ typedPointsto (structFieldRef context.timerCtx.t go!"timer" l) v.timer' dq ∗
-    "deadline" ∷ typedPointsto (structFieldRef context.timerCtx.t go!"deadline" l) v.deadline' dq ∗
+    "cancelCtx" ∷ typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq ∗
+    "timer" ∷ typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' dq ∗
+    "deadline" ∷ typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance timerCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.timerCtx.t context.timerCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.timerCtx context.timerCtx.underlying := by
   solve_into_val_typed_struct
 
-instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.timerCtx.t) (dq : DFrac) :
+instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"cancelCtx" l) v.cancelCtx' dq)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"cancelCtx" l) v.cancelCtx' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_cancelCtx (l : Loc) (v : context.timerCtx.t) (cancelCtx' : context.cancelCtx.t) :
+instance timerCtx_access_store_cancelCtx (l : Loc) (v : context.timerCtx) (cancelCtx' : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.timerCtx.t go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancelCtx' := cancelCtx' } : context.timerCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancelCtx' := cancelCtx' } : context.timerCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_load_timer (l : Loc) (v : context.timerCtx.t) (dq : DFrac) :
+instance timerCtx_access_load_timer (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"timer" l) v.timer' dq)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"timer" l) v.timer' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_timer (l : Loc) (v : context.timerCtx.t) (timer' : Loc) :
+instance timerCtx_access_store_timer (l : Loc) (v : context.timerCtx) (timer' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"timer" l) v.timer' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.timerCtx.t go!"timer" l) timer' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := timer' } : context.timerCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.timerCtx go!"timer" l) timer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := timer' } : context.timerCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_load_deadline (l : Loc) (v : context.timerCtx.t) (dq : DFrac) :
+instance timerCtx_access_load_deadline (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"deadline" l) v.deadline' dq)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"deadline" l) v.deadline' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' dq)
+      (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx.t) (deadline' : time.Time.t) :
+instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (deadline' : time.Time) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.timerCtx.t go!"deadline" l) v.deadline' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.timerCtx.t go!"deadline" l) deadline' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with deadline' := deadline' } : context.timerCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) deadline' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with deadline' := deadline' } : context.timerCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -522,65 +522,65 @@ variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
 instance valueCtx_typed_pointsto :
-    TypedPointsto (GF := GF) context.valueCtx.t where
+    TypedPointsto (GF := GF) context.valueCtx where
   typedPointstoDef l v dq := iprop(
-    "Context" ∷ typedPointsto (structFieldRef context.valueCtx.t go!"Context" l) v.Context' dq ∗
-    "key" ∷ typedPointsto (structFieldRef context.valueCtx.t go!"key" l) v.key' dq ∗
-    "val" ∷ typedPointsto (structFieldRef context.valueCtx.t go!"val" l) v.val' dq ∗
+    "Context" ∷ typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq ∗
+    "key" ∷ typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' dq ∗
+    "val" ∷ typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance valueCtx_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) context.valueCtx.t context.valueCtx.underlying := by
+    IntoValTypedUnderlying (GF := GF) context.valueCtx context.valueCtx.underlying := by
   solve_into_val_typed_struct
 
-instance valueCtx_access_load_Context (l : Loc) (v : context.valueCtx.t) (dq : DFrac) :
+instance valueCtx_access_load_Context (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"Context" l) v.Context' dq)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_Context (l : Loc) (v : context.valueCtx.t) (Context' : context.Context.t) :
+instance valueCtx_access_store_Context (l : Loc) (v : context.valueCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"Context" l) v.Context' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.valueCtx.t go!"Context" l) Context' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.valueCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.valueCtx go!"Context" l) Context' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Context' := Context' } : context.valueCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx.t) (dq : DFrac) :
+instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"key" l) v.key' dq)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"key" l) v.key' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx.t) (key' : interface.t) :
+instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (key' : interface.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"key" l) v.key' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.valueCtx.t go!"key" l) key' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with key' := key' } : context.valueCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.valueCtx go!"key" l) key' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with key' := key' } : context.valueCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx.t) (dq : DFrac) :
+instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"val" l) v.val' dq)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx.t) (val' : interface.t) :
+instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (val' : interface.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef context.valueCtx.t go!"val" l) v.val' (DFrac.own 1))
-      (typedPointsto (structFieldRef context.valueCtx.t go!"val" l) val' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : context.valueCtx.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' (DFrac.own 1))
+      (typedPointsto (structFieldRef context.valueCtx go!"val" l) val' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : context.valueCtx) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

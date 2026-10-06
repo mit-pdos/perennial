@@ -22,179 +22,179 @@ end pkg_id
 
 namespace testing
 
-def durationOrCountFlag [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def durationOrCountFlag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.durationOrCountFlag" [])
 
-attribute [irreducible] durationOrCountFlag
+attribute [irreducible] durationOrCountFlag.ty
 
-def InternalBenchmark [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def InternalBenchmark.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalBenchmark" [])
 
-attribute [irreducible] InternalBenchmark
+attribute [irreducible] InternalBenchmark.ty
 
-def B [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.B" [])
 
-attribute [irreducible] B
+attribute [irreducible] B.ty
 
-def BenchmarkResult [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def BenchmarkResult.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.BenchmarkResult" [])
 
-attribute [irreducible] BenchmarkResult
+attribute [irreducible] BenchmarkResult.ty
 
-def benchState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def benchState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.benchState" [])
 
-attribute [irreducible] benchState
+attribute [irreducible] benchState.ty
 
-def PB [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def PB.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.PB" [])
 
-attribute [irreducible] PB
+attribute [irreducible] PB.ty
 
-def discard [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def discard.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.discard" [])
 
-attribute [irreducible] discard
+attribute [irreducible] discard.ty
 
-def CoverBlock [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def CoverBlock.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.CoverBlock" [])
 
-attribute [irreducible] CoverBlock
+attribute [irreducible] CoverBlock.ty
 
-def Cover [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Cover.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.Cover" [])
 
-attribute [irreducible] Cover
+attribute [irreducible] Cover.ty
 
-def InternalExample [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def InternalExample.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalExample" [])
 
-attribute [irreducible] InternalExample
+attribute [irreducible] InternalExample.ty
 
-def InternalFuzzTarget [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def InternalFuzzTarget.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalFuzzTarget" [])
 
-attribute [irreducible] InternalFuzzTarget
+attribute [irreducible] InternalFuzzTarget.ty
 
-def F [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def F.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.F" [])
 
-attribute [irreducible] F
+attribute [irreducible] F.ty
 
-def fuzzResult [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def fuzzResult.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzResult" [])
 
-attribute [irreducible] fuzzResult
+attribute [irreducible] fuzzResult.ty
 
-def fuzzCrashError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def fuzzCrashError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzCrashError" [])
 
-attribute [irreducible] fuzzCrashError
+attribute [irreducible] fuzzCrashError.ty
 
-def fuzzState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def fuzzState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzState" [])
 
-attribute [irreducible] fuzzState
+attribute [irreducible] fuzzState.ty
 
-def fuzzMode [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def fuzzMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzMode" [])
 
-attribute [irreducible] fuzzMode
+attribute [irreducible] fuzzMode.ty
 
-def matcher [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def matcher.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.matcher" [])
 
-attribute [irreducible] matcher
+attribute [irreducible] matcher.ty
 
-def filterMatch [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def filterMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.filterMatch" [])
 
-attribute [irreducible] filterMatch
+attribute [irreducible] filterMatch.ty
 
-def simpleMatch [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def simpleMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.simpleMatch" [])
 
-attribute [irreducible] simpleMatch
+attribute [irreducible] simpleMatch.ty
 
-def alternationMatch [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def alternationMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.alternationMatch" [])
 
-attribute [irreducible] alternationMatch
+attribute [irreducible] alternationMatch.ty
 
-def chattyFlag [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def chattyFlag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.chattyFlag" [])
 
-attribute [irreducible] chattyFlag
+attribute [irreducible] chattyFlag.ty
 
-def chattyPrinter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def chattyPrinter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.chattyPrinter" [])
 
-attribute [irreducible] chattyPrinter
+attribute [irreducible] chattyPrinter.ty
 
-def common [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def common.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.common" [])
 
-attribute [irreducible] common
+attribute [irreducible] common.ty
 
-def indenter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def indenter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.indenter" [])
 
-attribute [irreducible] indenter
+attribute [irreducible] indenter.ty
 
-def TB [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def TB.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.TB" [])
 
-attribute [irreducible] TB
+attribute [irreducible] TB.ty
 
-def T [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def T.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.T" [])
 
-attribute [irreducible] T
+attribute [irreducible] T.ty
 
-def outputWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def outputWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.outputWriter" [])
 
-attribute [irreducible] outputWriter
+attribute [irreducible] outputWriter.ty
 
-def panicHandling [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def panicHandling.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.panicHandling" [])
 
-attribute [irreducible] panicHandling
+attribute [irreducible] panicHandling.ty
 
-def InternalTest [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def InternalTest.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalTest" [])
 
-attribute [irreducible] InternalTest
+attribute [irreducible] InternalTest.ty
 
-def testState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def testState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.testState" [])
 
-attribute [irreducible] testState
+attribute [irreducible] testState.ty
 
-def matchStringOnly [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def matchStringOnly.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.matchStringOnly" [])
 
-attribute [irreducible] matchStringOnly
+attribute [irreducible] matchStringOnly.ty
 
-def M [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def M.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.M" [])
 
-attribute [irreducible] M
+attribute [irreducible] M.ty
 
-def testDeps [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def testDeps.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.testDeps" [])
 
-attribute [irreducible] testDeps
+attribute [irreducible] testDeps.ty
 
-def highPrecisionTime [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def highPrecisionTime.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.highPrecisionTime" [])
 
-attribute [irreducible] highPrecisionTime
+attribute [irreducible] highPrecisionTime.ty
 
 axiom B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-@[reducible] def corpusEntry [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] def corpusEntry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType [(go.field_decl.FieldDecl go!"Parent" go.string),
   (go.field_decl.FieldDecl go!"Path" go.string),
   (go.field_decl.FieldDecl go!"Data" (go.GoType.SliceType go.byte)),
@@ -630,19 +630,17 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
-namespace durationOrCountFlag
-structure t [FfiSyntax] where
+structure durationOrCountFlag [FfiSyntax] where
   mk ::
-  d' : _root_.Perennial.time.Duration.t
+  d' : _root_.Perennial.time.Duration
   n' : w64
   allowZero' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end durationOrCountFlag
+instance durationOrCountFlag.zero_val [FfiSyntax] : ZeroVal durationOrCountFlag :=
+  ⟨durationOrCountFlag.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def durationOrCountFlag.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"d" _root_.Perennial.time.Duration),
+  [(go.field_decl.FieldDecl go!"d" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"n" go.int),
 (go.field_decl.FieldDecl go!"allowZero" go.bool)]
 
@@ -657,14 +655,14 @@ instance equals_unfold_durationOrCountFlag [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType durationOrCountFlag.fields)
 
 class durationOrCountFlag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying durationOrCountFlag.underlying durationOrCountFlag.t
-  underlying : go.UnderlyingDirectedEq durationOrCountFlag durationOrCountFlag.underlying
-  get_d : ∀ (x : durationOrCountFlag.t), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"d") #x (Val #(x.d'))
-  set_d : ∀ (x : durationOrCountFlag.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : durationOrCountFlag.t)))
-  get_n : ∀ (x : durationOrCountFlag.t), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : durationOrCountFlag.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : durationOrCountFlag.t)))
-  get_allowZero : ∀ (x : durationOrCountFlag.t), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"allowZero") #x (Val #(x.allowZero'))
-  set_allowZero : ∀ (x : durationOrCountFlag.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"allowZero") (PairV #x #y) (Val #(({ x with allowZero' := y } : durationOrCountFlag.t)))
+  type_repr : go.TypeReprUnderlying durationOrCountFlag.underlying durationOrCountFlag
+  underlying : go.UnderlyingDirectedEq durationOrCountFlag.ty durationOrCountFlag.underlying
+  get_d : ∀ (x : durationOrCountFlag), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"d") #x (Val #(x.d'))
+  set_d : ∀ (x : durationOrCountFlag) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : durationOrCountFlag)))
+  get_n : ∀ (x : durationOrCountFlag), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"n") #x (Val #(x.n'))
+  set_n : ∀ (x : durationOrCountFlag) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : durationOrCountFlag)))
+  get_allowZero : ∀ (x : durationOrCountFlag), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"allowZero") #x (Val #(x.allowZero'))
+  set_allowZero : ∀ (x : durationOrCountFlag) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet durationOrCountFlag.underlying go!"allowZero") (PairV #x #y) (Val #(({ x with allowZero' := y } : durationOrCountFlag)))
 
 attribute [instance] durationOrCountFlag.TypeAssumptions.type_repr
   durationOrCountFlag.TypeAssumptions.underlying
@@ -675,19 +673,17 @@ attribute [instance] durationOrCountFlag.TypeAssumptions.type_repr
   durationOrCountFlag.TypeAssumptions.get_allowZero
   durationOrCountFlag.TypeAssumptions.set_allowZero
 
-namespace InternalBenchmark
-structure t [FfiSyntax] where
+structure InternalBenchmark [FfiSyntax] where
   mk ::
   Name' : GoString
   F' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end InternalBenchmark
+instance InternalBenchmark.zero_val [FfiSyntax] : ZeroVal InternalBenchmark :=
+  ⟨InternalBenchmark.mk zeroValDef zeroValDef⟩
 
 @[reducible] def InternalBenchmark.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType B)] false [])))]
+(go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType B.ty)] false [])))]
 
 @[irreducible] def InternalBenchmark.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   InternalBenchmark.fieldsUnsealed
@@ -700,12 +696,12 @@ instance equals_unfold_InternalBenchmark [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType InternalBenchmark.fields)
 
 class InternalBenchmark.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying InternalBenchmark.underlying InternalBenchmark.t
-  underlying : go.UnderlyingDirectedEq InternalBenchmark InternalBenchmark.underlying
-  get_Name : ∀ (x : InternalBenchmark.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalBenchmark.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : InternalBenchmark.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalBenchmark.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalBenchmark.t)))
-  get_F : ∀ (x : InternalBenchmark.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalBenchmark.underlying go!"F") #x (Val #(x.F'))
-  set_F : ∀ (x : InternalBenchmark.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalBenchmark.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalBenchmark.t)))
+  type_repr : go.TypeReprUnderlying InternalBenchmark.underlying InternalBenchmark
+  underlying : go.UnderlyingDirectedEq InternalBenchmark.ty InternalBenchmark.underlying
+  get_Name : ∀ (x : InternalBenchmark), go.IsGoStepPureDetTagged under (StructFieldGet InternalBenchmark.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : InternalBenchmark) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalBenchmark.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalBenchmark)))
+  get_F : ∀ (x : InternalBenchmark), go.IsGoStepPureDetTagged under (StructFieldGet InternalBenchmark.underlying go!"F") #x (Val #(x.F'))
+  set_F : ∀ (x : InternalBenchmark) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalBenchmark.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalBenchmark)))
 
 attribute [instance] InternalBenchmark.TypeAssumptions.type_repr
   InternalBenchmark.TypeAssumptions.underlying
@@ -714,38 +710,34 @@ attribute [instance] InternalBenchmark.TypeAssumptions.type_repr
   InternalBenchmark.TypeAssumptions.get_F
   InternalBenchmark.TypeAssumptions.set_F
 
-namespace B
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end B
+axiom B : Type
+axiom B.zero_val : ZeroVal B
+attribute [instance] B.zero_val
 
 class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying B.underlying B.t
-  underlying : go.UnderlyingDirectedEq B B.underlying
+  type_repr : go.TypeReprUnderlying B.underlying B
+  underlying : go.UnderlyingDirectedEq B.ty B.underlying
   isUnderlying : go.IsUnderlying B.underlying B.underlying
 
 attribute [instance] B.TypeAssumptions.type_repr
   B.TypeAssumptions.underlying
   B.TypeAssumptions.isUnderlying
 
-namespace BenchmarkResult
-structure t [FfiSyntax] where
+structure BenchmarkResult [FfiSyntax] where
   mk ::
   N' : w64
-  T' : _root_.Perennial.time.Duration.t
+  T' : _root_.Perennial.time.Duration
   Bytes' : w64
   MemAllocs' : w64
   MemBytes' : w64
   Extra' : map.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end BenchmarkResult
+instance BenchmarkResult.zero_val [FfiSyntax] : ZeroVal BenchmarkResult :=
+  ⟨BenchmarkResult.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def BenchmarkResult.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"N" go.int),
-(go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration),
+(go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"Bytes" go.int64),
 (go.field_decl.FieldDecl go!"MemAllocs" go.uint64),
 (go.field_decl.FieldDecl go!"MemBytes" go.uint64),
@@ -762,20 +754,20 @@ instance equals_unfold_BenchmarkResult [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType BenchmarkResult.fields)
 
 class BenchmarkResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying BenchmarkResult.underlying BenchmarkResult.t
-  underlying : go.UnderlyingDirectedEq BenchmarkResult BenchmarkResult.underlying
-  get_N : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"N") #x (Val #(x.N'))
-  set_N : ∀ (x : BenchmarkResult.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"N") (PairV #x #y) (Val #(({ x with N' := y } : BenchmarkResult.t)))
-  get_T : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"T") #x (Val #(x.T'))
-  set_T : ∀ (x : BenchmarkResult.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"T") (PairV #x #y) (Val #(({ x with T' := y } : BenchmarkResult.t)))
-  get_Bytes : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"Bytes") #x (Val #(x.Bytes'))
-  set_Bytes : ∀ (x : BenchmarkResult.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"Bytes") (PairV #x #y) (Val #(({ x with Bytes' := y } : BenchmarkResult.t)))
-  get_MemAllocs : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"MemAllocs") #x (Val #(x.MemAllocs'))
-  set_MemAllocs : ∀ (x : BenchmarkResult.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"MemAllocs") (PairV #x #y) (Val #(({ x with MemAllocs' := y } : BenchmarkResult.t)))
-  get_MemBytes : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"MemBytes") #x (Val #(x.MemBytes'))
-  set_MemBytes : ∀ (x : BenchmarkResult.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"MemBytes") (PairV #x #y) (Val #(({ x with MemBytes' := y } : BenchmarkResult.t)))
-  get_Extra : ∀ (x : BenchmarkResult.t), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"Extra") #x (Val #(x.Extra'))
-  set_Extra : ∀ (x : BenchmarkResult.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"Extra") (PairV #x #y) (Val #(({ x with Extra' := y } : BenchmarkResult.t)))
+  type_repr : go.TypeReprUnderlying BenchmarkResult.underlying BenchmarkResult
+  underlying : go.UnderlyingDirectedEq BenchmarkResult.ty BenchmarkResult.underlying
+  get_N : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"N") #x (Val #(x.N'))
+  set_N : ∀ (x : BenchmarkResult) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"N") (PairV #x #y) (Val #(({ x with N' := y } : BenchmarkResult)))
+  get_T : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"T") #x (Val #(x.T'))
+  set_T : ∀ (x : BenchmarkResult) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"T") (PairV #x #y) (Val #(({ x with T' := y } : BenchmarkResult)))
+  get_Bytes : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"Bytes") #x (Val #(x.Bytes'))
+  set_Bytes : ∀ (x : BenchmarkResult) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"Bytes") (PairV #x #y) (Val #(({ x with Bytes' := y } : BenchmarkResult)))
+  get_MemAllocs : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"MemAllocs") #x (Val #(x.MemAllocs'))
+  set_MemAllocs : ∀ (x : BenchmarkResult) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"MemAllocs") (PairV #x #y) (Val #(({ x with MemAllocs' := y } : BenchmarkResult)))
+  get_MemBytes : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"MemBytes") #x (Val #(x.MemBytes'))
+  set_MemBytes : ∀ (x : BenchmarkResult) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"MemBytes") (PairV #x #y) (Val #(({ x with MemBytes' := y } : BenchmarkResult)))
+  get_Extra : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"Extra") #x (Val #(x.Extra'))
+  set_Extra : ∀ (x : BenchmarkResult) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet BenchmarkResult.underlying go!"Extra") (PairV #x #y) (Val #(({ x with Extra' := y } : BenchmarkResult)))
 
 attribute [instance] BenchmarkResult.TypeAssumptions.type_repr
   BenchmarkResult.TypeAssumptions.underlying
@@ -792,19 +784,17 @@ attribute [instance] BenchmarkResult.TypeAssumptions.type_repr
   BenchmarkResult.TypeAssumptions.get_Extra
   BenchmarkResult.TypeAssumptions.set_Extra
 
-namespace benchState
-structure t [FfiSyntax] where
+structure benchState [FfiSyntax] where
   mk ::
   match' : Loc
   maxLen' : w64
   extLen' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end benchState
+instance benchState.zero_val [FfiSyntax] : ZeroVal benchState :=
+  ⟨benchState.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def benchState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher)),
+  [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher.ty)),
 (go.field_decl.FieldDecl go!"maxLen" go.int),
 (go.field_decl.FieldDecl go!"extLen" go.int)]
 
@@ -819,14 +809,14 @@ instance equals_unfold_benchState [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType benchState.fields)
 
 class benchState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying benchState.underlying benchState.t
-  underlying : go.UnderlyingDirectedEq benchState benchState.underlying
-  get_match : ∀ (x : benchState.t), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"match") #x (Val #(x.match'))
-  set_match : ∀ (x : benchState.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : benchState.t)))
-  get_maxLen : ∀ (x : benchState.t), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"maxLen") #x (Val #(x.maxLen'))
-  set_maxLen : ∀ (x : benchState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"maxLen") (PairV #x #y) (Val #(({ x with maxLen' := y } : benchState.t)))
-  get_extLen : ∀ (x : benchState.t), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"extLen") #x (Val #(x.extLen'))
-  set_extLen : ∀ (x : benchState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"extLen") (PairV #x #y) (Val #(({ x with extLen' := y } : benchState.t)))
+  type_repr : go.TypeReprUnderlying benchState.underlying benchState
+  underlying : go.UnderlyingDirectedEq benchState.ty benchState.underlying
+  get_match : ∀ (x : benchState), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"match") #x (Val #(x.match'))
+  set_match : ∀ (x : benchState) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : benchState)))
+  get_maxLen : ∀ (x : benchState), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"maxLen") #x (Val #(x.maxLen'))
+  set_maxLen : ∀ (x : benchState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"maxLen") (PairV #x #y) (Val #(({ x with maxLen' := y } : benchState)))
+  get_extLen : ∀ (x : benchState), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"extLen") #x (Val #(x.extLen'))
+  set_extLen : ∀ (x : benchState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet benchState.underlying go!"extLen") (PairV #x #y) (Val #(({ x with extLen' := y } : benchState)))
 
 attribute [instance] benchState.TypeAssumptions.type_repr
   benchState.TypeAssumptions.underlying
@@ -837,20 +827,18 @@ attribute [instance] benchState.TypeAssumptions.type_repr
   benchState.TypeAssumptions.get_extLen
   benchState.TypeAssumptions.set_extLen
 
-namespace PB
-structure t [FfiSyntax] where
+structure PB [FfiSyntax] where
   mk ::
   globalN' : Loc
   grain' : w64
   cache' : w64
   bN' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end PB
+instance PB.zero_val [FfiSyntax] : ZeroVal PB :=
+  ⟨PB.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def PB.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"globalN" (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64)),
+  [(go.field_decl.FieldDecl go!"globalN" (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty)),
 (go.field_decl.FieldDecl go!"grain" go.uint64),
 (go.field_decl.FieldDecl go!"cache" go.uint64),
 (go.field_decl.FieldDecl go!"bN" go.uint64)]
@@ -866,16 +854,16 @@ instance equals_unfold_PB [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType PB.fields)
 
 class PB.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying PB.underlying PB.t
-  underlying : go.UnderlyingDirectedEq PB PB.underlying
-  get_globalN : ∀ (x : PB.t), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"globalN") #x (Val #(x.globalN'))
-  set_globalN : ∀ (x : PB.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"globalN") (PairV #x #y) (Val #(({ x with globalN' := y } : PB.t)))
-  get_grain : ∀ (x : PB.t), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"grain") #x (Val #(x.grain'))
-  set_grain : ∀ (x : PB.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"grain") (PairV #x #y) (Val #(({ x with grain' := y } : PB.t)))
-  get_cache : ∀ (x : PB.t), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"cache") #x (Val #(x.cache'))
-  set_cache : ∀ (x : PB.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : PB.t)))
-  get_bN : ∀ (x : PB.t), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"bN") #x (Val #(x.bN'))
-  set_bN : ∀ (x : PB.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"bN") (PairV #x #y) (Val #(({ x with bN' := y } : PB.t)))
+  type_repr : go.TypeReprUnderlying PB.underlying PB
+  underlying : go.UnderlyingDirectedEq PB.ty PB.underlying
+  get_globalN : ∀ (x : PB), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"globalN") #x (Val #(x.globalN'))
+  set_globalN : ∀ (x : PB) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"globalN") (PairV #x #y) (Val #(({ x with globalN' := y } : PB)))
+  get_grain : ∀ (x : PB), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"grain") #x (Val #(x.grain'))
+  set_grain : ∀ (x : PB) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"grain") (PairV #x #y) (Val #(({ x with grain' := y } : PB)))
+  get_cache : ∀ (x : PB), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"cache") #x (Val #(x.cache'))
+  set_cache : ∀ (x : PB) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : PB)))
+  get_bN : ∀ (x : PB), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"bN") #x (Val #(x.bN'))
+  set_bN : ∀ (x : PB) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PB.underlying go!"bN") (PairV #x #y) (Val #(({ x with bN' := y } : PB)))
 
 attribute [instance] PB.TypeAssumptions.type_repr
   PB.TypeAssumptions.underlying
@@ -888,13 +876,11 @@ attribute [instance] PB.TypeAssumptions.type_repr
   PB.TypeAssumptions.get_bN
   PB.TypeAssumptions.set_bN
 
-namespace discard
-structure t [FfiSyntax] where
+structure discard [FfiSyntax] where
   mk ::
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk⟩
-end discard
+instance discard.zero_val [FfiSyntax] : ZeroVal discard :=
+  ⟨discard.mk⟩
 
 @[reducible] def discard.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
@@ -910,14 +896,13 @@ instance equals_unfold_discard [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType discard.fields)
 
 class discard.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying discard.underlying discard.t
-  underlying : go.UnderlyingDirectedEq discard discard.underlying
+  type_repr : go.TypeReprUnderlying discard.underlying discard
+  underlying : go.UnderlyingDirectedEq discard.ty discard.underlying
 
 attribute [instance] discard.TypeAssumptions.type_repr
   discard.TypeAssumptions.underlying
 
-namespace CoverBlock
-structure t [FfiSyntax] where
+structure CoverBlock [FfiSyntax] where
   mk ::
   Line0' : w32
   Col0' : w16
@@ -925,9 +910,8 @@ structure t [FfiSyntax] where
   Col1' : w16
   Stmts' : w16
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end CoverBlock
+instance CoverBlock.zero_val [FfiSyntax] : ZeroVal CoverBlock :=
+  ⟨CoverBlock.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def CoverBlock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Line0" go.uint32),
@@ -947,18 +931,18 @@ instance equals_unfold_CoverBlock [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType CoverBlock.fields)
 
 class CoverBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying CoverBlock.underlying CoverBlock.t
-  underlying : go.UnderlyingDirectedEq CoverBlock CoverBlock.underlying
-  get_Line0 : ∀ (x : CoverBlock.t), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Line0") #x (Val #(x.Line0'))
-  set_Line0 : ∀ (x : CoverBlock.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Line0") (PairV #x #y) (Val #(({ x with Line0' := y } : CoverBlock.t)))
-  get_Col0 : ∀ (x : CoverBlock.t), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Col0") #x (Val #(x.Col0'))
-  set_Col0 : ∀ (x : CoverBlock.t) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Col0") (PairV #x #y) (Val #(({ x with Col0' := y } : CoverBlock.t)))
-  get_Line1 : ∀ (x : CoverBlock.t), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Line1") #x (Val #(x.Line1'))
-  set_Line1 : ∀ (x : CoverBlock.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Line1") (PairV #x #y) (Val #(({ x with Line1' := y } : CoverBlock.t)))
-  get_Col1 : ∀ (x : CoverBlock.t), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Col1") #x (Val #(x.Col1'))
-  set_Col1 : ∀ (x : CoverBlock.t) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Col1") (PairV #x #y) (Val #(({ x with Col1' := y } : CoverBlock.t)))
-  get_Stmts : ∀ (x : CoverBlock.t), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Stmts") #x (Val #(x.Stmts'))
-  set_Stmts : ∀ (x : CoverBlock.t) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Stmts") (PairV #x #y) (Val #(({ x with Stmts' := y } : CoverBlock.t)))
+  type_repr : go.TypeReprUnderlying CoverBlock.underlying CoverBlock
+  underlying : go.UnderlyingDirectedEq CoverBlock.ty CoverBlock.underlying
+  get_Line0 : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Line0") #x (Val #(x.Line0'))
+  set_Line0 : ∀ (x : CoverBlock) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Line0") (PairV #x #y) (Val #(({ x with Line0' := y } : CoverBlock)))
+  get_Col0 : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Col0") #x (Val #(x.Col0'))
+  set_Col0 : ∀ (x : CoverBlock) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Col0") (PairV #x #y) (Val #(({ x with Col0' := y } : CoverBlock)))
+  get_Line1 : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Line1") #x (Val #(x.Line1'))
+  set_Line1 : ∀ (x : CoverBlock) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Line1") (PairV #x #y) (Val #(({ x with Line1' := y } : CoverBlock)))
+  get_Col1 : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Col1") #x (Val #(x.Col1'))
+  set_Col1 : ∀ (x : CoverBlock) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Col1") (PairV #x #y) (Val #(({ x with Col1' := y } : CoverBlock)))
+  get_Stmts : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Stmts") #x (Val #(x.Stmts'))
+  set_Stmts : ∀ (x : CoverBlock) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet CoverBlock.underlying go!"Stmts") (PairV #x #y) (Val #(({ x with Stmts' := y } : CoverBlock)))
 
 attribute [instance] CoverBlock.TypeAssumptions.type_repr
   CoverBlock.TypeAssumptions.underlying
@@ -973,22 +957,20 @@ attribute [instance] CoverBlock.TypeAssumptions.type_repr
   CoverBlock.TypeAssumptions.get_Stmts
   CoverBlock.TypeAssumptions.set_Stmts
 
-namespace Cover
-structure t [FfiSyntax] where
+structure Cover [FfiSyntax] where
   mk ::
   Mode' : GoString
   Counters' : map.t
   Blocks' : map.t
   CoveredPackages' : GoString
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end Cover
+instance Cover.zero_val [FfiSyntax] : ZeroVal Cover :=
+  ⟨Cover.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def Cover.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Mode" go.string),
 (go.field_decl.FieldDecl go!"Counters" (go.GoType.MapType go.string (go.GoType.SliceType go.uint32))),
-(go.field_decl.FieldDecl go!"Blocks" (go.GoType.MapType go.string (go.GoType.SliceType CoverBlock))),
+(go.field_decl.FieldDecl go!"Blocks" (go.GoType.MapType go.string (go.GoType.SliceType CoverBlock.ty))),
 (go.field_decl.FieldDecl go!"CoveredPackages" go.string)]
 
 @[irreducible] def Cover.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1002,16 +984,16 @@ instance equals_unfold_Cover [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType Cover.fields)
 
 class Cover.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Cover.underlying Cover.t
-  underlying : go.UnderlyingDirectedEq Cover Cover.underlying
-  get_Mode : ∀ (x : Cover.t), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Mode") #x (Val #(x.Mode'))
-  set_Mode : ∀ (x : Cover.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Mode") (PairV #x #y) (Val #(({ x with Mode' := y } : Cover.t)))
-  get_Counters : ∀ (x : Cover.t), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Counters") #x (Val #(x.Counters'))
-  set_Counters : ∀ (x : Cover.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Counters") (PairV #x #y) (Val #(({ x with Counters' := y } : Cover.t)))
-  get_Blocks : ∀ (x : Cover.t), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Blocks") #x (Val #(x.Blocks'))
-  set_Blocks : ∀ (x : Cover.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Blocks") (PairV #x #y) (Val #(({ x with Blocks' := y } : Cover.t)))
-  get_CoveredPackages : ∀ (x : Cover.t), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"CoveredPackages") #x (Val #(x.CoveredPackages'))
-  set_CoveredPackages : ∀ (x : Cover.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"CoveredPackages") (PairV #x #y) (Val #(({ x with CoveredPackages' := y } : Cover.t)))
+  type_repr : go.TypeReprUnderlying Cover.underlying Cover
+  underlying : go.UnderlyingDirectedEq Cover.ty Cover.underlying
+  get_Mode : ∀ (x : Cover), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Mode") #x (Val #(x.Mode'))
+  set_Mode : ∀ (x : Cover) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Mode") (PairV #x #y) (Val #(({ x with Mode' := y } : Cover)))
+  get_Counters : ∀ (x : Cover), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Counters") #x (Val #(x.Counters'))
+  set_Counters : ∀ (x : Cover) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Counters") (PairV #x #y) (Val #(({ x with Counters' := y } : Cover)))
+  get_Blocks : ∀ (x : Cover), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Blocks") #x (Val #(x.Blocks'))
+  set_Blocks : ∀ (x : Cover) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"Blocks") (PairV #x #y) (Val #(({ x with Blocks' := y } : Cover)))
+  get_CoveredPackages : ∀ (x : Cover), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"CoveredPackages") #x (Val #(x.CoveredPackages'))
+  set_CoveredPackages : ∀ (x : Cover) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Cover.underlying go!"CoveredPackages") (PairV #x #y) (Val #(({ x with CoveredPackages' := y } : Cover)))
 
 attribute [instance] Cover.TypeAssumptions.type_repr
   Cover.TypeAssumptions.underlying
@@ -1024,17 +1006,15 @@ attribute [instance] Cover.TypeAssumptions.type_repr
   Cover.TypeAssumptions.get_CoveredPackages
   Cover.TypeAssumptions.set_CoveredPackages
 
-namespace InternalExample
-structure t [FfiSyntax] where
+structure InternalExample [FfiSyntax] where
   mk ::
   Name' : GoString
   F' : func.t
   Output' : GoString
   Unordered' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end InternalExample
+instance InternalExample.zero_val [FfiSyntax] : ZeroVal InternalExample :=
+  ⟨InternalExample.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def InternalExample.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
@@ -1053,16 +1033,16 @@ instance equals_unfold_InternalExample [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType InternalExample.fields)
 
 class InternalExample.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying InternalExample.underlying InternalExample.t
-  underlying : go.UnderlyingDirectedEq InternalExample InternalExample.underlying
-  get_Name : ∀ (x : InternalExample.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : InternalExample.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalExample.t)))
-  get_F : ∀ (x : InternalExample.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"F") #x (Val #(x.F'))
-  set_F : ∀ (x : InternalExample.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalExample.t)))
-  get_Output : ∀ (x : InternalExample.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Output") #x (Val #(x.Output'))
-  set_Output : ∀ (x : InternalExample.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Output") (PairV #x #y) (Val #(({ x with Output' := y } : InternalExample.t)))
-  get_Unordered : ∀ (x : InternalExample.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Unordered") #x (Val #(x.Unordered'))
-  set_Unordered : ∀ (x : InternalExample.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Unordered") (PairV #x #y) (Val #(({ x with Unordered' := y } : InternalExample.t)))
+  type_repr : go.TypeReprUnderlying InternalExample.underlying InternalExample
+  underlying : go.UnderlyingDirectedEq InternalExample.ty InternalExample.underlying
+  get_Name : ∀ (x : InternalExample), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : InternalExample) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalExample)))
+  get_F : ∀ (x : InternalExample), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"F") #x (Val #(x.F'))
+  set_F : ∀ (x : InternalExample) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalExample)))
+  get_Output : ∀ (x : InternalExample), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Output") #x (Val #(x.Output'))
+  set_Output : ∀ (x : InternalExample) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Output") (PairV #x #y) (Val #(({ x with Output' := y } : InternalExample)))
+  get_Unordered : ∀ (x : InternalExample), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Unordered") #x (Val #(x.Unordered'))
+  set_Unordered : ∀ (x : InternalExample) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet InternalExample.underlying go!"Unordered") (PairV #x #y) (Val #(({ x with Unordered' := y } : InternalExample)))
 
 attribute [instance] InternalExample.TypeAssumptions.type_repr
   InternalExample.TypeAssumptions.underlying
@@ -1075,19 +1055,17 @@ attribute [instance] InternalExample.TypeAssumptions.type_repr
   InternalExample.TypeAssumptions.get_Unordered
   InternalExample.TypeAssumptions.set_Unordered
 
-namespace InternalFuzzTarget
-structure t [FfiSyntax] where
+structure InternalFuzzTarget [FfiSyntax] where
   mk ::
   Name' : GoString
   Fn' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end InternalFuzzTarget
+instance InternalFuzzTarget.zero_val [FfiSyntax] : ZeroVal InternalFuzzTarget :=
+  ⟨InternalFuzzTarget.mk zeroValDef zeroValDef⟩
 
 @[reducible] def InternalFuzzTarget.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"Fn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType F)] false [])))]
+(go.field_decl.FieldDecl go!"Fn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType F.ty)] false [])))]
 
 @[irreducible] def InternalFuzzTarget.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   InternalFuzzTarget.fieldsUnsealed
@@ -1100,12 +1078,12 @@ instance equals_unfold_InternalFuzzTarget [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType InternalFuzzTarget.fields)
 
 class InternalFuzzTarget.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying InternalFuzzTarget.underlying InternalFuzzTarget.t
-  underlying : go.UnderlyingDirectedEq InternalFuzzTarget InternalFuzzTarget.underlying
-  get_Name : ∀ (x : InternalFuzzTarget.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalFuzzTarget.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : InternalFuzzTarget.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalFuzzTarget.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalFuzzTarget.t)))
-  get_Fn : ∀ (x : InternalFuzzTarget.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalFuzzTarget.underlying go!"Fn") #x (Val #(x.Fn'))
-  set_Fn : ∀ (x : InternalFuzzTarget.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalFuzzTarget.underlying go!"Fn") (PairV #x #y) (Val #(({ x with Fn' := y } : InternalFuzzTarget.t)))
+  type_repr : go.TypeReprUnderlying InternalFuzzTarget.underlying InternalFuzzTarget
+  underlying : go.UnderlyingDirectedEq InternalFuzzTarget.ty InternalFuzzTarget.underlying
+  get_Name : ∀ (x : InternalFuzzTarget), go.IsGoStepPureDetTagged under (StructFieldGet InternalFuzzTarget.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : InternalFuzzTarget) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalFuzzTarget.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalFuzzTarget)))
+  get_Fn : ∀ (x : InternalFuzzTarget), go.IsGoStepPureDetTagged under (StructFieldGet InternalFuzzTarget.underlying go!"Fn") #x (Val #(x.Fn'))
+  set_Fn : ∀ (x : InternalFuzzTarget) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalFuzzTarget.underlying go!"Fn") (PairV #x #y) (Val #(({ x with Fn' := y } : InternalFuzzTarget)))
 
 attribute [instance] InternalFuzzTarget.TypeAssumptions.type_repr
   InternalFuzzTarget.TypeAssumptions.underlying
@@ -1114,17 +1092,15 @@ attribute [instance] InternalFuzzTarget.TypeAssumptions.type_repr
   InternalFuzzTarget.TypeAssumptions.get_Fn
   InternalFuzzTarget.TypeAssumptions.set_Fn
 
-namespace highPrecisionTime
-structure t [FfiSyntax] where
+structure highPrecisionTime [FfiSyntax] where
   mk ::
-  now' : _root_.Perennial.time.Time.t
+  now' : _root_.Perennial.time.Time
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end highPrecisionTime
+instance highPrecisionTime.zero_val [FfiSyntax] : ZeroVal highPrecisionTime :=
+  ⟨highPrecisionTime.mk zeroValDef⟩
 
 @[reducible] def highPrecisionTime.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"now" _root_.Perennial.time.Time)]
+  [(go.field_decl.FieldDecl go!"now" _root_.Perennial.time.Time.ty)]
 
 @[irreducible] def highPrecisionTime.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   highPrecisionTime.fieldsUnsealed
@@ -1137,22 +1113,21 @@ instance equals_unfold_highPrecisionTime [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType highPrecisionTime.fields)
 
 class highPrecisionTime.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying highPrecisionTime.underlying highPrecisionTime.t
-  underlying : go.UnderlyingDirectedEq highPrecisionTime highPrecisionTime.underlying
-  get_now : ∀ (x : highPrecisionTime.t), go.IsGoStepPureDetTagged under (StructFieldGet highPrecisionTime.underlying go!"now") #x (Val #(x.now'))
-  set_now : ∀ (x : highPrecisionTime.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet highPrecisionTime.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : highPrecisionTime.t)))
+  type_repr : go.TypeReprUnderlying highPrecisionTime.underlying highPrecisionTime
+  underlying : go.UnderlyingDirectedEq highPrecisionTime.ty highPrecisionTime.underlying
+  get_now : ∀ (x : highPrecisionTime), go.IsGoStepPureDetTagged under (StructFieldGet highPrecisionTime.underlying go!"now") #x (Val #(x.now'))
+  set_now : ∀ (x : highPrecisionTime) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet highPrecisionTime.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : highPrecisionTime)))
 
 attribute [instance] highPrecisionTime.TypeAssumptions.type_repr
   highPrecisionTime.TypeAssumptions.underlying
   highPrecisionTime.TypeAssumptions.get_now
   highPrecisionTime.TypeAssumptions.set_now
 
-namespace common
-structure t [FfiSyntax] where
+structure common [FfiSyntax] where
   mk ::
-  mu' : _root_.Perennial.sync.RWMutex.t
+  mu' : _root_.Perennial.sync.RWMutex
   output' : slice.t
-  w' : _root_.Perennial.io.Writer.t
+  w' : _root_.Perennial.io.Writer
   o' : Loc
   ran' : Bool
   failed' : Bool
@@ -1168,8 +1143,8 @@ structure t [FfiSyntax] where
   isSynctest' : Bool
   chatty' : Loc
   bench' : Bool
-  hasSub' : _root_.Perennial.sync.atomic.Bool'.t
-  cleanupStarted' : _root_.Perennial.sync.atomic.Bool'.t
+  hasSub' : _root_.Perennial.sync.atomic.Bool'
+  cleanupStarted' : _root_.Perennial.sync.atomic.Bool'
   runner' : GoString
   isParallel' : Bool
   parent' : Loc
@@ -1178,32 +1153,31 @@ structure t [FfiSyntax] where
   modulePath' : GoString
   importPath' : GoString
   name' : GoString
-  start' : highPrecisionTime.t
-  duration' : _root_.Perennial.time.Duration.t
+  start' : highPrecisionTime
+  duration' : _root_.Perennial.time.Duration
   barrier' : chan.t
   signal' : chan.t
   sub' : slice.t
-  lastRaceErrors' : _root_.Perennial.sync.atomic.Int64.t
-  raceErrorLogged' : _root_.Perennial.sync.atomic.Bool'.t
-  tempDirMu' : _root_.Perennial.sync.Mutex.t
+  lastRaceErrors' : _root_.Perennial.sync.atomic.Int64
+  raceErrorLogged' : _root_.Perennial.sync.atomic.Bool'
+  tempDirMu' : _root_.Perennial.sync.Mutex
   tempDir' : GoString
   tempDirErr' : error.t
   tempDirSeq' : w32
-  artifactDirOnce' : _root_.Perennial.sync.Once.t
+  artifactDirOnce' : _root_.Perennial.sync.Once
   artifactDir' : GoString
   artifactDirErr' : error.t
-  ctx' : _root_.Perennial.context.Context.t
-  cancelCtx' : _root_.Perennial.context.CancelFunc.t
+  ctx' : _root_.Perennial.context.Context
+  cancelCtx' : _root_.Perennial.context.CancelFunc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end common
+instance common.zero_val [FfiSyntax] : ZeroVal common :=
+  ⟨common.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def common.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex),
+  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex.ty),
 (go.field_decl.FieldDecl go!"output" (go.GoType.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer),
-(go.field_decl.FieldDecl go!"o" (go.GoType.PointerType outputWriter)),
+(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer.ty),
+(go.field_decl.FieldDecl go!"o" (go.GoType.PointerType outputWriter.ty)),
 (go.field_decl.FieldDecl go!"ran" go.bool),
 (go.field_decl.FieldDecl go!"failed" go.bool),
 (go.field_decl.FieldDecl go!"skipped" go.bool),
@@ -1216,34 +1190,34 @@ end common
 (go.field_decl.FieldDecl go!"finished" go.bool),
 (go.field_decl.FieldDecl go!"inFuzzFn" go.bool),
 (go.field_decl.FieldDecl go!"isSynctest" go.bool),
-(go.field_decl.FieldDecl go!"chatty" (go.GoType.PointerType chattyPrinter)),
+(go.field_decl.FieldDecl go!"chatty" (go.GoType.PointerType chattyPrinter.ty)),
 (go.field_decl.FieldDecl go!"bench" go.bool),
-(go.field_decl.FieldDecl go!"hasSub" _root_.Perennial.sync.atomic.Bool'),
-(go.field_decl.FieldDecl go!"cleanupStarted" _root_.Perennial.sync.atomic.Bool'),
+(go.field_decl.FieldDecl go!"hasSub" _root_.Perennial.sync.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"cleanupStarted" _root_.Perennial.sync.atomic.Bool'.ty),
 (go.field_decl.FieldDecl go!"runner" go.string),
 (go.field_decl.FieldDecl go!"isParallel" go.bool),
-(go.field_decl.FieldDecl go!"parent" (go.GoType.PointerType common)),
+(go.field_decl.FieldDecl go!"parent" (go.GoType.PointerType common.ty)),
 (go.field_decl.FieldDecl go!"level" go.int),
 (go.field_decl.FieldDecl go!"creator" (go.GoType.SliceType go.uintptr)),
 (go.field_decl.FieldDecl go!"modulePath" go.string),
 (go.field_decl.FieldDecl go!"importPath" go.string),
 (go.field_decl.FieldDecl go!"name" go.string),
-(go.field_decl.FieldDecl go!"start" highPrecisionTime),
-(go.field_decl.FieldDecl go!"duration" _root_.Perennial.time.Duration),
+(go.field_decl.FieldDecl go!"start" highPrecisionTime.ty),
+(go.field_decl.FieldDecl go!"duration" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"barrier" (go.GoType.ChannelType go.ChanDir.sendrecv go.bool)),
 (go.field_decl.FieldDecl go!"signal" (go.GoType.ChannelType go.ChanDir.sendrecv go.bool)),
-(go.field_decl.FieldDecl go!"sub" (go.GoType.SliceType (go.GoType.PointerType T))),
-(go.field_decl.FieldDecl go!"lastRaceErrors" _root_.Perennial.sync.atomic.Int64),
-(go.field_decl.FieldDecl go!"raceErrorLogged" _root_.Perennial.sync.atomic.Bool'),
-(go.field_decl.FieldDecl go!"tempDirMu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"sub" (go.GoType.SliceType (go.GoType.PointerType T.ty))),
+(go.field_decl.FieldDecl go!"lastRaceErrors" _root_.Perennial.sync.atomic.Int64.ty),
+(go.field_decl.FieldDecl go!"raceErrorLogged" _root_.Perennial.sync.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"tempDirMu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"tempDir" go.string),
 (go.field_decl.FieldDecl go!"tempDirErr" go.error),
 (go.field_decl.FieldDecl go!"tempDirSeq" go.int32),
-(go.field_decl.FieldDecl go!"artifactDirOnce" _root_.Perennial.sync.Once),
+(go.field_decl.FieldDecl go!"artifactDirOnce" _root_.Perennial.sync.Once.ty),
 (go.field_decl.FieldDecl go!"artifactDir" go.string),
 (go.field_decl.FieldDecl go!"artifactDirErr" go.error),
-(go.field_decl.FieldDecl go!"ctx" _root_.Perennial.context.Context),
-(go.field_decl.FieldDecl go!"cancelCtx" _root_.Perennial.context.CancelFunc)]
+(go.field_decl.FieldDecl go!"ctx" _root_.Perennial.context.Context.ty),
+(go.field_decl.FieldDecl go!"cancelCtx" _root_.Perennial.context.CancelFunc.ty)]
 
 @[irreducible] def common.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   common.fieldsUnsealed
@@ -1256,96 +1230,96 @@ instance equals_unfold_common [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType common.fields)
 
 class common.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying common.underlying common.t
-  underlying : go.UnderlyingDirectedEq common common.underlying
-  get_mu : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : common.t) (y : _root_.Perennial.sync.RWMutex.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : common.t)))
-  get_output : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"output") #x (Val #(x.output'))
-  set_output : ∀ (x : common.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"output") (PairV #x #y) (Val #(({ x with output' := y } : common.t)))
-  get_w : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : common.t) (y : _root_.Perennial.io.Writer.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : common.t)))
-  get_o : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"o") #x (Val #(x.o'))
-  set_o : ∀ (x : common.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"o") (PairV #x #y) (Val #(({ x with o' := y } : common.t)))
-  get_ran : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"ran") #x (Val #(x.ran'))
-  set_ran : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"ran") (PairV #x #y) (Val #(({ x with ran' := y } : common.t)))
-  get_failed : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"failed") #x (Val #(x.failed'))
-  set_failed : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"failed") (PairV #x #y) (Val #(({ x with failed' := y } : common.t)))
-  get_skipped : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"skipped") #x (Val #(x.skipped'))
-  set_skipped : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"skipped") (PairV #x #y) (Val #(({ x with skipped' := y } : common.t)))
-  get_done : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : common.t)))
-  get_helperPCs : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"helperPCs") #x (Val #(x.helperPCs'))
-  set_helperPCs : ∀ (x : common.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"helperPCs") (PairV #x #y) (Val #(({ x with helperPCs' := y } : common.t)))
-  get_helperNames : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"helperNames") #x (Val #(x.helperNames'))
-  set_helperNames : ∀ (x : common.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"helperNames") (PairV #x #y) (Val #(({ x with helperNames' := y } : common.t)))
-  get_cleanups : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanups") #x (Val #(x.cleanups'))
-  set_cleanups : ∀ (x : common.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanups") (PairV #x #y) (Val #(({ x with cleanups' := y } : common.t)))
-  get_cleanupName : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupName") #x (Val #(x.cleanupName'))
-  set_cleanupName : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupName") (PairV #x #y) (Val #(({ x with cleanupName' := y } : common.t)))
-  get_cleanupPc : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupPc") #x (Val #(x.cleanupPc'))
-  set_cleanupPc : ∀ (x : common.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupPc") (PairV #x #y) (Val #(({ x with cleanupPc' := y } : common.t)))
-  get_finished : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"finished") #x (Val #(x.finished'))
-  set_finished : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"finished") (PairV #x #y) (Val #(({ x with finished' := y } : common.t)))
-  get_inFuzzFn : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"inFuzzFn") #x (Val #(x.inFuzzFn'))
-  set_inFuzzFn : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"inFuzzFn") (PairV #x #y) (Val #(({ x with inFuzzFn' := y } : common.t)))
-  get_isSynctest : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"isSynctest") #x (Val #(x.isSynctest'))
-  set_isSynctest : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"isSynctest") (PairV #x #y) (Val #(({ x with isSynctest' := y } : common.t)))
-  get_chatty : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"chatty") #x (Val #(x.chatty'))
-  set_chatty : ∀ (x : common.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"chatty") (PairV #x #y) (Val #(({ x with chatty' := y } : common.t)))
-  get_bench : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"bench") #x (Val #(x.bench'))
-  set_bench : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"bench") (PairV #x #y) (Val #(({ x with bench' := y } : common.t)))
-  get_hasSub : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"hasSub") #x (Val #(x.hasSub'))
-  set_hasSub : ∀ (x : common.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"hasSub") (PairV #x #y) (Val #(({ x with hasSub' := y } : common.t)))
-  get_cleanupStarted : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupStarted") #x (Val #(x.cleanupStarted'))
-  set_cleanupStarted : ∀ (x : common.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupStarted") (PairV #x #y) (Val #(({ x with cleanupStarted' := y } : common.t)))
-  get_runner : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"runner") #x (Val #(x.runner'))
-  set_runner : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"runner") (PairV #x #y) (Val #(({ x with runner' := y } : common.t)))
-  get_isParallel : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"isParallel") #x (Val #(x.isParallel'))
-  set_isParallel : ∀ (x : common.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"isParallel") (PairV #x #y) (Val #(({ x with isParallel' := y } : common.t)))
-  get_parent : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"parent") #x (Val #(x.parent'))
-  set_parent : ∀ (x : common.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"parent") (PairV #x #y) (Val #(({ x with parent' := y } : common.t)))
-  get_level : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"level") #x (Val #(x.level'))
-  set_level : ∀ (x : common.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"level") (PairV #x #y) (Val #(({ x with level' := y } : common.t)))
-  get_creator : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"creator") #x (Val #(x.creator'))
-  set_creator : ∀ (x : common.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"creator") (PairV #x #y) (Val #(({ x with creator' := y } : common.t)))
-  get_modulePath : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"modulePath") #x (Val #(x.modulePath'))
-  set_modulePath : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"modulePath") (PairV #x #y) (Val #(({ x with modulePath' := y } : common.t)))
-  get_importPath : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"importPath") #x (Val #(x.importPath'))
-  set_importPath : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"importPath") (PairV #x #y) (Val #(({ x with importPath' := y } : common.t)))
-  get_name : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : common.t)))
-  get_start : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"start") #x (Val #(x.start'))
-  set_start : ∀ (x : common.t) (y : highPrecisionTime.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"start") (PairV #x #y) (Val #(({ x with start' := y } : common.t)))
-  get_duration : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"duration") #x (Val #(x.duration'))
-  set_duration : ∀ (x : common.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"duration") (PairV #x #y) (Val #(({ x with duration' := y } : common.t)))
-  get_barrier : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"barrier") #x (Val #(x.barrier'))
-  set_barrier : ∀ (x : common.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"barrier") (PairV #x #y) (Val #(({ x with barrier' := y } : common.t)))
-  get_signal : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"signal") #x (Val #(x.signal'))
-  set_signal : ∀ (x : common.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"signal") (PairV #x #y) (Val #(({ x with signal' := y } : common.t)))
-  get_sub : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"sub") #x (Val #(x.sub'))
-  set_sub : ∀ (x : common.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"sub") (PairV #x #y) (Val #(({ x with sub' := y } : common.t)))
-  get_lastRaceErrors : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"lastRaceErrors") #x (Val #(x.lastRaceErrors'))
-  set_lastRaceErrors : ∀ (x : common.t) (y : _root_.Perennial.sync.atomic.Int64.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"lastRaceErrors") (PairV #x #y) (Val #(({ x with lastRaceErrors' := y } : common.t)))
-  get_raceErrorLogged : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"raceErrorLogged") #x (Val #(x.raceErrorLogged'))
-  set_raceErrorLogged : ∀ (x : common.t) (y : _root_.Perennial.sync.atomic.Bool'.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"raceErrorLogged") (PairV #x #y) (Val #(({ x with raceErrorLogged' := y } : common.t)))
-  get_tempDirMu : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirMu") #x (Val #(x.tempDirMu'))
-  set_tempDirMu : ∀ (x : common.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirMu") (PairV #x #y) (Val #(({ x with tempDirMu' := y } : common.t)))
-  get_tempDir : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDir") #x (Val #(x.tempDir'))
-  set_tempDir : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDir") (PairV #x #y) (Val #(({ x with tempDir' := y } : common.t)))
-  get_tempDirErr : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirErr") #x (Val #(x.tempDirErr'))
-  set_tempDirErr : ∀ (x : common.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirErr") (PairV #x #y) (Val #(({ x with tempDirErr' := y } : common.t)))
-  get_tempDirSeq : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirSeq") #x (Val #(x.tempDirSeq'))
-  set_tempDirSeq : ∀ (x : common.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirSeq") (PairV #x #y) (Val #(({ x with tempDirSeq' := y } : common.t)))
-  get_artifactDirOnce : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDirOnce") #x (Val #(x.artifactDirOnce'))
-  set_artifactDirOnce : ∀ (x : common.t) (y : _root_.Perennial.sync.Once.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDirOnce") (PairV #x #y) (Val #(({ x with artifactDirOnce' := y } : common.t)))
-  get_artifactDir : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDir") #x (Val #(x.artifactDir'))
-  set_artifactDir : ∀ (x : common.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDir") (PairV #x #y) (Val #(({ x with artifactDir' := y } : common.t)))
-  get_artifactDirErr : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDirErr") #x (Val #(x.artifactDirErr'))
-  set_artifactDirErr : ∀ (x : common.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDirErr") (PairV #x #y) (Val #(({ x with artifactDirErr' := y } : common.t)))
-  get_ctx : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"ctx") #x (Val #(x.ctx'))
-  set_ctx : ∀ (x : common.t) (y : _root_.Perennial.context.Context.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"ctx") (PairV #x #y) (Val #(({ x with ctx' := y } : common.t)))
-  get_cancelCtx : ∀ (x : common.t), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
-  set_cancelCtx : ∀ (x : common.t) (y : _root_.Perennial.context.CancelFunc.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : common.t)))
+  type_repr : go.TypeReprUnderlying common.underlying common
+  underlying : go.UnderlyingDirectedEq common.ty common.underlying
+  get_mu : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : common) (y : _root_.Perennial.sync.RWMutex), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : common)))
+  get_output : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"output") #x (Val #(x.output'))
+  set_output : ∀ (x : common) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"output") (PairV #x #y) (Val #(({ x with output' := y } : common)))
+  get_w : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : common) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : common)))
+  get_o : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"o") #x (Val #(x.o'))
+  set_o : ∀ (x : common) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"o") (PairV #x #y) (Val #(({ x with o' := y } : common)))
+  get_ran : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"ran") #x (Val #(x.ran'))
+  set_ran : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"ran") (PairV #x #y) (Val #(({ x with ran' := y } : common)))
+  get_failed : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"failed") #x (Val #(x.failed'))
+  set_failed : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"failed") (PairV #x #y) (Val #(({ x with failed' := y } : common)))
+  get_skipped : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"skipped") #x (Val #(x.skipped'))
+  set_skipped : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"skipped") (PairV #x #y) (Val #(({ x with skipped' := y } : common)))
+  get_done : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"done") #x (Val #(x.done'))
+  set_done : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : common)))
+  get_helperPCs : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"helperPCs") #x (Val #(x.helperPCs'))
+  set_helperPCs : ∀ (x : common) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"helperPCs") (PairV #x #y) (Val #(({ x with helperPCs' := y } : common)))
+  get_helperNames : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"helperNames") #x (Val #(x.helperNames'))
+  set_helperNames : ∀ (x : common) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"helperNames") (PairV #x #y) (Val #(({ x with helperNames' := y } : common)))
+  get_cleanups : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanups") #x (Val #(x.cleanups'))
+  set_cleanups : ∀ (x : common) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanups") (PairV #x #y) (Val #(({ x with cleanups' := y } : common)))
+  get_cleanupName : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupName") #x (Val #(x.cleanupName'))
+  set_cleanupName : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupName") (PairV #x #y) (Val #(({ x with cleanupName' := y } : common)))
+  get_cleanupPc : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupPc") #x (Val #(x.cleanupPc'))
+  set_cleanupPc : ∀ (x : common) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupPc") (PairV #x #y) (Val #(({ x with cleanupPc' := y } : common)))
+  get_finished : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"finished") #x (Val #(x.finished'))
+  set_finished : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"finished") (PairV #x #y) (Val #(({ x with finished' := y } : common)))
+  get_inFuzzFn : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"inFuzzFn") #x (Val #(x.inFuzzFn'))
+  set_inFuzzFn : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"inFuzzFn") (PairV #x #y) (Val #(({ x with inFuzzFn' := y } : common)))
+  get_isSynctest : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"isSynctest") #x (Val #(x.isSynctest'))
+  set_isSynctest : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"isSynctest") (PairV #x #y) (Val #(({ x with isSynctest' := y } : common)))
+  get_chatty : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"chatty") #x (Val #(x.chatty'))
+  set_chatty : ∀ (x : common) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"chatty") (PairV #x #y) (Val #(({ x with chatty' := y } : common)))
+  get_bench : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"bench") #x (Val #(x.bench'))
+  set_bench : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"bench") (PairV #x #y) (Val #(({ x with bench' := y } : common)))
+  get_hasSub : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"hasSub") #x (Val #(x.hasSub'))
+  set_hasSub : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"hasSub") (PairV #x #y) (Val #(({ x with hasSub' := y } : common)))
+  get_cleanupStarted : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupStarted") #x (Val #(x.cleanupStarted'))
+  set_cleanupStarted : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupStarted") (PairV #x #y) (Val #(({ x with cleanupStarted' := y } : common)))
+  get_runner : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"runner") #x (Val #(x.runner'))
+  set_runner : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"runner") (PairV #x #y) (Val #(({ x with runner' := y } : common)))
+  get_isParallel : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"isParallel") #x (Val #(x.isParallel'))
+  set_isParallel : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"isParallel") (PairV #x #y) (Val #(({ x with isParallel' := y } : common)))
+  get_parent : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"parent") #x (Val #(x.parent'))
+  set_parent : ∀ (x : common) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"parent") (PairV #x #y) (Val #(({ x with parent' := y } : common)))
+  get_level : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"level") #x (Val #(x.level'))
+  set_level : ∀ (x : common) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"level") (PairV #x #y) (Val #(({ x with level' := y } : common)))
+  get_creator : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"creator") #x (Val #(x.creator'))
+  set_creator : ∀ (x : common) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"creator") (PairV #x #y) (Val #(({ x with creator' := y } : common)))
+  get_modulePath : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"modulePath") #x (Val #(x.modulePath'))
+  set_modulePath : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"modulePath") (PairV #x #y) (Val #(({ x with modulePath' := y } : common)))
+  get_importPath : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"importPath") #x (Val #(x.importPath'))
+  set_importPath : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"importPath") (PairV #x #y) (Val #(({ x with importPath' := y } : common)))
+  get_name : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"name") #x (Val #(x.name'))
+  set_name : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : common)))
+  get_start : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"start") #x (Val #(x.start'))
+  set_start : ∀ (x : common) (y : highPrecisionTime), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"start") (PairV #x #y) (Val #(({ x with start' := y } : common)))
+  get_duration : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"duration") #x (Val #(x.duration'))
+  set_duration : ∀ (x : common) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"duration") (PairV #x #y) (Val #(({ x with duration' := y } : common)))
+  get_barrier : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"barrier") #x (Val #(x.barrier'))
+  set_barrier : ∀ (x : common) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"barrier") (PairV #x #y) (Val #(({ x with barrier' := y } : common)))
+  get_signal : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"signal") #x (Val #(x.signal'))
+  set_signal : ∀ (x : common) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"signal") (PairV #x #y) (Val #(({ x with signal' := y } : common)))
+  get_sub : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"sub") #x (Val #(x.sub'))
+  set_sub : ∀ (x : common) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"sub") (PairV #x #y) (Val #(({ x with sub' := y } : common)))
+  get_lastRaceErrors : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"lastRaceErrors") #x (Val #(x.lastRaceErrors'))
+  set_lastRaceErrors : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"lastRaceErrors") (PairV #x #y) (Val #(({ x with lastRaceErrors' := y } : common)))
+  get_raceErrorLogged : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"raceErrorLogged") #x (Val #(x.raceErrorLogged'))
+  set_raceErrorLogged : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"raceErrorLogged") (PairV #x #y) (Val #(({ x with raceErrorLogged' := y } : common)))
+  get_tempDirMu : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirMu") #x (Val #(x.tempDirMu'))
+  set_tempDirMu : ∀ (x : common) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirMu") (PairV #x #y) (Val #(({ x with tempDirMu' := y } : common)))
+  get_tempDir : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDir") #x (Val #(x.tempDir'))
+  set_tempDir : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDir") (PairV #x #y) (Val #(({ x with tempDir' := y } : common)))
+  get_tempDirErr : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirErr") #x (Val #(x.tempDirErr'))
+  set_tempDirErr : ∀ (x : common) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirErr") (PairV #x #y) (Val #(({ x with tempDirErr' := y } : common)))
+  get_tempDirSeq : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirSeq") #x (Val #(x.tempDirSeq'))
+  set_tempDirSeq : ∀ (x : common) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirSeq") (PairV #x #y) (Val #(({ x with tempDirSeq' := y } : common)))
+  get_artifactDirOnce : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDirOnce") #x (Val #(x.artifactDirOnce'))
+  set_artifactDirOnce : ∀ (x : common) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDirOnce") (PairV #x #y) (Val #(({ x with artifactDirOnce' := y } : common)))
+  get_artifactDir : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDir") #x (Val #(x.artifactDir'))
+  set_artifactDir : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDir") (PairV #x #y) (Val #(({ x with artifactDir' := y } : common)))
+  get_artifactDirErr : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"artifactDirErr") #x (Val #(x.artifactDirErr'))
+  set_artifactDirErr : ∀ (x : common) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"artifactDirErr") (PairV #x #y) (Val #(({ x with artifactDirErr' := y } : common)))
+  get_ctx : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"ctx") #x (Val #(x.ctx'))
+  set_ctx : ∀ (x : common) (y : _root_.Perennial.context.Context), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"ctx") (PairV #x #y) (Val #(({ x with ctx' := y } : common)))
+  get_cancelCtx : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
+  set_cancelCtx : ∀ (x : common) (y : _root_.Perennial.context.CancelFunc), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : common)))
 
 attribute [instance] common.TypeAssumptions.type_repr
   common.TypeAssumptions.underlying
@@ -1438,20 +1412,18 @@ attribute [instance] common.TypeAssumptions.type_repr
   common.TypeAssumptions.get_cancelCtx
   common.TypeAssumptions.set_cancelCtx
 
-namespace fuzzResult
-structure t [FfiSyntax] where
+structure fuzzResult [FfiSyntax] where
   mk ::
   N' : w64
-  T' : _root_.Perennial.time.Duration.t
+  T' : _root_.Perennial.time.Duration
   Error' : error.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end fuzzResult
+instance fuzzResult.zero_val [FfiSyntax] : ZeroVal fuzzResult :=
+  ⟨fuzzResult.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def fuzzResult.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"N" go.int),
-(go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration),
+(go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"Error" go.error)]
 
 @[irreducible] def fuzzResult.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1465,14 +1437,14 @@ instance equals_unfold_fuzzResult [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType fuzzResult.fields)
 
 class fuzzResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying fuzzResult.underlying fuzzResult.t
-  underlying : go.UnderlyingDirectedEq fuzzResult fuzzResult.underlying
-  get_N : ∀ (x : fuzzResult.t), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"N") #x (Val #(x.N'))
-  set_N : ∀ (x : fuzzResult.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"N") (PairV #x #y) (Val #(({ x with N' := y } : fuzzResult.t)))
-  get_T : ∀ (x : fuzzResult.t), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"T") #x (Val #(x.T'))
-  set_T : ∀ (x : fuzzResult.t) (y : _root_.Perennial.time.Duration.t), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"T") (PairV #x #y) (Val #(({ x with T' := y } : fuzzResult.t)))
-  get_Error : ∀ (x : fuzzResult.t), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"Error") #x (Val #(x.Error'))
-  set_Error : ∀ (x : fuzzResult.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"Error") (PairV #x #y) (Val #(({ x with Error' := y } : fuzzResult.t)))
+  type_repr : go.TypeReprUnderlying fuzzResult.underlying fuzzResult
+  underlying : go.UnderlyingDirectedEq fuzzResult.ty fuzzResult.underlying
+  get_N : ∀ (x : fuzzResult), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"N") #x (Val #(x.N'))
+  set_N : ∀ (x : fuzzResult) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"N") (PairV #x #y) (Val #(({ x with N' := y } : fuzzResult)))
+  get_T : ∀ (x : fuzzResult), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"T") #x (Val #(x.T'))
+  set_T : ∀ (x : fuzzResult) (y : _root_.Perennial.time.Duration), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"T") (PairV #x #y) (Val #(({ x with T' := y } : fuzzResult)))
+  get_Error : ∀ (x : fuzzResult), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"Error") #x (Val #(x.Error'))
+  set_Error : ∀ (x : fuzzResult) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet fuzzResult.underlying go!"Error") (PairV #x #y) (Val #(({ x with Error' := y } : fuzzResult)))
 
 attribute [instance] fuzzResult.TypeAssumptions.type_repr
   fuzzResult.TypeAssumptions.underlying
@@ -1483,28 +1455,26 @@ attribute [instance] fuzzResult.TypeAssumptions.type_repr
   fuzzResult.TypeAssumptions.get_Error
   fuzzResult.TypeAssumptions.set_Error
 
-namespace F
-structure t [FfiSyntax] where
+structure F [FfiSyntax] where
   mk ::
-  common' : common.t
+  common' : common
   fstate' : Loc
   tstate' : Loc
   inFuzzFn' : Bool
   corpus' : slice.t
-  result' : fuzzResult.t
+  result' : fuzzResult
   fuzzCalled' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end F
+instance F.zero_val [FfiSyntax] : ZeroVal F :=
+  ⟨F.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def F.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"common" common),
-(go.field_decl.FieldDecl go!"fstate" (go.GoType.PointerType fuzzState)),
-(go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState)),
+  [(go.field_decl.EmbeddedField go!"common" common.ty),
+(go.field_decl.FieldDecl go!"fstate" (go.GoType.PointerType fuzzState.ty)),
+(go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState.ty)),
 (go.field_decl.FieldDecl go!"inFuzzFn" go.bool),
-(go.field_decl.FieldDecl go!"corpus" (go.GoType.SliceType corpusEntry)),
-(go.field_decl.FieldDecl go!"result" fuzzResult),
+(go.field_decl.FieldDecl go!"corpus" (go.GoType.SliceType corpusEntry.ty)),
+(go.field_decl.FieldDecl go!"result" fuzzResult.ty),
 (go.field_decl.FieldDecl go!"fuzzCalled" go.bool)]
 
 @[irreducible] def F.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1518,22 +1488,22 @@ instance equals_unfold_F [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType F.fields)
 
 class F.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying F.underlying F.t
-  underlying : go.UnderlyingDirectedEq F F.underlying
-  get_common : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"common") #x (Val #(x.common'))
-  set_common : ∀ (x : F.t) (y : common.t), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"common") (PairV #x #y) (Val #(({ x with common' := y } : F.t)))
-  get_fstate : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"fstate") #x (Val #(x.fstate'))
-  set_fstate : ∀ (x : F.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"fstate") (PairV #x #y) (Val #(({ x with fstate' := y } : F.t)))
-  get_tstate : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"tstate") #x (Val #(x.tstate'))
-  set_tstate : ∀ (x : F.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"tstate") (PairV #x #y) (Val #(({ x with tstate' := y } : F.t)))
-  get_inFuzzFn : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"inFuzzFn") #x (Val #(x.inFuzzFn'))
-  set_inFuzzFn : ∀ (x : F.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"inFuzzFn") (PairV #x #y) (Val #(({ x with inFuzzFn' := y } : F.t)))
-  get_corpus : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"corpus") #x (Val #(x.corpus'))
-  set_corpus : ∀ (x : F.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"corpus") (PairV #x #y) (Val #(({ x with corpus' := y } : F.t)))
-  get_result : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"result") #x (Val #(x.result'))
-  set_result : ∀ (x : F.t) (y : fuzzResult.t), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : F.t)))
-  get_fuzzCalled : ∀ (x : F.t), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"fuzzCalled") #x (Val #(x.fuzzCalled'))
-  set_fuzzCalled : ∀ (x : F.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"fuzzCalled") (PairV #x #y) (Val #(({ x with fuzzCalled' := y } : F.t)))
+  type_repr : go.TypeReprUnderlying F.underlying F
+  underlying : go.UnderlyingDirectedEq F.ty F.underlying
+  get_common : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"common") #x (Val #(x.common'))
+  set_common : ∀ (x : F) (y : common), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"common") (PairV #x #y) (Val #(({ x with common' := y } : F)))
+  get_fstate : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"fstate") #x (Val #(x.fstate'))
+  set_fstate : ∀ (x : F) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"fstate") (PairV #x #y) (Val #(({ x with fstate' := y } : F)))
+  get_tstate : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"tstate") #x (Val #(x.tstate'))
+  set_tstate : ∀ (x : F) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"tstate") (PairV #x #y) (Val #(({ x with tstate' := y } : F)))
+  get_inFuzzFn : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"inFuzzFn") #x (Val #(x.inFuzzFn'))
+  set_inFuzzFn : ∀ (x : F) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"inFuzzFn") (PairV #x #y) (Val #(({ x with inFuzzFn' := y } : F)))
+  get_corpus : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"corpus") #x (Val #(x.corpus'))
+  set_corpus : ∀ (x : F) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"corpus") (PairV #x #y) (Val #(({ x with corpus' := y } : F)))
+  get_result : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"result") #x (Val #(x.result'))
+  set_result : ∀ (x : F) (y : fuzzResult), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : F)))
+  get_fuzzCalled : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"fuzzCalled") #x (Val #(x.fuzzCalled'))
+  set_fuzzCalled : ∀ (x : F) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet F.underlying go!"fuzzCalled") (PairV #x #y) (Val #(({ x with fuzzCalled' := y } : F)))
 
 attribute [instance] F.TypeAssumptions.type_repr
   F.TypeAssumptions.underlying
@@ -1552,58 +1522,50 @@ attribute [instance] F.TypeAssumptions.type_repr
   F.TypeAssumptions.get_fuzzCalled
   F.TypeAssumptions.set_fuzzCalled
 
-namespace fuzzCrashError
-abbrev t [FfiSyntax] : Type := interface.t
-end fuzzCrashError
+abbrev fuzzCrashError [FfiSyntax] : Type := interface.t
 
 @[reducible] def fuzzCrashError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CrashPath" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
 
 class fuzzCrashError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq fuzzCrashError fuzzCrashError.underlying
+  underlying : go.UnderlyingDirectedEq fuzzCrashError.ty fuzzCrashError.underlying
 
 attribute [instance] fuzzCrashError.TypeAssumptions.underlying
 
-namespace testDeps
-axiom t : Type
-axiom zero_val : ZeroVal t
-attribute [instance] zero_val
-end testDeps
+axiom testDeps : Type
+axiom testDeps.zero_val : ZeroVal testDeps
+attribute [instance] testDeps.zero_val
 
 class testDeps.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying testDeps.underlying testDeps.t
-  underlying : go.UnderlyingDirectedEq testDeps testDeps.underlying
+  type_repr : go.TypeReprUnderlying testDeps.underlying testDeps
+  underlying : go.UnderlyingDirectedEq testDeps.ty testDeps.underlying
   isUnderlying : go.IsUnderlying testDeps.underlying testDeps.underlying
 
 attribute [instance] testDeps.TypeAssumptions.type_repr
   testDeps.TypeAssumptions.underlying
   testDeps.TypeAssumptions.isUnderlying
 
-namespace fuzzMode
-abbrev t [FfiSyntax] : Type := w8
-end fuzzMode
+abbrev fuzzMode [FfiSyntax] : Type := w8
 
 @[reducible] def fuzzMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint8
 
 class fuzzMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq fuzzMode fuzzMode.underlying
+  underlying : go.UnderlyingDirectedEq fuzzMode.ty fuzzMode.underlying
 
 attribute [instance] fuzzMode.TypeAssumptions.underlying
 
-namespace fuzzState
-structure t [FfiSyntax] where
+structure fuzzState [FfiSyntax] where
   mk ::
-  deps' : testDeps.t
-  mode' : fuzzMode.t
+  deps' : testDeps
+  mode' : fuzzMode
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end fuzzState
+instance fuzzState.zero_val [FfiSyntax] : ZeroVal fuzzState :=
+  ⟨fuzzState.mk zeroValDef zeroValDef⟩
 
 @[reducible] def fuzzState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"deps" testDeps),
-(go.field_decl.FieldDecl go!"mode" fuzzMode)]
+  [(go.field_decl.FieldDecl go!"deps" testDeps.ty),
+(go.field_decl.FieldDecl go!"mode" fuzzMode.ty)]
 
 @[irreducible] def fuzzState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   fuzzState.fieldsUnsealed
@@ -1616,12 +1578,12 @@ instance equals_unfold_fuzzState [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType fuzzState.fields)
 
 class fuzzState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying fuzzState.underlying fuzzState.t
-  underlying : go.UnderlyingDirectedEq fuzzState fuzzState.underlying
-  get_deps : ∀ (x : fuzzState.t), go.IsGoStepPureDetTagged under (StructFieldGet fuzzState.underlying go!"deps") #x (Val #(x.deps'))
-  set_deps : ∀ (x : fuzzState.t) (y : testDeps.t), go.IsGoStepPureDetTagged under (StructFieldSet fuzzState.underlying go!"deps") (PairV #x #y) (Val #(({ x with deps' := y } : fuzzState.t)))
-  get_mode : ∀ (x : fuzzState.t), go.IsGoStepPureDetTagged under (StructFieldGet fuzzState.underlying go!"mode") #x (Val #(x.mode'))
-  set_mode : ∀ (x : fuzzState.t) (y : fuzzMode.t), go.IsGoStepPureDetTagged under (StructFieldSet fuzzState.underlying go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : fuzzState.t)))
+  type_repr : go.TypeReprUnderlying fuzzState.underlying fuzzState
+  underlying : go.UnderlyingDirectedEq fuzzState.ty fuzzState.underlying
+  get_deps : ∀ (x : fuzzState), go.IsGoStepPureDetTagged under (StructFieldGet fuzzState.underlying go!"deps") #x (Val #(x.deps'))
+  set_deps : ∀ (x : fuzzState) (y : testDeps), go.IsGoStepPureDetTagged under (StructFieldSet fuzzState.underlying go!"deps") (PairV #x #y) (Val #(({ x with deps' := y } : fuzzState)))
+  get_mode : ∀ (x : fuzzState), go.IsGoStepPureDetTagged under (StructFieldGet fuzzState.underlying go!"mode") #x (Val #(x.mode'))
+  set_mode : ∀ (x : fuzzState) (y : fuzzMode), go.IsGoStepPureDetTagged under (StructFieldSet fuzzState.underlying go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : fuzzState)))
 
 attribute [instance] fuzzState.TypeAssumptions.type_repr
   fuzzState.TypeAssumptions.underlying
@@ -1630,36 +1592,32 @@ attribute [instance] fuzzState.TypeAssumptions.type_repr
   fuzzState.TypeAssumptions.get_mode
   fuzzState.TypeAssumptions.set_mode
 
-namespace filterMatch
-abbrev t [FfiSyntax] : Type := interface.t
-end filterMatch
+abbrev filterMatch [FfiSyntax] : Type := interface.t
 
 @[reducible] def filterMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"matches" (go.signature.Signature [(go.GoType.SliceType go.string), (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))] false [go.bool, go.bool])), (go.InterfaceElem.MethodElem go!"verify" (go.signature.Signature [go.string, (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))] false [go.error]))])
 
 class filterMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq filterMatch filterMatch.underlying
+  underlying : go.UnderlyingDirectedEq filterMatch.ty filterMatch.underlying
 
 attribute [instance] filterMatch.TypeAssumptions.underlying
 
-namespace matcher
-structure t [FfiSyntax] where
+structure matcher [FfiSyntax] where
   mk ::
-  filter' : filterMatch.t
-  skip' : filterMatch.t
+  filter' : filterMatch
+  skip' : filterMatch
   matchFunc' : func.t
-  mu' : _root_.Perennial.sync.Mutex.t
+  mu' : _root_.Perennial.sync.Mutex
   subNames' : map.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end matcher
+instance matcher.zero_val [FfiSyntax] : ZeroVal matcher :=
+  ⟨matcher.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def matcher.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"filter" filterMatch),
-(go.field_decl.FieldDecl go!"skip" filterMatch),
+  [(go.field_decl.FieldDecl go!"filter" filterMatch.ty),
+(go.field_decl.FieldDecl go!"skip" filterMatch.ty),
 (go.field_decl.FieldDecl go!"matchFunc" (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))),
-(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"subNames" (go.GoType.MapType go.string go.int32))]
 
 @[irreducible] def matcher.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1673,18 +1631,18 @@ instance equals_unfold_matcher [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType matcher.fields)
 
 class matcher.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying matcher.underlying matcher.t
-  underlying : go.UnderlyingDirectedEq matcher matcher.underlying
-  get_filter : ∀ (x : matcher.t), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"filter") #x (Val #(x.filter'))
-  set_filter : ∀ (x : matcher.t) (y : filterMatch.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"filter") (PairV #x #y) (Val #(({ x with filter' := y } : matcher.t)))
-  get_skip : ∀ (x : matcher.t), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"skip") #x (Val #(x.skip'))
-  set_skip : ∀ (x : matcher.t) (y : filterMatch.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"skip") (PairV #x #y) (Val #(({ x with skip' := y } : matcher.t)))
-  get_matchFunc : ∀ (x : matcher.t), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"matchFunc") #x (Val #(x.matchFunc'))
-  set_matchFunc : ∀ (x : matcher.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"matchFunc") (PairV #x #y) (Val #(({ x with matchFunc' := y } : matcher.t)))
-  get_mu : ∀ (x : matcher.t), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : matcher.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : matcher.t)))
-  get_subNames : ∀ (x : matcher.t), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"subNames") #x (Val #(x.subNames'))
-  set_subNames : ∀ (x : matcher.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"subNames") (PairV #x #y) (Val #(({ x with subNames' := y } : matcher.t)))
+  type_repr : go.TypeReprUnderlying matcher.underlying matcher
+  underlying : go.UnderlyingDirectedEq matcher.ty matcher.underlying
+  get_filter : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"filter") #x (Val #(x.filter'))
+  set_filter : ∀ (x : matcher) (y : filterMatch), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"filter") (PairV #x #y) (Val #(({ x with filter' := y } : matcher)))
+  get_skip : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"skip") #x (Val #(x.skip'))
+  set_skip : ∀ (x : matcher) (y : filterMatch), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"skip") (PairV #x #y) (Val #(({ x with skip' := y } : matcher)))
+  get_matchFunc : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"matchFunc") #x (Val #(x.matchFunc'))
+  set_matchFunc : ∀ (x : matcher) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"matchFunc") (PairV #x #y) (Val #(({ x with matchFunc' := y } : matcher)))
+  get_mu : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : matcher) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : matcher)))
+  get_subNames : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"subNames") #x (Val #(x.subNames'))
+  set_subNames : ∀ (x : matcher) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet matcher.underlying go!"subNames") (PairV #x #y) (Val #(({ x with subNames' := y } : matcher)))
 
 attribute [instance] matcher.TypeAssumptions.type_repr
   matcher.TypeAssumptions.underlying
@@ -1699,39 +1657,33 @@ attribute [instance] matcher.TypeAssumptions.type_repr
   matcher.TypeAssumptions.get_subNames
   matcher.TypeAssumptions.set_subNames
 
-namespace simpleMatch
-abbrev t [FfiSyntax] : Type := slice.t
-end simpleMatch
+abbrev simpleMatch [FfiSyntax] : Type := slice.t
 
 @[reducible] def simpleMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
 class simpleMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq simpleMatch simpleMatch.underlying
+  underlying : go.UnderlyingDirectedEq simpleMatch.ty simpleMatch.underlying
 
 attribute [instance] simpleMatch.TypeAssumptions.underlying
 
-namespace alternationMatch
-abbrev t [FfiSyntax] : Type := slice.t
-end alternationMatch
+abbrev alternationMatch [FfiSyntax] : Type := slice.t
 
 @[reducible] def alternationMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType filterMatch)
+  (go.GoType.SliceType filterMatch.ty)
 
 class alternationMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq alternationMatch alternationMatch.underlying
+  underlying : go.UnderlyingDirectedEq alternationMatch.ty alternationMatch.underlying
 
 attribute [instance] alternationMatch.TypeAssumptions.underlying
 
-namespace chattyFlag
-structure t [FfiSyntax] where
+structure chattyFlag [FfiSyntax] where
   mk ::
   on' : Bool
   json' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end chattyFlag
+instance chattyFlag.zero_val [FfiSyntax] : ZeroVal chattyFlag :=
+  ⟨chattyFlag.mk zeroValDef zeroValDef⟩
 
 @[reducible] def chattyFlag.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"on" go.bool),
@@ -1748,12 +1700,12 @@ instance equals_unfold_chattyFlag [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType chattyFlag.fields)
 
 class chattyFlag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying chattyFlag.underlying chattyFlag.t
-  underlying : go.UnderlyingDirectedEq chattyFlag chattyFlag.underlying
-  get_on : ∀ (x : chattyFlag.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyFlag.underlying go!"on") #x (Val #(x.on'))
-  set_on : ∀ (x : chattyFlag.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyFlag.underlying go!"on") (PairV #x #y) (Val #(({ x with on' := y } : chattyFlag.t)))
-  get_json : ∀ (x : chattyFlag.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyFlag.underlying go!"json") #x (Val #(x.json'))
-  set_json : ∀ (x : chattyFlag.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyFlag.underlying go!"json") (PairV #x #y) (Val #(({ x with json' := y } : chattyFlag.t)))
+  type_repr : go.TypeReprUnderlying chattyFlag.underlying chattyFlag
+  underlying : go.UnderlyingDirectedEq chattyFlag.ty chattyFlag.underlying
+  get_on : ∀ (x : chattyFlag), go.IsGoStepPureDetTagged under (StructFieldGet chattyFlag.underlying go!"on") #x (Val #(x.on'))
+  set_on : ∀ (x : chattyFlag) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyFlag.underlying go!"on") (PairV #x #y) (Val #(({ x with on' := y } : chattyFlag)))
+  get_json : ∀ (x : chattyFlag), go.IsGoStepPureDetTagged under (StructFieldGet chattyFlag.underlying go!"json") #x (Val #(x.json'))
+  set_json : ∀ (x : chattyFlag) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyFlag.underlying go!"json") (PairV #x #y) (Val #(({ x with json' := y } : chattyFlag)))
 
 attribute [instance] chattyFlag.TypeAssumptions.type_repr
   chattyFlag.TypeAssumptions.underlying
@@ -1762,21 +1714,19 @@ attribute [instance] chattyFlag.TypeAssumptions.type_repr
   chattyFlag.TypeAssumptions.get_json
   chattyFlag.TypeAssumptions.set_json
 
-namespace chattyPrinter
-structure t [FfiSyntax] where
+structure chattyPrinter [FfiSyntax] where
   mk ::
-  w' : _root_.Perennial.io.Writer.t
-  lastNameMu' : _root_.Perennial.sync.Mutex.t
+  w' : _root_.Perennial.io.Writer
+  lastNameMu' : _root_.Perennial.sync.Mutex
   lastName' : GoString
   json' : Bool
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end chattyPrinter
+instance chattyPrinter.zero_val [FfiSyntax] : ZeroVal chattyPrinter :=
+  ⟨chattyPrinter.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def chattyPrinter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer),
-(go.field_decl.FieldDecl go!"lastNameMu" _root_.Perennial.sync.Mutex),
+  [(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer.ty),
+(go.field_decl.FieldDecl go!"lastNameMu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"lastName" go.string),
 (go.field_decl.FieldDecl go!"json" go.bool)]
 
@@ -1791,16 +1741,16 @@ instance equals_unfold_chattyPrinter [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType chattyPrinter.fields)
 
 class chattyPrinter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying chattyPrinter.underlying chattyPrinter.t
-  underlying : go.UnderlyingDirectedEq chattyPrinter chattyPrinter.underlying
-  get_w : ∀ (x : chattyPrinter.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : chattyPrinter.t) (y : _root_.Perennial.io.Writer.t), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : chattyPrinter.t)))
-  get_lastNameMu : ∀ (x : chattyPrinter.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"lastNameMu") #x (Val #(x.lastNameMu'))
-  set_lastNameMu : ∀ (x : chattyPrinter.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"lastNameMu") (PairV #x #y) (Val #(({ x with lastNameMu' := y } : chattyPrinter.t)))
-  get_lastName : ∀ (x : chattyPrinter.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"lastName") #x (Val #(x.lastName'))
-  set_lastName : ∀ (x : chattyPrinter.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"lastName") (PairV #x #y) (Val #(({ x with lastName' := y } : chattyPrinter.t)))
-  get_json : ∀ (x : chattyPrinter.t), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"json") #x (Val #(x.json'))
-  set_json : ∀ (x : chattyPrinter.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"json") (PairV #x #y) (Val #(({ x with json' := y } : chattyPrinter.t)))
+  type_repr : go.TypeReprUnderlying chattyPrinter.underlying chattyPrinter
+  underlying : go.UnderlyingDirectedEq chattyPrinter.ty chattyPrinter.underlying
+  get_w : ∀ (x : chattyPrinter), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : chattyPrinter) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : chattyPrinter)))
+  get_lastNameMu : ∀ (x : chattyPrinter), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"lastNameMu") #x (Val #(x.lastNameMu'))
+  set_lastNameMu : ∀ (x : chattyPrinter) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"lastNameMu") (PairV #x #y) (Val #(({ x with lastNameMu' := y } : chattyPrinter)))
+  get_lastName : ∀ (x : chattyPrinter), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"lastName") #x (Val #(x.lastName'))
+  set_lastName : ∀ (x : chattyPrinter) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"lastName") (PairV #x #y) (Val #(({ x with lastName' := y } : chattyPrinter)))
+  get_json : ∀ (x : chattyPrinter), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"json") #x (Val #(x.json'))
+  set_json : ∀ (x : chattyPrinter) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet chattyPrinter.underlying go!"json") (PairV #x #y) (Val #(({ x with json' := y } : chattyPrinter)))
 
 attribute [instance] chattyPrinter.TypeAssumptions.type_repr
   chattyPrinter.TypeAssumptions.underlying
@@ -1813,17 +1763,15 @@ attribute [instance] chattyPrinter.TypeAssumptions.type_repr
   chattyPrinter.TypeAssumptions.get_json
   chattyPrinter.TypeAssumptions.set_json
 
-namespace indenter
-structure t [FfiSyntax] where
+structure indenter [FfiSyntax] where
   mk ::
   c' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef⟩
-end indenter
+instance indenter.zero_val [FfiSyntax] : ZeroVal indenter :=
+  ⟨indenter.mk zeroValDef⟩
 
 @[reducible] def indenter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common))]
+  [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common.ty))]
 
 @[irreducible] def indenter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   indenter.fieldsUnsealed
@@ -1836,43 +1784,39 @@ instance equals_unfold_indenter [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType indenter.fields)
 
 class indenter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying indenter.underlying indenter.t
-  underlying : go.UnderlyingDirectedEq indenter indenter.underlying
-  get_c : ∀ (x : indenter.t), go.IsGoStepPureDetTagged under (StructFieldGet indenter.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : indenter.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet indenter.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : indenter.t)))
+  type_repr : go.TypeReprUnderlying indenter.underlying indenter
+  underlying : go.UnderlyingDirectedEq indenter.ty indenter.underlying
+  get_c : ∀ (x : indenter), go.IsGoStepPureDetTagged under (StructFieldGet indenter.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : indenter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet indenter.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : indenter)))
 
 attribute [instance] indenter.TypeAssumptions.type_repr
   indenter.TypeAssumptions.underlying
   indenter.TypeAssumptions.get_c
   indenter.TypeAssumptions.set_c
 
-namespace TB
-abbrev t [FfiSyntax] : Type := interface.t
-end TB
+abbrev TB [FfiSyntax] : Type := interface.t
 
 @[reducible] def TB.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ArtifactDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Attr" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Chdir" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"Cleanup" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])), (go.InterfaceElem.MethodElem go!"Context" (go.signature.Signature [] false [_root_.Perennial.context.Context])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fail" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Failed" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"Fatal" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Helper" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Log" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Logf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Output" (go.signature.Signature [] false [_root_.Perennial.io.Writer])), (go.InterfaceElem.MethodElem go!"Setenv" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Skip" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"SkipNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Skipf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Skipped" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"TempDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"private" (go.signature.Signature [] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ArtifactDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Attr" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Chdir" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"Cleanup" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])), (go.InterfaceElem.MethodElem go!"Context" (go.signature.Signature [] false [_root_.Perennial.context.Context.ty])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fail" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Failed" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"Fatal" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Helper" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Log" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Logf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Output" (go.signature.Signature [] false [_root_.Perennial.io.Writer.ty])), (go.InterfaceElem.MethodElem go!"Setenv" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Skip" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"SkipNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Skipf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Skipped" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"TempDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"private" (go.signature.Signature [] false []))])
 
 class TB.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq TB TB.underlying
+  underlying : go.UnderlyingDirectedEq TB.ty TB.underlying
 
 attribute [instance] TB.TypeAssumptions.underlying
 
-namespace T
-structure t [FfiSyntax] where
+structure T [FfiSyntax] where
   mk ::
-  common' : common.t
+  common' : common
   denyParallel' : Bool
   tstate' : Loc
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
-end T
+instance T.zero_val [FfiSyntax] : ZeroVal T :=
+  ⟨T.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def T.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"common" common),
+  [(go.field_decl.EmbeddedField go!"common" common.ty),
 (go.field_decl.FieldDecl go!"denyParallel" go.bool),
-(go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState))]
+(go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState.ty))]
 
 @[irreducible] def T.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   T.fieldsUnsealed
@@ -1885,14 +1829,14 @@ instance equals_unfold_T [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType T.fields)
 
 class T.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying T.underlying T.t
-  underlying : go.UnderlyingDirectedEq T T.underlying
-  get_common : ∀ (x : T.t), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"common") #x (Val #(x.common'))
-  set_common : ∀ (x : T.t) (y : common.t), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"common") (PairV #x #y) (Val #(({ x with common' := y } : T.t)))
-  get_denyParallel : ∀ (x : T.t), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"denyParallel") #x (Val #(x.denyParallel'))
-  set_denyParallel : ∀ (x : T.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"denyParallel") (PairV #x #y) (Val #(({ x with denyParallel' := y } : T.t)))
-  get_tstate : ∀ (x : T.t), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"tstate") #x (Val #(x.tstate'))
-  set_tstate : ∀ (x : T.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"tstate") (PairV #x #y) (Val #(({ x with tstate' := y } : T.t)))
+  type_repr : go.TypeReprUnderlying T.underlying T
+  underlying : go.UnderlyingDirectedEq T.ty T.underlying
+  get_common : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"common") #x (Val #(x.common'))
+  set_common : ∀ (x : T) (y : common), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"common") (PairV #x #y) (Val #(({ x with common' := y } : T)))
+  get_denyParallel : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"denyParallel") #x (Val #(x.denyParallel'))
+  set_denyParallel : ∀ (x : T) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"denyParallel") (PairV #x #y) (Val #(({ x with denyParallel' := y } : T)))
+  get_tstate : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"tstate") #x (Val #(x.tstate'))
+  set_tstate : ∀ (x : T) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"tstate") (PairV #x #y) (Val #(({ x with tstate' := y } : T)))
 
 attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.underlying
@@ -1903,18 +1847,16 @@ attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.get_tstate
   T.TypeAssumptions.set_tstate
 
-namespace outputWriter
-structure t [FfiSyntax] where
+structure outputWriter [FfiSyntax] where
   mk ::
   c' : Loc
   partial' : slice.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end outputWriter
+instance outputWriter.zero_val [FfiSyntax] : ZeroVal outputWriter :=
+  ⟨outputWriter.mk zeroValDef zeroValDef⟩
 
 @[reducible] def outputWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common)),
+  [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common.ty)),
 (go.field_decl.FieldDecl go!"partial" (go.GoType.SliceType go.byte))]
 
 @[irreducible] def outputWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1928,12 +1870,12 @@ instance equals_unfold_outputWriter [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType outputWriter.fields)
 
 class outputWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying outputWriter.underlying outputWriter.t
-  underlying : go.UnderlyingDirectedEq outputWriter outputWriter.underlying
-  get_c : ∀ (x : outputWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet outputWriter.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : outputWriter.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet outputWriter.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : outputWriter.t)))
-  get_partial : ∀ (x : outputWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet outputWriter.underlying go!"partial") #x (Val #(x.partial'))
-  set_partial : ∀ (x : outputWriter.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet outputWriter.underlying go!"partial") (PairV #x #y) (Val #(({ x with partial' := y } : outputWriter.t)))
+  type_repr : go.TypeReprUnderlying outputWriter.underlying outputWriter
+  underlying : go.UnderlyingDirectedEq outputWriter.ty outputWriter.underlying
+  get_c : ∀ (x : outputWriter), go.IsGoStepPureDetTagged under (StructFieldGet outputWriter.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : outputWriter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet outputWriter.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : outputWriter)))
+  get_partial : ∀ (x : outputWriter), go.IsGoStepPureDetTagged under (StructFieldGet outputWriter.underlying go!"partial") #x (Val #(x.partial'))
+  set_partial : ∀ (x : outputWriter) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet outputWriter.underlying go!"partial") (PairV #x #y) (Val #(({ x with partial' := y } : outputWriter)))
 
 attribute [instance] outputWriter.TypeAssumptions.type_repr
   outputWriter.TypeAssumptions.underlying
@@ -1942,31 +1884,27 @@ attribute [instance] outputWriter.TypeAssumptions.type_repr
   outputWriter.TypeAssumptions.get_partial
   outputWriter.TypeAssumptions.set_partial
 
-namespace panicHandling
-abbrev t [FfiSyntax] : Type := w64
-end panicHandling
+abbrev panicHandling [FfiSyntax] : Type := w64
 
 @[reducible] def panicHandling.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class panicHandling.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq panicHandling panicHandling.underlying
+  underlying : go.UnderlyingDirectedEq panicHandling.ty panicHandling.underlying
 
 attribute [instance] panicHandling.TypeAssumptions.underlying
 
-namespace InternalTest
-structure t [FfiSyntax] where
+structure InternalTest [FfiSyntax] where
   mk ::
   Name' : GoString
   F' : func.t
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef⟩
-end InternalTest
+instance InternalTest.zero_val [FfiSyntax] : ZeroVal InternalTest :=
+  ⟨InternalTest.mk zeroValDef zeroValDef⟩
 
 @[reducible] def InternalTest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType T)] false [])))]
+(go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType T.ty)] false [])))]
 
 @[irreducible] def InternalTest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   InternalTest.fieldsUnsealed
@@ -1979,12 +1917,12 @@ instance equals_unfold_InternalTest [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType InternalTest.fields)
 
 class InternalTest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying InternalTest.underlying InternalTest.t
-  underlying : go.UnderlyingDirectedEq InternalTest InternalTest.underlying
-  get_Name : ∀ (x : InternalTest.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalTest.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : InternalTest.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalTest.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalTest.t)))
-  get_F : ∀ (x : InternalTest.t), go.IsGoStepPureDetTagged under (StructFieldGet InternalTest.underlying go!"F") #x (Val #(x.F'))
-  set_F : ∀ (x : InternalTest.t) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalTest.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalTest.t)))
+  type_repr : go.TypeReprUnderlying InternalTest.underlying InternalTest
+  underlying : go.UnderlyingDirectedEq InternalTest.ty InternalTest.underlying
+  get_Name : ∀ (x : InternalTest), go.IsGoStepPureDetTagged under (StructFieldGet InternalTest.underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : InternalTest) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet InternalTest.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : InternalTest)))
+  get_F : ∀ (x : InternalTest), go.IsGoStepPureDetTagged under (StructFieldGet InternalTest.underlying go!"F") #x (Val #(x.F'))
+  set_F : ∀ (x : InternalTest) (y : func.t), go.IsGoStepPureDetTagged under (StructFieldSet InternalTest.underlying go!"F") (PairV #x #y) (Val #(({ x with F' := y } : InternalTest)))
 
 attribute [instance] InternalTest.TypeAssumptions.type_repr
   InternalTest.TypeAssumptions.underlying
@@ -1993,27 +1931,25 @@ attribute [instance] InternalTest.TypeAssumptions.type_repr
   InternalTest.TypeAssumptions.get_F
   InternalTest.TypeAssumptions.set_F
 
-namespace testState
-structure t [FfiSyntax] where
+structure testState [FfiSyntax] where
   mk ::
   match' : Loc
-  deadline' : _root_.Perennial.time.Time.t
+  deadline' : _root_.Perennial.time.Time
   isFuzzing' : Bool
-  mu' : _root_.Perennial.sync.Mutex.t
+  mu' : _root_.Perennial.sync.Mutex
   startParallel' : chan.t
   running' : w64
   numWaiting' : w64
   maxParallel' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end testState
+instance testState.zero_val [FfiSyntax] : ZeroVal testState :=
+  ⟨testState.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def testState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher)),
-(go.field_decl.FieldDecl go!"deadline" _root_.Perennial.time.Time),
+  [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher.ty)),
+(go.field_decl.FieldDecl go!"deadline" _root_.Perennial.time.Time.ty),
 (go.field_decl.FieldDecl go!"isFuzzing" go.bool),
-(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"startParallel" (go.GoType.ChannelType go.ChanDir.sendrecv go.bool)),
 (go.field_decl.FieldDecl go!"running" go.int),
 (go.field_decl.FieldDecl go!"numWaiting" go.int),
@@ -2030,24 +1966,24 @@ instance equals_unfold_testState [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType testState.fields)
 
 class testState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying testState.underlying testState.t
-  underlying : go.UnderlyingDirectedEq testState testState.underlying
-  get_match : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"match") #x (Val #(x.match'))
-  set_match : ∀ (x : testState.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : testState.t)))
-  get_deadline : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"deadline") #x (Val #(x.deadline'))
-  set_deadline : ∀ (x : testState.t) (y : _root_.Perennial.time.Time.t), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"deadline") (PairV #x #y) (Val #(({ x with deadline' := y } : testState.t)))
-  get_isFuzzing : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"isFuzzing") #x (Val #(x.isFuzzing'))
-  set_isFuzzing : ∀ (x : testState.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"isFuzzing") (PairV #x #y) (Val #(({ x with isFuzzing' := y } : testState.t)))
-  get_mu : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : testState.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : testState.t)))
-  get_startParallel : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"startParallel") #x (Val #(x.startParallel'))
-  set_startParallel : ∀ (x : testState.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"startParallel") (PairV #x #y) (Val #(({ x with startParallel' := y } : testState.t)))
-  get_running : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"running") #x (Val #(x.running'))
-  set_running : ∀ (x : testState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"running") (PairV #x #y) (Val #(({ x with running' := y } : testState.t)))
-  get_numWaiting : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"numWaiting") #x (Val #(x.numWaiting'))
-  set_numWaiting : ∀ (x : testState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"numWaiting") (PairV #x #y) (Val #(({ x with numWaiting' := y } : testState.t)))
-  get_maxParallel : ∀ (x : testState.t), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"maxParallel") #x (Val #(x.maxParallel'))
-  set_maxParallel : ∀ (x : testState.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"maxParallel") (PairV #x #y) (Val #(({ x with maxParallel' := y } : testState.t)))
+  type_repr : go.TypeReprUnderlying testState.underlying testState
+  underlying : go.UnderlyingDirectedEq testState.ty testState.underlying
+  get_match : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"match") #x (Val #(x.match'))
+  set_match : ∀ (x : testState) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : testState)))
+  get_deadline : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"deadline") #x (Val #(x.deadline'))
+  set_deadline : ∀ (x : testState) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"deadline") (PairV #x #y) (Val #(({ x with deadline' := y } : testState)))
+  get_isFuzzing : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"isFuzzing") #x (Val #(x.isFuzzing'))
+  set_isFuzzing : ∀ (x : testState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"isFuzzing") (PairV #x #y) (Val #(({ x with isFuzzing' := y } : testState)))
+  get_mu : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : testState) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : testState)))
+  get_startParallel : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"startParallel") #x (Val #(x.startParallel'))
+  set_startParallel : ∀ (x : testState) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"startParallel") (PairV #x #y) (Val #(({ x with startParallel' := y } : testState)))
+  get_running : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"running") #x (Val #(x.running'))
+  set_running : ∀ (x : testState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"running") (PairV #x #y) (Val #(({ x with running' := y } : testState)))
+  get_numWaiting : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"numWaiting") #x (Val #(x.numWaiting'))
+  set_numWaiting : ∀ (x : testState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"numWaiting") (PairV #x #y) (Val #(({ x with numWaiting' := y } : testState)))
+  get_maxParallel : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"maxParallel") #x (Val #(x.maxParallel'))
+  set_maxParallel : ∀ (x : testState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet testState.underlying go!"maxParallel") (PairV #x #y) (Val #(({ x with maxParallel' := y } : testState)))
 
 attribute [instance] testState.TypeAssumptions.type_repr
   testState.TypeAssumptions.underlying
@@ -2068,43 +2004,39 @@ attribute [instance] testState.TypeAssumptions.type_repr
   testState.TypeAssumptions.get_maxParallel
   testState.TypeAssumptions.set_maxParallel
 
-namespace matchStringOnly
-abbrev t [FfiSyntax] : Type := func.t
-end matchStringOnly
+abbrev matchStringOnly [FfiSyntax] : Type := func.t
 
 @[reducible] def matchStringOnly.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))
 
 class matchStringOnly.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq matchStringOnly matchStringOnly.underlying
+  underlying : go.UnderlyingDirectedEq matchStringOnly.ty matchStringOnly.underlying
 
 attribute [instance] matchStringOnly.TypeAssumptions.underlying
 
-namespace M
-structure t [FfiSyntax] where
+structure M [FfiSyntax] where
   mk ::
-  deps' : testDeps.t
+  deps' : testDeps
   tests' : slice.t
   benchmarks' : slice.t
   fuzzTargets' : slice.t
   examples' : slice.t
   timer' : Loc
-  afterOnce' : _root_.Perennial.sync.Once.t
+  afterOnce' : _root_.Perennial.sync.Once
   numRun' : w64
   exitCode' : w64
 
-instance zero_val [FfiSyntax] : ZeroVal t :=
-  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-end M
+instance M.zero_val [FfiSyntax] : ZeroVal M :=
+  ⟨M.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] def M.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"deps" testDeps),
-(go.field_decl.FieldDecl go!"tests" (go.GoType.SliceType InternalTest)),
-(go.field_decl.FieldDecl go!"benchmarks" (go.GoType.SliceType InternalBenchmark)),
-(go.field_decl.FieldDecl go!"fuzzTargets" (go.GoType.SliceType InternalFuzzTarget)),
-(go.field_decl.FieldDecl go!"examples" (go.GoType.SliceType InternalExample)),
-(go.field_decl.FieldDecl go!"timer" (go.GoType.PointerType _root_.Perennial.time.Timer)),
-(go.field_decl.FieldDecl go!"afterOnce" _root_.Perennial.sync.Once),
+  [(go.field_decl.FieldDecl go!"deps" testDeps.ty),
+(go.field_decl.FieldDecl go!"tests" (go.GoType.SliceType InternalTest.ty)),
+(go.field_decl.FieldDecl go!"benchmarks" (go.GoType.SliceType InternalBenchmark.ty)),
+(go.field_decl.FieldDecl go!"fuzzTargets" (go.GoType.SliceType InternalFuzzTarget.ty)),
+(go.field_decl.FieldDecl go!"examples" (go.GoType.SliceType InternalExample.ty)),
+(go.field_decl.FieldDecl go!"timer" (go.GoType.PointerType _root_.Perennial.time.Timer.ty)),
+(go.field_decl.FieldDecl go!"afterOnce" _root_.Perennial.sync.Once.ty),
 (go.field_decl.FieldDecl go!"numRun" go.int),
 (go.field_decl.FieldDecl go!"exitCode" go.int)]
 
@@ -2119,26 +2051,26 @@ instance equals_unfold_M [FfiSyntax] [GoGlobalContext] :
   (go.GoType.StructType M.fields)
 
 class M.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying M.underlying M.t
-  underlying : go.UnderlyingDirectedEq M M.underlying
-  get_deps : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"deps") #x (Val #(x.deps'))
-  set_deps : ∀ (x : M.t) (y : testDeps.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"deps") (PairV #x #y) (Val #(({ x with deps' := y } : M.t)))
-  get_tests : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"tests") #x (Val #(x.tests'))
-  set_tests : ∀ (x : M.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"tests") (PairV #x #y) (Val #(({ x with tests' := y } : M.t)))
-  get_benchmarks : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"benchmarks") #x (Val #(x.benchmarks'))
-  set_benchmarks : ∀ (x : M.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"benchmarks") (PairV #x #y) (Val #(({ x with benchmarks' := y } : M.t)))
-  get_fuzzTargets : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"fuzzTargets") #x (Val #(x.fuzzTargets'))
-  set_fuzzTargets : ∀ (x : M.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"fuzzTargets") (PairV #x #y) (Val #(({ x with fuzzTargets' := y } : M.t)))
-  get_examples : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"examples") #x (Val #(x.examples'))
-  set_examples : ∀ (x : M.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"examples") (PairV #x #y) (Val #(({ x with examples' := y } : M.t)))
-  get_timer : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"timer") #x (Val #(x.timer'))
-  set_timer : ∀ (x : M.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : M.t)))
-  get_afterOnce : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"afterOnce") #x (Val #(x.afterOnce'))
-  set_afterOnce : ∀ (x : M.t) (y : _root_.Perennial.sync.Once.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"afterOnce") (PairV #x #y) (Val #(({ x with afterOnce' := y } : M.t)))
-  get_numRun : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"numRun") #x (Val #(x.numRun'))
-  set_numRun : ∀ (x : M.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"numRun") (PairV #x #y) (Val #(({ x with numRun' := y } : M.t)))
-  get_exitCode : ∀ (x : M.t), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"exitCode") #x (Val #(x.exitCode'))
-  set_exitCode : ∀ (x : M.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"exitCode") (PairV #x #y) (Val #(({ x with exitCode' := y } : M.t)))
+  type_repr : go.TypeReprUnderlying M.underlying M
+  underlying : go.UnderlyingDirectedEq M.ty M.underlying
+  get_deps : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"deps") #x (Val #(x.deps'))
+  set_deps : ∀ (x : M) (y : testDeps), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"deps") (PairV #x #y) (Val #(({ x with deps' := y } : M)))
+  get_tests : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"tests") #x (Val #(x.tests'))
+  set_tests : ∀ (x : M) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"tests") (PairV #x #y) (Val #(({ x with tests' := y } : M)))
+  get_benchmarks : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"benchmarks") #x (Val #(x.benchmarks'))
+  set_benchmarks : ∀ (x : M) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"benchmarks") (PairV #x #y) (Val #(({ x with benchmarks' := y } : M)))
+  get_fuzzTargets : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"fuzzTargets") #x (Val #(x.fuzzTargets'))
+  set_fuzzTargets : ∀ (x : M) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"fuzzTargets") (PairV #x #y) (Val #(({ x with fuzzTargets' := y } : M)))
+  get_examples : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"examples") #x (Val #(x.examples'))
+  set_examples : ∀ (x : M) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"examples") (PairV #x #y) (Val #(({ x with examples' := y } : M)))
+  get_timer : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"timer") #x (Val #(x.timer'))
+  set_timer : ∀ (x : M) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : M)))
+  get_afterOnce : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"afterOnce") #x (Val #(x.afterOnce'))
+  set_afterOnce : ∀ (x : M) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"afterOnce") (PairV #x #y) (Val #(({ x with afterOnce' := y } : M)))
+  get_numRun : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"numRun") #x (Val #(x.numRun'))
+  set_numRun : ∀ (x : M) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"numRun") (PairV #x #y) (Val #(({ x with numRun' := y } : M)))
+  get_exitCode : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"exitCode") #x (Val #(x.exitCode'))
+  set_exitCode : ∀ (x : M) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet M.underlying go!"exitCode") (PairV #x #y) (Val #(({ x with exitCode' := y } : M)))
 
 attribute [instance] M.TypeAssumptions.type_repr
   M.TypeAssumptions.underlying

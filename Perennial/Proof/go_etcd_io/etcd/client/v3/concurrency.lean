@@ -57,22 +57,22 @@ variable [package_sem : concurrency.Assumptions]
 
 local notation "pkg" => pkg_id.go_etcd_io.etcd.client.v3.concurrency
 
-def isSessionDef (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
+def isSessionDef (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) : IProp GF :=
   iprop(∃ (cl : Loc) (donec : chan.t) (γdonec : ChanNames),
-    "#client" ∷ s.[Session.t, go!"client"] ↦□ cl ∗
-    "#id" ∷ s.[Session.t, go!"id"] ↦□ lease ∗
+    "#client" ∷ s.[Session, go!"client"] ↦□ cl ∗
+    "#id" ∷ s.[Session, go!"id"] ↦□ lease ∗
     "#Hclient" ∷ isClient cl γ ∗
     "#Hlease" ∷ isEtcdLease γ lease ∗
-    "#donec" ∷ s.[Session.t, go!"donec"] ↦□ donec ∗
+    "#donec" ∷ s.[Session, go!"donec"] ↦□ donec ∗
     -- One can keep calling receive, and the only thing they might get back is a
     -- "closed" value.
     "#Hdonec" ∷ ownBroadcastChan donec γdonec iprop(True) .Unknown)
 /-- (Rocq: `Opaque isSession`) -/
-@[irreducible] def isSession (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
+@[irreducible] def isSession (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) : IProp GF :=
   isSessionDef s γ lease
 theorem isSession_unseal : @isSession = @isSessionDef := by funext; with_unfolding_all rfl
 
-instance isSession_pers (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+instance isSession_pers (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) :
     Persistent (isSession (GF := GF) s γ lease) := by
   rw [isSession_unseal]; unfold isSessionDef; infer_instance
 
@@ -160,9 +160,9 @@ theorem wp_NewSession (client : Loc) (γetcd : Clientv3Names) :
   rw [isSession_unseal]; unfold isSessionDef
   iframe #
 
-theorem Session.wp_Lease (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+theorem Session.wp_Lease (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isSession s γ lease }}
-      (App (Val (s @!! go.GoType.PointerType Session @!! go!"Lease")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType Session.ty @!! go!"Lease")) (Val #()))
     {{ RET #lease; True }} := by
   wp_start as Hs
   rw [isSession_unseal]
@@ -170,9 +170,9 @@ theorem Session.wp_Lease (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
   wp_auto
   wp_end
 
-theorem Session.wp_Done (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+theorem Session.wp_Done (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isSession s γ lease }}
-      (App (Val (s @!! go.GoType.PointerType Session @!! go!"Done")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType Session.ty @!! go!"Done")) (Val #()))
     {{ (ch : chan.t) (γch : ChanNames), RET #ch;
         ownBroadcastChan ch γch iprop(True) .Unknown }} := by
   wp_start as Hs

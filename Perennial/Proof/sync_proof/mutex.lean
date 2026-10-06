@@ -47,14 +47,14 @@ instance locked_timeless (m : Loc) : Timeless (ownMutex (GF := GF) m) := by
   rw [ownMutex_unseal]; unfold ownMutexDef; infer_instance
 
 theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
-    ⊢ typedPointsto (GF := GF) m (zero_val sync.Mutex.t) (DFrac.own 1) -∗ ▷ R ={E}=∗
+    ⊢ typedPointsto (GF := GF) m (zero_val sync.Mutex) (DFrac.own 1) -∗ ▷ R ={E}=∗
       isMutex m R := by
   simp only [isMutex_unseal, isMutexDef]
   exact init_lock R E m
 
 theorem Mutex.wp_TryLock (m : Loc) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isMutex m R }}
-      (App (Val (m @!! go.GoType.PointerType Mutex @!! go!"TryLock")) (Val #()))
+      (App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"TryLock")) (Val #()))
     {{ (locked : Bool), RET #locked; if locked then ownMutex m ∗ R else True }} := by
   wp_start as #His
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
@@ -63,7 +63,7 @@ theorem Mutex.wp_TryLock (m : Loc) (R : IProp GF) :
 
 theorem Mutex.wp_Lock (m : Loc) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isMutex m R }}
-      (App (Val (m @!! go.GoType.PointerType Mutex @!! go!"Lock")) (Val #()))
+      (App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"Lock")) (Val #()))
     {{ RET #(); ownMutex m ∗ R }} := by
   wp_start as #His
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
@@ -74,7 +74,7 @@ theorem Mutex.wp_Lock (m : Loc) (R : IProp GF) :
 /-- This form is useful for defer statements. -/
 theorem Mutex.wp_Unlock (m : Loc) (R : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isMutex m R ∗ ownMutex m ∗ ▷ R }}
-      (App (Val (m @!! go.GoType.PointerType Mutex @!! go!"Unlock")) (Val #()))
+      (App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"Unlock")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#His, Hlocked, HR⟩
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
@@ -95,7 +95,7 @@ instance isLocker_persistent (v : interface.t_ok) (P : IProp GF) :
 
 theorem Mutex_is_Locker (m : Loc) (R : IProp GF) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.sync -∗ isMutex m R -∗
-      isLocker (interface.mk (go.GoType.PointerType Mutex) #m) iprop(ownMutex m ∗ R) := by
+      isLocker (interface.mk (go.GoType.PointerType Mutex.ty) #m) iprop(ownMutex m ∗ R) := by
   iintro #Hi #Hm
   unfold isLocker
   isplitl

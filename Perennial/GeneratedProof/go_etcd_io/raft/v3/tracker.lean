@@ -27,48 +27,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.tracker.Assumptions]
 
 instance inflight_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.inflight.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.inflight where
   typedPointstoDef l v dq := iprop(
-    "index" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"index" l) v.index' dq ∗
-    "bytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"bytes" l) v.bytes' dq ∗
+    "index" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"index" l) v.index' dq ∗
+    "bytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"bytes" l) v.bytes' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance inflight_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.inflight.t go_etcd_io.raft.v3.tracker.inflight.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.inflight go_etcd_io.raft.v3.tracker.inflight.underlying := by
   solve_into_val_typed_struct
 
-instance inflight_access_load_index (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight.t) (dq : DFrac) :
+instance inflight_access_load_index (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"index" l) v.index' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"index" l) v.index' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"index" l) v.index' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"index" l) v.index' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance inflight_access_store_index (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight.t) (index' : w64) :
+instance inflight_access_store_index (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight) (index' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"index" l) v.index' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"index" l) index' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : go_etcd_io.raft.v3.tracker.inflight.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"index" l) v.index' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"index" l) index' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : go_etcd_io.raft.v3.tracker.inflight) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance inflight_access_load_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight.t) (dq : DFrac) :
+instance inflight_access_load_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"bytes" l) v.bytes' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"bytes" l) v.bytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"bytes" l) v.bytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"bytes" l) v.bytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance inflight_access_store_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight.t) (bytes' : w64) :
+instance inflight_access_store_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.inflight) (bytes' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"bytes" l) v.bytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight.t go!"bytes" l) bytes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytes' := bytes' } : go_etcd_io.raft.v3.tracker.inflight.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"bytes" l) v.bytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.inflight go!"bytes" l) bytes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytes' := bytes' } : go_etcd_io.raft.v3.tracker.inflight) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -84,116 +84,116 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.tracker.Assumptions]
 
 instance Inflights_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Inflights.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Inflights where
   typedPointstoDef l v dq := iprop(
-    "start" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"start" l) v.start' dq ∗
-    "count" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"count" l) v.count' dq ∗
-    "bytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"bytes" l) v.bytes' dq ∗
-    "size" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"size" l) v.size' dq ∗
-    "maxBytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"maxBytes" l) v.maxBytes' dq ∗
-    "buffer" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"buffer" l) v.buffer' dq ∗
+    "start" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"start" l) v.start' dq ∗
+    "count" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"count" l) v.count' dq ∗
+    "bytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"bytes" l) v.bytes' dq ∗
+    "size" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"size" l) v.size' dq ∗
+    "maxBytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"maxBytes" l) v.maxBytes' dq ∗
+    "buffer" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) v.buffer' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Inflights_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Inflights.t go_etcd_io.raft.v3.tracker.Inflights.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Inflights go_etcd_io.raft.v3.tracker.Inflights.underlying := by
   solve_into_val_typed_struct
 
-instance Inflights_access_load_start (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_start (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"start" l) v.start' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"start" l) v.start' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"start" l) v.start' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"start" l) v.start' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_start (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (start' : w64) :
+instance Inflights_access_store_start (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (start' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"start" l) v.start' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"start" l) start' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with start' := start' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"start" l) v.start' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"start" l) start' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with start' := start' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_load_count (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_count (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"count" l) v.count' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"count" l) v.count' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"count" l) v.count' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"count" l) v.count' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_count (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (count' : w64) :
+instance Inflights_access_store_count (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (count' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"count" l) v.count' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"count" l) count' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"count" l) v.count' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"count" l) count' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_load_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"bytes" l) v.bytes' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"bytes" l) v.bytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"bytes" l) v.bytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"bytes" l) v.bytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (bytes' : w64) :
+instance Inflights_access_store_bytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (bytes' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"bytes" l) v.bytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"bytes" l) bytes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytes' := bytes' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"bytes" l) v.bytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"bytes" l) bytes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytes' := bytes' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_load_size (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_size (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"size" l) v.size' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"size" l) v.size' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"size" l) v.size' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"size" l) v.size' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_size (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (size' : w64) :
+instance Inflights_access_store_size (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (size' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"size" l) v.size' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"size" l) size' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with size' := size' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"size" l) v.size' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"size" l) size' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with size' := size' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_load_maxBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_maxBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"maxBytes" l) v.maxBytes' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"maxBytes" l) v.maxBytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"maxBytes" l) v.maxBytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"maxBytes" l) v.maxBytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_maxBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (maxBytes' : w64) :
+instance Inflights_access_store_maxBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (maxBytes' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"maxBytes" l) v.maxBytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"maxBytes" l) maxBytes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with maxBytes' := maxBytes' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"maxBytes" l) v.maxBytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"maxBytes" l) maxBytes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with maxBytes' := maxBytes' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_load_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (dq : DFrac) :
+instance Inflights_access_load_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"buffer" l) v.buffer' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"buffer" l) v.buffer' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) v.buffer' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) v.buffer' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Inflights_access_store_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights.t) (buffer' : slice.t) :
+instance Inflights_access_store_buffer (l : Loc) (v : go_etcd_io.raft.v3.tracker.Inflights) (buffer' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"buffer" l) v.buffer' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights.t go!"buffer" l) buffer' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buffer' := buffer' } : go_etcd_io.raft.v3.tracker.Inflights.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) v.buffer' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Inflights go!"buffer" l) buffer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buffer' := buffer' } : go_etcd_io.raft.v3.tracker.Inflights) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -209,167 +209,167 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.tracker.Assumptions]
 
 instance Progress_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Progress.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Progress where
   typedPointstoDef l v dq := iprop(
-    "Match" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Match" l) v.Match' dq ∗
-    "Next" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Next" l) v.Next' dq ∗
-    "sentCommit" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"sentCommit" l) v.sentCommit' dq ∗
-    "State" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"State" l) v.State' dq ∗
-    "PendingSnapshot" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"PendingSnapshot" l) v.PendingSnapshot' dq ∗
-    "RecentActive" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"RecentActive" l) v.RecentActive' dq ∗
-    "MsgAppFlowPaused" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq ∗
-    "Inflights" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Inflights" l) v.Inflights' dq ∗
-    "IsLearner" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"IsLearner" l) v.IsLearner' dq ∗
+    "Match" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Match" l) v.Match' dq ∗
+    "Next" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Next" l) v.Next' dq ∗
+    "sentCommit" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"sentCommit" l) v.sentCommit' dq ∗
+    "State" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"State" l) v.State' dq ∗
+    "PendingSnapshot" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"PendingSnapshot" l) v.PendingSnapshot' dq ∗
+    "RecentActive" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"RecentActive" l) v.RecentActive' dq ∗
+    "MsgAppFlowPaused" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq ∗
+    "Inflights" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Inflights" l) v.Inflights' dq ∗
+    "IsLearner" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"IsLearner" l) v.IsLearner' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Progress_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Progress.t go_etcd_io.raft.v3.tracker.Progress.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Progress go_etcd_io.raft.v3.tracker.Progress.underlying := by
   solve_into_val_typed_struct
 
-instance Progress_access_load_Match (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_Match (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Match" l) v.Match' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Match" l) v.Match' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Match" l) v.Match' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Match" l) v.Match' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_Match (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (Match' : w64) :
+instance Progress_access_store_Match (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (Match' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Match" l) v.Match' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Match" l) Match' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Match' := Match' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Match" l) v.Match' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Match" l) Match' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Match' := Match' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_Next (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_Next (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Next" l) v.Next' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Next" l) v.Next' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Next" l) v.Next' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Next" l) v.Next' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_Next (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (Next' : w64) :
+instance Progress_access_store_Next (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (Next' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Next" l) v.Next' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Next" l) Next' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Next' := Next' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Next" l) v.Next' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Next" l) Next' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Next' := Next' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_sentCommit (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_sentCommit (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"sentCommit" l) v.sentCommit' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"sentCommit" l) v.sentCommit' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"sentCommit" l) v.sentCommit' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"sentCommit" l) v.sentCommit' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_sentCommit (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (sentCommit' : w64) :
+instance Progress_access_store_sentCommit (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (sentCommit' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"sentCommit" l) v.sentCommit' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"sentCommit" l) sentCommit' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sentCommit' := sentCommit' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"sentCommit" l) v.sentCommit' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"sentCommit" l) sentCommit' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sentCommit' := sentCommit' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_State (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_State (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"State" l) v.State' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"State" l) v.State' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"State" l) v.State' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"State" l) v.State' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_State (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (State' : go_etcd_io.raft.v3.tracker.StateType.t) :
+instance Progress_access_store_State (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (State' : go_etcd_io.raft.v3.tracker.StateType) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"State" l) v.State' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"State" l) State' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with State' := State' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"State" l) v.State' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"State" l) State' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with State' := State' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_PendingSnapshot (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_PendingSnapshot (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"PendingSnapshot" l) v.PendingSnapshot' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"PendingSnapshot" l) v.PendingSnapshot' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"PendingSnapshot" l) v.PendingSnapshot' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"PendingSnapshot" l) v.PendingSnapshot' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_PendingSnapshot (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (PendingSnapshot' : w64) :
+instance Progress_access_store_PendingSnapshot (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (PendingSnapshot' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"PendingSnapshot" l) v.PendingSnapshot' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"PendingSnapshot" l) PendingSnapshot' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PendingSnapshot' := PendingSnapshot' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"PendingSnapshot" l) v.PendingSnapshot' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"PendingSnapshot" l) PendingSnapshot' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PendingSnapshot' := PendingSnapshot' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_RecentActive (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_RecentActive (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"RecentActive" l) v.RecentActive' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"RecentActive" l) v.RecentActive' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"RecentActive" l) v.RecentActive' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"RecentActive" l) v.RecentActive' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_RecentActive (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (RecentActive' : Bool) :
+instance Progress_access_store_RecentActive (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (RecentActive' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"RecentActive" l) v.RecentActive' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"RecentActive" l) RecentActive' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with RecentActive' := RecentActive' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"RecentActive" l) v.RecentActive' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"RecentActive" l) RecentActive' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with RecentActive' := RecentActive' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_MsgAppFlowPaused (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_MsgAppFlowPaused (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_MsgAppFlowPaused (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (MsgAppFlowPaused' : Bool) :
+instance Progress_access_store_MsgAppFlowPaused (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (MsgAppFlowPaused' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"MsgAppFlowPaused" l) MsgAppFlowPaused' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MsgAppFlowPaused' := MsgAppFlowPaused' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"MsgAppFlowPaused" l) v.MsgAppFlowPaused' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"MsgAppFlowPaused" l) MsgAppFlowPaused' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MsgAppFlowPaused' := MsgAppFlowPaused' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_Inflights (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_Inflights (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Inflights" l) v.Inflights' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Inflights" l) v.Inflights' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Inflights" l) v.Inflights' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Inflights" l) v.Inflights' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_Inflights (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (Inflights' : Loc) :
+instance Progress_access_store_Inflights (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (Inflights' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Inflights" l) v.Inflights' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"Inflights" l) Inflights' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Inflights' := Inflights' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Inflights" l) v.Inflights' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"Inflights" l) Inflights' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Inflights' := Inflights' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_load_IsLearner (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (dq : DFrac) :
+instance Progress_access_load_IsLearner (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"IsLearner" l) v.IsLearner' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"IsLearner" l) v.IsLearner' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"IsLearner" l) v.IsLearner' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"IsLearner" l) v.IsLearner' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Progress_access_store_IsLearner (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress.t) (IsLearner' : Bool) :
+instance Progress_access_store_IsLearner (l : Loc) (v : go_etcd_io.raft.v3.tracker.Progress) (IsLearner' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"IsLearner" l) v.IsLearner' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress.t go!"IsLearner" l) IsLearner' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsLearner' := IsLearner' } : go_etcd_io.raft.v3.tracker.Progress.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"IsLearner" l) v.IsLearner' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Progress go!"IsLearner" l) IsLearner' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsLearner' := IsLearner' } : go_etcd_io.raft.v3.tracker.Progress) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -385,82 +385,82 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.tracker.Assumptions]
 
 instance Config_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Config.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.Config where
   typedPointstoDef l v dq := iprop(
-    "Voters" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Voters" l) v.Voters' dq ∗
-    "AutoLeave" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"AutoLeave" l) v.AutoLeave' dq ∗
-    "Learners" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Learners" l) v.Learners' dq ∗
-    "LearnersNext" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"LearnersNext" l) v.LearnersNext' dq ∗
+    "Voters" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Voters" l) v.Voters' dq ∗
+    "AutoLeave" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"AutoLeave" l) v.AutoLeave' dq ∗
+    "Learners" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) v.Learners' dq ∗
+    "LearnersNext" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) v.LearnersNext' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Config_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Config.t go_etcd_io.raft.v3.tracker.Config.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.Config go_etcd_io.raft.v3.tracker.Config.underlying := by
   solve_into_val_typed_struct
 
-instance Config_access_load_Voters (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (dq : DFrac) :
+instance Config_access_load_Voters (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Voters" l) v.Voters' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Voters" l) v.Voters' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Voters" l) v.Voters' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Voters" l) v.Voters' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_Voters (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (Voters' : go_etcd_io.raft.v3.quorum.JointConfig.t) :
+instance Config_access_store_Voters (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (Voters' : go_etcd_io.raft.v3.quorum.JointConfig) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Voters" l) v.Voters' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Voters" l) Voters' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Voters' := Voters' } : go_etcd_io.raft.v3.tracker.Config.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Voters" l) v.Voters' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Voters" l) Voters' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Voters' := Voters' } : go_etcd_io.raft.v3.tracker.Config) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_load_AutoLeave (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (dq : DFrac) :
+instance Config_access_load_AutoLeave (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"AutoLeave" l) v.AutoLeave' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"AutoLeave" l) v.AutoLeave' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"AutoLeave" l) v.AutoLeave' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"AutoLeave" l) v.AutoLeave' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_AutoLeave (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (AutoLeave' : Bool) :
+instance Config_access_store_AutoLeave (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (AutoLeave' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"AutoLeave" l) v.AutoLeave' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"AutoLeave" l) AutoLeave' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with AutoLeave' := AutoLeave' } : go_etcd_io.raft.v3.tracker.Config.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"AutoLeave" l) v.AutoLeave' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"AutoLeave" l) AutoLeave' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with AutoLeave' := AutoLeave' } : go_etcd_io.raft.v3.tracker.Config) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_load_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (dq : DFrac) :
+instance Config_access_load_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Learners" l) v.Learners' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Learners" l) v.Learners' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) v.Learners' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) v.Learners' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (Learners' : map.t) :
+instance Config_access_store_Learners (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (Learners' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Learners" l) v.Learners' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"Learners" l) Learners' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Learners' := Learners' } : go_etcd_io.raft.v3.tracker.Config.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) v.Learners' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"Learners" l) Learners' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Learners' := Learners' } : go_etcd_io.raft.v3.tracker.Config) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_load_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (dq : DFrac) :
+instance Config_access_load_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"LearnersNext" l) v.LearnersNext' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"LearnersNext" l) v.LearnersNext' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) v.LearnersNext' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) v.LearnersNext' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Config_access_store_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config.t) (LearnersNext' : map.t) :
+instance Config_access_store_LearnersNext (l : Loc) (v : go_etcd_io.raft.v3.tracker.Config) (LearnersNext' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"LearnersNext" l) v.LearnersNext' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config.t go!"LearnersNext" l) LearnersNext' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with LearnersNext' := LearnersNext' } : go_etcd_io.raft.v3.tracker.Config.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) v.LearnersNext' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.Config go!"LearnersNext" l) LearnersNext' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with LearnersNext' := LearnersNext' } : go_etcd_io.raft.v3.tracker.Config) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -476,99 +476,99 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.tracker.Assumptions]
 
 instance ProgressTracker_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker where
   typedPointstoDef l v dq := iprop(
-    "Config" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Config" l) v.Config' dq ∗
-    "Progress" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Progress" l) v.Progress' dq ∗
-    "Votes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Votes" l) v.Votes' dq ∗
-    "MaxInflight" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflight" l) v.MaxInflight' dq ∗
-    "MaxInflightBytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflightBytes" l) v.MaxInflightBytes' dq ∗
+    "Config" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Config" l) v.Config' dq ∗
+    "Progress" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Progress" l) v.Progress' dq ∗
+    "Votes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) v.Votes' dq ∗
+    "MaxInflight" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflight" l) v.MaxInflight' dq ∗
+    "MaxInflightBytes" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflightBytes" l) v.MaxInflightBytes' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ProgressTracker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker.t go_etcd_io.raft.v3.tracker.ProgressTracker.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.tracker.ProgressTracker go_etcd_io.raft.v3.tracker.ProgressTracker.underlying := by
   solve_into_val_typed_struct
 
-instance ProgressTracker_access_load_Config (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :
+instance ProgressTracker_access_load_Config (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Config" l) v.Config' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Config" l) v.Config' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Config" l) v.Config' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Config" l) v.Config' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_Config (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (Config' : go_etcd_io.raft.v3.tracker.Config.t) :
+instance ProgressTracker_access_store_Config (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (Config' : go_etcd_io.raft.v3.tracker.Config) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Config" l) v.Config' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Config" l) Config' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Config' := Config' } : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Config" l) v.Config' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Config" l) Config' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Config' := Config' } : go_etcd_io.raft.v3.tracker.ProgressTracker) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_load_Progress (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :
+instance ProgressTracker_access_load_Progress (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Progress" l) v.Progress' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Progress" l) v.Progress' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Progress" l) v.Progress' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Progress" l) v.Progress' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (Progress' : go_etcd_io.raft.v3.tracker.ProgressMap.t) :
+instance ProgressTracker_access_store_Progress (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (Progress' : go_etcd_io.raft.v3.tracker.ProgressMap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Progress" l) v.Progress' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Progress" l) Progress' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Progress' := Progress' } : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Progress" l) v.Progress' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Progress" l) Progress' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Progress' := Progress' } : go_etcd_io.raft.v3.tracker.ProgressTracker) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_load_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :
+instance ProgressTracker_access_load_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Votes" l) v.Votes' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Votes" l) v.Votes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) v.Votes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) v.Votes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (Votes' : map.t) :
+instance ProgressTracker_access_store_Votes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (Votes' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Votes" l) v.Votes' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"Votes" l) Votes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Votes' := Votes' } : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) v.Votes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"Votes" l) Votes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Votes' := Votes' } : go_etcd_io.raft.v3.tracker.ProgressTracker) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_load_MaxInflight (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :
+instance ProgressTracker_access_load_MaxInflight (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflight" l) v.MaxInflight' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflight" l) v.MaxInflight' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflight" l) v.MaxInflight' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflight" l) v.MaxInflight' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_MaxInflight (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (MaxInflight' : w64) :
+instance ProgressTracker_access_store_MaxInflight (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (MaxInflight' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflight" l) v.MaxInflight' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflight" l) MaxInflight' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxInflight' := MaxInflight' } : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflight" l) v.MaxInflight' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflight" l) MaxInflight' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxInflight' := MaxInflight' } : go_etcd_io.raft.v3.tracker.ProgressTracker) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_load_MaxInflightBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (dq : DFrac) :
+instance ProgressTracker_access_load_MaxInflightBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflightBytes" l) v.MaxInflightBytes' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflightBytes" l) v.MaxInflightBytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflightBytes" l) v.MaxInflightBytes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflightBytes" l) v.MaxInflightBytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ProgressTracker_access_store_MaxInflightBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (MaxInflightBytes' : w64) :
+instance ProgressTracker_access_store_MaxInflightBytes (l : Loc) (v : go_etcd_io.raft.v3.tracker.ProgressTracker) (MaxInflightBytes' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflightBytes" l) v.MaxInflightBytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker.t go!"MaxInflightBytes" l) MaxInflightBytes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxInflightBytes' := MaxInflightBytes' } : go_etcd_io.raft.v3.tracker.ProgressTracker.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflightBytes" l) v.MaxInflightBytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.tracker.ProgressTracker go!"MaxInflightBytes" l) MaxInflightBytes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxInflightBytes' := MaxInflightBytes' } : go_etcd_io.raft.v3.tracker.ProgressTracker) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

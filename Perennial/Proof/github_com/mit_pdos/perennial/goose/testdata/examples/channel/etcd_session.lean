@@ -71,7 +71,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := sync.Mutex.t) mu sync.Mutex as Hmu
+  wp_apply wp_GlobalAlloc (V := sync.Mutex) mu sync.Mutex.ty as Hmu
   wp_apply wp_GlobalAlloc (V := chan.t) sessionc
     (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) as Hsc
   wp_apply github_com.goose_lang.primitive.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩

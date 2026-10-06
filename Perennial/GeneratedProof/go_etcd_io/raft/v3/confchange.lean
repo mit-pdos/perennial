@@ -23,48 +23,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.confchange.Assumptions]
 
 instance Changer_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.confchange.Changer.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.confchange.Changer where
   typedPointstoDef l v dq := iprop(
-    "Tracker" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' dq ∗
-    "LastIndex" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' dq ∗
+    "Tracker" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"Tracker" l) v.Tracker' dq ∗
+    "LastIndex" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"LastIndex" l) v.LastIndex' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Changer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.confchange.Changer.t go_etcd_io.raft.v3.confchange.Changer.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.confchange.Changer go_etcd_io.raft.v3.confchange.Changer.underlying := by
   solve_into_val_typed_struct
 
-instance Changer_access_load_Tracker (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer.t) (dq : DFrac) :
+instance Changer_access_load_Tracker (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"Tracker" l) v.Tracker' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"Tracker" l) v.Tracker' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Changer_access_store_Tracker (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer.t) (Tracker' : go_etcd_io.raft.v3.tracker.ProgressTracker.t) :
+instance Changer_access_store_Tracker (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer) (Tracker' : go_etcd_io.raft.v3.tracker.ProgressTracker) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) v.Tracker' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"Tracker" l) Tracker' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Tracker' := Tracker' } : go_etcd_io.raft.v3.confchange.Changer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"Tracker" l) v.Tracker' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"Tracker" l) Tracker' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Tracker' := Tracker' } : go_etcd_io.raft.v3.confchange.Changer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Changer_access_load_LastIndex (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer.t) (dq : DFrac) :
+instance Changer_access_load_LastIndex (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"LastIndex" l) v.LastIndex' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"LastIndex" l) v.LastIndex' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Changer_access_store_LastIndex (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer.t) (LastIndex' : w64) :
+instance Changer_access_store_LastIndex (l : Loc) (v : go_etcd_io.raft.v3.confchange.Changer) (LastIndex' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) v.LastIndex' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer.t go!"LastIndex" l) LastIndex' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with LastIndex' := LastIndex' } : go_etcd_io.raft.v3.confchange.Changer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"LastIndex" l) v.LastIndex' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.confchange.Changer go!"LastIndex" l) LastIndex' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with LastIndex' := LastIndex' } : go_etcd_io.raft.v3.confchange.Changer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -22,48 +22,48 @@ variable [sem : go.Semantics]
 variable [package_sem' : sort.Assumptions]
 
 instance lessSwap_typed_pointsto :
-    TypedPointsto (GF := GF) sort.lessSwap.t where
+    TypedPointsto (GF := GF) sort.lessSwap where
   typedPointstoDef l v dq := iprop(
-    "Less" ∷ typedPointsto (structFieldRef sort.lessSwap.t go!"Less" l) v.Less' dq ∗
-    "Swap" ∷ typedPointsto (structFieldRef sort.lessSwap.t go!"Swap" l) v.Swap' dq ∗
+    "Less" ∷ typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq ∗
+    "Swap" ∷ typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance lessSwap_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.lessSwap.t sort.lessSwap.underlying := by
+    IntoValTypedUnderlying (GF := GF) sort.lessSwap sort.lessSwap.underlying := by
   solve_into_val_typed_struct
 
-instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap.t) (dq : DFrac) :
+instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Less" l) v.Less' dq)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Less" l) v.Less' dq)
+      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq)
+      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap.t) (Less' : func.t) :
+instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Less" l) v.Less' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Less" l) Less' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := Less' } : sort.lessSwap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
+      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) Less' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := Less' } : sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_load_Swap (l : Loc) (v : sort.lessSwap.t) (dq : DFrac) :
+instance lessSwap_access_load_Swap (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Swap" l) v.Swap' dq)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Swap" l) v.Swap' dq)
+      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq)
+      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap.t) (Swap' : func.t) :
+instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Swap" l) v.Swap' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap.t go!"Swap" l) Swap' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := Swap' } : sort.lessSwap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
+      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) Swap' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := Swap' } : sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -79,31 +79,31 @@ variable [sem : go.Semantics]
 variable [package_sem' : sort.Assumptions]
 
 instance reverse_typed_pointsto :
-    TypedPointsto (GF := GF) sort.reverse.t where
+    TypedPointsto (GF := GF) sort.reverse where
   typedPointstoDef l v dq := iprop(
-    "Interface" ∷ typedPointsto (structFieldRef sort.reverse.t go!"Interface" l) v.Interface' dq ∗
+    "Interface" ∷ typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance reverse_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sort.reverse.t sort.reverse.underlying := by
+    IntoValTypedUnderlying (GF := GF) sort.reverse sort.reverse.underlying := by
   solve_into_val_typed_struct
 
-instance reverse_access_load_Interface (l : Loc) (v : sort.reverse.t) (dq : DFrac) :
+instance reverse_access_load_Interface (l : Loc) (v : sort.reverse) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.reverse.t go!"Interface" l) v.Interface' dq)
-      (typedPointsto (structFieldRef sort.reverse.t go!"Interface" l) v.Interface' dq)
+      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq)
+      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance reverse_access_store_Interface (l : Loc) (v : sort.reverse.t) (Interface' : sort.Interface.t) :
+instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : sort.Interface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.reverse.t go!"Interface" l) v.Interface' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.reverse.t go!"Interface" l) Interface' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := Interface' } : sort.reverse.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
+      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) Interface' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := Interface' } : sort.reverse) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

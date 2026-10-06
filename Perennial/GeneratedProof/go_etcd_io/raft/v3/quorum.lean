@@ -28,82 +28,82 @@ variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.raft.v3.quorum.Assumptions]
 
 instance tup_typed_pointsto :
-    TypedPointsto (GF := GF) go_etcd_io.raft.v3.quorum.tup.t where
+    TypedPointsto (GF := GF) go_etcd_io.raft.v3.quorum.tup where
   typedPointstoDef l v dq := iprop(
-    "id" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq ∗
-    "idx" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq ∗
-    "ok" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq ∗
-    "bar" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq ∗
+    "id" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"id" l) v.id' dq ∗
+    "idx" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"idx" l) v.idx' dq ∗
+    "ok" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"ok" l) v.ok' dq ∗
+    "bar" ∷ typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"bar" l) v.bar' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance tup_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.quorum.tup.t go_etcd_io.raft.v3.quorum.tup.underlying := by
+    IntoValTypedUnderlying (GF := GF) go_etcd_io.raft.v3.quorum.tup go_etcd_io.raft.v3.quorum.tup.underlying := by
   solve_into_val_typed_struct
 
-instance tup_access_load_id (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
+instance tup_access_load_id (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"id" l) v.id' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_store_id (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (id' : w64) :
+instance tup_access_store_id (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (id' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"id" l) v.id' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"id" l) id' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"id" l) v.id' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"id" l) id' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : go_etcd_io.raft.v3.quorum.tup) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_load_idx (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
+instance tup_access_load_idx (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"idx" l) v.idx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"idx" l) v.idx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_store_idx (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (idx' : go_etcd_io.raft.v3.quorum.Index'.t) :
+instance tup_access_store_idx (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (idx' : go_etcd_io.raft.v3.quorum.Index') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) v.idx' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"idx" l) idx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with idx' := idx' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"idx" l) v.idx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"idx" l) idx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with idx' := idx' } : go_etcd_io.raft.v3.quorum.tup) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_load_ok (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
+instance tup_access_load_ok (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"ok" l) v.ok' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"ok" l) v.ok' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_store_ok (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (ok' : Bool) :
+instance tup_access_store_ok (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (ok' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) v.ok' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"ok" l) ok' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ok' := ok' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"ok" l) v.ok' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"ok" l) ok' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ok' := ok' } : go_etcd_io.raft.v3.quorum.tup) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_load_bar (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (dq : DFrac) :
+instance tup_access_load_bar (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"bar" l) v.bar' dq)
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"bar" l) v.bar' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance tup_access_store_bar (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup.t) (bar' : w64) :
+instance tup_access_store_bar (l : Loc) (v : go_etcd_io.raft.v3.quorum.tup) (bar' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) v.bar' (DFrac.own 1))
-      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup.t go!"bar" l) bar' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bar' := bar' } : go_etcd_io.raft.v3.quorum.tup.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"bar" l) v.bar' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.raft.v3.quorum.tup go!"bar" l) bar' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bar' := bar' } : go_etcd_io.raft.v3.quorum.tup) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

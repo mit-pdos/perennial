@@ -116,7 +116,7 @@ theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
 
 theorem Mutex.wp_Lock (m : Loc) (R : IProp GF) :
     {{ isMutex m R }}
-      (App (Val (m @!! go.GoType.PointerType Mutex @!! go!"Lock")) (Val #()))
+      (App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"Lock")) (Val #()))
     {{ RET #(); ownMutex m ∗ R }} := by
   wp_start as #His
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
@@ -127,7 +127,7 @@ theorem Mutex.wp_Lock (m : Loc) (R : IProp GF) :
 /-- This form is useful for defer statements. -/
 theorem Mutex.wp_Unlock (m : Loc) (R : IProp GF) :
     {{ isMutex m R ∗ ownMutex m ∗ ▷ R }}
-      (App (Val (m @!! go.GoType.PointerType Mutex @!! go!"Unlock")) (Val #()))
+      (App (Val (m @!! go.GoType.PointerType Mutex.ty @!! go!"Unlock")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as ⟨#His, Hlocked, HR⟩
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
