@@ -22,53 +22,53 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-instance request_countable [ffi_syntax] : Pos.Countable request.t :=
+instance request_countable [FfiSyntax] : Pos.Countable request.t :=
   countableOfLeftInverse (fun r : request.t => (r.f', r.result')) (fun p => ⟨p.1, p.2⟩)
     (fun _ => rfl)
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-def doRequest (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) : IProp GF :=
-  iprop("Hf" ∷ WP (App (Val #r.f') (Val #())) {{ fun v => iprop(∃ s : go_string, ⌜v = #s⌝ ∗ Q s) }} ∗
-    "#Hfut" ∷ isFuture go_string γfut r.result' ∗
-    "Hpromise" ∷ Fulfill (V := go_string) γfut Q)
+def doRequest (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
+  iprop("Hf" ∷ WP (App (Val #r.f') (Val #())) {{ fun v => iprop(∃ s : GoString, ⌜v = #s⌝ ∗ Q s) }} ∗
+    "#Hfut" ∷ isFuture GoString γfut r.result' ∗
+    "Hpromise" ∷ Fulfill (V := GoString) γfut Q)
 
-def awaitRequest (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) : IProp GF :=
-  iprop("#Hfut" ∷ isFuture go_string γfut r.result' ∗
-    "HAwait" ∷ Await (V := go_string) γfut [Q])
+def awaitRequest (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) : IProp GF :=
+  iprop("#Hfut" ∷ isFuture GoString γfut r.result' ∗
+    "HAwait" ∷ Await (V := GoString) γfut [Q])
 
 set_option goose.wp.extras true
 
-theorem wp_mkRequest (f : func.t) (Q : go_string → IProp GF) :
+theorem wp_mkRequest (f : func.t) (Q : GoString → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
-        WP (App (Val #f) (Val #())) {{ fun v => iprop(∃ s : go_string, ⌜v = #s⌝ ∗ Q s) }} }}
+        WP (App (Val #f) (Val #())) {{ fun v => iprop(∃ s : GoString, ⌜v = #s⌝ ∗ Q s) }} }}
       (App (Val (@! mkRequest)) (Val #f))
     {{ (γfut : FutureNames) (r : request.t), RET #r;
         doRequest r γfut Q ∗ awaitRequest r γfut Q }} := by
   wp_start as Hf
   wp_auto
   iapply wp_fupd
-  wp_apply chan.wp_make2 (V := go_string) (W64 1) $$ [] as %ch %γ ⟨#Hch, %Hcap, Hown⟩
+  wp_apply chan.wp_make2 (V := GoString) (W64 1) $$ [] as %ch %γ ⟨#Hch, %Hcap, Hown⟩
   · ipureintro; decide
-  imod start_future (V := go_string) ch γ (.Buffered []) (.inr rfl) $$ Hch Hown
+  imod start_future (V := GoString) ch γ (.Buffered []) (.inr rfl) $$ Hch Hown
     with ⟨%γfut, #Hfut, HAwait⟩
-  imod future_alloc_promise (V := go_string) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
+  imod future_alloc_promise (V := GoString) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
   imodintro
   iapply HΦ
   unfold doRequest awaitRequest
   iframe # ∗
 
 omit package_sem in
-theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : go_string → IProp GF) :
+theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : GoString → IProp GF) :
     {{ awaitRequest r γfut Q }}
       (App (Val (chan.receive go.string)) (Val #r.result'))
-    {{ (s : go_string), RET (PairV #s #true); Q s }} := by
+    {{ (s : GoString), RET (PairV #s #true); Q s }} := by
   iintro %Φ H HΦ
   unfold awaitRequest
   icases H with ⟨#Hfut, HAwait⟩
@@ -85,14 +85,14 @@ theorem wp_get_response (r : request.t) (γfut : FutureNames) (Q : go_string →
     simp at this
 
 
-def isRequestChan (γ : ChanNames) (ch : loc) : IProp GF :=
+def isRequestChan (γ : ChanNames) (ch : Loc) : IProp GF :=
   isChanBag (V := request.t) γ ch (fun r => iprop(∃ γfut Q, doRequest r γfut Q))
 
-instance isRequestChan_pers (γ : ChanNames) (ch : loc) :
+instance isRequestChan_pers (γ : ChanNames) (ch : Loc) :
     Persistent (isRequestChan (GF := GF) γ ch) := by
   unfold isRequestChan; infer_instance
 
-theorem wp_ho_worker (γ : ChanNames) (ch : loc) :
+theorem wp_ho_worker (γ : ChanNames) (ch : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isRequestChan γ ch }}
       (App (Val (@! ho_worker)) (Val #ch))
     {{ RET #(); True }} := by
@@ -160,7 +160,7 @@ theorem wp_HigherOrderExample :
   wp_apply wp_get_response r2 γfut2 _ $$ Hawait2 as %s2 %Hs2
   wp_apply wp_get_response r3 γfut3 _ $$ Hawait3 as %s3 %Hs3
   subst Hs1 Hs2 Hs3
-  wp_apply wp_slice_literal (V := go_string) [go!"hello world", go!"HELLO", go!"world"]
+  wp_apply wp_slice_literal (V := GoString) [go!"hello world", go!"HELLO", go!"world"]
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩

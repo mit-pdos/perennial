@@ -17,79 +17,79 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.std : go_string := go!"github.com/goose-lang/std"
+def github_com.goose_lang.std : GoString := go!"github.com/goose-lang/std"
 end pkg_id
 
 namespace github_com.goose_lang.std
 
-def JoinHandle [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/std.JoinHandle" [])
+def JoinHandle [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/std.JoinHandle" [])
 
 attribute [irreducible] JoinHandle
 
-noncomputable def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assert [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Assert"
 
-noncomputable def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SumNoOverflow"
 
-noncomputable def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SumAssumeNoOverflow"
 
-noncomputable def SignedSumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SignedSumAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SignedSumAssumeNoOverflow"
 
-noncomputable def BytesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.BytesEqual"
 
-noncomputable def BytesClone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesClone [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.BytesClone"
 
-noncomputable def SliceSplit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceSplit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SliceSplit"
 
-noncomputable def newJoinHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newJoinHandle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.newJoinHandle"
 
-noncomputable def Spawn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Spawn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Spawn"
 
-noncomputable def Multipar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Multipar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Multipar"
 
-noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Skip"
 
-noncomputable def WaitTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WaitTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.WaitTimeout"
 
 /-- Assert(b) panics if b doesn't hold
 
     go: goose_std.go:13:6 -/
-noncomputable def «Assertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Assertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "b")))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"assertion failure")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"assertion failure")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- Returns true if x + y does not overflow
 
     go: goose_std.go:20:6 -/
-noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.std.std_core.SumNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
@@ -99,82 +99,82 @@ noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     *Use with care* - if the assumption is violated this function will panic.
 
     go: goose_std.go:27:6 -/
-noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.std.std_core.SumAssumeNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: goose_std.go:31:6 -/
-noncomputable def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SignedSumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.int))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))))
-  (App (Val do_execute)
-  (Let "$a0" (If (If (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val _root_.Perennial.math.MaxInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)) (Val #true) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val _root_.Perennial.math.MinInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)))
+  (App (Val doExecute)
+  (Let "$a0" (If (If (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val _root_.Perennial.math.MaxInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)) (Val #true) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val _root_.Perennial.math.MinInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.Assume []))) (Val #())) (Var "$a0"))))))))))
 
 /-- BytesEqual returns if the two byte slices are equal.
 
     go: goose_std.go:37:6 -/
-noncomputable def «BytesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BytesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "y"))
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "x"))
+  (App (Val exceptionDo)
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "y"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "x"))
   (Let "xlen" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "retval" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "retval")))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "xlen"))))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))))))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "retval") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "retval") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "xlen")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "xlen")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "xlen") (Var "$r0"))))))))))))
 
 /-- See the [reference].
@@ -182,19 +182,19 @@ noncomputable def «BytesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     [reference]: https://pkg.go.dev/bytes#Clone
 
     go: goose_std.go:58:6 -/
-noncomputable def «BytesCloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «BytesCloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Let "$a0" (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue []))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil)))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil)))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue []))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil)))
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- SliceSplit splits xs at n into two slices.
@@ -203,59 +203,59 @@ noncomputable def «BytesCloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     no longer safe to append to the first slice.
 
     go: goose_std.go:69:6 -/
-noncomputable def «SliceSplitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «SliceSplitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "xs"
   (Lam "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
-  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.type.SliceType T)))) (Var "xs"))
-  (App (Val do_return)
-  (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (Var "xs")))))))))))))
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "xs"))
+  (App (Val doReturn)
+  (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs")))))))))))))
 
 /-- go: goose_std.go:84:6 -/
-noncomputable def «newJoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newJoinHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "mu" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "mu" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "cond" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.type.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "mu")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "cond" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "mu")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.NewCond []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoAlloc JoinHandle))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "mu"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoAlloc JoinHandle))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "mu"))
   (Let "$v1" (Val #false)
-  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))
-  (App (Val (GoInstruction (CompositeLiteral JoinHandle))) (LiteralValue [(KeyedElement (some (KeyField go!"mu")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"done")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"cond")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Cond) (Var "$v2")))])))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "cond") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0")))))))))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))
+  (App (Val (GoInstruction (CompositeLiteral JoinHandle))) (LiteralValue [(KeyedElement (some (KeyField go!"mu")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"done")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"cond")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Cond) (Var "$v2")))])))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "cond") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "mu") (Var "$r0")))))))))
 
 /-- go: goose_std.go:94:22 -/
-noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "h" (App (Val (GoInstruction (GoAlloc (go.type.PointerType JoinHandle)))) (Var "h"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "h" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType JoinHandle)))) (Var "h"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Cond) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"cond"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"cond"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))))))
 
 /-- Spawn runs `f` in a parallel goroutine and returns a handle to wait for
     it to finish.
@@ -266,62 +266,62 @@ noncomputable def «JoinHandle__finishⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
     result value.
 
     go: goose_std.go:108:6 -/
-noncomputable def «Spawnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Spawnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "f"
-  (App (Val exception_do)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
-  (Let "h" (App (Val (GoInstruction (GoAlloc (go.type.PointerType JoinHandle)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType JoinHandle)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
+  (Let "h" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType JoinHandle)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType JoinHandle)))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newJoinHandle []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType JoinHandle) go!"finish"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))) (Val #())))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [] false []))))) (Var "f")) (Val #())))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h")))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType JoinHandle) go!"finish"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f")) (Val #())))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h")))))
+  (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType JoinHandle)))) (Pair (Var "h") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType JoinHandle)))) (Pair (Var "h") (Var "$r0"))))))))))
 
 /-- go: goose_std.go:117:22 -/
-noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "h" (App (Val (GoInstruction (GoAlloc (go.type.PointerType JoinHandle)))) (Var "h"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "h" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType JoinHandle)))) (Var "h"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"cond"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
-  (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"cond"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef JoinHandle go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef JoinHandle go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType JoinHandle)))) (Var "h"))))) (Val #())))))))))
 
 /-- Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
@@ -330,81 +330,81 @@ noncomputable def «JoinHandle__Joinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
     and condition variables since these are modeled in Goose
 
     go: goose_std.go:136:6 -/
-noncomputable def «Multiparⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Multiparⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "num"
   (Lam "op"
-  (App (Val exception_do)
-  (Let "op" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.uint64] false []))))) (Var "op"))
+  (App (Val exceptionDo)
+  (Let "op" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.uint64] false []))))) (Var "op"))
   (Let "num" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "num"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "num_left" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "num"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "num_left_mu" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "num_left_mu" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "num_left_cond" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.type.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "num_left_cond" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.sync.Mutex) _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.NewCond []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #())))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #())))))
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "num_left")) (Val #(W64 0)))))) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "num_left_cond"))) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "num_left_cond"))) (Val #())))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #()))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "num")))))) (Lam BAnon
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #())))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Cond) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "num_left_cond"))) (Val #()))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Signal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "num_left_cond"))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "num_left") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "num_left")) (Val #(W64 1))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "num_left_mu"))) (Val #()))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.uint64] false []))))) (Var "op")) (Var "$a0"))))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.uint64] false []))))) (Var "op")) (Var "$a0"))))))))
+  (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #())))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "num_left_cond") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "num_left_mu") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Pair (Var "num_left_cond") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "num_left_mu") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "num_left") (Var "$r0")))))))))))))
 
 /-- Skip is a no-op that can be useful in proofs.
@@ -416,10 +416,10 @@ noncomputable def «Multiparⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     application to a value.
 
     go: goose_std.go:167:6 -/
-noncomputable def «Skipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Skipⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))
 
 /-- WaitTimeout is like cond.Wait(), but waits for a maximum time of timeoutMs
@@ -429,113 +429,113 @@ noncomputable def «Skipⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     ourselves.
 
     go: goose_std.go:174:6 -/
-noncomputable def «WaitTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «WaitTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "cond"
   (Lam "timeoutMs"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "timeoutMs" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "timeoutMs"))
-  (Let "cond" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "cond" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "done" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "done" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "done"))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Unlock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))) (Val #())))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Unlock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))) (Val #())))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration))) (Pair (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.time.Duration))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "timeoutMs"))) (Val _root_.Perennial.time.Millisecond)))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
-  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "done"))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase _root_.Perennial.time.Time (Var "$ch0")) (Lam "$recvVal"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #())))))),
-  (CommClause (RecvCase (go.type.StructType []) (Var "$ch1")) (Lam "$recvVal"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #())))))),
+  (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch1")) (Lam "$recvVal"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #()))))))]))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond)))) (Var "cond"))))) (Val #()))))))]))))))
+  (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.std where
-  pkg_imported_pkgs := [pkg_id.math, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.std.std_core]
+  pkgImportedPkgs := [pkg_id.math, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.std.std_core]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.std)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _root_.Perennial.math.initialize') (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.std.std_core.initialize') (Val #()))))))))
 
 namespace JoinHandle
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  mu' : loc
+  mu' : Loc
   done' : Bool
-  cond' : loc
+  cond' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end JoinHandle
 
-@[reducible] def JoinHandle'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mu" (go.type.PointerType _root_.Perennial.sync.Mutex)),
+@[reducible] def JoinHandle'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"done" go.bool),
-(go.field_decl.FieldDecl go!"cond" (go.type.PointerType _root_.Perennial.sync.Cond))]
+(go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond))]
 
-@[irreducible] def JoinHandle'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def JoinHandle'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   JoinHandle'fds_unsealed
 
-instance equals_unfold_JoinHandle [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold JoinHandle'fds JoinHandle'fds_unsealed :=
   ⟨by unfold JoinHandle'fds; rfl⟩
 
-@[reducible] def «JoinHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType JoinHandle'fds)
+@[reducible] def «JoinHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType JoinHandle'fds)
 
-class JoinHandle_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class JoinHandle_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   JoinHandle_type_repr : go.TypeReprUnderlying «JoinHandleⁱᵐᵖˡ» JoinHandle.t
   JoinHandle_underlying : go.UnderlyingDirectedEq JoinHandle «JoinHandleⁱᵐᵖˡ»
   JoinHandle_get_mu : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
-  JoinHandle_set_mu : ∀ (x : JoinHandle.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle.t)))
+  JoinHandle_set_mu : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle.t)))
   JoinHandle_get_done : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
   JoinHandle_set_done : ∀ (x : JoinHandle.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle.t)))
   JoinHandle_get_cond : ∀ (x : JoinHandle.t), go.IsGoStepPureDetTagged under (StructFieldGet «JoinHandleⁱᵐᵖˡ» go!"cond") #x (Val #(x.cond'))
-  JoinHandle_set_cond : ∀ (x : JoinHandle.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle.t)))
-  JoinHandle'ptr_Join_unfold : MethodUnfold (go.type.PointerType JoinHandle) go!"Join" «JoinHandle__Joinⁱᵐᵖˡ»
-  JoinHandle'ptr_finish_unfold : MethodUnfold (go.type.PointerType JoinHandle) go!"finish" «JoinHandle__finishⁱᵐᵖˡ»
+  JoinHandle_set_cond : ∀ (x : JoinHandle.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «JoinHandleⁱᵐᵖˡ» go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle.t)))
+  JoinHandle'ptr_Join_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"Join" «JoinHandle__Joinⁱᵐᵖˡ»
+  JoinHandle'ptr_finish_unfold : MethodUnfold (go.GoType.PointerType JoinHandle) go!"finish" «JoinHandle__finishⁱᵐᵖˡ»
 
 attribute [instance] JoinHandle_Assumptions.JoinHandle_type_repr
   JoinHandle_Assumptions.JoinHandle_underlying
@@ -548,7 +548,7 @@ attribute [instance] JoinHandle_Assumptions.JoinHandle_type_repr
   JoinHandle_Assumptions.JoinHandle'ptr_Join_unfold
   JoinHandle_Assumptions.JoinHandle'ptr_finish_unfold
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   JoinHandle_instance : JoinHandle_Assumptions
   Assert_unfold : FuncUnfold Assert [] «Assertⁱᵐᵖˡ»
   SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] «SumNoOverflowⁱᵐᵖˡ»
@@ -556,7 +556,7 @@ class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFu
   SignedSumAssumeNoOverflow_unfold : FuncUnfold SignedSumAssumeNoOverflow [] «SignedSumAssumeNoOverflowⁱᵐᵖˡ»
   BytesEqual_unfold : FuncUnfold BytesEqual [] «BytesEqualⁱᵐᵖˡ»
   BytesClone_unfold : FuncUnfold BytesClone [] «BytesCloneⁱᵐᵖˡ»
-  SliceSplit_unfold : ∀ (T : go.type), FuncUnfold SliceSplit [T] («SliceSplitⁱᵐᵖˡ» T)
+  SliceSplit_unfold : ∀ (T : go.GoType), FuncUnfold SliceSplit [T] («SliceSplitⁱᵐᵖˡ» T)
   newJoinHandle_unfold : FuncUnfold newJoinHandle [] «newJoinHandleⁱᵐᵖˡ»
   Spawn_unfold : FuncUnfold Spawn [] «Spawnⁱᵐᵖˡ»
   Multipar_unfold : FuncUnfold Multipar [] «Multiparⁱᵐᵖˡ»

@@ -24,7 +24,7 @@ def isAsciiSpace (b : w8) : Bool :=
    32#8    -- space (0x20)
   ].contains b
 
-def splitFieldsAux : go_string → Option go_string → List go_string
+def splitFieldsAux : GoString → Option GoString → List GoString
   | [], w => match w with | none => [] | some w => [w]
   | x :: s, w =>
     if isAsciiSpace x then
@@ -33,7 +33,7 @@ def splitFieldsAux : go_string → Option go_string → List go_string
       | some w => w :: splitFieldsAux s none
     else splitFieldsAux s (some (w.getD [] ++ [x]))
 
-def splitFields (s : go_string) : List go_string := splitFieldsAux s none
+def splitFields (s : GoString) : List GoString := splitFieldsAux s none
 
 /-! Tests of `splitFields`, which is part of the `wp_Fields` axiom. -/
 
@@ -50,7 +50,7 @@ def bsNl : w8 := 10#8
 def bsCr : w8 := 13#8
 def bsSp : w8 := 32#8
 
-def helloWorldWs : go_string :=
+def helloWorldWs : GoString :=
   [bsSp, bsTab] ++ go!"hello" ++ [bsNl] ++ go!"world" ++ [bsCr, bsSp]
 
 example : splitFields helloWorldWs = [go!"hello", go!"world"] := by decide
@@ -59,9 +59,9 @@ example : splitFields go!"  hello\tthere\ngeneral\rkenobi " =
     [go!"hello", go!"there", go!"general", go!"kenobi"] := by decide
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
@@ -70,7 +70,7 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.strings :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.strings :=
   build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.strings get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -88,7 +88,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 /-- FIXME (from Rocq): this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be
 all ASCII. (`ownSliceCap w8` is also as in Rocq.) -/
-axiom wp_Fields [package_sem : strings.Assumptions] (s : go_string) :
+axiom wp_Fields [package_sem : strings.Assumptions] (s : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #s))
     {{ (sl : slice.t), RET #sl;

@@ -19,7 +19,7 @@ namespace go
 code written in Go itself. For instance, Goose has a channel model implemented
 in Go so channel semantics are not present here. Instead, the channel model
 proof actually uses the below semantics. -/
-class PreSemantics [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] :
+class PreSemantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] :
     Prop where
   [core_sem : go.CoreSemantics]
   [interface_sem : go.InterfaceSemantics]

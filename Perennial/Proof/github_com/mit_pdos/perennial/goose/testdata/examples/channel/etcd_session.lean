@@ -24,9 +24,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : etcd_session.Assumptions]
 
 local notation "pkg" =>
@@ -36,7 +36,7 @@ local notation "pkg" =>
 broadcast channel. -/
 abbrev muInv : IProp GF :=
   iprop(∃ (ch : chan.t) (γch : ChanNames),
-    "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+    "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
     "#Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Unknown ∗
     "#Hsessionc_is" ∷ isChan ch γch Unit)
 
@@ -51,17 +51,17 @@ theorem isInv_access :
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg
 
 omit [AllG GF] in
-theorem pointsto_halves {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) :
-    typed_pointsto (GF := GF) l v (DFrac.own 1) ⊣⊢
-      typed_pointsto l v (DFrac.own (1 : Qp).half) ∗ typed_pointsto l v (DFrac.own (1 : Qp).half) := by
-  have h := (typed_pointsto_dfractional (GF := GF) l v).dfractional
+theorem pointsto_halves {V : Type} [TypedPointsto (GF := GF) V] (l : Loc) (v : V) :
+    typedPointsto (GF := GF) l v (DFrac.own 1) ⊣⊢
+      typedPointsto l v (DFrac.own (1 : Qp).half) ∗ typedPointsto l v (DFrac.own (1 : Qp).half) := by
+  have h := (typedPointsto_dfractional (GF := GF) l v).dfractional
     (DFrac.own (1 : Qp).half) (DFrac.own (1 : Qp).half)
   rwa [DFrac.op_own, Qp.half_add_half] at h
 
 set_option goose.wp.extras true
 
 set_option maxHeartbeats 400000 in
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -73,7 +73,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   wp_auto
   wp_apply wp_GlobalAlloc (V := sync.Mutex.t) mu sync.Mutex as Hmu
   wp_apply wp_GlobalAlloc (V := chan.t) sessionc
-    (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) as Hsc
+    (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) as Hsc
   wp_apply github_com.goose_lang.primitive.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
   wp_apply time.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
   wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #H3⟩
@@ -111,14 +111,14 @@ theorem wp_waitForSessionExpiration :
 abbrev monitorSelectPost (v : val) : IProp GF :=
   iprop(⌜v = executeVal⌝ ∗
     ∃ (ch : chan.t) (γch : ChanNames),
-      "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
+      "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
       "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
       "#Hsessionc_is" ∷ isChan ch γch Unit)
 
 set_option maxHeartbeats 1600000 in
 theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
-        "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+        "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
         "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) broadcast.t.Pending ∗
         "#Hsessionc_is" ∷ isChan ch γch Unit }}
       (App (Val (@! monitorSession)) (Val #()))
@@ -128,7 +128,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
   · iPkgInit
   ihave #Hmu := isInv_access $$ Hpkg
   ihave HH : (∃ (ch : chan.t) (γch : ChanNames) (cst : broadcast.t),
-      "sessionc" ∷ typed_pointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
+      "sessionc" ∷ typedPointsto (globalAddr sessionc) ch (DFrac.own (1 : Qp).half) ∗
       "Hsessionc" ∷ ownBroadcastChan ch γch iprop(True) cst ∗
       "#Hsessionc_is" ∷ isChan ch γch Unit ∗
       "%Hcst" ∷ ⌜cst ≠ broadcast.t.Unknown⌝ : IProp GF) $$ [sessionc Hsessionc]
@@ -148,7 +148,7 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
   wp_bind (App (Val (GoInstruction SelectStmt)) _)
   iapply wp_wand (Φ := monitorSelectPost) $$ [sessionc Hsessionc] [-]
   · iapply chan.wp_select_nonblocking_alt [iprop(⌜cst = broadcast.t.Pending⌝)]
-      iprop(typed_pointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
+      iprop(typedPointsto (globalAddr sessionc) ch (DFrac.own 1) ∗
         ownBroadcastChan ch γch iprop(True) cst) $$ [] [sessionc Hsessionc] []
     · iapply BigSepL2.bigSepL2_cons.2
       isplitl
@@ -235,8 +235,8 @@ theorem wp_monitorSession (ch : chan.t) (γch : ChanNames) :
 set_option maxHeartbeats 800000 in
 /-- Rocq `waitSession` (renamed: the Lean name `waitSession` is the function). -/
 theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [Pos.Countable A']
-    {A : go.type} [IntoValTyped (GF := GF) A' A]
-    (cancel : loc) (γcancel : ChanNames) (Pcancel : A' → IProp GF) :
+    {A : go.GoType} [IntoValTyped (GF := GF) A' A]
+    (cancel : Loc) (γcancel : ChanNames) (Pcancel : A' → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isChanBag γcancel cancel Pcancel }}
       (App (Val #(functions waitSession [A])) (Val #cancel))
     {{ (err : error.t), RET #err;

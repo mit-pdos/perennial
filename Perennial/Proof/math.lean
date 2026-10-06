@@ -14,9 +14,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace math
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.Assumptions]
 
@@ -27,7 +27,7 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.math :=
 
 /-- The initializer of `math` calls the package's (unmodeled) `init` function
 `_'init`, so this is not provable. -/
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.math get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))

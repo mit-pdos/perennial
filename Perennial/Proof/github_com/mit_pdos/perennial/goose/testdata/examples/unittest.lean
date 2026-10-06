@@ -5,7 +5,7 @@ specs for some of the goose unit tests.
 Differences from Rocq:
 * `unittest` imports `github.com/goose-lang/primitive/disk`, so the FFI is the
   disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
-  section does not bind `ffi_syntax`/`ffi_model`.
+  section does not bind `FfiSyntax`/`FfiModel`.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -30,7 +30,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unittest.Assumptions]
 
@@ -128,7 +128,7 @@ theorem wp_basicTypeSwitch (x : interface.t) :
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
-              (ty = go.string → ∃ v' : go_string, v = #v')
+              (ty = go.string → ∃ v' : GoString, v = #v')
           | _ => True⌝ }}
       (App (Val (@! basicTypeSwitch)) (Val #x))
     {{ (y : w64), RET #y; True }} := by
@@ -158,7 +158,7 @@ theorem wp_fancyTypeSwitch (x : interface.t) :
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
-              (ty = go.string → ∃ v' : go_string, v = #v')
+              (ty = go.string → ∃ v' : GoString, v = #v')
           | _ => True⌝ }}
       (App (Val (@! fancyTypeSwitch)) (Val #x))
     {{ (y : w64), RET #y; True }} := by
@@ -190,7 +190,7 @@ theorem wp_multiTypeSwitch (x : interface.t) :
         ⌜match x with
           | interface.ok ⟨ty, v⟩ =>
               (ty = go.int → ∃ v' : w64, v = #v') ∧
-              (ty = go.string → ∃ v' : go_string, v = #v')
+              (ty = go.string → ∃ v' : GoString, v = #v')
           | _ => True⌝ }}
       (App (Val (@! multiTypeSwitch)) (Val #x))
     {{ (y : w64), RET #y; True }} := by
@@ -249,7 +249,7 @@ theorem wp_mapGetCall :
 theorem wp_NamedMapAssignment :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NamedMapAssignment)) (Val #()))
-    {{ (m : loc), RET #m; m ↦$ ({[W64 1 := true]} : GMap w64 Bool) }} := by
+    {{ (m : Loc), RET #m; m ↦$ ({[W64 1 := true]} : GMap w64 Bool) }} := by
   wp_start
   wp_auto
   rw [go.make1_underlying, go.is_underlying (t := MapWrapper)]
@@ -261,11 +261,11 @@ theorem wp_NamedMapAssignment :
 theorem wp_mapLiteralTest :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! mapLiteralTest)) (Val #()))
-    {{ (l : loc), RET #l;
-        l ↦$ (<[go!"c" := W64 99]> (<[go!"b" := W64 98]> {[go!"a" := W64 97]}) : GMap go_string w64) }} := by
+    {{ (l : Loc), RET #l;
+        l ↦$ (<[go!"c" := W64 99]> (<[go!"b" := W64 98]> {[go!"a" := W64 97]}) : GMap GoString w64) }} := by
   wp_start
   wp_auto
-  wp_apply (wp_map_make1 (K := go_string) (V := w64)) with %m Hm
+  wp_apply (wp_map_make1 (K := GoString) (V := w64)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
@@ -295,7 +295,7 @@ theorem wp_testConversionLiteral :
 theorem wp_useNilField :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! useNilField)) (Val #()))
-    {{ (l : loc), RET #l; l ↦ containsPointer.t.mk null }} := by
+    {{ (l : Loc), RET #l; l ↦ containsPointer.t.mk null }} := by
   wp_start
   wp_alloc x as Hx
   wp_auto
@@ -401,7 +401,7 @@ theorem wp_useEmbeddedMethod (d : embedD.t) (b : embedB.t) :
 theorem wp_pointerAny :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! pointerAny)) (Val #()))
-    {{ (l : loc), RET #l; l ↦ interface.nil }} := by
+    {{ (l : Loc), RET #l; l ↦ interface.nil }} := by
   wp_start
   wp_alloc p as Hp
   wp_auto

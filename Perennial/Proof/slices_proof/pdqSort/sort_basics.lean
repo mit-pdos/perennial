@@ -193,12 +193,12 @@ theorem header_preserve (xs xs' : List E) (a b : Nat) :
 end sorted
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : slices.Assumptions]
-variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
+variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop)
 
@@ -215,7 +215,7 @@ instance cmpImplements_persistent (cmp_code : func.t) :
     Persistent (cmpImplements (GF := GF) R cmp_code) := by
   unfold cmpImplements; infer_instance
 
-theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps_l : loc)
+theorem wp_order2CmpFunc [StrictWeakOrder R] (data : slice.t) (a b : w64) (swaps_l : Loc)
     (cmp_code : func.t) (dq : DFrac) (xs : List E) (swaps : w64) (xa xb : E)
     (Ha_bound : 0 ≤ sint.Z a) (Hb_bound : 0 ≤ sint.Z b) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗

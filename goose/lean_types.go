@@ -117,7 +117,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "structure t [ffi_syntax]%s%s where\n  mk ::\n", sep, typeBinders)
+			fmt.Fprintf(w, "structure t [FfiSyntax]%s%s where\n  mk ::\n", sep, typeBinders)
 			for i := range t.NumFields() {
 				f := t.Field(i)
 				ft := ctx.toLeanType(spec, f.Type())
@@ -130,9 +130,9 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 					zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
 				}
 			}
-			fmt.Fprintf(w, "\ninstance zero_val [ffi_syntax]%s : ZeroVal %s :=\n  ⟨t.mk", zvBinders, tApplied)
+			fmt.Fprintf(w, "\ninstance zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨t.mk", zvBinders, tApplied)
 			for range t.NumFields() {
-				fmt.Fprint(w, " zero_val_def")
+				fmt.Fprint(w, " zeroValDef")
 			}
 			fmt.Fprint(w, "⟩\n")
 		default:
@@ -140,7 +140,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "abbrev t [ffi_syntax]%s%s : Type := %s\n", sep, typeBinders, ctx.toLeanType(spec, t))
+			fmt.Fprintf(w, "abbrev t [FfiSyntax]%s%s : Type := %s\n", sep, typeBinders, ctx.toLeanType(spec, t))
 		}
 	}
 	fmt.Fprintf(w, "end %s", ns)
@@ -153,16 +153,16 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	params := ctx.typeParamList(spec.TypeParams)
 	binders := ""
 	if len(params) > 0 {
-		binders = " " + leanTypeParamBinders(params, "go.type")
+		binders = " " + leanTypeParamBinders(params, "go.GoType")
 	}
 	fds := glang.LeanQuote(name + "'fds")
 	fdsU := glang.LeanQuote(name + "'fds_unsealed")
 	w := new(strings.Builder)
-	fmt.Fprintf(w, "@[reducible] def %s [ffi_syntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
+	fmt.Fprintf(w, "@[reducible] def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
 		ty.LeanFields())
-	fmt.Fprintf(w, "\n@[irreducible] def %s [ffi_syntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
+	fmt.Fprintf(w, "\n@[irreducible] def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
 		fds, binders, leanApplied(fdsU, params))
-	fmt.Fprintf(w, "\ninstance %s [ffi_syntax] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
+	fmt.Fprintf(w, "\ninstance %s [FfiSyntax] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
 		glang.LeanQuoteComponent("equals_unfold_"+name), binders, leanApplied(fds, params),
 		leanApplied(fdsU, params), fds)
 	return w.String()
@@ -196,7 +196,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 			params = append(params, t.TypeParams().At(i).Obj().Name())
 		}
 	}
-	goBinders := leanTypeParamBinders(params, "go.type")
+	goBinders := leanTypeParamBinders(params, "go.GoType")
 	rocqBinders := leanTypeParamBinders(primed(params), "Type")
 
 	var fields []leanClassField
@@ -253,7 +253,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 		}
 	}
 
-	ptrTy := "(go.type.PointerType " + ty + ")"
+	ptrTy := "(go.GoType.PointerType " + ty + ")"
 
 	if !types.IsInterface(t) {
 		// for every method in `t`
@@ -344,7 +344,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 		}
 	}
 
-	return leanClass(typeName+"_Assumptions", " [ffi_syntax] "+leanClassParams, fields)
+	return leanClass(typeName+"_Assumptions", " [FfiSyntax] "+leanClassParams, fields)
 }
 
 func lparenS(s string) string {
@@ -368,13 +368,13 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		if s == "bool" {
 			return "Bool"
 		}
-		return s
+		return glang.LeanRename(s)
 	case *types.Slice:
 		return "slice.t"
 	case *types.Array:
 		return fmt.Sprintf("(array.t %s %d)", ctx.toLeanTypeP(l, t.Elem(), primed), t.Len())
 	case *types.Pointer:
-		return "loc"
+		return "Loc"
 	case *types.Signature:
 		return "func.t"
 	case *types.Interface:
@@ -441,7 +441,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		}
 		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(f.Name.Name)), params)
 		fields = append(fields, leanClassField{name: f.Name.Name + "_unfold",
-			ty: leanForall(leanTypeParamBinders(params, "go.type"),
+			ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
 				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(f.Name.Name),
 					strings.Join(typeArgs, ", "), impl))})
 	}
@@ -452,7 +452,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	}
 	params := " " + leanClassParams
 	if ctx.declImplicitParams != "" {
-		params = " [ffi_syntax]" + params
+		params = " [FfiSyntax]" + params
 	}
 	return leanClass("Assumptions", params, fields)
 }
@@ -462,6 +462,6 @@ func (ctx *Ctx) leanInfoInstance() string {
 	for _, impName := range ctx.importNamesOrdered {
 		imps = append(imps, glang.LeanPkgId(impName.Imported().Path()))
 	}
-	return fmt.Sprintf("instance info' : PkgInfo %s where\n  pkg_imported_pkgs := [%s]",
+	return fmt.Sprintf("instance info' : PkgInfo %s where\n  pkgImportedPkgs := [%s]",
 		ctx.pkgIdent, strings.Join(imps, ", "))
 }

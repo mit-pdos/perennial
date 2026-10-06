@@ -82,9 +82,9 @@ theorem ids_bigSepL_sub {GF : BundledGFunctors} (R : w64 → IProp GF) (p s : In
   exact h
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : idutil.Assumptions]
 
@@ -113,7 +113,7 @@ the code.
 Lean deviation: the invariant additionally owns the time receipts of the
 `num_used` calls made so far (`"Hused"`, with `"%Hnum_used" : 0 ≤ num_used`).
 Rocq: invariant `suffix ∗ HR` only. -/
-def isGeneratorDef (g : loc) (R : w64 → IProp GF) : IProp GF :=
+def isGeneratorDef (g : Loc) (R : w64 → IProp GF) : IProp GF :=
   iprop(∃ («prefix» : Int),
     "#prefix" ∷ g.[Generator.t, go!"prefix"] ↦□ (W64 («prefix» * 2^48)) ∗
     "#Hinv" ∷
@@ -125,12 +125,12 @@ def isGeneratorDef (g : loc) (R : w64 → IProp GF) : IProp GF :=
                     R (W64 («prefix» * 2^48 + i % 2^48)))) ∗
     "_" ∷ True)
 /-- (Rocq: `Opaque isGenerator`) -/
-@[irreducible] def isGenerator (g : loc) (R : w64 → IProp GF) : IProp GF :=
+@[irreducible] def isGenerator (g : Loc) (R : w64 → IProp GF) : IProp GF :=
   isGeneratorDef g R
 theorem isGenerator_unseal : @isGenerator = @isGeneratorDef := by
   funext; with_unfolding_all rfl
 
-instance isGenerator_pers (g : loc) (R : w64 → IProp GF) :
+instance isGenerator_pers (g : Loc) (R : w64 → IProp GF) :
     Persistent (isGenerator g R) := by
   rw [isGenerator_unseal]; unfold isGeneratorDef; infer_instance
 
@@ -218,9 +218,9 @@ theorem take_token (Φ : Int → IProp GF) (a n : Int) (M : Nat) (hlt : n.toNat 
 /-- Lean deviation: proved (Rocq: admitted) using time receipts, for every
 time-receipt bound; the postcondition gives `R i` under the premise
 `receiptBound GF ≤ 2^48` (Rocq: `R i`), see the module docstring. -/
-theorem Generator.wp_Next (g : loc) (R : w64 → IProp GF) :
+theorem Generator.wp_Next (g : Loc) (R : w64 → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isGenerator g R }}
-      (App (Val (g @!! go.type.PointerType Generator @!! go!"Next")) (Val #()))
+      (App (Val (g @!! go.GoType.PointerType Generator @!! go!"Next")) (Val #()))
     {{ (i : w64), RET #i; ⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i }} := by
   wp_start as H
   rw [isGenerator_unseal]; unfold isGeneratorDef
@@ -270,7 +270,7 @@ theorem Generator.wp_Next (g : loc) (R : w64 → IProp GF) :
 
 /-- Allocating the invariant of `isGenerator` (`2^48` is kept abstract as `N`,
 see `ids_bigSepL_sub`). -/
-theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : loc)
+theorem isGenerator_alloc (R : w64 → IProp GF) (L : List Int) (hL : L = seqZ 0 (2^64)) (g : Loc)
     (memberID : w16) (sv : w64) :
     ⊢ g.[Generator.t, go!"prefix"] ↦ W64 (uint.Z memberID * 2 ^ 48) -∗
       g.[Generator.t, go!"suffix"] ↦ sv -∗
@@ -310,7 +310,7 @@ theorem wp_NewGenerator' (R : w64 → IProp GF)
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ L, R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; isGenerator g R }} := by
+    {{ (g : Loc), RET #g; isGenerator g R }} := by
   wp_start as HR
   wp_auto
   wp_apply time.Time.wp_UnixNano $$ [$now] as %nowNano now
@@ -336,7 +336,7 @@ theorem wp_NewGenerator (R : w64 → IProp GF)
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
       (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : loc), RET #g; isGenerator g R }} :=
+    {{ (g : Loc), RET #g; isGenerator g R }} :=
   wp_NewGenerator' R memberID now _ rfl
 
 end wps

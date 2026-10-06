@@ -17,451 +17,451 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def encoding.binary : go_string := go!"encoding/binary"
+def encoding.binary : GoString := go!"encoding/binary"
 end pkg_id
 
 namespace encoding.binary
 
-def ByteOrder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.ByteOrder" [])
+def ByteOrder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.ByteOrder" [])
 
 attribute [irreducible] ByteOrder
 
-def AppendByteOrder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.AppendByteOrder" [])
+def AppendByteOrder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.AppendByteOrder" [])
 
 attribute [irreducible] AppendByteOrder
 
-def littleEndian [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.littleEndian" [])
+def littleEndian [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.littleEndian" [])
 
 attribute [irreducible] littleEndian
 
-def bigEndian [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.bigEndian" [])
+def bigEndian [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.bigEndian" [])
 
 attribute [irreducible] bigEndian
 
-def coder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.coder" [])
+def coder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.coder" [])
 
 attribute [irreducible] coder
 
-def decoder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.decoder" [])
+def decoder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.decoder" [])
 
 attribute [irreducible] decoder
 
-def encoder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.encoder" [])
+def encoder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.encoder" [])
 
 attribute [irreducible] encoder
 
-def nativeEndian [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"encoding/binary.nativeEndian" [])
+def nativeEndian [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"encoding/binary.nativeEndian" [])
 
 attribute [irreducible] nativeEndian
 
-axiom MaxVarintLen16 [ffi_syntax] [GoGlobalContext] : val
+axiom MaxVarintLen16 [FfiSyntax] [GoGlobalContext] : val
 
-axiom MaxVarintLen32 [ffi_syntax] [GoGlobalContext] : val
+axiom MaxVarintLen32 [FfiSyntax] [GoGlobalContext] : val
 
-axiom MaxVarintLen64 [ffi_syntax] [GoGlobalContext] : val
+axiom MaxVarintLen64 [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errBufferTooSmall [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBufferTooSmall [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.errBufferTooSmall"
 
-noncomputable def LittleEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LittleEndian [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.LittleEndian"
 
-noncomputable def BigEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BigEndian [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.BigEndian"
 
-noncomputable def structSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def structSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.structSize"
 
-noncomputable def NativeEndian [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NativeEndian [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.NativeEndian"
 
-noncomputable def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.errOverflow"
 
-noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Read"
 
-noncomputable def Decode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Decode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Decode"
 
-noncomputable def decodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeFast [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.decodeFast"
 
-noncomputable def Write [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Write [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Write"
 
-noncomputable def Encode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Encode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Encode"
 
-noncomputable def Append [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Append [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Append"
 
-noncomputable def encodeFast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeFast [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.encodeFast"
 
-noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Size"
 
-noncomputable def dataSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dataSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.dataSize"
 
-noncomputable def sizeof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.sizeof"
 
-noncomputable def intDataSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intDataSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.intDataSize"
 
-noncomputable def ensure [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ensure [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ensure"
 
-noncomputable def AppendUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.AppendUvarint"
 
-noncomputable def PutUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PutUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.PutUvarint"
 
-noncomputable def Uvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uvarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Uvarint"
 
-noncomputable def AppendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.AppendVarint"
 
-noncomputable def PutVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PutVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.PutVarint"
 
-noncomputable def Varint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Varint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Varint"
 
-noncomputable def ReadUvarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ReadUvarint"
 
-noncomputable def ReadVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ReadVarint"
 
 /-- Uint16 returns the uint16 representation of b[0:2].
 
     go: binary.go:69:21 -/
-noncomputable def «littleEndian__Uint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int))))))))))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int))))))))))
+  (App (Val doExecute)
   (Var "$r0"))))))))
 
 /-- PutUint16 stores v into b[0:2].
 
     go: binary.go:75:21 -/
-noncomputable def «littleEndian__PutUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Var "$r0")))))))))))
 
 /-- AppendUint16 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:82:21 -/
-noncomputable def «littleEndian__AppendUint16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (Val do_return)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")))
-  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int))))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1")))]))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint16 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1")))]))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- Uint32 returns the uint32 representation of b[0:4].
 
     go: binary.go:90:21 -/
-noncomputable def «littleEndian__Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(24 : Int))))))))))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(24 : Int))))))))))
+  (App (Val doExecute)
   (Var "$r0"))))))))
 
 /-- PutUint32 stores v into b[0:4].
 
     go: binary.go:96:21 -/
-noncomputable def «littleEndian__PutUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(24 : Int))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(24 : Int))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Var "$r0")))))))))))
 
 /-- AppendUint32 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:105:21 -/
-noncomputable def «littleEndian__AppendUint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (Val do_return)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")))
-  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int))))))
-  (Let "$sl2" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))))
-  (Let "$sl3" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(24 : Int))))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1"))), (KeyedElement none (ElementExpression go.byte (Var "$sl2"))), (KeyedElement none (ElementExpression go.byte (Var "$sl3")))]))))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int))))))
+  (Let "$sl2" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))))
+  (Let "$sl3" (App (Val (GoInstruction (Convert go.uint32 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(24 : Int))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1"))), (KeyedElement none (ElementExpression go.byte (Var "$sl2"))), (KeyedElement none (ElementExpression go.byte (Var "$sl3")))]))))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- Uint64 returns the uint64 representation of b[0:8].
 
     go: binary.go:115:21 -/
-noncomputable def «littleEndian__Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Uint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(24 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 4)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 5)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(40 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 6)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(48 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(56 : Int))))))))))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 4)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 5)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 6)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))))))
+  (App (Val doExecute)
   (Var "$r0"))))))))
 
 /-- PutUint64 stores v into b[0:8].
 
     go: binary.go:122:21 -/
-noncomputable def «littleEndian__PutUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__PutUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(24 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(40 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(48 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(56 : Int))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 6)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 5)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 4)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 7)))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 6)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 5)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 4)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Var "$r0")))))))))))
 
 /-- AppendUint64 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:135:21 -/
-noncomputable def «littleEndian__AppendUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__AppendUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "v"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (Val do_return)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")))
-  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int))))))
-  (Let "$sl2" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int))))))
-  (Let "$sl3" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(24 : Int))))))
-  (Let "$sl4" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))
-  (Let "$sl5" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(40 : Int))))))
-  (Let "$sl6" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(48 : Int))))))
-  (Let "$sl7" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(56 : Int))))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1"))), (KeyedElement none (ElementExpression go.byte (Var "$sl2"))), (KeyedElement none (ElementExpression go.byte (Var "$sl3"))), (KeyedElement none (ElementExpression go.byte (Var "$sl4"))), (KeyedElement none (ElementExpression go.byte (Var "$sl5"))), (KeyedElement none (ElementExpression go.byte (Var "$sl6"))), (KeyedElement none (ElementExpression go.byte (Var "$sl7")))]))))))))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (Let "$sl1" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))
+  (Let "$sl2" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))
+  (Let "$sl3" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))
+  (Let "$sl4" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (Let "$sl5" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))
+  (Let "$sl6" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))
+  (Let "$sl7" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0"))), (KeyedElement none (ElementExpression go.byte (Var "$sl1"))), (KeyedElement none (ElementExpression go.byte (Var "$sl2"))), (KeyedElement none (ElementExpression go.byte (Var "$sl3"))), (KeyedElement none (ElementExpression go.byte (Var "$sl4"))), (KeyedElement none (ElementExpression go.byte (Var "$sl5"))), (KeyedElement none (ElementExpression go.byte (Var "$sl6"))), (KeyedElement none (ElementExpression go.byte (Var "$sl7")))]))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: binary.go:148:21 -/
-noncomputable def «littleEndian__Stringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__Stringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Val #(go!"LittleEndian"))))))
 
 /-- go: binary.go:150:21 -/
-noncomputable def «littleEndian__GoStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «littleEndian__GoStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Val #(go!"binary.LittleEndian"))))))
 
 instance info' : PkgInfo pkg_id.encoding.binary where
-  pkg_imported_pkgs := [pkg_id.errors, pkg_id.io, pkg_id.math, pkg_id.slices, pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.math, pkg_id.slices, pkg_id.sync]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.encoding.binary)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"buffer too small"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"binary: varint overflows a 64-bit integer"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errOverflow))) (Val #())) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errBufferTooSmall))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.io.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.math.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.slices.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errBufferTooSmall go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc LittleEndian littleEndian)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errOverflow go.error)) (Val #()))))))))
 
 namespace ByteOrder
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ByteOrder
 
-@[reducible] def «ByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"PutUint16" (go.signature.Signature [(go.type.SliceType go.byte), go.uint16] false [])), (go.interface_elem.MethodElem go!"PutUint32" (go.signature.Signature [(go.type.SliceType go.byte), go.uint32] false [])), (go.interface_elem.MethodElem go!"PutUint64" (go.signature.Signature [(go.type.SliceType go.byte), go.uint64] false [])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Uint16" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint16])), (go.interface_elem.MethodElem go!"Uint32" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint32])), (go.interface_elem.MethodElem go!"Uint64" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.uint64]))])
+@[reducible] def «ByteOrderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"PutUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [])), (go.InterfaceElem.MethodElem go!"PutUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [])), (go.InterfaceElem.MethodElem go!"PutUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Uint16" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16])), (go.InterfaceElem.MethodElem go!"Uint32" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32])), (go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64]))])
 
-class ByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteOrder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_underlying : go.UnderlyingDirectedEq ByteOrder «ByteOrderⁱᵐᵖˡ»
 
 attribute [instance] ByteOrder_Assumptions.ByteOrder_underlying
 
 namespace AppendByteOrder
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end AppendByteOrder
 
-@[reducible] def «AppendByteOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"AppendUint16" (go.signature.Signature [(go.type.SliceType go.byte), go.uint16] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"AppendUint32" (go.signature.Signature [(go.type.SliceType go.byte), go.uint32] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"AppendUint64" (go.signature.Signature [(go.type.SliceType go.byte), go.uint64] false [(go.type.SliceType go.byte)])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
+@[reducible] def «AppendByteOrderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AppendUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class AppendByteOrder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class AppendByteOrder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AppendByteOrder_underlying : go.UnderlyingDirectedEq AppendByteOrder «AppendByteOrderⁱᵐᵖˡ»
 
 attribute [instance] AppendByteOrder_Assumptions.AppendByteOrder_underlying
 
 namespace littleEndian
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end littleEndian
 
-@[reducible] def littleEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def littleEndian'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def littleEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def littleEndian'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   littleEndian'fds_unsealed
 
-instance equals_unfold_littleEndian [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_littleEndian [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold littleEndian'fds littleEndian'fds_unsealed :=
   ⟨by unfold littleEndian'fds; rfl⟩
 
-@[reducible] def «littleEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType littleEndian'fds)
+@[reducible] def «littleEndianⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType littleEndian'fds)
 
-class littleEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class littleEndian_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   littleEndian_type_repr : go.TypeReprUnderlying «littleEndianⁱᵐᵖˡ» littleEndian.t
   littleEndian_underlying : go.UnderlyingDirectedEq littleEndian «littleEndianⁱᵐᵖˡ»
   littleEndian_AppendUint16_unfold : MethodUnfold littleEndian go!"AppendUint16" «littleEndian__AppendUint16ⁱᵐᵖˡ»
@@ -475,27 +475,27 @@ class littleEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [
   littleEndian_Uint16_unfold : MethodUnfold littleEndian go!"Uint16" «littleEndian__Uint16ⁱᵐᵖˡ»
   littleEndian_Uint32_unfold : MethodUnfold littleEndian go!"Uint32" «littleEndian__Uint32ⁱᵐᵖˡ»
   littleEndian_Uint64_unfold : MethodUnfold littleEndian go!"Uint64" «littleEndian__Uint64ⁱᵐᵖˡ»
-  littleEndian'ptr_AppendUint16_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"AppendUint16" (LamV "$r"
+  littleEndian'ptr_AppendUint16_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"AppendUint16" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"AppendUint16"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_AppendUint32_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"AppendUint32" (LamV "$r"
+  littleEndian'ptr_AppendUint32_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"AppendUint32" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"AppendUint32"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_AppendUint64_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"AppendUint64" (LamV "$r"
+  littleEndian'ptr_AppendUint64_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"AppendUint64" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"AppendUint64"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_GoString_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"GoString" (LamV "$r"
+  littleEndian'ptr_GoString_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"GoString" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"GoString"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_PutUint16_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"PutUint16" (LamV "$r"
+  littleEndian'ptr_PutUint16_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"PutUint16" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"PutUint16"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_PutUint32_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"PutUint32" (LamV "$r"
+  littleEndian'ptr_PutUint32_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"PutUint32" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"PutUint32"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_PutUint64_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"PutUint64" (LamV "$r"
+  littleEndian'ptr_PutUint64_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"PutUint64" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"PutUint64"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_String_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"String" (LamV "$r"
+  littleEndian'ptr_String_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"String"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_Uint16_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"Uint16" (LamV "$r"
+  littleEndian'ptr_Uint16_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"Uint16" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"Uint16"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_Uint32_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"Uint32" (LamV "$r"
+  littleEndian'ptr_Uint32_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"Uint32" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"Uint32"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
-  littleEndian'ptr_Uint64_unfold : MethodUnfold (go.type.PointerType littleEndian) go!"Uint64" (LamV "$r"
+  littleEndian'ptr_Uint64_unfold : MethodUnfold (go.GoType.PointerType littleEndian) go!"Uint64" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve littleEndian go!"Uint64"))) (App (Val (GoInstruction (GoLoad littleEndian))) (Var "$r"))))
 
 attribute [instance] littleEndian_Assumptions.littleEndian_type_repr
@@ -524,27 +524,27 @@ attribute [instance] littleEndian_Assumptions.littleEndian_type_repr
   littleEndian_Assumptions.littleEndian'ptr_Uint64_unfold
 
 namespace bigEndian
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end bigEndian
 
-@[reducible] def bigEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def bigEndian'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def bigEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def bigEndian'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   bigEndian'fds_unsealed
 
-instance equals_unfold_bigEndian [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_bigEndian [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold bigEndian'fds bigEndian'fds_unsealed :=
   ⟨by unfold bigEndian'fds; rfl⟩
 
-@[reducible] def «bigEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType bigEndian'fds)
+@[reducible] def «bigEndianⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType bigEndian'fds)
 
-class bigEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bigEndian_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bigEndian_type_repr : go.TypeReprUnderlying «bigEndianⁱᵐᵖˡ» bigEndian.t
   bigEndian_underlying : go.UnderlyingDirectedEq bigEndian «bigEndianⁱᵐᵖˡ»
 
@@ -552,32 +552,32 @@ attribute [instance] bigEndian_Assumptions.bigEndian_type_repr
   bigEndian_Assumptions.bigEndian_underlying
 
 namespace coder
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   order' : ByteOrder.t
   buf' : slice.t
   offset' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end coder
 
-@[reducible] def coder'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def coder'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"order" ByteOrder),
-(go.field_decl.FieldDecl go!"buf" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"offset" go.int)]
 
-@[irreducible] def coder'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def coder'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   coder'fds_unsealed
 
-instance equals_unfold_coder [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_coder [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold coder'fds coder'fds_unsealed :=
   ⟨by unfold coder'fds; rfl⟩
 
-@[reducible] def «coderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType coder'fds)
+@[reducible] def «coderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType coder'fds)
 
-class coder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class coder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   coder_type_repr : go.TypeReprUnderlying «coderⁱᵐᵖˡ» coder.t
   coder_underlying : go.UnderlyingDirectedEq coder «coderⁱᵐᵖˡ»
   coder_get_order : ∀ (x : coder.t), go.IsGoStepPureDetTagged under (StructFieldGet «coderⁱᵐᵖˡ» go!"order") #x (Val #(x.order'))
@@ -597,52 +597,52 @@ attribute [instance] coder_Assumptions.coder_type_repr
   coder_Assumptions.coder_set_offset
 
 namespace decoder
-abbrev t [ffi_syntax] : Type := coder.t
+abbrev t [FfiSyntax] : Type := coder.t
 end decoder
 
-@[reducible] def «decoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «decoderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   coder
 
-class decoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class decoder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   decoder_underlying : go.UnderlyingDirectedEq decoder «decoderⁱᵐᵖˡ»
 
 attribute [instance] decoder_Assumptions.decoder_underlying
 
 namespace encoder
-abbrev t [ffi_syntax] : Type := coder.t
+abbrev t [FfiSyntax] : Type := coder.t
 end encoder
 
-@[reducible] def «encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «encoderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   coder
 
-class encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class encoder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   encoder_underlying : go.UnderlyingDirectedEq encoder «encoderⁱᵐᵖˡ»
 
 attribute [instance] encoder_Assumptions.encoder_underlying
 
 namespace nativeEndian
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   littleEndian' : littleEndian.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end nativeEndian
 
-@[reducible] def nativeEndian'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nativeEndian'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"littleEndian" littleEndian)]
 
-@[irreducible] def nativeEndian'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def nativeEndian'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nativeEndian'fds_unsealed
 
-instance equals_unfold_nativeEndian [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_nativeEndian [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nativeEndian'fds nativeEndian'fds_unsealed :=
   ⟨by unfold nativeEndian'fds; rfl⟩
 
-@[reducible] def «nativeEndianⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType nativeEndian'fds)
+@[reducible] def «nativeEndianⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nativeEndian'fds)
 
-class nativeEndian_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nativeEndian_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nativeEndian_type_repr : go.TypeReprUnderlying «nativeEndianⁱᵐᵖˡ» nativeEndian.t
   nativeEndian_underlying : go.UnderlyingDirectedEq nativeEndian «nativeEndianⁱᵐᵖˡ»
   nativeEndian_get_littleEndian : ∀ (x : nativeEndian.t), go.IsGoStepPureDetTagged under (StructFieldGet «nativeEndianⁱᵐᵖˡ» go!"littleEndian") #x (Val #(x.littleEndian'))
@@ -653,7 +653,7 @@ attribute [instance] nativeEndian_Assumptions.nativeEndian_type_repr
   nativeEndian_Assumptions.nativeEndian_get_littleEndian
   nativeEndian_Assumptions.nativeEndian_set_littleEndian
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_instance : ByteOrder_Assumptions
   AppendByteOrder_instance : AppendByteOrder_Assumptions
   littleEndian_instance : littleEndian_Assumptions

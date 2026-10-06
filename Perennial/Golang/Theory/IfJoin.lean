@@ -41,15 +41,15 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section lemma
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
 /-- Joining the branches of an `if:` at the assertion `asn`: it suffices to
 prove `WP (if: c then e1 else e2) {{ asn }}` and `∀ v, asn v -∗ Φ v`. -/
-theorem wp_if_join (asn : val → IProp GF) {c : val} {e1 e2 : expr} {Φ : val → IProp GF} :
-    WP (expr.If (Val c) e1 e2) {{ asn }} ⊢
-      (∀ v, asn v -∗ Φ v) -∗ WP (expr.If (Val c) e1 e2) {{ Φ }} :=
+theorem wp_if_join (asn : val → IProp GF) {c : val} {e1 e2 : Expr} {Φ : val → IProp GF} :
+    WP (Expr.If (Val c) e1 e2) {{ asn }} ⊢
+      (∀ v, asn v -∗ Φ v) -∗ WP (Expr.If (Val c) e1 e2) {{ Φ }} :=
   wp_wand
 
 end lemma
@@ -79,13 +79,13 @@ open Lean Elab Tactic Meta in
 /-! ## Examples -/
 
 section examples
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Both branches store to `l`; the join assertion forgets which value. -/
-example (b : Bool) (l : loc) (x : w64) (Φ : val → IProp GF) :
+example (b : Bool) (l : Loc) (x : w64) (Φ : val → IProp GF) :
     l ↦ x ∗ (∀ y : w64, l ↦ y -∗ ⌜uint.Z y ≤ 2⌝ -∗ Φ #y) ⊢
       WP gl((if: #b then #l <-[go.uint64] #(W64 1) else #l <-[go.uint64] #(W64 2)) ;;
         ![go.uint64] #l) {{ Φ }} := by

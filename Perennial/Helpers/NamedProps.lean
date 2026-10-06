@@ -89,7 +89,7 @@ def changeHypType {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (ivar : IVarId)
     ⟨_, Hyps.mkSep l r⟩
 
 /-- Is `e` (syntactically) `named n P`? Returns `(n, P)`. -/
-def isNamed? (e : Expr) : Option (String × Expr) :=
+def isNamed? (e : Lean.Expr) : Option (String × Lean.Expr) :=
   let e := e.consumeMData
   if e.isAppOfArity ``named 3 then
     match e.getArg! 1 with
@@ -97,17 +97,17 @@ def isNamed? (e : Expr) : Option (String × Expr) :=
     | _ => none
   else none
 
-def isBIExists (e : Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.exists 4
-def isBISep (e : Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.sep 4
+def isBIExists (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.exists 4
+def isBISep (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.sep 4
 
 /-- `▷ Q` as `(▷ ·, Q)`. -/
-def isLater? (e : Expr) : Option (Expr × Expr) :=
+def isLater? (e : Lean.Expr) : Option (Lean.Expr × Lean.Expr) :=
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.later 3 then some (e.appFn!, e.appArg!) else none
 
 /-- Unfold definitions at the head of `e` until it is a `named`, `∃` or `∗`
 (or nothing can be unfolded). Irreducible definitions are not unfolded. -/
-partial def unfoldNamedHead (e : Expr) (fuel : Nat := 64) : MetaM Expr := do
+partial def unfoldNamedHead (e : Lean.Expr) (fuel : Nat := 64) : MetaM Lean.Expr := do
   if fuel == 0 then return e
   let e ← instantiateMVars e
   if (isNamed? e).isSome || isBIExists e || isBISep e then return e
@@ -162,7 +162,7 @@ def parsePat (s : String) : TacticM (TSyntax `icasesPat) := do
   | .error err => throwError "cannot parse the cases pattern {repr s}: {err}"
 
 /-- Look up an Iris hypothesis by name in the main goal. -/
-def findIrisHyp (h : Name) : TacticM (IrisGoal × IVarId × Expr) := do
+def findIrisHyp (h : Name) : TacticM (IrisGoal × IVarId × Lean.Expr) := do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType))
     | throwError "not in the Iris proof mode"
   let some (ivar, ty) := g.hyps.find? h | throwError "hypothesis {h} not found"
@@ -170,7 +170,7 @@ def findIrisHyp (h : Name) : TacticM (IrisGoal × IVarId × Expr) := do
 
 /-- Hypotheses `H : "H" ∷ P` (whose name is the one they carry). -/
 def collectNamedHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (names : List String) :
-    ∀ {e}, Hyps bi e → List (IVarId × Expr)
+    ∀ {e}, Hyps bi e → List (IVarId × Lean.Expr)
   | _, .emp _ => []
   | _, .hyp _ name ivar _ ty _ =>
     match isNamed? ty with
@@ -195,7 +195,7 @@ def stripNamedHyps (names : List String) : TacticM Unit := do
   (← getMainGoal).setType (IrisGoal.toExpr { g with e := st.1, hyps := st.2 })
 
 /-- Unfold the head of hypothesis `h`'s type (see `unfoldNamedHead`). -/
-def unfoldHypHead (h : Name) : TacticM Expr := do
+def unfoldHypHead (h : Name) : TacticM Lean.Expr := do
   let (g, ivar, ty) ← findIrisHyp h
   -- under a later `▷ Q`: unfold `Q`
   let ty' ← match isLater? ty with
@@ -210,7 +210,7 @@ def unfoldHypHead (h : Name) : TacticM Expr := do
   return ty'
 
 /-- The binder name of an existential `∃ x, P` (as a usable identifier). -/
-def existsBinderName (e : Expr) : MetaM Name := do
+def existsBinderName (e : Lean.Expr) : MetaM Name := do
   let e := e.consumeMData
   let body := e.getArg! 3
   match body with
@@ -242,7 +242,7 @@ partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : Tactic
 
 /-- `iNamedCore` on the hypothesis `h` whose (unfolded, possibly under a later)
 type is `ty`. -/
-partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : Expr) : TacticM Unit :=
+partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : Lean.Expr) : TacticM Unit :=
   withMainContext do
   -- a single named hypothesis
   if let some (n, _) := isNamed? ty then
@@ -376,7 +376,7 @@ elab "iFrameNamed" : tactic => withMainContext do
     | throwError "not in the Iris proof mode"
   let mut names : Array Name := #[]
   let goal ← instantiateMVars g.goal
-  let collect (e : Expr) : StateT (Array Name) MetaM Unit := do
+  let collect (e : Lean.Expr) : StateT (Array Name) MetaM Unit := do
     e.forEach' fun s => do
       if let some (n, _) := isNamed? s then
         let n := if n.startsWith "#" || n.startsWith "%" then (n.drop 1).toString else n

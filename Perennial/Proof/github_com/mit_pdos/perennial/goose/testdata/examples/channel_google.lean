@@ -26,7 +26,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
 /-! ### Pure part -/
 
-def googleExpected (q : go_string) : List go_string :=
+def googleExpected (q : GoString) : List GoString :=
   [q ++ go!".html", q ++ go!".png", q ++ go!".mp4"]
 
 inductive Kind where
@@ -35,21 +35,21 @@ inductive Kind where
 
 open Kind
 
-def valueOf (q : go_string) (k : Kind) : go_string :=
+def valueOf (q : GoString) (k : Kind) : GoString :=
   match k with
   | KWeb => q ++ go!".html"
   | KImg => q ++ go!".png"
   | KVid => q ++ go!".mp4"
 
-def PureContractOf (q : go_string) (k : Kind) : go_string → Prop :=
+def PureContractOf (q : GoString) (k : Kind) : GoString → Prop :=
   fun v => v = valueOf q k
 
-theorem valueOf_inj (q : go_string) (k1 k2 : Kind) (h : valueOf q k1 = valueOf q k2) :
+theorem valueOf_inj (q : GoString) (k1 k2 : Kind) (h : valueOf q k1 = valueOf q k2) :
     k1 = k2 := by
   cases k1 <;> cases k2 <;> simp only [valueOf, List.append_cancel_left_eq] at h <;>
     first | rfl | exact absurd h (by decide)
 
-theorem pureContractOf_inj (q : go_string) (k1 k2 : Kind) :
+theorem pureContractOf_inj (q : GoString) (k1 k2 : Kind) :
     PureContractOf q k1 = PureContractOf q k2 → k1 = k2 := by
   intro Heq
   have h := congrFun Heq (valueOf q k1)
@@ -61,16 +61,16 @@ def pendingk : List Kind := [KWeb, KImg, KVid]
 theorem pendingk_nodup : pendingk.Nodup := by decide
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
 set_option goose.wp.extras true
 
-theorem wp_Web (q : go_string) :
+theorem wp_Web (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Web)) (Val #q))
     {{ RET #(q ++ go!".html"); True }} := by
@@ -78,7 +78,7 @@ theorem wp_Web (q : go_string) :
   wp_auto
   wp_end
 
-theorem wp_Image (q : go_string) :
+theorem wp_Image (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Image)) (Val #q))
     {{ RET #(q ++ go!".png"); True }} := by
@@ -86,7 +86,7 @@ theorem wp_Image (q : go_string) :
   wp_auto
   wp_end
 
-theorem wp_Video (q : go_string) :
+theorem wp_Video (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Video)) (Val #q))
     {{ RET #(q ++ go!".mp4"); True }} := by
@@ -94,33 +94,33 @@ theorem wp_Video (q : go_string) :
   wp_auto
   wp_end
 
-def contractOf (q : go_string) (k : Kind) : go_string → IProp GF :=
+def contractOf (q : GoString) (k : Kind) : GoString → IProp GF :=
   fun v => iprop(⌜PureContractOf q k v⌝)
 
-theorem contractOf_sound (q : go_string) (k : Kind) (v : go_string) :
+theorem contractOf_sound (q : GoString) (k : Kind) (v : GoString) :
     contractOf (GF := GF) q k v ⊢ ⌜v = valueOf q k⌝ := by
   unfold contractOf PureContractOf
   iintro %Hv
   ipureintro
   exact Hv
 
-theorem mem_map_contract_of (q : go_string) (remk : List Kind) (P : go_string → IProp GF) :
+theorem mem_map_contract_of (q : GoString) (remk : List Kind) (P : GoString → IProp GF) :
     P ∈ remk.map (contractOf q) → ∃ k, k ∈ remk ∧ P = contractOf q k := by
   intro HP
   obtain ⟨k, Hk, rfl⟩ := List.mem_map.1 HP
   exact ⟨k, Hk, rfl⟩
 
 set_option maxHeartbeats 400000 in
-theorem wp_Google (q : go_string) :
+theorem wp_Google (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Google)) (Val #q))
     {{ (sl : slice.t), RET #sl;
-        ∃ xs : List go_string, sl ↦* xs ∗ ⌜xs.Perm (googleExpected q)⌝ }} := by
+        ∃ xs : List GoString, sl ↦* xs ∗ ⌜xs.Perm (googleExpected q)⌝ }} := by
   wp_start
   wp_auto
-  wp_apply chan.wp_make2 (V := go_string) (W64 3) $$ [] as %c %γch ⟨#Hchan, %Hcap3, Hown⟩
+  wp_apply chan.wp_make2 (V := GoString) (W64 3) $$ [] as %c %γch ⟨#Hchan, %Hcap3, Hown⟩
   · ipureintro; decide
-  imod start_future (V := go_string) c γch (.Buffered []) (.inr rfl) $$ Hchan Hown
+  imod start_future (V := GoString) c γch (.Buffered []) (.inr rfl) $$ Hchan Hown
     with ⟨%γmf, #Hmf, HAwait⟩
   imod future_alloc_promise γmf c (contractOf q KWeb) [] $$ Hmf HAwait
     with ⟨Hprom_web, HAwait⟩
@@ -165,13 +165,13 @@ theorem wp_Google (q : go_string) :
       unfold contractOf PureContractOf
       ipureintro; rfl
     itrivial
-  wp_apply wp_slice_make3 (V := go_string) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
-  ihave HI : (∃ (xs : List go_string) (donek remk : List Kind) (sl0 : slice.t),
+  wp_apply wp_slice_make3 (V := GoString) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
+  ihave HI : (∃ (xs : List GoString) (donek remk : List Kind) (sl0 : slice.t),
       "i" ∷ i_ptr ↦ W64 xs.length ∗
       "results" ∷ results_ptr ↦ sl0 ∗
       "Hsl" ∷ sl0 ↦* xs ∗
-      "Hcap" ∷ ownSliceCap go_string sl0 (DFrac.own 1) ∗
-      "HAwait" ∷ Await (V := go_string) γmf (remk.map (contractOf q)) ∗
+      "Hcap" ∷ ownSliceCap GoString sl0 (DFrac.own 1) ∗
+      "HAwait" ∷ Await (V := GoString) γmf (remk.map (contractOf q)) ∗
       "%Hi" ∷ ⌜xs.length ≤ 3⌝ ∗
       "%Hrem" ∷ ⌜remk.length = 3 - xs.length⌝ ∗
       "%Hsplit" ∷ ⌜pendingk.Perm (donek ++ remk)⌝ ∗
@@ -189,7 +189,7 @@ theorem wp_Google (q : go_string) :
     obtain ⟨k, remk3, rfl, rfl, rfl⟩ := List.map_eq_cons_iff.1 Hrest
     ihave %Hv := contractOf_sound q k v $$ HPv
     subst Hv
-    wp_apply wp_slice_literal (V := go_string) [valueOf q k]
+    wp_apply wp_slice_literal (V := GoString) [valueOf q k]
     isplitr
     · ipureintro; rfl
     iintro %sl1 ⟨Hsl1, -⟩

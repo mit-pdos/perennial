@@ -23,139 +23,139 @@ namespace testing
 namespace F
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : testing.Assumptions]
 
 instance F_typed_pointsto :
     TypedPointsto (GF := GF) testing.F.t where
-  typed_pointsto_def l v dq := iprop(
-    "common" ∷ typed_pointsto (struct_field_ref testing.F.t go!"common" l) v.common' dq ∗
-    "fstate" ∷ typed_pointsto (struct_field_ref testing.F.t go!"fstate" l) v.fstate' dq ∗
-    "tstate" ∷ typed_pointsto (struct_field_ref testing.F.t go!"tstate" l) v.tstate' dq ∗
-    "inFuzzFn" ∷ typed_pointsto (struct_field_ref testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq ∗
-    "corpus" ∷ typed_pointsto (struct_field_ref testing.F.t go!"corpus" l) v.corpus' dq ∗
-    "result" ∷ typed_pointsto (struct_field_ref testing.F.t go!"result" l) v.result' dq ∗
-    "fuzzCalled" ∷ typed_pointsto (struct_field_ref testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "common" ∷ typedPointsto (structFieldRef testing.F.t go!"common" l) v.common' dq ∗
+    "fstate" ∷ typedPointsto (structFieldRef testing.F.t go!"fstate" l) v.fstate' dq ∗
+    "tstate" ∷ typedPointsto (structFieldRef testing.F.t go!"tstate" l) v.tstate' dq ∗
+    "inFuzzFn" ∷ typedPointsto (structFieldRef testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq ∗
+    "corpus" ∷ typedPointsto (structFieldRef testing.F.t go!"corpus" l) v.corpus' dq ∗
+    "result" ∷ typedPointsto (structFieldRef testing.F.t go!"result" l) v.result' dq ∗
+    "fuzzCalled" ∷ typedPointsto (structFieldRef testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance F_into_val_typed :
     IntoValTypedUnderlying (GF := GF) testing.F.t testing.«Fⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance F_access_load_common (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_common (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"common" l) v.common' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"common" l) v.common' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"common" l) v.common' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"common" l) v.common' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_common (l : loc) (v : testing.F.t) (common' : testing.common.t) :
+instance F_access_store_common (l : Loc) (v : testing.F.t) (common' : testing.common.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"common" l) v.common' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"common" l) common' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with common' := common' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"common" l) v.common' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"common" l) common' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with common' := common' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_fstate (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_fstate (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fstate" l) v.fstate' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fstate" l) v.fstate' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"fstate" l) v.fstate' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"fstate" l) v.fstate' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_fstate (l : loc) (v : testing.F.t) (fstate' : loc) :
+instance F_access_store_fstate (l : Loc) (v : testing.F.t) (fstate' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fstate" l) v.fstate' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"fstate" l) fstate' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fstate' := fstate' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"fstate" l) v.fstate' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"fstate" l) fstate' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fstate' := fstate' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_tstate (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_tstate (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"tstate" l) v.tstate' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"tstate" l) v.tstate' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"tstate" l) v.tstate' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"tstate" l) v.tstate' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_tstate (l : loc) (v : testing.F.t) (tstate' : loc) :
+instance F_access_store_tstate (l : Loc) (v : testing.F.t) (tstate' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"tstate" l) v.tstate' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"tstate" l) tstate' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tstate' := tstate' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"tstate" l) v.tstate' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"tstate" l) tstate' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tstate' := tstate' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_inFuzzFn (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_inFuzzFn (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"inFuzzFn" l) v.inFuzzFn' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_inFuzzFn (l : loc) (v : testing.F.t) (inFuzzFn' : Bool) :
+instance F_access_store_inFuzzFn (l : Loc) (v : testing.F.t) (inFuzzFn' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"inFuzzFn" l) v.inFuzzFn' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"inFuzzFn" l) inFuzzFn' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with inFuzzFn' := inFuzzFn' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"inFuzzFn" l) v.inFuzzFn' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"inFuzzFn" l) inFuzzFn' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with inFuzzFn' := inFuzzFn' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_corpus (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_corpus (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"corpus" l) v.corpus' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"corpus" l) v.corpus' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"corpus" l) v.corpus' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"corpus" l) v.corpus' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_corpus (l : loc) (v : testing.F.t) (corpus' : slice.t) :
+instance F_access_store_corpus (l : Loc) (v : testing.F.t) (corpus' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"corpus" l) v.corpus' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"corpus" l) corpus' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with corpus' := corpus' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"corpus" l) v.corpus' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"corpus" l) corpus' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with corpus' := corpus' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_result (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_result (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"result" l) v.result' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"result" l) v.result' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"result" l) v.result' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"result" l) v.result' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_result (l : loc) (v : testing.F.t) (result' : testing.fuzzResult.t) :
+instance F_access_store_result (l : Loc) (v : testing.F.t) (result' : testing.fuzzResult.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"result" l) v.result' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"result" l) result' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with result' := result' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"result" l) v.result' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"result" l) result' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with result' := result' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_load_fuzzCalled (l : loc) (v : testing.F.t) (dq : DFrac) :
+instance F_access_load_fuzzCalled (l : Loc) (v : testing.F.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq)
+      (typedPointsto (structFieldRef testing.F.t go!"fuzzCalled" l) v.fuzzCalled' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance F_access_store_fuzzCalled (l : loc) (v : testing.F.t) (fuzzCalled' : Bool) :
+instance F_access_store_fuzzCalled (l : Loc) (v : testing.F.t) (fuzzCalled' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.F.t go!"fuzzCalled" l) v.fuzzCalled' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.F.t go!"fuzzCalled" l) fuzzCalled' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fuzzCalled' := fuzzCalled' } : testing.F.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.F.t go!"fuzzCalled" l) v.fuzzCalled' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.F.t go!"fuzzCalled" l) fuzzCalled' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fuzzCalled' := fuzzCalled' } : testing.F.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -165,71 +165,71 @@ end F
 namespace T
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : testing.Assumptions]
 
 instance T_typed_pointsto :
     TypedPointsto (GF := GF) testing.T.t where
-  typed_pointsto_def l v dq := iprop(
-    "common" ∷ typed_pointsto (struct_field_ref testing.T.t go!"common" l) v.common' dq ∗
-    "denyParallel" ∷ typed_pointsto (struct_field_ref testing.T.t go!"denyParallel" l) v.denyParallel' dq ∗
-    "tstate" ∷ typed_pointsto (struct_field_ref testing.T.t go!"tstate" l) v.tstate' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "common" ∷ typedPointsto (structFieldRef testing.T.t go!"common" l) v.common' dq ∗
+    "denyParallel" ∷ typedPointsto (structFieldRef testing.T.t go!"denyParallel" l) v.denyParallel' dq ∗
+    "tstate" ∷ typedPointsto (structFieldRef testing.T.t go!"tstate" l) v.tstate' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance T_into_val_typed :
     IntoValTypedUnderlying (GF := GF) testing.T.t testing.«Tⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance T_access_load_common (l : loc) (v : testing.T.t) (dq : DFrac) :
+instance T_access_load_common (l : Loc) (v : testing.T.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"common" l) v.common' dq)
-      (typed_pointsto (struct_field_ref testing.T.t go!"common" l) v.common' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.T.t go!"common" l) v.common' dq)
+      (typedPointsto (structFieldRef testing.T.t go!"common" l) v.common' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance T_access_store_common (l : loc) (v : testing.T.t) (common' : testing.common.t) :
+instance T_access_store_common (l : Loc) (v : testing.T.t) (common' : testing.common.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"common" l) v.common' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.T.t go!"common" l) common' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with common' := common' } : testing.T.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.T.t go!"common" l) v.common' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.T.t go!"common" l) common' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with common' := common' } : testing.T.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance T_access_load_denyParallel (l : loc) (v : testing.T.t) (dq : DFrac) :
+instance T_access_load_denyParallel (l : Loc) (v : testing.T.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"denyParallel" l) v.denyParallel' dq)
-      (typed_pointsto (struct_field_ref testing.T.t go!"denyParallel" l) v.denyParallel' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.T.t go!"denyParallel" l) v.denyParallel' dq)
+      (typedPointsto (structFieldRef testing.T.t go!"denyParallel" l) v.denyParallel' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance T_access_store_denyParallel (l : loc) (v : testing.T.t) (denyParallel' : Bool) :
+instance T_access_store_denyParallel (l : Loc) (v : testing.T.t) (denyParallel' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"denyParallel" l) v.denyParallel' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.T.t go!"denyParallel" l) denyParallel' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with denyParallel' := denyParallel' } : testing.T.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.T.t go!"denyParallel" l) v.denyParallel' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.T.t go!"denyParallel" l) denyParallel' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with denyParallel' := denyParallel' } : testing.T.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance T_access_load_tstate (l : loc) (v : testing.T.t) (dq : DFrac) :
+instance T_access_load_tstate (l : Loc) (v : testing.T.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"tstate" l) v.tstate' dq)
-      (typed_pointsto (struct_field_ref testing.T.t go!"tstate" l) v.tstate' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef testing.T.t go!"tstate" l) v.tstate' dq)
+      (typedPointsto (structFieldRef testing.T.t go!"tstate" l) v.tstate' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance T_access_store_tstate (l : loc) (v : testing.T.t) (tstate' : loc) :
+instance T_access_store_tstate (l : Loc) (v : testing.T.t) (tstate' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref testing.T.t go!"tstate" l) v.tstate' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref testing.T.t go!"tstate" l) tstate' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tstate' := tstate' } : testing.T.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.T.t go!"tstate" l) v.tstate' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.T.t go!"tstate" l) tstate' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tstate' := tstate' } : testing.T.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

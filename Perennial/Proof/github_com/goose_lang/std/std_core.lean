@@ -51,9 +51,9 @@ local macro "slice_index_if" : tactic =>
   `(tactic| (rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]))
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : github_com.goose_lang.std.std_core.Assumptions]
 
@@ -63,7 +63,7 @@ instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.github_com.goose_lang.std.std_core :=
   build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.github_com.goose_lang.std.std_core get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))

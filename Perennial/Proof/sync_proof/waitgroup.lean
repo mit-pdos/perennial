@@ -128,9 +128,9 @@ theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
   unfold enc; decide
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -155,30 +155,30 @@ instance ownWaitGroupWaitToken_timeless (γ : WaitGroupNames) :
     Timeless (ownWaitGroupWaitToken (GF := GF) γ) := by
   rw [ownWaitGroupWaitToken_unseal]; unfold ownWaitGroupWaitTokenDef; infer_instance
 
-abbrev wgState (wg : loc) : loc := struct_field_ref WaitGroup.t go!"state" wg
-abbrev wgSema (wg : loc) : loc := struct_field_ref WaitGroup.t go!"sema" wg
+abbrev wgState (wg : Loc) : Loc := structFieldRef WaitGroup.t go!"state" wg
+abbrev wgSema (wg : Loc) : Loc := structFieldRef WaitGroup.t go!"sema" wg
 
 /-- The second half of the state, kept in the invariant unless the counter is
 zero and there are waiters (in which case `Add` owns it while waking them). -/
-def wgPtsto2 (wg : loc) (wait counter : w32) : IProp GF :=
+def wgPtsto2 (wg : Loc) (wait counter : w32) : IProp GF :=
   if counter = W32 0 ∧ wait ≠ W32 0 then iprop(True)
   else sync.atomic.ownUint64 (wgState (GF := GF) wg) (DFrac.own (1 : Qp).half) (enc wait counter)
 
-instance wgPtsto2_timeless (wg : loc) (wait counter : w32) :
+instance wgPtsto2_timeless (wg : Loc) (wait counter : w32) :
     Timeless (wgPtsto2 (GF := GF) wg wait counter) := by
   unfold wgPtsto2; split <;> infer_instance
 
-theorem wgPtsto2_true (wg : loc) (wait counter : w32) (h : counter = W32 0 ∧ wait ≠ W32 0) :
+theorem wgPtsto2_true (wg : Loc) (wait counter : w32) (h : counter = W32 0 ∧ wait ≠ W32 0) :
     wgPtsto2 (GF := GF) wg wait counter = iprop(True) := by
   unfold wgPtsto2; simp only [h, ne_eq, not_false_eq_true, and_self, ↓reduceIte]
 
-theorem wgPtsto2_false (wg : loc) (wait counter : w32) (h : ¬ (counter = W32 0 ∧ wait ≠ W32 0)) :
+theorem wgPtsto2_false (wg : Loc) (wait counter : w32) (h : ¬ (counter = W32 0 ∧ wait ≠ W32 0)) :
     wgPtsto2 (GF := GF) wg wait counter =
       sync.atomic.ownUint64 (wgState (GF := GF) wg) (DFrac.own (1 : Qp).half) (enc wait counter) := by
   unfold wgPtsto2; simp only [h, ↓reduceIte]
 
 /-- The body of Rocq `isWaitGroupInv`. -/
-abbrev wgInv (wg : loc) (γ : WaitGroupNames) : IProp GF :=
+abbrev wgInv (wg : Loc) (γ : WaitGroupNames) : IProp GF :=
   iprop(∃ (counter wait sema : w32) (unfinished_waiters possible_waiters : Nat),
     "Hsema" ∷ ownSema γ.semaGn sema ∗
     "Hsema_zerotoks" ∷ ownToks γ.zerostateGn (uint.nat sema) ∗
@@ -199,21 +199,21 @@ abbrev wgInv (wg : loc) (γ : WaitGroupNames) : IProp GF :=
 
 set_option synthInstance.maxSize 2000 in
 set_option synthInstance.maxHeartbeats 200000 in
-instance wgInv_timeless (wg : loc) (γ : WaitGroupNames) : Timeless (wgInv (GF := GF) wg γ) := by
+instance wgInv_timeless (wg : Loc) (γ : WaitGroupNames) : Timeless (wgInv (GF := GF) wg γ) := by
   unfold wgInv named; infer_instance
 
 /-- Rocq `isWaitGroupInv` (local). -/
-abbrev isWaitGroupInv (wg : loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
+abbrev isWaitGroupInv (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   inv (N.@"wg") (wgInv wg γ)
 
-def isWaitGroupDef (wg : loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
+def isWaitGroupDef (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   iprop("#Hsem" ∷ isSema (wgSema (GF := GF) wg) γ.semaGn (N.@"sema") ∗
     "#Hinv" ∷ isWaitGroupInv wg γ N)
-@[irreducible] def isWaitGroup (wg : loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
+@[irreducible] def isWaitGroup (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   isWaitGroupDef wg γ N
 theorem isWaitGroup_unseal : @isWaitGroup = @isWaitGroupDef := by
   funext; with_unfolding_all rfl
-instance isWaitGroup_persistent (wg : loc) (γ : WaitGroupNames) (N : Namespace) :
+instance isWaitGroup_persistent (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     Persistent (isWaitGroup (GF := GF) wg γ N) := by
   rw [isWaitGroup_unseal]; unfold isWaitGroupDef named; infer_instance
 
@@ -227,7 +227,7 @@ instance ownWaitGroup_timeless (γ : WaitGroupNames) (counter : w32) :
     Timeless (ownWaitGroup (GF := GF) γ counter) := by
   rw [ownWaitGroup_unseal]; unfold ownWaitGroupDef; infer_instance
 
-theorem ownUint64_halves (u : loc) (v : w64) :
+theorem ownUint64_halves (u : Loc) (v : w64) :
     sync.atomic.ownUint64 (GF := GF) u (DFrac.own 1) v ⊣⊢
       sync.atomic.ownUint64 u (DFrac.own (1 : Qp).half) v ∗
       sync.atomic.ownUint64 u (DFrac.own (1 : Qp).half) v := by
@@ -253,7 +253,7 @@ theorem mask_ndot_sub (N : Namespace) (x : String) : (↑(N.@x) : CoPset) ⊆ �
   nclose_subseteq N x
 
 /-- Prepare to `Wait()`. -/
-theorem alloc_wait_token (wg : loc) (γ : WaitGroupNames) (N : Namespace) (w : Int)
+theorem alloc_wait_token (wg : Loc) (γ : WaitGroupNames) (N : Namespace) (w : Int)
     (H : 0 < w + 1 ∧ w + 1 < 2 ^ 31) :
     ⊢ isWaitGroup (GF := GF) wg γ N -∗ ownWaitGroupWaiters γ w ={↑N}=∗
       ownWaitGroupWaiters γ (w + 1) ∗ ownWaitGroupWaitToken γ := by
@@ -289,7 +289,7 @@ theorem waiters_none_token_false (γ : WaitGroupNames) :
   icombine H1 H2 gives %H
   simp at H
 
-theorem dealloc_wait_token (wg : loc) (γ : WaitGroupNames) (N : Namespace) (w : Int)
+theorem dealloc_wait_token (wg : Loc) (γ : WaitGroupNames) (N : Namespace) (w : Int)
     (H : 0 ≤ w - 1) :
     ⊢ isWaitGroup (GF := GF) wg γ N -∗ ownWaitGroupWaiters γ w -∗
       ownWaitGroupWaitToken γ ={↑N}=∗ ownWaitGroupWaiters γ (w - 1) := by
@@ -318,8 +318,8 @@ theorem dealloc_wait_token (wg : loc) (γ : WaitGroupNames) (N : Namespace) (w :
   imodintro
   iframe
 
-theorem init_WaitGroup (N : Namespace) (wg_ptr : loc) :
-    typed_pointsto (GF := GF) wg_ptr (zero_val WaitGroup.t) (DFrac.own 1) ⊢
+theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) :
+    typedPointsto (GF := GF) wg_ptr (zero_val WaitGroup.t) (DFrac.own 1) ⊢
     |={⊤}=> ∃ γ, isWaitGroup wg_ptr γ N ∗ ownWaitGroup γ (W32 0) ∗ ownWaitGroupWaiters γ 0 := by
   iintro H
   iStructNamed H
@@ -359,7 +359,7 @@ theorem init_WaitGroup (N : Namespace) (wg_ptr : loc) :
   iframe
   iframe #
 
-theorem WaitGroup.wp_Add (wg : loc) (delta : w64) (γ : WaitGroupNames) (N : Namespace) :
+theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isWaitGroup wg γ N) -∗
       (|={⊤,↑N}=> ▷ ∃ oldc : w32,
@@ -370,7 +370,7 @@ theorem WaitGroup.wp_Add (wg : loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
           (ownWaitGroupWaiters γ 0 ∗
             (ownWaitGroupWaiters γ 0 -∗ ownWaitGroup γ (oldc + W32 (sint.Z delta)) ={↑N,⊤}=∗
               Φ #())))) -∗
-      WP (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Add")) (Val #delta)) {{ Φ }} := by
+      WP (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Add")) (Val #delta)) {{ Φ }} := by
   wp_start as #His
   iapply wp_with_defer
   iintro %defer Hdefer
@@ -605,14 +605,14 @@ theorem WaitGroup.wp_Add (wg : loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
       wp_join_done
     wp_if_destruct <;> first | iexact HΦ | (exfalso; omega)
 
-theorem WaitGroup.wp_Done (wg : loc) (γ : WaitGroupNames) (N : Namespace) :
+theorem WaitGroup.wp_Done (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isWaitGroup wg γ N) -∗
       (|={⊤,↑N}=> ▷ ∃ oldc : w32,
         "Hwg" ∷ ownWaitGroup γ oldc ∗
         "%Hbounds" ∷ ⌜0 ≤ sint.Z oldc - 1 ∧ sint.Z oldc - 1 < 2 ^ 31⌝ ∗
         "HΦ" ∷ (ownWaitGroup γ (oldc - W32 1) ={↑N,⊤}=∗ Φ #())) -∗
-      WP (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Done")) (Val #())) {{ Φ }} := by
+      WP (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Done")) (Val #())) {{ Φ }} := by
   wp_start as #His
   wp_auto
   wp_apply_core WaitGroup.wp_Add wg (W64 (-1)) γ N $$ [] [-]
@@ -639,14 +639,14 @@ theorem WaitGroup.wp_Done (wg : loc) (γ : WaitGroupNames) (N : Namespace) :
   wp_auto
   iexact HΦ
 
-theorem WaitGroup.wp_Wait (wg : loc) (γ : WaitGroupNames) (N : Namespace) :
+theorem WaitGroup.wp_Wait (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isWaitGroup wg γ N ∗
         ownWaitGroupWaitToken γ) -∗
       (|={⊤ \ ↑N,∅}=> ▷ ∃ oldc : w32, ownWaitGroup γ oldc ∗
         (⌜sint.Z oldc = 0⌝ → ownWaitGroup γ oldc ={∅,⊤ \ ↑N}=∗
           ownWaitGroupWaitToken γ -∗ Φ #())) -∗
-      WP (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Wait")) (Val #())) {{ Φ }} := by
+      WP (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Wait")) (Val #())) {{ Φ }} := by
   wp_start as ⟨#Hwg, HR_in⟩
   simp only [isWaitGroup_unseal, isWaitGroupDef, ownWaitGroup_unseal, ownWaitGroupDef,
     ownWaitGroupWaitToken_unseal, ownWaitGroupWaitTokenDef]

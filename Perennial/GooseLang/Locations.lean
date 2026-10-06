@@ -8,58 +8,58 @@ import Perennial.Std.Word
 
 namespace Perennial
 
-structure loc where
+structure Loc where
   locCar : Int
   locOff : Int
 deriving DecidableEq, Repr, Inhabited, Hashable
 
-namespace loc
+namespace Loc
 
-def null : loc := ⟨0, 0⟩
+def null : Loc := ⟨0, 0⟩
 
-instance : Inhabited loc := ⟨null⟩
+instance : Inhabited Loc := ⟨null⟩
 
 /-- Rocq `l +ₗ off`. -/
-def add (l : loc) (off : Int) : loc := ⟨l.locCar, l.locOff + off⟩
+def add (l : Loc) (off : Int) : Loc := ⟨l.locCar, l.locOff + off⟩
 
 /-- Rocq `addrBase`: the start of `l`'s block. -/
-def addrBase (l : loc) : loc := ⟨l.locCar, 0⟩
+def addrBase (l : Loc) : Loc := ⟨l.locCar, 0⟩
 /-- Rocq `addrOffset`. -/
-def addrOffset (l : loc) : Int := l.locOff
+def addrOffset (l : Loc) : Int := l.locOff
 
-end loc
+end Loc
 
-export loc (null)
+export Loc (null)
 
-scoped infixl:65 " +ₗ " => loc.add
+scoped infixl:65 " +ₗ " => Loc.add
 
-@[simp] theorem loc_add_assoc (l : loc) (i j : Int) : l +ₗ i +ₗ j = l +ₗ (i + j) := by
-  simp [loc.add, Int.add_assoc]
+@[simp] theorem loc_add_assoc (l : Loc) (i j : Int) : l +ₗ i +ₗ j = l +ₗ (i + j) := by
+  simp [Loc.add, Int.add_assoc]
 
-theorem loc_add_comm (l : loc) (i j : Int) : l +ₗ i +ₗ j = l +ₗ j +ₗ i := by
-  simp [loc.add]; omega
+theorem loc_add_comm (l : Loc) (i j : Int) : l +ₗ i +ₗ j = l +ₗ j +ₗ i := by
+  simp [Loc.add]; omega
 
-@[simp] theorem loc_add_0 (l : loc) : l +ₗ 0 = l := by simp [loc.add]
+@[simp] theorem loc_add_0 (l : Loc) : l +ₗ 0 = l := by simp [Loc.add]
 
-theorem loc_add_Sn (l : loc) (n : Nat) : l +ₗ ((n + 1 : Nat) : Int) = (l +ₗ 1) +ₗ (n : Int) := by
-  simp [loc.add]; omega
+theorem loc_add_Sn (l : Loc) (n : Nat) : l +ₗ ((n + 1 : Nat) : Int) = (l +ₗ 1) +ₗ (n : Int) := by
+  simp [Loc.add]; omega
 
-theorem loc_add_eq_inv (l : loc) (i : Int) : l +ₗ i = l → i = 0 := by
-  cases l; simp [loc.add]; omega
+theorem loc_add_eq_inv (l : Loc) (i : Int) : l +ₗ i = l → i = 0 := by
+  cases l; simp [Loc.add]; omega
 
-theorem loc_add_ne (l : loc) (i : Int) : 0 < i → l +ₗ i ≠ l := by
+theorem loc_add_ne (l : Loc) (i : Int) : 0 < i → l +ₗ i ≠ l := by
   intro h e; have := loc_add_eq_inv l i e; omega
 
-theorem loc_add_inj (l : loc) {i j : Int} : l +ₗ i = l +ₗ j → i = j := by
-  cases l; simp [loc.add]
+theorem loc_add_inj (l : Loc) {i j : Int} : l +ₗ i = l +ₗ j → i = j := by
+  cases l; simp [Loc.add]
 
-theorem addrBase_of_plus (l : loc) (i : Int) : (l +ₗ i).addrBase = l.addrBase := rfl
+theorem addrBase_of_plus (l : Loc) (i : Int) : (l +ₗ i).addrBase = l.addrBase := rfl
 
 /-- A location whose block is strictly larger than every block in `ls`. -/
-def freshLocs (ls : List loc) : loc :=
+def freshLocs (ls : List Loc) : Loc :=
   ⟨ls.foldr (fun k r => max (1 + k.locCar) r) 1, 0⟩
 
-theorem freshLocs_car_gt (ls : List loc) :
+theorem freshLocs_car_gt (ls : List Loc) :
     ∀ l ∈ ls, l.locCar < (freshLocs ls).locCar := by
   induction ls with
   | nil => simp
@@ -70,22 +70,22 @@ theorem freshLocs_car_gt (ls : List loc) :
     · omega
     · have := ih l h; omega
 
-theorem freshLocs_pos (ls : List loc) : 0 < (freshLocs ls).locCar := by
+theorem freshLocs_pos (ls : List Loc) : 0 < (freshLocs ls).locCar := by
   induction ls with
   | nil => simp [freshLocs]
   | cons a ls ih => simp only [freshLocs, List.foldr_cons] at *; omega
 
-theorem freshLocs_fresh (ls : List loc) (i : Int) : freshLocs ls +ₗ i ∉ ls := by
+theorem freshLocs_fresh (ls : List Loc) (i : Int) : freshLocs ls +ₗ i ∉ ls := by
   intro h
   have := freshLocs_car_gt ls _ h
-  simp [loc.add] at this
+  simp [Loc.add] at this
 
-theorem freshLocs_non_null (ls : List loc) (i : Int) : freshLocs ls +ₗ i ≠ null := by
+theorem freshLocs_non_null (ls : List Loc) (i : Int) : freshLocs ls +ₗ i ≠ null := by
   intro h
   have := freshLocs_pos ls
-  have h' := congrArg loc.locCar h
-  simp [loc.add, null] at h'; omega
+  have h' := congrArg Loc.locCar h
+  simp [Loc.add, null] at h'; omega
 
-theorem freshLocs_off_0 (ls : List loc) : (freshLocs ls).locOff = 0 := rfl
+theorem freshLocs_off_0 (ls : List Loc) : (freshLocs ls).locOff = 0 := rfl
 
 end Perennial

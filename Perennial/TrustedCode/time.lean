@@ -10,7 +10,7 @@ namespace Perennial
 
 namespace time
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def «newTimerⁱᵐᵖˡ» : val :=
   λ: "when" "period" "f" "arg" "cp", #()

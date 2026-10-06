@@ -12,46 +12,46 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def crypto.rand : go_string := go!"crypto/rand"
+def crypto.rand : GoString := go!"crypto/rand"
 end pkg_id
 
 namespace crypto.rand
 
-axiom base32alphabet [ffi_syntax] [GoGlobalContext] : val
+axiom base32alphabet [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Reader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Reader"
 
-axiom Reader'init [ffi_syntax] [GoGlobalContext] : val
+axiom Reader'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fatal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.fatal"
 
-noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Read"
 
-noncomputable def Text [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Text [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Text"
 
-noncomputable def Prime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Prime [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Prime"
 
-noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Int"
 
 instance info' : PkgInfo pkg_id.crypto.rand where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.rand)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val Reader'init) (Val #())))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
 end crypto.rand
 

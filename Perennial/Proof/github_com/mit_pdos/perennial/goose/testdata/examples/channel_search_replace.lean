@@ -21,9 +21,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions]
 
 instance isPkgInit_inst :
@@ -82,15 +82,15 @@ theorem searchReplace_take_append (x y : w64) (xs : List w64) (o n : Nat) (h : o
   rw [← List.map_take, ← List.map_take, ← List.map_append, ← List.take_add]
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions]
 
 local notation "pkg" =>
   pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
-def chanP (wg : loc) (x y : w64) (s : slice.t) : IProp GF :=
+def chanP (wg : Loc) (x y : w64) (s : slice.t) : IProp GF :=
   iprop(∃ xs : List w64,
     "Hxs" ∷ s ↦* xs ∗
     "Hwg_done" ∷ sync.join.ownDone wg (s ↦* (searchReplace x y xs)))
@@ -113,7 +113,7 @@ theorem ownSlice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
     simp only [slice.slice, sliceIndexRef, slice.nil]
     rw [show sint.Z (W64 0) = 0 from rfl, go.arrayIndexRef_0]
     rfl
-  · ihave %Hnn := typed_pointsto_not_null _ _ _ $$ H
+  · ihave %Hnn := typedPointsto_not_null _ _ _ $$ H
     have hslice : slice.slice s w64 index index =
         slice.mk (sliceIndexRef w64 (sint.Z index) s) (W64 0) (s.cap - index) := by
       simp [slice.slice]
@@ -128,7 +128,7 @@ theorem ownSlice_slice_empty (index : w64) (s : slice.t) (xs : List w64)
 
 set_option goose.wp.extras true
 
-theorem wp_worker (γs : ChanNames) (ch : loc) (wg : loc) (x y : w64) :
+theorem wp_worker (γs : ChanNames) (ch : Loc) (wg : Loc) (x y : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#Hchan" ∷ isChanBag γs ch (chanP wg x y) }}
       (App (App (App (App (Val (@! worker)) (Val #ch)) (Val #wg)) (Val #x)) (Val #y))

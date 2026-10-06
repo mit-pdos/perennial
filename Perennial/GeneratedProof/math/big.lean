@@ -17,54 +17,54 @@ namespace math.big
 namespace decimal
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance decimal_typed_pointsto :
     TypedPointsto (GF := GF) math.big.decimal.t where
-  typed_pointsto_def l v dq := iprop(
-    "mant" ∷ typed_pointsto (struct_field_ref math.big.decimal.t go!"mant" l) v.mant' dq ∗
-    "exp" ∷ typed_pointsto (struct_field_ref math.big.decimal.t go!"exp" l) v.exp' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "mant" ∷ typedPointsto (structFieldRef math.big.decimal.t go!"mant" l) v.mant' dq ∗
+    "exp" ∷ typedPointsto (structFieldRef math.big.decimal.t go!"exp" l) v.exp' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance decimal_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.decimal.t math.big.«decimalⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance decimal_access_load_mant (l : loc) (v : math.big.decimal.t) (dq : DFrac) :
+instance decimal_access_load_mant (l : Loc) (v : math.big.decimal.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"mant" l) v.mant' dq)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"mant" l) v.mant' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.decimal.t go!"mant" l) v.mant' dq)
+      (typedPointsto (structFieldRef math.big.decimal.t go!"mant" l) v.mant' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance decimal_access_store_mant (l : loc) (v : math.big.decimal.t) (mant' : slice.t) :
+instance decimal_access_store_mant (l : Loc) (v : math.big.decimal.t) (mant' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"mant" l) v.mant' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"mant" l) mant' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mant' := mant' } : math.big.decimal.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.decimal.t go!"mant" l) v.mant' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.decimal.t go!"mant" l) mant' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mant' := mant' } : math.big.decimal.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance decimal_access_load_exp (l : loc) (v : math.big.decimal.t) (dq : DFrac) :
+instance decimal_access_load_exp (l : Loc) (v : math.big.decimal.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"exp" l) v.exp' dq)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"exp" l) v.exp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.decimal.t go!"exp" l) v.exp' dq)
+      (typedPointsto (structFieldRef math.big.decimal.t go!"exp" l) v.exp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance decimal_access_store_exp (l : loc) (v : math.big.decimal.t) (exp' : w64) :
+instance decimal_access_store_exp (l : Loc) (v : math.big.decimal.t) (exp' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"exp" l) v.exp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.decimal.t go!"exp" l) exp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with exp' := exp' } : math.big.decimal.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.decimal.t go!"exp" l) v.exp' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.decimal.t go!"exp" l) exp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with exp' := exp' } : math.big.decimal.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -74,139 +74,139 @@ end decimal
 namespace Float
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance Float_typed_pointsto :
     TypedPointsto (GF := GF) math.big.Float.t where
-  typed_pointsto_def l v dq := iprop(
-    "prec" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"prec" l) v.prec' dq ∗
-    "mode" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"mode" l) v.mode' dq ∗
-    "acc" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"acc" l) v.acc' dq ∗
-    "form" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"form" l) v.form' dq ∗
-    "neg" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"neg" l) v.neg' dq ∗
-    "mant" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"mant" l) v.mant' dq ∗
-    "exp" ∷ typed_pointsto (struct_field_ref math.big.Float.t go!"exp" l) v.exp' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "prec" ∷ typedPointsto (structFieldRef math.big.Float.t go!"prec" l) v.prec' dq ∗
+    "mode" ∷ typedPointsto (structFieldRef math.big.Float.t go!"mode" l) v.mode' dq ∗
+    "acc" ∷ typedPointsto (structFieldRef math.big.Float.t go!"acc" l) v.acc' dq ∗
+    "form" ∷ typedPointsto (structFieldRef math.big.Float.t go!"form" l) v.form' dq ∗
+    "neg" ∷ typedPointsto (structFieldRef math.big.Float.t go!"neg" l) v.neg' dq ∗
+    "mant" ∷ typedPointsto (structFieldRef math.big.Float.t go!"mant" l) v.mant' dq ∗
+    "exp" ∷ typedPointsto (structFieldRef math.big.Float.t go!"exp" l) v.exp' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Float_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.Float.t math.big.«Floatⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Float_access_load_prec (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_prec (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"prec" l) v.prec' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"prec" l) v.prec' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"prec" l) v.prec' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"prec" l) v.prec' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_prec (l : loc) (v : math.big.Float.t) (prec' : w32) :
+instance Float_access_store_prec (l : Loc) (v : math.big.Float.t) (prec' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"prec" l) v.prec' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"prec" l) prec' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prec' := prec' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"prec" l) v.prec' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"prec" l) prec' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prec' := prec' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_mode (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_mode (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mode" l) v.mode' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mode" l) v.mode' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"mode" l) v.mode' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"mode" l) v.mode' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_mode (l : loc) (v : math.big.Float.t) (mode' : math.big.RoundingMode.t) :
+instance Float_access_store_mode (l : Loc) (v : math.big.Float.t) (mode' : math.big.RoundingMode.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mode" l) v.mode' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mode" l) mode' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mode' := mode' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"mode" l) v.mode' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"mode" l) mode' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mode' := mode' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_acc (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_acc (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"acc" l) v.acc' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"acc" l) v.acc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"acc" l) v.acc' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"acc" l) v.acc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_acc (l : loc) (v : math.big.Float.t) (acc' : math.big.Accuracy.t) :
+instance Float_access_store_acc (l : Loc) (v : math.big.Float.t) (acc' : math.big.Accuracy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"acc" l) v.acc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"acc" l) acc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with acc' := acc' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"acc" l) v.acc' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"acc" l) acc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with acc' := acc' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_form (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_form (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"form" l) v.form' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"form" l) v.form' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"form" l) v.form' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"form" l) v.form' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_form (l : loc) (v : math.big.Float.t) (form' : math.big.form.t) :
+instance Float_access_store_form (l : Loc) (v : math.big.Float.t) (form' : math.big.form.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"form" l) v.form' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"form" l) form' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with form' := form' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"form" l) v.form' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"form" l) form' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with form' := form' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_neg (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_neg (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"neg" l) v.neg' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"neg" l) v.neg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"neg" l) v.neg' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"neg" l) v.neg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_neg (l : loc) (v : math.big.Float.t) (neg' : Bool) :
+instance Float_access_store_neg (l : Loc) (v : math.big.Float.t) (neg' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"neg" l) v.neg' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"neg" l) neg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with neg' := neg' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"neg" l) v.neg' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"neg" l) neg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with neg' := neg' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_mant (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_mant (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mant" l) v.mant' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mant" l) v.mant' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"mant" l) v.mant' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"mant" l) v.mant' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_mant (l : loc) (v : math.big.Float.t) (mant' : math.big.nat.t) :
+instance Float_access_store_mant (l : Loc) (v : math.big.Float.t) (mant' : math.big.nat.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mant" l) v.mant' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"mant" l) mant' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mant' := mant' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"mant" l) v.mant' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"mant" l) mant' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mant' := mant' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_load_exp (l : loc) (v : math.big.Float.t) (dq : DFrac) :
+instance Float_access_load_exp (l : Loc) (v : math.big.Float.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"exp" l) v.exp' dq)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"exp" l) v.exp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"exp" l) v.exp' dq)
+      (typedPointsto (structFieldRef math.big.Float.t go!"exp" l) v.exp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_exp (l : loc) (v : math.big.Float.t) (exp' : w32) :
+instance Float_access_store_exp (l : Loc) (v : math.big.Float.t) (exp' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"exp" l) v.exp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Float.t go!"exp" l) exp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with exp' := exp' } : math.big.Float.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Float.t go!"exp" l) v.exp' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Float.t go!"exp" l) exp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with exp' := exp' } : math.big.Float.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -216,37 +216,37 @@ end Float
 namespace ErrNaN
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance ErrNaN_typed_pointsto :
     TypedPointsto (GF := GF) math.big.ErrNaN.t where
-  typed_pointsto_def l v dq := iprop(
-    "msg" ∷ typed_pointsto (struct_field_ref math.big.ErrNaN.t go!"msg" l) v.msg' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "msg" ∷ typedPointsto (structFieldRef math.big.ErrNaN.t go!"msg" l) v.msg' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ErrNaN_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.ErrNaN.t math.big.«ErrNaNⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance ErrNaN_access_load_msg (l : loc) (v : math.big.ErrNaN.t) (dq : DFrac) :
+instance ErrNaN_access_load_msg (l : Loc) (v : math.big.ErrNaN.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.ErrNaN.t go!"msg" l) v.msg' dq)
-      (typed_pointsto (struct_field_ref math.big.ErrNaN.t go!"msg" l) v.msg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.ErrNaN.t go!"msg" l) v.msg' dq)
+      (typedPointsto (structFieldRef math.big.ErrNaN.t go!"msg" l) v.msg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ErrNaN_access_store_msg (l : loc) (v : math.big.ErrNaN.t) (msg' : go_string) :
+instance ErrNaN_access_store_msg (l : Loc) (v : math.big.ErrNaN.t) (msg' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.ErrNaN.t go!"msg" l) v.msg' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.ErrNaN.t go!"msg" l) msg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with msg' := msg' } : math.big.ErrNaN.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.ErrNaN.t go!"msg" l) v.msg' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.ErrNaN.t go!"msg" l) msg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msg' := msg' } : math.big.ErrNaN.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -256,54 +256,54 @@ end ErrNaN
 namespace Int'
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance Int'_typed_pointsto :
     TypedPointsto (GF := GF) math.big.Int'.t where
-  typed_pointsto_def l v dq := iprop(
-    "neg" ∷ typed_pointsto (struct_field_ref math.big.Int'.t go!"neg" l) v.neg' dq ∗
-    "abs" ∷ typed_pointsto (struct_field_ref math.big.Int'.t go!"abs" l) v.abs' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "neg" ∷ typedPointsto (structFieldRef math.big.Int'.t go!"neg" l) v.neg' dq ∗
+    "abs" ∷ typedPointsto (structFieldRef math.big.Int'.t go!"abs" l) v.abs' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int'_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.Int'.t math.big.«Int'ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Int'_access_load_neg (l : loc) (v : math.big.Int'.t) (dq : DFrac) :
+instance Int'_access_load_neg (l : Loc) (v : math.big.Int'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"neg" l) v.neg' dq)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"neg" l) v.neg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Int'.t go!"neg" l) v.neg' dq)
+      (typedPointsto (structFieldRef math.big.Int'.t go!"neg" l) v.neg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int'_access_store_neg (l : loc) (v : math.big.Int'.t) (neg' : Bool) :
+instance Int'_access_store_neg (l : Loc) (v : math.big.Int'.t) (neg' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"neg" l) v.neg' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"neg" l) neg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with neg' := neg' } : math.big.Int'.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Int'.t go!"neg" l) v.neg' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Int'.t go!"neg" l) neg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with neg' := neg' } : math.big.Int'.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Int'_access_load_abs (l : loc) (v : math.big.Int'.t) (dq : DFrac) :
+instance Int'_access_load_abs (l : Loc) (v : math.big.Int'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"abs" l) v.abs' dq)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"abs" l) v.abs' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Int'.t go!"abs" l) v.abs' dq)
+      (typedPointsto (structFieldRef math.big.Int'.t go!"abs" l) v.abs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int'_access_store_abs (l : loc) (v : math.big.Int'.t) (abs' : math.big.nat.t) :
+instance Int'_access_store_abs (l : Loc) (v : math.big.Int'.t) (abs' : math.big.nat.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"abs" l) v.abs' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Int'.t go!"abs" l) abs' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with abs' := abs' } : math.big.Int'.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Int'.t go!"abs" l) v.abs' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Int'.t go!"abs" l) abs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with abs' := abs' } : math.big.Int'.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -313,37 +313,37 @@ end Int'
 namespace byteReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance byteReader_typed_pointsto :
     TypedPointsto (GF := GF) math.big.byteReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "ScanState" ∷ typed_pointsto (struct_field_ref math.big.byteReader.t go!"ScanState" l) v.ScanState' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "ScanState" ∷ typedPointsto (structFieldRef math.big.byteReader.t go!"ScanState" l) v.ScanState' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance byteReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.byteReader.t math.big.«byteReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance byteReader_access_load_ScanState (l : loc) (v : math.big.byteReader.t) (dq : DFrac) :
+instance byteReader_access_load_ScanState (l : Loc) (v : math.big.byteReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.byteReader.t go!"ScanState" l) v.ScanState' dq)
-      (typed_pointsto (struct_field_ref math.big.byteReader.t go!"ScanState" l) v.ScanState' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.byteReader.t go!"ScanState" l) v.ScanState' dq)
+      (typedPointsto (structFieldRef math.big.byteReader.t go!"ScanState" l) v.ScanState' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance byteReader_access_store_ScanState (l : loc) (v : math.big.byteReader.t) (ScanState' : fmt.ScanState.t) :
+instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader.t) (ScanState' : fmt.ScanState.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.byteReader.t go!"ScanState" l) v.ScanState' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.byteReader.t go!"ScanState" l) ScanState' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ScanState' := ScanState' } : math.big.byteReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.byteReader.t go!"ScanState" l) v.ScanState' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.byteReader.t go!"ScanState" l) ScanState' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ScanState' := ScanState' } : math.big.byteReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -353,37 +353,37 @@ end byteReader
 namespace stack
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance stack_typed_pointsto :
     TypedPointsto (GF := GF) math.big.stack.t where
-  typed_pointsto_def l v dq := iprop(
-    "w" ∷ typed_pointsto (struct_field_ref math.big.stack.t go!"w" l) v.w' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "w" ∷ typedPointsto (structFieldRef math.big.stack.t go!"w" l) v.w' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stack_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.stack.t math.big.«stackⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance stack_access_load_w (l : loc) (v : math.big.stack.t) (dq : DFrac) :
+instance stack_access_load_w (l : Loc) (v : math.big.stack.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.stack.t go!"w" l) v.w' dq)
-      (typed_pointsto (struct_field_ref math.big.stack.t go!"w" l) v.w' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.stack.t go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef math.big.stack.t go!"w" l) v.w' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stack_access_store_w (l : loc) (v : math.big.stack.t) (w' : slice.t) :
+instance stack_access_store_w (l : Loc) (v : math.big.stack.t) (w' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.stack.t go!"w" l) v.w' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.stack.t go!"w" l) w' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : math.big.stack.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.stack.t go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.stack.t go!"w" l) w' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : math.big.stack.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -393,71 +393,71 @@ end stack
 namespace divisor
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance divisor_typed_pointsto :
     TypedPointsto (GF := GF) math.big.divisor.t where
-  typed_pointsto_def l v dq := iprop(
-    "bbb" ∷ typed_pointsto (struct_field_ref math.big.divisor.t go!"bbb" l) v.bbb' dq ∗
-    "nbits" ∷ typed_pointsto (struct_field_ref math.big.divisor.t go!"nbits" l) v.nbits' dq ∗
-    "ndigits" ∷ typed_pointsto (struct_field_ref math.big.divisor.t go!"ndigits" l) v.ndigits' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "bbb" ∷ typedPointsto (structFieldRef math.big.divisor.t go!"bbb" l) v.bbb' dq ∗
+    "nbits" ∷ typedPointsto (structFieldRef math.big.divisor.t go!"nbits" l) v.nbits' dq ∗
+    "ndigits" ∷ typedPointsto (structFieldRef math.big.divisor.t go!"ndigits" l) v.ndigits' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance divisor_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.divisor.t math.big.«divisorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance divisor_access_load_bbb (l : loc) (v : math.big.divisor.t) (dq : DFrac) :
+instance divisor_access_load_bbb (l : Loc) (v : math.big.divisor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"bbb" l) v.bbb' dq)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"bbb" l) v.bbb' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"bbb" l) v.bbb' dq)
+      (typedPointsto (structFieldRef math.big.divisor.t go!"bbb" l) v.bbb' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_bbb (l : loc) (v : math.big.divisor.t) (bbb' : math.big.nat.t) :
+instance divisor_access_store_bbb (l : Loc) (v : math.big.divisor.t) (bbb' : math.big.nat.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"bbb" l) v.bbb' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"bbb" l) bbb' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with bbb' := bbb' } : math.big.divisor.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"bbb" l) v.bbb' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.divisor.t go!"bbb" l) bbb' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bbb' := bbb' } : math.big.divisor.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance divisor_access_load_nbits (l : loc) (v : math.big.divisor.t) (dq : DFrac) :
+instance divisor_access_load_nbits (l : Loc) (v : math.big.divisor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"nbits" l) v.nbits' dq)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"nbits" l) v.nbits' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"nbits" l) v.nbits' dq)
+      (typedPointsto (structFieldRef math.big.divisor.t go!"nbits" l) v.nbits' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_nbits (l : loc) (v : math.big.divisor.t) (nbits' : w64) :
+instance divisor_access_store_nbits (l : Loc) (v : math.big.divisor.t) (nbits' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"nbits" l) v.nbits' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"nbits" l) nbits' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with nbits' := nbits' } : math.big.divisor.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"nbits" l) v.nbits' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.divisor.t go!"nbits" l) nbits' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nbits' := nbits' } : math.big.divisor.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance divisor_access_load_ndigits (l : loc) (v : math.big.divisor.t) (dq : DFrac) :
+instance divisor_access_load_ndigits (l : Loc) (v : math.big.divisor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"ndigits" l) v.ndigits' dq)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"ndigits" l) v.ndigits' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"ndigits" l) v.ndigits' dq)
+      (typedPointsto (structFieldRef math.big.divisor.t go!"ndigits" l) v.ndigits' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_ndigits (l : loc) (v : math.big.divisor.t) (ndigits' : w64) :
+instance divisor_access_store_ndigits (l : Loc) (v : math.big.divisor.t) (ndigits' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"ndigits" l) v.ndigits' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.divisor.t go!"ndigits" l) ndigits' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ndigits' := ndigits' } : math.big.divisor.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.divisor.t go!"ndigits" l) v.ndigits' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.divisor.t go!"ndigits" l) ndigits' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ndigits' := ndigits' } : math.big.divisor.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -467,54 +467,54 @@ end divisor
 namespace Rat
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.big.Assumptions]
 
 instance Rat_typed_pointsto :
     TypedPointsto (GF := GF) math.big.Rat.t where
-  typed_pointsto_def l v dq := iprop(
-    "a" ∷ typed_pointsto (struct_field_ref math.big.Rat.t go!"a" l) v.a' dq ∗
-    "b" ∷ typed_pointsto (struct_field_ref math.big.Rat.t go!"b" l) v.b' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "a" ∷ typedPointsto (structFieldRef math.big.Rat.t go!"a" l) v.a' dq ∗
+    "b" ∷ typedPointsto (structFieldRef math.big.Rat.t go!"b" l) v.b' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Rat_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.big.Rat.t math.big.«Ratⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Rat_access_load_a (l : loc) (v : math.big.Rat.t) (dq : DFrac) :
+instance Rat_access_load_a (l : Loc) (v : math.big.Rat.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"a" l) v.a' dq)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"a" l) v.a' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Rat.t go!"a" l) v.a' dq)
+      (typedPointsto (structFieldRef math.big.Rat.t go!"a" l) v.a' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Rat_access_store_a (l : loc) (v : math.big.Rat.t) (a' : math.big.Int'.t) :
+instance Rat_access_store_a (l : Loc) (v : math.big.Rat.t) (a' : math.big.Int'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"a" l) v.a' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"a" l) a' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with a' := a' } : math.big.Rat.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Rat.t go!"a" l) v.a' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Rat.t go!"a" l) a' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := a' } : math.big.Rat.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Rat_access_load_b (l : loc) (v : math.big.Rat.t) (dq : DFrac) :
+instance Rat_access_load_b (l : Loc) (v : math.big.Rat.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"b" l) v.b' dq)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"b" l) v.b' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef math.big.Rat.t go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef math.big.Rat.t go!"b" l) v.b' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Rat_access_store_b (l : loc) (v : math.big.Rat.t) (b' : math.big.Int'.t) :
+instance Rat_access_store_b (l : Loc) (v : math.big.Rat.t) (b' : math.big.Int'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"b" l) v.b' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref math.big.Rat.t go!"b" l) b' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with b' := b' } : math.big.Rat.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef math.big.Rat.t go!"b" l) v.b' (DFrac.own 1))
+      (typedPointsto (structFieldRef math.big.Rat.t go!"b" l) b' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : math.big.Rat.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

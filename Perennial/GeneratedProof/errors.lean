@@ -16,37 +16,37 @@ namespace errors
 namespace errorString
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
 instance errorString_typed_pointsto :
     TypedPointsto (GF := GF) errors.errorString.t where
-  typed_pointsto_def l v dq := iprop(
-    "s" ∷ typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "s" ∷ typedPointsto (structFieldRef errors.errorString.t go!"s" l) v.s' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance errorString_into_val_typed :
     IntoValTypedUnderlying (GF := GF) errors.errorString.t errors.«errorStringⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance errorString_access_load_s (l : loc) (v : errors.errorString.t) (dq : DFrac) :
+instance errorString_access_load_s (l : Loc) (v : errors.errorString.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' dq)
-      (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef errors.errorString.t go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef errors.errorString.t go!"s" l) v.s' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance errorString_access_store_s (l : loc) (v : errors.errorString.t) (s' : go_string) :
+instance errorString_access_store_s (l : Loc) (v : errors.errorString.t) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) v.s' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref errors.errorString.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : errors.errorString.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef errors.errorString.t go!"s" l) v.s' (DFrac.own 1))
+      (typedPointsto (structFieldRef errors.errorString.t go!"s" l) s' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : errors.errorString.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -56,37 +56,37 @@ end errorString
 namespace joinError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
 instance joinError_typed_pointsto :
     TypedPointsto (GF := GF) errors.joinError.t where
-  typed_pointsto_def l v dq := iprop(
-    "errs" ∷ typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "errs" ∷ typedPointsto (structFieldRef errors.joinError.t go!"errs" l) v.errs' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance joinError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) errors.joinError.t errors.«joinErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance joinError_access_load_errs (l : loc) (v : errors.joinError.t) (dq : DFrac) :
+instance joinError_access_load_errs (l : Loc) (v : errors.joinError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq)
-      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef errors.joinError.t go!"errs" l) v.errs' dq)
+      (typedPointsto (structFieldRef errors.joinError.t go!"errs" l) v.errs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance joinError_access_store_errs (l : loc) (v : errors.joinError.t) (errs' : slice.t) :
+instance joinError_access_store_errs (l : Loc) (v : errors.joinError.t) (errs' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) v.errs' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref errors.joinError.t go!"errs" l) errs' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with errs' := errs' } : errors.joinError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef errors.joinError.t go!"errs" l) v.errs' (DFrac.own 1))
+      (typedPointsto (structFieldRef errors.joinError.t go!"errs" l) errs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errs' := errs' } : errors.joinError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

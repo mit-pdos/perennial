@@ -17,11 +17,11 @@ open github_com.goose_lang.primitive (isMutex isMutex_unseal isMutexDef ownMutex
   ownMutexDef Mutex.wp_Lock Mutex.wp_Unlock)
 
 section atomic_specs
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 set_option goose.wp.extras true
@@ -43,11 +43,11 @@ theorem ownSlice_pop (sl : slice.t) (x : V) (rest : List V) :
   iapply (ownSliceCap_slice sl (W64 1) _ ⟨by decide, by word, by word⟩).1 $$ Hcap
 
 set_option maxHeartbeats 400000 in
-theorem wp_TryReceive_blocking (ch : loc) (γ : ChanNames) :
+theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (recvAu γ V (fun v ok => Φ (PairV (PairV #true #v) #ok)) ∧
         Φ (PairV (PairV #false #(zero_val V)) #true)) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TryReceive"))
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TryReceive"))
         (Val #true)) {{ Φ }} := by
   wp_start as Hch
   rw [isChan_unseal]
@@ -359,11 +359,11 @@ theorem wp_TryReceive_blocking (ch : loc) (γ : ChanNames) :
       · exfalso; revert Hif Hlen; word
 
 set_option maxHeartbeats 400000 in
-theorem wp_TryReceive_nonblocking (ch : loc) (γ : ChanNames) :
+theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       nonblockingRecvAu γ V (fun v ok => Φ (PairV (PairV #true #v) #ok))
         (Φ (PairV (PairV #false #(zero_val V)) #true)) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TryReceive"))
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TryReceive"))
         (Val #false)) {{ Φ }} := by
   wp_start as Hch
   rw [isChan_unseal]
@@ -571,11 +571,11 @@ theorem wp_TryReceive_nonblocking (ch : loc) (γ : ChanNames) :
       · exfalso; revert Hif Hlen; word
 
 set_option maxHeartbeats 400000 in
-theorem wp_TryReceive_nonblocking_alt (ch : loc) (γ : ChanNames) :
+theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       nonblockingRecvAuAlt γ V (fun v ok => Φ (PairV (PairV #true #v) #ok))
         (Φ (PairV (PairV #false #(zero_val V)) #true)) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TryReceive"))
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TryReceive"))
         (Val #false)) {{ Φ }} := by
   wp_start as Hch
   rw [isChan_unseal]
@@ -838,7 +838,7 @@ theorem wp_TryReceive_nonblocking_alt (ch : loc) (γ : ChanNames) :
         iexact HΦ
       · exfalso; revert Hif Hlen; word
 
-theorem wp_TryReceive (ch : loc) (γ : ChanNames) (blocking : Bool) :
+theorem wp_TryReceive (ch : Loc) (γ : ChanNames) (blocking : Bool) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (if blocking then
         iprop(recvAu γ V (fun v ok => Φ (PairV (PairV #true #v) #ok)) ∧
@@ -847,7 +847,7 @@ theorem wp_TryReceive (ch : loc) (γ : ChanNames) (blocking : Bool) :
            (Φ (PairV (PairV #false #(zero_val V)) #true)) ∨
          nonblockingRecvAuAlt γ V (fun v ok => Φ (PairV (PairV #true #v) #ok))
            (Φ (PairV (PairV #false #(zero_val V)) #true)))) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TryReceive"))
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TryReceive"))
         (Val #blocking)) {{ Φ }} := by
   iintro %Φ #Hch HΦ
   cases blocking with
@@ -861,10 +861,10 @@ theorem wp_TryReceive (ch : loc) (γ : ChanNames) (blocking : Bool) :
     · iapply wp_TryReceive_nonblocking_alt $$ Hch HΦ
 
 set_option maxHeartbeats 400000 in
-theorem wp_Receive (ch : loc) (γ : ChanNames) :
+theorem wp_Receive (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ recvAu γ V (fun v ok => Φ (PairV #v #ok))) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Receive")) (Val #())) {{ Φ }} := by
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Receive")) (Val #())) {{ Φ }} := by
   wp_start as #Hic
   ihave %Hnn := isChan_not_null _ _ _ $$ Hic
   wp_auto_lc 4

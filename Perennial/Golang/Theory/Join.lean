@@ -66,13 +66,13 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section lemma
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
 /-- Joining at a known value `v₀`: it suffices to prove that `e` returns `v₀`
 with `R`, and `R -∗ Φ v₀`. -/
-theorem wp_join_val (R : IProp GF) (v₀ : val) {s : Stuckness} {E : CoPset} {e : expr}
+theorem wp_join_val (R : IProp GF) (v₀ : val) {s : Stuckness} {E : CoPset} {e : Expr}
     {Φ : val → IProp GF} :
     WP e @ s; E {{ v, ⌜v = v₀⌝ ∗ R }} ⊢ (R -∗ Φ v₀) -∗ WP e @ s; E {{ Φ }} := by
   iintro Hwp HΦ
@@ -82,7 +82,7 @@ theorem wp_join_val (R : IProp GF) (v₀ : val) {s : Stuckness} {E : CoPset} {e 
   iapply HΦ $$ HR
 
 /-- Joining at the assertion `Q` (a specialization of `wp_wand`). -/
-theorem wp_join_gen (Q : val → IProp GF) {s : Stuckness} {E : CoPset} {e : expr}
+theorem wp_join_gen (Q : val → IProp GF) {s : Stuckness} {E : CoPset} {e : Expr}
     {Φ : val → IProp GF} :
     WP e @ s; E {{ Q }} ⊢ (∀ v, Q v -∗ Φ v) -∗ WP e @ s; E {{ Φ }} :=
   wp_wand
@@ -90,7 +90,7 @@ theorem wp_join_gen (Q : val → IProp GF) {s : Stuckness} {E : CoPset} {e : exp
 end lemma
 
 section done
-variable [ext : ffi_syntax] {GF : BundledGFunctors}
+variable [ext : FfiSyntax] {GF : BundledGFunctors}
 
 /-- Closing a case of `wp_join`: the value is the join value. -/
 theorem wp_join_done_intro (R : IProp GF) (v : val) : R ⊢ ⌜v = v⌝ ∗ R := by
@@ -139,8 +139,8 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_bind_stmts n` (`n ≥ 1`, default 1): bind the next `n` statements.
 
 Goose sequences the statements `s₁; s₂; …; sₖ` of a block left-nested,
-`((s₁ ;;; s₂) ;;; …) ;;; sₖ` (`a ;;; b` is `exception_seq (λ: <>, b) a`), so the
-first `n` statements are the argument of the `n`-th innermost `exception_seq`
+`((s₁ ;;; s₂) ;;; …) ;;; sₖ` (`a ;;; b` is `exceptionSeq (λ: <>, b) a`), so the
+first `n` statements are the argument of the `n`-th innermost `exceptionSeq`
 in evaluation position. A declaration `x := e` is a `let:` around the rest of
 its block, so the statements counted are those before the next declaration (a
 declaration itself can be the last of them). -/
@@ -148,18 +148,18 @@ elab "wp_bind_stmts" n?:(ppSpace num)? : tactic => do
   let n := match n? with | some n => n.getNat | none => 1
   if n == 0 then throwError "wp_bind_stmts: the number of statements must be positive"
   runTacticGooseWp `wp_bind_stmts fun mvar g wp => do
-    let isSeq (e : Expr) : MetaM Bool := do
+    let isSeq (e : Lean.Expr) : MetaM Bool := do
       let e ← whnfR (← instantiateMVars e)
-      let_expr Perennial.expr.App _ f s := e | return false
+      let_expr Perennial.Expr.App _ f s := e | return false
       let f ← whnfR f
-      let_expr Perennial.expr.App _ f0 _ := f | return false
+      let_expr Perennial.Expr.App _ f0 _ := f | return false
       let f0 ← whnfR f0
-      let_expr Perennial.expr.Val _ c := f0 | return false
-      unless c.getAppFn.isConstOf ``Perennial.exception_seq do return false
-      return !(← whnfR s).isAppOf ``Perennial.expr.Val
+      let_expr Perennial.Expr.Val _ c := f0 | return false
+      unless c.getAppFn.isConstOf ``Perennial.exceptionSeq do return false
+      return !(← whnfR s).isAppOf ``Perennial.Expr.Val
     let seqs ← (← allEctx wp.e).filterM fun (_, e) => isSeq e
     let some (K, e') := seqs.reverse[n - 1]?
-      | throwIPMError "wp_bind_stmts: fewer than {n} statements (`exception_seq`s) in evaluation position"
+      | throwIPMError "wp_bind_stmts: fewer than {n} statements (`exceptionSeq`s) in evaluation position"
     let some (Ki, s) ← extractEctxItem e'
       | throwIPMError "wp_bind_stmts: unexpected shape"
     mvar.assign (← iWpBindCore g.e wp (Ki :: K) s (addBIGoal g.hyps ·))
@@ -253,14 +253,14 @@ open Lean Elab Tactic Meta in
 /-! ## Examples -/
 
 section examples
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Both branches store to `l`; the join forgets which value. The load after
 the `if:` is verified once. -/
-example (b : Bool) (l : loc) (x : w64) (Φ : val → IProp GF) :
+example (b : Bool) (l : Loc) (x : w64) (Φ : val → IProp GF) :
     l ↦ x ∗ (∀ y : w64, l ↦ y -∗ ⌜uint.Z y ≤ 2⌝ -∗ Φ #y) ⊢
       WP gl((if: #b then #l <-[go.uint64] #(W64 1) else #l <-[go.uint64] #(W64 2)) ;;
         ![go.uint64] #l) {{ Φ }} := by
@@ -272,7 +272,7 @@ example (b : Bool) (l : loc) (x : w64) (Φ : val → IProp GF) :
   ipureintro; exact Hy
 
 /-- A case split on a ghost (here: pure) variable inside the joined `if:`. -/
-example (n : Nat) (l : loc) (Φ : val → IProp GF) :
+example (n : Nat) (l : Loc) (Φ : val → IProp GF) :
     l ↦ (W64 0) ∗ (l ↦ (W64 1) -∗ Φ #()) ⊢
       WP gl((if: #true then #l <-[go.uint64] #(W64 1) else #()) ;; #()) {{ Φ }} := by
   iintro ⟨Hl, HΦ⟩
@@ -293,7 +293,7 @@ example (n : w64) (Φ : val → IProp GF) :
 
 /-- Frame mode: the branches only read `l`, so the join assertion is `l ↦ x`
 itself, given back as `Hl`; both cases are closed automatically. -/
-example (l : loc) (x : w64) (Φ : val → IProp GF) :
+example (l : Loc) (x : w64) (Φ : val → IProp GF) :
     l ↦ x ∗ (l ↦ x -∗ Φ #x) ⊢
       WP gl((if: #(decide (uint.Z x < 0)) then ![go.uint64] #l ;; #() else #()) ;;
         ![go.uint64] #l) {{ Φ }} := by

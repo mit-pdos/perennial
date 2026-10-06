@@ -16,7 +16,7 @@ namespace Perennial
 
 open Lean PrettyPrinter
 
-@[app_unexpander Perennial.expr.Val]
+@[app_unexpander Perennial.Expr.Val]
 def unexpandGooseVal : Unexpander
   | `($_ $v) => `($v)
   | _ => throw ()
@@ -26,7 +26,7 @@ def unexpandGooseInstr : Unexpander
   | `($_ $i) => `($i)
   | _ => throw ()
 
-@[app_unexpander Perennial.expr.Var]
+@[app_unexpander Perennial.Expr.Var]
 def unexpandGooseVar : Unexpander
   | `($_ $s:str) => `($s:str)
   | _ => throw ()
@@ -46,7 +46,7 @@ def unexpandGooseRec : Unexpander
     | _ => let f ← binderStx f; `(rec: $f $x := $e)
   | _ => throw ()
 
-attribute [app_unexpander Perennial.expr.Rec] unexpandGooseRec
+attribute [app_unexpander Perennial.Expr.Rec] unexpandGooseRec
 
 /-- A function value `RecV f x e` is shown as `glv(λ: x, e)` / `glv(rec: f x := e)`,
 to distinguish it from the (unevaluated) expression `Rec f x e`, shown as `λ: x, e`. -/
@@ -59,7 +59,7 @@ def unexpandGooseRecV : Unexpander
     | _ => let f ← binderStx f; `(glv(rec: $f $x := $e))
   | _ => throw ()
 
-@[app_unexpander Perennial.expr.If]
+@[app_unexpander Perennial.Expr.If]
 def unexpandGooseIf : Unexpander
   | `($_ $c $a $b) => `(if: $c then $a else $b)
   | _ => throw ()
@@ -82,18 +82,18 @@ def goOpStx (o t a b : Term) : UnexpandM Term :=
   | `(GoXor) => `($a ^⟨$t⟩ $b)
   | _ => throw ()
 
-@[app_unexpander Perennial.expr.App]
+@[app_unexpander Perennial.Expr.App]
 def unexpandGooseApp : Unexpander
   | `($_ $f $a) => do
     match f with
     | `(λ: <>, $e2) => `($a ;; $e2)
     | `(λ: $x:str, $e2) => `(let: $x:str := $a in $e2)
-    | `(exception_seq $g) =>
+    | `(exceptionSeq $g) =>
       match g with
       | `(λ: <>, $e2) => `($a ;;; $e2)
       | _ => `($f $a)
-    | `(do_execute) => `(do: $a)
-    | `(do_return) => `(return: $a)
+    | `(doExecute) => `(do: $a)
+    | `(doReturn) => `(return: $a)
     | `(GoLoad $t) => `(![$t] $a)
     | `(GoStore $t) =>
       match a with
@@ -107,7 +107,7 @@ def unexpandGooseApp : Unexpander
     | _ => `($f $a)
   | _ => throw ()
 
-@[app_unexpander Perennial.expr.Pair]
+@[app_unexpander Perennial.Expr.Pair]
 def unexpandGoosePair : Unexpander
   | `($_ $a $b) => `(($a, $b))
   | _ => throw ()

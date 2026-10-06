@@ -20,9 +20,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace go_etcd_io.raft.v3_proof
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
@@ -30,8 +30,8 @@ local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
 /-- Rocq `is_Node`. -/
 def is_Node (γ : RaftNames) (n : interface.t_ok) : IProp GF :=
-  iprop(∃ n_ptr : loc,
-    "%Hn" ∷ ⌜n = interface.mk (go.type.PointerType v3.node) #n_ptr⌝ ∗
+  iprop(∃ n_ptr : Loc,
+    "%Hn" ∷ ⌜n = interface.mk (go.GoType.PointerType v3.node) #n_ptr⌝ ∗
     "#Hnode" ∷ is_node γ n_ptr)
 
 instance is_Node_pers (γ : RaftNames) (n : interface.t_ok) :

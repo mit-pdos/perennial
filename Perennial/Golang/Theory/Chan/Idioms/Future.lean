@@ -33,11 +33,11 @@ structure FutureNames where
   pendingSetName : GName
 
 section future
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 /-- `Fulfill γ contract` is a token representing a registered contract. The holder
@@ -73,10 +73,10 @@ def futureInv (γ : FutureNames) : IProp GF :=
 variable (V) in
 /-- `isFuture γ ch` is the persistent channel invariant. The channel carries `Fulfilled`
 tokens — values bundled with their contract evidence. -/
-def isFuture (γ : FutureNames) (ch : loc) : IProp GF :=
+def isFuture (γ : FutureNames) (ch : Loc) : IProp GF :=
   iprop(isChan ch γ.chanName V ∗ inv nroot (futureInv (V := V) γ))
 
-instance isFuture_pers (γ : FutureNames) (ch : loc) : Persistent (isFuture V (GF := GF) γ ch) := by
+instance isFuture_pers (γ : FutureNames) (ch : Loc) : Persistent (isFuture V (GF := GF) γ ch) := by
   unfold isFuture; infer_instance
 
 theorem mapToList_snd_insert {K A : Type} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
@@ -96,7 +96,7 @@ theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x
   have h2 : (x :: l').Perm (x :: (pre ++ post)) := h.symm.trans List.perm_middle
   exact h2.cons_inv
 
-theorem start_future (ch : loc) (γ : ChanNames) (s : chanstate.t V)
+theorem start_future (ch : Loc) (γ : ChanNames) (s : chanstate.t V)
     (Hs : s = .Idle ∨ s = .Buffered []) :
     ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗
       ∃ γmf, isFuture V γmf ch ∗ Await (V := V) γmf [] := by
@@ -122,7 +122,7 @@ theorem start_future (ch : loc) (γ : ChanNames) (s : chanstate.t V)
   · ipureintro; rw [GMap.mapToList_empty]; exact .nil
   · iapply BigSepM.bigSepM_empty.2; iempintro
 
-theorem future_alloc_promise (γ : FutureNames) (ch : loc) (contract : V → IProp GF)
+theorem future_alloc_promise (γ : FutureNames) (ch : Loc) (contract : V → IProp GF)
     (pending : List (V → IProp GF)) :
     ⊢ isFuture V γ ch -∗ Await γ pending ={⊤}=∗
       Fulfill γ contract ∗ Await γ (pending ++ [contract]) := by
@@ -153,7 +153,7 @@ theorem future_alloc_promise (γ : FutureNames) (ch : loc) (contract : V → IPr
       savedPredOwn (GF := GF) gn (DFrac.own (1 : Qp).half) P) Hnone).2
     iframe
 
-theorem future_fulfill_au (γ : FutureNames) (ch : loc) (v : V) (Φ : IProp GF) :
+theorem future_fulfill_au (γ : FutureNames) (ch : Loc) (v : V) (Φ : IProp GF) :
     ⊢ isFuture V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Fulfilled γ v -∗ ▷ (True -∗ Φ) -∗
       sendAu γ.chanName v Φ := by
   unfold isFuture sendAu
@@ -219,7 +219,7 @@ theorem future_fulfill_au (γ : FutureNames) (ch : loc) (v : V) (Φ : IProp GF) 
     itrivial
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_future_fulfill (γ : FutureNames) (ch : loc) (v : V) :
+theorem wp_future_fulfill (γ : FutureNames) (ch : Loc) (v : V) :
     {{ isFuture V γ ch ∗ Fulfilled γ v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); True }} := by
@@ -274,7 +274,7 @@ theorem future_match (γ : FutureNames) (pending : List (V → IProp GF)) (v_rcv
 2. uses saved predicate agreement to identify which contract was fulfilled,
 3. removes the matched contract from `pending`,
 4. returns `P v` directly to the caller. -/
-theorem future_await_au (γ : FutureNames) (ch : loc) (pending : List (V → IProp GF))
+theorem future_await_au (γ : FutureNames) (ch : Loc) (pending : List (V → IProp GF))
     (Φ : V → Bool → IProp GF) :
     ⊢ isFuture V γ ch -∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ Await γ pending -∗
       ▷ (∀ (v : V) (P : V → IProp GF) (pre post : List (V → IProp GF)),
@@ -338,7 +338,7 @@ theorem future_await_au (γ : FutureNames) (ch : loc) (pending : List (V → IPr
     iapply Hau $$ %v %P %pre %post %Hsplit HP HAwait
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_future_await (γ : FutureNames) (ch : loc) (pending : List (V → IProp GF)) :
+theorem wp_future_await (γ : FutureNames) (ch : Loc) (pending : List (V → IProp GF)) :
     {{ isFuture V γ ch ∗ Await γ pending }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V) (P : V → IProp GF) (pre post : List (V → IProp GF)), RET (PairV #v #true);

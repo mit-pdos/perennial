@@ -13,92 +13,92 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.raft.v3.confchange : go_string := go!"go.etcd.io/raft/v3/confchange"
+def go_etcd_io.raft.v3.confchange : GoString := go!"go.etcd.io/raft/v3/confchange"
 end pkg_id
 
 namespace go_etcd_io.raft.v3.confchange
 
-def Changer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/confchange.Changer" [])
+def Changer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/confchange.Changer" [])
 
 attribute [irreducible] Changer
 
-noncomputable def checkInvariants [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkInvariants [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.checkInvariants"
 
-noncomputable def checkAndReturn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkAndReturn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.checkAndReturn"
 
-noncomputable def nilAwareAdd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilAwareAdd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.nilAwareAdd"
 
-noncomputable def nilAwareDelete [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilAwareDelete [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.nilAwareDelete"
 
-noncomputable def symdiff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symdiff [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.symdiff"
 
-noncomputable def joint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def joint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.joint"
 
-noncomputable def incoming [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def incoming [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.incoming"
 
-noncomputable def outgoing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outgoing [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.outgoing"
 
-noncomputable def outgoingPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def outgoingPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.outgoingPtr"
 
-noncomputable def Describe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Describe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.Describe"
 
-noncomputable def toConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toConfChangeSingle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.toConfChangeSingle"
 
-noncomputable def chain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chain [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.chain"
 
-noncomputable def Restore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Restore [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/confchange.Restore"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.confchange where
-  pkg_imported_pkgs := [pkg_id.go_etcd_io.raft.v3.tracker]
+  pkgImportedPkgs := [pkg_id.go_etcd_io.raft.v3.tracker]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.confchange)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.raft.v3.tracker.initialize') (Val #())))))))
 
 namespace Changer
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Tracker' : _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker.t
   LastIndex' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Changer
 
-@[reducible] def Changer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Changer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Tracker" _root_.Perennial.go_etcd_io.raft.v3.tracker.ProgressTracker),
 (go.field_decl.FieldDecl go!"LastIndex" go.uint64)]
 
-@[irreducible] def Changer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Changer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Changer'fds_unsealed
 
-instance equals_unfold_Changer [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Changer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Changer'fds Changer'fds_unsealed :=
   ⟨by unfold Changer'fds; rfl⟩
 
-@[reducible] def «Changerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Changer'fds)
+@[reducible] def «Changerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Changer'fds)
 
-class Changer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Changer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Changer_type_repr : go.TypeReprUnderlying «Changerⁱᵐᵖˡ» Changer.t
   Changer_underlying : go.UnderlyingDirectedEq Changer «Changerⁱᵐᵖˡ»
   Changer_get_Tracker : ∀ (x : Changer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Changerⁱᵐᵖˡ» go!"Tracker") #x (Val #(x.Tracker'))
@@ -113,7 +113,7 @@ attribute [instance] Changer_Assumptions.Changer_type_repr
   Changer_Assumptions.Changer_get_LastIndex
   Changer_Assumptions.Changer_set_LastIndex
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Changer_instance : Changer_Assumptions
   import_tracker_Assumption : _root_.Perennial.go_etcd_io.raft.v3.tracker.Assumptions
 

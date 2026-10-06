@@ -6,7 +6,7 @@ import Perennial.Golang.Defn.Exception
 namespace Perennial
 
 section defn
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 /-- `assume e` goes into an infinite loop if e does not hold -/
 def assume : val :=

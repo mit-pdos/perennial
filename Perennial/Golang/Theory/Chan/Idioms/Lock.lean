@@ -26,11 +26,11 @@ structure LockChannelNames where
   lockedName : GName
 
 section lock_channel
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 /-- The lock channel invariant. -/
@@ -45,15 +45,15 @@ def lockChannelInv (γ : ChanNames) (R : IProp GF) : IProp GF :=
      | _ => iprop(False)))
 
 variable (V) in
-def isLockChannel (γ : LockChannelNames) (ch : loc) (R : IProp GF) : IProp GF :=
+def isLockChannel (γ : LockChannelNames) (ch : Loc) (R : IProp GF) : IProp GF :=
   iprop("#Hchan" ∷ isChan ch γ.lchanName V ∗
     "#Hinv" ∷ inv nroot (lockChannelInv (V := V) γ.lchanName R))
 
-instance isLockChannel_persistent (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+instance isLockChannel_persistent (γ : LockChannelNames) (ch : Loc) (R : IProp GF) :
     Persistent (isLockChannel V γ ch R) := by
   unfold isLockChannel; infer_instance
 
-theorem start_lock_channel (ch : loc) (R : IProp GF) (γ : ChanNames)
+theorem start_lock_channel (ch : Loc) (R : IProp GF) (γ : ChanNames)
     (Hcap : γ.chanCap = W64 1) :
     ⊢ isChan ch γ V -∗ ownChan γ V (.Buffered []) -∗ ▷ R ={⊤}=∗
       ∃ γlock, isLockChannel V γlock ch R := by
@@ -71,12 +71,12 @@ theorem start_lock_channel (ch : loc) (R : IProp GF) (γ : ChanNames)
   unfold isLockChannel
   iframe #
 
-theorem isLockChannel_is_chan (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+theorem isLockChannel_is_chan (γ : LockChannelNames) (ch : Loc) (R : IProp GF) :
     isLockChannel V γ ch R ⊢ isChan ch γ.lchanName V := by
   unfold isLockChannel
   iintro ⟨$, -⟩
 
-theorem lock_channel_send_au (γ : LockChannelNames) (ch : loc) (v : V) (R : IProp GF)
+theorem lock_channel_send_au (γ : LockChannelNames) (ch : Loc) (v : V) (R : IProp GF)
     (Φ : IProp GF) :
     ⊢ isLockChannel V γ ch R -∗ £ 1 -∗ ▷ (R -∗ Φ) -∗ sendAu γ.lchanName v Φ := by
   unfold isLockChannel sendAu
@@ -109,7 +109,7 @@ theorem lock_channel_send_au (γ : LockChannelNames) (ch : loc) (v : V) (R : IPr
     simp at Hbad
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem lock_channel_nonblocking_send_au (γ : LockChannelNames) (ch : loc) (v : V)
+theorem lock_channel_nonblocking_send_au (γ : LockChannelNames) (ch : Loc) (v : V)
     (R : IProp GF) (Φ : IProp GF) :
     ⊢ isLockChannel V γ ch R -∗ £ 1 -∗ (R -∗ Φ) -∗
       nonblockingSendAu γ.lchanName v Φ iprop(True) := by
@@ -145,7 +145,7 @@ theorem lock_channel_nonblocking_send_au (γ : LockChannelNames) (ch : loc) (v :
     all_goals first | itrivial | (iexfalso; iexact Hi)
   · itrivial
 
-theorem wp_lock_channel_lock (γ : LockChannelNames) (ch : loc) (v : V) (R : IProp GF) :
+theorem wp_lock_channel_lock (γ : LockChannelNames) (ch : Loc) (v : V) (R : IProp GF) :
     {{ isLockChannel V γ ch R }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); R }} := by
@@ -155,7 +155,7 @@ theorem wp_lock_channel_lock (γ : LockChannelNames) (ch : loc) (v : V) (R : IPr
   iintro ⟨Hlc1, Hlc2, Hlc3, Hlc4⟩
   iapply lock_channel_send_au γ ch v R (Φ #()) $$ Hlock Hlc1 HΦ
 
-theorem lock_channel_recv_au (γ : LockChannelNames) (ch : loc) (R : IProp GF)
+theorem lock_channel_recv_au (γ : LockChannelNames) (ch : Loc) (R : IProp GF)
     (Φ : V → Bool → IProp GF) :
     ⊢ isLockChannel V γ ch R -∗ R -∗ £ 1 -∗ ▷ (∀ v, True -∗ Φ v true) -∗
       recvAu γ.lchanName V Φ := by
@@ -187,7 +187,7 @@ theorem lock_channel_recv_au (γ : LockChannelNames) (ch : loc) (R : IProp GF)
     itrivial
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_lock_channel_unlock (γ : LockChannelNames) (ch : loc) (R : IProp GF) :
+theorem wp_lock_channel_unlock (γ : LockChannelNames) (ch : Loc) (R : IProp GF) :
     {{ isLockChannel V γ ch R ∗ R }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V), RET (PairV #v #true); True }} := by

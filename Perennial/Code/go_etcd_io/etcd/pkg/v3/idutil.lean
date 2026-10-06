@@ -15,143 +15,143 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.pkg.v3.idutil : go_string := go!"go.etcd.io/etcd/pkg/v3/idutil"
+def go_etcd_io.etcd.pkg.v3.idutil : GoString := go!"go.etcd.io/etcd/pkg/v3/idutil"
 end pkg_id
 
 namespace go_etcd_io.etcd.pkg.v3.idutil
 
-def Generator [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/idutil.Generator" [])
+def Generator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/idutil.Generator" [])
 
 attribute [irreducible] Generator
 
-@[reducible] noncomputable def tsLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def tsLen [FfiSyntax] [GoGlobalContext] : val :=
   #(40 : Int)
 
-@[reducible] noncomputable def cntLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def cntLen [FfiSyntax] [GoGlobalContext] : val :=
   #(8 : Int)
 
-@[reducible] noncomputable def suffixLen [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def suffixLen [FfiSyntax] [GoGlobalContext] : val :=
   #(48 : Int)
 
-noncomputable def NewGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewGenerator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/idutil.NewGenerator"
 
-noncomputable def lowbit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lowbit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/idutil.lowbit"
 
 /-- go: id.go:56:6 -/
-noncomputable def «NewGeneratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewGeneratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "memberID"
   (Lam "now"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "now" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time))) (Var "now"))
   (Let "memberID" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "memberID"))
   (Let "prefix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "memberID"))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val suffixLen))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "memberID"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val suffixLen))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "unixMilli" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.time.Time) go!"UnixNano"))) (Var "now")) (Val #()))) (App (Val (GoInstruction (Convert _root_.Perennial.time.Duration go.uint64))) (App (Val (GoInstruction (GoOp GoDiv _root_.Perennial.time.Duration))) (Pair (Val _root_.Perennial.time.Millisecond) (Val _root_.Perennial.time.Nanosecond))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.time.Time) go!"UnixNano"))) (Var "now")) (Val #()))) (App (Val (GoInstruction (Convert _root_.Perennial.time.Duration go.uint64))) (App (Val (GoInstruction (GoOp GoDiv _root_.Perennial.time.Duration))) (Pair (Val _root_.Perennial.time.Millisecond) (Val _root_.Perennial.time.Nanosecond))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "suffix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "unixMilli"))
-  (Let "$a1" (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val tsLen))
-  (App (App (App (Val (GoInstruction (FuncResolve lowbit []))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val cntLen))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val tsLen))
+  (App (App (App (Val (GoInstruction (FuncResolve lowbit []))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val cntLen))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc Generator))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "prefix"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
   (App (Val (GoInstruction (CompositeLiteral Generator))) (LiteralValue [(KeyedElement (some (KeyField go!"prefix")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"suffix")) (ElementExpression go.uint64 (Var "$v1")))]))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "suffix") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "unixMilli") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "prefix") (Var "$r0"))))))))))))
 
 /-- Next generates a id that is unique.
 
     go: id.go:67:21 -/
-noncomputable def «Generator__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Generator__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "g" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Generator)))) (Var "g"))
+  (App (Val exceptionDo)
+  (Let "g" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Generator)))) (Var "g"))
   (Let "suffix" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Generator go!"suffix"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Generator)))) (Var "g")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Generator go!"suffix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator)))) (Var "g")))
   (Let "$a1" (Val #(W64 1))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Generator go!"prefix"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Generator)))) (Var "g")))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
-  (Let "$a1" (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val suffixLen))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Generator go!"prefix"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Generator)))) (Var "g")))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "suffix"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val suffixLen))
   (App (App (App (Val (GoInstruction (FuncResolve lowbit []))) (Val #())) (Var "$a0")) (Var "$a1"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "id") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "suffix") (Var "$r0")))))))))))
 
 /-- go: id.go:73:6 -/
-noncomputable def «lowbitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «lowbitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "n"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val _root_.Perennial.math.MaxUint64)) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (Val #(W64 64)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "n")))))))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val _root_.Perennial.math.MaxUint64)) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (Val #(W64 64)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "n")))))))))))))))
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.idutil where
-  pkg_imported_pkgs := [pkg_id.math, pkg_id.sync.atomic, pkg_id.time]
+  pkgImportedPkgs := [pkg_id.math, pkg_id.sync.atomic, pkg_id.time]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.pkg.v3.idutil)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _root_.Perennial.math.initialize') (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
 namespace Generator
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   prefix' : w64
   suffix' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Generator
 
-@[reducible] def Generator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Generator'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prefix" go.uint64),
 (go.field_decl.FieldDecl go!"suffix" go.uint64)]
 
-@[irreducible] def Generator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Generator'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Generator'fds_unsealed
 
-instance equals_unfold_Generator [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Generator [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Generator'fds Generator'fds_unsealed :=
   ⟨by unfold Generator'fds; rfl⟩
 
-@[reducible] def «Generatorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Generator'fds)
+@[reducible] def «Generatorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Generator'fds)
 
-class Generator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Generator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Generator_type_repr : go.TypeReprUnderlying «Generatorⁱᵐᵖˡ» Generator.t
   Generator_underlying : go.UnderlyingDirectedEq Generator «Generatorⁱᵐᵖˡ»
   Generator_get_prefix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Generatorⁱᵐᵖˡ» go!"prefix") #x (Val #(x.prefix'))
   Generator_set_prefix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Generatorⁱᵐᵖˡ» go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : Generator.t)))
   Generator_get_suffix : ∀ (x : Generator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Generatorⁱᵐᵖˡ» go!"suffix") #x (Val #(x.suffix'))
   Generator_set_suffix : ∀ (x : Generator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Generatorⁱᵐᵖˡ» go!"suffix") (PairV #x #y) (Val #(({ x with suffix' := y } : Generator.t)))
-  Generator'ptr_Next_unfold : MethodUnfold (go.type.PointerType Generator) go!"Next" «Generator__Nextⁱᵐᵖˡ»
+  Generator'ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Generator) go!"Next" «Generator__Nextⁱᵐᵖˡ»
 
 attribute [instance] Generator_Assumptions.Generator_type_repr
   Generator_Assumptions.Generator_underlying
@@ -161,7 +161,7 @@ attribute [instance] Generator_Assumptions.Generator_type_repr
   Generator_Assumptions.Generator_set_suffix
   Generator_Assumptions.Generator'ptr_Next_unfold
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Generator_instance : Generator_Assumptions
   NewGenerator_unfold : FuncUnfold NewGenerator [] «NewGeneratorⁱᵐᵖˡ»
   lowbit_unfold : FuncUnfold lowbit [] «lowbitⁱᵐᵖˡ»

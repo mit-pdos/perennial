@@ -12,18 +12,18 @@ import Perennial.Golang.Defn.PostLang
 namespace Perennial
 
 namespace error
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end error
 
 section helpers
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
-def «minⁱᵐᵖˡ» (t : go.type) (n : Nat) : val :=
+def «minⁱᵐᵖˡ» (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: ("x" <⟨t⟩ "y") then "x" else "y"
   | _ => LitV LitPoison
 
-def «maxⁱᵐᵖˡ» (t : go.type) (n : Nat) : val :=
+def «maxⁱᵐᵖˡ» (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
   | _ => LitV LitPoison
@@ -31,15 +31,15 @@ def «maxⁱᵐᵖˡ» (t : go.type) (n : Nat) : val :=
 end helpers
 
 namespace «unsafe»
-def Pointer : go.type := go.Named go!"unsafe.Pointer" []
+def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
 
-class Semantics [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
-  go_zero_val_Pointer : go.TypeReprUnderlying Pointer loc
-  go_eq_Pointer : go.IsStrictlyComparable Pointer loc
+class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
+  go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
+  go_eq_Pointer : go.IsStrictlyComparable Pointer Loc
   underlying_pointer : unsafe.Pointer ↓u unsafe.Pointer
-  convert_unsafe_to_pointer (elem : go.type) (l : loc) :
+  convert_unsafe_to_pointer (elem : go.GoType) (l : Loc) :
     ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
-  convert_pointer_to_unsafe (elem : go.type) (l : loc) :
+  convert_pointer_to_unsafe (elem : go.GoType) (l : Loc) :
     ⟦Convert (go.PointerType elem) unsafe.Pointer, #l⟧ ⤳[under] #l
 
 attribute [instance] Semantics.go_zero_val_Pointer Semantics.go_eq_Pointer
@@ -50,84 +50,84 @@ export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_u
 end «unsafe»
 
 namespace any
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end any
 
 namespace go
 
 /-! Functions from https://go.dev/ref/spec#Predeclared_identifiers -/
-def append : go_string := go!"append"
-def cap : go_string := go!"cap"
-def clear : go_string := go!"clear"
-def close : go_string := go!"close"
-def complex : go_string := go!"close"
-def copy : go_string := go!"copy"
-def delete : go_string := go!"delete"
-def imag : go_string := go!"imag"
-def len : go_string := go!"len"
-def make3 : go_string := go!"make3"
-def make2 : go_string := go!"make2"
-def make1 : go_string := go!"make1"
-def max : go_string := go!"max"
-def min : go_string := go!"min"
+def append : GoString := go!"append"
+def cap : GoString := go!"cap"
+def clear : GoString := go!"clear"
+def close : GoString := go!"close"
+def complex : GoString := go!"close"
+def copy : GoString := go!"copy"
+def delete : GoString := go!"delete"
+def imag : GoString := go!"imag"
+def len : GoString := go!"len"
+def make3 : GoString := go!"make3"
+def make2 : GoString := go!"make2"
+def make1 : GoString := go!"make1"
+def max : GoString := go!"max"
+def min : GoString := go!"min"
 -- Instead of `new`, the model uses `GoAlloc`
-def panic : go_string := go!"panic"
-def print : go_string := go!"print"
-def println : go_string := go!"println"
-def real : go_string := go!"real"
-def recover : go_string := go!"recover"
+def panic : GoString := go!"panic"
+def print : GoString := go!"print"
+def println : GoString := go!"println"
+def real : GoString := go!"real"
+def recover : GoString := go!"recover"
 
 /-! Types from https://go.dev/ref/spec#Predeclared_identifiers -/
-@[reducible] def any : go.type := go.InterfaceType []
+@[reducible] def any : go.GoType := go.InterfaceType []
 --  bool is declared in PreLang.
 --  byte is aliased below
 --  comparable is omitted: it's only used in type constraints and does not
 --  affect executions
-def complex64 : go.type := go.Named go!"complex64" []
-def complex128 : go.type := go.Named go!"complex128" []
+def complex64 : go.GoType := go.Named go!"complex64" []
+def complex128 : go.GoType := go.Named go!"complex128" []
 --  error is aliased below, after defining string.
-def float32 : go.type := go.Named go!"float32" []
-def float64 : go.type := go.Named go!"float64" []
-def int : go.type := go.Named go!"int" []
-def int8 : go.type := go.Named go!"int8" []
-def int16 : go.type := go.Named go!"int16" []
-def int32 : go.type := go.Named go!"int32" []
-def int64 : go.type := go.Named go!"int64" []
-abbrev rune : go.type := int32
-def string : go.type := go.Named go!"string" []
+def float32 : go.GoType := go.Named go!"float32" []
+def float64 : go.GoType := go.Named go!"float64" []
+def int : go.GoType := go.Named go!"int" []
+def int8 : go.GoType := go.Named go!"int8" []
+def int16 : go.GoType := go.Named go!"int16" []
+def int32 : go.GoType := go.Named go!"int32" []
+def int64 : go.GoType := go.Named go!"int64" []
+abbrev rune : go.GoType := int32
+def string : go.GoType := go.Named go!"string" []
 /-- `error` is reducible (like `any`; in Rocq it is a notation-like definition), so that
 typeclass search sees that it is an interface type (`go.error ↓u go.InterfaceType _`,
 `IntoValTyped interface.t go.error`, ...). -/
-@[reducible] def error : go.type :=
+@[reducible] def error : go.GoType :=
   go.InterfaceType [go.MethodElem go!"Error" (go.Signature [] false [go.string])]
 
-def uint : go.type := go.Named go!"uint" []
-def uint8 : go.type := go.Named go!"uint8" []
-abbrev byte : go.type := uint8
-def uint16 : go.type := go.Named go!"uint16" []
-def uint32 : go.type := go.Named go!"uint32" []
-def uint64 : go.type := go.Named go!"uint64" []
+def uint : go.GoType := go.Named go!"uint" []
+def uint8 : go.GoType := go.Named go!"uint8" []
+abbrev byte : go.GoType := uint8
+def uint16 : go.GoType := go.Named go!"uint16" []
+def uint32 : go.GoType := go.Named go!"uint32" []
+def uint64 : go.GoType := go.Named go!"uint64" []
 /-- 64-bit unsigned integer (Lean addition: Rocq declares only the name); see
 `go.UintptrSemantics`. -/
-def uintptr : go.type := go.Named go!"uintptr" []
+def uintptr : go.GoType := go.Named go!"uintptr" []
 
 -- Untyped types
-def untyped_int : go.type := go.Named go!"untyped int" []
-abbrev untyped_string : go.type := go.string
-abbrev untyped_bool : go.type := go.bool
-def untyped_nil : go.type := go.Named go!"untyped nil" []
-def untyped_float : go.type := go.Named go!"untyped float" []
-abbrev untyped_rune : go.type := untyped_int
+def untypedInt : go.GoType := go.Named go!"untyped int" []
+abbrev untypedString : go.GoType := go.string
+abbrev untypedBool : go.GoType := go.bool
+def untypedNil : go.GoType := go.Named go!"untyped nil" []
+def untypedFloat : go.GoType := go.Named go!"untyped float" []
+abbrev untypedRune : go.GoType := untypedInt
 
-def proph_id : go.type := go.Named go!"proph id" []
+def prophId : go.GoType := go.Named go!"proph id" []
 
 section defs
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
 /-- These are the predeclareds that are modeled as taking up a single heap
 location. A `class` (Rocq: plain inductive) so that the `[IsPredeclared u]`
 premises below are found by typeclass search. -/
-class inductive IsPredeclared : go.type → Prop
+class inductive IsPredeclared : go.GoType → Prop
   | isPredeclared_uint : IsPredeclared go.uint
   | isPredeclared_uint8 : IsPredeclared go.uint8
   | isPredeclared_uint16 : IsPredeclared go.uint16
@@ -145,7 +145,7 @@ class inductive IsPredeclared : go.type → Prop
   | isPredeclared_float32 : IsPredeclared go.float32
   | isPredeclared_float64 : IsPredeclared go.float64
   -- Treating this like a predeclared too.
-  | isPredeclared_proph_id : IsPredeclared go.proph_id
+  | isPredeclared_proph_id : IsPredeclared go.prophId
 
 attribute [instance] IsPredeclared.isPredeclared_uint IsPredeclared.isPredeclared_uint8
   IsPredeclared.isPredeclared_uint16 IsPredeclared.isPredeclared_uint32
@@ -164,26 +164,26 @@ export IsPredeclared (isPredeclared_uint isPredeclared_uint8 isPredeclared_uint1
   isPredeclared_proph_id)
 
 class ProphIdSemantics [GoSemanticsFunctions] : Prop where
-  underlying_proph_id : go.proph_id ↓u go.proph_id
-  go_zero_val_proph_id : TypeReprUnderlying go.proph_id Perennial.proph_id
+  underlying_proph_id : go.prophId ↓u go.prophId
+  go_zero_val_proph_id : TypeReprUnderlying go.prophId Perennial.proph_id
 
 attribute [instance] ProphIdSemantics.underlying_proph_id ProphIdSemantics.go_zero_val_proph_id
 export ProphIdSemantics (underlying_proph_id go_zero_val_proph_id)
 
 class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
-  underlying_untyped_int : go.untyped_int ↓u go.untyped_int
-  neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untyped_int, #v⟧ ⤳ #(-v)
+  underlying_untyped_int : go.untypedInt ↓u go.untypedInt
+  neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untypedInt, #v⟧ ⤳ #(-v)
 
-  convert_untyped_int_to_int (v : Int) : ⟦Convert go.untyped_int go.int, #v⟧ ⤳[under] #(W64 v)
-  convert_untyped_int_to_int64 (v : Int) : ⟦Convert go.untyped_int go.int64, #v⟧ ⤳[under] #(W64 v)
-  convert_untyped_int_to_int32 (v : Int) : ⟦Convert go.untyped_int go.int32, #v⟧ ⤳[under] #(W32 v)
-  convert_untyped_int_to_int16 (v : Int) : ⟦Convert go.untyped_int go.int16, #v⟧ ⤳[under] #(W16 v)
-  convert_untyped_int_to_int8 (v : Int) : ⟦Convert go.untyped_int go.int8, #v⟧ ⤳[under] #(W8 v)
-  convert_untyped_int_to_uint (v : Int) : ⟦Convert go.untyped_int go.uint, #v⟧ ⤳[under] #(W64 v)
-  convert_untyped_int_to_uint64 (v : Int) : ⟦Convert go.untyped_int go.uint64, #v⟧ ⤳[under] #(W64 v)
-  convert_untyped_int_to_uint32 (v : Int) : ⟦Convert go.untyped_int go.uint32, #v⟧ ⤳[under] #(W32 v)
-  convert_untyped_int_to_uint16 (v : Int) : ⟦Convert go.untyped_int go.uint16, #v⟧ ⤳[under] #(W16 v)
-  convert_untyped_int_to_uint8 (v : Int) : ⟦Convert go.untyped_int go.uint8, #v⟧ ⤳[under] #(W8 v)
+  convert_untyped_int_to_int (v : Int) : ⟦Convert go.untypedInt go.int, #v⟧ ⤳[under] #(W64 v)
+  convert_untyped_int_to_int64 (v : Int) : ⟦Convert go.untypedInt go.int64, #v⟧ ⤳[under] #(W64 v)
+  convert_untyped_int_to_int32 (v : Int) : ⟦Convert go.untypedInt go.int32, #v⟧ ⤳[under] #(W32 v)
+  convert_untyped_int_to_int16 (v : Int) : ⟦Convert go.untypedInt go.int16, #v⟧ ⤳[under] #(W16 v)
+  convert_untyped_int_to_int8 (v : Int) : ⟦Convert go.untypedInt go.int8, #v⟧ ⤳[under] #(W8 v)
+  convert_untyped_int_to_uint (v : Int) : ⟦Convert go.untypedInt go.uint, #v⟧ ⤳[under] #(W64 v)
+  convert_untyped_int_to_uint64 (v : Int) : ⟦Convert go.untypedInt go.uint64, #v⟧ ⤳[under] #(W64 v)
+  convert_untyped_int_to_uint32 (v : Int) : ⟦Convert go.untypedInt go.uint32, #v⟧ ⤳[under] #(W32 v)
+  convert_untyped_int_to_uint16 (v : Int) : ⟦Convert go.untypedInt go.uint16, #v⟧ ⤳[under] #(W16 v)
+  convert_untyped_int_to_uint8 (v : Int) : ⟦Convert go.untypedInt go.uint8, #v⟧ ⤳[under] #(W8 v)
 
 attribute [instance] UntypedIntSemantics.underlying_untyped_int UntypedIntSemantics.neg_untyped_int
   UntypedIntSemantics.convert_untyped_int_to_int UntypedIntSemantics.convert_untyped_int_to_int64
@@ -801,7 +801,7 @@ class UintptrSemantics [GoSemanticsFunctions] : Prop where
 
   complement_uintptr (v : w64) : ⟦GoUnOp GoComplement go.uintptr, #v⟧ ⤳[under] #(~~~v)
 
-  convert_untyped_int_to_uintptr (v : Int) : ⟦Convert go.untyped_int go.uintptr, #v⟧
+  convert_untyped_int_to_uintptr (v : Int) : ⟦Convert go.untypedInt go.uintptr, #v⟧
     ⤳[under] #(W64 v)
   convert_int_to_uintptr (v : w64) : ⟦Convert go.int go.uintptr, #v⟧ ⤳[under] #v
   convert_int64_to_uintptr (v : w64) : ⟦Convert go.int64 go.uintptr, #v⟧ ⤳[under] #v
@@ -859,9 +859,9 @@ export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintp
   convert_uintptr_to_uint16 convert_uintptr_to_uint8)
 
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
-  underlying_untyped_float : go.untyped_float ↓u go.untyped_float
-  convert_untyped_float64 (v : w64) : ⟦Convert go.untyped_float go.float64, #v⟧ ⤳[under] #v
-  convert_untyped_float32 (v : w64) : ⟦Convert go.untyped_float go.float32, #v⟧
+  underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat
+  convert_untyped_float64 (v : w64) : ⟦Convert go.untypedFloat go.float64, #v⟧ ⤳[under] #v
+  convert_untyped_float32 (v : w64) : ⟦Convert go.untypedFloat go.float32, #v⟧
     ⤳[under] #(float64ToFloat32 v)
 
 attribute [instance] UntypedFloatSemantics.underlying_untyped_float
@@ -918,26 +918,26 @@ export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
-  alloc_predeclared (u : go.type) [H : IsPredeclared u] (v : val) :
+  alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
-  load_predeclared (u : go.type) [H : IsPredeclared u] (l : val) :
+  load_predeclared (u : go.GoType) [H : IsPredeclared u] (l : val) :
     ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
-  store_predeclared (u : go.type) [H : IsPredeclared u] (l v : val) :
+  store_predeclared (u : go.GoType) [H : IsPredeclared u] (l v : val) :
     ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
 
-  predeclared_underlying (t : go.type) (H : IsPredeclared t) : underlying t = t
+  predeclared_underlying (t : go.GoType) (H : IsPredeclared t) : underlying t = t
 
-  len_underlying (t : go.type) : functions len [t] = functions len [underlying t]
-  cap_underlying (t : go.type) : functions cap [t] = functions cap [underlying t]
-  clear_underlying (t : go.type) : functions clear [t] = functions clear [underlying t]
-  copy_underlying (t : go.type) : functions copy [t] = functions copy [underlying t]
-  delete_underlying (t : go.type) : functions delete [t] = functions delete [underlying t]
-  make3_underlying (t : go.type) : functions make3 [t] = functions make3 [underlying t]
-  make2_underlying (t : go.type) : functions make2 [t] = functions make2 [underlying t]
-  make1_underlying (t : go.type) : functions make1 [t] = functions make1 [underlying t]
+  len_underlying (t : go.GoType) : functions len [t] = functions len [underlying t]
+  cap_underlying (t : go.GoType) : functions cap [t] = functions cap [underlying t]
+  clear_underlying (t : go.GoType) : functions clear [t] = functions clear [underlying t]
+  copy_underlying (t : go.GoType) : functions copy [t] = functions copy [underlying t]
+  delete_underlying (t : go.GoType) : functions delete [t] = functions delete [underlying t]
+  make3_underlying (t : go.GoType) : functions make3 [t] = functions make3 [underlying t]
+  make2_underlying (t : go.GoType) : functions make2 [t] = functions make2 [underlying t]
+  make1_underlying (t : go.GoType) : functions make1 [t] = functions make1 [underlying t]
 
-  min_unfold (n : Nat) (t : go.type) : FuncUnfold min (List.replicate n t) («minⁱᵐᵖˡ» t n)
-  max_unfold (n : Nat) (t : go.type) : FuncUnfold max (List.replicate n t) («maxⁱᵐᵖˡ» t n)
+  min_unfold (n : Nat) (t : go.GoType) : FuncUnfold min (List.replicate n t) («minⁱᵐᵖˡ» t n)
+  max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) («maxⁱᵐᵖˡ» t n)
 
   [unsafe_sem : unsafe.Semantics]
 
@@ -947,7 +947,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_bool : TypeReprUnderlying go.bool Bool
   go_unop_not_bool (b : Bool) : ⟦GoUnOp GoNot go.bool, #b⟧ ⤳[under] #(!b)
 
-  [untyped_int_semantics : UntypedIntSemantics]
+  [untypedInt_semantics : UntypedIntSemantics]
   [int_semantics : IntSemantics]
   [int64_semantics : Int64Semantics]
   [int32_semantics : Int32Semantics]
@@ -959,30 +959,30 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   [uint16_semantics : Uint16Semantics]
   [uint8_semantics : Uint8Semantics]
   [uintptr_semantics : UintptrSemantics] -- Lean addition, see `UintptrSemantics`
-  [untyped_float_semantics : UntypedFloatSemantics]
+  [untypedFloat_semantics : UntypedFloatSemantics]
   [float64_semantics : Float64Semantics]
   [float32_semantics : Float32Semantics]
   [prophid_semantics : ProphIdSemantics]
 
   comparable_string : ⟦CheckComparable go.string, #()⟧ ⤳[under] #()
-  go_eq_string : IsStrictlyComparable go.string go_string
+  go_eq_string : IsStrictlyComparable go.string GoString
   underlying_string : go.string ↓u go.string
-  plus_string (v1 v2 : go_string) : ⟦GoOp GoPlus go.string, (#v1, #v2)⟧ ⤳[under] #(v1 ++ v2)
-  go_zero_val_string : TypeReprUnderlying go.string go_string
+  plus_string (v1 v2 : GoString) : ⟦GoOp GoPlus go.string, (#v1, #v2)⟧ ⤳[under] #(v1 ++ v2)
+  go_zero_val_string : TypeReprUnderlying go.string GoString
 
-  underlying_untyped_nil : go.untyped_nil ↓u go.untyped_nil
-  convert_nil_pointer (elem : go.type) :
-    ⟦Convert go.untyped_nil (go.PointerType elem), UntypedNil⟧ ⤳[under] #null
+  underlying_untyped_nil : go.untypedNil ↓u go.untypedNil
+  convert_nil_pointer (elem : go.GoType) :
+    ⟦Convert go.untypedNil (go.PointerType elem), UntypedNil⟧ ⤳[under] #null
   convert_nil_function (sig : go.signature) :
-    ⟦Convert go.untyped_nil (go.FunctionType sig), UntypedNil⟧ ⤳[under] #func.nil
-  convert_nil_slice (elem : go.type) :
-    ⟦Convert go.untyped_nil (go.SliceType elem), UntypedNil⟧ ⤳[under] #slice.nil
-  convert_nil_chan (dir : go.chan_dir) (elem : go.type) :
-    ⟦Convert go.untyped_nil (go.ChannelType dir elem), UntypedNil⟧ ⤳[under] #chan.nil
-  convert_nil_map (key elem : go.type) :
-    ⟦Convert go.untyped_nil (go.MapType key elem), UntypedNil⟧ ⤳[under] #map.nil
-  convert_nil_interface (elems : List go.interface_elem) :
-    ⟦Convert go.untyped_nil (go.InterfaceType elems), UntypedNil⟧ ⤳[under] #interface.nil
+    ⟦Convert go.untypedNil (go.FunctionType sig), UntypedNil⟧ ⤳[under] #func.nil
+  convert_nil_slice (elem : go.GoType) :
+    ⟦Convert go.untypedNil (go.SliceType elem), UntypedNil⟧ ⤳[under] #slice.nil
+  convert_nil_chan (dir : go.ChanDir) (elem : go.GoType) :
+    ⟦Convert go.untypedNil (go.ChannelType dir elem), UntypedNil⟧ ⤳[under] #chan.nil
+  convert_nil_map (key elem : go.GoType) :
+    ⟦Convert go.untypedNil (go.MapType key elem), UntypedNil⟧ ⤳[under] #map.nil
+  convert_nil_interface (elems : List go.InterfaceElem) :
+    ⟦Convert go.untypedNil (go.InterfaceType elems), UntypedNil⟧ ⤳[under] #interface.nil
 
   type_repr_empty_struct : TypeReprUnderlying (go.StructType []) Unit
 
@@ -991,14 +991,14 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.max_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
-  PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untyped_int_semantics
+  PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untypedInt_semantics
   PredeclaredSemantics.int_semantics PredeclaredSemantics.int64_semantics
   PredeclaredSemantics.int32_semantics PredeclaredSemantics.int16_semantics
   PredeclaredSemantics.int8_semantics PredeclaredSemantics.uint_semantics
   PredeclaredSemantics.uint64_semantics PredeclaredSemantics.uint32_semantics
   PredeclaredSemantics.uint16_semantics PredeclaredSemantics.uint8_semantics
   PredeclaredSemantics.uintptr_semantics
-  PredeclaredSemantics.untyped_float_semantics PredeclaredSemantics.float64_semantics
+  PredeclaredSemantics.untypedFloat_semantics PredeclaredSemantics.float64_semantics
   PredeclaredSemantics.float32_semantics PredeclaredSemantics.prophid_semantics
   PredeclaredSemantics.comparable_string PredeclaredSemantics.go_eq_string
   PredeclaredSemantics.underlying_string PredeclaredSemantics.plus_string
@@ -1011,9 +1011,9 @@ export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclare
   predeclared_underlying len_underlying cap_underlying clear_underlying copy_underlying
   delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
-  untyped_int_semantics int_semantics int64_semantics int32_semantics int16_semantics
+  untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics
-  uint8_semantics uintptr_semantics untyped_float_semantics float64_semantics float32_semantics
+  uint8_semantics uintptr_semantics untypedFloat_semantics float64_semantics float32_semantics
   prophid_semantics
   comparable_string go_eq_string underlying_string plus_string go_zero_val_string
   underlying_untyped_nil convert_nil_pointer convert_nil_function convert_nil_slice

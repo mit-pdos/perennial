@@ -16,1064 +16,1064 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_uber_org.zap : go_string := go!"go.uber.org/zap"
+def go_uber_org.zap : GoString := go!"go.uber.org/zap"
 end pkg_id
 
 namespace go_uber_org.zap
 
-def objects [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"go.uber.org/zap.objects" [T])
+def objects [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.objects" [T])
 
 attribute [irreducible] objects
 
-def ObjectMarshalerPtr [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"go.uber.org/zap.ObjectMarshalerPtr" [T])
+def ObjectMarshalerPtr [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.ObjectMarshalerPtr" [T])
 
 attribute [irreducible] ObjectMarshalerPtr
 
-def objectValues [ffi_syntax] [GoGlobalContext] (T : go.type) (P : go.type) : go.type :=
-  (go.type.Named go!"go.uber.org/zap.objectValues" [T, P])
+def objectValues [FfiSyntax] [GoGlobalContext] (T : go.GoType) (P : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.objectValues" [T, P])
 
 attribute [irreducible] objectValues
 
-def stringers [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"go.uber.org/zap.stringers" [T])
+def stringers [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.stringers" [T])
 
 attribute [irreducible] stringers
 
-def bools [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.bools" [])
+def bools [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.bools" [])
 
 attribute [irreducible] bools
 
-def byteStringsArray [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.byteStringsArray" [])
+def byteStringsArray [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.byteStringsArray" [])
 
 attribute [irreducible] byteStringsArray
 
-def complex128s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.complex128s" [])
+def complex128s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.complex128s" [])
 
 attribute [irreducible] complex128s
 
-def complex64s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.complex64s" [])
+def complex64s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.complex64s" [])
 
 attribute [irreducible] complex64s
 
-def durations [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.durations" [])
+def durations [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.durations" [])
 
 attribute [irreducible] durations
 
-def float64s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.float64s" [])
+def float64s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.float64s" [])
 
 attribute [irreducible] float64s
 
-def float32s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.float32s" [])
+def float32s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.float32s" [])
 
 attribute [irreducible] float32s
 
-def ints [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.ints" [])
+def ints [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.ints" [])
 
 attribute [irreducible] ints
 
-def int64s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.int64s" [])
+def int64s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.int64s" [])
 
 attribute [irreducible] int64s
 
-def int32s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.int32s" [])
+def int32s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.int32s" [])
 
 attribute [irreducible] int32s
 
-def int16s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.int16s" [])
+def int16s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.int16s" [])
 
 attribute [irreducible] int16s
 
-def int8s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.int8s" [])
+def int8s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.int8s" [])
 
 attribute [irreducible] int8s
 
-def stringArray [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.stringArray" [])
+def stringArray [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.stringArray" [])
 
 attribute [irreducible] stringArray
 
-def times [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.times" [])
+def times [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.times" [])
 
 attribute [irreducible] times
 
-def uints [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uints" [])
+def uints [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uints" [])
 
 attribute [irreducible] uints
 
-def uint64s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uint64s" [])
+def uint64s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uint64s" [])
 
 attribute [irreducible] uint64s
 
-def uint32s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uint32s" [])
+def uint32s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uint32s" [])
 
 attribute [irreducible] uint32s
 
-def uint16s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uint16s" [])
+def uint16s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uint16s" [])
 
 attribute [irreducible] uint16s
 
-def uint8s [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uint8s" [])
+def uint8s [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uint8s" [])
 
 attribute [irreducible] uint8s
 
-def uintptrs [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.uintptrs" [])
+def uintptrs [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.uintptrs" [])
 
 attribute [irreducible] uintptrs
 
-def SamplingConfig [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.SamplingConfig" [])
+def SamplingConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.SamplingConfig" [])
 
 attribute [irreducible] SamplingConfig
 
-def Config [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.Config" [])
+def Config [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.Config" [])
 
 attribute [irreducible] Config
 
-def errArray [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.errArray" [])
+def errArray [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.errArray" [])
 
 attribute [irreducible] errArray
 
-def errArrayElem [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.errArrayElem" [])
+def errArrayElem [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.errArrayElem" [])
 
 attribute [irreducible] errArrayElem
 
-def dictObject [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.dictObject" [])
+def dictObject [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.dictObject" [])
 
 attribute [irreducible] dictObject
 
-def anyFieldC [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"go.uber.org/zap.anyFieldC" [T])
+def anyFieldC [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.anyFieldC" [T])
 
 attribute [irreducible] anyFieldC
 
-def loggerWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.loggerWriter" [])
+def loggerWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.loggerWriter" [])
 
 attribute [irreducible] loggerWriter
 
-def LevelEnablerFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.LevelEnablerFunc" [])
+def LevelEnablerFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.LevelEnablerFunc" [])
 
 attribute [irreducible] LevelEnablerFunc
 
-def AtomicLevel [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.AtomicLevel" [])
+def AtomicLevel [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.AtomicLevel" [])
 
 attribute [irreducible] AtomicLevel
 
-def Logger [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.Logger" [])
+def Logger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.Logger" [])
 
 attribute [irreducible] Logger
 
-def Option [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.Option" [])
+def Option [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.Option" [])
 
 attribute [irreducible] Option
 
-def optionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.optionFunc" [])
+def optionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.optionFunc" [])
 
 attribute [irreducible] optionFunc
 
-def Sink [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.Sink" [])
+def Sink [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.Sink" [])
 
 attribute [irreducible] Sink
 
-def errSinkNotFound [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.errSinkNotFound" [])
+def errSinkNotFound [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.errSinkNotFound" [])
 
 attribute [irreducible] errSinkNotFound
 
-def nopCloserSink [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.nopCloserSink" [])
+def nopCloserSink [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.nopCloserSink" [])
 
 attribute [irreducible] nopCloserSink
 
-def sinkRegistry [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.sinkRegistry" [])
+def sinkRegistry [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.sinkRegistry" [])
 
 attribute [irreducible] sinkRegistry
 
-def SugaredLogger [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.SugaredLogger" [])
+def SugaredLogger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.SugaredLogger" [])
 
 attribute [irreducible] SugaredLogger
 
-def invalidPair [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.invalidPair" [])
+def invalidPair [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.invalidPair" [])
 
 attribute [irreducible] invalidPair
 
-def invalidPairs [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.uber.org/zap.invalidPairs" [])
+def invalidPairs [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.uber.org/zap.invalidPairs" [])
 
 attribute [irreducible] invalidPairs
 
-@[reducible] def Field [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def Field [FfiSyntax] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.go_uber_org.zap.zapcore.Field
 
-axiom «sinkRegistryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «sinkRegistryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom _stdLogDefaultDepth [ffi_syntax] [GoGlobalContext] : val
+axiom _stdLogDefaultDepth [FfiSyntax] [GoGlobalContext] : val
 
-axiom _loggerWriterDepth [ffi_syntax] [GoGlobalContext] : val
+axiom _loggerWriterDepth [FfiSyntax] [GoGlobalContext] : val
 
-axiom _programmerErrorTemplate [ffi_syntax] [GoGlobalContext] : val
+axiom _programmerErrorTemplate [FfiSyntax] [GoGlobalContext] : val
 
-axiom DebugLevel [ffi_syntax] [GoGlobalContext] : val
+axiom DebugLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom InfoLevel [ffi_syntax] [GoGlobalContext] : val
+axiom InfoLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom WarnLevel [ffi_syntax] [GoGlobalContext] : val
+axiom WarnLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom ErrorLevel [ffi_syntax] [GoGlobalContext] : val
+axiom ErrorLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom DPanicLevel [ffi_syntax] [GoGlobalContext] : val
+axiom DPanicLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom PanicLevel [ffi_syntax] [GoGlobalContext] : val
+axiom PanicLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom FatalLevel [ffi_syntax] [GoGlobalContext] : val
+axiom FatalLevel [FfiSyntax] [GoGlobalContext] : val
 
-axiom schemeFile [ffi_syntax] [GoGlobalContext] : val
+axiom schemeFile [FfiSyntax] [GoGlobalContext] : val
 
-axiom _oddNumberErrMsg [ffi_syntax] [GoGlobalContext] : val
+axiom _oddNumberErrMsg [FfiSyntax] [GoGlobalContext] : val
 
-axiom _nonStringKeyErrMsg [ffi_syntax] [GoGlobalContext] : val
+axiom _nonStringKeyErrMsg [FfiSyntax] [GoGlobalContext] : val
 
-axiom _multipleErrMsg [ffi_syntax] [GoGlobalContext] : val
+axiom _multipleErrMsg [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errNoEncoderNameSpecified [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoEncoderNameSpecified [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.errNoEncoderNameSpecified"
 
-axiom errNoEncoderNameSpecified'init [ffi_syntax] [GoGlobalContext] : val
+axiom errNoEncoderNameSpecified'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _encoderNameToConstructor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _encoderNameToConstructor [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._encoderNameToConstructor"
 
-axiom _encoderNameToConstructor'init [ffi_syntax] [GoGlobalContext] : val
+axiom _encoderNameToConstructor'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _encoderMutex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _encoderMutex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._encoderMutex"
 
-noncomputable def _errArrayElemPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _errArrayElemPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._errArrayElemPool"
 
-axiom _errArrayElemPool'init [ffi_syntax] [GoGlobalContext] : val
+axiom _errArrayElemPool'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _minTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _minTimeInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._minTimeInt64"
 
-axiom _minTimeInt64'init [ffi_syntax] [GoGlobalContext] : val
+axiom _minTimeInt64'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _maxTimeInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _maxTimeInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._maxTimeInt64"
 
-axiom _maxTimeInt64'init [ffi_syntax] [GoGlobalContext] : val
+axiom _maxTimeInt64'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _globalMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalMu [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._globalMu"
 
-noncomputable def _globalL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalL [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._globalL"
 
-axiom _globalL'init [ffi_syntax] [GoGlobalContext] : val
+axiom _globalL'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _globalS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _globalS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._globalS"
 
-axiom _globalS'init [ffi_syntax] [GoGlobalContext] : val
+axiom _globalS'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _sinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _sinkRegistry [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap._sinkRegistry"
 
-axiom _sinkRegistry'init [ffi_syntax] [GoGlobalContext] : val
+axiom _sinkRegistry'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Array [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Array [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Array"
 
-noncomputable def Bools [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bools [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Bools"
 
-noncomputable def ByteStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteStrings [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ByteStrings"
 
-noncomputable def Complex128s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex128s"
 
-noncomputable def Complex64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex64s"
 
-noncomputable def Durations [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Durations [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Durations"
 
-noncomputable def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float64s"
 
-noncomputable def Float32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float32s"
 
-noncomputable def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Ints [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Ints"
 
-noncomputable def Int64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int64s"
 
-noncomputable def Int32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int32s"
 
-noncomputable def Int16s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int16s"
 
-noncomputable def Int8s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int8s"
 
-noncomputable def Objects [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Objects [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Objects"
 
-noncomputable def ObjectValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ObjectValues"
 
-noncomputable def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Strings [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Strings"
 
-noncomputable def Stringers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Stringers"
 
-noncomputable def Times [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Times [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Times"
 
-noncomputable def Uints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uints [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uints"
 
-noncomputable def Uint64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint64s"
 
-noncomputable def Uint32s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint32s"
 
-noncomputable def Uint16s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint16s"
 
-noncomputable def Uint8s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint8s"
 
-noncomputable def Uintptrs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptrs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uintptrs"
 
-noncomputable def Errors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errors [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Errors"
 
-noncomputable def NewProductionEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProductionEncoderConfig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewProductionEncoderConfig"
 
-noncomputable def NewProductionConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProductionConfig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewProductionConfig"
 
-noncomputable def NewDevelopmentEncoderConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopmentEncoderConfig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewDevelopmentEncoderConfig"
 
-noncomputable def NewDevelopmentConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopmentConfig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewDevelopmentConfig"
 
-noncomputable def RegisterEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterEncoder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.RegisterEncoder"
 
-noncomputable def newEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newEncoder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.newEncoder"
 
-noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Error"
 
-noncomputable def NamedError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NamedError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NamedError"
 
-noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Skip"
 
-noncomputable def nilField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nilField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.nilField"
 
-noncomputable def Binary [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Binary [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Binary"
 
-noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Bool"
 
-noncomputable def Boolp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Boolp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Boolp"
 
-noncomputable def ByteString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ByteString"
 
-noncomputable def Complex128 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex128"
 
-noncomputable def Complex128p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex128p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex128p"
 
-noncomputable def Complex64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex64"
 
-noncomputable def Complex64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Complex64p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Complex64p"
 
-noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float64"
 
-noncomputable def Float64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float64p"
 
-noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float32"
 
-noncomputable def Float32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Float32p"
 
-noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int"
 
-noncomputable def Intp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Intp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Intp"
 
-noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int64"
 
-noncomputable def Int64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int64p"
 
-noncomputable def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int32"
 
-noncomputable def Int32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int32p"
 
-noncomputable def Int16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int16"
 
-noncomputable def Int16p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int16p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int16p"
 
-noncomputable def Int8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int8"
 
-noncomputable def Int8p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int8p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Int8p"
 
-noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.String"
 
-noncomputable def Stringp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Stringp"
 
-noncomputable def Uint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint"
 
-noncomputable def Uintp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uintp"
 
-noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint64"
 
-noncomputable def Uint64p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint64p"
 
-noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint32"
 
-noncomputable def Uint32p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint32p"
 
-noncomputable def Uint16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint16"
 
-noncomputable def Uint16p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint16p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint16p"
 
-noncomputable def Uint8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint8"
 
-noncomputable def Uint8p [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint8p [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uint8p"
 
-noncomputable def Uintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uintptr"
 
-noncomputable def Uintptrp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uintptrp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Uintptrp"
 
-noncomputable def Reflect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reflect [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Reflect"
 
-noncomputable def Namespace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Namespace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Namespace"
 
-noncomputable def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Stringer"
 
-noncomputable def Time [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Time [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Time"
 
-noncomputable def Timep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Timep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Timep"
 
-noncomputable def Stack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stack [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Stack"
 
-noncomputable def StackSkip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StackSkip [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.StackSkip"
 
-noncomputable def Duration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Duration [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Duration"
 
-noncomputable def Durationp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Durationp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Durationp"
 
-noncomputable def Object [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Object [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Object"
 
-noncomputable def Inline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Inline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Inline"
 
-noncomputable def Dict [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Dict [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Dict"
 
-noncomputable def dictField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dictField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.dictField"
 
-noncomputable def DictObject [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DictObject [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.DictObject"
 
-noncomputable def Any [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Any [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Any"
 
-noncomputable def LevelFlag [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LevelFlag [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.LevelFlag"
 
-noncomputable def L [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def L [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.L"
 
-noncomputable def S [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def S [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.S"
 
-noncomputable def ReplaceGlobals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReplaceGlobals [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ReplaceGlobals"
 
-noncomputable def NewStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewStdLog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewStdLog"
 
-noncomputable def NewStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewStdLogAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewStdLogAt"
 
-noncomputable def RedirectStdLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RedirectStdLog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.RedirectStdLog"
 
-noncomputable def RedirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RedirectStdLogAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.RedirectStdLogAt"
 
-noncomputable def redirectStdLogAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def redirectStdLogAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.redirectStdLogAt"
 
-noncomputable def levelToFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def levelToFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.levelToFunc"
 
-noncomputable def decodePutRequest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutRequest [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.decodePutRequest"
 
-noncomputable def decodePutURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutURL [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.decodePutURL"
 
-noncomputable def decodePutJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodePutJSON [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.decodePutJSON"
 
-noncomputable def NewAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAtomicLevel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewAtomicLevel"
 
-noncomputable def NewAtomicLevelAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAtomicLevelAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewAtomicLevelAt"
 
-noncomputable def ParseAtomicLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseAtomicLevel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ParseAtomicLevel"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.New"
 
-noncomputable def NewNop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewNop [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewNop"
 
-noncomputable def NewProduction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProduction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewProduction"
 
-noncomputable def NewDevelopment [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDevelopment [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewDevelopment"
 
-noncomputable def Must [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Must [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Must"
 
-noncomputable def NewExample [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewExample [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.NewExample"
 
-noncomputable def terminalHookOverride [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def terminalHookOverride [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.terminalHookOverride"
 
-noncomputable def WrapCore [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WrapCore [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.WrapCore"
 
-noncomputable def Hooks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Hooks [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Hooks"
 
-noncomputable def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fields [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Fields"
 
-noncomputable def ErrorOutput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorOutput [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.ErrorOutput"
 
-noncomputable def Development [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Development [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Development"
 
-noncomputable def AddCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddCaller [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.AddCaller"
 
-noncomputable def WithCaller [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithCaller [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.WithCaller"
 
-noncomputable def AddCallerSkip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddCallerSkip [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.AddCallerSkip"
 
-noncomputable def AddStacktrace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AddStacktrace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.AddStacktrace"
 
-noncomputable def IncreaseLevel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IncreaseLevel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.IncreaseLevel"
 
-noncomputable def WithPanicHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithPanicHook [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.WithPanicHook"
 
-noncomputable def OnFatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnFatal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.OnFatal"
 
-noncomputable def WithFatalHook [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithFatalHook [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.WithFatalHook"
 
-noncomputable def WithClock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithClock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.WithClock"
 
-noncomputable def newSinkRegistry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSinkRegistry [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.newSinkRegistry"
 
-noncomputable def RegisterSink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterSink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.RegisterSink"
 
-noncomputable def normalizeScheme [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def normalizeScheme [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.normalizeScheme"
 
-noncomputable def getMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessage [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.getMessage"
 
-noncomputable def getMessageln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessageln [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.getMessageln"
 
-noncomputable def timeToMillis [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeToMillis [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.timeToMillis"
 
-noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.Open"
 
-noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.open"
 
-noncomputable def CombineWriteSyncers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CombineWriteSyncers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.uber.org/zap.CombineWriteSyncers"
 
 instance info' : PkgInfo pkg_id.go_uber_org.zap where
-  pkg_imported_pkgs := [pkg_id.time, pkg_id.go_uber_org.zap.zapcore, pkg_id.io, pkg_id.sync.atomic]
+  pkgImportedPkgs := [pkg_id.time, pkg_id.go_uber_org.zap.zapcore, pkg_id.io, pkg_id.sync.atomic]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_uber_org.zap)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _sinkRegistry'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _globalS'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _globalL'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _maxTimeInt64'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _minTimeInt64'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _errArrayElemPool'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _encoderNameToConstructor'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errNoEncoderNameSpecified'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.go_uber_org.zap.zapcore.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.io.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))))
 
 namespace objects
-abbrev t [ffi_syntax] (T : Type) : Type := slice.t
+abbrev t [FfiSyntax] (T : Type) : Type := slice.t
 end objects
 
-@[reducible] def «objectsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.SliceType T)
+@[reducible] def «objectsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.SliceType T)
 
-class objects_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  objects_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (objects T) («objectsⁱᵐᵖˡ» T)
+class objects_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  objects_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (objects T) («objectsⁱᵐᵖˡ» T)
 
 attribute [instance] objects_Assumptions.objects_underlying
 
 namespace ObjectMarshalerPtr
-abbrev t [ffi_syntax] (T : Type) : Type := interface.t
+abbrev t [FfiSyntax] (T : Type) : Type := interface.t
 end ObjectMarshalerPtr
 
-@[reducible] def «ObjectMarshalerPtrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm (go.type.PointerType T))]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_uber_org.zap.zapcore.ObjectMarshaler)])])
+@[reducible] def «ObjectMarshalerPtrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm (go.GoType.PointerType T))]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_uber_org.zap.zapcore.ObjectMarshaler)])])
 
-class ObjectMarshalerPtr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ObjectMarshalerPtr_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (ObjectMarshalerPtr T) («ObjectMarshalerPtrⁱᵐᵖˡ» T)
+class ObjectMarshalerPtr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ObjectMarshalerPtr_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (ObjectMarshalerPtr T) («ObjectMarshalerPtrⁱᵐᵖˡ» T)
 
 attribute [instance] ObjectMarshalerPtr_Assumptions.ObjectMarshalerPtr_underlying
 
 namespace objectValues
-abbrev t [ffi_syntax] (T P : Type) : Type := slice.t
+abbrev t [FfiSyntax] (T P : Type) : Type := slice.t
 end objectValues
 
-@[reducible] def «objectValuesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) (P : go.type) : go.type :=
-  (go.type.SliceType T)
+@[reducible] def «objectValuesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) (P : go.GoType) : go.GoType :=
+  (go.GoType.SliceType T)
 
-class objectValues_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  objectValues_underlying : ∀ (T P : go.type), go.UnderlyingDirectedEq (objectValues T P) («objectValuesⁱᵐᵖˡ» T P)
+class objectValues_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  objectValues_underlying : ∀ (T P : go.GoType), go.UnderlyingDirectedEq (objectValues T P) («objectValuesⁱᵐᵖˡ» T P)
 
 attribute [instance] objectValues_Assumptions.objectValues_underlying
 
 namespace stringers
-abbrev t [ffi_syntax] (T : Type) : Type := slice.t
+abbrev t [FfiSyntax] (T : Type) : Type := slice.t
 end stringers
 
-@[reducible] def «stringersⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.SliceType T)
+@[reducible] def «stringersⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.SliceType T)
 
-class stringers_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  stringers_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (stringers T) («stringersⁱᵐᵖˡ» T)
+class stringers_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  stringers_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (stringers T) («stringersⁱᵐᵖˡ» T)
 
 attribute [instance] stringers_Assumptions.stringers_underlying
 
 namespace bools
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end bools
 
-@[reducible] def «boolsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.bool)
+@[reducible] def «boolsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.bool)
 
-class bools_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bools_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bools_underlying : go.UnderlyingDirectedEq bools «boolsⁱᵐᵖˡ»
 
 attribute [instance] bools_Assumptions.bools_underlying
 
 namespace byteStringsArray
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end byteStringsArray
 
-@[reducible] def «byteStringsArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType (go.type.SliceType go.byte))
+@[reducible] def «byteStringsArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType (go.GoType.SliceType go.byte))
 
-class byteStringsArray_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class byteStringsArray_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   byteStringsArray_underlying : go.UnderlyingDirectedEq byteStringsArray «byteStringsArrayⁱᵐᵖˡ»
 
 attribute [instance] byteStringsArray_Assumptions.byteStringsArray_underlying
 
 namespace complex128s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end complex128s
 
-@[reducible] def «complex128sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.complex128)
+@[reducible] def «complex128sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.complex128)
 
-class complex128s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class complex128s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   complex128s_underlying : go.UnderlyingDirectedEq complex128s «complex128sⁱᵐᵖˡ»
 
 attribute [instance] complex128s_Assumptions.complex128s_underlying
 
 namespace complex64s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end complex64s
 
-@[reducible] def «complex64sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.complex64)
+@[reducible] def «complex64sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.complex64)
 
-class complex64s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class complex64s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   complex64s_underlying : go.UnderlyingDirectedEq complex64s «complex64sⁱᵐᵖˡ»
 
 attribute [instance] complex64s_Assumptions.complex64s_underlying
 
 namespace durations
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end durations
 
-@[reducible] def «durationsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType _root_.Perennial.time.Duration)
+@[reducible] def «durationsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType _root_.Perennial.time.Duration)
 
-class durations_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class durations_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   durations_underlying : go.UnderlyingDirectedEq durations «durationsⁱᵐᵖˡ»
 
 attribute [instance] durations_Assumptions.durations_underlying
 
 namespace float64s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end float64s
 
-@[reducible] def «float64sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.float64)
+@[reducible] def «float64sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.float64)
 
-class float64s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class float64s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   float64s_underlying : go.UnderlyingDirectedEq float64s «float64sⁱᵐᵖˡ»
 
 attribute [instance] float64s_Assumptions.float64s_underlying
 
 namespace float32s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end float32s
 
-@[reducible] def «float32sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.float32)
+@[reducible] def «float32sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.float32)
 
-class float32s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class float32s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   float32s_underlying : go.UnderlyingDirectedEq float32s «float32sⁱᵐᵖˡ»
 
 attribute [instance] float32s_Assumptions.float32s_underlying
 
 namespace ints
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end ints
 
-@[reducible] def «intsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int)
+@[reducible] def «intsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int)
 
-class ints_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ints_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ints_underlying : go.UnderlyingDirectedEq ints «intsⁱᵐᵖˡ»
 
 attribute [instance] ints_Assumptions.ints_underlying
 
 namespace int64s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end int64s
 
-@[reducible] def «int64sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int64)
+@[reducible] def «int64sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int64)
 
-class int64s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int64s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int64s_underlying : go.UnderlyingDirectedEq int64s «int64sⁱᵐᵖˡ»
 
 attribute [instance] int64s_Assumptions.int64s_underlying
 
 namespace int32s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end int32s
 
-@[reducible] def «int32sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int32)
+@[reducible] def «int32sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int32)
 
-class int32s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int32s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int32s_underlying : go.UnderlyingDirectedEq int32s «int32sⁱᵐᵖˡ»
 
 attribute [instance] int32s_Assumptions.int32s_underlying
 
 namespace int16s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end int16s
 
-@[reducible] def «int16sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int16)
+@[reducible] def «int16sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int16)
 
-class int16s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int16s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int16s_underlying : go.UnderlyingDirectedEq int16s «int16sⁱᵐᵖˡ»
 
 attribute [instance] int16s_Assumptions.int16s_underlying
 
 namespace int8s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end int8s
 
-@[reducible] def «int8sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int8)
+@[reducible] def «int8sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int8)
 
-class int8s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int8s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int8s_underlying : go.UnderlyingDirectedEq int8s «int8sⁱᵐᵖˡ»
 
 attribute [instance] int8s_Assumptions.int8s_underlying
 
 namespace stringArray
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end stringArray
 
-@[reducible] def «stringArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.string)
+@[reducible] def «stringArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.string)
 
-class stringArray_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class stringArray_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   stringArray_underlying : go.UnderlyingDirectedEq stringArray «stringArrayⁱᵐᵖˡ»
 
 attribute [instance] stringArray_Assumptions.stringArray_underlying
 
 namespace times
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end times
 
-@[reducible] def «timesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType _root_.Perennial.time.Time)
+@[reducible] def «timesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType _root_.Perennial.time.Time)
 
-class times_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class times_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   times_underlying : go.UnderlyingDirectedEq times «timesⁱᵐᵖˡ»
 
 attribute [instance] times_Assumptions.times_underlying
 
 namespace uints
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uints
 
-@[reducible] def «uintsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uint)
+@[reducible] def «uintsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint)
 
-class uints_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uints_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uints_underlying : go.UnderlyingDirectedEq uints «uintsⁱᵐᵖˡ»
 
 attribute [instance] uints_Assumptions.uints_underlying
 
 namespace uint64s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uint64s
 
-@[reducible] def «uint64sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uint64)
+@[reducible] def «uint64sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint64)
 
-class uint64s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint64s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint64s_underlying : go.UnderlyingDirectedEq uint64s «uint64sⁱᵐᵖˡ»
 
 attribute [instance] uint64s_Assumptions.uint64s_underlying
 
 namespace uint32s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uint32s
 
-@[reducible] def «uint32sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uint32)
+@[reducible] def «uint32sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint32)
 
-class uint32s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint32s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint32s_underlying : go.UnderlyingDirectedEq uint32s «uint32sⁱᵐᵖˡ»
 
 attribute [instance] uint32s_Assumptions.uint32s_underlying
 
 namespace uint16s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uint16s
 
-@[reducible] def «uint16sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uint16)
+@[reducible] def «uint16sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint16)
 
-class uint16s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint16s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint16s_underlying : go.UnderlyingDirectedEq uint16s «uint16sⁱᵐᵖˡ»
 
 attribute [instance] uint16s_Assumptions.uint16s_underlying
 
 namespace uint8s
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uint8s
 
-@[reducible] def «uint8sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uint8)
+@[reducible] def «uint8sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint8)
 
-class uint8s_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint8s_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint8s_underlying : go.UnderlyingDirectedEq uint8s «uint8sⁱᵐᵖˡ»
 
 attribute [instance] uint8s_Assumptions.uint8s_underlying
 
 namespace uintptrs
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end uintptrs
 
-@[reducible] def «uintptrsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.uintptr)
+@[reducible] def «uintptrsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uintptr)
 
-class uintptrs_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uintptrs_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uintptrs_underlying : go.UnderlyingDirectedEq uintptrs «uintptrsⁱᵐᵖˡ»
 
 attribute [instance] uintptrs_Assumptions.uintptrs_underlying
 
 namespace SamplingConfig
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Initial' : w64
   Thereafter' : w64
   Hook' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end SamplingConfig
 
-@[reducible] def SamplingConfig'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SamplingConfig'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Initial" go.int),
 (go.field_decl.FieldDecl go!"Thereafter" go.int),
-(go.field_decl.FieldDecl go!"Hook" (go.type.FunctionType (go.signature.Signature [_root_.Perennial.go_uber_org.zap.zapcore.Entry, _root_.Perennial.go_uber_org.zap.zapcore.SamplingDecision] false [])))]
+(go.field_decl.FieldDecl go!"Hook" (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.go_uber_org.zap.zapcore.Entry, _root_.Perennial.go_uber_org.zap.zapcore.SamplingDecision] false [])))]
 
-@[irreducible] def SamplingConfig'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SamplingConfig'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SamplingConfig'fds_unsealed
 
-instance equals_unfold_SamplingConfig [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SamplingConfig [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SamplingConfig'fds SamplingConfig'fds_unsealed :=
   ⟨by unfold SamplingConfig'fds; rfl⟩
 
-@[reducible] def «SamplingConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SamplingConfig'fds)
+@[reducible] def «SamplingConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SamplingConfig'fds)
 
-class SamplingConfig_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SamplingConfig_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SamplingConfig_type_repr : go.TypeReprUnderlying «SamplingConfigⁱᵐᵖˡ» SamplingConfig.t
   SamplingConfig_underlying : go.UnderlyingDirectedEq SamplingConfig «SamplingConfigⁱᵐᵖˡ»
   SamplingConfig_get_Initial : ∀ (x : SamplingConfig.t), go.IsGoStepPureDetTagged under (StructFieldGet «SamplingConfigⁱᵐᵖˡ» go!"Initial") #x (Val #(x.Initial'))
@@ -1093,32 +1093,32 @@ attribute [instance] SamplingConfig_Assumptions.SamplingConfig_type_repr
   SamplingConfig_Assumptions.SamplingConfig_set_Hook
 
 namespace AtomicLevel
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  l' : loc
+  l' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end AtomicLevel
 
-@[reducible] def AtomicLevel'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"l" (go.type.PointerType _root_.Perennial.sync.atomic.Int32))]
+@[reducible] def AtomicLevel'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"l" (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32))]
 
-@[irreducible] def AtomicLevel'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def AtomicLevel'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   AtomicLevel'fds_unsealed
 
-instance equals_unfold_AtomicLevel [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_AtomicLevel [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold AtomicLevel'fds AtomicLevel'fds_unsealed :=
   ⟨by unfold AtomicLevel'fds; rfl⟩
 
-@[reducible] def «AtomicLevelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType AtomicLevel'fds)
+@[reducible] def «AtomicLevelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType AtomicLevel'fds)
 
-class AtomicLevel_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class AtomicLevel_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AtomicLevel_type_repr : go.TypeReprUnderlying «AtomicLevelⁱᵐᵖˡ» AtomicLevel.t
   AtomicLevel_underlying : go.UnderlyingDirectedEq AtomicLevel «AtomicLevelⁱᵐᵖˡ»
   AtomicLevel_get_l : ∀ (x : AtomicLevel.t), go.IsGoStepPureDetTagged under (StructFieldGet «AtomicLevelⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
-  AtomicLevel_set_l : ∀ (x : AtomicLevel.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «AtomicLevelⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : AtomicLevel.t)))
+  AtomicLevel_set_l : ∀ (x : AtomicLevel.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «AtomicLevelⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : AtomicLevel.t)))
 
 attribute [instance] AtomicLevel_Assumptions.AtomicLevel_type_repr
   AtomicLevel_Assumptions.AtomicLevel_underlying
@@ -1126,46 +1126,46 @@ attribute [instance] AtomicLevel_Assumptions.AtomicLevel_type_repr
   AtomicLevel_Assumptions.AtomicLevel_set_l
 
 namespace Config
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Level' : AtomicLevel.t
   Development' : Bool
   DisableCaller' : Bool
   DisableStacktrace' : Bool
-  Sampling' : loc
-  Encoding' : go_string
+  Sampling' : Loc
+  Encoding' : GoString
   EncoderConfig' : _root_.Perennial.go_uber_org.zap.zapcore.EncoderConfig.t
   OutputPaths' : slice.t
   ErrorOutputPaths' : slice.t
   InitialFields' : map.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Config
 
-@[reducible] def Config'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Config'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Level" AtomicLevel),
 (go.field_decl.FieldDecl go!"Development" go.bool),
 (go.field_decl.FieldDecl go!"DisableCaller" go.bool),
 (go.field_decl.FieldDecl go!"DisableStacktrace" go.bool),
-(go.field_decl.FieldDecl go!"Sampling" (go.type.PointerType SamplingConfig)),
+(go.field_decl.FieldDecl go!"Sampling" (go.GoType.PointerType SamplingConfig)),
 (go.field_decl.FieldDecl go!"Encoding" go.string),
 (go.field_decl.FieldDecl go!"EncoderConfig" _root_.Perennial.go_uber_org.zap.zapcore.EncoderConfig),
-(go.field_decl.FieldDecl go!"OutputPaths" (go.type.SliceType go.string)),
-(go.field_decl.FieldDecl go!"ErrorOutputPaths" (go.type.SliceType go.string)),
-(go.field_decl.FieldDecl go!"InitialFields" (go.type.MapType go.string (go.type.InterfaceType [])))]
+(go.field_decl.FieldDecl go!"OutputPaths" (go.GoType.SliceType go.string)),
+(go.field_decl.FieldDecl go!"ErrorOutputPaths" (go.GoType.SliceType go.string)),
+(go.field_decl.FieldDecl go!"InitialFields" (go.GoType.MapType go.string (go.GoType.InterfaceType [])))]
 
-@[irreducible] def Config'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Config'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Config'fds_unsealed
 
-instance equals_unfold_Config [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Config [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Config'fds Config'fds_unsealed :=
   ⟨by unfold Config'fds; rfl⟩
 
-@[reducible] def «Configⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Config'fds)
+@[reducible] def «Configⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Config'fds)
 
-class Config_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Config_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Config_type_repr : go.TypeReprUnderlying «Configⁱᵐᵖˡ» Config.t
   Config_underlying : go.UnderlyingDirectedEq Config «Configⁱᵐᵖˡ»
   Config_get_Level : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Level") #x (Val #(x.Level'))
@@ -1177,9 +1177,9 @@ class Config_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSema
   Config_get_DisableStacktrace : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"DisableStacktrace") #x (Val #(x.DisableStacktrace'))
   Config_set_DisableStacktrace : ∀ (x : Config.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"DisableStacktrace") (PairV #x #y) (Val #(({ x with DisableStacktrace' := y } : Config.t)))
   Config_get_Sampling : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Sampling") #x (Val #(x.Sampling'))
-  Config_set_Sampling : ∀ (x : Config.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Sampling") (PairV #x #y) (Val #(({ x with Sampling' := y } : Config.t)))
+  Config_set_Sampling : ∀ (x : Config.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Sampling") (PairV #x #y) (Val #(({ x with Sampling' := y } : Config.t)))
   Config_get_Encoding : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"Encoding") #x (Val #(x.Encoding'))
-  Config_set_Encoding : ∀ (x : Config.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Encoding") (PairV #x #y) (Val #(({ x with Encoding' := y } : Config.t)))
+  Config_set_Encoding : ∀ (x : Config.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"Encoding") (PairV #x #y) (Val #(({ x with Encoding' := y } : Config.t)))
   Config_get_EncoderConfig : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"EncoderConfig") #x (Val #(x.EncoderConfig'))
   Config_set_EncoderConfig : ∀ (x : Config.t) (y : _root_.Perennial.go_uber_org.zap.zapcore.EncoderConfig.t), go.IsGoStepPureDetTagged under (StructFieldSet «Configⁱᵐᵖˡ» go!"EncoderConfig") (PairV #x #y) (Val #(({ x with EncoderConfig' := y } : Config.t)))
   Config_get_OutputPaths : ∀ (x : Config.t), go.IsGoStepPureDetTagged under (StructFieldGet «Configⁱᵐᵖˡ» go!"OutputPaths") #x (Val #(x.OutputPaths'))
@@ -1213,40 +1213,40 @@ attribute [instance] Config_Assumptions.Config_type_repr
   Config_Assumptions.Config_set_InitialFields
 
 namespace errArray
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end errArray
 
-@[reducible] def «errArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.error)
+@[reducible] def «errArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.error)
 
-class errArray_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class errArray_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errArray_underlying : go.UnderlyingDirectedEq errArray «errArrayⁱᵐᵖˡ»
 
 attribute [instance] errArray_Assumptions.errArray_underlying
 
 namespace errArrayElem
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   error' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end errArrayElem
 
-@[reducible] def errArrayElem'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def errArrayElem'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"error" go.error)]
 
-@[irreducible] def errArrayElem'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def errArrayElem'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   errArrayElem'fds_unsealed
 
-instance equals_unfold_errArrayElem [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_errArrayElem [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold errArrayElem'fds errArrayElem'fds_unsealed :=
   ⟨by unfold errArrayElem'fds; rfl⟩
 
-@[reducible] def «errArrayElemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType errArrayElem'fds)
+@[reducible] def «errArrayElemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType errArrayElem'fds)
 
-class errArrayElem_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class errArrayElem_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errArrayElem_type_repr : go.TypeReprUnderlying «errArrayElemⁱᵐᵖˡ» errArrayElem.t
   errArrayElem_underlying : go.UnderlyingDirectedEq errArrayElem «errArrayElemⁱᵐᵖˡ»
   errArrayElem_get_error : ∀ (x : errArrayElem.t), go.IsGoStepPureDetTagged under (StructFieldGet «errArrayElemⁱᵐᵖˡ» go!"error") #x (Val #(x.error'))
@@ -1258,52 +1258,52 @@ attribute [instance] errArrayElem_Assumptions.errArrayElem_type_repr
   errArrayElem_Assumptions.errArrayElem_set_error
 
 namespace dictObject
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end dictObject
 
-@[reducible] def «dictObjectⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType Field)
+@[reducible] def «dictObjectⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType Field)
 
-class dictObject_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dictObject_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   dictObject_underlying : go.UnderlyingDirectedEq dictObject «dictObjectⁱᵐᵖˡ»
 
 attribute [instance] dictObject_Assumptions.dictObject_underlying
 
 namespace anyFieldC
-abbrev t [ffi_syntax] (T : Type) : Type := func.t
+abbrev t [FfiSyntax] (T : Type) : Type := func.t
 end anyFieldC
 
-@[reducible] def «anyFieldCⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.FunctionType (go.signature.Signature [go.string, T] false [Field]))
+@[reducible] def «anyFieldCⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [go.string, T] false [Field]))
 
-class anyFieldC_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  anyFieldC_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (anyFieldC T) («anyFieldCⁱᵐᵖˡ» T)
+class anyFieldC_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anyFieldC_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (anyFieldC T) («anyFieldCⁱᵐᵖˡ» T)
 
 attribute [instance] anyFieldC_Assumptions.anyFieldC_underlying
 
 namespace loggerWriter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   logFunc' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end loggerWriter
 
-@[reducible] def loggerWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"logFunc" (go.type.FunctionType (go.signature.Signature [go.string, (go.type.SliceType Field)] true [])))]
+@[reducible] def loggerWriter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"logFunc" (go.GoType.FunctionType (go.signature.Signature [go.string, (go.GoType.SliceType Field)] true [])))]
 
-@[irreducible] def loggerWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def loggerWriter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   loggerWriter'fds_unsealed
 
-instance equals_unfold_loggerWriter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_loggerWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold loggerWriter'fds loggerWriter'fds_unsealed :=
   ⟨by unfold loggerWriter'fds; rfl⟩
 
-@[reducible] def «loggerWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType loggerWriter'fds)
+@[reducible] def «loggerWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType loggerWriter'fds)
 
-class loggerWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class loggerWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   loggerWriter_type_repr : go.TypeReprUnderlying «loggerWriterⁱᵐᵖˡ» loggerWriter.t
   loggerWriter_underlying : go.UnderlyingDirectedEq loggerWriter «loggerWriterⁱᵐᵖˡ»
   loggerWriter_get_logFunc : ∀ (x : loggerWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet «loggerWriterⁱᵐᵖˡ» go!"logFunc") #x (Val #(x.logFunc'))
@@ -1315,36 +1315,36 @@ attribute [instance] loggerWriter_Assumptions.loggerWriter_type_repr
   loggerWriter_Assumptions.loggerWriter_set_logFunc
 
 namespace LevelEnablerFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end LevelEnablerFunc
 
-@[reducible] def «LevelEnablerFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [_root_.Perennial.go_uber_org.zap.zapcore.Level] false [go.bool]))
+@[reducible] def «LevelEnablerFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [_root_.Perennial.go_uber_org.zap.zapcore.Level] false [go.bool]))
 
-class LevelEnablerFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LevelEnablerFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LevelEnablerFunc_underlying : go.UnderlyingDirectedEq LevelEnablerFunc «LevelEnablerFuncⁱᵐᵖˡ»
 
 attribute [instance] LevelEnablerFunc_Assumptions.LevelEnablerFunc_underlying
 
 namespace Logger
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   core' : _root_.Perennial.go_uber_org.zap.zapcore.Core.t
   development' : Bool
   addCaller' : Bool
   onPanic' : _root_.Perennial.go_uber_org.zap.zapcore.CheckWriteHook.t
   onFatal' : _root_.Perennial.go_uber_org.zap.zapcore.CheckWriteHook.t
-  name' : go_string
+  name' : GoString
   errorOutput' : _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer.t
   addStack' : _root_.Perennial.go_uber_org.zap.zapcore.LevelEnabler.t
   callerSkip' : w64
   clock' : _root_.Perennial.go_uber_org.zap.zapcore.Clock.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Logger
 
-@[reducible] def Logger'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Logger'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"core" _root_.Perennial.go_uber_org.zap.zapcore.Core),
 (go.field_decl.FieldDecl go!"development" go.bool),
 (go.field_decl.FieldDecl go!"addCaller" go.bool),
@@ -1356,17 +1356,17 @@ end Logger
 (go.field_decl.FieldDecl go!"callerSkip" go.int),
 (go.field_decl.FieldDecl go!"clock" _root_.Perennial.go_uber_org.zap.zapcore.Clock)]
 
-@[irreducible] def Logger'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Logger'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Logger'fds_unsealed
 
-instance equals_unfold_Logger [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Logger [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Logger'fds Logger'fds_unsealed :=
   ⟨by unfold Logger'fds; rfl⟩
 
-@[reducible] def «Loggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Logger'fds)
+@[reducible] def «Loggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Logger'fds)
 
-class Logger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Logger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Logger_type_repr : go.TypeReprUnderlying «Loggerⁱᵐᵖˡ» Logger.t
   Logger_underlying : go.UnderlyingDirectedEq Logger «Loggerⁱᵐᵖˡ»
   Logger_get_core : ∀ (x : Logger.t), go.IsGoStepPureDetTagged under (StructFieldGet «Loggerⁱᵐᵖˡ» go!"core") #x (Val #(x.core'))
@@ -1380,7 +1380,7 @@ class Logger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSema
   Logger_get_onFatal : ∀ (x : Logger.t), go.IsGoStepPureDetTagged under (StructFieldGet «Loggerⁱᵐᵖˡ» go!"onFatal") #x (Val #(x.onFatal'))
   Logger_set_onFatal : ∀ (x : Logger.t) (y : _root_.Perennial.go_uber_org.zap.zapcore.CheckWriteHook.t), go.IsGoStepPureDetTagged under (StructFieldSet «Loggerⁱᵐᵖˡ» go!"onFatal") (PairV #x #y) (Val #(({ x with onFatal' := y } : Logger.t)))
   Logger_get_name : ∀ (x : Logger.t), go.IsGoStepPureDetTagged under (StructFieldGet «Loggerⁱᵐᵖˡ» go!"name") #x (Val #(x.name'))
-  Logger_set_name : ∀ (x : Logger.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «Loggerⁱᵐᵖˡ» go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Logger.t)))
+  Logger_set_name : ∀ (x : Logger.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Loggerⁱᵐᵖˡ» go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Logger.t)))
   Logger_get_errorOutput : ∀ (x : Logger.t), go.IsGoStepPureDetTagged under (StructFieldGet «Loggerⁱᵐᵖˡ» go!"errorOutput") #x (Val #(x.errorOutput'))
   Logger_set_errorOutput : ∀ (x : Logger.t) (y : _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer.t), go.IsGoStepPureDetTagged under (StructFieldSet «Loggerⁱᵐᵖˡ» go!"errorOutput") (PairV #x #y) (Val #(({ x with errorOutput' := y } : Logger.t)))
   Logger_get_addStack : ∀ (x : Logger.t), go.IsGoStepPureDetTagged under (StructFieldGet «Loggerⁱᵐᵖˡ» go!"addStack") #x (Val #(x.addStack'))
@@ -1414,68 +1414,68 @@ attribute [instance] Logger_Assumptions.Logger_type_repr
   Logger_Assumptions.Logger_set_clock
 
 namespace Option
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Option
 
-@[reducible] def «Optionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"apply" (go.signature.Signature [(go.type.PointerType Logger)] false []))])
+@[reducible] def «Optionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"apply" (go.signature.Signature [(go.GoType.PointerType Logger)] false []))])
 
-class Option_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Option_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Option_underlying : go.UnderlyingDirectedEq Option «Optionⁱᵐᵖˡ»
 
 attribute [instance] Option_Assumptions.Option_underlying
 
 namespace optionFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end optionFunc
 
-@[reducible] def «optionFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [(go.type.PointerType Logger)] false []))
+@[reducible] def «optionFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType Logger)] false []))
 
-class optionFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class optionFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   optionFunc_underlying : go.UnderlyingDirectedEq optionFunc «optionFuncⁱᵐᵖˡ»
 
 attribute [instance] optionFunc_Assumptions.optionFunc_underlying
 
 namespace Sink
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Sink
 
-@[reducible] def «Sinkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.io.Closer)])])
+@[reducible] def «Sinkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.io.Closer)])])
 
-class Sink_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Sink_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Sink_underlying : go.UnderlyingDirectedEq Sink «Sinkⁱᵐᵖˡ»
 
 attribute [instance] Sink_Assumptions.Sink_underlying
 
 namespace errSinkNotFound
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  scheme' : go_string
+  scheme' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end errSinkNotFound
 
-@[reducible] def errSinkNotFound'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def errSinkNotFound'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"scheme" go.string)]
 
-@[irreducible] def errSinkNotFound'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def errSinkNotFound'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   errSinkNotFound'fds_unsealed
 
-instance equals_unfold_errSinkNotFound [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_errSinkNotFound [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold errSinkNotFound'fds errSinkNotFound'fds_unsealed :=
   ⟨by unfold errSinkNotFound'fds; rfl⟩
 
-@[reducible] def «errSinkNotFoundⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType errSinkNotFound'fds)
+@[reducible] def «errSinkNotFoundⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType errSinkNotFound'fds)
 
-class errSinkNotFound_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class errSinkNotFound_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errSinkNotFound_type_repr : go.TypeReprUnderlying «errSinkNotFoundⁱᵐᵖˡ» errSinkNotFound.t
   errSinkNotFound_underlying : go.UnderlyingDirectedEq errSinkNotFound «errSinkNotFoundⁱᵐᵖˡ»
   errSinkNotFound_get_scheme : ∀ (x : errSinkNotFound.t), go.IsGoStepPureDetTagged under (StructFieldGet «errSinkNotFoundⁱᵐᵖˡ» go!"scheme") #x (Val #(x.scheme'))
-  errSinkNotFound_set_scheme : ∀ (x : errSinkNotFound.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «errSinkNotFoundⁱᵐᵖˡ» go!"scheme") (PairV #x #y) (Val #(({ x with scheme' := y } : errSinkNotFound.t)))
+  errSinkNotFound_set_scheme : ∀ (x : errSinkNotFound.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «errSinkNotFoundⁱᵐᵖˡ» go!"scheme") (PairV #x #y) (Val #(({ x with scheme' := y } : errSinkNotFound.t)))
 
 attribute [instance] errSinkNotFound_Assumptions.errSinkNotFound_type_repr
   errSinkNotFound_Assumptions.errSinkNotFound_underlying
@@ -1483,28 +1483,28 @@ attribute [instance] errSinkNotFound_Assumptions.errSinkNotFound_type_repr
   errSinkNotFound_Assumptions.errSinkNotFound_set_scheme
 
 namespace nopCloserSink
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   WriteSyncer' : _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end nopCloserSink
 
-@[reducible] def nopCloserSink'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nopCloserSink'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"WriteSyncer" _root_.Perennial.go_uber_org.zap.zapcore.WriteSyncer)]
 
-@[irreducible] def nopCloserSink'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def nopCloserSink'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nopCloserSink'fds_unsealed
 
-instance equals_unfold_nopCloserSink [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_nopCloserSink [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nopCloserSink'fds nopCloserSink'fds_unsealed :=
   ⟨by unfold nopCloserSink'fds; rfl⟩
 
-@[reducible] def «nopCloserSinkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType nopCloserSink'fds)
+@[reducible] def «nopCloserSinkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nopCloserSink'fds)
 
-class nopCloserSink_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nopCloserSink_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nopCloserSink_type_repr : go.TypeReprUnderlying «nopCloserSinkⁱᵐᵖˡ» nopCloserSink.t
   nopCloserSink_underlying : go.UnderlyingDirectedEq nopCloserSink «nopCloserSinkⁱᵐᵖˡ»
   nopCloserSink_get_WriteSyncer : ∀ (x : nopCloserSink.t), go.IsGoStepPureDetTagged under (StructFieldGet «nopCloserSinkⁱᵐᵖˡ» go!"WriteSyncer") #x (Val #(x.WriteSyncer'))
@@ -1521,7 +1521,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end sinkRegistry
 
-class sinkRegistry_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sinkRegistry_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sinkRegistry_type_repr : go.TypeReprUnderlying «sinkRegistryⁱᵐᵖˡ» sinkRegistry.t
   sinkRegistry_underlying : go.UnderlyingDirectedEq sinkRegistry «sinkRegistryⁱᵐᵖˡ»
   «sinkRegistryⁱᵐᵖˡ_underlying» : go.IsUnderlying «sinkRegistryⁱᵐᵖˡ» «sinkRegistryⁱᵐᵖˡ»
@@ -1531,32 +1531,32 @@ attribute [instance] sinkRegistry_Assumptions.sinkRegistry_type_repr
   sinkRegistry_Assumptions.«sinkRegistryⁱᵐᵖˡ_underlying»
 
 namespace SugaredLogger
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  base' : loc
+  base' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end SugaredLogger
 
-@[reducible] def SugaredLogger'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"base" (go.type.PointerType Logger))]
+@[reducible] def SugaredLogger'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType Logger))]
 
-@[irreducible] def SugaredLogger'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SugaredLogger'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SugaredLogger'fds_unsealed
 
-instance equals_unfold_SugaredLogger [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SugaredLogger [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SugaredLogger'fds SugaredLogger'fds_unsealed :=
   ⟨by unfold SugaredLogger'fds; rfl⟩
 
-@[reducible] def «SugaredLoggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SugaredLogger'fds)
+@[reducible] def «SugaredLoggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SugaredLogger'fds)
 
-class SugaredLogger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SugaredLogger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SugaredLogger_type_repr : go.TypeReprUnderlying «SugaredLoggerⁱᵐᵖˡ» SugaredLogger.t
   SugaredLogger_underlying : go.UnderlyingDirectedEq SugaredLogger «SugaredLoggerⁱᵐᵖˡ»
   SugaredLogger_get_base : ∀ (x : SugaredLogger.t), go.IsGoStepPureDetTagged under (StructFieldGet «SugaredLoggerⁱᵐᵖˡ» go!"base") #x (Val #(x.base'))
-  SugaredLogger_set_base : ∀ (x : SugaredLogger.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «SugaredLoggerⁱᵐᵖˡ» go!"base") (PairV #x #y) (Val #(({ x with base' := y } : SugaredLogger.t)))
+  SugaredLogger_set_base : ∀ (x : SugaredLogger.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «SugaredLoggerⁱᵐᵖˡ» go!"base") (PairV #x #y) (Val #(({ x with base' := y } : SugaredLogger.t)))
 
 attribute [instance] SugaredLogger_Assumptions.SugaredLogger_type_repr
   SugaredLogger_Assumptions.SugaredLogger_underlying
@@ -1564,32 +1564,32 @@ attribute [instance] SugaredLogger_Assumptions.SugaredLogger_type_repr
   SugaredLogger_Assumptions.SugaredLogger_set_base
 
 namespace invalidPair
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   position' : w64
   key' : interface.t
   value' : interface.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end invalidPair
 
-@[reducible] def invalidPair'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def invalidPair'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"position" go.int),
-(go.field_decl.FieldDecl go!"key" (go.type.InterfaceType [])),
-(go.field_decl.FieldDecl go!"value" (go.type.InterfaceType []))]
+(go.field_decl.FieldDecl go!"key" (go.GoType.InterfaceType [])),
+(go.field_decl.FieldDecl go!"value" (go.GoType.InterfaceType []))]
 
-@[irreducible] def invalidPair'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def invalidPair'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   invalidPair'fds_unsealed
 
-instance equals_unfold_invalidPair [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_invalidPair [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold invalidPair'fds invalidPair'fds_unsealed :=
   ⟨by unfold invalidPair'fds; rfl⟩
 
-@[reducible] def «invalidPairⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType invalidPair'fds)
+@[reducible] def «invalidPairⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType invalidPair'fds)
 
-class invalidPair_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class invalidPair_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   invalidPair_type_repr : go.TypeReprUnderlying «invalidPairⁱᵐᵖˡ» invalidPair.t
   invalidPair_underlying : go.UnderlyingDirectedEq invalidPair «invalidPairⁱᵐᵖˡ»
   invalidPair_get_position : ∀ (x : invalidPair.t), go.IsGoStepPureDetTagged under (StructFieldGet «invalidPairⁱᵐᵖˡ» go!"position") #x (Val #(x.position'))
@@ -1609,18 +1609,18 @@ attribute [instance] invalidPair_Assumptions.invalidPair_type_repr
   invalidPair_Assumptions.invalidPair_set_value
 
 namespace invalidPairs
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end invalidPairs
 
-@[reducible] def «invalidPairsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType invalidPair)
+@[reducible] def «invalidPairsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType invalidPair)
 
-class invalidPairs_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class invalidPairs_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   invalidPairs_underlying : go.UnderlyingDirectedEq invalidPairs «invalidPairsⁱᵐᵖˡ»
 
 attribute [instance] invalidPairs_Assumptions.invalidPairs_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   objects_instance : objects_Assumptions
   ObjectMarshalerPtr_instance : ObjectMarshalerPtr_Assumptions
   objectValues_instance : objectValues_Assumptions

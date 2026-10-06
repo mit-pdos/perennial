@@ -15,8 +15,8 @@ namespace Perennial.word
 open Lean Meta
 
 structure CacheEntry where
-  goal : Expr
-  proof : Expr
+  goal : Lean.Expr
+  proof : Lean.Expr
   /-- The declarations of the free variables of `goal` and `proof`. -/
   decls : Array LocalDecl
   consts : Array Name
@@ -27,7 +27,7 @@ initialize wordCache : IO.Ref (Std.HashMap UInt64 (Array CacheEntry)) ← IO.mkR
 def cacheMax : Nat := 4096
 
 /-- A cached proof of `goal` that is valid in the current context. -/
-def cacheLookup (goal : Expr) : MetaM (Option Expr) := do
+def cacheLookup (goal : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let some es := (← wordCache.get)[goal.hash]? | return none
   let lctx ← getLCtx
   let env ← getEnv
@@ -41,7 +41,7 @@ def cacheLookup (goal : Expr) : MetaM (Option Expr) := do
   return none
 
 /-- Record the proof `proof` of `goal` (no metavariables, no `sorry`). -/
-def cacheStore (goal proof : Expr) : MetaM Unit := do
+def cacheStore (goal proof : Lean.Expr) : MetaM Unit := do
   if proof.hasMVar || proof.hasSorry || goal.hasMVar then return
   let lctx ← getLCtx
   let fvs := (collectFVars (collectFVars {} goal) proof).fvarIds
@@ -56,11 +56,11 @@ def cacheStore (goal proof : Expr) : MetaM Unit := do
 
 /-- Goals that `omega` failed to prove, with the hypotheses it had (`omega` is
 deterministic, so it fails again on the same goal with the same hypotheses). -/
-initialize failCache : IO.Ref (Std.HashMap UInt64 (Array (Expr × Array (FVarId × Expr)))) ←
+initialize failCache : IO.Ref (Std.HashMap UInt64 (Array (Lean.Expr × Array (FVarId × Lean.Expr)))) ←
   IO.mkRef {}
 
 /-- The propositions of the current context (what `omega` can use). -/
-def propContext : MetaM (Array (FVarId × Expr)) := do
+def propContext : MetaM (Array (FVarId × Lean.Expr)) := do
   let mut r := #[]
   for d in ← getLCtx do
     if d.isImplementationDetail then continue
@@ -68,11 +68,11 @@ def propContext : MetaM (Array (FVarId × Expr)) := do
     if ← isProp ty then r := r.push (d.fvarId, ty)
   return r
 
-def failLookup (goal : Expr) (ctx : Array (FVarId × Expr)) : IO Bool := do
+def failLookup (goal : Lean.Expr) (ctx : Array (FVarId × Lean.Expr)) : IO Bool := do
   let some es := (← failCache.get)[goal.hash]? | return false
   return es.any fun (g, c) => g == goal && c == ctx
 
-def failStore (goal : Expr) (ctx : Array (FVarId × Expr)) : IO Unit :=
+def failStore (goal : Lean.Expr) (ctx : Array (FVarId × Lean.Expr)) : IO Unit :=
   failCache.modify fun m =>
     let m := if m.size ≥ cacheMax then {} else m
     m.insert goal.hash ((m.getD goal.hash #[]).push (goal, ctx))

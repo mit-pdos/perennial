@@ -17,11 +17,11 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 /-- The bag invariant. -/
@@ -35,18 +35,18 @@ def chanBagInv (γ : ChanNames) (P : V → IProp GF) : IProp GF :=
      | .Closed _ => iprop(False)
      | _ => iprop(True)))
 
-def isChanBagDef (γ : ChanNames) (ch : loc) (P : V → IProp GF) : IProp GF :=
+def isChanBagDef (γ : ChanNames) (ch : Loc) (P : V → IProp GF) : IProp GF :=
   iprop("#Hch" ∷ isChan ch γ V ∗ "#Hinv" ∷ inv nroot (chanBagInv γ P))
 /-- (Rocq: `Opaque isChanBag`) -/
-@[irreducible] def isChanBag (γ : ChanNames) (ch : loc) (P : V → IProp GF) : IProp GF :=
+@[irreducible] def isChanBag (γ : ChanNames) (ch : Loc) (P : V → IProp GF) : IProp GF :=
   isChanBagDef γ ch P
 theorem isChanBag_unseal : @isChanBag = @isChanBagDef := by funext; with_unfolding_all rfl
 
-instance isChanBag_pers (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+instance isChanBag_pers (γ : ChanNames) (ch : Loc) (P : V → IProp GF) :
     Persistent (isChanBag γ ch P) := by
   rw [isChanBag_unseal]; unfold isChanBagDef; infer_instance
 
-theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : loc) (γ : ChanNames)
+theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : Loc) (γ : ChanNames)
     (Hs : match s with | .Idle | .Buffered [] => True | _ => False) :
     ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗ isChanBag γ ch P := by
   iintro #Hch Hoc
@@ -62,12 +62,12 @@ theorem start_bag (P : V → IProp GF) (s : chanstate.t V) (ch : loc) (γ : Chan
   rw [isChanBag_unseal]; unfold isChanBagDef
   iframe #
 
-theorem is_bag_is_chan (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+theorem is_bag_is_chan (γ : ChanNames) (ch : Loc) (P : V → IProp GF) :
     ⊢ isChanBag γ ch P -∗ isChan ch γ V := by
   rw [isChanBag_unseal]; unfold isChanBagDef
   iintro ⟨$, -⟩
 
-theorem bag_recv_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Φ : V → Bool → IProp GF) :
+theorem bag_recv_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Φ : V → Bool → IProp GF) :
     ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ (▷ ∀ v, P v -∗ Φ v true) -∗ recvAu γ V Φ := by
   rw [isChanBag_unseal]; unfold isChanBagDef recvAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HΦ
@@ -124,7 +124,7 @@ theorem bag_recv_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Φ : V →
     iapply HΦ $$ Hi
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_bag_receive (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
+theorem wp_bag_receive (γ : ChanNames) (ch : Loc) (P : V → IProp GF) :
     {{ isChanBag γ ch P }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V), RET (PairV #v #true); P v }} := by
@@ -134,7 +134,7 @@ theorem wp_bag_receive (γ : ChanNames) (ch : loc) (P : V → IProp GF) :
   iintro ⟨Hlc1, Hlc2, Hlc3, Hlc4⟩
   iapply bag_recv_au γ ch P (fun v ok => Φ (PairV #v #ok)) $$ [$Hlc1 $Hlc2] Hbag HΦ
 
-theorem bag_send_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
+theorem bag_send_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
     ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ P v -∗ ▷ Φ -∗ sendAu γ v Φ := by
   rw [isChanBag_unseal]; unfold isChanBagDef sendAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HP HΦ
@@ -196,7 +196,7 @@ theorem bag_send_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (v : V) (Φ
     iexact HΦ
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_bag_send (γ : ChanNames) (ch : loc) (v : V) (P : V → IProp GF) :
+theorem wp_bag_send (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp GF) :
     {{ isChanBag γ ch P ∗ P v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); True }} := by

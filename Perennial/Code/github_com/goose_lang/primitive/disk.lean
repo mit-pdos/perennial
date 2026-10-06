@@ -14,110 +14,110 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.primitive.disk : go_string := go!"github.com/goose-lang/primitive/disk"
+def github_com.goose_lang.primitive.disk : GoString := go!"github.com/goose-lang/primitive/disk"
 end pkg_id
 
 namespace github_com.goose_lang.primitive.disk
 
-def Disk [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/primitive/disk.Disk" [])
+def Disk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/primitive/disk.Disk" [])
 
 attribute [irreducible] Disk
 
-def FileDisk [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/primitive/disk.FileDisk" [])
+def FileDisk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/primitive/disk.FileDisk" [])
 
 attribute [irreducible] FileDisk
 
-def MemDisk [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/primitive/disk.MemDisk" [])
+def MemDisk [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/primitive/disk.MemDisk" [])
 
 attribute [irreducible] MemDisk
 
-@[reducible] def Block [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.byte)
+@[reducible] def Block [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.byte)
 
-axiom «MemDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «MemDiskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-noncomputable def implicitDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def implicitDisk [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.implicitDisk"
 
-noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Init"
 
-noncomputable def Get [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Get [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Get"
 
-noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Read"
 
-noncomputable def Write [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Write [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Write"
 
-noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Size"
 
-noncomputable def Barrier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Barrier [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.Barrier"
 
-noncomputable def NewFileDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFileDisk [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.NewFileDisk"
 
-noncomputable def NewMemDisk [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMemDisk [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.NewMemDisk"
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.primitive.disk)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))))
 
 namespace Disk
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Disk
 
-@[reducible] def «Diskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block])), (go.interface_elem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block] false [])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block] false []))])
+@[reducible] def «Diskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block] false []))])
 
-class Disk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Disk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Disk_underlying : go.UnderlyingDirectedEq Disk «Diskⁱᵐᵖˡ»
 
 attribute [instance] Disk_Assumptions.Disk_underlying
 
 namespace FileDisk
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   fd' : w64
   numBlocks' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end FileDisk
 
-@[reducible] def FileDisk'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def FileDisk'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fd" go.int),
 (go.field_decl.FieldDecl go!"numBlocks" go.uint64)]
 
-@[irreducible] def FileDisk'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def FileDisk'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   FileDisk'fds_unsealed
 
-instance equals_unfold_FileDisk [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold FileDisk'fds FileDisk'fds_unsealed :=
   ⟨by unfold FileDisk'fds; rfl⟩
 
-@[reducible] def «FileDiskⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType FileDisk'fds)
+@[reducible] def «FileDiskⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType FileDisk'fds)
 
-class FileDisk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class FileDisk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   FileDisk_type_repr : go.TypeReprUnderlying «FileDiskⁱᵐᵖˡ» FileDisk.t
   FileDisk_underlying : go.UnderlyingDirectedEq FileDisk «FileDiskⁱᵐᵖˡ»
   FileDisk_get_fd : ∀ (x : FileDisk.t), go.IsGoStepPureDetTagged under (StructFieldGet «FileDiskⁱᵐᵖˡ» go!"fd") #x (Val #(x.fd'))
@@ -138,7 +138,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end MemDisk
 
-class MemDisk_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MemDisk_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MemDisk_type_repr : go.TypeReprUnderlying «MemDiskⁱᵐᵖˡ» MemDisk.t
   MemDisk_underlying : go.UnderlyingDirectedEq MemDisk «MemDiskⁱᵐᵖˡ»
   «MemDiskⁱᵐᵖˡ_underlying» : go.IsUnderlying «MemDiskⁱᵐᵖˡ» «MemDiskⁱᵐᵖˡ»

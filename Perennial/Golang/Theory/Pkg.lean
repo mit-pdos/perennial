@@ -10,7 +10,7 @@ Port of `new/golang/theory/pkg.v`: package initialization.
   `get_is_pkg_init` to contain the init predicates of `pkg_name` and its
   transitive dependencies.
 * `define_is_pkg_init P` (term) builds an `IsPkgInit` instance whose
-  dependencies are computed from `pkg_imported_pkgs`; `build_get_is_pkg_init_wf`
+  dependencies are computed from `pkgImportedPkgs`; `build_get_is_pkg_init_wf`
   (term) builds the `GetIsPkgInitWf` instance.
 * Tactics: `solve_pkg_init` (prove a goal `isPkgInit pkg` from the
   intuitionistic context), `iPkgInit` (solve `isPkgInit` goals and conjuncts
@@ -25,23 +25,23 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 noncomputable section init_defns
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
-def IsInit [ffi_model] (σ : state) : Prop :=
+def IsInit [FfiModel] (σ : state) : Prop :=
   σ.goState.packageState = ∅
 
 /-- Permission to run `package.init`. `get_is_pkg_init` maps every package to
 its agreed-upon post-init predicate. -/
-def ownInitializingDef (get_is_pkg_init : go_string → IProp GF) : IProp GF :=
-  iprop(∃ package_inited : GMap go_string Bool,
+def ownInitializingDef (get_is_pkg_init : GoString → IProp GF) : IProp GF :=
+  iprop(∃ package_inited : GMap GoString Bool,
     "Hg" ∷ ownGoState package_inited ∗
     "#Hinit" ∷ □ ([∗map] pkg_name ↦ inited ∈ package_inited,
       if inited then get_is_pkg_init pkg_name else iprop(True)))
 
 /-- Rocq `Opaque ownInitializing`. -/
-@[irreducible] def ownInitializing (get_is_pkg_init : go_string → IProp GF) : IProp GF :=
+@[irreducible] def ownInitializing (get_is_pkg_init : GoString → IProp GF) : IProp GF :=
   ownInitializingDef get_is_pkg_init
 
 theorem ownInitializing_unseal : @ownInitializing = @ownInitializingDef := by
@@ -55,7 +55,7 @@ variable {PROP : Type _} [BI PROP]
 /-- `IsPkgInit PROP pkg_name` connects a package name (the full package path) to
 its post-initialization predicate. There should be only one instance for each
 package. -/
-class IsPkgInit (PROP : Type _) [BI PROP] (pkg_name : go_string) where
+class IsPkgInit (PROP : Type _) [BI PROP] (pkg_name : GoString) where
   /-- auto-generated; includes the `isPkgInit` of the dependencies -/
   isPkgInitDeps : PROP
   /-- user-specified -/
@@ -63,33 +63,33 @@ class IsPkgInit (PROP : Type _) [BI PROP] (pkg_name : go_string) where
 
 export IsPkgInit (isPkgInitDeps isPkgInitDef)
 
-def isPkgInitWrap (pkg_name : go_string) [IsPkgInit PROP pkg_name] : PROP :=
+def isPkgInitWrap (pkg_name : GoString) [IsPkgInit PROP pkg_name] : PROP :=
   iprop("#Hdeps" ∷ □ isPkgInitDeps (PROP := PROP) pkg_name ∗
     "#Hinit" ∷ □ isPkgInitDef (PROP := PROP) pkg_name)
 
 /-- `isPkgInit pkg_name` asserts the predicate of the `IsPkgInit` instance
 (Rocq `Opaque isPkgInit`). -/
-@[irreducible] def isPkgInit (pkg_name : go_string) [IsPkgInit PROP pkg_name] : PROP :=
+@[irreducible] def isPkgInit (pkg_name : GoString) [IsPkgInit PROP pkg_name] : PROP :=
   isPkgInitWrap pkg_name
 
-theorem isPkgInit_unfold (pkg_name : go_string) [IsPkgInit PROP pkg_name] :
+theorem isPkgInit_unfold (pkg_name : GoString) [IsPkgInit PROP pkg_name] :
     isPkgInit (PROP := PROP) pkg_name =
       iprop("#Hdeps" ∷ □ isPkgInitDeps (PROP := PROP) pkg_name ∗
         "#Hinit" ∷ □ isPkgInitDef (PROP := PROP) pkg_name) := by
   with_unfolding_all rfl
 
-instance isPkgInit_pers (pkg_name : go_string) [IsPkgInit PROP pkg_name] :
+instance isPkgInit_pers (pkg_name : GoString) [IsPkgInit PROP pkg_name] :
     Persistent (isPkgInit (PROP := PROP) pkg_name) := by
   rw [isPkgInit_unfold]; unfold named; infer_instance
 
 /-- Access the user-defined init predicate. -/
-theorem isPkgInit_access (pkg_name : go_string) [IsPkgInit PROP pkg_name] :
+theorem isPkgInit_access (pkg_name : GoString) [IsPkgInit PROP pkg_name] :
     isPkgInit (PROP := PROP) pkg_name ⊢ isPkgInitDef pkg_name := by
   rw [isPkgInit_unfold]
   iintro ⟨_, #H⟩
   iexact H
 
-theorem isPkgInit_unfold_deps (pkg_name : go_string) [IsPkgInit PROP pkg_name] :
+theorem isPkgInit_unfold_deps (pkg_name : GoString) [IsPkgInit PROP pkg_name] :
     isPkgInit (PROP := PROP) pkg_name ⊢ isPkgInitDeps pkg_name := by
   rw [isPkgInit_unfold]
   iintro ⟨#H, _⟩
@@ -97,12 +97,12 @@ theorem isPkgInit_unfold_deps (pkg_name : go_string) [IsPkgInit PROP pkg_name] :
 
 /-- Maps `pkg_name` to a pure predicate that constrains `get_is_pkg_init` to
 have all of the init predicates for `pkg_name` and its transitive dependencies. -/
-class GetIsPkgInitWf (PROP : Type _) [BI PROP] (pkg_name : go_string) where
-  get_is_pkg_init_prop_def : (go_string → PROP) → Prop
+class GetIsPkgInitWf (PROP : Type _) [BI PROP] (pkg_name : GoString) where
+  get_is_pkg_init_prop_def : (GoString → PROP) → Prop
 
 /-- Rocq `GetIsPkgInitProp pkg_name get_is_pkg_init`. -/
-abbrev GetIsPkgInitProp (pkg_name : go_string) [GetIsPkgInitWf PROP pkg_name]
-    (get_is_pkg_init : go_string → PROP) : Prop :=
+abbrev GetIsPkgInitProp (pkg_name : GoString) [GetIsPkgInitWf PROP pkg_name]
+    (get_is_pkg_init : GoString → PROP) : Prop :=
   GetIsPkgInitWf.get_is_pkg_init_prop_def pkg_name get_is_pkg_init
 
 end package_init_and_defined
@@ -114,9 +114,9 @@ open Lean Elab Term Meta
 
 /-- The list of imported packages of `pkg` (from its `PkgInfo` instance), as a
 list of expressions. -/
-def importedPkgs (pkg : Expr) : TermElabM (List Expr) := do
-  let deps ← whnf (← mkAppOptM ``pkg_imported_pkgs #[some pkg, none])
-  let rec go (e : Expr) (fuel : Nat) : TermElabM (List Expr) := do
+def importedPkgs (pkg : Lean.Expr) : TermElabM (List Lean.Expr) := do
+  let deps ← whnf (← mkAppOptM ``pkgImportedPkgs #[some pkg, none])
+  let rec go (e : Lean.Expr) (fuel : Nat) : TermElabM (List Lean.Expr) := do
     match fuel with
     | 0 => throwError "importedPkgs: list too long"
     | fuel + 1 =>
@@ -129,7 +129,7 @@ def importedPkgs (pkg : Expr) : TermElabM (List Expr) := do
 
 /-- `define_is_pkg_init P`: an `IsPkgInit PROP pkg` instance with user part `P`
 and dependency part `isPkgInit dep1 ∗ ... ∗ True` computed from
-`pkg_imported_pkgs pkg`. Must be used where the expected type is known. -/
+`pkgImportedPkgs pkg`. Must be used where the expected type is known. -/
 elab "define_is_pkg_init " P:term:max : term <= ety => do
   let ety ← whnfR (← instantiateMVars ety)
   unless ety.isAppOfArity ``IsPkgInit 3 do
@@ -158,12 +158,12 @@ elab "build_get_is_pkg_init_wf" : term <= ety => do
   let bi := ety.getArg! 1
   let pkg := ety.getArg! 2
   let deps ← importedPkgs pkg
-  let fTy ← mkArrow (mkConst ``go_string) prop
+  let fTy ← mkArrow (mkConst ``GoString) prop
   let p ← withLocalDeclD `get_is_pkg_init fTy fun g => do
     let inst ← synthInstance (← mkAppOptM ``IsPkgInit #[some prop, some bi, some pkg])
     let lhs := mkApp g pkg
     let rhs ← mkAppOptM ``isPkgInit #[some prop, some bi, some pkg, some inst]
-    let mut acc : Expr := mkConst ``True
+    let mut acc : Lean.Expr := mkConst ``True
     for d in deps.reverse do
       let instD ← synthInstance (← mkAppOptM ``GetIsPkgInitWf #[some prop, some bi, some d])
       let pd ← mkAppOptM ``GetIsPkgInitProp #[some prop, some bi, some d, some instD, some g]
@@ -193,7 +193,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- A proof of `P ⊢ target`, where `target` is `isPkgInit pkg`, by unfolding
 `isPkgInit` hypotheses into their dependencies. -/
-partial def pkgInitChain (target P : Expr) (fuel : Nat := 200) : MetaM (Option Expr) := do
+partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM (Option Lean.Expr) := do
   if fuel == 0 then return none
   let P ← instantiateMVars P
   if ← withReducible (isDefEq P target) then
@@ -202,7 +202,7 @@ partial def pkgInitChain (target P : Expr) (fuel : Nat := 200) : MetaM (Option E
   if P'.isAppOfArity ``isPkgInit 4 then
     -- unfold the instance (e.g. built by `define_is_pkg_init`) to `IsPkgInit.mk`
     -- and take its dependency field (`whnf` would also unfold the BI operations)
-    let rec instFields (inst : Expr) (fuel : Nat) : MetaM (Option Expr) := do
+    let rec instFields (inst : Lean.Expr) (fuel : Nat) : MetaM (Option Lean.Expr) := do
       let inst := (← instantiateMVars inst).headBeta
       if inst.isAppOfArity ``IsPkgInit.mk 5 then return some (inst.getArg! 3)
       if fuel == 0 then return none
@@ -252,13 +252,13 @@ macro "iPkgInit" : tactic => `(tactic| first
      repeat (isplitr; · solve_pkg_init)))
 
 section package_init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-theorem wp_package_init (pkg_name : go_string) [PkgInfo pkg_name] (init_func : val)
-    (get_is_pkg_init : go_string → IProp GF) (isPkgInit : IProp GF) (Φ : val → IProp GF)
+theorem wp_package_init (pkg_name : GoString) [PkgInfo pkg_name] (init_func : val)
+    (get_is_pkg_init : GoString → IProp GF) (isPkgInit : IProp GF) (Φ : val → IProp GF)
     (heq : get_is_pkg_init pkg_name = isPkgInit) :
     iprop(ownInitializing get_is_pkg_init ∗
       (ownInitializing get_is_pkg_init -∗

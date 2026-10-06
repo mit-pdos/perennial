@@ -7,7 +7,7 @@ namespace Perennial
 
 namespace lock
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def trylock : val :=
   λ: "m", Snd (CmpXchg "m" #false #true)
@@ -21,7 +21,7 @@ def lock : val :=
       "lock" "m"
 
 def unlock : val :=
-  λ: "m", exception_do (do: CmpXchg "m" #true #false ;;; return: #())
+  λ: "m", exceptionDo (do: CmpXchg "m" #true #false ;;; return: #())
 
 end code
 end lock

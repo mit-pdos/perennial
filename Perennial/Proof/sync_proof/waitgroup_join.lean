@@ -30,9 +30,9 @@ structure WaitGroupJoinNames where
 abbrev wgjN : Namespace := nroot.@"wgjoin"
 
 section waitgroup_join_idiom
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -49,14 +49,14 @@ abbrev wgjInv (γ : WaitGroupJoinNames) : IProp GF :=
     "%Hctr" ∷ ⌜sint.Z ctr = (added : Int) - (done : Int)⌝)
 
 /-- Rocq `isWgjInv` (local). -/
-abbrev isWgjInv (wg : loc) (γ : WaitGroupJoinNames) : IProp GF :=
+abbrev isWgjInv (wg : Loc) (γ : WaitGroupJoinNames) : IProp GF :=
   iprop("#His" ∷ isWaitGroup wg γ.wgGn (wgjN.@"wg") ∗
     "#Hinv" ∷ inv (wgjN.@"inv") (wgjInv γ))
 
 /-- Permission to call `Add` or `Wait`. Calling `Add` will extend `P` with a
 caller-chosen proposition (as long as `num_added` doesn't overflow) and calling
 `Wait` will give `P` as postcondition and reset the permission. -/
-def ownAdderDef (wg : loc) (num_added : w32) (P : IProp GF) : IProp GF :=
+def ownAdderDef (wg : Loc) (num_added : w32) (P : IProp GF) : IProp GF :=
   iprop(∃ (γ : WaitGroupJoinNames) (P' : IProp GF),
     "Hno_waiters" ∷ ownWaitGroupWaiters γ.wgGn 0 ∗
     "Haprop" ∷ ownApropAuth γ.wgApropGn P' (sint.nat num_added) ∗
@@ -64,17 +64,17 @@ def ownAdderDef (wg : loc) (num_added : w32) (P : IProp GF) : IProp GF :=
     "%Hadded_pos" ∷ ⌜0 ≤ sint.Z num_added⌝ ∗
     "HimpliesP" ∷ (P' -∗ P) ∗
     "#Hinv" ∷ isWgjInv wg γ)
-@[irreducible] def ownAdder (wg : loc) (num_added : w32) (P : IProp GF) : IProp GF :=
+@[irreducible] def ownAdder (wg : Loc) (num_added : w32) (P : IProp GF) : IProp GF :=
   ownAdderDef wg num_added P
 theorem ownAdder_unseal : @ownAdder = @ownAdderDef := by funext; with_unfolding_all rfl
 
 /-- Permission to call `Done` as long as `P` is passed in. -/
-def ownDoneDef (wg : loc) (P : IProp GF) : IProp GF :=
+def ownDoneDef (wg : Loc) (P : IProp GF) : IProp GF :=
   iprop(∃ (γ : WaitGroupJoinNames),
     "Haprop" ∷ ownAprop γ.wgApropGn P ∗
     "Hdone_tok" ∷ ownToks γ.wgNotDoneGn 1 ∗
     "#Hinv" ∷ isWgjInv wg γ)
-@[irreducible] def ownDone (wg : loc) (P : IProp GF) : IProp GF := ownDoneDef wg P
+@[irreducible] def ownDone (wg : Loc) (P : IProp GF) : IProp GF := ownDoneDef wg P
 theorem ownDone_unseal : @ownDone = @ownDoneDef := by funext; with_unfolding_all rfl
 
 theorem ownTokAuth_halves (γ : GName) (n : Nat) :
@@ -85,7 +85,7 @@ theorem ownTokAuth_halves (γ : GName) (n : Nat) :
   rw [Qp.half_add_half] at h
   exact h
 
-theorem init (wg : loc) (γwg : WaitGroupNames) :
+theorem init (wg : Loc) (γwg : WaitGroupNames) :
     isWaitGroup (GF := GF) wg γwg (wgjN.@"wg") ∗ ownWaitGroup γwg (W32 0) ∗
       ownWaitGroupWaiters γwg 0 ⊢ |={⊤}=> ownAdder wg (W32 0) iprop(True) := by
   iintro ⟨#His, Hctr_inv, Hwaiters⟩
@@ -116,10 +116,10 @@ theorem init (wg : loc) (γwg : WaitGroupNames) :
   unfold isWgjInv named
   isplit <;> iassumption
 
-theorem WaitGroup.wp_Add (P' : IProp GF) (wg : loc) (P : IProp GF) (num_added : w32) :
+theorem WaitGroup.wp_Add (P' : IProp GF) (wg : Loc) (P : IProp GF) (num_added : w32) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder wg num_added P ∗
         ⌜sint.Z num_added < 2 ^ 31 - 1⌝ }}
-      (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Add")) (Val #(W64 1)))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Add")) (Val #(W64 1)))
     {{ RET #(); ownAdder wg (num_added + W32 1) iprop(P ∗ P') ∗ ownDone wg P' }} := by
   wp_start_folded as ⟨Ha, %Hoverflow⟩
   simp only [ownAdder_unseal, ownAdderDef]
@@ -183,9 +183,9 @@ theorem WaitGroup.wp_Add (P' : IProp GF) (wg : loc) (P : IProp GF) (num_added : 
     unfold isWgjInv named
     isplit <;> iassumption
 
-theorem WaitGroup.wp_Done (P : IProp GF) (wg : loc) :
+theorem WaitGroup.wp_Done (P : IProp GF) (wg : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownDone wg P ∗ P }}
-      (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Done")) (Val #()))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Done")) (Val #()))
     {{ RET #(); True }} := by
   wp_start_folded as ⟨Ha, HP⟩
   simp only [ownDone_unseal, ownDoneDef]
@@ -225,9 +225,9 @@ theorem WaitGroup.wp_Done (P : IProp GF) (wg : loc) :
   iapply HΦ
   itrivial
 
-theorem WaitGroup.wp_Wait (P : IProp GF) (n : w32) (wg : loc) :
+theorem WaitGroup.wp_Wait (P : IProp GF) (n : w32) (wg : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder wg n P }}
-      (App (Val (wg @!! go.type.PointerType WaitGroup @!! go!"Wait")) (Val #()))
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup @!! go!"Wait")) (Val #()))
     {{ RET #(); ▷ P ∗ ownAdder wg (W32 0) iprop(True) }} := by
   wp_start_folded as Ha
   iapply wp_fupd
@@ -303,7 +303,7 @@ theorem WaitGroup.wp_Wait (P : IProp GF) (n : w32) (wg : loc) :
   unfold isWgjInv named
   isplit <;> iassumption
 
-theorem ownAdder_wand (P' : IProp GF) (wg : loc) (n : w32) (P : IProp GF) :
+theorem ownAdder_wand (P' : IProp GF) (wg : Loc) (n : w32) (P : IProp GF) :
     ⊢ (P -∗ P') -∗ ownAdder wg n P -∗ ownAdder wg n P' := by
   iintro Hwand Ha
   simp only [ownAdder_unseal, ownAdderDef]

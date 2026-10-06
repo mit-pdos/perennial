@@ -633,9 +633,9 @@ theorem sext_32_64 (x : w32) : sint.Z (W64 (sint.Z x)) = sint.Z x := by
   apply Int.bmod_eq_of_le <;> simp at * <;> omega
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -654,19 +654,19 @@ def ownRLockTokenDef (γ : RWMutexNames) : IProp GF := ownToks γ.protGn.rlockOv
 theorem ownRLockToken_unseal : @ownRLockToken GF _ = @ownRLockTokenDef GF _ := by
   funext; with_unfolding_all rfl
 
-abbrev RWW (rw : loc) : loc := struct_field_ref RWMutex.t go!"w" rw
-abbrev RWReaderSem (rw : loc) : loc := struct_field_ref RWMutex.t go!"readerSem" rw
-abbrev RWWriterSem (rw : loc) : loc := struct_field_ref RWMutex.t go!"writerSem" rw
-abbrev RWReaderCount (rw : loc) : loc := struct_field_ref RWMutex.t go!"readerCount" rw
-abbrev RWReaderWait (rw : loc) : loc := struct_field_ref RWMutex.t go!"readerWait" rw
+abbrev RWW (rw : Loc) : Loc := structFieldRef RWMutex.t go!"w" rw
+abbrev RWReaderSem (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerSem" rw
+abbrev RWWriterSem (rw : Loc) : Loc := structFieldRef RWMutex.t go!"writerSem" rw
+abbrev RWReaderCount (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerCount" rw
+abbrev RWReaderWait (rw : Loc) : Loc := structFieldRef RWMutex.t go!"readerWait" rw
 
-abbrev rwLockedPart (rw : loc) (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
+abbrev rwLockedPart (rw : Loc) (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
   match state with
   | .Locked => iprop(ownMutex (RWW (GF := GF) rw) ∗
       ghostVar γ.protGn.wlockGn (1 : Qp).half WlockState.IsLocked)
   | _ => iprop(True)
 
-abbrev rwInv (rw : loc) (γ : RWMutexNames) : IProp GF :=
+abbrev rwInv (rw : Loc) (γ : RWMutexNames) : IProp GF :=
   iprop(∃ (writer_sem reader_sem reader_count reader_wait : w32) (state : rwmutex),
     "Hstate" ∷ ghostVar γ.protGn.stateGn (1 : Qp).half state ∗
     "HreaderSem" ∷ ownSema γ.readerSemGn reader_sem ∗
@@ -676,34 +676,34 @@ abbrev rwInv (rw : loc) (γ : RWMutexNames) : IProp GF :=
     "Hprot" ∷ ownRWMutexInvariant γ.protGn writer_sem reader_sem reader_count reader_wait state ∗
     "Hlocked" ∷ rwLockedPart rw γ state)
 
-instance rwLockedPart_timeless (rw : loc) (γ : RWMutexNames) (state : rwmutex) :
+instance rwLockedPart_timeless (rw : Loc) (γ : RWMutexNames) (state : rwmutex) :
     Timeless (rwLockedPart (GF := GF) rw γ state) := by
   cases state <;> simp only [rwLockedPart] <;> infer_instance
 
-instance rwInv_timeless (rw : loc) (γ : RWMutexNames) : Timeless (rwInv (GF := GF) rw γ) := by
+instance rwInv_timeless (rw : Loc) (γ : RWMutexNames) : Timeless (rwInv (GF := GF) rw γ) := by
   unfold rwInv named; infer_instance
 
-def isRWMutexDef (rw : loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
+def isRWMutexDef (rw : Loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
   iprop("#Hmu" ∷ isMutex (RWW (GF := GF) rw)
       (ghostVar γ.protGn.wlockGn (1 : Qp).half (WlockState.NotLocked (W32 0))) ∗
     "#His_readerSem" ∷ isSema (RWReaderSem (GF := GF) rw) γ.readerSemGn (N.@"sema") ∗
     "#His_writerSem" ∷ isSema (RWWriterSem (GF := GF) rw) γ.writerSemGn (N.@"sema") ∗
     "#Hinv" ∷ inv (N.@"inv") (rwInv rw γ))
-@[irreducible] def isRWMutex (rw : loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
+@[irreducible] def isRWMutex (rw : Loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
   isRWMutexDef rw γ N
 theorem isRWMutex_unseal : @isRWMutex = @isRWMutexDef := by funext; with_unfolding_all rfl
 
-instance isRWMutex_pers (rw : loc) (γ : RWMutexNames) (N : Namespace) :
+instance isRWMutex_pers (rw : Loc) (γ : RWMutexNames) (N : Namespace) :
     Persistent (isRWMutex (GF := GF) rw γ N) := by
   rw [isRWMutex_unseal]; unfold isRWMutexDef named; infer_instance
 
-theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N ∗ ownRLockToken γ) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (∀ num_readers, ⌜state = .RLocked num_readers⌝ →
             ownRWMutex γ (.RLocked (num_readers + 1)) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"RLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RLock")) (Val #())) {{ Φ }} := by
   wp_start as ⟨#His, Htok⟩
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -793,14 +793,14 @@ theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
     wp_auto
     iexact HΦ
 
-theorem RWMutex.wp_TryRLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_TryRLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N ∗ ownRLockToken γ) -∗
       ▷ ((|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (∀ num_readers, ⌜state = .RLocked num_readers⌝ →
             ownRWMutex γ (.RLocked (num_readers + 1)) ={∅,⊤ \ ↑N}=∗ Φ #true)) ∧
          Φ #false) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"TryRLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"TryRLock")) (Val #())) {{ Φ }} := by
   wp_start as ⟨#His, Htok⟩
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -881,12 +881,12 @@ theorem RWMutex.wp_TryRLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
       iframe
 
 set_option maxRecDepth 200000 in
-theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ∃ num_readers, ownRWMutex γ (.RLocked (num_readers + 1)) ∗
           (ownRWMutex γ (.RLocked num_readers) ∗ ownRLockToken γ ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"RUnlock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RUnlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
@@ -1014,12 +1014,12 @@ theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
     wp_auto
     iexact HΦ
 
-theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (⌜state = .RLocked 0⌝ → ownRWMutex γ .Locked ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"Lock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Lock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1170,13 +1170,13 @@ theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
         wp_auto
         iexact HΦ
 
-theorem RWMutex.wp_TryLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_TryLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ ((|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (⌜state = .RLocked 0⌝ → ownRWMutex γ .Locked ={∅,⊤ \ ↑N}=∗ Φ #true)) ∧
          Φ #false) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"TryLock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"TryLock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1251,12 +1251,12 @@ theorem RWMutex.wp_TryLock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
       icases HΦ with ⟨-, HΦ⟩
       iexact HΦ
 
-theorem RWMutex.wp_Unlock (γ : RWMutexNames) (rw : loc) (N : Namespace) :
+theorem RWMutex.wp_Unlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
       ▷ (|={⊤ \ ↑N,∅}=> ownRWMutex γ .Locked ∗
           (ownRWMutex γ (.RLocked 0) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"Unlock")) (Val #())) {{ Φ }} := by
+      WP (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Unlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
@@ -1362,8 +1362,8 @@ theorem ownToks_replicate (γ : GName) (n : Nat) :
     iframe H1
     iapply ih $$ H2
 
-theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : loc) :
-    typed_pointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ⊢
+theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
+    typedPointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ⊢
     |={E}=> ∃ γ : RWMutexNames, isRWMutex rw γ N ∗ ownRWMutex γ (.RLocked 0) ∗
       [∗list] _x ∈ List.replicate (Int.toNat actualMaxReaders) (), ownRLockToken γ := by
   iintro Hrw

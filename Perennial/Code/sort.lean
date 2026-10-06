@@ -12,220 +12,220 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def sort : go_string := go!"sort"
+def sort : GoString := go!"sort"
 end pkg_id
 
 namespace sort
 
-def Interface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.Interface" [])
+def Interface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.Interface" [])
 
 attribute [irreducible] Interface
 
-def sortedHint [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.sortedHint" [])
+def sortedHint [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.sortedHint" [])
 
 attribute [irreducible] sortedHint
 
-def xorshift [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.xorshift" [])
+def xorshift [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.xorshift" [])
 
 attribute [irreducible] xorshift
 
-def lessSwap [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.lessSwap" [])
+def lessSwap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.lessSwap" [])
 
 attribute [irreducible] lessSwap
 
-def reverse [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.reverse" [])
+def reverse [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.reverse" [])
 
 attribute [irreducible] reverse
 
-def IntSlice [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.IntSlice" [])
+def IntSlice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.IntSlice" [])
 
 attribute [irreducible] IntSlice
 
-def Float64Slice [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.Float64Slice" [])
+def Float64Slice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.Float64Slice" [])
 
 attribute [irreducible] Float64Slice
 
-def StringSlice [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"sort.StringSlice" [])
+def StringSlice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sort.StringSlice" [])
 
 attribute [irreducible] StringSlice
 
-@[reducible] noncomputable def unknownHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def unknownHint [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] noncomputable def increasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def increasingHint [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def decreasingHint [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def decreasingHint [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-noncomputable def Search [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Search [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Search"
 
-noncomputable def Find [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Find [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Find"
 
-noncomputable def SearchInts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchInts [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.SearchInts"
 
-noncomputable def SearchFloat64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchFloat64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.SearchFloat64s"
 
-noncomputable def SearchStrings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchStrings [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.SearchStrings"
 
-noncomputable def Slice' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Slice' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Slice"
 
-noncomputable def SliceStable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceStable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.SliceStable"
 
-noncomputable def SliceIsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SliceIsSorted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.SliceIsSorted"
 
-noncomputable def «Sort» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «Sort» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Sort"
 
-noncomputable def nextPowerOfTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextPowerOfTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.nextPowerOfTwo"
 
-noncomputable def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Reverse"
 
-noncomputable def IsSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsSorted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.IsSorted"
 
-noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.isNaN"
 
-noncomputable def Ints [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Ints [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Ints"
 
-noncomputable def Float64s [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64s [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Float64s"
 
-noncomputable def Strings [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Strings [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Strings"
 
-noncomputable def IntsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntsAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.IntsAreSorted"
 
-noncomputable def Float64sAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64sAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Float64sAreSorted"
 
-noncomputable def StringsAreSorted [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringsAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.StringsAreSorted"
 
-noncomputable def Stable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.Stable"
 
-noncomputable def insertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.insertionSort_func"
 
-noncomputable def siftDown_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDown_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.siftDown_func"
 
-noncomputable def heapSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.heapSort_func"
 
-noncomputable def pdqsort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsort_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.pdqsort_func"
 
-noncomputable def partition_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partition_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partition_func"
 
-noncomputable def partitionEqual_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqual_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partitionEqual_func"
 
-noncomputable def partialInsertionSort_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partialInsertionSort_func"
 
-noncomputable def breakPatterns_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatterns_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.breakPatterns_func"
 
-noncomputable def choosePivot_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivot_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.choosePivot_func"
 
-noncomputable def order2_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.order2_func"
 
-noncomputable def median_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def median_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.median_func"
 
-noncomputable def medianAdjacent_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacent_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.medianAdjacent_func"
 
-noncomputable def reverseRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRange_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.reverseRange_func"
 
-noncomputable def swapRange_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRange_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.swapRange_func"
 
-noncomputable def stable_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stable_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.stable_func"
 
-noncomputable def symMerge_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMerge_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.symMerge_func"
 
-noncomputable def rotate_func [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotate_func [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.rotate_func"
 
-noncomputable def insertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def insertionSort [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.insertionSort"
 
-noncomputable def siftDown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def siftDown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.siftDown"
 
-noncomputable def heapSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def heapSort [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.heapSort"
 
-noncomputable def pdqsort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pdqsort [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.pdqsort"
 
-noncomputable def partition [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partition [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partition"
 
-noncomputable def partitionEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partitionEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partitionEqual"
 
-noncomputable def partialInsertionSort [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def partialInsertionSort [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.partialInsertionSort"
 
-noncomputable def breakPatterns [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def breakPatterns [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.breakPatterns"
 
-noncomputable def choosePivot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def choosePivot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.choosePivot"
 
-noncomputable def order2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def order2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.order2"
 
-noncomputable def median [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def median [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.median"
 
-noncomputable def medianAdjacent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def medianAdjacent [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.medianAdjacent"
 
-noncomputable def reverseRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.reverseRange"
 
-noncomputable def swapRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def swapRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.swapRange"
 
-noncomputable def stable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.stable"
 
-noncomputable def symMerge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symMerge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.symMerge"
 
-noncomputable def rotate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rotate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sort.rotate"
 
 /-- Search uses binary search to find and return the smallest index i
@@ -279,41 +279,41 @@ noncomputable def rotate [ffi_syntax] [GoGlobalContext] : go_string :=
     	}
 
     go: search.go:58:6 -/
-noncomputable def «Searchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Searchⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "f"
-  (App (Val exception_do)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.int] false [go.bool]))))) (Var "f"))
+  (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.int] false [go.bool]))))) (Var "f"))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val #(1 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "h"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.int] false [go.bool]))))) (Var "f")) (Var "$a0"))))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.int] false [go.bool]))))) (Var "f")) (Var "$a0"))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "h"))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "h") (Var "$r0")))))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))))
 
 /-- Find uses binary search to find and return the smallest index i in [0, n)
@@ -342,43 +342,43 @@ noncomputable def «Searchⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     	}
 
     go: search.go:99:6 -/
-noncomputable def «Findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Findⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "cmp"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp"))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp")) (Var "$a0"))) (Val #(W64 0)))) (Val #false))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp")) (Var "$a0"))) (Val #(W64 0)))) (Val #false))))))
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val #(1 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "h"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp")) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "h"))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.int] false [go.int]))))) (Var "cmp")) (Var "$a0"))) (Val #(W64 0)))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "h"))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "h") (Var "$r0")))))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))
 
 /-- SearchInts searches for x in a sorted slice of ints and returns the index
@@ -387,115 +387,115 @@ noncomputable def «Findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     The slice must be sorted in ascending order.
 
     go: search.go:123:6 -/
-noncomputable def «SearchIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SearchIntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.int)))) (Var "a"))
-  (App (Val do_return)
-  (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0")))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (Var "a"))
+  (App (Val doReturn)
+  (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "a"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0")))
   (Let "$a1" (Lam "i"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))))))))
   (App (App (App (Val (GoInstruction (FuncResolve Search []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: sort.go:70:20 -/
-noncomputable def «xorshift__Nextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «xorshift__Nextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType xorshift)))) (Var "r"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untyped_int xorshift))) (Val #(17 : Int)))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untyped_int xorshift))) (Val #(7 : Int)))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.type.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untyped_int xorshift))) (Val #(13 : Int)))))))))))))))
+  (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType xorshift)))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(17 : Int)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(7 : Int)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore xorshift))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift))) (Pair (App (Val (GoInstruction (GoLoad xorshift))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift))) (Val #(13 : Int)))))))))))))))
 
 instance info' : PkgInfo pkg_id.sort where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sort)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace Interface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Interface
 
-@[reducible] def «Interfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.interface_elem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
+@[reducible] def «Interfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
 
-class Interface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Interface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_underlying : go.UnderlyingDirectedEq Interface «Interfaceⁱᵐᵖˡ»
 
 attribute [instance] Interface_Assumptions.Interface_underlying
 
 namespace sortedHint
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end sortedHint
 
-@[reducible] def «sortedHintⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «sortedHintⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class sortedHint_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sortedHint_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortedHint_underlying : go.UnderlyingDirectedEq sortedHint «sortedHintⁱᵐᵖˡ»
 
 attribute [instance] sortedHint_Assumptions.sortedHint_underlying
 
 namespace xorshift
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end xorshift
 
-@[reducible] def «xorshiftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «xorshiftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class xorshift_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xorshift_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   xorshift_underlying : go.UnderlyingDirectedEq xorshift «xorshiftⁱᵐᵖˡ»
-  xorshift'ptr_Next_unfold : MethodUnfold (go.type.PointerType xorshift) go!"Next" «xorshift__Nextⁱᵐᵖˡ»
+  xorshift'ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift) go!"Next" «xorshift__Nextⁱᵐᵖˡ»
 
 attribute [instance] xorshift_Assumptions.xorshift_underlying
   xorshift_Assumptions.xorshift'ptr_Next_unfold
 
 namespace lessSwap
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Less' : func.t
   Swap' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end lessSwap
 
-@[reducible] def lessSwap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Less" (go.type.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
-(go.field_decl.FieldDecl go!"Swap" (go.type.FunctionType (go.signature.Signature [go.int, go.int] false [])))]
+@[reducible] def lessSwap'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Less" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
+(go.field_decl.FieldDecl go!"Swap" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [])))]
 
-@[irreducible] def lessSwap'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def lessSwap'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   lessSwap'fds_unsealed
 
-instance equals_unfold_lessSwap [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold lessSwap'fds lessSwap'fds_unsealed :=
   ⟨by unfold lessSwap'fds; rfl⟩
 
-@[reducible] def «lessSwapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType lessSwap'fds)
+@[reducible] def «lessSwapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType lessSwap'fds)
 
-class lessSwap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class lessSwap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   lessSwap_type_repr : go.TypeReprUnderlying «lessSwapⁱᵐᵖˡ» lessSwap.t
   lessSwap_underlying : go.UnderlyingDirectedEq lessSwap «lessSwapⁱᵐᵖˡ»
   lessSwap_get_Less : ∀ (x : lessSwap.t), go.IsGoStepPureDetTagged under (StructFieldGet «lessSwapⁱᵐᵖˡ» go!"Less") #x (Val #(x.Less'))
@@ -511,28 +511,28 @@ attribute [instance] lessSwap_Assumptions.lessSwap_type_repr
   lessSwap_Assumptions.lessSwap_set_Swap
 
 namespace reverse
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Interface' : Interface.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end reverse
 
-@[reducible] def reverse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def reverse'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Interface" Interface)]
 
-@[irreducible] def reverse'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def reverse'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   reverse'fds_unsealed
 
-instance equals_unfold_reverse [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold reverse'fds reverse'fds_unsealed :=
   ⟨by unfold reverse'fds; rfl⟩
 
-@[reducible] def «reverseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType reverse'fds)
+@[reducible] def «reverseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType reverse'fds)
 
-class reverse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class reverse_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   reverse_type_repr : go.TypeReprUnderlying «reverseⁱᵐᵖˡ» reverse.t
   reverse_underlying : go.UnderlyingDirectedEq reverse «reverseⁱᵐᵖˡ»
   reverse_get_Interface : ∀ (x : reverse.t), go.IsGoStepPureDetTagged under (StructFieldGet «reverseⁱᵐᵖˡ» go!"Interface") #x (Val #(x.Interface'))
@@ -544,42 +544,42 @@ attribute [instance] reverse_Assumptions.reverse_type_repr
   reverse_Assumptions.reverse_set_Interface
 
 namespace IntSlice
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end IntSlice
 
-@[reducible] def «IntSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int)
+@[reducible] def «IntSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int)
 
-class IntSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class IntSlice_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   IntSlice_underlying : go.UnderlyingDirectedEq IntSlice «IntSliceⁱᵐᵖˡ»
 
 attribute [instance] IntSlice_Assumptions.IntSlice_underlying
 
 namespace Float64Slice
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end Float64Slice
 
-@[reducible] def «Float64Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.float64)
+@[reducible] def «Float64Sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.float64)
 
-class Float64Slice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Float64Slice_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Float64Slice_underlying : go.UnderlyingDirectedEq Float64Slice «Float64Sliceⁱᵐᵖˡ»
 
 attribute [instance] Float64Slice_Assumptions.Float64Slice_underlying
 
 namespace StringSlice
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end StringSlice
 
-@[reducible] def «StringSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.string)
+@[reducible] def «StringSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.string)
 
-class StringSlice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StringSlice_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StringSlice_underlying : go.UnderlyingDirectedEq StringSlice «StringSliceⁱᵐᵖˡ»
 
 attribute [instance] StringSlice_Assumptions.StringSlice_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_instance : Interface_Assumptions
   sortedHint_instance : sortedHint_Assumptions
   xorshift_instance : xorshift_Assumptions

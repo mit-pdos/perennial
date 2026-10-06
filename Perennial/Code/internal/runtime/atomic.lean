@@ -12,264 +12,264 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def internal.runtime.atomic : go_string := go!"internal/runtime/atomic"
+def internal.runtime.atomic : GoString := go!"internal/runtime/atomic"
 end pkg_id
 
 namespace internal.runtime.atomic
 
-def Int32 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Int32" [])
+def Int32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Int32" [])
 
 attribute [irreducible] Int32
 
-def Int64 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Int64" [])
+def Int64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Int64" [])
 
 attribute [irreducible] Int64
 
-def Uint8 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Uint8" [])
+def Uint8 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Uint8" [])
 
 attribute [irreducible] Uint8
 
-def Bool' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Bool" [])
+def Bool' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Bool" [])
 
 attribute [irreducible] Bool'
 
-def Uint32 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Uint32" [])
+def Uint32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Uint32" [])
 
 attribute [irreducible] Uint32
 
-def Uint64 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Uint64" [])
+def Uint64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Uint64" [])
 
 attribute [irreducible] Uint64
 
-def Uintptr [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Uintptr" [])
+def Uintptr [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Uintptr" [])
 
 attribute [irreducible] Uintptr
 
-def Float64 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Float64" [])
+def Float64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Float64" [])
 
 attribute [irreducible] Float64
 
-def UnsafePointer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.UnsafePointer" [])
+def UnsafePointer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.UnsafePointer" [])
 
 attribute [irreducible] UnsafePointer
 
-def Pointer [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.Pointer" [T])
+def Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Pointer" [T])
 
 attribute [irreducible] Pointer
 
-def noCopy [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.noCopy" [])
+def noCopy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.noCopy" [])
 
 attribute [irreducible] noCopy
 
-def align64 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/runtime/atomic.align64" [])
+def align64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.align64" [])
 
 attribute [irreducible] align64
 
-noncomputable def Load [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Load [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Load"
 
-noncomputable def Loadp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Loadp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Loadp"
 
-noncomputable def Load64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Load64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Load64"
 
-noncomputable def LoadAcq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadAcq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.LoadAcq"
 
-noncomputable def LoadAcq64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadAcq64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.LoadAcq64"
 
-noncomputable def LoadAcquintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LoadAcquintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.LoadAcquintptr"
 
-noncomputable def Xadd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xadd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xadd"
 
-noncomputable def Xadd64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xadd64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xadd64"
 
-noncomputable def Xadduintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xadduintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xadduintptr"
 
-noncomputable def Xchg8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchg8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchg8"
 
-noncomputable def Xchg [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchg [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchg"
 
-noncomputable def Xchg64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchg64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchg64"
 
-noncomputable def Xchguintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchguintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchguintptr"
 
-noncomputable def Load8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Load8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Load8"
 
-noncomputable def And8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def And8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.And8"
 
-noncomputable def Or8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Or8"
 
-noncomputable def And [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def And [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.And"
 
-noncomputable def Or [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Or"
 
-noncomputable def And32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def And32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.And32"
 
-noncomputable def Or32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Or32"
 
-noncomputable def And64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def And64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.And64"
 
-noncomputable def Or64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Or64"
 
-noncomputable def Anduintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Anduintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Anduintptr"
 
-noncomputable def Oruintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Oruintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Oruintptr"
 
-noncomputable def Cas64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cas64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Cas64"
 
-noncomputable def CasRel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CasRel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.CasRel"
 
-noncomputable def Store [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Store [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Store"
 
-noncomputable def Store8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Store8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Store8"
 
-noncomputable def Store64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Store64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Store64"
 
-noncomputable def StoreRel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreRel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.StoreRel"
 
-noncomputable def StoreRel64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreRel64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.StoreRel64"
 
-noncomputable def StoreReluintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StoreReluintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.StoreReluintptr"
 
-noncomputable def StorepNoWB [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StorepNoWB [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.StorepNoWB"
 
-noncomputable def Cas [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cas [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Cas"
 
-noncomputable def Casp1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Casp1 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Casp1"
 
-noncomputable def Casint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Casint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Casint32"
 
-noncomputable def Casint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Casint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Casint64"
 
-noncomputable def Casuintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Casuintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Casuintptr"
 
-noncomputable def Storeint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Storeint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Storeint32"
 
-noncomputable def Storeint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Storeint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Storeint64"
 
-noncomputable def Storeuintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Storeuintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Storeuintptr"
 
-noncomputable def Loaduintptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Loaduintptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Loaduintptr"
 
-noncomputable def Loaduint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Loaduint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Loaduint"
 
-noncomputable def Loadint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Loadint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Loadint32"
 
-noncomputable def Loadint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Loadint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Loadint64"
 
-noncomputable def Xaddint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xaddint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xaddint32"
 
-noncomputable def Xaddint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xaddint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xaddint64"
 
-noncomputable def Xchgint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchgint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchgint32"
 
-noncomputable def Xchgint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Xchgint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.Xchgint64"
 
-noncomputable def storePointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def storePointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.storePointer"
 
-noncomputable def casPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def casPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.casPointer"
 
-noncomputable def panicUnaligned [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def panicUnaligned [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.panicUnaligned"
 
-noncomputable def goXchg8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def goXchg8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/atomic.goXchg8"
 
 instance info' : PkgInfo pkg_id.internal.runtime.atomic where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.runtime.atomic)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace noCopy
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noCopy
 
-@[reducible] def noCopy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noCopy'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noCopy'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def noCopy'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noCopy'fds_unsealed
 
-instance equals_unfold_noCopy [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold noCopy'fds noCopy'fds_unsealed :=
   ⟨by unfold noCopy'fds; rfl⟩
 
-@[reducible] def «noCopyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType noCopy'fds)
+@[reducible] def «noCopyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noCopy'fds)
 
-class noCopy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class noCopy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   noCopy_type_repr : go.TypeReprUnderlying «noCopyⁱᵐᵖˡ» noCopy.t
   noCopy_underlying : go.UnderlyingDirectedEq noCopy «noCopyⁱᵐᵖˡ»
 
@@ -277,30 +277,30 @@ attribute [instance] noCopy_Assumptions.noCopy_type_repr
   noCopy_Assumptions.noCopy_underlying
 
 namespace Int32
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   value' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Int32
 
-@[reducible] def Int32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int32'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"value" go.int32)]
 
-@[irreducible] def Int32'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Int32'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Int32'fds_unsealed
 
-instance equals_unfold_Int32 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Int32'fds Int32'fds_unsealed :=
   ⟨by unfold Int32'fds; rfl⟩
 
-@[reducible] def «Int32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Int32'fds)
+@[reducible] def «Int32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int32'fds)
 
-class Int32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Int32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int32_type_repr : go.TypeReprUnderlying «Int32ⁱᵐᵖˡ» Int32.t
   Int32_underlying : go.UnderlyingDirectedEq Int32 «Int32ⁱᵐᵖˡ»
   Int32_get_noCopy : ∀ (x : Int32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int32ⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -316,27 +316,27 @@ attribute [instance] Int32_Assumptions.Int32_type_repr
   Int32_Assumptions.Int32_set_value
 
 namespace align64
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end align64
 
-@[reducible] def align64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def align64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def align64'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def align64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   align64'fds_unsealed
 
-instance equals_unfold_align64 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold align64'fds align64'fds_unsealed :=
   ⟨by unfold align64'fds; rfl⟩
 
-@[reducible] def «align64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType align64'fds)
+@[reducible] def «align64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType align64'fds)
 
-class align64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class align64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   align64_type_repr : go.TypeReprUnderlying «align64ⁱᵐᵖˡ» align64.t
   align64_underlying : go.UnderlyingDirectedEq align64 «align64ⁱᵐᵖˡ»
 
@@ -344,32 +344,32 @@ attribute [instance] align64_Assumptions.align64_type_repr
   align64_Assumptions.align64_underlying
 
 namespace Int64
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   _1' : align64.t
   value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Int64
 
-@[reducible] def Int64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"value" go.int64)]
 
-@[irreducible] def Int64'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Int64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Int64'fds_unsealed
 
-instance equals_unfold_Int64 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Int64'fds Int64'fds_unsealed :=
   ⟨by unfold Int64'fds; rfl⟩
 
-@[reducible] def «Int64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Int64'fds)
+@[reducible] def «Int64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int64'fds)
 
-class Int64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Int64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int64_type_repr : go.TypeReprUnderlying «Int64ⁱᵐᵖˡ» Int64.t
   Int64_underlying : go.UnderlyingDirectedEq Int64 «Int64ⁱᵐᵖˡ»
   Int64_get_noCopy : ∀ (x : Int64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int64ⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -389,30 +389,30 @@ attribute [instance] Int64_Assumptions.Int64_type_repr
   Int64_Assumptions.Int64_set_value
 
 namespace Uint8
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   value' : w8
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Uint8
 
-@[reducible] def Uint8'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint8'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"value" go.uint8)]
 
-@[irreducible] def Uint8'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Uint8'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Uint8'fds_unsealed
 
-instance equals_unfold_Uint8 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Uint8 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Uint8'fds Uint8'fds_unsealed :=
   ⟨by unfold Uint8'fds; rfl⟩
 
-@[reducible] def «Uint8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Uint8'fds)
+@[reducible] def «Uint8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uint8'fds)
 
-class Uint8_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint8_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uint8_type_repr : go.TypeReprUnderlying «Uint8ⁱᵐᵖˡ» Uint8.t
   Uint8_underlying : go.UnderlyingDirectedEq Uint8 «Uint8ⁱᵐᵖˡ»
   Uint8_get_noCopy : ∀ (x : Uint8.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint8ⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -428,28 +428,28 @@ attribute [instance] Uint8_Assumptions.Uint8_type_repr
   Uint8_Assumptions.Uint8_set_value
 
 namespace Bool'
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   u' : Uint8.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Bool'
 
-@[reducible] def Bool'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bool'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"u" Uint8)]
 
-@[irreducible] def Bool'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Bool'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Bool'fds_unsealed
 
-instance equals_unfold_Bool [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Bool'fds Bool'fds_unsealed :=
   ⟨by unfold Bool'fds; rfl⟩
 
-@[reducible] def «Bool'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Bool'fds)
+@[reducible] def «Bool'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bool'fds)
 
-class Bool_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bool_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bool_type_repr : go.TypeReprUnderlying «Bool'ⁱᵐᵖˡ» Bool'.t
   Bool_underlying : go.UnderlyingDirectedEq Bool' «Bool'ⁱᵐᵖˡ»
   Bool_get_u : ∀ (x : Bool'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bool'ⁱᵐᵖˡ» go!"u") #x (Val #(x.u'))
@@ -461,30 +461,30 @@ attribute [instance] Bool_Assumptions.Bool_type_repr
   Bool_Assumptions.Bool_set_u
 
 namespace Uint32
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   value' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Uint32
 
-@[reducible] def Uint32'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint32'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"value" go.uint32)]
 
-@[irreducible] def Uint32'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Uint32'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Uint32'fds_unsealed
 
-instance equals_unfold_Uint32 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Uint32'fds Uint32'fds_unsealed :=
   ⟨by unfold Uint32'fds; rfl⟩
 
-@[reducible] def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Uint32'fds)
+@[reducible] def «Uint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uint32'fds)
 
-class Uint32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uint32_type_repr : go.TypeReprUnderlying «Uint32ⁱᵐᵖˡ» Uint32.t
   Uint32_underlying : go.UnderlyingDirectedEq Uint32 «Uint32ⁱᵐᵖˡ»
   Uint32_get_noCopy : ∀ (x : Uint32.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint32ⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -500,32 +500,32 @@ attribute [instance] Uint32_Assumptions.Uint32_type_repr
   Uint32_Assumptions.Uint32_set_value
 
 namespace Uint64
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   _1' : align64.t
   value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Uint64
 
-@[reducible] def Uint64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uint64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"_1" align64),
 (go.field_decl.FieldDecl go!"value" go.uint64)]
 
-@[irreducible] def Uint64'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Uint64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Uint64'fds_unsealed
 
-instance equals_unfold_Uint64 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Uint64'fds Uint64'fds_unsealed :=
   ⟨by unfold Uint64'fds; rfl⟩
 
-@[reducible] def «Uint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Uint64'fds)
+@[reducible] def «Uint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uint64'fds)
 
-class Uint64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uint64_type_repr : go.TypeReprUnderlying «Uint64ⁱᵐᵖˡ» Uint64.t
   Uint64_underlying : go.UnderlyingDirectedEq Uint64 «Uint64ⁱᵐᵖˡ»
   Uint64_get_noCopy : ∀ (x : Uint64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uint64ⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -545,30 +545,30 @@ attribute [instance] Uint64_Assumptions.Uint64_type_repr
   Uint64_Assumptions.Uint64_set_value
 
 namespace Uintptr
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
   value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Uintptr
 
-@[reducible] def Uintptr'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Uintptr'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"value" go.uintptr)]
 
-@[irreducible] def Uintptr'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Uintptr'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Uintptr'fds_unsealed
 
-instance equals_unfold_Uintptr [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Uintptr'fds Uintptr'fds_unsealed :=
   ⟨by unfold Uintptr'fds; rfl⟩
 
-@[reducible] def «Uintptrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Uintptr'fds)
+@[reducible] def «Uintptrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Uintptr'fds)
 
-class Uintptr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uintptr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uintptr_type_repr : go.TypeReprUnderlying «Uintptrⁱᵐᵖˡ» Uintptr.t
   Uintptr_underlying : go.UnderlyingDirectedEq Uintptr «Uintptrⁱᵐᵖˡ»
   Uintptr_get_noCopy : ∀ (x : Uintptr.t), go.IsGoStepPureDetTagged under (StructFieldGet «Uintptrⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
@@ -584,28 +584,28 @@ attribute [instance] Uintptr_Assumptions.Uintptr_type_repr
   Uintptr_Assumptions.Uintptr_set_value
 
 namespace Float64
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   u' : Uint64.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Float64
 
-@[reducible] def Float64'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Float64'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"u" Uint64)]
 
-@[irreducible] def Float64'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Float64'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Float64'fds_unsealed
 
-instance equals_unfold_Float64 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Float64 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Float64'fds Float64'fds_unsealed :=
   ⟨by unfold Float64'fds; rfl⟩
 
-@[reducible] def «Float64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Float64'fds)
+@[reducible] def «Float64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Float64'fds)
 
-class Float64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Float64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Float64_type_repr : go.TypeReprUnderlying «Float64ⁱᵐᵖˡ» Float64.t
   Float64_underlying : go.UnderlyingDirectedEq Float64 «Float64ⁱᵐᵖˡ»
   Float64_get_u : ∀ (x : Float64.t), go.IsGoStepPureDetTagged under (StructFieldGet «Float64ⁱᵐᵖˡ» go!"u") #x (Val #(x.u'))
@@ -617,36 +617,36 @@ attribute [instance] Float64_Assumptions.Float64_type_repr
   Float64_Assumptions.Float64_set_u
 
 namespace UnsafePointer
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noCopy' : noCopy.t
-  value' : loc
+  value' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end UnsafePointer
 
-@[reducible] def UnsafePointer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def UnsafePointer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy),
 (go.field_decl.FieldDecl go!"value" «unsafe».Pointer)]
 
-@[irreducible] def UnsafePointer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def UnsafePointer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   UnsafePointer'fds_unsealed
 
-instance equals_unfold_UnsafePointer [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_UnsafePointer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold UnsafePointer'fds UnsafePointer'fds_unsealed :=
   ⟨by unfold UnsafePointer'fds; rfl⟩
 
-@[reducible] def «UnsafePointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType UnsafePointer'fds)
+@[reducible] def «UnsafePointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType UnsafePointer'fds)
 
-class UnsafePointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class UnsafePointer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   UnsafePointer_type_repr : go.TypeReprUnderlying «UnsafePointerⁱᵐᵖˡ» UnsafePointer.t
   UnsafePointer_underlying : go.UnderlyingDirectedEq UnsafePointer «UnsafePointerⁱᵐᵖˡ»
   UnsafePointer_get_noCopy : ∀ (x : UnsafePointer.t), go.IsGoStepPureDetTagged under (StructFieldGet «UnsafePointerⁱᵐᵖˡ» go!"noCopy") #x (Val #(x.noCopy'))
   UnsafePointer_set_noCopy : ∀ (x : UnsafePointer.t) (y : noCopy.t), go.IsGoStepPureDetTagged under (StructFieldSet «UnsafePointerⁱᵐᵖˡ» go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : UnsafePointer.t)))
   UnsafePointer_get_value : ∀ (x : UnsafePointer.t), go.IsGoStepPureDetTagged under (StructFieldGet «UnsafePointerⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
-  UnsafePointer_set_value : ∀ (x : UnsafePointer.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «UnsafePointerⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : UnsafePointer.t)))
+  UnsafePointer_set_value : ∀ (x : UnsafePointer.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «UnsafePointerⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : UnsafePointer.t)))
 
 attribute [instance] UnsafePointer_Assumptions.UnsafePointer_type_repr
   UnsafePointer_Assumptions.UnsafePointer_underlying
@@ -656,39 +656,39 @@ attribute [instance] UnsafePointer_Assumptions.UnsafePointer_type_repr
   UnsafePointer_Assumptions.UnsafePointer_set_value
 
 namespace Pointer
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   u' : UnsafePointer.t
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef⟩
 end Pointer
 
-@[reducible] def Pointer'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Pointer'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"u" UnsafePointer)]
 
-@[irreducible] def Pointer'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def Pointer'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (Pointer'fds_unsealed T)
 
-instance equals_unfold_Pointer [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (Pointer'fds T) (Pointer'fds_unsealed T) :=
   ⟨by unfold Pointer'fds; rfl⟩
 
-@[reducible] def «Pointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (Pointer'fds T))
+@[reducible] def «Pointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Pointer'fds T))
 
-class Pointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pointer_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Pointerⁱᵐᵖˡ» T) (Pointer.t T')
-  Pointer_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (Pointer T) («Pointerⁱᵐᵖˡ» T)
-  Pointer_get_u : ∀ (T : go.type) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Pointerⁱᵐᵖˡ» T) go!"u") #x (Val #(x.u'))
-  Pointer_set_u : ∀ (T : go.type) (T' : Type) (x : (Pointer.t T')) (y : UnsafePointer.t), go.IsGoStepPureDetTagged under (StructFieldSet («Pointerⁱᵐᵖˡ» T) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer.t T'))))
+class Pointer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Pointer_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Pointerⁱᵐᵖˡ» T) (Pointer.t T')
+  Pointer_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer T) («Pointerⁱᵐᵖˡ» T)
+  Pointer_get_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Pointerⁱᵐᵖˡ» T) go!"u") #x (Val #(x.u'))
+  Pointer_set_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer.t T')) (y : UnsafePointer.t), go.IsGoStepPureDetTagged under (StructFieldSet («Pointerⁱᵐᵖˡ» T) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer.t T'))))
 
 attribute [instance] Pointer_Assumptions.Pointer_type_repr
   Pointer_Assumptions.Pointer_underlying
   Pointer_Assumptions.Pointer_get_u
   Pointer_Assumptions.Pointer_set_u
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int32_instance : Int32_Assumptions
   Int64_instance : Int64_Assumptions
   Uint8_instance : Uint8_Assumptions

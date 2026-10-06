@@ -13,189 +13,189 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace"
+def github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
-noncomputable def worker [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def worker [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.worker"
 
-noncomputable def SearchReplace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SearchReplace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.SearchReplace"
 
 /-- go: parallel_search_replace.go:13:6 -/
-noncomputable def «workerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «workerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "wg"
   (Lam "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.int))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.WaitGroup)))) (Var "wg"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.recvonly (go.type.SliceType go.int))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.WaitGroup)))) (Var "wg"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.int)))) (Val #())))
-  (Let "__p" (App (Val (chan.receive (go.type.SliceType go.int))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly (go.type.SliceType go.int))))) (Var "c")))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
+  (Let "__p" (App (Val (chan.receive (go.GoType.SliceType go.int))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (Var "c")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.WaitGroup) go!"Done"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.WaitGroup)))) (Var "wg"))) (Val #())))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.WaitGroup) go!"Done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.WaitGroup)))) (Var "wg"))) (Val #())))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0")))))))) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "x")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0")))))))) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "x")))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "y"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))
+  (App (Val doExecute)
   (Val #())))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
   (Lam BAnon
-  (Let "__p" (App (Val (chan.receive (go.type.SliceType go.int))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly (go.type.SliceType go.int))))) (Var "c")))
+  (Let "__p" (App (Val (chan.receive (go.GoType.SliceType go.int))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (Var "c")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
 
 /-- go: parallel_search_replace.go:24:6 -/
-noncomputable def «SearchReplaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SearchReplaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.int))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "workers" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 8))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "workRange" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 1000))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))]))) (Val #())) (Val #(W64 4)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))]))) (Val #())) (Val #(W64 4)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "wg" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.WaitGroup))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.WaitGroup))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.WaitGroup) go!"Wait"))) (Var "wg")) (Val #())))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.WaitGroup) go!"Wait"))) (Var "wg")) (Val #())))))
   (Let "offset" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "offset")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0")))))))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "offset")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0")))))))) (Lam BAnon
   (Let "nextOffset" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "offset")) (App (Val (GoInstruction (GoLoad go.int))) (Var "workRange"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "section" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.int)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.int)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "offset"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "nextOffset")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "section" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.int)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "offset"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "nextOffset")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "nextOffset"))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "offset") (Var "$r0")))))))
-  (App (Val do_execute)
-  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))))) (Var "c"))
-  (Let "$v" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "section"))
-  (App (App (Val (chan.send (go.type.SliceType go.int))) (Var "$chan")) (Var "$v"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))))) (Var "c"))
+  (Let "$v" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "section"))
+  (App (App (Val (chan.send (go.GoType.SliceType go.int))) (Var "$chan")) (Var "$v"))))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 1))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.WaitGroup) go!"Add"))) (Var "wg")) (Var "$a0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.int)))) (Pair (Var "section") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "nextOffset")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0"))))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0")))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.WaitGroup) go!"Add"))) (Var "wg")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "section") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "nextOffset")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0"))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0")))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "nextOffset") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "nextOffset") (Var "$r0")))))))))
   (Lam BAnon
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "offset") (Var "$r0"))))))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "workers"))))))) (Lam BAnon
-  (Let "$a0" (App (Val (GoInstruction (Convert (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int)) (go.type.ChannelType go.chan_dir.recvonly (go.type.SliceType go.int))))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))))) (Var "c")))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int)) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))))) (Var "c")))
   (Let "$a1" (Var "wg")
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "y"))
   (Let "$go" (App (Val (GoInstruction (FuncResolve worker []))) (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Fork
   (App (App (App (App (Var "$go") (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.int))))) (Pair (Var "c") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.int))))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "workRange") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "workers") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.int)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.int)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
-  pkg_imported_pkgs := [pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.sync]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   worker_unfold : FuncUnfold worker [] «workerⁱᵐᵖˡ»
   SearchReplace_unfold : FuncUnfold SearchReplace [] «SearchReplaceⁱᵐᵖˡ»
   import_sync_Assumption : _root_.Perennial.sync.Assumptions

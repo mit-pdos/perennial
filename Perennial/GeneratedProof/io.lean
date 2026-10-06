@@ -18,54 +18,54 @@ namespace io
 namespace LimitedReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance LimitedReader_typed_pointsto :
     TypedPointsto (GF := GF) io.LimitedReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "R" ∷ typed_pointsto (struct_field_ref io.LimitedReader.t go!"R" l) v.R' dq ∗
-    "N" ∷ typed_pointsto (struct_field_ref io.LimitedReader.t go!"N" l) v.N' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "R" ∷ typedPointsto (structFieldRef io.LimitedReader.t go!"R" l) v.R' dq ∗
+    "N" ∷ typedPointsto (structFieldRef io.LimitedReader.t go!"N" l) v.N' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance LimitedReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.LimitedReader.t io.«LimitedReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance LimitedReader_access_load_R (l : loc) (v : io.LimitedReader.t) (dq : DFrac) :
+instance LimitedReader_access_load_R (l : Loc) (v : io.LimitedReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"R" l) v.R' dq)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"R" l) v.R' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"R" l) v.R' dq)
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"R" l) v.R' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LimitedReader_access_store_R (l : loc) (v : io.LimitedReader.t) (R' : io.Reader.t) :
+instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader.t) (R' : io.Reader.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"R" l) v.R' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"R" l) R' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with R' := R' } : io.LimitedReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"R" l) v.R' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"R" l) R' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with R' := R' } : io.LimitedReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance LimitedReader_access_load_N (l : loc) (v : io.LimitedReader.t) (dq : DFrac) :
+instance LimitedReader_access_load_N (l : Loc) (v : io.LimitedReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"N" l) v.N' dq)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"N" l) v.N' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"N" l) v.N' dq)
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"N" l) v.N' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance LimitedReader_access_store_N (l : loc) (v : io.LimitedReader.t) (N' : w64) :
+instance LimitedReader_access_store_N (l : Loc) (v : io.LimitedReader.t) (N' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"N" l) v.N' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.LimitedReader.t go!"N" l) N' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with N' := N' } : io.LimitedReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"N" l) v.N' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.LimitedReader.t go!"N" l) N' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with N' := N' } : io.LimitedReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -75,105 +75,105 @@ end LimitedReader
 namespace SectionReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance SectionReader_typed_pointsto :
     TypedPointsto (GF := GF) io.SectionReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "r" ∷ typed_pointsto (struct_field_ref io.SectionReader.t go!"r" l) v.r' dq ∗
-    "base" ∷ typed_pointsto (struct_field_ref io.SectionReader.t go!"base" l) v.base' dq ∗
-    "off" ∷ typed_pointsto (struct_field_ref io.SectionReader.t go!"off" l) v.off' dq ∗
-    "limit" ∷ typed_pointsto (struct_field_ref io.SectionReader.t go!"limit" l) v.limit' dq ∗
-    "n" ∷ typed_pointsto (struct_field_ref io.SectionReader.t go!"n" l) v.n' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "r" ∷ typedPointsto (structFieldRef io.SectionReader.t go!"r" l) v.r' dq ∗
+    "base" ∷ typedPointsto (structFieldRef io.SectionReader.t go!"base" l) v.base' dq ∗
+    "off" ∷ typedPointsto (structFieldRef io.SectionReader.t go!"off" l) v.off' dq ∗
+    "limit" ∷ typedPointsto (structFieldRef io.SectionReader.t go!"limit" l) v.limit' dq ∗
+    "n" ∷ typedPointsto (structFieldRef io.SectionReader.t go!"n" l) v.n' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SectionReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.SectionReader.t io.«SectionReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance SectionReader_access_load_r (l : loc) (v : io.SectionReader.t) (dq : DFrac) :
+instance SectionReader_access_load_r (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"r" l) v.r' dq)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"r" l) v.r' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef io.SectionReader.t go!"r" l) v.r' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_store_r (l : loc) (v : io.SectionReader.t) (r' : io.ReaderAt.t) :
+instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader.t) (r' : io.ReaderAt.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"r" l) v.r' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"r" l) r' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with r' := r' } : io.SectionReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.SectionReader.t go!"r" l) r' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.SectionReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_load_base (l : loc) (v : io.SectionReader.t) (dq : DFrac) :
+instance SectionReader_access_load_base (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"base" l) v.base' dq)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"base" l) v.base' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef io.SectionReader.t go!"base" l) v.base' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_store_base (l : loc) (v : io.SectionReader.t) (base' : w64) :
+instance SectionReader_access_store_base (l : Loc) (v : io.SectionReader.t) (base' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"base" l) v.base' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"base" l) base' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with base' := base' } : io.SectionReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"base" l) v.base' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.SectionReader.t go!"base" l) base' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := base' } : io.SectionReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_load_off (l : loc) (v : io.SectionReader.t) (dq : DFrac) :
+instance SectionReader_access_load_off (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"off" l) v.off' dq)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"off" l) v.off' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef io.SectionReader.t go!"off" l) v.off' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_store_off (l : loc) (v : io.SectionReader.t) (off' : w64) :
+instance SectionReader_access_store_off (l : Loc) (v : io.SectionReader.t) (off' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"off" l) v.off' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"off" l) off' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : io.SectionReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"off" l) v.off' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.SectionReader.t go!"off" l) off' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := off' } : io.SectionReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_load_limit (l : loc) (v : io.SectionReader.t) (dq : DFrac) :
+instance SectionReader_access_load_limit (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"limit" l) v.limit' dq)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"limit" l) v.limit' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"limit" l) v.limit' dq)
+      (typedPointsto (structFieldRef io.SectionReader.t go!"limit" l) v.limit' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_store_limit (l : loc) (v : io.SectionReader.t) (limit' : w64) :
+instance SectionReader_access_store_limit (l : Loc) (v : io.SectionReader.t) (limit' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"limit" l) v.limit' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"limit" l) limit' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with limit' := limit' } : io.SectionReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"limit" l) v.limit' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.SectionReader.t go!"limit" l) limit' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with limit' := limit' } : io.SectionReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_load_n (l : loc) (v : io.SectionReader.t) (dq : DFrac) :
+instance SectionReader_access_load_n (l : Loc) (v : io.SectionReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"n" l) v.n' dq)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"n" l) v.n' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef io.SectionReader.t go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SectionReader_access_store_n (l : loc) (v : io.SectionReader.t) (n' : w64) :
+instance SectionReader_access_store_n (l : Loc) (v : io.SectionReader.t) (n' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"n" l) v.n' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.SectionReader.t go!"n" l) n' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with n' := n' } : io.SectionReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader.t go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.SectionReader.t go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : io.SectionReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -183,71 +183,71 @@ end SectionReader
 namespace OffsetWriter
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance OffsetWriter_typed_pointsto :
     TypedPointsto (GF := GF) io.OffsetWriter.t where
-  typed_pointsto_def l v dq := iprop(
-    "w" ∷ typed_pointsto (struct_field_ref io.OffsetWriter.t go!"w" l) v.w' dq ∗
-    "base" ∷ typed_pointsto (struct_field_ref io.OffsetWriter.t go!"base" l) v.base' dq ∗
-    "off" ∷ typed_pointsto (struct_field_ref io.OffsetWriter.t go!"off" l) v.off' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "w" ∷ typedPointsto (structFieldRef io.OffsetWriter.t go!"w" l) v.w' dq ∗
+    "base" ∷ typedPointsto (structFieldRef io.OffsetWriter.t go!"base" l) v.base' dq ∗
+    "off" ∷ typedPointsto (structFieldRef io.OffsetWriter.t go!"off" l) v.off' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance OffsetWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.OffsetWriter.t io.«OffsetWriterⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance OffsetWriter_access_load_w (l : loc) (v : io.OffsetWriter.t) (dq : DFrac) :
+instance OffsetWriter_access_load_w (l : Loc) (v : io.OffsetWriter.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"w" l) v.w' dq)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"w" l) v.w' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"w" l) v.w' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance OffsetWriter_access_store_w (l : loc) (v : io.OffsetWriter.t) (w' : io.WriterAt.t) :
+instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter.t) (w' : io.WriterAt.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"w" l) v.w' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"w" l) w' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : io.OffsetWriter.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"w" l) w' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : io.OffsetWriter.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance OffsetWriter_access_load_base (l : loc) (v : io.OffsetWriter.t) (dq : DFrac) :
+instance OffsetWriter_access_load_base (l : Loc) (v : io.OffsetWriter.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"base" l) v.base' dq)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"base" l) v.base' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"base" l) v.base' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance OffsetWriter_access_store_base (l : loc) (v : io.OffsetWriter.t) (base' : w64) :
+instance OffsetWriter_access_store_base (l : Loc) (v : io.OffsetWriter.t) (base' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"base" l) v.base' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"base" l) base' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with base' := base' } : io.OffsetWriter.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"base" l) v.base' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"base" l) base' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := base' } : io.OffsetWriter.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance OffsetWriter_access_load_off (l : loc) (v : io.OffsetWriter.t) (dq : DFrac) :
+instance OffsetWriter_access_load_off (l : Loc) (v : io.OffsetWriter.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"off" l) v.off' dq)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"off" l) v.off' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"off" l) v.off' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance OffsetWriter_access_store_off (l : loc) (v : io.OffsetWriter.t) (off' : w64) :
+instance OffsetWriter_access_store_off (l : Loc) (v : io.OffsetWriter.t) (off' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"off" l) v.off' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.OffsetWriter.t go!"off" l) off' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : io.OffsetWriter.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"off" l) v.off' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.OffsetWriter.t go!"off" l) off' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := off' } : io.OffsetWriter.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -257,54 +257,54 @@ end OffsetWriter
 namespace teeReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance teeReader_typed_pointsto :
     TypedPointsto (GF := GF) io.teeReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "r" ∷ typed_pointsto (struct_field_ref io.teeReader.t go!"r" l) v.r' dq ∗
-    "w" ∷ typed_pointsto (struct_field_ref io.teeReader.t go!"w" l) v.w' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "r" ∷ typedPointsto (structFieldRef io.teeReader.t go!"r" l) v.r' dq ∗
+    "w" ∷ typedPointsto (structFieldRef io.teeReader.t go!"w" l) v.w' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance teeReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.teeReader.t io.«teeReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance teeReader_access_load_r (l : loc) (v : io.teeReader.t) (dq : DFrac) :
+instance teeReader_access_load_r (l : Loc) (v : io.teeReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"r" l) v.r' dq)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"r" l) v.r' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.teeReader.t go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef io.teeReader.t go!"r" l) v.r' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance teeReader_access_store_r (l : loc) (v : io.teeReader.t) (r' : io.Reader.t) :
+instance teeReader_access_store_r (l : Loc) (v : io.teeReader.t) (r' : io.Reader.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"r" l) v.r' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"r" l) r' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with r' := r' } : io.teeReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.teeReader.t go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.teeReader.t go!"r" l) r' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.teeReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance teeReader_access_load_w (l : loc) (v : io.teeReader.t) (dq : DFrac) :
+instance teeReader_access_load_w (l : Loc) (v : io.teeReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"w" l) v.w' dq)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"w" l) v.w' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.teeReader.t go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef io.teeReader.t go!"w" l) v.w' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance teeReader_access_store_w (l : loc) (v : io.teeReader.t) (w' : io.Writer.t) :
+instance teeReader_access_store_w (l : Loc) (v : io.teeReader.t) (w' : io.Writer.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"w" l) v.w' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.teeReader.t go!"w" l) w' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with w' := w' } : io.teeReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.teeReader.t go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.teeReader.t go!"w" l) w' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : io.teeReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -314,18 +314,18 @@ end teeReader
 namespace discard
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance discard_typed_pointsto :
     TypedPointsto (GF := GF) io.discard.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance discard_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.discard.t io.«discardⁱᵐᵖˡ» := by
@@ -337,37 +337,37 @@ end discard
 namespace nopCloser
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance nopCloser_typed_pointsto :
     TypedPointsto (GF := GF) io.nopCloser.t where
-  typed_pointsto_def l v dq := iprop(
-    "Reader" ∷ typed_pointsto (struct_field_ref io.nopCloser.t go!"Reader" l) v.Reader' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Reader" ∷ typedPointsto (structFieldRef io.nopCloser.t go!"Reader" l) v.Reader' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCloser_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.nopCloser.t io.«nopCloserⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance nopCloser_access_load_Reader (l : loc) (v : io.nopCloser.t) (dq : DFrac) :
+instance nopCloser_access_load_Reader (l : Loc) (v : io.nopCloser.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.nopCloser.t go!"Reader" l) v.Reader' dq)
-      (typed_pointsto (struct_field_ref io.nopCloser.t go!"Reader" l) v.Reader' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.nopCloser.t go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef io.nopCloser.t go!"Reader" l) v.Reader' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance nopCloser_access_store_Reader (l : loc) (v : io.nopCloser.t) (Reader' : io.Reader.t) :
+instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser.t) (Reader' : io.Reader.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.nopCloser.t go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.nopCloser.t go!"Reader" l) Reader' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Reader' := Reader' } : io.nopCloser.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.nopCloser.t go!"Reader" l) v.Reader' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.nopCloser.t go!"Reader" l) Reader' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := Reader' } : io.nopCloser.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -377,37 +377,37 @@ end nopCloser
 namespace nopCloserWriterTo
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance nopCloserWriterTo_typed_pointsto :
     TypedPointsto (GF := GF) io.nopCloserWriterTo.t where
-  typed_pointsto_def l v dq := iprop(
-    "Reader" ∷ typed_pointsto (struct_field_ref io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Reader" ∷ typedPointsto (structFieldRef io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance nopCloserWriterTo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.nopCloserWriterTo.t io.«nopCloserWriterToⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance nopCloserWriterTo_access_load_Reader (l : loc) (v : io.nopCloserWriterTo.t) (dq : DFrac) :
+instance nopCloserWriterTo_access_load_Reader (l : Loc) (v : io.nopCloserWriterTo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq)
-      (typed_pointsto (struct_field_ref io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef io.nopCloserWriterTo.t go!"Reader" l) v.Reader' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance nopCloserWriterTo_access_store_Reader (l : loc) (v : io.nopCloserWriterTo.t) (Reader' : io.Reader.t) :
+instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo.t) (Reader' : io.Reader.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.nopCloserWriterTo.t go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.nopCloserWriterTo.t go!"Reader" l) Reader' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Reader' := Reader' } : io.nopCloserWriterTo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.nopCloserWriterTo.t go!"Reader" l) v.Reader' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.nopCloserWriterTo.t go!"Reader" l) Reader' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := Reader' } : io.nopCloserWriterTo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -417,18 +417,18 @@ end nopCloserWriterTo
 namespace eofReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance eofReader_typed_pointsto :
     TypedPointsto (GF := GF) io.eofReader.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance eofReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.eofReader.t io.«eofReaderⁱᵐᵖˡ» := by
@@ -440,37 +440,37 @@ end eofReader
 namespace multiReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance multiReader_typed_pointsto :
     TypedPointsto (GF := GF) io.multiReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "readers" ∷ typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "readers" ∷ typedPointsto (structFieldRef io.multiReader.t go!"readers" l) v.readers' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance multiReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.multiReader.t io.«multiReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance multiReader_access_load_readers (l : loc) (v : io.multiReader.t) (dq : DFrac) :
+instance multiReader_access_load_readers (l : Loc) (v : io.multiReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' dq)
-      (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.multiReader.t go!"readers" l) v.readers' dq)
+      (typedPointsto (structFieldRef io.multiReader.t go!"readers" l) v.readers' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance multiReader_access_store_readers (l : loc) (v : io.multiReader.t) (readers' : slice.t) :
+instance multiReader_access_store_readers (l : Loc) (v : io.multiReader.t) (readers' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) v.readers' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.multiReader.t go!"readers" l) readers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readers' := readers' } : io.multiReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.multiReader.t go!"readers" l) v.readers' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.multiReader.t go!"readers" l) readers' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := readers' } : io.multiReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -480,37 +480,37 @@ end multiReader
 namespace multiWriter
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance multiWriter_typed_pointsto :
     TypedPointsto (GF := GF) io.multiWriter.t where
-  typed_pointsto_def l v dq := iprop(
-    "writers" ∷ typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "writers" ∷ typedPointsto (structFieldRef io.multiWriter.t go!"writers" l) v.writers' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance multiWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.multiWriter.t io.«multiWriterⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance multiWriter_access_load_writers (l : loc) (v : io.multiWriter.t) (dq : DFrac) :
+instance multiWriter_access_load_writers (l : Loc) (v : io.multiWriter.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' dq)
-      (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.multiWriter.t go!"writers" l) v.writers' dq)
+      (typedPointsto (structFieldRef io.multiWriter.t go!"writers" l) v.writers' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance multiWriter_access_store_writers (l : loc) (v : io.multiWriter.t) (writers' : slice.t) :
+instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter.t) (writers' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) v.writers' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.multiWriter.t go!"writers" l) writers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writers' := writers' } : io.multiWriter.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.multiWriter.t go!"writers" l) v.writers' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.multiWriter.t go!"writers" l) writers' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writers' := writers' } : io.multiWriter.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -520,54 +520,54 @@ end multiWriter
 namespace onceError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance onceError_typed_pointsto :
     TypedPointsto (GF := GF) io.onceError.t where
-  typed_pointsto_def l v dq := iprop(
-    "Mutex" ∷ typed_pointsto (struct_field_ref io.onceError.t go!"Mutex" l) v.Mutex' dq ∗
-    "err" ∷ typed_pointsto (struct_field_ref io.onceError.t go!"err" l) v.err' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Mutex" ∷ typedPointsto (structFieldRef io.onceError.t go!"Mutex" l) v.Mutex' dq ∗
+    "err" ∷ typedPointsto (structFieldRef io.onceError.t go!"err" l) v.err' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance onceError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.onceError.t io.«onceErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance onceError_access_load_Mutex (l : loc) (v : io.onceError.t) (dq : DFrac) :
+instance onceError_access_load_Mutex (l : Loc) (v : io.onceError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"Mutex" l) v.Mutex' dq)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"Mutex" l) v.Mutex' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.onceError.t go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto (structFieldRef io.onceError.t go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance onceError_access_store_Mutex (l : loc) (v : io.onceError.t) (Mutex' : sync.Mutex.t) :
+instance onceError_access_store_Mutex (l : Loc) (v : io.onceError.t) (Mutex' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"Mutex" l) v.Mutex' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.onceError.t go!"Mutex" l) Mutex' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Mutex' := Mutex' } : io.onceError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.onceError.t go!"Mutex" l) v.Mutex' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.onceError.t go!"Mutex" l) Mutex' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := Mutex' } : io.onceError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance onceError_access_load_err (l : loc) (v : io.onceError.t) (dq : DFrac) :
+instance onceError_access_load_err (l : Loc) (v : io.onceError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"err" l) v.err' dq)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"err" l) v.err' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.onceError.t go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef io.onceError.t go!"err" l) v.err' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance onceError_access_store_err (l : loc) (v : io.onceError.t) (err' : error.t) :
+instance onceError_access_store_err (l : Loc) (v : io.onceError.t) (err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.onceError.t go!"err" l) v.err' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.onceError.t go!"err" l) err' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with err' := err' } : io.onceError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.onceError.t go!"err" l) v.err' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.onceError.t go!"err" l) err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : io.onceError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -577,139 +577,139 @@ end onceError
 namespace pipe
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance pipe_typed_pointsto :
     TypedPointsto (GF := GF) io.pipe.t where
-  typed_pointsto_def l v dq := iprop(
-    "wrMu" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"wrMu" l) v.wrMu' dq ∗
-    "wrCh" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"wrCh" l) v.wrCh' dq ∗
-    "rdCh" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"rdCh" l) v.rdCh' dq ∗
-    "once" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"once" l) v.once' dq ∗
-    "done" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"done" l) v.done' dq ∗
-    "rerr" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"rerr" l) v.rerr' dq ∗
-    "werr" ∷ typed_pointsto (struct_field_ref io.pipe.t go!"werr" l) v.werr' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "wrMu" ∷ typedPointsto (structFieldRef io.pipe.t go!"wrMu" l) v.wrMu' dq ∗
+    "wrCh" ∷ typedPointsto (structFieldRef io.pipe.t go!"wrCh" l) v.wrCh' dq ∗
+    "rdCh" ∷ typedPointsto (structFieldRef io.pipe.t go!"rdCh" l) v.rdCh' dq ∗
+    "once" ∷ typedPointsto (structFieldRef io.pipe.t go!"once" l) v.once' dq ∗
+    "done" ∷ typedPointsto (structFieldRef io.pipe.t go!"done" l) v.done' dq ∗
+    "rerr" ∷ typedPointsto (structFieldRef io.pipe.t go!"rerr" l) v.rerr' dq ∗
+    "werr" ∷ typedPointsto (structFieldRef io.pipe.t go!"werr" l) v.werr' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pipe_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.pipe.t io.«pipeⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance pipe_access_load_wrMu (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_wrMu (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrMu" l) v.wrMu' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrMu" l) v.wrMu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"wrMu" l) v.wrMu' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"wrMu" l) v.wrMu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_wrMu (l : loc) (v : io.pipe.t) (wrMu' : sync.Mutex.t) :
+instance pipe_access_store_wrMu (l : Loc) (v : io.pipe.t) (wrMu' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrMu" l) v.wrMu' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrMu" l) wrMu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wrMu' := wrMu' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"wrMu" l) v.wrMu' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"wrMu" l) wrMu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrMu' := wrMu' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_wrCh (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_wrCh (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrCh" l) v.wrCh' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrCh" l) v.wrCh' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"wrCh" l) v.wrCh' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"wrCh" l) v.wrCh' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_wrCh (l : loc) (v : io.pipe.t) (wrCh' : chan.t) :
+instance pipe_access_store_wrCh (l : Loc) (v : io.pipe.t) (wrCh' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrCh" l) v.wrCh' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"wrCh" l) wrCh' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wrCh' := wrCh' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"wrCh" l) v.wrCh' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"wrCh" l) wrCh' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrCh' := wrCh' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_rdCh (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_rdCh (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rdCh" l) v.rdCh' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rdCh" l) v.rdCh' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"rdCh" l) v.rdCh' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"rdCh" l) v.rdCh' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_rdCh (l : loc) (v : io.pipe.t) (rdCh' : chan.t) :
+instance pipe_access_store_rdCh (l : Loc) (v : io.pipe.t) (rdCh' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rdCh" l) v.rdCh' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rdCh" l) rdCh' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rdCh' := rdCh' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"rdCh" l) v.rdCh' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"rdCh" l) rdCh' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdCh' := rdCh' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_once (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_once (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"once" l) v.once' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"once" l) v.once' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"once" l) v.once' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_once (l : loc) (v : io.pipe.t) (once' : sync.Once.t) :
+instance pipe_access_store_once (l : Loc) (v : io.pipe.t) (once' : sync.Once.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"once" l) v.once' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"once" l) once' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with once' := once' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"once" l) once' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_done (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_done (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"done" l) v.done' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"done" l) v.done' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"done" l) v.done' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_done (l : loc) (v : io.pipe.t) (done' : chan.t) :
+instance pipe_access_store_done (l : Loc) (v : io.pipe.t) (done' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"done" l) v.done' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"done" l) done' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with done' := done' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"done" l) v.done' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"done" l) done' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_rerr (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_rerr (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rerr" l) v.rerr' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rerr" l) v.rerr' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"rerr" l) v.rerr' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"rerr" l) v.rerr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_rerr (l : loc) (v : io.pipe.t) (rerr' : io.onceError.t) :
+instance pipe_access_store_rerr (l : Loc) (v : io.pipe.t) (rerr' : io.onceError.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rerr" l) v.rerr' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"rerr" l) rerr' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rerr' := rerr' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"rerr" l) v.rerr' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"rerr" l) rerr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rerr' := rerr' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_load_werr (l : loc) (v : io.pipe.t) (dq : DFrac) :
+instance pipe_access_load_werr (l : Loc) (v : io.pipe.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"werr" l) v.werr' dq)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"werr" l) v.werr' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"werr" l) v.werr' dq)
+      (typedPointsto (structFieldRef io.pipe.t go!"werr" l) v.werr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pipe_access_store_werr (l : loc) (v : io.pipe.t) (werr' : io.onceError.t) :
+instance pipe_access_store_werr (l : Loc) (v : io.pipe.t) (werr' : io.onceError.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.pipe.t go!"werr" l) v.werr' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.pipe.t go!"werr" l) werr' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with werr' := werr' } : io.pipe.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe.t go!"werr" l) v.werr' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.pipe.t go!"werr" l) werr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with werr' := werr' } : io.pipe.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -719,37 +719,37 @@ end pipe
 namespace PipeReader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance PipeReader_typed_pointsto :
     TypedPointsto (GF := GF) io.PipeReader.t where
-  typed_pointsto_def l v dq := iprop(
-    "pipe" ∷ typed_pointsto (struct_field_ref io.PipeReader.t go!"pipe" l) v.pipe' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "pipe" ∷ typedPointsto (structFieldRef io.PipeReader.t go!"pipe" l) v.pipe' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PipeReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.PipeReader.t io.«PipeReaderⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance PipeReader_access_load_pipe (l : loc) (v : io.PipeReader.t) (dq : DFrac) :
+instance PipeReader_access_load_pipe (l : Loc) (v : io.PipeReader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.PipeReader.t go!"pipe" l) v.pipe' dq)
-      (typed_pointsto (struct_field_ref io.PipeReader.t go!"pipe" l) v.pipe' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.PipeReader.t go!"pipe" l) v.pipe' dq)
+      (typedPointsto (structFieldRef io.PipeReader.t go!"pipe" l) v.pipe' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance PipeReader_access_store_pipe (l : loc) (v : io.PipeReader.t) (pipe' : io.pipe.t) :
+instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader.t) (pipe' : io.pipe.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.PipeReader.t go!"pipe" l) v.pipe' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.PipeReader.t go!"pipe" l) pipe' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with pipe' := pipe' } : io.PipeReader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.PipeReader.t go!"pipe" l) v.pipe' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.PipeReader.t go!"pipe" l) pipe' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pipe' := pipe' } : io.PipeReader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -759,37 +759,37 @@ end PipeReader
 namespace PipeWriter
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.Assumptions]
 
 instance PipeWriter_typed_pointsto :
     TypedPointsto (GF := GF) io.PipeWriter.t where
-  typed_pointsto_def l v dq := iprop(
-    "r" ∷ typed_pointsto (struct_field_ref io.PipeWriter.t go!"r" l) v.r' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "r" ∷ typedPointsto (structFieldRef io.PipeWriter.t go!"r" l) v.r' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance PipeWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) io.PipeWriter.t io.«PipeWriterⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance PipeWriter_access_load_r (l : loc) (v : io.PipeWriter.t) (dq : DFrac) :
+instance PipeWriter_access_load_r (l : Loc) (v : io.PipeWriter.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.PipeWriter.t go!"r" l) v.r' dq)
-      (typed_pointsto (struct_field_ref io.PipeWriter.t go!"r" l) v.r' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef io.PipeWriter.t go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef io.PipeWriter.t go!"r" l) v.r' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance PipeWriter_access_store_r (l : loc) (v : io.PipeWriter.t) (r' : io.PipeReader.t) :
+instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter.t) (r' : io.PipeReader.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref io.PipeWriter.t go!"r" l) v.r' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref io.PipeWriter.t go!"r" l) r' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with r' := r' } : io.PipeWriter.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.PipeWriter.t go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef io.PipeWriter.t go!"r" l) r' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.PipeWriter.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

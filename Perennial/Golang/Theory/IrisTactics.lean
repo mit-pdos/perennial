@@ -50,7 +50,7 @@ open Lean Elab Tactic Meta
 /-- Is `e` a mask side condition that `solve_ndisj` should try: a (conjunction
 of) `E1 ⊆ E2`, `E1 ## E2` or `p ∈ E` over `CoPset`s, or `N1 ## N2` over
 namespaces? -/
-partial def isNdisjGoal (e : Expr) : MetaM Bool := do
+partial def isNdisjGoal (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
   if e.isAppOfArity ``And 2 then
     return (← isNdisjGoal (e.getArg! 0)) && (← isNdisjGoal (e.getArg! 1))
@@ -65,7 +65,7 @@ partial def isNdisjGoal (e : Expr) : MetaM Bool := do
   return false
 
 /-- Does the type of a local hypothesis talk about masks or namespaces? -/
-def isNdisjHyp (ty : Expr) : Bool :=
+def isNdisjHyp (ty : Lean.Expr) : Bool :=
   (ty.find? fun s => s.isConstOf ``CoPset || s.isConstOf ``nclose || s.isConstOf ``ndot).isSome
 
 /-- Rocq `solve_ndisj`: prove a mask side condition built from `⊆`, `##`, `∈`,
@@ -100,7 +100,7 @@ namespace IrisTactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- `wandM`/`Option.getD` reduction (copy of iris-lean's private `reduceWandM`). -/
-def reduceWandM (e : Expr) : ProofModeM Expr := do
+def reduceWandM (e : Lean.Expr) : ProofModeM Lean.Expr := do
   let simpThms ← #[``BIBase.wandM, ``Option.getD].foldlM (·.addDeclToUnfold ·) {}
   let simpContext ← Simp.mkContext {} #[simpThms] (← getSimpCongrTheorems)
   Lean.Meta.dsimp e simpContext <&> Prod.fst
@@ -225,7 +225,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- The atoms of a goal: the conjuncts of its `∗`-spine, looking through `∃`
 (atoms mentioning the bound variable are skipped) and `named`. -/
-partial def goalAtoms (e : Expr) (acc : Array Expr := #[]) : MetaM (Array Expr) := do
+partial def goalAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : MetaM (Array Lean.Expr) := do
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.sep 4 then
     return ← goalAtoms (e.getArg! 3) (← goalAtoms (e.getArg! 2) acc)
@@ -240,7 +240,7 @@ partial def goalAtoms (e : Expr) (acc : Array Expr := #[]) : MetaM (Array Expr) 
 /-- Does `P` match `Q` by computation (default transparency, no metavariable
 assignment), e.g. `P [v]` and `P ([] ++ [v])`, `ghost_var γ q a` under a `let`?
 Bounded; errors count as no match. -/
-def matchesByDefEq (P Q : Expr) : MetaM Bool := do
+def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
   if Q.hasMVar || P.hasMVar then return false
   if P.getAppFn != Q.getAppFn then return false
   -- cheap filter: few arguments may differ syntactically (e.g. `P [v]` and
@@ -260,7 +260,7 @@ def matchesByDefEq (P Q : Expr) : MetaM Bool := do
 
 /-- The conjuncts of the `∗`-spine of `e` (through `named`), with loose bound
 variables allowed. -/
-partial def sepAtoms (e : Expr) (acc : Array Expr := #[]) : Array Expr :=
+partial def sepAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : Array Lean.Expr :=
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.sep 4 then sepAtoms (e.getArg! 3) (sepAtoms (e.getArg! 2) acc)
   else if e.isAppOfArity ``Perennial.named 3 then sepAtoms (e.getArg! 2) acc
@@ -270,7 +270,7 @@ partial def sepAtoms (e : Expr) (acc : Array Expr := #[]) : Array Expr :=
 hypotheses, ignoring hypotheses that exactly match a conjunct of `body` that
 does not mention `x` (those are framed there). `none` unless exactly one
 witness is found. -/
-def existsWitness? (goal : Expr) (hs : Array (Name × Expr)) : MetaM (Option Expr) := do
+def existsWitness? (goal : Lean.Expr) (hs : Array (Name × Lean.Expr)) : MetaM (Option Lean.Expr) := do
   let goal := goal.consumeMData
   unless goal.isAppOfArity ``BIBase.exists 4 do return none
   let .lam _ ty body _ := goal.getArg! 3 | return none
@@ -279,7 +279,7 @@ def existsWitness? (goal : Expr) (hs : Array (Name × Expr)) : MetaM (Option Exp
   let open_ := atoms.filter (·.hasLooseBVars)
   if open_.isEmpty then return none
   let cands := hs.filter fun (_, t) => !closed.contains t
-  let mut found : Option Expr := none
+  let mut found : Option Lean.Expr := none
   for a in open_ do
     for (_, t) in cands do
       let r ← withNewMCtxDepth do
@@ -308,7 +308,7 @@ register_option goose.iframe.prepass : Bool := {
 
 /-- The spatial hypotheses (name, type). -/
 def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
-    ∀ {e}, Hyps bi e → Array (Name × Expr)
+    ∀ {e}, Hyps bi e → Array (Name × Lean.Expr)
   | _, .emp _ => #[]
   | _, .hyp _ name _ p ty _ => if isTrue p then #[] else #[(name, ty)]
   | _, .sep _ _ _ _ lhs rhs => hypsSpatial lhs ++ hypsSpatial rhs

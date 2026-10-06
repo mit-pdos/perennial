@@ -19,37 +19,37 @@ namespace github_com.prometheus.client_golang.prometheus
 namespace MultiTRegistry
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance MultiTRegistry_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.MultiTRegistry.t where
-  typed_pointsto_def l v dq := iprop(
-    "tGatherers" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "tGatherers" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MultiTRegistry_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.MultiTRegistry.t github_com.prometheus.client_golang.prometheus.«MultiTRegistryⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MultiTRegistry_access_load_tGatherers (l : loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (dq : DFrac) :
+instance MultiTRegistry_access_load_tGatherers (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MultiTRegistry_access_store_tGatherers (l : loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (tGatherers' : slice.t) :
+instance MultiTRegistry_access_store_tGatherers (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (tGatherers' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) tGatherers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tGatherers' := tGatherers' } : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) v.tGatherers' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MultiTRegistry.t go!"tGatherers" l) tGatherers' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tGatherers' := tGatherers' } : github_com.prometheus.client_golang.prometheus.MultiTRegistry.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -59,8 +59,8 @@ end MultiTRegistry
 namespace summary
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
@@ -78,54 +78,54 @@ end summary
 namespace summaryCounts
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance summaryCounts_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.summaryCounts.t where
-  typed_pointsto_def l v dq := iprop(
-    "sumBits" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq ∗
-    "count" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "sumBits" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq ∗
+    "count" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance summaryCounts_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.summaryCounts.t github_com.prometheus.client_golang.prometheus.«summaryCountsⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance summaryCounts_access_load_sumBits (l : loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (dq : DFrac) :
+instance summaryCounts_access_load_sumBits (l : Loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance summaryCounts_access_store_sumBits (l : loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (sumBits' : w64) :
+instance summaryCounts_access_store_sumBits (l : Loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (sumBits' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) sumBits' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sumBits' := sumBits' } : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) v.sumBits' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"sumBits" l) sumBits' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sumBits' := sumBits' } : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance summaryCounts_access_load_count (l : loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (dq : DFrac) :
+instance summaryCounts_access_load_count (l : Loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance summaryCounts_access_store_count (l : loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (count' : w64) :
+instance summaryCounts_access_store_count (l : Loc) (v : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (count' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) count' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with count' := count' } : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) v.count' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.summaryCounts.t go!"count" l) count' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : github_com.prometheus.client_golang.prometheus.summaryCounts.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -135,8 +135,8 @@ end summaryCounts
 namespace noObjectivesSummary
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
@@ -154,37 +154,37 @@ end noObjectivesSummary
 namespace SummaryVec
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance SummaryVec_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryVec.t where
-  typed_pointsto_def l v dq := iprop(
-    "MetricVec" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MetricVec" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance SummaryVec_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.SummaryVec.t github_com.prometheus.client_golang.prometheus.«SummaryVecⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance SummaryVec_access_load_MetricVec (l : loc) (v : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (dq : DFrac) :
+instance SummaryVec_access_load_MetricVec (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance SummaryVec_access_store_MetricVec (l : loc) (v : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (MetricVec' : loc) :
+instance SummaryVec_access_store_MetricVec (l : Loc) (v : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (MetricVec' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) MetricVec' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MetricVec' := MetricVec' } : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) v.MetricVec' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.SummaryVec.t go!"MetricVec" l) MetricVec' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MetricVec' := MetricVec' } : github_com.prometheus.client_golang.prometheus.SummaryVec.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -194,8 +194,8 @@ end SummaryVec
 namespace constSummary
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
@@ -213,54 +213,54 @@ end constSummary
 namespace constMetric
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance constMetric_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.constMetric.t where
-  typed_pointsto_def l v dq := iprop(
-    "desc" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq ∗
-    "metric" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "desc" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq ∗
+    "metric" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance constMetric_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constMetric.t github_com.prometheus.client_golang.prometheus.«constMetricⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance constMetric_access_load_desc (l : loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (dq : DFrac) :
+instance constMetric_access_load_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance constMetric_access_store_desc (l : loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (desc' : loc) :
+instance constMetric_access_store_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (desc' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) desc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : github_com.prometheus.client_golang.prometheus.constMetric.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) v.desc' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"desc" l) desc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with desc' := desc' } : github_com.prometheus.client_golang.prometheus.constMetric.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance constMetric_access_load_metric (l : loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (dq : DFrac) :
+instance constMetric_access_load_metric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance constMetric_access_store_metric (l : loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (metric' : loc) :
+instance constMetric_access_store_metric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.constMetric.t) (metric' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) metric' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with metric' := metric' } : github_com.prometheus.client_golang.prometheus.constMetric.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) v.metric' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.constMetric.t go!"metric" l) metric' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with metric' := metric' } : github_com.prometheus.client_golang.prometheus.constMetric.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -270,88 +270,88 @@ end constMetric
 namespace MetricVec
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance MetricVec_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.MetricVec.t where
-  typed_pointsto_def l v dq := iprop(
-    "metricMap" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq ∗
-    "curry" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq ∗
-    "hashAdd" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq ∗
-    "hashAddByte" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "metricMap" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq ∗
+    "curry" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq ∗
+    "hashAdd" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq ∗
+    "hashAddByte" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MetricVec_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.MetricVec.t github_com.prometheus.client_golang.prometheus.«MetricVecⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MetricVec_access_load_metricMap (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
+instance MetricVec_access_load_metricMap (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_metricMap (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (metricMap' : loc) :
+instance MetricVec_access_store_metricMap (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (metricMap' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) metricMap' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with metricMap' := metricMap' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) v.metricMap' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"metricMap" l) metricMap' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with metricMap' := metricMap' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_load_curry (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
+instance MetricVec_access_load_curry (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_curry (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (curry' : slice.t) :
+instance MetricVec_access_store_curry (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (curry' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) curry' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with curry' := curry' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) v.curry' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"curry" l) curry' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with curry' := curry' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_load_hashAdd (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
+instance MetricVec_access_load_hashAdd (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_hashAdd (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (hashAdd' : func.t) :
+instance MetricVec_access_store_hashAdd (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (hashAdd' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) hashAdd' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with hashAdd' := hashAdd' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) v.hashAdd' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAdd" l) hashAdd' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hashAdd' := hashAdd' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_load_hashAddByte (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
+instance MetricVec_access_load_hashAddByte (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MetricVec_access_store_hashAddByte (l : loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (hashAddByte' : func.t) :
+instance MetricVec_access_store_hashAddByte (l : Loc) (v : github_com.prometheus.client_golang.prometheus.MetricVec.t) (hashAddByte' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) hashAddByte' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with hashAddByte' := hashAddByte' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) v.hashAddByte' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.MetricVec.t go!"hashAddByte" l) hashAddByte' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hashAddByte' := hashAddByte' } : github_com.prometheus.client_golang.prometheus.MetricVec.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -361,54 +361,54 @@ end MetricVec
 namespace curriedLabelValue
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance curriedLabelValue_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.curriedLabelValue.t where
-  typed_pointsto_def l v dq := iprop(
-    "index" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "index" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq ∗
+    "value" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance curriedLabelValue_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.curriedLabelValue.t github_com.prometheus.client_golang.prometheus.«curriedLabelValueⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance curriedLabelValue_access_load_index (l : loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (dq : DFrac) :
+instance curriedLabelValue_access_load_index (l : Loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance curriedLabelValue_access_store_index (l : loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (index' : w64) :
+instance curriedLabelValue_access_store_index (l : Loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (index' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) index' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with index' := index' } : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) v.index' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"index" l) index' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance curriedLabelValue_access_load_value (l : loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (dq : DFrac) :
+instance curriedLabelValue_access_load_value (l : Loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance curriedLabelValue_access_store_value (l : loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (value' : go_string) :
+instance curriedLabelValue_access_store_value (l : Loc) (v : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.curriedLabelValue.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : github_com.prometheus.client_golang.prometheus.curriedLabelValue.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -418,88 +418,88 @@ end curriedLabelValue
 namespace metricMap
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance metricMap_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.metricMap.t where
-  typed_pointsto_def l v dq := iprop(
-    "mtx" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq ∗
-    "metrics" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq ∗
-    "desc" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq ∗
-    "newMetric" ∷ typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "mtx" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq ∗
+    "metrics" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq ∗
+    "desc" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq ∗
+    "newMetric" ∷ typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance metricMap_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.metricMap.t github_com.prometheus.client_golang.prometheus.«metricMapⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance metricMap_access_load_mtx (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
+instance metricMap_access_load_mtx (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_mtx (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (mtx' : sync.RWMutex.t) :
+instance metricMap_access_store_mtx (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (mtx' : sync.RWMutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) mtx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mtx' := mtx' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) v.mtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"mtx" l) mtx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mtx' := mtx' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_load_metrics (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
+instance metricMap_access_load_metrics (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_metrics (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (metrics' : map.t) :
+instance metricMap_access_store_metrics (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (metrics' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) metrics' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with metrics' := metrics' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) v.metrics' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"metrics" l) metrics' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with metrics' := metrics' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_load_desc (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
+instance metricMap_access_load_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_desc (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (desc' : loc) :
+instance metricMap_access_store_desc (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (desc' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) desc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) v.desc' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"desc" l) desc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with desc' := desc' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_load_newMetric (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
+instance metricMap_access_load_newMetric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq)
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance metricMap_access_store_newMetric (l : loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (newMetric' : func.t) :
+instance metricMap_access_store_newMetric (l : Loc) (v : github_com.prometheus.client_golang.prometheus.metricMap.t) (newMetric' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) newMetric' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with newMetric' := newMetric' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) v.newMetric' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.prometheus.client_golang.prometheus.metricMap.t go!"newMetric" l) newMetric' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with newMetric' := newMetric' } : github_com.prometheus.client_golang.prometheus.metricMap.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -509,18 +509,18 @@ end metricMap
 namespace v2
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 instance v2_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.v2.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance v2_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.v2.t github_com.prometheus.client_golang.prometheus.«v2ⁱᵐᵖˡ» := by

@@ -29,9 +29,9 @@ inductive t where
 end broadcast
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 
 /-- The broadcast invariant. -/
@@ -335,7 +335,7 @@ theorem ownBroadcastChan_Unknown (ch : chan.t) (γ : ChanNames) (Q : IProp GF)
   iapply ownBroadcastChan_close _ _ _ _ γch
   iframe #
 
-theorem wp_broadcast_chan_close {ty : go.type} {dir : go.chan_dir}
+theorem wp_broadcast_chan_close {ty : go.GoType} {dir : go.ChanDir}
     [ty ↓u go.ChannelType dir (go.StructType [])] (ch : chan.t) (γch : ChanNames) (Q : IProp GF) :
     {{ ownBroadcastChan ch γch Q .Pending ∗ □ Q }}
       (App (Val #(functions go.close [ty])) (Val #ch))

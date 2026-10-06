@@ -25,54 +25,54 @@ namespace runtime
 namespace pollCache
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance pollCache_typed_pointsto :
     TypedPointsto (GF := GF) runtime.pollCache.t where
-  typed_pointsto_def l v dq := iprop(
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.pollCache.t go!"lock" l) v.lock' dq ∗
-    "first" ∷ typed_pointsto (struct_field_ref runtime.pollCache.t go!"first" l) v.first' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "lock" ∷ typedPointsto (structFieldRef runtime.pollCache.t go!"lock" l) v.lock' dq ∗
+    "first" ∷ typedPointsto (structFieldRef runtime.pollCache.t go!"first" l) v.first' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance pollCache_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.pollCache.t runtime.«pollCacheⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance pollCache_access_load_lock (l : loc) (v : runtime.pollCache.t) (dq : DFrac) :
+instance pollCache_access_load_lock (l : Loc) (v : runtime.pollCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pollCache_access_store_lock (l : loc) (v : runtime.pollCache.t) (lock' : runtime.mutex.t) :
+instance pollCache_access_store_lock (l : Loc) (v : runtime.pollCache.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.pollCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.pollCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance pollCache_access_load_first (l : loc) (v : runtime.pollCache.t) (dq : DFrac) :
+instance pollCache_access_load_first (l : Loc) (v : runtime.pollCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"first" l) v.first' dq)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"first" l) v.first' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"first" l) v.first' dq)
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"first" l) v.first' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance pollCache_access_store_first (l : loc) (v : runtime.pollCache.t) (first' : loc) :
+instance pollCache_access_store_first (l : Loc) (v : runtime.pollCache.t) (first' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"first" l) v.first' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.pollCache.t go!"first" l) first' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with first' := first' } : runtime.pollCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"first" l) v.first' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.pollCache.t go!"first" l) first' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with first' := first' } : runtime.pollCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -82,88 +82,88 @@ end pollCache
 namespace updateMaxProcsGState
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance updateMaxProcsGState_typed_pointsto :
     TypedPointsto (GF := GF) runtime.updateMaxProcsGState.t where
-  typed_pointsto_def l v dq := iprop(
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq ∗
-    "g" ∷ typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"g" l) v.g' dq ∗
-    "idle" ∷ typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq ∗
-    "procs" ∷ typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "lock" ∷ typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq ∗
+    "g" ∷ typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"g" l) v.g' dq ∗
+    "idle" ∷ typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq ∗
+    "procs" ∷ typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance updateMaxProcsGState_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.updateMaxProcsGState.t runtime.«updateMaxProcsGStateⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance updateMaxProcsGState_access_load_lock (l : loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
+instance updateMaxProcsGState_access_load_lock (l : Loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_store_lock (l : loc) (v : runtime.updateMaxProcsGState.t) (lock' : runtime.mutex.t) :
+instance updateMaxProcsGState_access_store_lock (l : Loc) (v : runtime.updateMaxProcsGState.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_load_g (l : loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
+instance updateMaxProcsGState_access_load_g (l : Loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"g" l) v.g' dq)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"g" l) v.g' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"g" l) v.g' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_store_g (l : loc) (v : runtime.updateMaxProcsGState.t) (g' : loc) :
+instance updateMaxProcsGState_access_store_g (l : Loc) (v : runtime.updateMaxProcsGState.t) (g' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"g" l) v.g' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"g" l) g' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with g' := g' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"g" l) v.g' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"g" l) g' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_load_idle (l : loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
+instance updateMaxProcsGState_access_load_idle (l : Loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq)
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"idle" l) v.idle' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_store_idle (l : loc) (v : runtime.updateMaxProcsGState.t) (idle' : internal.runtime.atomic.Bool'.t) :
+instance updateMaxProcsGState_access_store_idle (l : Loc) (v : runtime.updateMaxProcsGState.t) (idle' : internal.runtime.atomic.Bool'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"idle" l) v.idle' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"idle" l) idle' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with idle' := idle' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"idle" l) v.idle' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"idle" l) idle' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with idle' := idle' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_load_procs (l : loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
+instance updateMaxProcsGState_access_load_procs (l : Loc) (v : runtime.updateMaxProcsGState.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq)
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"procs" l) v.procs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance updateMaxProcsGState_access_store_procs (l : loc) (v : runtime.updateMaxProcsGState.t) (procs' : w32) :
+instance updateMaxProcsGState_access_store_procs (l : Loc) (v : runtime.updateMaxProcsGState.t) (procs' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"procs" l) v.procs' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.updateMaxProcsGState.t go!"procs" l) procs' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with procs' := procs' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"procs" l) v.procs' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.updateMaxProcsGState.t go!"procs" l) procs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with procs' := procs' } : runtime.updateMaxProcsGState.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -173,88 +173,88 @@ end updateMaxProcsGState
 namespace ticksType
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance ticksType_typed_pointsto :
     TypedPointsto (GF := GF) runtime.ticksType.t where
-  typed_pointsto_def l v dq := iprop(
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.ticksType.t go!"lock" l) v.lock' dq ∗
-    "startTicks" ∷ typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTicks" l) v.startTicks' dq ∗
-    "startTime" ∷ typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTime" l) v.startTime' dq ∗
-    "val" ∷ typed_pointsto (struct_field_ref runtime.ticksType.t go!"val" l) v.val' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "lock" ∷ typedPointsto (structFieldRef runtime.ticksType.t go!"lock" l) v.lock' dq ∗
+    "startTicks" ∷ typedPointsto (structFieldRef runtime.ticksType.t go!"startTicks" l) v.startTicks' dq ∗
+    "startTime" ∷ typedPointsto (structFieldRef runtime.ticksType.t go!"startTime" l) v.startTime' dq ∗
+    "val" ∷ typedPointsto (structFieldRef runtime.ticksType.t go!"val" l) v.val' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ticksType_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.ticksType.t runtime.«ticksTypeⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance ticksType_access_load_lock (l : loc) (v : runtime.ticksType.t) (dq : DFrac) :
+instance ticksType_access_load_lock (l : Loc) (v : runtime.ticksType.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_store_lock (l : loc) (v : runtime.ticksType.t) (lock' : runtime.mutex.t) :
+instance ticksType_access_store_lock (l : Loc) (v : runtime.ticksType.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.ticksType.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.ticksType.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_load_startTicks (l : loc) (v : runtime.ticksType.t) (dq : DFrac) :
+instance ticksType_access_load_startTicks (l : Loc) (v : runtime.ticksType.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTicks" l) v.startTicks' dq)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTicks" l) v.startTicks' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTicks" l) v.startTicks' dq)
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTicks" l) v.startTicks' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_store_startTicks (l : loc) (v : runtime.ticksType.t) (startTicks' : w64) :
+instance ticksType_access_store_startTicks (l : Loc) (v : runtime.ticksType.t) (startTicks' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTicks" l) v.startTicks' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTicks" l) startTicks' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with startTicks' := startTicks' } : runtime.ticksType.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTicks" l) v.startTicks' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTicks" l) startTicks' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with startTicks' := startTicks' } : runtime.ticksType.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_load_startTime (l : loc) (v : runtime.ticksType.t) (dq : DFrac) :
+instance ticksType_access_load_startTime (l : Loc) (v : runtime.ticksType.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTime" l) v.startTime' dq)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTime" l) v.startTime' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTime" l) v.startTime' dq)
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTime" l) v.startTime' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_store_startTime (l : loc) (v : runtime.ticksType.t) (startTime' : w64) :
+instance ticksType_access_store_startTime (l : Loc) (v : runtime.ticksType.t) (startTime' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTime" l) v.startTime' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"startTime" l) startTime' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with startTime' := startTime' } : runtime.ticksType.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTime" l) v.startTime' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"startTime" l) startTime' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with startTime' := startTime' } : runtime.ticksType.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_load_val (l : loc) (v : runtime.ticksType.t) (dq : DFrac) :
+instance ticksType_access_load_val (l : Loc) (v : runtime.ticksType.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"val" l) v.val' dq)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"val" l) v.val' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"val" l) v.val' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ticksType_access_store_val (l : loc) (v : runtime.ticksType.t) (val' : internal.runtime.atomic.Int64.t) :
+instance ticksType_access_store_val (l : Loc) (v : runtime.ticksType.t) (val' : internal.runtime.atomic.Int64.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"val" l) v.val' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.ticksType.t go!"val" l) val' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with val' := val' } : runtime.ticksType.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"val" l) v.val' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ticksType.t go!"val" l) val' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : runtime.ticksType.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -264,258 +264,258 @@ end ticksType
 namespace sudog
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance sudog_typed_pointsto :
     TypedPointsto (GF := GF) runtime.sudog.t where
-  typed_pointsto_def l v dq := iprop(
-    "g" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"g" l) v.g' dq ∗
-    "next" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"next" l) v.next' dq ∗
-    "prev" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"prev" l) v.prev' dq ∗
-    "elem" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"elem" l) v.elem' dq ∗
-    "acquiretime" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq ∗
-    "releasetime" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"releasetime" l) v.releasetime' dq ∗
-    "ticket" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"ticket" l) v.ticket' dq ∗
-    "isSelect" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"isSelect" l) v.isSelect' dq ∗
-    "success" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"success" l) v.success' dq ∗
-    "waiters" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"waiters" l) v.waiters' dq ∗
-    "parent" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"parent" l) v.parent' dq ∗
-    "waitlink" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"waitlink" l) v.waitlink' dq ∗
-    "waittail" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"waittail" l) v.waittail' dq ∗
-    "c" ∷ typed_pointsto (struct_field_ref runtime.sudog.t go!"c" l) v.c' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "g" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"g" l) v.g' dq ∗
+    "next" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"next" l) v.next' dq ∗
+    "prev" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"prev" l) v.prev' dq ∗
+    "elem" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"elem" l) v.elem' dq ∗
+    "acquiretime" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq ∗
+    "releasetime" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"releasetime" l) v.releasetime' dq ∗
+    "ticket" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"ticket" l) v.ticket' dq ∗
+    "isSelect" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"isSelect" l) v.isSelect' dq ∗
+    "success" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"success" l) v.success' dq ∗
+    "waiters" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"waiters" l) v.waiters' dq ∗
+    "parent" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"parent" l) v.parent' dq ∗
+    "waitlink" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"waitlink" l) v.waitlink' dq ∗
+    "waittail" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"waittail" l) v.waittail' dq ∗
+    "c" ∷ typedPointsto (structFieldRef runtime.sudog.t go!"c" l) v.c' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance sudog_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.sudog.t runtime.«sudogⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance sudog_access_load_g (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_g (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"g" l) v.g' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"g" l) v.g' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"g" l) v.g' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_g (l : loc) (v : runtime.sudog.t) (g' : loc) :
+instance sudog_access_store_g (l : Loc) (v : runtime.sudog.t) (g' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"g" l) v.g' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"g" l) g' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with g' := g' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"g" l) v.g' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"g" l) g' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_next (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_next (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"next" l) v.next' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"next" l) v.next' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"next" l) v.next' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"next" l) v.next' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_next (l : loc) (v : runtime.sudog.t) (next' : loc) :
+instance sudog_access_store_next (l : Loc) (v : runtime.sudog.t) (next' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"next" l) v.next' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"next" l) next' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with next' := next' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"next" l) v.next' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"next" l) next' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with next' := next' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_prev (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_prev (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"prev" l) v.prev' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"prev" l) v.prev' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"prev" l) v.prev' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"prev" l) v.prev' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_prev (l : loc) (v : runtime.sudog.t) (prev' : loc) :
+instance sudog_access_store_prev (l : Loc) (v : runtime.sudog.t) (prev' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"prev" l) v.prev' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"prev" l) prev' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prev' := prev' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"prev" l) v.prev' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"prev" l) prev' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prev' := prev' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_elem (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_elem (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"elem" l) v.elem' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"elem" l) v.elem' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"elem" l) v.elem' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"elem" l) v.elem' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_elem (l : loc) (v : runtime.sudog.t) (elem' : runtime.maybeTraceablePtr.t) :
+instance sudog_access_store_elem (l : Loc) (v : runtime.sudog.t) (elem' : runtime.maybeTraceablePtr.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"elem" l) v.elem' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"elem" l) elem' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with elem' := elem' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"elem" l) v.elem' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"elem" l) elem' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with elem' := elem' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_acquiretime (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_acquiretime (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"acquiretime" l) v.acquiretime' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_acquiretime (l : loc) (v : runtime.sudog.t) (acquiretime' : w64) :
+instance sudog_access_store_acquiretime (l : Loc) (v : runtime.sudog.t) (acquiretime' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"acquiretime" l) v.acquiretime' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"acquiretime" l) acquiretime' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with acquiretime' := acquiretime' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"acquiretime" l) v.acquiretime' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"acquiretime" l) acquiretime' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with acquiretime' := acquiretime' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_releasetime (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_releasetime (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"releasetime" l) v.releasetime' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"releasetime" l) v.releasetime' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"releasetime" l) v.releasetime' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"releasetime" l) v.releasetime' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_releasetime (l : loc) (v : runtime.sudog.t) (releasetime' : w64) :
+instance sudog_access_store_releasetime (l : Loc) (v : runtime.sudog.t) (releasetime' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"releasetime" l) v.releasetime' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"releasetime" l) releasetime' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with releasetime' := releasetime' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"releasetime" l) v.releasetime' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"releasetime" l) releasetime' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasetime' := releasetime' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_ticket (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_ticket (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"ticket" l) v.ticket' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"ticket" l) v.ticket' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"ticket" l) v.ticket' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"ticket" l) v.ticket' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_ticket (l : loc) (v : runtime.sudog.t) (ticket' : w32) :
+instance sudog_access_store_ticket (l : Loc) (v : runtime.sudog.t) (ticket' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"ticket" l) v.ticket' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"ticket" l) ticket' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ticket' := ticket' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"ticket" l) v.ticket' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"ticket" l) ticket' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ticket' := ticket' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_isSelect (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_isSelect (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"isSelect" l) v.isSelect' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"isSelect" l) v.isSelect' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"isSelect" l) v.isSelect' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"isSelect" l) v.isSelect' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_isSelect (l : loc) (v : runtime.sudog.t) (isSelect' : Bool) :
+instance sudog_access_store_isSelect (l : Loc) (v : runtime.sudog.t) (isSelect' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"isSelect" l) v.isSelect' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"isSelect" l) isSelect' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with isSelect' := isSelect' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"isSelect" l) v.isSelect' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"isSelect" l) isSelect' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isSelect' := isSelect' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_success (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_success (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"success" l) v.success' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"success" l) v.success' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"success" l) v.success' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"success" l) v.success' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_success (l : loc) (v : runtime.sudog.t) (success' : Bool) :
+instance sudog_access_store_success (l : Loc) (v : runtime.sudog.t) (success' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"success" l) v.success' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"success" l) success' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with success' := success' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"success" l) v.success' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"success" l) success' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with success' := success' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_waiters (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_waiters (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waiters" l) v.waiters' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waiters" l) v.waiters' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waiters" l) v.waiters' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waiters" l) v.waiters' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_waiters (l : loc) (v : runtime.sudog.t) (waiters' : w16) :
+instance sudog_access_store_waiters (l : Loc) (v : runtime.sudog.t) (waiters' : w16) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waiters" l) v.waiters' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waiters" l) waiters' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waiters' := waiters' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waiters" l) v.waiters' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waiters" l) waiters' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiters' := waiters' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_parent (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_parent (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"parent" l) v.parent' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"parent" l) v.parent' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"parent" l) v.parent' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"parent" l) v.parent' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_parent (l : loc) (v : runtime.sudog.t) (parent' : loc) :
+instance sudog_access_store_parent (l : Loc) (v : runtime.sudog.t) (parent' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"parent" l) v.parent' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"parent" l) parent' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with parent' := parent' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"parent" l) v.parent' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"parent" l) parent' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parent' := parent' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_waitlink (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_waitlink (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waitlink" l) v.waitlink' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waitlink" l) v.waitlink' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waitlink" l) v.waitlink' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waitlink" l) v.waitlink' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_waitlink (l : loc) (v : runtime.sudog.t) (waitlink' : loc) :
+instance sudog_access_store_waitlink (l : Loc) (v : runtime.sudog.t) (waitlink' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waitlink" l) v.waitlink' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waitlink" l) waitlink' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitlink' := waitlink' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waitlink" l) v.waitlink' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waitlink" l) waitlink' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waitlink' := waitlink' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_waittail (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_waittail (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waittail" l) v.waittail' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waittail" l) v.waittail' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waittail" l) v.waittail' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waittail" l) v.waittail' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_waittail (l : loc) (v : runtime.sudog.t) (waittail' : loc) :
+instance sudog_access_store_waittail (l : Loc) (v : runtime.sudog.t) (waittail' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waittail" l) v.waittail' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"waittail" l) waittail' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waittail' := waittail' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waittail" l) v.waittail' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"waittail" l) waittail' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waittail' := waittail' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_load_c (l : loc) (v : runtime.sudog.t) (dq : DFrac) :
+instance sudog_access_load_c (l : Loc) (v : runtime.sudog.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"c" l) v.c' dq)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"c" l) v.c' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"c" l) v.c' dq)
+      (typedPointsto (structFieldRef runtime.sudog.t go!"c" l) v.c' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance sudog_access_store_c (l : loc) (v : runtime.sudog.t) (c' : runtime.maybeTraceableChan.t) :
+instance sudog_access_store_c (l : Loc) (v : runtime.sudog.t) (c' : runtime.maybeTraceableChan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"c" l) v.c' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.sudog.t go!"c" l) c' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with c' := c' } : runtime.sudog.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sudog.t go!"c" l) v.c' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sudog.t go!"c" l) c' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : runtime.sudog.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -525,8 +525,8 @@ end sudog
 namespace g
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
@@ -535,1118 +535,1118 @@ set_option synthInstance.maxSize 1024 in
 set_option synthInstance.maxHeartbeats 200000 in
 instance g_typed_pointsto :
     TypedPointsto (GF := GF) runtime.g.t where
-  typed_pointsto_def l v dq := iprop(
-    "stack" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"stack" l) v.stack' dq ∗
-    "stackguard0" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"stackguard0" l) v.stackguard0' dq ∗
-    "stackguard1" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"stackguard1" l) v.stackguard1' dq ∗
-    "_panic" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"_panic" l) v._panic' dq ∗
-    "_defer" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"_defer" l) v._defer' dq ∗
-    "m" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"m" l) v.m' dq ∗
-    "sched" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sched" l) v.sched' dq ∗
-    "syscallsp" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"syscallsp" l) v.syscallsp' dq ∗
-    "syscallpc" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"syscallpc" l) v.syscallpc' dq ∗
-    "syscallbp" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"syscallbp" l) v.syscallbp' dq ∗
-    "stktopsp" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"stktopsp" l) v.stktopsp' dq ∗
-    "param" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"param" l) v.param' dq ∗
-    "atomicstatus" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq ∗
-    "stackLock" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"stackLock" l) v.stackLock' dq ∗
-    "goid" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"goid" l) v.goid' dq ∗
-    "schedlink" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"schedlink" l) v.schedlink' dq ∗
-    "waitsince" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"waitsince" l) v.waitsince' dq ∗
-    "waitreason" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"waitreason" l) v.waitreason' dq ∗
-    "preempt" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"preempt" l) v.preempt' dq ∗
-    "preemptStop" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"preemptStop" l) v.preemptStop' dq ∗
-    "preemptShrink" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq ∗
-    "asyncSafePoint" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq ∗
-    "paniconfault" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"paniconfault" l) v.paniconfault' dq ∗
-    "gcscandone" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"gcscandone" l) v.gcscandone' dq ∗
-    "throwsplit" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"throwsplit" l) v.throwsplit' dq ∗
-    "activeStackChans" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq ∗
-    "parkingOnChan" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq ∗
-    "inMarkAssist" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq ∗
-    "coroexit" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"coroexit" l) v.coroexit' dq ∗
-    "raceignore" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"raceignore" l) v.raceignore' dq ∗
-    "nocgocallback" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq ∗
-    "tracking" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"tracking" l) v.tracking' dq ∗
-    "trackingSeq" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq ∗
-    "trackingStamp" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq ∗
-    "runnableTime" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"runnableTime" l) v.runnableTime' dq ∗
-    "lockedm" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"lockedm" l) v.lockedm' dq ∗
-    "fipsIndicator" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq ∗
-    "fipsOnlyBypass" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq ∗
-    "ditWanted" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"ditWanted" l) v.ditWanted' dq ∗
-    "syncSafePoint" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq ∗
-    "runningCleanups" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq ∗
-    "sig" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sig" l) v.sig' dq ∗
-    "secret" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"secret" l) v.secret' dq ∗
-    "writebuf" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"writebuf" l) v.writebuf' dq ∗
-    "sigcode0" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sigcode0" l) v.sigcode0' dq ∗
-    "sigcode1" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sigcode1" l) v.sigcode1' dq ∗
-    "sigpc" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sigpc" l) v.sigpc' dq ∗
-    "parentGoid" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"parentGoid" l) v.parentGoid' dq ∗
-    "gopc" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"gopc" l) v.gopc' dq ∗
-    "ancestors" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"ancestors" l) v.ancestors' dq ∗
-    "startpc" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"startpc" l) v.startpc' dq ∗
-    "racectx" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"racectx" l) v.racectx' dq ∗
-    "waiting" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"waiting" l) v.waiting' dq ∗
-    "cgoCtxt" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq ∗
-    "labels" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"labels" l) v.labels' dq ∗
-    "timer" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"timer" l) v.timer' dq ∗
-    "sleepWhen" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq ∗
-    "selectDone" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"selectDone" l) v.selectDone' dq ∗
-    "goroutineProfiled" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq ∗
-    "coroarg" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"coroarg" l) v.coroarg' dq ∗
-    "bubble" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"bubble" l) v.bubble' dq ∗
-    "xRegs" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"xRegs" l) v.xRegs' dq ∗
-    "trace" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"trace" l) v.trace' dq ∗
-    "gcAssistBytes" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq ∗
-    "valgrindStackID" ∷ typed_pointsto (struct_field_ref runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "stack" ∷ typedPointsto (structFieldRef runtime.g.t go!"stack" l) v.stack' dq ∗
+    "stackguard0" ∷ typedPointsto (structFieldRef runtime.g.t go!"stackguard0" l) v.stackguard0' dq ∗
+    "stackguard1" ∷ typedPointsto (structFieldRef runtime.g.t go!"stackguard1" l) v.stackguard1' dq ∗
+    "_panic" ∷ typedPointsto (structFieldRef runtime.g.t go!"_panic" l) v._panic' dq ∗
+    "_defer" ∷ typedPointsto (structFieldRef runtime.g.t go!"_defer" l) v._defer' dq ∗
+    "m" ∷ typedPointsto (structFieldRef runtime.g.t go!"m" l) v.m' dq ∗
+    "sched" ∷ typedPointsto (structFieldRef runtime.g.t go!"sched" l) v.sched' dq ∗
+    "syscallsp" ∷ typedPointsto (structFieldRef runtime.g.t go!"syscallsp" l) v.syscallsp' dq ∗
+    "syscallpc" ∷ typedPointsto (structFieldRef runtime.g.t go!"syscallpc" l) v.syscallpc' dq ∗
+    "syscallbp" ∷ typedPointsto (structFieldRef runtime.g.t go!"syscallbp" l) v.syscallbp' dq ∗
+    "stktopsp" ∷ typedPointsto (structFieldRef runtime.g.t go!"stktopsp" l) v.stktopsp' dq ∗
+    "param" ∷ typedPointsto (structFieldRef runtime.g.t go!"param" l) v.param' dq ∗
+    "atomicstatus" ∷ typedPointsto (structFieldRef runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq ∗
+    "stackLock" ∷ typedPointsto (structFieldRef runtime.g.t go!"stackLock" l) v.stackLock' dq ∗
+    "goid" ∷ typedPointsto (structFieldRef runtime.g.t go!"goid" l) v.goid' dq ∗
+    "schedlink" ∷ typedPointsto (structFieldRef runtime.g.t go!"schedlink" l) v.schedlink' dq ∗
+    "waitsince" ∷ typedPointsto (structFieldRef runtime.g.t go!"waitsince" l) v.waitsince' dq ∗
+    "waitreason" ∷ typedPointsto (structFieldRef runtime.g.t go!"waitreason" l) v.waitreason' dq ∗
+    "preempt" ∷ typedPointsto (structFieldRef runtime.g.t go!"preempt" l) v.preempt' dq ∗
+    "preemptStop" ∷ typedPointsto (structFieldRef runtime.g.t go!"preemptStop" l) v.preemptStop' dq ∗
+    "preemptShrink" ∷ typedPointsto (structFieldRef runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq ∗
+    "asyncSafePoint" ∷ typedPointsto (structFieldRef runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq ∗
+    "paniconfault" ∷ typedPointsto (structFieldRef runtime.g.t go!"paniconfault" l) v.paniconfault' dq ∗
+    "gcscandone" ∷ typedPointsto (structFieldRef runtime.g.t go!"gcscandone" l) v.gcscandone' dq ∗
+    "throwsplit" ∷ typedPointsto (structFieldRef runtime.g.t go!"throwsplit" l) v.throwsplit' dq ∗
+    "activeStackChans" ∷ typedPointsto (structFieldRef runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq ∗
+    "parkingOnChan" ∷ typedPointsto (structFieldRef runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq ∗
+    "inMarkAssist" ∷ typedPointsto (structFieldRef runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq ∗
+    "coroexit" ∷ typedPointsto (structFieldRef runtime.g.t go!"coroexit" l) v.coroexit' dq ∗
+    "raceignore" ∷ typedPointsto (structFieldRef runtime.g.t go!"raceignore" l) v.raceignore' dq ∗
+    "nocgocallback" ∷ typedPointsto (structFieldRef runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq ∗
+    "tracking" ∷ typedPointsto (structFieldRef runtime.g.t go!"tracking" l) v.tracking' dq ∗
+    "trackingSeq" ∷ typedPointsto (structFieldRef runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq ∗
+    "trackingStamp" ∷ typedPointsto (structFieldRef runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq ∗
+    "runnableTime" ∷ typedPointsto (structFieldRef runtime.g.t go!"runnableTime" l) v.runnableTime' dq ∗
+    "lockedm" ∷ typedPointsto (structFieldRef runtime.g.t go!"lockedm" l) v.lockedm' dq ∗
+    "fipsIndicator" ∷ typedPointsto (structFieldRef runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq ∗
+    "fipsOnlyBypass" ∷ typedPointsto (structFieldRef runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq ∗
+    "ditWanted" ∷ typedPointsto (structFieldRef runtime.g.t go!"ditWanted" l) v.ditWanted' dq ∗
+    "syncSafePoint" ∷ typedPointsto (structFieldRef runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq ∗
+    "runningCleanups" ∷ typedPointsto (structFieldRef runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq ∗
+    "sig" ∷ typedPointsto (structFieldRef runtime.g.t go!"sig" l) v.sig' dq ∗
+    "secret" ∷ typedPointsto (structFieldRef runtime.g.t go!"secret" l) v.secret' dq ∗
+    "writebuf" ∷ typedPointsto (structFieldRef runtime.g.t go!"writebuf" l) v.writebuf' dq ∗
+    "sigcode0" ∷ typedPointsto (structFieldRef runtime.g.t go!"sigcode0" l) v.sigcode0' dq ∗
+    "sigcode1" ∷ typedPointsto (structFieldRef runtime.g.t go!"sigcode1" l) v.sigcode1' dq ∗
+    "sigpc" ∷ typedPointsto (structFieldRef runtime.g.t go!"sigpc" l) v.sigpc' dq ∗
+    "parentGoid" ∷ typedPointsto (structFieldRef runtime.g.t go!"parentGoid" l) v.parentGoid' dq ∗
+    "gopc" ∷ typedPointsto (structFieldRef runtime.g.t go!"gopc" l) v.gopc' dq ∗
+    "ancestors" ∷ typedPointsto (structFieldRef runtime.g.t go!"ancestors" l) v.ancestors' dq ∗
+    "startpc" ∷ typedPointsto (structFieldRef runtime.g.t go!"startpc" l) v.startpc' dq ∗
+    "racectx" ∷ typedPointsto (structFieldRef runtime.g.t go!"racectx" l) v.racectx' dq ∗
+    "waiting" ∷ typedPointsto (structFieldRef runtime.g.t go!"waiting" l) v.waiting' dq ∗
+    "cgoCtxt" ∷ typedPointsto (structFieldRef runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq ∗
+    "labels" ∷ typedPointsto (structFieldRef runtime.g.t go!"labels" l) v.labels' dq ∗
+    "timer" ∷ typedPointsto (structFieldRef runtime.g.t go!"timer" l) v.timer' dq ∗
+    "sleepWhen" ∷ typedPointsto (structFieldRef runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq ∗
+    "selectDone" ∷ typedPointsto (structFieldRef runtime.g.t go!"selectDone" l) v.selectDone' dq ∗
+    "goroutineProfiled" ∷ typedPointsto (structFieldRef runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq ∗
+    "coroarg" ∷ typedPointsto (structFieldRef runtime.g.t go!"coroarg" l) v.coroarg' dq ∗
+    "bubble" ∷ typedPointsto (structFieldRef runtime.g.t go!"bubble" l) v.bubble' dq ∗
+    "xRegs" ∷ typedPointsto (structFieldRef runtime.g.t go!"xRegs" l) v.xRegs' dq ∗
+    "trace" ∷ typedPointsto (structFieldRef runtime.g.t go!"trace" l) v.trace' dq ∗
+    "gcAssistBytes" ∷ typedPointsto (structFieldRef runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq ∗
+    "valgrindStackID" ∷ typedPointsto (structFieldRef runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance g_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.g.t runtime.«gⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance g_access_load_stack (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_stack (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stack" l) v.stack' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stack" l) v.stack' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stack" l) v.stack' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"stack" l) v.stack' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_stack (l : loc) (v : runtime.g.t) (stack' : runtime.stack.t) :
+instance g_access_store_stack (l : Loc) (v : runtime.g.t) (stack' : runtime.stack.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stack" l) v.stack' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stack" l) stack' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stack' := stack' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stack" l) v.stack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"stack" l) stack' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := stack' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_stackguard0 (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_stackguard0 (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard0" l) v.stackguard0' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard0" l) v.stackguard0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard0" l) v.stackguard0' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard0" l) v.stackguard0' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_stackguard0 (l : loc) (v : runtime.g.t) (stackguard0' : w64) :
+instance g_access_store_stackguard0 (l : Loc) (v : runtime.g.t) (stackguard0' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard0" l) v.stackguard0' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard0" l) stackguard0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stackguard0' := stackguard0' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard0" l) v.stackguard0' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard0" l) stackguard0' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackguard0' := stackguard0' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_stackguard1 (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_stackguard1 (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard1" l) v.stackguard1' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard1" l) v.stackguard1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard1" l) v.stackguard1' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard1" l) v.stackguard1' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_stackguard1 (l : loc) (v : runtime.g.t) (stackguard1' : w64) :
+instance g_access_store_stackguard1 (l : Loc) (v : runtime.g.t) (stackguard1' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard1" l) v.stackguard1' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackguard1" l) stackguard1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stackguard1' := stackguard1' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard1" l) v.stackguard1' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"stackguard1" l) stackguard1' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackguard1' := stackguard1' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load__panic (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load__panic (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_panic" l) v._panic' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_panic" l) v._panic' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"_panic" l) v._panic' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"_panic" l) v._panic' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store__panic (l : loc) (v : runtime.g.t) (_panic' : loc) :
+instance g_access_store__panic (l : Loc) (v : runtime.g.t) (_panic' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_panic" l) v._panic' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_panic" l) _panic' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _panic' := _panic' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"_panic" l) v._panic' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"_panic" l) _panic' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _panic' := _panic' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load__defer (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load__defer (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_defer" l) v._defer' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_defer" l) v._defer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"_defer" l) v._defer' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"_defer" l) v._defer' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store__defer (l : loc) (v : runtime.g.t) (_defer' : loc) :
+instance g_access_store__defer (l : Loc) (v : runtime.g.t) (_defer' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_defer" l) v._defer' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"_defer" l) _defer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _defer' := _defer' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"_defer" l) v._defer' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"_defer" l) _defer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _defer' := _defer' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_m (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_m (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"m" l) v.m' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"m" l) v.m' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"m" l) v.m' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"m" l) v.m' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_m (l : loc) (v : runtime.g.t) (m' : loc) :
+instance g_access_store_m (l : Loc) (v : runtime.g.t) (m' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"m" l) v.m' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"m" l) m' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with m' := m' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"m" l) v.m' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"m" l) m' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with m' := m' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sched (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sched (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sched" l) v.sched' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sched" l) v.sched' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sched" l) v.sched' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sched" l) v.sched' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sched (l : loc) (v : runtime.g.t) (sched' : runtime.gobuf.t) :
+instance g_access_store_sched (l : Loc) (v : runtime.g.t) (sched' : runtime.gobuf.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sched" l) v.sched' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sched" l) sched' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sched' := sched' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sched" l) v.sched' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sched" l) sched' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sched' := sched' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_syscallsp (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_syscallsp (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallsp" l) v.syscallsp' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallsp" l) v.syscallsp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallsp" l) v.syscallsp' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallsp" l) v.syscallsp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_syscallsp (l : loc) (v : runtime.g.t) (syscallsp' : w64) :
+instance g_access_store_syscallsp (l : Loc) (v : runtime.g.t) (syscallsp' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallsp" l) v.syscallsp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallsp" l) syscallsp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with syscallsp' := syscallsp' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallsp" l) v.syscallsp' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallsp" l) syscallsp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with syscallsp' := syscallsp' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_syscallpc (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_syscallpc (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallpc" l) v.syscallpc' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallpc" l) v.syscallpc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallpc" l) v.syscallpc' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallpc" l) v.syscallpc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_syscallpc (l : loc) (v : runtime.g.t) (syscallpc' : w64) :
+instance g_access_store_syscallpc (l : Loc) (v : runtime.g.t) (syscallpc' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallpc" l) v.syscallpc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallpc" l) syscallpc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with syscallpc' := syscallpc' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallpc" l) v.syscallpc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallpc" l) syscallpc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with syscallpc' := syscallpc' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_syscallbp (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_syscallbp (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallbp" l) v.syscallbp' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallbp" l) v.syscallbp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallbp" l) v.syscallbp' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallbp" l) v.syscallbp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_syscallbp (l : loc) (v : runtime.g.t) (syscallbp' : w64) :
+instance g_access_store_syscallbp (l : Loc) (v : runtime.g.t) (syscallbp' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallbp" l) v.syscallbp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syscallbp" l) syscallbp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with syscallbp' := syscallbp' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallbp" l) v.syscallbp' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"syscallbp" l) syscallbp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with syscallbp' := syscallbp' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_stktopsp (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_stktopsp (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stktopsp" l) v.stktopsp' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stktopsp" l) v.stktopsp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stktopsp" l) v.stktopsp' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"stktopsp" l) v.stktopsp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_stktopsp (l : loc) (v : runtime.g.t) (stktopsp' : w64) :
+instance g_access_store_stktopsp (l : Loc) (v : runtime.g.t) (stktopsp' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stktopsp" l) v.stktopsp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stktopsp" l) stktopsp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stktopsp' := stktopsp' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stktopsp" l) v.stktopsp' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"stktopsp" l) stktopsp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stktopsp' := stktopsp' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_param (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_param (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"param" l) v.param' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"param" l) v.param' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"param" l) v.param' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"param" l) v.param' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_param (l : loc) (v : runtime.g.t) (param' : loc) :
+instance g_access_store_param (l : Loc) (v : runtime.g.t) (param' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"param" l) v.param' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"param" l) param' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with param' := param' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"param" l) v.param' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"param" l) param' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with param' := param' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_atomicstatus (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_atomicstatus (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"atomicstatus" l) v.atomicstatus' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_atomicstatus (l : loc) (v : runtime.g.t) (atomicstatus' : internal.runtime.atomic.Uint32.t) :
+instance g_access_store_atomicstatus (l : Loc) (v : runtime.g.t) (atomicstatus' : internal.runtime.atomic.Uint32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"atomicstatus" l) v.atomicstatus' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"atomicstatus" l) atomicstatus' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with atomicstatus' := atomicstatus' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"atomicstatus" l) v.atomicstatus' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"atomicstatus" l) atomicstatus' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with atomicstatus' := atomicstatus' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_stackLock (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_stackLock (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackLock" l) v.stackLock' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackLock" l) v.stackLock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackLock" l) v.stackLock' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"stackLock" l) v.stackLock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_stackLock (l : loc) (v : runtime.g.t) (stackLock' : w32) :
+instance g_access_store_stackLock (l : Loc) (v : runtime.g.t) (stackLock' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackLock" l) v.stackLock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"stackLock" l) stackLock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with stackLock' := stackLock' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"stackLock" l) v.stackLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"stackLock" l) stackLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackLock' := stackLock' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_goid (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_goid (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goid" l) v.goid' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goid" l) v.goid' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"goid" l) v.goid' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"goid" l) v.goid' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_goid (l : loc) (v : runtime.g.t) (goid' : w64) :
+instance g_access_store_goid (l : Loc) (v : runtime.g.t) (goid' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goid" l) v.goid' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goid" l) goid' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with goid' := goid' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"goid" l) v.goid' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"goid" l) goid' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with goid' := goid' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_schedlink (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_schedlink (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"schedlink" l) v.schedlink' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"schedlink" l) v.schedlink' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"schedlink" l) v.schedlink' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"schedlink" l) v.schedlink' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_schedlink (l : loc) (v : runtime.g.t) (schedlink' : runtime.guintptr.t) :
+instance g_access_store_schedlink (l : Loc) (v : runtime.g.t) (schedlink' : runtime.guintptr.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"schedlink" l) v.schedlink' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"schedlink" l) schedlink' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with schedlink' := schedlink' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"schedlink" l) v.schedlink' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"schedlink" l) schedlink' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with schedlink' := schedlink' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_waitsince (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_waitsince (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitsince" l) v.waitsince' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitsince" l) v.waitsince' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waitsince" l) v.waitsince' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"waitsince" l) v.waitsince' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_waitsince (l : loc) (v : runtime.g.t) (waitsince' : w64) :
+instance g_access_store_waitsince (l : Loc) (v : runtime.g.t) (waitsince' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitsince" l) v.waitsince' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitsince" l) waitsince' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitsince' := waitsince' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waitsince" l) v.waitsince' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"waitsince" l) waitsince' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waitsince' := waitsince' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_waitreason (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_waitreason (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitreason" l) v.waitreason' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitreason" l) v.waitreason' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waitreason" l) v.waitreason' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"waitreason" l) v.waitreason' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_waitreason (l : loc) (v : runtime.g.t) (waitreason' : runtime.waitReason.t) :
+instance g_access_store_waitreason (l : Loc) (v : runtime.g.t) (waitreason' : runtime.waitReason.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitreason" l) v.waitreason' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waitreason" l) waitreason' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitreason' := waitreason' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waitreason" l) v.waitreason' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"waitreason" l) waitreason' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waitreason' := waitreason' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_preempt (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_preempt (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preempt" l) v.preempt' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preempt" l) v.preempt' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preempt" l) v.preempt' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"preempt" l) v.preempt' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_preempt (l : loc) (v : runtime.g.t) (preempt' : Bool) :
+instance g_access_store_preempt (l : Loc) (v : runtime.g.t) (preempt' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preempt" l) v.preempt' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preempt" l) preempt' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with preempt' := preempt' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preempt" l) v.preempt' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"preempt" l) preempt' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with preempt' := preempt' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_preemptStop (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_preemptStop (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptStop" l) v.preemptStop' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptStop" l) v.preemptStop' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptStop" l) v.preemptStop' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptStop" l) v.preemptStop' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_preemptStop (l : loc) (v : runtime.g.t) (preemptStop' : Bool) :
+instance g_access_store_preemptStop (l : Loc) (v : runtime.g.t) (preemptStop' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptStop" l) v.preemptStop' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptStop" l) preemptStop' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with preemptStop' := preemptStop' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptStop" l) v.preemptStop' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptStop" l) preemptStop' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with preemptStop' := preemptStop' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_preemptShrink (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_preemptShrink (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptShrink" l) v.preemptShrink' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_preemptShrink (l : loc) (v : runtime.g.t) (preemptShrink' : Bool) :
+instance g_access_store_preemptShrink (l : Loc) (v : runtime.g.t) (preemptShrink' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptShrink" l) v.preemptShrink' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"preemptShrink" l) preemptShrink' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with preemptShrink' := preemptShrink' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptShrink" l) v.preemptShrink' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"preemptShrink" l) preemptShrink' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with preemptShrink' := preemptShrink' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_asyncSafePoint (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_asyncSafePoint (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_asyncSafePoint (l : loc) (v : runtime.g.t) (asyncSafePoint' : Bool) :
+instance g_access_store_asyncSafePoint (l : Loc) (v : runtime.g.t) (asyncSafePoint' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"asyncSafePoint" l) asyncSafePoint' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with asyncSafePoint' := asyncSafePoint' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"asyncSafePoint" l) v.asyncSafePoint' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"asyncSafePoint" l) asyncSafePoint' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with asyncSafePoint' := asyncSafePoint' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_paniconfault (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_paniconfault (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"paniconfault" l) v.paniconfault' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"paniconfault" l) v.paniconfault' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"paniconfault" l) v.paniconfault' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"paniconfault" l) v.paniconfault' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_paniconfault (l : loc) (v : runtime.g.t) (paniconfault' : Bool) :
+instance g_access_store_paniconfault (l : Loc) (v : runtime.g.t) (paniconfault' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"paniconfault" l) v.paniconfault' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"paniconfault" l) paniconfault' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with paniconfault' := paniconfault' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"paniconfault" l) v.paniconfault' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"paniconfault" l) paniconfault' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with paniconfault' := paniconfault' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_gcscandone (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_gcscandone (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcscandone" l) v.gcscandone' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcscandone" l) v.gcscandone' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gcscandone" l) v.gcscandone' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"gcscandone" l) v.gcscandone' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_gcscandone (l : loc) (v : runtime.g.t) (gcscandone' : Bool) :
+instance g_access_store_gcscandone (l : Loc) (v : runtime.g.t) (gcscandone' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcscandone" l) v.gcscandone' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcscandone" l) gcscandone' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with gcscandone' := gcscandone' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gcscandone" l) v.gcscandone' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"gcscandone" l) gcscandone' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gcscandone' := gcscandone' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_throwsplit (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_throwsplit (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"throwsplit" l) v.throwsplit' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"throwsplit" l) v.throwsplit' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"throwsplit" l) v.throwsplit' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"throwsplit" l) v.throwsplit' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_throwsplit (l : loc) (v : runtime.g.t) (throwsplit' : Bool) :
+instance g_access_store_throwsplit (l : Loc) (v : runtime.g.t) (throwsplit' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"throwsplit" l) v.throwsplit' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"throwsplit" l) throwsplit' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with throwsplit' := throwsplit' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"throwsplit" l) v.throwsplit' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"throwsplit" l) throwsplit' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with throwsplit' := throwsplit' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_activeStackChans (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_activeStackChans (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"activeStackChans" l) v.activeStackChans' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_activeStackChans (l : loc) (v : runtime.g.t) (activeStackChans' : Bool) :
+instance g_access_store_activeStackChans (l : Loc) (v : runtime.g.t) (activeStackChans' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"activeStackChans" l) v.activeStackChans' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"activeStackChans" l) activeStackChans' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with activeStackChans' := activeStackChans' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"activeStackChans" l) v.activeStackChans' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"activeStackChans" l) activeStackChans' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with activeStackChans' := activeStackChans' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_parkingOnChan (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_parkingOnChan (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_parkingOnChan (l : loc) (v : runtime.g.t) (parkingOnChan' : internal.runtime.atomic.Bool'.t) :
+instance g_access_store_parkingOnChan (l : Loc) (v : runtime.g.t) (parkingOnChan' : internal.runtime.atomic.Bool'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parkingOnChan" l) parkingOnChan' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with parkingOnChan' := parkingOnChan' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"parkingOnChan" l) v.parkingOnChan' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"parkingOnChan" l) parkingOnChan' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parkingOnChan' := parkingOnChan' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_inMarkAssist (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_inMarkAssist (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_inMarkAssist (l : loc) (v : runtime.g.t) (inMarkAssist' : Bool) :
+instance g_access_store_inMarkAssist (l : Loc) (v : runtime.g.t) (inMarkAssist' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"inMarkAssist" l) inMarkAssist' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with inMarkAssist' := inMarkAssist' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"inMarkAssist" l) v.inMarkAssist' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"inMarkAssist" l) inMarkAssist' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with inMarkAssist' := inMarkAssist' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_coroexit (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_coroexit (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroexit" l) v.coroexit' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroexit" l) v.coroexit' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"coroexit" l) v.coroexit' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"coroexit" l) v.coroexit' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_coroexit (l : loc) (v : runtime.g.t) (coroexit' : Bool) :
+instance g_access_store_coroexit (l : Loc) (v : runtime.g.t) (coroexit' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroexit" l) v.coroexit' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroexit" l) coroexit' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with coroexit' := coroexit' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"coroexit" l) v.coroexit' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"coroexit" l) coroexit' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with coroexit' := coroexit' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_raceignore (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_raceignore (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"raceignore" l) v.raceignore' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"raceignore" l) v.raceignore' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"raceignore" l) v.raceignore' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"raceignore" l) v.raceignore' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_raceignore (l : loc) (v : runtime.g.t) (raceignore' : w8) :
+instance g_access_store_raceignore (l : Loc) (v : runtime.g.t) (raceignore' : w8) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"raceignore" l) v.raceignore' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"raceignore" l) raceignore' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with raceignore' := raceignore' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"raceignore" l) v.raceignore' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"raceignore" l) raceignore' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with raceignore' := raceignore' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_nocgocallback (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_nocgocallback (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"nocgocallback" l) v.nocgocallback' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_nocgocallback (l : loc) (v : runtime.g.t) (nocgocallback' : Bool) :
+instance g_access_store_nocgocallback (l : Loc) (v : runtime.g.t) (nocgocallback' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"nocgocallback" l) v.nocgocallback' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"nocgocallback" l) nocgocallback' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with nocgocallback' := nocgocallback' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"nocgocallback" l) v.nocgocallback' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"nocgocallback" l) nocgocallback' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nocgocallback' := nocgocallback' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_tracking (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_tracking (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"tracking" l) v.tracking' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"tracking" l) v.tracking' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"tracking" l) v.tracking' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"tracking" l) v.tracking' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_tracking (l : loc) (v : runtime.g.t) (tracking' : Bool) :
+instance g_access_store_tracking (l : Loc) (v : runtime.g.t) (tracking' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"tracking" l) v.tracking' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"tracking" l) tracking' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tracking' := tracking' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"tracking" l) v.tracking' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"tracking" l) tracking' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tracking' := tracking' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_trackingSeq (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_trackingSeq (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingSeq" l) v.trackingSeq' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_trackingSeq (l : loc) (v : runtime.g.t) (trackingSeq' : w8) :
+instance g_access_store_trackingSeq (l : Loc) (v : runtime.g.t) (trackingSeq' : w8) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingSeq" l) v.trackingSeq' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingSeq" l) trackingSeq' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with trackingSeq' := trackingSeq' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingSeq" l) v.trackingSeq' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingSeq" l) trackingSeq' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with trackingSeq' := trackingSeq' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_trackingStamp (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_trackingStamp (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingStamp" l) v.trackingStamp' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_trackingStamp (l : loc) (v : runtime.g.t) (trackingStamp' : w64) :
+instance g_access_store_trackingStamp (l : Loc) (v : runtime.g.t) (trackingStamp' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingStamp" l) v.trackingStamp' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trackingStamp" l) trackingStamp' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with trackingStamp' := trackingStamp' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingStamp" l) v.trackingStamp' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"trackingStamp" l) trackingStamp' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with trackingStamp' := trackingStamp' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_runnableTime (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_runnableTime (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runnableTime" l) v.runnableTime' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runnableTime" l) v.runnableTime' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"runnableTime" l) v.runnableTime' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"runnableTime" l) v.runnableTime' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_runnableTime (l : loc) (v : runtime.g.t) (runnableTime' : w64) :
+instance g_access_store_runnableTime (l : Loc) (v : runtime.g.t) (runnableTime' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runnableTime" l) v.runnableTime' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runnableTime" l) runnableTime' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with runnableTime' := runnableTime' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"runnableTime" l) v.runnableTime' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"runnableTime" l) runnableTime' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with runnableTime' := runnableTime' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_lockedm (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_lockedm (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"lockedm" l) v.lockedm' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"lockedm" l) v.lockedm' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"lockedm" l) v.lockedm' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"lockedm" l) v.lockedm' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_lockedm (l : loc) (v : runtime.g.t) (lockedm' : runtime.muintptr.t) :
+instance g_access_store_lockedm (l : Loc) (v : runtime.g.t) (lockedm' : runtime.muintptr.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"lockedm" l) v.lockedm' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"lockedm" l) lockedm' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lockedm' := lockedm' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"lockedm" l) v.lockedm' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"lockedm" l) lockedm' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lockedm' := lockedm' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_fipsIndicator (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_fipsIndicator (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_fipsIndicator (l : loc) (v : runtime.g.t) (fipsIndicator' : w8) :
+instance g_access_store_fipsIndicator (l : Loc) (v : runtime.g.t) (fipsIndicator' : w8) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsIndicator" l) fipsIndicator' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fipsIndicator' := fipsIndicator' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsIndicator" l) v.fipsIndicator' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsIndicator" l) fipsIndicator' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fipsIndicator' := fipsIndicator' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_fipsOnlyBypass (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_fipsOnlyBypass (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_fipsOnlyBypass (l : loc) (v : runtime.g.t) (fipsOnlyBypass' : Bool) :
+instance g_access_store_fipsOnlyBypass (l : Loc) (v : runtime.g.t) (fipsOnlyBypass' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"fipsOnlyBypass" l) fipsOnlyBypass' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with fipsOnlyBypass' := fipsOnlyBypass' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsOnlyBypass" l) v.fipsOnlyBypass' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"fipsOnlyBypass" l) fipsOnlyBypass' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fipsOnlyBypass' := fipsOnlyBypass' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_ditWanted (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_ditWanted (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ditWanted" l) v.ditWanted' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ditWanted" l) v.ditWanted' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"ditWanted" l) v.ditWanted' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"ditWanted" l) v.ditWanted' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_ditWanted (l : loc) (v : runtime.g.t) (ditWanted' : Bool) :
+instance g_access_store_ditWanted (l : Loc) (v : runtime.g.t) (ditWanted' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ditWanted" l) v.ditWanted' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ditWanted" l) ditWanted' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ditWanted' := ditWanted' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"ditWanted" l) v.ditWanted' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"ditWanted" l) ditWanted' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ditWanted' := ditWanted' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_syncSafePoint (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_syncSafePoint (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_syncSafePoint (l : loc) (v : runtime.g.t) (syncSafePoint' : Bool) :
+instance g_access_store_syncSafePoint (l : Loc) (v : runtime.g.t) (syncSafePoint' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"syncSafePoint" l) syncSafePoint' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with syncSafePoint' := syncSafePoint' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"syncSafePoint" l) v.syncSafePoint' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"syncSafePoint" l) syncSafePoint' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with syncSafePoint' := syncSafePoint' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_runningCleanups (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_runningCleanups (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"runningCleanups" l) v.runningCleanups' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_runningCleanups (l : loc) (v : runtime.g.t) (runningCleanups' : internal.runtime.atomic.Bool'.t) :
+instance g_access_store_runningCleanups (l : Loc) (v : runtime.g.t) (runningCleanups' : internal.runtime.atomic.Bool'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runningCleanups" l) v.runningCleanups' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"runningCleanups" l) runningCleanups' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with runningCleanups' := runningCleanups' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"runningCleanups" l) v.runningCleanups' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"runningCleanups" l) runningCleanups' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with runningCleanups' := runningCleanups' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sig (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sig (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sig" l) v.sig' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sig" l) v.sig' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sig" l) v.sig' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sig" l) v.sig' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sig (l : loc) (v : runtime.g.t) (sig' : w32) :
+instance g_access_store_sig (l : Loc) (v : runtime.g.t) (sig' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sig" l) v.sig' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sig" l) sig' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sig' := sig' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sig" l) v.sig' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sig" l) sig' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sig' := sig' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_secret (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_secret (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"secret" l) v.secret' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"secret" l) v.secret' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"secret" l) v.secret' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"secret" l) v.secret' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_secret (l : loc) (v : runtime.g.t) (secret' : w32) :
+instance g_access_store_secret (l : Loc) (v : runtime.g.t) (secret' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"secret" l) v.secret' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"secret" l) secret' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with secret' := secret' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"secret" l) v.secret' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"secret" l) secret' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with secret' := secret' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_writebuf (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_writebuf (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"writebuf" l) v.writebuf' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"writebuf" l) v.writebuf' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"writebuf" l) v.writebuf' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"writebuf" l) v.writebuf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_writebuf (l : loc) (v : runtime.g.t) (writebuf' : slice.t) :
+instance g_access_store_writebuf (l : Loc) (v : runtime.g.t) (writebuf' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"writebuf" l) v.writebuf' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"writebuf" l) writebuf' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writebuf' := writebuf' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"writebuf" l) v.writebuf' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"writebuf" l) writebuf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writebuf' := writebuf' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sigcode0 (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sigcode0 (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode0" l) v.sigcode0' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode0" l) v.sigcode0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode0" l) v.sigcode0' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode0" l) v.sigcode0' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sigcode0 (l : loc) (v : runtime.g.t) (sigcode0' : w64) :
+instance g_access_store_sigcode0 (l : Loc) (v : runtime.g.t) (sigcode0' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode0" l) v.sigcode0' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode0" l) sigcode0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sigcode0' := sigcode0' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode0" l) v.sigcode0' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode0" l) sigcode0' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sigcode0' := sigcode0' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sigcode1 (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sigcode1 (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode1" l) v.sigcode1' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode1" l) v.sigcode1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode1" l) v.sigcode1' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode1" l) v.sigcode1' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sigcode1 (l : loc) (v : runtime.g.t) (sigcode1' : w64) :
+instance g_access_store_sigcode1 (l : Loc) (v : runtime.g.t) (sigcode1' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode1" l) v.sigcode1' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigcode1" l) sigcode1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sigcode1' := sigcode1' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode1" l) v.sigcode1' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sigcode1" l) sigcode1' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sigcode1' := sigcode1' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sigpc (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sigpc (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigpc" l) v.sigpc' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigpc" l) v.sigpc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigpc" l) v.sigpc' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sigpc" l) v.sigpc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sigpc (l : loc) (v : runtime.g.t) (sigpc' : w64) :
+instance g_access_store_sigpc (l : Loc) (v : runtime.g.t) (sigpc' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigpc" l) v.sigpc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sigpc" l) sigpc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sigpc' := sigpc' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sigpc" l) v.sigpc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sigpc" l) sigpc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sigpc' := sigpc' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_parentGoid (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_parentGoid (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parentGoid" l) v.parentGoid' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parentGoid" l) v.parentGoid' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"parentGoid" l) v.parentGoid' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"parentGoid" l) v.parentGoid' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_parentGoid (l : loc) (v : runtime.g.t) (parentGoid' : w64) :
+instance g_access_store_parentGoid (l : Loc) (v : runtime.g.t) (parentGoid' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parentGoid" l) v.parentGoid' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"parentGoid" l) parentGoid' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with parentGoid' := parentGoid' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"parentGoid" l) v.parentGoid' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"parentGoid" l) parentGoid' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parentGoid' := parentGoid' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_gopc (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_gopc (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gopc" l) v.gopc' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gopc" l) v.gopc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gopc" l) v.gopc' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"gopc" l) v.gopc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_gopc (l : loc) (v : runtime.g.t) (gopc' : w64) :
+instance g_access_store_gopc (l : Loc) (v : runtime.g.t) (gopc' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gopc" l) v.gopc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gopc" l) gopc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with gopc' := gopc' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gopc" l) v.gopc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"gopc" l) gopc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gopc' := gopc' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_ancestors (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_ancestors (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ancestors" l) v.ancestors' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ancestors" l) v.ancestors' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"ancestors" l) v.ancestors' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"ancestors" l) v.ancestors' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_ancestors (l : loc) (v : runtime.g.t) (ancestors' : loc) :
+instance g_access_store_ancestors (l : Loc) (v : runtime.g.t) (ancestors' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ancestors" l) v.ancestors' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"ancestors" l) ancestors' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ancestors' := ancestors' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"ancestors" l) v.ancestors' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"ancestors" l) ancestors' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ancestors' := ancestors' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_startpc (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_startpc (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"startpc" l) v.startpc' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"startpc" l) v.startpc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"startpc" l) v.startpc' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"startpc" l) v.startpc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_startpc (l : loc) (v : runtime.g.t) (startpc' : w64) :
+instance g_access_store_startpc (l : Loc) (v : runtime.g.t) (startpc' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"startpc" l) v.startpc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"startpc" l) startpc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with startpc' := startpc' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"startpc" l) v.startpc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"startpc" l) startpc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with startpc' := startpc' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_racectx (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_racectx (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"racectx" l) v.racectx' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"racectx" l) v.racectx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"racectx" l) v.racectx' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"racectx" l) v.racectx' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_racectx (l : loc) (v : runtime.g.t) (racectx' : w64) :
+instance g_access_store_racectx (l : Loc) (v : runtime.g.t) (racectx' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"racectx" l) v.racectx' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"racectx" l) racectx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with racectx' := racectx' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"racectx" l) v.racectx' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"racectx" l) racectx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with racectx' := racectx' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_waiting (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_waiting (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waiting" l) v.waiting' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waiting" l) v.waiting' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waiting" l) v.waiting' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"waiting" l) v.waiting' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_waiting (l : loc) (v : runtime.g.t) (waiting' : loc) :
+instance g_access_store_waiting (l : Loc) (v : runtime.g.t) (waiting' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waiting" l) v.waiting' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"waiting" l) waiting' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waiting' := waiting' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"waiting" l) v.waiting' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"waiting" l) waiting' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiting' := waiting' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_cgoCtxt (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_cgoCtxt (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_cgoCtxt (l : loc) (v : runtime.g.t) (cgoCtxt' : slice.t) :
+instance g_access_store_cgoCtxt (l : Loc) (v : runtime.g.t) (cgoCtxt' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"cgoCtxt" l) cgoCtxt' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cgoCtxt' := cgoCtxt' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"cgoCtxt" l) v.cgoCtxt' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"cgoCtxt" l) cgoCtxt' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cgoCtxt' := cgoCtxt' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_labels (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_labels (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"labels" l) v.labels' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"labels" l) v.labels' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"labels" l) v.labels' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"labels" l) v.labels' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_labels (l : loc) (v : runtime.g.t) (labels' : loc) :
+instance g_access_store_labels (l : Loc) (v : runtime.g.t) (labels' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"labels" l) v.labels' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"labels" l) labels' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with labels' := labels' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"labels" l) v.labels' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"labels" l) labels' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with labels' := labels' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_timer (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_timer (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"timer" l) v.timer' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"timer" l) v.timer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"timer" l) v.timer' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"timer" l) v.timer' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_timer (l : loc) (v : runtime.g.t) (timer' : loc) :
+instance g_access_store_timer (l : Loc) (v : runtime.g.t) (timer' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"timer" l) v.timer' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"timer" l) timer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with timer' := timer' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"timer" l) v.timer' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"timer" l) timer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := timer' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_sleepWhen (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_sleepWhen (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"sleepWhen" l) v.sleepWhen' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_sleepWhen (l : loc) (v : runtime.g.t) (sleepWhen' : w64) :
+instance g_access_store_sleepWhen (l : Loc) (v : runtime.g.t) (sleepWhen' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sleepWhen" l) v.sleepWhen' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"sleepWhen" l) sleepWhen' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sleepWhen' := sleepWhen' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"sleepWhen" l) v.sleepWhen' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"sleepWhen" l) sleepWhen' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sleepWhen' := sleepWhen' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_selectDone (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_selectDone (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"selectDone" l) v.selectDone' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"selectDone" l) v.selectDone' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"selectDone" l) v.selectDone' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"selectDone" l) v.selectDone' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_selectDone (l : loc) (v : runtime.g.t) (selectDone' : internal.runtime.atomic.Uint32.t) :
+instance g_access_store_selectDone (l : Loc) (v : runtime.g.t) (selectDone' : internal.runtime.atomic.Uint32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"selectDone" l) v.selectDone' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"selectDone" l) selectDone' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with selectDone' := selectDone' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"selectDone" l) v.selectDone' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"selectDone" l) selectDone' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with selectDone' := selectDone' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_goroutineProfiled (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_goroutineProfiled (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_goroutineProfiled (l : loc) (v : runtime.g.t) (goroutineProfiled' : runtime.goroutineProfileStateHolder.t) :
+instance g_access_store_goroutineProfiled (l : Loc) (v : runtime.g.t) (goroutineProfiled' : runtime.goroutineProfileStateHolder.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"goroutineProfiled" l) goroutineProfiled' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with goroutineProfiled' := goroutineProfiled' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"goroutineProfiled" l) v.goroutineProfiled' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"goroutineProfiled" l) goroutineProfiled' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with goroutineProfiled' := goroutineProfiled' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_coroarg (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_coroarg (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroarg" l) v.coroarg' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroarg" l) v.coroarg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"coroarg" l) v.coroarg' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"coroarg" l) v.coroarg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_coroarg (l : loc) (v : runtime.g.t) (coroarg' : loc) :
+instance g_access_store_coroarg (l : Loc) (v : runtime.g.t) (coroarg' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroarg" l) v.coroarg' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"coroarg" l) coroarg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with coroarg' := coroarg' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"coroarg" l) v.coroarg' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"coroarg" l) coroarg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with coroarg' := coroarg' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_bubble (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_bubble (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"bubble" l) v.bubble' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"bubble" l) v.bubble' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"bubble" l) v.bubble' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"bubble" l) v.bubble' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_bubble (l : loc) (v : runtime.g.t) (bubble' : loc) :
+instance g_access_store_bubble (l : Loc) (v : runtime.g.t) (bubble' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"bubble" l) v.bubble' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"bubble" l) bubble' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with bubble' := bubble' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"bubble" l) v.bubble' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"bubble" l) bubble' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bubble' := bubble' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_xRegs (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_xRegs (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"xRegs" l) v.xRegs' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"xRegs" l) v.xRegs' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"xRegs" l) v.xRegs' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"xRegs" l) v.xRegs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_xRegs (l : loc) (v : runtime.g.t) (xRegs' : runtime.xRegPerG.t) :
+instance g_access_store_xRegs (l : Loc) (v : runtime.g.t) (xRegs' : runtime.xRegPerG.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"xRegs" l) v.xRegs' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"xRegs" l) xRegs' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with xRegs' := xRegs' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"xRegs" l) v.xRegs' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"xRegs" l) xRegs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with xRegs' := xRegs' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_trace (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_trace (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trace" l) v.trace' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trace" l) v.trace' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trace" l) v.trace' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"trace" l) v.trace' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_trace (l : loc) (v : runtime.g.t) (trace' : runtime.gTraceState.t) :
+instance g_access_store_trace (l : Loc) (v : runtime.g.t) (trace' : runtime.gTraceState.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trace" l) v.trace' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"trace" l) trace' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with trace' := trace' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"trace" l) v.trace' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"trace" l) trace' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with trace' := trace' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_gcAssistBytes (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_gcAssistBytes (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_gcAssistBytes (l : loc) (v : runtime.g.t) (gcAssistBytes' : w64) :
+instance g_access_store_gcAssistBytes (l : Loc) (v : runtime.g.t) (gcAssistBytes' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"gcAssistBytes" l) gcAssistBytes' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with gcAssistBytes' := gcAssistBytes' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"gcAssistBytes" l) v.gcAssistBytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"gcAssistBytes" l) gcAssistBytes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gcAssistBytes' := gcAssistBytes' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_load_valgrindStackID (l : loc) (v : runtime.g.t) (dq : DFrac) :
+instance g_access_load_valgrindStackID (l : Loc) (v : runtime.g.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq)
+      (typedPointsto (structFieldRef runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance g_access_store_valgrindStackID (l : loc) (v : runtime.g.t) (valgrindStackID' : w64) :
+instance g_access_store_valgrindStackID (l : Loc) (v : runtime.g.t) (valgrindStackID' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.g.t go!"valgrindStackID" l) valgrindStackID' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with valgrindStackID' := valgrindStackID' } : runtime.g.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.g.t go!"valgrindStackID" l) v.valgrindStackID' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.g.t go!"valgrindStackID" l) valgrindStackID' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with valgrindStackID' := valgrindStackID' } : runtime.g.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1656,71 +1656,71 @@ end g
 namespace forcegcstate
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance forcegcstate_typed_pointsto :
     TypedPointsto (GF := GF) runtime.forcegcstate.t where
-  typed_pointsto_def l v dq := iprop(
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"lock" l) v.lock' dq ∗
-    "g" ∷ typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"g" l) v.g' dq ∗
-    "idle" ∷ typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"idle" l) v.idle' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "lock" ∷ typedPointsto (structFieldRef runtime.forcegcstate.t go!"lock" l) v.lock' dq ∗
+    "g" ∷ typedPointsto (structFieldRef runtime.forcegcstate.t go!"g" l) v.g' dq ∗
+    "idle" ∷ typedPointsto (structFieldRef runtime.forcegcstate.t go!"idle" l) v.idle' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance forcegcstate_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.forcegcstate.t runtime.«forcegcstateⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance forcegcstate_access_load_lock (l : loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
+instance forcegcstate_access_load_lock (l : Loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance forcegcstate_access_store_lock (l : loc) (v : runtime.forcegcstate.t) (lock' : runtime.mutex.t) :
+instance forcegcstate_access_store_lock (l : Loc) (v : runtime.forcegcstate.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance forcegcstate_access_load_g (l : loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
+instance forcegcstate_access_load_g (l : Loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"g" l) v.g' dq)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"g" l) v.g' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"g" l) v.g' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance forcegcstate_access_store_g (l : loc) (v : runtime.forcegcstate.t) (g' : loc) :
+instance forcegcstate_access_store_g (l : Loc) (v : runtime.forcegcstate.t) (g' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"g" l) v.g' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"g" l) g' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with g' := g' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"g" l) v.g' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"g" l) g' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance forcegcstate_access_load_idle (l : loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
+instance forcegcstate_access_load_idle (l : Loc) (v : runtime.forcegcstate.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"idle" l) v.idle' dq)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"idle" l) v.idle' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"idle" l) v.idle' dq)
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"idle" l) v.idle' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance forcegcstate_access_store_idle (l : loc) (v : runtime.forcegcstate.t) (idle' : internal.runtime.atomic.Bool'.t) :
+instance forcegcstate_access_store_idle (l : Loc) (v : runtime.forcegcstate.t) (idle' : internal.runtime.atomic.Bool'.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"idle" l) v.idle' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.forcegcstate.t go!"idle" l) idle' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with idle' := idle' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"idle" l) v.idle' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.forcegcstate.t go!"idle" l) idle' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with idle' := idle' } : runtime.forcegcstate.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1730,156 +1730,156 @@ end forcegcstate
 namespace rwmutex
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance rwmutex_typed_pointsto :
     TypedPointsto (GF := GF) runtime.rwmutex.t where
-  typed_pointsto_def l v dq := iprop(
-    "rLock" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"rLock" l) v.rLock' dq ∗
-    "readers" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readers" l) v.readers' dq ∗
-    "readerPass" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq ∗
-    "wLock" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"wLock" l) v.wLock' dq ∗
-    "writer" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"writer" l) v.writer' dq ∗
-    "readerCount" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq ∗
-    "readerWait" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq ∗
-    "readRank" ∷ typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readRank" l) v.readRank' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "rLock" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"rLock" l) v.rLock' dq ∗
+    "readers" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"readers" l) v.readers' dq ∗
+    "readerPass" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq ∗
+    "wLock" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"wLock" l) v.wLock' dq ∗
+    "writer" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"writer" l) v.writer' dq ∗
+    "readerCount" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq ∗
+    "readerWait" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq ∗
+    "readRank" ∷ typedPointsto (structFieldRef runtime.rwmutex.t go!"readRank" l) v.readRank' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance rwmutex_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.rwmutex.t runtime.«rwmutexⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance rwmutex_access_load_rLock (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_rLock (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"rLock" l) v.rLock' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"rLock" l) v.rLock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"rLock" l) v.rLock' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"rLock" l) v.rLock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_rLock (l : loc) (v : runtime.rwmutex.t) (rLock' : runtime.mutex.t) :
+instance rwmutex_access_store_rLock (l : Loc) (v : runtime.rwmutex.t) (rLock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"rLock" l) v.rLock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"rLock" l) rLock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rLock' := rLock' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"rLock" l) v.rLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"rLock" l) rLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rLock' := rLock' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_readers (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_readers (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readers" l) v.readers' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readers" l) v.readers' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readers" l) v.readers' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readers" l) v.readers' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_readers (l : loc) (v : runtime.rwmutex.t) (readers' : runtime.muintptr.t) :
+instance rwmutex_access_store_readers (l : Loc) (v : runtime.rwmutex.t) (readers' : runtime.muintptr.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readers" l) v.readers' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readers" l) readers' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readers' := readers' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readers" l) v.readers' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readers" l) readers' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := readers' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_readerPass (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_readerPass (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerPass" l) v.readerPass' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_readerPass (l : loc) (v : runtime.rwmutex.t) (readerPass' : w32) :
+instance rwmutex_access_store_readerPass (l : Loc) (v : runtime.rwmutex.t) (readerPass' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerPass" l) v.readerPass' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerPass" l) readerPass' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerPass' := readerPass' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerPass" l) v.readerPass' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerPass" l) readerPass' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readerPass' := readerPass' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_wLock (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_wLock (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"wLock" l) v.wLock' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"wLock" l) v.wLock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"wLock" l) v.wLock' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"wLock" l) v.wLock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_wLock (l : loc) (v : runtime.rwmutex.t) (wLock' : runtime.mutex.t) :
+instance rwmutex_access_store_wLock (l : Loc) (v : runtime.rwmutex.t) (wLock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"wLock" l) v.wLock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"wLock" l) wLock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wLock' := wLock' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"wLock" l) v.wLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"wLock" l) wLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wLock' := wLock' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_writer (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_writer (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"writer" l) v.writer' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"writer" l) v.writer' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"writer" l) v.writer' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"writer" l) v.writer' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_writer (l : loc) (v : runtime.rwmutex.t) (writer' : runtime.muintptr.t) :
+instance rwmutex_access_store_writer (l : Loc) (v : runtime.rwmutex.t) (writer' : runtime.muintptr.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"writer" l) v.writer' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"writer" l) writer' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with writer' := writer' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"writer" l) v.writer' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"writer" l) writer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writer' := writer' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_readerCount (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_readerCount (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerCount" l) v.readerCount' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_readerCount (l : loc) (v : runtime.rwmutex.t) (readerCount' : internal.runtime.atomic.Int32.t) :
+instance rwmutex_access_store_readerCount (l : Loc) (v : runtime.rwmutex.t) (readerCount' : internal.runtime.atomic.Int32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerCount" l) v.readerCount' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerCount" l) readerCount' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerCount' := readerCount' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerCount" l) v.readerCount' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerCount" l) readerCount' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readerCount' := readerCount' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_readerWait (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_readerWait (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerWait" l) v.readerWait' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_readerWait (l : loc) (v : runtime.rwmutex.t) (readerWait' : internal.runtime.atomic.Int32.t) :
+instance rwmutex_access_store_readerWait (l : Loc) (v : runtime.rwmutex.t) (readerWait' : internal.runtime.atomic.Int32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerWait" l) v.readerWait' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readerWait" l) readerWait' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readerWait' := readerWait' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerWait" l) v.readerWait' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readerWait" l) readerWait' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readerWait' := readerWait' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_load_readRank (l : loc) (v : runtime.rwmutex.t) (dq : DFrac) :
+instance rwmutex_access_load_readRank (l : Loc) (v : runtime.rwmutex.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readRank" l) v.readRank' dq)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readRank" l) v.readRank' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readRank" l) v.readRank' dq)
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readRank" l) v.readRank' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance rwmutex_access_store_readRank (l : loc) (v : runtime.rwmutex.t) (readRank' : runtime.lockRank.t) :
+instance rwmutex_access_store_readRank (l : Loc) (v : runtime.rwmutex.t) (readRank' : runtime.lockRank.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readRank" l) v.readRank' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.rwmutex.t go!"readRank" l) readRank' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with readRank' := readRank' } : runtime.rwmutex.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readRank" l) v.readRank' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.rwmutex.t go!"readRank" l) readRank' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readRank' := readRank' } : runtime.rwmutex.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1889,71 +1889,71 @@ end rwmutex
 namespace semaRoot
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance semaRoot_typed_pointsto :
     TypedPointsto (GF := GF) runtime.semaRoot.t where
-  typed_pointsto_def l v dq := iprop(
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.semaRoot.t go!"lock" l) v.lock' dq ∗
-    "treap" ∷ typed_pointsto (struct_field_ref runtime.semaRoot.t go!"treap" l) v.treap' dq ∗
-    "nwait" ∷ typed_pointsto (struct_field_ref runtime.semaRoot.t go!"nwait" l) v.nwait' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "lock" ∷ typedPointsto (structFieldRef runtime.semaRoot.t go!"lock" l) v.lock' dq ∗
+    "treap" ∷ typedPointsto (structFieldRef runtime.semaRoot.t go!"treap" l) v.treap' dq ∗
+    "nwait" ∷ typedPointsto (structFieldRef runtime.semaRoot.t go!"nwait" l) v.nwait' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance semaRoot_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.semaRoot.t runtime.«semaRootⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance semaRoot_access_load_lock (l : loc) (v : runtime.semaRoot.t) (dq : DFrac) :
+instance semaRoot_access_load_lock (l : Loc) (v : runtime.semaRoot.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance semaRoot_access_store_lock (l : loc) (v : runtime.semaRoot.t) (lock' : runtime.mutex.t) :
+instance semaRoot_access_store_lock (l : Loc) (v : runtime.semaRoot.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.semaRoot.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.semaRoot.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance semaRoot_access_load_treap (l : loc) (v : runtime.semaRoot.t) (dq : DFrac) :
+instance semaRoot_access_load_treap (l : Loc) (v : runtime.semaRoot.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"treap" l) v.treap' dq)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"treap" l) v.treap' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"treap" l) v.treap' dq)
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"treap" l) v.treap' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance semaRoot_access_store_treap (l : loc) (v : runtime.semaRoot.t) (treap' : loc) :
+instance semaRoot_access_store_treap (l : Loc) (v : runtime.semaRoot.t) (treap' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"treap" l) v.treap' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"treap" l) treap' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with treap' := treap' } : runtime.semaRoot.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"treap" l) v.treap' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"treap" l) treap' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with treap' := treap' } : runtime.semaRoot.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance semaRoot_access_load_nwait (l : loc) (v : runtime.semaRoot.t) (dq : DFrac) :
+instance semaRoot_access_load_nwait (l : Loc) (v : runtime.semaRoot.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"nwait" l) v.nwait' dq)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"nwait" l) v.nwait' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"nwait" l) v.nwait' dq)
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"nwait" l) v.nwait' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance semaRoot_access_store_nwait (l : loc) (v : runtime.semaRoot.t) (nwait' : internal.runtime.atomic.Uint32.t) :
+instance semaRoot_access_store_nwait (l : Loc) (v : runtime.semaRoot.t) (nwait' : internal.runtime.atomic.Uint32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"nwait" l) v.nwait' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.semaRoot.t go!"nwait" l) nwait' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with nwait' := nwait' } : runtime.semaRoot.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"nwait" l) v.nwait' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.semaRoot.t go!"nwait" l) nwait' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nwait' := nwait' } : runtime.semaRoot.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1963,105 +1963,105 @@ end semaRoot
 namespace notifyList
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance notifyList_typed_pointsto :
     TypedPointsto (GF := GF) runtime.notifyList.t where
-  typed_pointsto_def l v dq := iprop(
-    "wait" ∷ typed_pointsto (struct_field_ref runtime.notifyList.t go!"wait" l) v.wait' dq ∗
-    "notify" ∷ typed_pointsto (struct_field_ref runtime.notifyList.t go!"notify" l) v.notify' dq ∗
-    "lock" ∷ typed_pointsto (struct_field_ref runtime.notifyList.t go!"lock" l) v.lock' dq ∗
-    "head" ∷ typed_pointsto (struct_field_ref runtime.notifyList.t go!"head" l) v.head' dq ∗
-    "tail" ∷ typed_pointsto (struct_field_ref runtime.notifyList.t go!"tail" l) v.tail' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "wait" ∷ typedPointsto (structFieldRef runtime.notifyList.t go!"wait" l) v.wait' dq ∗
+    "notify" ∷ typedPointsto (structFieldRef runtime.notifyList.t go!"notify" l) v.notify' dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.notifyList.t go!"lock" l) v.lock' dq ∗
+    "head" ∷ typedPointsto (structFieldRef runtime.notifyList.t go!"head" l) v.head' dq ∗
+    "tail" ∷ typedPointsto (structFieldRef runtime.notifyList.t go!"tail" l) v.tail' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance notifyList_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.notifyList.t runtime.«notifyListⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance notifyList_access_load_wait (l : loc) (v : runtime.notifyList.t) (dq : DFrac) :
+instance notifyList_access_load_wait (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"wait" l) v.wait' dq)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"wait" l) v.wait' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"wait" l) v.wait' dq)
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"wait" l) v.wait' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_wait (l : loc) (v : runtime.notifyList.t) (wait' : internal.runtime.atomic.Uint32.t) :
+instance notifyList_access_store_wait (l : Loc) (v : runtime.notifyList.t) (wait' : internal.runtime.atomic.Uint32.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"wait" l) v.wait' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"wait" l) wait' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wait' := wait' } : runtime.notifyList.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"wait" l) v.wait' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"wait" l) wait' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wait' := wait' } : runtime.notifyList.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_notify (l : loc) (v : runtime.notifyList.t) (dq : DFrac) :
+instance notifyList_access_load_notify (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"notify" l) v.notify' dq)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"notify" l) v.notify' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"notify" l) v.notify' dq)
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"notify" l) v.notify' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_notify (l : loc) (v : runtime.notifyList.t) (notify' : w32) :
+instance notifyList_access_store_notify (l : Loc) (v : runtime.notifyList.t) (notify' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"notify" l) v.notify' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"notify" l) notify' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with notify' := notify' } : runtime.notifyList.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"notify" l) v.notify' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"notify" l) notify' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with notify' := notify' } : runtime.notifyList.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_lock (l : loc) (v : runtime.notifyList.t) (dq : DFrac) :
+instance notifyList_access_load_lock (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"lock" l) v.lock' dq)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"lock" l) v.lock' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_lock (l : loc) (v : runtime.notifyList.t) (lock' : runtime.mutex.t) :
+instance notifyList_access_store_lock (l : Loc) (v : runtime.notifyList.t) (lock' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"lock" l) v.lock' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"lock" l) lock' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lock' := lock' } : runtime.notifyList.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.notifyList.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_head (l : loc) (v : runtime.notifyList.t) (dq : DFrac) :
+instance notifyList_access_load_head (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"head" l) v.head' dq)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"head" l) v.head' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"head" l) v.head' dq)
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"head" l) v.head' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_head (l : loc) (v : runtime.notifyList.t) (head' : loc) :
+instance notifyList_access_store_head (l : Loc) (v : runtime.notifyList.t) (head' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"head" l) v.head' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"head" l) head' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with head' := head' } : runtime.notifyList.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"head" l) v.head' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"head" l) head' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with head' := head' } : runtime.notifyList.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_tail (l : loc) (v : runtime.notifyList.t) (dq : DFrac) :
+instance notifyList_access_load_tail (l : Loc) (v : runtime.notifyList.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"tail" l) v.tail' dq)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"tail" l) v.tail' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"tail" l) v.tail' dq)
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"tail" l) v.tail' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_tail (l : loc) (v : runtime.notifyList.t) (tail' : loc) :
+instance notifyList_access_store_tail (l : Loc) (v : runtime.notifyList.t) (tail' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"tail" l) v.tail' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.notifyList.t go!"tail" l) tail' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tail' := tail' } : runtime.notifyList.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"tail" l) v.tail' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.notifyList.t go!"tail" l) tail' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tail' := tail' } : runtime.notifyList.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -2071,71 +2071,71 @@ end notifyList
 namespace stackpoolItem
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 instance stackpoolItem_typed_pointsto :
     TypedPointsto (GF := GF) runtime.stackpoolItem.t where
-  typed_pointsto_def l v dq := iprop(
-    "_0" ∷ typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"_0" l) v._0' dq ∗
-    "mu" ∷ typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"mu" l) v.mu' dq ∗
-    "span" ∷ typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"span" l) v.span' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "_0" ∷ typedPointsto (structFieldRef runtime.stackpoolItem.t go!"_0" l) v._0' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef runtime.stackpoolItem.t go!"mu" l) v.mu' dq ∗
+    "span" ∷ typedPointsto (structFieldRef runtime.stackpoolItem.t go!"span" l) v.span' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance stackpoolItem_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.stackpoolItem.t runtime.«stackpoolItemⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance stackpoolItem_access_load__0 (l : loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
+instance stackpoolItem_access_load__0 (l : Loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"_0" l) v._0' dq)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"_0" l) v._0' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"_0" l) v._0' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stackpoolItem_access_store__0 (l : loc) (v : runtime.stackpoolItem.t) (_0' : internal.runtime.sys.NotInHeap.t) :
+instance stackpoolItem_access_store__0 (l : Loc) (v : runtime.stackpoolItem.t) (_0' : internal.runtime.sys.NotInHeap.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"_0" l) v._0' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"_0" l) _0' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _0' := _0' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"_0" l) v._0' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"_0" l) _0' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stackpoolItem_access_load_mu (l : loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
+instance stackpoolItem_access_load_mu (l : Loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"mu" l) v.mu' dq)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stackpoolItem_access_store_mu (l : loc) (v : runtime.stackpoolItem.t) (mu' : runtime.mutex.t) :
+instance stackpoolItem_access_store_mu (l : Loc) (v : runtime.stackpoolItem.t) (mu' : runtime.mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"mu" l) v.mu' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance stackpoolItem_access_load_span (l : loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
+instance stackpoolItem_access_load_span (l : Loc) (v : runtime.stackpoolItem.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"span" l) v.span' dq)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"span" l) v.span' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"span" l) v.span' dq)
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"span" l) v.span' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance stackpoolItem_access_store_span (l : loc) (v : runtime.stackpoolItem.t) (span' : runtime.mSpanList.t) :
+instance stackpoolItem_access_store_span (l : Loc) (v : runtime.stackpoolItem.t) (span' : runtime.mSpanList.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"span" l) v.span' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref runtime.stackpoolItem.t go!"span" l) span' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with span' := span' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"span" l) v.span' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackpoolItem.t go!"span" l) span' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with span' := span' } : runtime.stackpoolItem.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -16,15 +16,15 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std BigSepL
 
 /-- `go.index_ref_array` with the `ZeroVal V` instance determined by
 `TypeRepr elem_type V` (see `go_zero_val_step'`). -/
-instance (priority := high) index_ref_array' [ffi_syntax] [GoLocalContext] [GoGlobalContext]
-    [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.type) (i : w64) (l : loc)
+instance (priority := high) index_ref_array' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+    [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
       (if sint.Z i < n then #(arrayIndexRef V (sint.Z i) l) else Panic "index out of range") :=
   go.index_ref_array n elem_type i l
 
-instance (priority := high) slice_array_step' [ffi_syntax] [GoLocalContext] [GoGlobalContext]
-    [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.type) (p : loc)
+instance (priority := high) slice_array_step' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+    [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.GoType) (p : Loc)
     (low high : w64) {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦Slice (go.ArrayType n elem_type), (#p, #low, #high)⟧ ⤳
        (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ n then
@@ -33,20 +33,20 @@ instance (priority := high) slice_array_step' [ffi_syntax] [GoLocalContext] [GoG
   go.slice_array_step n elem_type p low high
 
 section lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
 /-- The element points-tos of a list of values starting at `l`. -/
-abbrev arrayElems (l : loc) (vs : List V) (dq : DFrac) : IProp GF :=
-  iprop([∗list] i ↦ ve ∈ vs, typed_pointsto (arrayIndexRef V (i : Int) l) ve dq)
+abbrev arrayElems (l : Loc) (vs : List V) (dq : DFrac) : IProp GF :=
+  iprop([∗list] i ↦ ve ∈ vs, typedPointsto (arrayIndexRef V (i : Int) l) ve dq)
 
 include preSem in
-theorem arrayElems_cons (l : loc) (v : V) (vs : List V) (dq : DFrac) :
+theorem arrayElems_cons (l : Loc) (v : V) (vs : List V) (dq : DFrac) :
     arrayElems (GF := GF) l (v :: vs) dq ⊣⊢
-      iprop(typed_pointsto (arrayIndexRef V 0 l) v dq ∗
+      iprop(typedPointsto (arrayIndexRef V 0 l) v dq ∗
         arrayElems (arrayIndexRef V 1 l) vs dq) := by
   unfold arrayElems
   refine bigSepL_cons.trans ?_
@@ -58,7 +58,7 @@ theorem arrayElems_cons (l : loc) (v : V) (vs : List V) (dq : DFrac) :
   exact .rfl
 
 include preSem in
-theorem arrayElems_agree (l : loc) (vs1 vs2 : List V) (dq1 dq2 : DFrac)
+theorem arrayElems_agree (l : Loc) (vs1 vs2 : List V) (dq1 dq2 : DFrac)
     (hlen : vs1.length = vs2.length) :
     arrayElems (GF := GF) l vs1 dq1 ⊢ arrayElems l vs2 dq2 -∗ ⌜vs1 = vs2⌝ := by
   induction vs1 generalizing l vs2 with
@@ -79,14 +79,14 @@ theorem arrayElems_agree (l : loc) (vs1 vs2 : List V) (dq1 dq2 : DFrac)
       ipureintro
       rw [Heq, Heq']
 
-noncomputable instance typed_pointsto_array (n : Int) : TypedPointsto (GF := GF) (array.t V n) where
-  typed_pointsto_def l v dq :=
+noncomputable instance typedPointsto_array (n : Int) : TypedPointsto (GF := GF) (array.t V n) where
+  typedPointstoDef l v dq :=
     iprop(⌜(v.arr.length : Int) = n⌝ ∗ arrayElems l v.arr dq)
-  typed_pointsto_def_dfractional l v := by
+  typedPointstoDef_dfractional l v := by
     unfold arrayElems; infer_instance
-  typed_pointsto_def_timeless l v dq := by
+  typedPointstoDef_timeless l v dq := by
     unfold arrayElems; infer_instance
-  typed_pointsto_agree l dq1 dq2 v1 v2 := by
+  typedPointsto_agree l dq1 dq2 v1 v2 := by
     obtain ⟨vs1⟩ := v1
     obtain ⟨vs2⟩ := v2
     iintro ⟨%Hlen1, H1⟩ ⟨%Hlen2, H2⟩
@@ -94,38 +94,38 @@ noncomputable instance typed_pointsto_array (n : Int) : TypedPointsto (GF := GF)
     ipureintro
     rw [Heq]
 
-theorem array_len (ptr : loc) (dq : DFrac) (n : Int) (vs : List V) :
-    typed_pointsto (GF := GF) ptr (array.mk n vs) dq ⊢ ⌜n = (vs.length : Int)⌝ := by
-  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
-  simp only [TypedPointsto.typed_pointsto_def]
+theorem array_len (ptr : Loc) (dq : DFrac) (n : Int) (vs : List V) :
+    typedPointsto (GF := GF) ptr (array.mk n vs) dq ⊢ ⌜n = (vs.length : Int)⌝ := by
+  rw [typedPointsto_unseal]; unfold typedPointstoWrap
+  simp only [TypedPointsto.typedPointstoDef]
   iintro ⟨⟨%H, _⟩, _⟩
   ipureintro
   exact H.symm
 
-theorem array_empty (ptr : loc) (dq : DFrac) (h : ptr ≠ null) :
-    ⊢ typed_pointsto (GF := GF) ptr (array.mk 0 ([] : List V)) dq := by
-  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
-  simp only [TypedPointsto.typed_pointsto_def]
+theorem array_empty (ptr : Loc) (dq : DFrac) (h : ptr ≠ null) :
+    ⊢ typedPointsto (GF := GF) ptr (array.mk 0 ([] : List V)) dq := by
+  rw [typedPointsto_unseal]; unfold typedPointstoWrap
+  simp only [TypedPointsto.typedPointstoDef]
   isplit
   · isplit
     · ipureintro; rfl
     · unfold arrayElems; iapply bigSepL_nil.2; iempintro
   · ipureintro; exact h
 
-theorem array_acc (p : loc) (i : Int) (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
+theorem array_acc (p : Loc) (i : Int) (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
     (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
-    typed_pointsto (GF := GF) p a dq ⊢
-      iprop(typed_pointsto (arrayIndexRef V i p) v dq ∗
-        (∀ v', typed_pointsto (arrayIndexRef V i p) v' dq -∗
-          typed_pointsto p (array.mk n (a.arr.set i.toNat v')) dq)) := by
+    typedPointsto (GF := GF) p a dq ⊢
+      iprop(typedPointsto (arrayIndexRef V i p) v dq ∗
+        (∀ v', typedPointsto (arrayIndexRef V i p) v' dq -∗
+          typedPointsto p (array.mk n (a.arr.set i.toNat v')) dq)) := by
   iintro Harr
-  icases typed_pointsto_not_null_dup _ _ _ $$ Harr with ⟨Harr, %Hnn⟩
-  icases typed_pointsto_split _ _ _ $$ Harr with Harr
-  simp only [TypedPointsto.typed_pointsto_def]
+  icases typedPointsto_not_null_dup _ _ _ $$ Harr with ⟨Harr, %Hnn⟩
+  icases typedPointsto_split _ _ _ $$ Harr with Harr
+  simp only [TypedPointsto.typedPointstoDef]
   icases Harr with ⟨%Hlen, Harr⟩
   unfold arrayElems
   icases bigSepL_insert_acc (Φ := fun (k : Nat) (ve : V) =>
-      typed_pointsto (GF := GF) (arrayIndexRef V (k : Int) p) ve dq) hlookup $$ Harr
+      typedPointsto (GF := GF) (arrayIndexRef V (k : Int) p) ve dq) hlookup $$ Harr
     with ⟨Hptsto, Harr⟩
   have hi : ((i.toNat : Nat) : Int) = i := Int.toNat_of_nonneg hpos
   simp only [hi]
@@ -133,14 +133,14 @@ theorem array_acc (p : loc) (i : Int) (dq : DFrac) (n : Int) (a : array.t V n) (
   iintro %v' Hptsto
   ihave Harr := Harr $$ %v' [Hptsto]
   · iexact Hptsto
-  iapply typed_pointsto_combine _ _ _ Hnn
-  simp only [TypedPointsto.typed_pointsto_def]
+  iapply typedPointsto_combine _ _ _ Hnn
+  simp only [TypedPointsto.typedPointstoDef]
   isplit
   · ipureintro; simp [Hlen]
   · iexact Harr
 
 include preSem in
-theorem arrayElems_app (l : loc) (vs1 vs2 : List V) (dq : DFrac) :
+theorem arrayElems_app (l : Loc) (vs1 vs2 : List V) (dq : DFrac) :
     arrayElems (GF := GF) l (vs1 ++ vs2) dq ⊣⊢
       iprop(arrayElems l vs1 dq ∗
         arrayElems (arrayIndexRef V (vs1.length : Int) l) vs2 dq) := by
@@ -154,18 +154,18 @@ theorem arrayElems_app (l : loc) (vs1 vs2 : List V) (dq : DFrac) :
   exact .rfl
 
 include preSem in
-theorem array_split (k : w64) (l : loc) (dq : DFrac) (n : Int) (a : array.t V n)
+theorem array_split (k : w64) (l : Loc) (dq : DFrac) (n : Int) (a : array.t V n)
     (hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ n) :
-    typed_pointsto (GF := GF) l a dq ⊣⊢
-      iprop(typed_pointsto l (array.mk (sint.Z k) (a.arr.take (sint.nat k))) dq ∗
-        typed_pointsto (arrayIndexRef V (sint.Z k) l)
+    typedPointsto (GF := GF) l a dq ⊣⊢
+      iprop(typedPointsto l (array.mk (sint.Z k) (a.arr.take (sint.nat k))) dq ∗
+        typedPointsto (arrayIndexRef V (sint.Z k) l)
           (array.mk (n - sint.Z k) (a.arr.drop (sint.nat k))) dq) := by
   obtain ⟨arr⟩ := a
   have hk' : ((sint.nat k : Nat) : Int) = sint.Z k := by word
   have e := arrayElems_app (GF := GF) l (arr.take (sint.nat k)) (arr.drop (sint.nat k)) dq
   rw [List.take_append_drop] at e
-  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
-  simp only [TypedPointsto.typed_pointsto_def]
+  rw [typedPointsto_unseal]; unfold typedPointstoWrap
+  simp only [TypedPointsto.typedPointstoDef]
   constructor
   · iintro ⟨⟨%Hlen, H⟩, %Hnn⟩
     have Hl : (arr.take (sint.nat k)).length = sint.nat k := by
@@ -191,9 +191,9 @@ theorem array_split (k : w64) (l : loc) (dq : DFrac) (n : Int) (a : array.t V n)
 end lemmas
 
 section intoVal
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -222,15 +222,15 @@ theorem list_set_getElem?_self {A : Type} (vs : List A) (k : Nat) (ve : A)
   · rfl
 
 /-- The body of the recursive loop of `go.load_array`. -/
-abbrev loadArrayBody (n : Int) (elem_type : go.type) (l : val) : expr :=
+abbrev loadArrayBody (n : Int) (elem_type : go.GoType) (l : val) : Expr :=
   gl(if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
             else let: "array_so_far" := "recur" ("n" -⟨go.int⟩ #(W64 1)) in
                  let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" -⟨go.int⟩ #(W64 1)) in
                  let: "elem_val" := GoLoad elem_type "elem_addr" in
                  ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val")))
 
-theorem wp_load_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
-    {s : Stuckness} {E : CoPset} (l : loc) (dq : DFrac) (vs : List V)
+theorem wp_load_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : Loc) (dq : DFrac) (vs : List V)
     (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (m : Nat) (hm : (m : Int) ≤ n) :
     {{ arrayElems (GF := GF) l vs dq }}
       (App (Val (RecV "recur" "n" (loadArrayBody n t #l))) (Val #(W64 m))) @ s; E
@@ -267,7 +267,7 @@ theorem wp_load_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
       ⟨vs[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
     unfold arrayElems
     icases bigSepL_insert_acc (Φ := fun (j : Nat) (x : V) =>
-        typed_pointsto (GF := GF) (arrayIndexRef V (j : Int) l) x dq) hve $$ Hl
+        typedPointsto (GF := GF) (arrayIndexRef V (j : Int) l) x dq) hve $$ Hl
       with ⟨Hx, Hl⟩
     wp_pures
     wp_apply_core IntoValTyped.wp_load (t := t) _ _ _ $$ Hx
@@ -282,20 +282,20 @@ theorem wp_load_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
     iexact Hl
 
 /-- One step of the loop of `go.store_array`. -/
-abbrev storeArrayStep (n : Int) (elem_type : go.type) (l v : val) (str_so_far : expr) (j : Int) :
-    expr :=
+abbrev storeArrayStep (n : Int) (elem_type : go.GoType) (l v : val) (str_so_far : Expr) (j : Int) :
+    Expr :=
   gl(str_so_far ;;
     (let elem_addr := gl(IndexRef (go.ArrayType n elem_type) (l, #(W64 j)))
      let elem_val := gl(Index (go.ArrayType n elem_type) (v, #(W64 j)))
      gl(GoStore elem_type (elem_addr, elem_val))))
 
-theorem wp_store_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int)
-    {s : Stuckness} {E : CoPset} (l : loc) (vs : List V) (w : array.t V n)
+theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : array.t V n)
     (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
     (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
     ⊢ ∀ Φ, arrayElems (GF := GF) l vs (DFrac.own 1) -∗
       (arrayElems l (w.arr.take k ++ vs.drop k) (DFrac.own 1) -∗ Φ #()) -∗
-      WP (List.foldl (storeArrayStep n t #l #w) (#() : expr)
+      WP (List.foldl (storeArrayStep n t #l #w) (#() : Expr)
         ((List.range k).map (fun (i : Nat) => (i : Int)))) @ s; E {{ Φ }} := by
   induction k with
   | zero =>
@@ -321,7 +321,7 @@ theorem wp_store_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int
       ⟨_, List.getElem?_eq_getElem (by simp; omega)⟩
     unfold arrayElems
     icases bigSepL_insert_acc (Φ := fun (j : Nat) (x : V) =>
-        typed_pointsto (GF := GF) (arrayIndexRef V (j : Int) l) x (DFrac.own 1)) hve $$ Hl
+        typedPointsto (GF := GF) (arrayIndexRef V (j : Int) l) x (DFrac.own 1)) hve $$ Hl
       with ⟨Hx, Hl⟩
     wp_pures
     simp only [hk'', hwe]
@@ -334,7 +334,7 @@ theorem wp_store_array_loop (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int
     iapply HΦ
     iexact Hl
 
-instance intoVal_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : Int) :
+instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int) :
     IntoValTypedUnderlying (GF := GF) (array.t V n) (go.ArrayType n t) := by
   constructor
   · intro s E t' _ v
@@ -354,9 +354,9 @@ instance intoVal_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : In
       iapply wp_AngelicExit
     simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = False from eq_false (fun h => h hn), ↓reduceIte]
     obtain ⟨vs⟩ := v
-    icases typed_pointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
-    icases typed_pointsto_split _ _ _ $$ Hl with Hl
-    simp only [TypedPointsto.typed_pointsto_def]
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    icases typedPointsto_split _ _ _ $$ Hl with Hl
+    simp only [TypedPointsto.typedPointstoDef]
     icases Hl with ⟨%Hlen, Hl⟩
     have hW : W64 n = W64 ((n.toNat : Nat) : Int) := by rw [Int.toNat_of_nonneg hn.1]
     rw [hW]
@@ -367,8 +367,8 @@ instance intoVal_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : In
       rw [List.take_of_length_le (by omega), List.drop_of_length_le (by simp)]; simp
     rw [hvs]
     iapply HΦ
-    iapply typed_pointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typed_pointsto_def]
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
     isplit
     · ipureintro; exact Hlen
     · iexact Hl
@@ -390,9 +390,9 @@ instance intoVal_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : In
     simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
         eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
     obtain ⟨vs⟩ := v
-    icases typed_pointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
-    icases typed_pointsto_split _ _ _ $$ Hl with Hl
-    simp only [TypedPointsto.typed_pointsto_def]
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    icases typedPointsto_split _ _ _ $$ Hl with Hl
+    simp only [TypedPointsto.typedPointstoDef]
     icases Hl with ⟨%Hlen, Hl⟩
     iapply wp_store_array_loop t n l vs w Hlen hwlen hn n.toNat (by omega) $$ Hl
     iintro Hl
@@ -400,8 +400,8 @@ instance intoVal_typed_array (t : go.type) [IntoValTyped (GF := GF) V t] (n : In
       rw [List.take_of_length_le (by omega), List.drop_of_length_le (by omega)]; simp
     rw [hws]
     iapply HΦ
-    iapply typed_pointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typed_pointsto_def]
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
     isplit
     · ipureintro; exact hwlen
     · iexact Hl

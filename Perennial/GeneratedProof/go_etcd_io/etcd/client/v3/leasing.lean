@@ -29,88 +29,88 @@ namespace go_etcd_io.etcd.client.v3.leasing
 namespace leaseCache
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.leasing.Assumptions]
 
 instance leaseCache_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseCache.t where
-  typed_pointsto_def l v dq := iprop(
-    "mu" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq ∗
-    "entries" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq ∗
-    "revokes" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq ∗
-    "header" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "mu" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq ∗
+    "entries" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq ∗
+    "revokes" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq ∗
+    "header" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leaseCache_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseCache.t go_etcd_io.etcd.client.v3.leasing.«leaseCacheⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance leaseCache_access_load_mu (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
+instance leaseCache_access_load_mu (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_store_mu (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (mu' : sync.RWMutex.t) :
+instance leaseCache_access_store_mu (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (mu' : sync.RWMutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_load_entries (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
+instance leaseCache_access_load_entries (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_store_entries (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (entries' : map.t) :
+instance leaseCache_access_store_entries (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (entries' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) entries' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with entries' := entries' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) v.entries' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"entries" l) entries' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with entries' := entries' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_load_revokes (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
+instance leaseCache_access_load_revokes (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_store_revokes (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (revokes' : map.t) :
+instance leaseCache_access_store_revokes (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (revokes' : map.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) revokes' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with revokes' := revokes' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) v.revokes' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"revokes" l) revokes' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with revokes' := revokes' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_load_header (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
+instance leaseCache_access_load_header (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseCache_access_store_header (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (header' : loc) :
+instance leaseCache_access_store_header (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (header' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) header' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with header' := header' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) v.header' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseCache.t go!"header" l) header' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with header' := header' } : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -120,71 +120,71 @@ end leaseCache
 namespace leaseKey
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.leasing.Assumptions]
 
 instance leaseKey_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseKey.t where
-  typed_pointsto_def l v dq := iprop(
-    "response" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq ∗
-    "rev" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq ∗
-    "waitc" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "response" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq ∗
+    "rev" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq ∗
+    "waitc" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leaseKey_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leaseKey.t go_etcd_io.etcd.client.v3.leasing.«leaseKeyⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance leaseKey_access_load_response (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
+instance leaseKey_access_load_response (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseKey_access_store_response (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (response' : loc) :
+instance leaseKey_access_store_response (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (response' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) response' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with response' := response' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) v.response' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"response" l) response' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with response' := response' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leaseKey_access_load_rev (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
+instance leaseKey_access_load_rev (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseKey_access_store_rev (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (rev' : w64) :
+instance leaseKey_access_store_rev (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (rev' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) rev' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with rev' := rev' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) v.rev' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"rev" l) rev' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rev' := rev' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leaseKey_access_load_waitc (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
+instance leaseKey_access_load_waitc (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leaseKey_access_store_waitc (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (waitc' : chan.t) :
+instance leaseKey_access_store_waitc (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (waitc' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) waitc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with waitc' := waitc' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) v.waitc' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leaseKey.t go!"waitc" l) waitc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waitc' := waitc' } : go_etcd_io.etcd.client.v3.leasing.leaseKey.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -194,190 +194,190 @@ end leaseKey
 namespace leasingKV
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.leasing.Assumptions]
 
 instance leasingKV_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.leasing.leasingKV.t where
-  typed_pointsto_def l v dq := iprop(
-    "cl" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq ∗
-    "kv" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq ∗
-    "pfx" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq ∗
-    "leases" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq ∗
-    "ctx" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq ∗
-    "cancel" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq ∗
-    "wg" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq ∗
-    "sessionOpts" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq ∗
-    "session" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq ∗
-    "sessionc" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "cl" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq ∗
+    "kv" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq ∗
+    "pfx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq ∗
+    "leases" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq ∗
+    "cancel" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq ∗
+    "wg" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq ∗
+    "sessionOpts" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq ∗
+    "session" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq ∗
+    "sessionc" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance leasingKV_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.leasingKV.t go_etcd_io.etcd.client.v3.leasing.«leasingKVⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance leasingKV_access_load_cl (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_cl (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_cl (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (cl' : loc) :
+instance leasingKV_access_store_cl (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (cl' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) cl' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cl' := cl' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) v.cl' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cl" l) cl' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cl' := cl' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_kv (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_kv (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_kv (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (kv' : go_etcd_io.etcd.client.v3.KV.t) :
+instance leasingKV_access_store_kv (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (kv' : go_etcd_io.etcd.client.v3.KV.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) kv' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with kv' := kv' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) v.kv' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"kv" l) kv' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with kv' := kv' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_pfx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_pfx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (pfx' : go_string) :
+instance leasingKV_access_store_pfx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (pfx' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) pfx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with pfx' := pfx' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) v.pfx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"pfx" l) pfx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pfx' := pfx' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_leases (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_leases (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_leases (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (leases' : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) :
+instance leasingKV_access_store_leases (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (leases' : go_etcd_io.etcd.client.v3.leasing.leaseCache.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) leases' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with leases' := leases' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) v.leases' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"leases" l) leases' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with leases' := leases' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_ctx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_ctx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (ctx' : context.Context.t) :
+instance leasingKV_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (ctx' : context.Context.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_cancel (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_cancel (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (cancel' : context.CancelFunc.t) :
+instance leasingKV_access_store_cancel (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (cancel' : context.CancelFunc.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) cancel' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cancel' := cancel' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) v.cancel' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"cancel" l) cancel' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cancel' := cancel' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_wg (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_wg (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_wg (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (wg' : sync.WaitGroup.t) :
+instance leasingKV_access_store_wg (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (wg' : sync.WaitGroup.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) wg' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with wg' := wg' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) v.wg' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"wg" l) wg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wg' := wg' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_sessionOpts (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_sessionOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_sessionOpts (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (sessionOpts' : slice.t) :
+instance leasingKV_access_store_sessionOpts (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (sessionOpts' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) sessionOpts' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sessionOpts' := sessionOpts' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) v.sessionOpts' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionOpts" l) sessionOpts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sessionOpts' := sessionOpts' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_session (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_session (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_session (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (session' : loc) :
+instance leasingKV_access_store_session (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (session' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) session' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with session' := session' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) v.session' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"session" l) session' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with session' := session' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_load_sessionc (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
+instance leasingKV_access_load_sessionc (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance leasingKV_access_store_sessionc (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (sessionc' : chan.t) :
+instance leasingKV_access_store_sessionc (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (sessionc' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) sessionc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sessionc' := sessionc' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) v.sessionc' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.leasingKV.t go!"sessionc" l) sessionc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sessionc' := sessionc' } : go_etcd_io.etcd.client.v3.leasing.leasingKV.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -387,122 +387,122 @@ end leasingKV
 namespace txnLeasing
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.client.v3.leasing.Assumptions]
 
 instance txnLeasing_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.leasing.txnLeasing.t where
-  typed_pointsto_def l v dq := iprop(
-    "Txn" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq ∗
-    "lkv" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq ∗
-    "ctx" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq ∗
-    "cs" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq ∗
-    "opst" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq ∗
-    "opse" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Txn" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq ∗
+    "lkv" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq ∗
+    "ctx" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq ∗
+    "cs" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq ∗
+    "opst" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq ∗
+    "opse" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance txnLeasing_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go_etcd_io.etcd.client.v3.leasing.«txnLeasingⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance txnLeasing_access_load_Txn (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_Txn (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_Txn (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (Txn' : go_etcd_io.etcd.client.v3.Txn.t) :
+instance txnLeasing_access_store_Txn (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (Txn' : go_etcd_io.etcd.client.v3.Txn.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) Txn' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Txn' := Txn' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) v.Txn' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"Txn" l) Txn' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Txn' := Txn' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_load_lkv (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_lkv (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_lkv (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (lkv' : loc) :
+instance txnLeasing_access_store_lkv (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (lkv' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) lkv' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lkv' := lkv' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) v.lkv' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"lkv" l) lkv' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lkv' := lkv' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_load_ctx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_ctx (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (ctx' : context.Context.t) :
+instance txnLeasing_access_store_ctx (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (ctx' : context.Context.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) ctx' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) v.ctx' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"ctx" l) ctx' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctx' := ctx' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_load_cs (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_cs (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_cs (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (cs' : slice.t) :
+instance txnLeasing_access_store_cs (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (cs' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) cs' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with cs' := cs' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) v.cs' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"cs" l) cs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cs' := cs' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_load_opst (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_opst (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_opst (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (opst' : slice.t) :
+instance txnLeasing_access_store_opst (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (opst' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) opst' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with opst' := opst' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) v.opst' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opst" l) opst' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with opst' := opst' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_load_opse (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
+instance txnLeasing_access_load_opse (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance txnLeasing_access_store_opse (l : loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (opse' : slice.t) :
+instance txnLeasing_access_store_opse (l : Loc) (v : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (opse' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) opse' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with opse' := opse' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) v.opse' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.client.v3.leasing.txnLeasing.t go!"opse" l) opse' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with opse' := opse' } : go_etcd_io.etcd.client.v3.leasing.txnLeasing.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -46,7 +46,7 @@ theorem block_to_list_to_block (i : _root_.Perennial.Block) : listToBlock i.toLi
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.primitive.disk.Assumptions]
 
@@ -73,7 +73,7 @@ theorem listToBlock_to_vals (l : List w8) (h : l.length = blockBytes) :
   rw [BlockToVals, listToBlock_to_list _ h]
 
 /-- The element points-tos of a byte array are heap points-tos. -/
-theorem arrayElems_w8 (l : loc) (vs : List w8) (dq : DFrac) :
+theorem arrayElems_w8 (l : Loc) (vs : List w8) (dq : DFrac) :
     arrayElems (GF := GF) l vs dq ⊣⊢
       [∗list] i ↦ v ∈ vs.map (fun b => (#b : val)), heapPointsto (l +ₗ (i : Int)) dq v := by
   unfold arrayElems
@@ -81,11 +81,11 @@ theorem arrayElems_w8 (l : loc) (vs : List w8) (dq : DFrac) :
   constructor
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typed_pointsto_unseal_eq, typed_pointsto_def_heap]
+    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
     iintro ⟨H, _⟩; iexact H
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typed_pointsto_unseal_eq, typed_pointsto_def_heap]
+    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
     iintro H
     ihave %Hnn := heapPointsto_non_null _ _ _ $$ H
     iframe H; ipureintro; exact Hnn
@@ -98,8 +98,8 @@ theorem slice_to_block_array (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Bl
     have h := congrArg List.length H.2
     rw [Vector.length_toList] at h
     simp [blockBytes] at h
-  · rw [typed_pointsto_unseal_eq]
-    simp only [TypedPointsto.typed_pointsto_def]
+  · rw [typedPointsto_unseal_eq]
+    simp only [TypedPointsto.typedPointstoDef]
     icases H with ⟨⟨_, Ha⟩, _⟩
     unfold pointstoBlock BlockToVals
     iapply (arrayElems_w8 s.ptr b.toList dq).1 $$ Ha
@@ -120,8 +120,8 @@ theorem block_array_to_slice (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Bl
       iapply heapPointsto_non_null $$ H0
   rw [ownSlice_unseal]; unfold ownSliceDef
   iright
-  rw [typed_pointsto_unseal_eq]
-  simp only [TypedPointsto.typed_pointsto_def]
+  rw [typedPointsto_unseal_eq]
+  simp only [TypedPointsto.typedPointstoDef]
   unfold pointstoBlock BlockToVals
   isplitl
   · isplitl
@@ -131,7 +131,7 @@ theorem block_array_to_slice (s : slice.t) (dq : DFrac) (b : _root_.Perennial.Bl
     · ipureintro; exact Hnn
   · ipureintro; exact hcap.2
 
-theorem block_array_to_slice_mk (l : loc) (dq : DFrac) (b : _root_.Perennial.Block) :
+theorem block_array_to_slice_mk (l : Loc) (dq : DFrac) (b : _root_.Perennial.Block) :
     pointstoBlock (GF := GF) l dq b ⊢
       slice.mk l (W64 b.toList.length) (W64 b.toList.length) ↦*{dq} b.toList := by
   rw [Vector.length_toList]

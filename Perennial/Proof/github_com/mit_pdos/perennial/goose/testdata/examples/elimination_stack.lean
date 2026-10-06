@@ -31,9 +31,9 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminat
 
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
 instance isPkgInit_inst :
@@ -57,28 +57,28 @@ structure EliminationStackNames where
   rGn : GName
 
 section locked_stack_proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
-def ownLockedStack (γ : GName) (σ : List go_string) : IProp GF :=
+def ownLockedStack (γ : GName) (σ : List GoString) : IProp GF :=
   ghostVar γ (1 : Qp).half σ
 
-instance ownLockedStack_timeless (γ : GName) (σ : List go_string) :
+instance ownLockedStack_timeless (γ : GName) (σ : List GoString) :
     Timeless (ownLockedStack (GF := GF) γ σ) := by
   unfold ownLockedStack; infer_instance
 
-def isLockedStack (s : loc) (γ : GName) : IProp GF :=
+def isLockedStack (s : Loc) (γ : GName) : IProp GF :=
   iprop("#Hmu" ∷ sync.isMutex (s.[LockedStack.t, go!"mu"])
-      iprop(∃ (stack_sl : slice.t) (stack : List go_string),
+      iprop(∃ (stack_sl : slice.t) (stack : List GoString),
         "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
-        "Hcap" ∷ ownSliceCap go_string stack_sl (DFrac.own 1) ∗
+        "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
         "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ∗
     "_" ∷ True)
 
-instance isLockedStack_persistent (s : loc) (γ : GName) :
+instance isLockedStack_persistent (s : Loc) (γ : GName) :
     Persistent (isLockedStack (GF := GF) s γ) := by
   unfold isLockedStack; infer_instance
 
@@ -87,19 +87,19 @@ set_option goose.wp.extras true
 theorem wp_NewLockedStack :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewLockedStack)) (Val #()))
-    {{ (s : loc) (γ : GName), RET #s; isLockedStack s γ ∗ ownLockedStack γ [] }} := by
+    {{ (s : Loc) (γ : GName), RET #s; isLockedStack s γ ∗ ownLockedStack γ [] }} := by
   wp_start
-  wp_apply wp_slice_make2 (V := go_string) (t := go.string) (W64 0) as %stack_sl ⟨Hsl, Hcap⟩
+  wp_apply wp_slice_make2 (V := GoString) (t := go.string) (W64 0) as %stack_sl ⟨Hsl, Hcap⟩
   · ipureintro; decide
   wp_alloc s as Hs
   iStructNamed Hs
-  imod ghostVar_alloc ([] : List go_string) with ⟨%γ, Hγ⟩
-  icases ghostVar_split γ ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
+  imod ghostVar_alloc ([] : List GoString) with ⟨%γ, Hγ⟩
+  icases ghostVar_split γ ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
   · rw [Qp.half_add_half]; iexact Hγ
-  imod sync.init_Mutex iprop(∃ (stack_sl : slice.t) (stack : List go_string),
+  imod sync.init_Mutex iprop(∃ (stack_sl : slice.t) (stack : List GoString),
         "stack" ∷ s.[LockedStack.t, go!"stack"] ↦ stack_sl ∗
         "Hsl" ∷ stack_sl ↦* stack ∗
-        "Hcap" ∷ ownSliceCap go_string stack_sl (DFrac.own 1) ∗
+        "Hcap" ∷ ownSliceCap GoString stack_sl (DFrac.own 1) ∗
         "Hauth" ∷ ghostVar γ (1 : Qp).half stack.reverse) ⊤ (s.[LockedStack.t, go!"mu"])
     $$ [mu] [stack Hsl Hcap Hauth] with #Hmu
   · iexact mu
@@ -109,11 +109,11 @@ theorem wp_NewLockedStack :
   unfold isLockedStack ownLockedStack
   iframe # ∗
 
-theorem LockedStack.wp_Push (v : go_string) (γ : GName) (s : loc) :
+theorem LockedStack.wp_Push (v : GoString) (γ : GName) (s : Loc) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isLockedStack s γ) -∗
       (|={⊤,∅}=> ∃ σ, ownLockedStack γ σ ∗ (ownLockedStack γ (v :: σ) ={∅,⊤}=∗ Φ #())) -∗
-      WP (App (Val (s @!! go.type.PointerType LockedStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType LockedStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
   unfold isLockedStack
   iNamed His
@@ -121,15 +121,15 @@ theorem LockedStack.wp_Push (v : go_string) (γ : GName) (s : loc) :
   wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hi⟩
   iNamed Hi
   wp_auto
-  wp_bind (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.string)))) (Val (LiteralValueV _)))
-  iapply wp_slice_literal (V := go_string) (t := go.string) [v]
+  wp_bind (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (Val (LiteralValueV _)))
+  iapply wp_slice_literal (V := GoString) (t := go.string) [v]
   wp_auto
   rw [show go.arrayLiteralSize [KeyedElement none (ElementExpression go.string #v)] = 1 from rfl]
   isplitl []
   · ipureintro; rfl
   iintro %sl_ptr ⟨Htmp, -⟩
   wp_auto
-  wp_apply wp_slice_append (V := go_string) (t := go.string) stack_sl stack _ [v] (DFrac.own 1)
+  wp_apply wp_slice_append (V := GoString) (t := go.string) stack_sl stack _ [v] (DFrac.own 1)
     $$ [Hsl Hcap Htmp] with %sl' ⟨Hsl, Hcap, -⟩
   · iframe
   iapply fupd_wp
@@ -146,14 +146,14 @@ theorem LockedStack.wp_Push (v : go_string) (γ : GName) (s : loc) :
     iframe
   iexact HΦ
 
-theorem LockedStack.wp_Pop (γ : GName) (s : loc) :
+theorem LockedStack.wp_Pop (γ : GName) (s : Loc) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isLockedStack s γ) -∗
       (|={⊤,∅}=> ∃ σ, ownLockedStack γ σ ∗
         (match σ with
          | [] => ownLockedStack γ [] ={∅,⊤}=∗ Φ (PairV #(go!"") #false)
          | v :: σ => ownLockedStack γ σ ={∅,⊤}=∗ Φ (PairV #v #true))) -∗
-      WP (App (Val (s @!! go.type.PointerType LockedStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType LockedStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
   unfold isLockedStack
   iNamed His
@@ -212,18 +212,18 @@ end locked_stack_proof
 
 section elimination_stack_proof
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
-def ownEliminationStack (γ : EliminationStackNames) (σ : List go_string) : IProp GF :=
+def ownEliminationStack (γ : EliminationStackNames) (σ : List GoString) : IProp GF :=
   ghostVar γ.specGn (1 : Qp).half σ
 
 /-- (Rocq `ownExchangerInv`) Supports atomic updates for Pop and Push that are
 allowed to access `⊤ ∖ N`. -/
 abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
-    (exstate : chanstate.t go_string) : IProp GF :=
+    (exstate : chanstate.t GoString) : IProp GF :=
   iprop(∃ (γs γr : GName),
     "Hsa" ∷ ghostVar γ.sGn (1 : Qp).half γs ∗ "Hra" ∷ ghostVar γ.rGn (1 : Qp).half γr ∗
     "Hexchanger" ∷ (match exstate with
@@ -242,20 +242,20 @@ abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
       | _ => iprop(False)))
 
 abbrev elimInv (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
-  iprop(∃ (stack : List go_string) (exstate : chanstate.t go_string),
+  iprop(∃ (stack : List GoString) (exstate : chanstate.t GoString),
     "Hls" ∷ ownLockedStack γ.lsGn stack ∗
     "Hauth" ∷ ghostVar γ.specGn (1 : Qp).half stack ∗
-    "exchanger" ∷ ownChan γ.chGn go_string exstate ∗
+    "exchanger" ∷ ownChan γ.chGn GoString exstate ∗
     "Hexchanger" ∷ ownExchangerInv γ (N.@"inv") exstate)
 
-def isEliminationStack (s : loc) (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
+def isEliminationStack (s : Loc) (γ : EliminationStackNames) (N : Namespace) : IProp GF :=
   iprop(∃ st : EliminationStack.t,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ isLockedStack st.base' γ.lsGn ∗
-    "#Hch" ∷ isChan st.exchanger' γ.chGn go_string ∗
+    "#Hch" ∷ isChan st.exchanger' γ.chGn GoString ∗
     "#Hinv" ∷ inv (N.@"inv") (elimInv γ N))
 
-instance isEliminationStack_persistent (s : loc) (γ : EliminationStackNames) (N : Namespace) :
+instance isEliminationStack_persistent (s : Loc) (γ : EliminationStackNames) (N : Namespace) :
     Persistent (isEliminationStack (GF := GF) s γ N) := by
   unfold isEliminationStack; infer_instance
 
@@ -281,16 +281,16 @@ theorem alloc_push_help_token {E : CoPset} (N : Namespace) (P : IProp GF) :
       · inext; ileft; iframe
       imodintro; iexact Htok
 
-theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : go_string → IProp GF) :
-    ⊢ |={E}=> ∃ γr, (∀ v : go_string, ghostVar γr Qp.threeQuarters v ={↑N}=∗ ▷ P v) ∗
+theorem alloc_pop_help_token {E : CoPset} (N : Namespace) (P : GoString → IProp GF) :
+    ⊢ |={E}=> ∃ γr, (∀ v : GoString, ghostVar γr Qp.threeQuarters v ={↑N}=∗ ▷ P v) ∗
                    (∀ v, ▷ P v ={↑N}=∗ ghostVar γr Qp.threeQuarters v) := by
   have hq : Qp.threeQuarters + Qp.quarter = 1 := by
     rw [Qp.ext_iff, Qp.val_add, Qp.val_threeQuarters, Qp.val_quarter, Qp.val_one]; grind
   have hbad : ¬ (Qp.threeQuarters + 1 ≤ 1) := by
     rw [Qp.le_iff, Qp.val_add, Qp.val_threeQuarters, Qp.val_one]; grind
-  imod ghostVar_alloc (go!"" : go_string) with ⟨%γr, Htok⟩
+  imod ghostVar_alloc (go!"" : GoString) with ⟨%γr, Htok⟩
   imod token_alloc with ⟨%γdone, Hdone⟩
-  imod inv_alloc N E iprop(∃ v : go_string,
+  imod inv_alloc N E iprop(∃ v : GoString,
       (P v ∗ token γdone ∗ ghostVar γr Qp.quarter v) ∨ ghostVar γr 1 v) $$ [Htok] with #Hescrow
   · inext; iexists _; iright; iexact Htok
   imodintro
@@ -324,15 +324,15 @@ set_option goose.wp.extras true
 theorem wp_NewEliminationStack (N : Namespace) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! NewEliminationStack)) (Val #()))
-    {{ (s : loc) (γ : EliminationStackNames), RET #s;
+    {{ (s : Loc) (γ : EliminationStackNames), RET #s;
         isEliminationStack s γ N ∗ ownEliminationStack γ [] }} := by
   wp_start
   wp_apply wp_NewLockedStack as %base %γbase ⟨#Hbase, Hls⟩
-  wp_apply chan.wp_make1 (V := go_string) as %ch %γch ⟨#Hch, -, Hc⟩
+  wp_apply chan.wp_make1 (V := GoString) as %ch %γch ⟨#Hch, -, Hc⟩
   wp_alloc s as Hs
   ipersist Hs
-  imod ghostVar_alloc ([] : List go_string) with ⟨%γspec, Hspec⟩
-  icases ghostVar_split γspec ([] : List go_string) (1 : Qp).half (1 : Qp).half $$ [Hspec]
+  imod ghostVar_alloc ([] : List GoString) with ⟨%γspec, Hspec⟩
+  icases ghostVar_split γspec ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hspec]
     with ⟨Hauth, Hes⟩
   · rw [Qp.half_add_half]; iexact Hspec
   imod ghostVar_alloc (0 : GName) with ⟨%γsn, Hsn⟩
@@ -360,13 +360,13 @@ theorem wp_NewEliminationStack (N : Namespace) :
   iexists _
   iframe # ∗
 
-theorem EliminationStack.wp_Push (v : go_string) (γ : EliminationStackNames) (s : loc)
+theorem EliminationStack.wp_Push (v : GoString) (γ : EliminationStackNames) (s : Loc)
     (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isEliminationStack s γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
         (ownEliminationStack γ (v :: σ) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
-      WP (App (Val (s @!! go.type.PointerType EliminationStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType EliminationStack @!! go!"Push")) (Val #v)) {{ Φ }} := by
   wp_start as #His
   unfold isEliminationStack
   iNamed His
@@ -379,7 +379,7 @@ theorem EliminationStack.wp_Push (v : go_string) (γ : EliminationStackNames) (s
   isplit
   · -- elimination occurs
     simp only [chan.blockingClausePre]
-    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn, v
+    iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn, v
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
     iframe Hch
@@ -536,14 +536,14 @@ theorem EliminationStack.wp_Push (v : go_string) (γ : EliminationStackNames) (s
   iapply BigAndL.bigAndL_nil.2
   itrivial
 
-theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : loc) (N : Namespace) :
+theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg ∗ isEliminationStack s γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ σ, ownEliminationStack γ σ ∗
         (match σ with
          | [] => ownEliminationStack γ [] ={∅,⊤ \ ↑N}=∗ Φ (PairV #(go!"") #false)
          | v :: σ => ownEliminationStack γ σ ={∅,⊤ \ ↑N}=∗ Φ (PairV #v #true))) -∗
-      WP (App (Val (s @!! go.type.PointerType EliminationStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
+      WP (App (Val (s @!! go.GoType.PointerType EliminationStack @!! go!"Pop")) (Val #())) {{ Φ }} := by
   wp_start as #His
   unfold isEliminationStack
   iNamed His
@@ -556,7 +556,7 @@ theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : loc) (N : Name
   isplit
   · -- elimination occurs
     simp only [chan.blockingClausePre]
-    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn
+    iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, st.exchanger', γ.chGn
     isplitr
     · ipureintro; rfl
     iframe Hch
@@ -575,7 +575,7 @@ theorem EliminationStack.wp_Pop (γ : EliminationStackNames) (s : loc) (N : Name
       iintro exchanger
       imod Hmask with -
       imod alloc_pop_help_token (E := ⊤ \ ↑(N.@"inv")) (N.@"escrow")
-        (fun v : go_string => Φ (PairV #v #true)) with ⟨%γr', HΦtok, Htok⟩
+        (fun v : GoString => Φ (PairV #v #true)) with ⟨%γr', HΦtok, Htok⟩
       imod ghostVar_update_halves γr' γ.rGn γr γr $$ Hrf Hra with ⟨Hrf, Hra⟩
       imod Hclose $$ [Hls Hauth exchanger Hsa Hra Hsf HΦ Htok] with -
       · inext

@@ -14,604 +14,604 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.server.v3.storage.schema : go_string := go!"go.etcd.io/etcd/server/v3/storage/schema"
+def go_etcd_io.etcd.server.v3.storage.schema : GoString := go!"go.etcd.io/etcd/server/v3/storage/schema"
 end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.storage.schema
 
-def action [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.action" [])
+def action [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.action" [])
 
 attribute [irreducible] action
 
-def setKeyAction [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.setKeyAction" [])
+def setKeyAction [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.setKeyAction" [])
 
 attribute [irreducible] setKeyAction
 
-def deleteKeyAction [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.deleteKeyAction" [])
+def deleteKeyAction [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.deleteKeyAction" [])
 
 attribute [irreducible] deleteKeyAction
 
-def ActionList [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.ActionList" [])
+def ActionList [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.ActionList" [])
 
 attribute [irreducible] ActionList
 
-def AlarmBackend [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.AlarmBackend" [])
+def AlarmBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.AlarmBackend" [])
 
 attribute [irreducible] AlarmBackend
 
-def alarmBackend [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.alarmBackend" [])
+def alarmBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.alarmBackend" [])
 
 attribute [irreducible] alarmBackend
 
-def authBackend [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBackend" [])
+def authBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBackend" [])
 
 attribute [irreducible] authBackend
 
-def authReadTx [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authReadTx" [])
+def authReadTx [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authReadTx" [])
 
 attribute [irreducible] authReadTx
 
-def authBatchTx [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBatchTx" [])
+def authBatchTx [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.authBatchTx" [])
 
 attribute [irreducible] authBatchTx
 
-def bucket [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.bucket" [])
+def bucket [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.bucket" [])
 
 attribute [irreducible] bucket
 
-def schemaChange [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChange" [])
+def schemaChange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChange" [])
 
 attribute [irreducible] schemaChange
 
-def simpleSchemaChange [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.simpleSchemaChange" [])
+def simpleSchemaChange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.simpleSchemaChange" [])
 
 attribute [irreducible] simpleSchemaChange
 
-def membershipBackend [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.membershipBackend" [])
+def membershipBackend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.membershipBackend" [])
 
 attribute [irreducible] membershipBackend
 
-def migrationPlan [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationPlan" [])
+def migrationPlan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationPlan" [])
 
 attribute [irreducible] migrationPlan
 
-def migrationStep [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationStep" [])
+def migrationStep [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/storage/schema.migrationStep" [])
 
 attribute [irreducible] migrationStep
 
-axiom «alarmBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «alarmBackendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «authBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «authBackendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «authReadTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «authReadTxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «authBatchTxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «authBatchTxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «membershipBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «membershipBackendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «migrationStepⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «migrationStepⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom revBytesLen [ffi_syntax] [GoGlobalContext] : val
+axiom revBytesLen [FfiSyntax] [GoGlobalContext] : val
 
-axiom MemberAttributesSuffix [ffi_syntax] [GoGlobalContext] : val
+axiom MemberAttributesSuffix [FfiSyntax] [GoGlobalContext] : val
 
-axiom MemberRaftAttributesSuffix [ffi_syntax] [GoGlobalContext] : val
+axiom MemberRaftAttributesSuffix [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def authEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authEnabled [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authEnabled"
 
-axiom authEnabled'init [ffi_syntax] [GoGlobalContext] : val
+axiom authEnabled'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def authDisabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authDisabled [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authDisabled"
 
-axiom authDisabled'init [ffi_syntax] [GoGlobalContext] : val
+axiom authDisabled'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def keyBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def keyBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.keyBucketName"
 
-axiom keyBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom keyBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def metaBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def metaBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.metaBucketName"
 
-axiom metaBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom metaBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def leaseBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaseBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.leaseBucketName"
 
-axiom leaseBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom leaseBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def alarmBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alarmBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.alarmBucketName"
 
-axiom alarmBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom alarmBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def clusterBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clusterBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.clusterBucketName"
 
-axiom clusterBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom clusterBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def membersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def membersBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.membersBucketName"
 
-axiom membersBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom membersBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def membersRemovedBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def membersRemovedBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.membersRemovedBucketName"
 
-axiom membersRemovedBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom membersRemovedBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def authBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authBucketName"
 
-axiom authBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom authBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def authUsersBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authUsersBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authUsersBucketName"
 
-axiom authUsersBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom authUsersBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def authRolesBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def authRolesBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.authRolesBucketName"
 
-axiom authRolesBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom authRolesBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def testBucketName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBucketName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.testBucketName"
 
-axiom testBucketName'init [ffi_syntax] [GoGlobalContext] : val
+axiom testBucketName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Key [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Key [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Key"
 
-axiom Key'init [ffi_syntax] [GoGlobalContext] : val
+axiom Key'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Meta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Meta [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Meta"
 
-axiom Meta'init [ffi_syntax] [GoGlobalContext] : val
+axiom Meta'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Lease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lease [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Lease"
 
-axiom Lease'init [ffi_syntax] [GoGlobalContext] : val
+axiom Lease'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Alarm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Alarm [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Alarm"
 
-axiom Alarm'init [ffi_syntax] [GoGlobalContext] : val
+axiom Alarm'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Cluster [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cluster [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Cluster"
 
-axiom Cluster'init [ffi_syntax] [GoGlobalContext] : val
+axiom Cluster'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Members [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Members [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Members"
 
-axiom Members'init [ffi_syntax] [GoGlobalContext] : val
+axiom Members'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MembersRemoved [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MembersRemoved [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MembersRemoved"
 
-axiom MembersRemoved'init [ffi_syntax] [GoGlobalContext] : val
+axiom MembersRemoved'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Auth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Auth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Auth"
 
-axiom Auth'init [ffi_syntax] [GoGlobalContext] : val
+axiom Auth'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AuthUsers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthUsers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthUsers"
 
-axiom AuthUsers'init [ffi_syntax] [GoGlobalContext] : val
+axiom AuthUsers'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AuthRoles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthRoles [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthRoles"
 
-axiom AuthRoles'init [ffi_syntax] [GoGlobalContext] : val
+axiom AuthRoles'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Test [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Test [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Test"
 
-axiom Test'init [ffi_syntax] [GoGlobalContext] : val
+axiom Test'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AllBuckets [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AllBuckets [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AllBuckets"
 
-axiom AllBuckets'init [ffi_syntax] [GoGlobalContext] : val
+axiom AllBuckets'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ScheduledCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ScheduledCompactKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ScheduledCompactKeyName"
 
-axiom ScheduledCompactKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom ScheduledCompactKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def FinishedCompactKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FinishedCompactKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.FinishedCompactKeyName"
 
-axiom FinishedCompactKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom FinishedCompactKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetaConsistentIndexKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaConsistentIndexKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaConsistentIndexKeyName"
 
-axiom MetaConsistentIndexKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetaConsistentIndexKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AuthEnabledKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthEnabledKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthEnabledKeyName"
 
-axiom AuthEnabledKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom AuthEnabledKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AuthRevisionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AuthRevisionKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.AuthRevisionKeyName"
 
-axiom AuthRevisionKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom AuthRevisionKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetaTermKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaTermKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaTermKeyName"
 
-axiom MetaTermKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetaTermKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetaConfStateName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaConfStateName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaConfStateName"
 
-axiom MetaConfStateName'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetaConfStateName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ClusterClusterVersionKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClusterClusterVersionKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ClusterClusterVersionKeyName"
 
-axiom ClusterClusterVersionKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom ClusterClusterVersionKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ClusterDowngradeKeyName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClusterDowngradeKeyName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ClusterDowngradeKeyName"
 
-axiom ClusterDowngradeKeyName'init [ffi_syntax] [GoGlobalContext] : val
+axiom ClusterDowngradeKeyName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetaStorageVersionName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetaStorageVersionName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MetaStorageVersionName"
 
-axiom MetaStorageVersionName'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetaStorageVersionName'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def schemaChanges [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schemaChanges [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChanges"
 
-axiom schemaChanges'init [ffi_syntax] [GoGlobalContext] : val
+axiom schemaChanges'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def emptyStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyStorageVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.emptyStorageVersion"
 
-axiom emptyStorageVersion'init [ffi_syntax] [GoGlobalContext] : val
+axiom emptyStorageVersion'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def restoreFieldValueAction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreFieldValueAction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.restoreFieldValueAction"
 
-noncomputable def NewAlarmBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAlarmBackend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewAlarmBackend"
 
-noncomputable def NewAuthBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAuthBackend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewAuthBackend"
 
-noncomputable def unsafeReadAuthEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeReadAuthEnabled [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeReadAuthEnabled"
 
-noncomputable def unsafeReadAuthRevision [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeReadAuthRevision [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeReadAuthRevision"
 
-noncomputable def UnsafeCreateAuthRolesBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateAuthRolesBucket [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateAuthRolesBucket"
 
-noncomputable def unsafeGetRole [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetRole [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetRole"
 
-noncomputable def unsafeGetAllRoles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetAllRoles [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetAllRoles"
 
-noncomputable def unsafeGetUser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetUser [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetUser"
 
-noncomputable def unsafeGetAllUsers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeGetAllUsers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeGetAllUsers"
 
-noncomputable def DefaultIgnores [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultIgnores [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.DefaultIgnores"
 
-noncomputable def BackendMemberKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BackendMemberKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.BackendMemberKey"
 
-noncomputable def addNewField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addNewField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.addNewField"
 
-noncomputable def UnsafeCreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateMetaBucket [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateMetaBucket"
 
-noncomputable def CreateMetaBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CreateMetaBucket [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.CreateMetaBucket"
 
-noncomputable def UnsafeReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeReadConsistentIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeReadConsistentIndex"
 
-noncomputable def ReadConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadConsistentIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadConsistentIndex"
 
-noncomputable def UnsafeUpdateConsistentIndexForce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeUpdateConsistentIndexForce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeUpdateConsistentIndexForce"
 
-noncomputable def UnsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeUpdateConsistentIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeUpdateConsistentIndex"
 
-noncomputable def unsafeUpdateConsistentIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeUpdateConsistentIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeUpdateConsistentIndex"
 
-noncomputable def MustUnsafeSaveConfStateToBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeSaveConfStateToBackend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeSaveConfStateToBackend"
 
-noncomputable def UnsafeConfStateFromBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeConfStateFromBackend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeConfStateFromBackend"
 
-noncomputable def UnsafeCreateLeaseBucket [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeCreateLeaseBucket [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeCreateLeaseBucket"
 
-noncomputable def MustUnsafeGetAllLeases [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeGetAllLeases [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeGetAllLeases"
 
-noncomputable def MustUnsafePutLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafePutLease [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafePutLease"
 
-noncomputable def UnsafeDeleteLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeDeleteLease [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeDeleteLease"
 
-noncomputable def MustUnsafeGetLease [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MustUnsafeGetLease [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.MustUnsafeGetLease"
 
-noncomputable def leaseIDToBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leaseIDToBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.leaseIDToBytes"
 
-noncomputable def bytesToLeaseID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytesToLeaseID [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.bytesToLeaseID"
 
-noncomputable def NewMembershipBackend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMembershipBackend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.NewMembershipBackend"
 
-noncomputable def mustParseMemberIDFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mustParseMemberIDFromBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.mustParseMemberIDFromBytes"
 
-noncomputable def newPlan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPlan [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.newPlan"
 
-noncomputable def newMigrationStep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newMigrationStep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.newMigrationStep"
 
-noncomputable def trimToMinor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimToMinor [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.trimToMinor"
 
-noncomputable def Validate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Validate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Validate"
 
-noncomputable def unsafeValidate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unsafeValidate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.unsafeValidate"
 
-noncomputable def localBinaryVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def localBinaryVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.localBinaryVersion"
 
-noncomputable def Migrate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Migrate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.Migrate"
 
-noncomputable def UnsafeMigrate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeMigrate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeMigrate"
 
-noncomputable def DetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DetectSchemaVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.DetectSchemaVersion"
 
-noncomputable def UnsafeDetectSchemaVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeDetectSchemaVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeDetectSchemaVersion"
 
-noncomputable def schemaChangesForVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def schemaChangesForVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.schemaChangesForVersion"
 
-noncomputable def ReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadStorageVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadStorageVersion"
 
-noncomputable def UnsafeReadStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeReadStorageVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeReadStorageVersion"
 
-noncomputable def ReadStorageVersionFromSnapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadStorageVersionFromSnapshot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.ReadStorageVersionFromSnapshot"
 
-noncomputable def UnsafeSetStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeSetStorageVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeSetStorageVersion"
 
-noncomputable def UnsafeClearStorageVersion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnsafeClearStorageVersion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/storage/schema.UnsafeClearStorageVersion"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.storage.schema where
-  pkg_imported_pkgs := [pkg_id.go_etcd_io.etcd.server.v3.storage.backend, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb]
+  pkgImportedPkgs := [pkg_id.go_etcd_io.etcd.server.v3.storage.backend, pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.storage.schema)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val schemaChanges'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val emptyStorageVersion'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetaStorageVersionName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ClusterDowngradeKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ClusterClusterVersionKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetaConfStateName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetaTermKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val AuthRevisionKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val AuthEnabledKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetaConsistentIndexKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val FinishedCompactKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ScheduledCompactKeyName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val AllBuckets'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Test'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val AuthRoles'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val AuthUsers'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Auth'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MembersRemoved'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Members'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Cluster'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Alarm'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Lease'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Meta'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Key'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val testBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val authRolesBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val authUsersBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val authBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val membersRemovedBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val membersBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val clusterBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val alarmBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val leaseBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val metaBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val keyBucketName'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val authDisabled'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val authEnabled'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.initialize') (Val #()))))))))
 
 namespace action
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end action
 
-@[reducible] def «actionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"unsafeDo" (go.signature.Signature [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.UnsafeReadWriter] false [action, go.error]))])
+@[reducible] def «actionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"unsafeDo" (go.signature.Signature [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.UnsafeReadWriter] false [action, go.error]))])
 
-class action_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class action_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   action_underlying : go.UnderlyingDirectedEq action «actionⁱᵐᵖˡ»
 
 attribute [instance] action_Assumptions.action_underlying
 
 namespace setKeyAction
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t
   FieldName' : slice.t
   FieldValue' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end setKeyAction
 
-@[reducible] def setKeyAction'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def setKeyAction'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket),
-(go.field_decl.FieldDecl go!"FieldName" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"FieldValue" (go.type.SliceType go.byte))]
+(go.field_decl.FieldDecl go!"FieldName" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"FieldValue" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def setKeyAction'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def setKeyAction'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   setKeyAction'fds_unsealed
 
-instance equals_unfold_setKeyAction [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_setKeyAction [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold setKeyAction'fds setKeyAction'fds_unsealed :=
   ⟨by unfold setKeyAction'fds; rfl⟩
 
-@[reducible] def «setKeyActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType setKeyAction'fds)
+@[reducible] def «setKeyActionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType setKeyAction'fds)
 
-class setKeyAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class setKeyAction_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   setKeyAction_type_repr : go.TypeReprUnderlying «setKeyActionⁱᵐᵖˡ» setKeyAction.t
   setKeyAction_underlying : go.UnderlyingDirectedEq setKeyAction «setKeyActionⁱᵐᵖˡ»
   setKeyAction_get_Bucket : ∀ (x : setKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet «setKeyActionⁱᵐᵖˡ» go!"Bucket") #x (Val #(x.Bucket'))
@@ -631,30 +631,30 @@ attribute [instance] setKeyAction_Assumptions.setKeyAction_type_repr
   setKeyAction_Assumptions.setKeyAction_set_FieldValue
 
 namespace deleteKeyAction
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Bucket' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket.t
   FieldName' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end deleteKeyAction
 
-@[reducible] def deleteKeyAction'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def deleteKeyAction'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Bucket" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Bucket),
-(go.field_decl.FieldDecl go!"FieldName" (go.type.SliceType go.byte))]
+(go.field_decl.FieldDecl go!"FieldName" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def deleteKeyAction'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def deleteKeyAction'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   deleteKeyAction'fds_unsealed
 
-instance equals_unfold_deleteKeyAction [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_deleteKeyAction [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold deleteKeyAction'fds deleteKeyAction'fds_unsealed :=
   ⟨by unfold deleteKeyAction'fds; rfl⟩
 
-@[reducible] def «deleteKeyActionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType deleteKeyAction'fds)
+@[reducible] def «deleteKeyActionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType deleteKeyAction'fds)
 
-class deleteKeyAction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class deleteKeyAction_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   deleteKeyAction_type_repr : go.TypeReprUnderlying «deleteKeyActionⁱᵐᵖˡ» deleteKeyAction.t
   deleteKeyAction_underlying : go.UnderlyingDirectedEq deleteKeyAction «deleteKeyActionⁱᵐᵖˡ»
   deleteKeyAction_get_Bucket : ∀ (x : deleteKeyAction.t), go.IsGoStepPureDetTagged under (StructFieldGet «deleteKeyActionⁱᵐᵖˡ» go!"Bucket") #x (Val #(x.Bucket'))
@@ -670,25 +670,25 @@ attribute [instance] deleteKeyAction_Assumptions.deleteKeyAction_type_repr
   deleteKeyAction_Assumptions.deleteKeyAction_set_FieldName
 
 namespace ActionList
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end ActionList
 
-@[reducible] def «ActionListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType action)
+@[reducible] def «ActionListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType action)
 
-class ActionList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ActionList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ActionList_underlying : go.UnderlyingDirectedEq ActionList «ActionListⁱᵐᵖˡ»
 
 attribute [instance] ActionList_Assumptions.ActionList_underlying
 
 namespace AlarmBackend
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end AlarmBackend
 
-@[reducible] def «AlarmBackendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"CreateAlarmBucket" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"ForceCommit" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"GetAllAlarms" (go.signature.Signature [] false [(go.type.SliceType (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)), go.error])), (go.interface_elem.MethodElem go!"MustDeleteAlarm" (go.signature.Signature [(go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false [])), (go.interface_elem.MethodElem go!"MustPutAlarm" (go.signature.Signature [(go.type.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false []))])
+@[reducible] def «AlarmBackendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CreateAlarmBucket" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"ForceCommit" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"GetAllAlarms" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)), go.error])), (go.InterfaceElem.MethodElem go!"MustDeleteAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false [])), (go.InterfaceElem.MethodElem go!"MustPutAlarm" (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.api.v3.etcdserverpb.AlarmMember)] false []))])
 
-class AlarmBackend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class AlarmBackend_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AlarmBackend_underlying : go.UnderlyingDirectedEq AlarmBackend «AlarmBackendⁱᵐᵖˡ»
 
 attribute [instance] AlarmBackend_Assumptions.AlarmBackend_underlying
@@ -699,7 +699,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end alarmBackend
 
-class alarmBackend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class alarmBackend_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   alarmBackend_type_repr : go.TypeReprUnderlying «alarmBackendⁱᵐᵖˡ» alarmBackend.t
   alarmBackend_underlying : go.UnderlyingDirectedEq alarmBackend «alarmBackendⁱᵐᵖˡ»
   «alarmBackendⁱᵐᵖˡ_underlying» : go.IsUnderlying «alarmBackendⁱᵐᵖˡ» «alarmBackendⁱᵐᵖˡ»
@@ -714,7 +714,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end authBackend
 
-class authBackend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class authBackend_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   authBackend_type_repr : go.TypeReprUnderlying «authBackendⁱᵐᵖˡ» authBackend.t
   authBackend_underlying : go.UnderlyingDirectedEq authBackend «authBackendⁱᵐᵖˡ»
   «authBackendⁱᵐᵖˡ_underlying» : go.IsUnderlying «authBackendⁱᵐᵖˡ» «authBackendⁱᵐᵖˡ»
@@ -729,7 +729,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end authReadTx
 
-class authReadTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class authReadTx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   authReadTx_type_repr : go.TypeReprUnderlying «authReadTxⁱᵐᵖˡ» authReadTx.t
   authReadTx_underlying : go.UnderlyingDirectedEq authReadTx «authReadTxⁱᵐᵖˡ»
   «authReadTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «authReadTxⁱᵐᵖˡ» «authReadTxⁱᵐᵖˡ»
@@ -744,7 +744,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end authBatchTx
 
-class authBatchTx_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class authBatchTx_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   authBatchTx_type_repr : go.TypeReprUnderlying «authBatchTxⁱᵐᵖˡ» authBatchTx.t
   authBatchTx_underlying : go.UnderlyingDirectedEq authBatchTx «authBatchTxⁱᵐᵖˡ»
   «authBatchTxⁱᵐᵖˡ_underlying» : go.IsUnderlying «authBatchTxⁱᵐᵖˡ» «authBatchTxⁱᵐᵖˡ»
@@ -754,32 +754,32 @@ attribute [instance] authBatchTx_Assumptions.authBatchTx_type_repr
   authBatchTx_Assumptions.«authBatchTxⁱᵐᵖˡ_underlying»
 
 namespace bucket
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   id' : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID.t
   name' : slice.t
   safeRangeBucket' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end bucket
 
-@[reducible] def bucket'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def bucket'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"id" _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.BucketID),
-(go.field_decl.FieldDecl go!"name" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"name" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"safeRangeBucket" go.bool)]
 
-@[irreducible] def bucket'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def bucket'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   bucket'fds_unsealed
 
-instance equals_unfold_bucket [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_bucket [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold bucket'fds bucket'fds_unsealed :=
   ⟨by unfold bucket'fds; rfl⟩
 
-@[reducible] def «bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType bucket'fds)
+@[reducible] def «bucketⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType bucket'fds)
 
-class bucket_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bucket_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bucket_type_repr : go.TypeReprUnderlying «bucketⁱᵐᵖˡ» bucket.t
   bucket_underlying : go.UnderlyingDirectedEq bucket «bucketⁱᵐᵖˡ»
   bucket_get_id : ∀ (x : bucket.t), go.IsGoStepPureDetTagged under (StructFieldGet «bucketⁱᵐᵖˡ» go!"id") #x (Val #(x.id'))
@@ -799,42 +799,42 @@ attribute [instance] bucket_Assumptions.bucket_type_repr
   bucket_Assumptions.bucket_set_safeRangeBucket
 
 namespace schemaChange
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end schemaChange
 
-@[reducible] def «schemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"downgradeAction" (go.signature.Signature [] false [action])), (go.interface_elem.MethodElem go!"upgradeAction" (go.signature.Signature [] false [action]))])
+@[reducible] def «schemaChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"downgradeAction" (go.signature.Signature [] false [action])), (go.InterfaceElem.MethodElem go!"upgradeAction" (go.signature.Signature [] false [action]))])
 
-class schemaChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class schemaChange_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   schemaChange_underlying : go.UnderlyingDirectedEq schemaChange «schemaChangeⁱᵐᵖˡ»
 
 attribute [instance] schemaChange_Assumptions.schemaChange_underlying
 
 namespace simpleSchemaChange
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   upgrade' : action.t
   downgrade' : action.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end simpleSchemaChange
 
-@[reducible] def simpleSchemaChange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def simpleSchemaChange'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"upgrade" action),
 (go.field_decl.FieldDecl go!"downgrade" action)]
 
-@[irreducible] def simpleSchemaChange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def simpleSchemaChange'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   simpleSchemaChange'fds_unsealed
 
-instance equals_unfold_simpleSchemaChange [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_simpleSchemaChange [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold simpleSchemaChange'fds simpleSchemaChange'fds_unsealed :=
   ⟨by unfold simpleSchemaChange'fds; rfl⟩
 
-@[reducible] def «simpleSchemaChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType simpleSchemaChange'fds)
+@[reducible] def «simpleSchemaChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType simpleSchemaChange'fds)
 
-class simpleSchemaChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class simpleSchemaChange_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   simpleSchemaChange_type_repr : go.TypeReprUnderlying «simpleSchemaChangeⁱᵐᵖˡ» simpleSchemaChange.t
   simpleSchemaChange_underlying : go.UnderlyingDirectedEq simpleSchemaChange «simpleSchemaChangeⁱᵐᵖˡ»
   simpleSchemaChange_get_upgrade : ∀ (x : simpleSchemaChange.t), go.IsGoStepPureDetTagged under (StructFieldGet «simpleSchemaChangeⁱᵐᵖˡ» go!"upgrade") #x (Val #(x.upgrade'))
@@ -855,7 +855,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end membershipBackend
 
-class membershipBackend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class membershipBackend_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   membershipBackend_type_repr : go.TypeReprUnderlying «membershipBackendⁱᵐᵖˡ» membershipBackend.t
   membershipBackend_underlying : go.UnderlyingDirectedEq membershipBackend «membershipBackendⁱᵐᵖˡ»
   «membershipBackendⁱᵐᵖˡ_underlying» : go.IsUnderlying «membershipBackendⁱᵐᵖˡ» «membershipBackendⁱᵐᵖˡ»
@@ -865,13 +865,13 @@ attribute [instance] membershipBackend_Assumptions.membershipBackend_type_repr
   membershipBackend_Assumptions.«membershipBackendⁱᵐᵖˡ_underlying»
 
 namespace migrationPlan
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end migrationPlan
 
-@[reducible] def «migrationPlanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType migrationStep)
+@[reducible] def «migrationPlanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType migrationStep)
 
-class migrationPlan_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class migrationPlan_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   migrationPlan_underlying : go.UnderlyingDirectedEq migrationPlan «migrationPlanⁱᵐᵖˡ»
 
 attribute [instance] migrationPlan_Assumptions.migrationPlan_underlying
@@ -882,7 +882,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end migrationStep
 
-class migrationStep_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class migrationStep_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   migrationStep_type_repr : go.TypeReprUnderlying «migrationStepⁱᵐᵖˡ» migrationStep.t
   migrationStep_underlying : go.UnderlyingDirectedEq migrationStep «migrationStepⁱᵐᵖˡ»
   «migrationStepⁱᵐᵖˡ_underlying» : go.IsUnderlying «migrationStepⁱᵐᵖˡ» «migrationStepⁱᵐᵖˡ»
@@ -891,7 +891,7 @@ attribute [instance] migrationStep_Assumptions.migrationStep_type_repr
   migrationStep_Assumptions.migrationStep_underlying
   migrationStep_Assumptions.«migrationStepⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   action_instance : action_Assumptions
   setKeyAction_instance : setKeyAction_Assumptions
   deleteKeyAction_instance : deleteKeyAction_Assumptions

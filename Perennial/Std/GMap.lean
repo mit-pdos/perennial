@@ -156,7 +156,7 @@ scoped notation "{[" k " := " v "]}" => GMap.singleton k v
 open Lean Elab Term Meta in
 /-- Classify the container type of `m` for `!!` / `<[ ]>`: 0 = gmap, 1 = list,
 2 = other, 3 = unknown (metavariable). -/
-private def lookupKind (m : Expr) : TermElabM Nat := do
+private def lookupKind (m : Lean.Expr) : TermElabM Nat := do
   let ty ← whnfR (← instantiateMVars (← inferType m))
   if ty.isAppOf ``GMap then return 0
   if ty.isAppOf ``List then return 1
@@ -540,7 +540,7 @@ theorem ite_isSome_eq {α β} (o : Option α) (a b : β) [Decidable (o.isSome = 
 open Lean Elab Tactic Term Meta in
 /-- `cases` on every `GMap.lookup m k` (closed term) in the goal. -/
 elab "cases_lookups" : tactic => do
-  let rec collect (e : Expr) (acc : Array Expr) : Array Expr :=
+  let rec collect (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
     let acc := if e.isAppOfArity ``GMap.lookup 4 && !e.hasLooseBVars && !acc.contains e
       then acc.push e else acc
     match e with

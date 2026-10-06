@@ -10,7 +10,7 @@ namespace Perennial
 
 namespace runtime
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def «Goschedⁱᵐᵖˡ» : val :=
   λ: <>,

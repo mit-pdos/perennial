@@ -52,20 +52,20 @@ namespace Perennial
 open Iris.ProgramLogic
 
 section bounded
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 /-- The state of the bounded language: the real configuration and the fuel, the
 number of counted steps that may still be taken. -/
 abbrev BcfgState := CfgState × Nat
 
 /-- The counted redexes: Go instructions. -/
-def isCounted : expr → Bool
+def isCounted : Expr → Bool
   | .App (.Val (.GoInstruction _)) (.Val _) => true
   | _ => false
 
 /-- The base step of the bounded language (see the module docstring). -/
 inductive BoundedBaseStep :
-    expr → BcfgState → List Observation → expr → BcfgState → List expr → Prop
+    Expr → BcfgState → List Observation → Expr → BcfgState → List Expr → Prop
   | step {e σ f κ e' σ' efs} :
       isCounted e = false → BaseStep e σ κ e' σ' efs →
       BoundedBaseStep e (σ, f) κ e' (σ', f) efs
@@ -97,7 +97,7 @@ theorem boundedBaseStep_uncounted {e σ f κ e' s' efs} (hnc : isCounted e = fal
 
 /-- The registered iris-lean language instance of GooseLang: the bounded layer
 over `base_step`. -/
-instance goose_ectxi_lang : EctxItemLanguage expr EctxItem BcfgState Observation val where
+instance goose_ectxi_lang : EctxItemLanguage Expr EctxItem BcfgState Observation val where
   toVal := toVal
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
@@ -124,33 +124,33 @@ Language`) derive from the trusted `gooseRealEctxiLang`; it is passed
 explicitly since the registered instance is the bounded one. -/
 
 section real
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open Language.Notation EctxLanguage.Notation
 
 /-- The real (unbounded) GooseLang language. -/
-abbrev gooseRealLang : Language expr CfgState Observation val :=
+abbrev gooseRealLang : Language Expr CfgState Observation val :=
   @EctxLanguage.instLanguage _ _ _ _ _
     (@EctxItemLanguage.instEctxLanguage _ _ _ _ _ gooseRealEctxiLang)
 
 /-- A real primitive (thread) step: a `base_step` in an evaluation context. -/
-def RealPrimStep (e : expr) (σ : CfgState) (κ : List Observation) (e' : expr)
-    (σ' : CfgState) (efs : List expr) : Prop :=
+def RealPrimStep (e : Expr) (σ : CfgState) (κ : List Observation) (e' : Expr)
+    (σ' : CfgState) (efs : List Expr) : Prop :=
   @PrimStep.primStep _ _ _ gooseRealLang.toPrimStep (e, σ) κ (e', σ', efs)
 
 /-- `n` steps of the real thread-pool semantics. -/
-def RealNsteps (n : Nat) (ρ₁ : List expr × CfgState) (κs : List Observation)
-    (ρ₂ : List expr × CfgState) : Prop :=
+def RealNsteps (n : Nat) (ρ₁ : List Expr × CfgState) (κs : List Observation)
+    (ρ₂ : List Expr × CfgState) : Prop :=
   @Language.NSteps _ _ _ _ gooseRealLang n ρ₁ κs ρ₂
 
 /-- A thread is not stuck in the real semantics: it is a value or it can take a
 real primitive step. -/
-def RealNotStuck (e : expr) (σ : CfgState) : Prop :=
+def RealNotStuck (e : Expr) (σ : CfgState) : Prop :=
   (toVal e).isSome ∨ ∃ κ e' σ' efs, RealPrimStep e σ κ e' σ' efs
 
 /-- A real thread-pool step from a state with fuel `f > 0` is also a step of the
 bounded semantics, which leaves at least `f - 1` fuel. -/
-theorem bounded_step_of_real {ρ₁ ρ₂ : List expr × CfgState} {κ : List Observation} (f : Nat)
+theorem bounded_step_of_real {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Observation} (f : Nat)
     (h : @Language.Step _ _ _ _ gooseRealLang ρ₁ κ ρ₂) (hf : 0 < f) :
     ∃ f', f ≤ f' + 1 ∧ Language.Step (ρ₁.1, ((ρ₁.2, f) : BcfgState)) κ (ρ₂.1, (ρ₂.2, f')) := by
   obtain ⟨H, t₁, t₂⟩ := h
@@ -166,7 +166,7 @@ theorem bounded_step_of_real {ρ₁ ρ₂ : List expr × CfgState} {κ : List Ob
 
 /-- Simulation: a real execution of `n` steps is also an execution of the bounded
 semantics started with any fuel `f ≥ n`. -/
-theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List expr × CfgState} {κs : List Observation}
+theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {κs : List Observation}
     (h : RealNsteps n ρ₁ κs ρ₂) (f : Nat) (hf : n ≤ f) :
     ∃ f', Language.NSteps n (ρ₁.1, ((ρ₁.2, f) : BcfgState)) κs (ρ₂.1, (ρ₂.2, f')) := by
   unfold RealNsteps at h
@@ -179,7 +179,7 @@ theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List expr × CfgState} {
 
 /-- Bounded reducibility implies real reducibility: every bounded step is backed
 by a real base step. -/
-theorem realNotStuck_of_bounded {e : expr} {σ : CfgState} {f : Nat}
+theorem realNotStuck_of_bounded {e : Expr} {σ : CfgState} {f : Nat}
     (h : PrimStep.NotStuck (e, ((σ, f) : BcfgState))) : RealNotStuck e σ := by
   rcases h with h | ⟨κ, e', s', efs, H⟩
   · exact .inl h

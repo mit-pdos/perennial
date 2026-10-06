@@ -213,9 +213,9 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		case "bool":
 			return "Bool"
 		case "string", "untyped string":
-			return "go_string"
+			return "GoString"
 		case "Pointer":
-			return "loc"
+			return "Loc"
 		}
 		log.Fatalf("unknown basic type %s", t.Name())
 	case *types.Slice:
@@ -223,7 +223,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Array:
 		return fmt.Sprintf("(array.t %s %d)", tr.toLeanType(t.Elem()), t.Len())
 	case *types.Pointer:
-		return "loc"
+		return "Loc"
 	case *types.Signature:
 		return "func.t"
 	case *types.Interface:

@@ -22,9 +22,9 @@ section grove
 variable [GoGlobalContext]
 
 -- These are pointers in Go.
-def «Listenerⁱᵐᵖˡ» : go.type := «unsafe».Pointer
-def «Connectionⁱᵐᵖˡ» : go.type := «unsafe».Pointer
-def Address : go.type := go.uint64
+def «Listenerⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
+def «Connectionⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
+def Address : go.GoType := go.uint64
 
 /-- Type: func(uint64) Listener -/
 def «Listenⁱᵐᵖˡ» : val :=
@@ -102,11 +102,11 @@ def «GetTimeRangeⁱᵐᵖˡ» : val :=
 end grove
 
 namespace Connection
-abbrev t := loc
+abbrev t := Loc
 end Connection
 
 namespace Listener
-abbrev t := loc
+abbrev t := Loc
 end Listener
 
 end github_com.mit_pdos.gokv.grove_ffi

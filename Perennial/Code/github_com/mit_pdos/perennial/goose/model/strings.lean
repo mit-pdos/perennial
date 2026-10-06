@@ -14,79 +14,79 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.model.strings : go_string := go!"github.com/mit-pdos/perennial/goose/model/strings"
+def github_com.mit_pdos.perennial.goose.model.strings : GoString := go!"github.com/mit-pdos/perennial/goose/model/strings"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.strings
 
-noncomputable def StringToByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringToByteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.StringToByteSlice"
 
-noncomputable def ByteSliceToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ByteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.ByteSliceToString"
 
 /-- go: convert.go:3:6 -/
-noncomputable def «StringToByteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «StringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
-  (App (Val exception_do)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "a")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "a")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "a"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "a"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "a") (Var "$r0")))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "a") (Var "$r0")))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
 
 /-- go: convert.go:11:6 -/
-noncomputable def «ByteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ByteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "a"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "a"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "a"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "a"))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
-  (App (App (Val (slice.for_range go.byte)) (Var "$range"))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (Convert go.byte go.string))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$key")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value")))))))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.strings where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.strings)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StringToByteSlice_unfold : FuncUnfold StringToByteSlice [] «StringToByteSliceⁱᵐᵖˡ»
   ByteSliceToString_unfold : FuncUnfold ByteSliceToString [] «ByteSliceToStringⁱᵐᵖˡ»
 

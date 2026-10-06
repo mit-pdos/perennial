@@ -13,17 +13,17 @@ namespace Perennial
 
 namespace chan
 section defns
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 open github_com.mit_pdos.perennial.goose.model in
-def receive (elem_type : go.type) : val :=
+def receive (elem_type : go.GoType) : val :=
   λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Receive" "c" #()
 
 open github_com.mit_pdos.perennial.goose.model in
-def send (elem_type : go.type) : val :=
+def send (elem_type : go.GoType) : val :=
   λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Send" "c"
 
-def for_range (elem_type : go.type) : val :=
+def forRange (elem_type : go.GoType) : val :=
   λ: "c" "body",
     (for: (λ: <>, #true : val) ; (λ: <>, #() : val) := λ: <>,
        let: ("v", "ok") := receive elem_type "c" in
@@ -69,7 +69,7 @@ def tryCommClause (c : comm_clause) : val :=
 
 /-- `trySelect` is used as the core of both `select_blocking` and
 `select_nonblocking` -/
-def trySelect (blocking : Bool) : List comm_clause → expr :=
+def trySelect (blocking : Bool) : List comm_clause → Expr :=
   List.foldr (fun clause cases_remaining =>
       gl(let: ("v", "done") := tryCommClause clause #blocking in
       if: ⟨go.bool⟩! "done" then (λ: <>, cases_remaining : val) #()
@@ -81,39 +81,39 @@ end chan
 
 namespace go
 section defs
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model
 
 class ChanSemantics [GoSemanticsFunctions] : Prop where
   [package_sem : channel.Assumptions]
 
-  convert_channel (dir1 dir2 : go.chan_dir) (elem : go.type) (c : chan.t) :
+  convert_channel (dir1 dir2 : go.ChanDir) (elem : go.GoType) (c : chan.t) :
     ⟦Convert (go.ChannelType dir1 elem) (go.ChannelType dir2 elem), #c⟧ ⤳[under] #c
 
-  make2_chan {t : go.type} {dir : go.chan_dir} {elem_type : go.type}
+  make2_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.make2 [t]
     (λ: "cap", FuncResolve channel.NewChannel [elem_type] #() "cap" : val)
-  make1_chan {t : go.type} {dir : go.chan_dir} {elem_type : go.type}
+  make1_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.make1 [t]
     (λ: "<>", FuncResolve go.make2 [t] #() #(W64 0) : val)
-  close_chan {t : go.type} {dir : go.chan_dir} {elem_type : go.type}
+  close_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.close [t]
     (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Close" "c" #() : val)
-  len_chan {t : go.type} {dir : go.chan_dir} {elem_type : go.type}
+  len_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.len [t]
     (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Len" "c" #() : val)
-  cap_chan {t : go.type} {dir : go.chan_dir} {elem_type : go.type}
+  cap_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
     FuncUnfold go.cap [t]
     (λ: "c", MethodResolve (go.PointerType (channel.Channel elem_type)) "Cap" "c" #() : val)
 
-  chan_select_nonblocking (default_handler : expr) (clauses : List comm_clause) :
+  chan_select_nonblocking (default_handler : Expr) (clauses : List comm_clause) :
     is_go_step_pure SelectStmt (SelectStmtClausesV (some default_handler) clauses) =
-    (fun (e' : expr) =>
+    (fun (e' : Expr) =>
        ∃ clauses',
          clauses'.Perm clauses ∧
          e' =
@@ -122,7 +122,7 @@ class ChanSemantics [GoSemanticsFunctions] : Prop where
           else (λ: <>, default_handler : val) #()))
   chan_select_blocking (clauses : List comm_clause) :
     is_go_step_pure SelectStmt (SelectStmtClausesV none clauses) =
-    (fun (e' : expr) =>
+    (fun (e' : Expr) =>
        ∃ clauses',
          clauses'.Perm clauses ∧
          e' =
@@ -139,6 +139,6 @@ export ChanSemantics (convert_channel make2_chan make1_chan close_chan len_chan 
 end defs
 end go
 
-attribute [irreducible] chan.receive chan.send chan.for_range
+attribute [irreducible] chan.receive chan.send chan.forRange
 
 end Perennial

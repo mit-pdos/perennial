@@ -14,11 +14,11 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 section handshake
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 /-- The handshake invariant. -/
@@ -39,15 +39,15 @@ def handshakeInv (γ : ChanNames) (P : V → IProp GF) (Q : IProp GF) : IProp GF
   (consumer-side obligation).
 - Buffered channels are intentionally disallowed.
 - Closing is also disallowed in this idiom (`_ => False`). -/
-def isHandshake (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q : IProp GF) : IProp GF :=
+def isHandshake (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q : IProp GF) : IProp GF :=
   iprop(isChan ch γ V ∗ inv nroot (handshakeInv γ P Q))
 
-instance isHandshake_persistent (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q : IProp GF) :
+instance isHandshake_persistent (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q : IProp GF) :
     Persistent (isHandshake γ ch P Q) := by
   unfold isHandshake; infer_instance
 
 omit [IntoValTyped (GF := GF) V t] in
-theorem start_handshake (ch : loc) (P : V → IProp GF) (Q : IProp GF) (γ : ChanNames) :
+theorem start_handshake (ch : Loc) (P : V → IProp GF) (Q : IProp GF) (γ : ChanNames) :
     ⊢ isChan ch γ V -∗ ownChan γ V .Idle ={⊤}=∗ isHandshake γ ch P Q := by
   iintro #Hch Hchan
   unfold isHandshake
@@ -58,7 +58,7 @@ theorem start_handshake (ch : loc) (P : V → IProp GF) (Q : IProp GF) (γ : Cha
   iexists .Idle
   iframe
 
-theorem handshake_receive_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q : IProp GF)
+theorem handshake_receive_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q : IProp GF)
     (Φ : V → Bool → IProp GF) :
     ⊢ £ 1 ∗ £ 1 -∗ isHandshake γ ch P Q -∗ Q -∗ ▷ (∀ v, P v -∗ Φ v true) -∗ recvAu γ V Φ := by
   unfold isHandshake recvAu
@@ -115,7 +115,7 @@ theorem handshake_receive_au (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q
     iapply Hau $$ Hi
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_handshake_receive (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q : IProp GF) :
+theorem wp_handshake_receive (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q : IProp GF) :
     {{ isHandshake γ ch P Q ∗ Q }}
       (App (Val (chan.receive t)) (Val #ch))
     {{ (v : V), RET (PairV #v #true); P v }} := by
@@ -126,7 +126,7 @@ theorem wp_handshake_receive (γ : ChanNames) (ch : loc) (P : V → IProp GF) (Q
   iintro ⟨Hlc1, Hlc2, Hlc3, _⟩
   iapply handshake_receive_au γ ch P Q (fun v ok => Φ (PairV #v #ok)) $$ [$Hlc1 $Hlc2] His HQ HΦ
 
-theorem handshake_send_au (γ : ChanNames) (ch : loc) (v : V) (P : V → IProp GF) (Q : IProp GF)
+theorem handshake_send_au (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp GF) (Q : IProp GF)
     (Φ : IProp GF) :
     ⊢ £ 1 ∗ £ 1 ∗ £ 1 -∗ isHandshake γ ch P Q -∗ P v -∗ ▷ (Q -∗ Φ) -∗ sendAu γ v Φ := by
   unfold isHandshake sendAu
@@ -182,7 +182,7 @@ theorem handshake_send_au (γ : ChanNames) (ch : loc) (v : V) (P : V → IProp G
     iapply Hau $$ Hi
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
-theorem wp_handshake_send (γ : ChanNames) (ch : loc) (v : V) (P : V → IProp GF) (Q : IProp GF) :
+theorem wp_handshake_send (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp GF) (Q : IProp GF) :
     {{ isHandshake γ ch P Q ∗ P v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); Q }} := by

@@ -12,75 +12,75 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_opentelemetry_io.otel.trace.embedded : go_string := go!"go.opentelemetry.io/otel/trace/embedded"
+def go_opentelemetry_io.otel.trace.embedded : GoString := go!"go.opentelemetry.io/otel/trace/embedded"
 end pkg_id
 
 namespace go_opentelemetry_io.otel.trace.embedded
 
-def TracerProvider [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/trace/embedded.TracerProvider" [])
+def TracerProvider [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/trace/embedded.TracerProvider" [])
 
 attribute [irreducible] TracerProvider
 
-def Tracer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/trace/embedded.Tracer" [])
+def Tracer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/trace/embedded.Tracer" [])
 
 attribute [irreducible] Tracer
 
-def Span [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/trace/embedded.Span" [])
+def Span [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/trace/embedded.Span" [])
 
 attribute [irreducible] Span
 
 instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.trace.embedded where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_opentelemetry_io.otel.trace.embedded)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace TracerProvider
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end TracerProvider
 
-@[reducible] def «TracerProviderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"tracerProvider" (go.signature.Signature [] false []))])
+@[reducible] def «TracerProviderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracerProvider" (go.signature.Signature [] false []))])
 
-class TracerProvider_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class TracerProvider_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TracerProvider_underlying : go.UnderlyingDirectedEq TracerProvider «TracerProviderⁱᵐᵖˡ»
 
 attribute [instance] TracerProvider_Assumptions.TracerProvider_underlying
 
 namespace Tracer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Tracer
 
-@[reducible] def «Tracerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"tracer" (go.signature.Signature [] false []))])
+@[reducible] def «Tracerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"tracer" (go.signature.Signature [] false []))])
 
-class Tracer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Tracer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Tracer_underlying : go.UnderlyingDirectedEq Tracer «Tracerⁱᵐᵖˡ»
 
 attribute [instance] Tracer_Assumptions.Tracer_underlying
 
 namespace Span
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Span
 
-@[reducible] def «Spanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"span" (go.signature.Signature [] false []))])
+@[reducible] def «Spanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"span" (go.signature.Signature [] false []))])
 
-class Span_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Span_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Span_underlying : go.UnderlyingDirectedEq Span «Spanⁱᵐᵖˡ»
 
 attribute [instance] Span_Assumptions.Span_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TracerProvider_instance : TracerProvider_Assumptions
   Tracer_instance : Tracer_Assumptions
   Span_instance : Span_Assumptions

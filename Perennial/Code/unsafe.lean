@@ -12,22 +12,22 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def «unsafe» : go_string := go!"unsafe"
+def «unsafe» : GoString := go!"unsafe"
 end pkg_id
 
 namespace «unsafe»
 
 instance info' : PkgInfo pkg_id.«unsafe» where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.«unsafe»)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
 end «unsafe»
 

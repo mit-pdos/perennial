@@ -16,18 +16,18 @@ namespace internal.runtime.atomic
 namespace noCopy
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance noCopy_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.noCopy.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance noCopy_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.noCopy.t internal.runtime.atomic.«noCopyⁱᵐᵖˡ» := by
@@ -39,54 +39,54 @@ end noCopy
 namespace Int32
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Int32_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Int32.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int32_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int32.t internal.runtime.atomic.«Int32ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Int32_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Int32.t) (dq : DFrac) :
+instance Int32_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Int32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int32_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Int32.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Int32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int32.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Int32.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Int32.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Int32_access_load_value (l : loc) (v : internal.runtime.atomic.Int32.t) (dq : DFrac) :
+instance Int32_access_load_value (l : Loc) (v : internal.runtime.atomic.Int32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int32_access_store_value (l : loc) (v : internal.runtime.atomic.Int32.t) (value' : w32) :
+instance Int32_access_store_value (l : Loc) (v : internal.runtime.atomic.Int32.t) (value' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int32.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Int32.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int32.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Int32.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -96,18 +96,18 @@ end Int32
 namespace align64
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance align64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.align64.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance align64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.align64.t internal.runtime.atomic.«align64ⁱᵐᵖˡ» := by
@@ -119,71 +119,71 @@ end align64
 namespace Int64
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Int64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Int64.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq ∗
-    "_1" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq ∗
+    "_1" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Int64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Int64.t internal.runtime.atomic.«Int64ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Int64_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
+instance Int64_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Int64.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Int64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int64.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Int64_access_load__1 (l : loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
+instance Int64_access_load__1 (l : Loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"_1" l) v._1' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store__1 (l : loc) (v : internal.runtime.atomic.Int64.t) (_1' : internal.runtime.atomic.align64.t) :
+instance Int64_access_store__1 (l : Loc) (v : internal.runtime.atomic.Int64.t) (_1' : internal.runtime.atomic.align64.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"_1" l) v._1' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"_1" l) _1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"_1" l) v._1' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"_1" l) _1' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Int64_access_load_value (l : loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
+instance Int64_access_load_value (l : Loc) (v : internal.runtime.atomic.Int64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store_value (l : loc) (v : internal.runtime.atomic.Int64.t) (value' : w64) :
+instance Int64_access_store_value (l : Loc) (v : internal.runtime.atomic.Int64.t) (value' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Int64.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Int64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -193,54 +193,54 @@ end Int64
 namespace Uint8
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Uint8_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Uint8.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint8_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint8.t internal.runtime.atomic.«Uint8ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Uint8_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Uint8.t) (dq : DFrac) :
+instance Uint8_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint8.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint8_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Uint8.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Uint8_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint8.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint8.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint8.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Uint8_access_load_value (l : loc) (v : internal.runtime.atomic.Uint8.t) (dq : DFrac) :
+instance Uint8_access_load_value (l : Loc) (v : internal.runtime.atomic.Uint8.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint8_access_store_value (l : loc) (v : internal.runtime.atomic.Uint8.t) (value' : w8) :
+instance Uint8_access_store_value (l : Loc) (v : internal.runtime.atomic.Uint8.t) (value' : w8) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint8.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint8.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint8.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint8.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -250,37 +250,37 @@ end Uint8
 namespace Bool'
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Bool'_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Bool'.t where
-  typed_pointsto_def l v dq := iprop(
-    "u" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "u" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Bool'_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Bool'.t internal.runtime.atomic.«Bool'ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Bool'_access_load_u (l : loc) (v : internal.runtime.atomic.Bool'.t) (dq : DFrac) :
+instance Bool'_access_load_u (l : Loc) (v : internal.runtime.atomic.Bool'.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Bool'.t go!"u" l) v.u' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Bool'_access_store_u (l : loc) (v : internal.runtime.atomic.Bool'.t) (u' : internal.runtime.atomic.Uint8.t) :
+instance Bool'_access_store_u (l : Loc) (v : internal.runtime.atomic.Bool'.t) (u' : internal.runtime.atomic.Uint8.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Bool'.t go!"u" l) v.u' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Bool'.t go!"u" l) u' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with u' := u' } : internal.runtime.atomic.Bool'.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Bool'.t go!"u" l) v.u' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Bool'.t go!"u" l) u' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with u' := u' } : internal.runtime.atomic.Bool'.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -290,54 +290,54 @@ end Bool'
 namespace Uint32
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Uint32_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Uint32.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint32_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint32.t internal.runtime.atomic.«Uint32ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Uint32_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Uint32.t) (dq : DFrac) :
+instance Uint32_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Uint32.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Uint32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint32.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint32.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint32.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_load_value (l : loc) (v : internal.runtime.atomic.Uint32.t) (dq : DFrac) :
+instance Uint32_access_load_value (l : Loc) (v : internal.runtime.atomic.Uint32.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_store_value (l : loc) (v : internal.runtime.atomic.Uint32.t) (value' : w32) :
+instance Uint32_access_store_value (l : Loc) (v : internal.runtime.atomic.Uint32.t) (value' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint32.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint32.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint32.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint32.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -347,71 +347,71 @@ end Uint32
 namespace Uint64
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Uint64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Uint64.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq ∗
-    "_1" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq ∗
+    "_1" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uint64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uint64.t internal.runtime.atomic.«Uint64ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Uint64_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
+instance Uint64_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Uint64.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Uint64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint64.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_load__1 (l : loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
+instance Uint64_access_load__1 (l : Loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"_1" l) v._1' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store__1 (l : loc) (v : internal.runtime.atomic.Uint64.t) (_1' : internal.runtime.atomic.align64.t) :
+instance Uint64_access_store__1 (l : Loc) (v : internal.runtime.atomic.Uint64.t) (_1' : internal.runtime.atomic.align64.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"_1" l) v._1' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"_1" l) _1' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"_1" l) v._1' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"_1" l) _1' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_load_value (l : loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
+instance Uint64_access_load_value (l : Loc) (v : internal.runtime.atomic.Uint64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store_value (l : loc) (v : internal.runtime.atomic.Uint64.t) (value' : w64) :
+instance Uint64_access_store_value (l : Loc) (v : internal.runtime.atomic.Uint64.t) (value' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uint64.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Uint64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -421,54 +421,54 @@ end Uint64
 namespace Uintptr
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Uintptr_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Uintptr.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Uintptr_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Uintptr.t internal.runtime.atomic.«Uintptrⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Uintptr_access_load_noCopy (l : loc) (v : internal.runtime.atomic.Uintptr.t) (dq : DFrac) :
+instance Uintptr_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.Uintptr.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_store_noCopy (l : loc) (v : internal.runtime.atomic.Uintptr.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance Uintptr_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uintptr.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uintptr.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.Uintptr.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_load_value (l : loc) (v : internal.runtime.atomic.Uintptr.t) (dq : DFrac) :
+instance Uintptr_access_load_value (l : Loc) (v : internal.runtime.atomic.Uintptr.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_store_value (l : loc) (v : internal.runtime.atomic.Uintptr.t) (value' : w64) :
+instance Uintptr_access_store_value (l : Loc) (v : internal.runtime.atomic.Uintptr.t) (value' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Uintptr.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.Uintptr.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.Uintptr.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -478,37 +478,37 @@ end Uintptr
 namespace Float64
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Float64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Float64.t where
-  typed_pointsto_def l v dq := iprop(
-    "u" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.Float64.t go!"u" l) v.u' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "u" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Float64.t go!"u" l) v.u' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Float64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.Float64.t internal.runtime.atomic.«Float64ⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Float64_access_load_u (l : loc) (v : internal.runtime.atomic.Float64.t) (dq : DFrac) :
+instance Float64_access_load_u (l : Loc) (v : internal.runtime.atomic.Float64.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Float64.t go!"u" l) v.u' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Float64.t go!"u" l) v.u' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Float64.t go!"u" l) v.u' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Float64.t go!"u" l) v.u' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Float64_access_store_u (l : loc) (v : internal.runtime.atomic.Float64.t) (u' : internal.runtime.atomic.Uint64.t) :
+instance Float64_access_store_u (l : Loc) (v : internal.runtime.atomic.Float64.t) (u' : internal.runtime.atomic.Uint64.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Float64.t go!"u" l) v.u' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.Float64.t go!"u" l) u' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with u' := u' } : internal.runtime.atomic.Float64.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Float64.t go!"u" l) v.u' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Float64.t go!"u" l) u' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with u' := u' } : internal.runtime.atomic.Float64.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -518,54 +518,54 @@ end Float64
 namespace UnsafePointer
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance UnsafePointer_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.UnsafePointer.t where
-  typed_pointsto_def l v dq := iprop(
-    "noCopy" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq ∗
-    "value" ∷ typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq ∗
+    "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnsafePointer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.atomic.UnsafePointer.t internal.runtime.atomic.«UnsafePointerⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance UnsafePointer_access_load_noCopy (l : loc) (v : internal.runtime.atomic.UnsafePointer.t) (dq : DFrac) :
+instance UnsafePointer_access_load_noCopy (l : Loc) (v : internal.runtime.atomic.UnsafePointer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UnsafePointer_access_store_noCopy (l : loc) (v : internal.runtime.atomic.UnsafePointer.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
+instance UnsafePointer_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.UnsafePointer.t) (noCopy' : internal.runtime.atomic.noCopy.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) noCopy' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.UnsafePointer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) v.noCopy' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"noCopy" l) noCopy' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noCopy' := noCopy' } : internal.runtime.atomic.UnsafePointer.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance UnsafePointer_access_load_value (l : loc) (v : internal.runtime.atomic.UnsafePointer.t) (dq : DFrac) :
+instance UnsafePointer_access_load_value (l : Loc) (v : internal.runtime.atomic.UnsafePointer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UnsafePointer_access_store_value (l : loc) (v : internal.runtime.atomic.UnsafePointer.t) (value' : loc) :
+instance UnsafePointer_access_store_value (l : Loc) (v : internal.runtime.atomic.UnsafePointer.t) (value' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref internal.runtime.atomic.UnsafePointer.t go!"value" l) value' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with value' := value' } : internal.runtime.atomic.UnsafePointer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer.t go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : internal.runtime.atomic.UnsafePointer.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -575,37 +575,37 @@ end UnsafePointer
 namespace Pointer
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.runtime.atomic.Assumptions]
 
 instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
     TypedPointsto (GF := GF) (internal.runtime.atomic.Pointer.t T') where
-  typed_pointsto_def l v dq := iprop(
-    "u" ∷ typed_pointsto (struct_field_ref (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "u" ∷ typedPointsto (structFieldRef (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Pointer_into_val_typed (T : go.type) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
+instance Pointer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
     IntoValTypedUnderlying (GF := GF) (internal.runtime.atomic.Pointer.t T') (internal.runtime.atomic.«Pointerⁱᵐᵖˡ» T) := by
   solve_into_val_typed_struct
 
-instance Pointer_access_load_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (internal.runtime.atomic.Pointer.t T')) (dq : DFrac) :
+instance Pointer_access_load_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (internal.runtime.atomic.Pointer.t T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq)
-      (typed_pointsto (struct_field_ref (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq)
+      (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_store_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : loc) (v : (internal.runtime.atomic.Pointer.t T')) (u' : internal.runtime.atomic.UnsafePointer.t) :
+instance Pointer_access_store_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (internal.runtime.atomic.Pointer.t T')) (u' : internal.runtime.atomic.UnsafePointer.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref (internal.runtime.atomic.Pointer.t T') go!"u" l) u' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with u' := u' } : (internal.runtime.atomic.Pointer.t T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer.t T') go!"u" l) v.u' (DFrac.own 1))
+      (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer.t T') go!"u" l) u' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with u' := u' } : (internal.runtime.atomic.Pointer.t T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

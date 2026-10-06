@@ -14,2324 +14,2324 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.gogo.protobuf.proto : go_string := go!"github.com/gogo/protobuf/proto"
+def github_com.gogo.protobuf.proto : GoString := go!"github.com/gogo/protobuf/proto"
 end pkg_id
 
 namespace github_com.gogo.protobuf.proto
 
-def Merger [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Merger" [])
+def Merger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Merger" [])
 
 attribute [irreducible] Merger
 
-def generatedMerger [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.generatedMerger" [])
+def generatedMerger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.generatedMerger" [])
 
 attribute [irreducible] generatedMerger
 
-def custom [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.custom" [])
+def custom [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.custom" [])
 
 attribute [irreducible] custom
 
-def Unmarshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Unmarshaler" [])
+def Unmarshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Unmarshaler" [])
 
 attribute [irreducible] Unmarshaler
 
-def newUnmarshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.newUnmarshaler" [])
+def newUnmarshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.newUnmarshaler" [])
 
 attribute [irreducible] newUnmarshaler
 
-def Stats [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Stats" [])
+def Stats [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Stats" [])
 
 attribute [irreducible] Stats
 
-def generatedDiscarder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.generatedDiscarder" [])
+def generatedDiscarder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.generatedDiscarder" [])
 
 attribute [irreducible] generatedDiscarder
 
-def discardInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.discardInfo" [])
+def discardInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.discardInfo" [])
 
 attribute [irreducible] discardInfo
 
-def discardFieldInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.discardFieldInfo" [])
+def discardFieldInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.discardFieldInfo" [])
 
 attribute [irreducible] discardFieldInfo
 
-def duration [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.duration" [])
+def duration [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.duration" [])
 
 attribute [irreducible] duration
 
-def Marshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Marshaler" [])
+def Marshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Marshaler" [])
 
 attribute [irreducible] Marshaler
 
-def ExtensionRange [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.ExtensionRange" [])
+def ExtensionRange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.ExtensionRange" [])
 
 attribute [irreducible] ExtensionRange
 
-def extendableProto [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.extendableProto" [])
+def extendableProto [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.extendableProto" [])
 
 attribute [irreducible] extendableProto
 
-def extendableProtoV1 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.extendableProtoV1" [])
+def extendableProtoV1 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.extendableProtoV1" [])
 
 attribute [irreducible] extendableProtoV1
 
-def extensionAdapter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.extensionAdapter" [])
+def extensionAdapter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.extensionAdapter" [])
 
 attribute [irreducible] extensionAdapter
 
-def notLocker [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.notLocker" [])
+def notLocker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.notLocker" [])
 
 attribute [irreducible] notLocker
 
-def XXX_InternalExtensions [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.XXX_InternalExtensions" [])
+def XXX_InternalExtensions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.XXX_InternalExtensions" [])
 
 attribute [irreducible] XXX_InternalExtensions
 
-def ExtensionDesc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.ExtensionDesc" [])
+def ExtensionDesc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.ExtensionDesc" [])
 
 attribute [irreducible] ExtensionDesc
 
-def Extension [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Extension" [])
+def Extension [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Extension" [])
 
 attribute [irreducible] Extension
 
-def extPropKey [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.extPropKey" [])
+def extPropKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.extPropKey" [])
 
 attribute [irreducible] extPropKey
 
-def extensionsBytes [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.extensionsBytes" [])
+def extensionsBytes [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.extensionsBytes" [])
 
 attribute [irreducible] extensionsBytes
 
-def slowExtensionAdapter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.slowExtensionAdapter" [])
+def slowExtensionAdapter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.slowExtensionAdapter" [])
 
 attribute [irreducible] slowExtensionAdapter
 
-def sortableMapElem [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.sortableMapElem" [])
+def sortableMapElem [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.sortableMapElem" [])
 
 attribute [irreducible] sortableMapElem
 
-def sortableExtensions [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.sortableExtensions" [])
+def sortableExtensions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.sortableExtensions" [])
 
 attribute [irreducible] sortableExtensions
 
-def RequiredNotSetError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.RequiredNotSetError" [])
+def RequiredNotSetError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.RequiredNotSetError" [])
 
 attribute [irreducible] RequiredNotSetError
 
-def invalidUTF8Error [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.invalidUTF8Error" [])
+def invalidUTF8Error [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.invalidUTF8Error" [])
 
 attribute [irreducible] invalidUTF8Error
 
-def nonFatal [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.nonFatal" [])
+def nonFatal [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.nonFatal" [])
 
 attribute [irreducible] nonFatal
 
-def Message [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Message" [])
+def Message [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Message" [])
 
 attribute [irreducible] Message
 
-def Buffer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Buffer" [])
+def Buffer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Buffer" [])
 
 attribute [irreducible] Buffer
 
-def defaultMessage [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.defaultMessage" [])
+def defaultMessage [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.defaultMessage" [])
 
 attribute [irreducible] defaultMessage
 
-def scalarField [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.scalarField" [])
+def scalarField [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.scalarField" [])
 
 attribute [irreducible] scalarField
 
-def mapKeySorter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.mapKeySorter" [])
+def mapKeySorter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.mapKeySorter" [])
 
 attribute [irreducible] mapKeySorter
 
-def InternalMessageInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.InternalMessageInfo" [])
+def InternalMessageInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.InternalMessageInfo" [])
 
 attribute [irreducible] InternalMessageInfo
 
-def Sizer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Sizer" [])
+def Sizer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Sizer" [])
 
 attribute [irreducible] Sizer
 
-def ProtoSizer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.ProtoSizer" [])
+def ProtoSizer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.ProtoSizer" [])
 
 attribute [irreducible] ProtoSizer
 
-def _MessageSet_Item [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto._MessageSet_Item" [])
+def _MessageSet_Item [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto._MessageSet_Item" [])
 
 attribute [irreducible] _MessageSet_Item
 
-def messageSet [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.messageSet" [])
+def messageSet [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.messageSet" [])
 
 attribute [irreducible] messageSet
 
-def messageTypeIder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.messageTypeIder" [])
+def messageTypeIder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.messageTypeIder" [])
 
 attribute [irreducible] messageTypeIder
 
-def field [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.field" [])
+def field [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.field" [])
 
 attribute [irreducible] field
 
-def pointer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.pointer" [])
+def pointer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.pointer" [])
 
 attribute [irreducible] pointer
 
-def tagMap [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.tagMap" [])
+def tagMap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.tagMap" [])
 
 attribute [irreducible] tagMap
 
-def StructProperties [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.StructProperties" [])
+def StructProperties [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.StructProperties" [])
 
 attribute [irreducible] StructProperties
 
-def OneofProperties [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.OneofProperties" [])
+def OneofProperties [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.OneofProperties" [])
 
 attribute [irreducible] OneofProperties
 
-def Properties [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.Properties" [])
+def Properties [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.Properties" [])
 
 attribute [irreducible] Properties
 
-def oneofFuncsIface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.oneofFuncsIface" [])
+def oneofFuncsIface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.oneofFuncsIface" [])
 
 attribute [irreducible] oneofFuncsIface
 
-def oneofWrappersIface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.oneofWrappersIface" [])
+def oneofWrappersIface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.oneofWrappersIface" [])
 
 attribute [irreducible] oneofWrappersIface
 
-def sizer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.sizer" [])
+def sizer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.sizer" [])
 
 attribute [irreducible] sizer
 
-def marshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.marshaler" [])
+def marshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.marshaler" [])
 
 attribute [irreducible] marshaler
 
-def marshalInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.marshalInfo" [])
+def marshalInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.marshalInfo" [])
 
 attribute [irreducible] marshalInfo
 
-def marshalFieldInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.marshalFieldInfo" [])
+def marshalFieldInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.marshalFieldInfo" [])
 
 attribute [irreducible] marshalFieldInfo
 
-def marshalElemInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.marshalElemInfo" [])
+def marshalElemInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.marshalElemInfo" [])
 
 attribute [irreducible] marshalElemInfo
 
-def byTag [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.byTag" [])
+def byTag [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.byTag" [])
 
 attribute [irreducible] byTag
 
-def newMarshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.newMarshaler" [])
+def newMarshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.newMarshaler" [])
 
 attribute [irreducible] newMarshaler
 
-def mergeInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.mergeInfo" [])
+def mergeInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.mergeInfo" [])
 
 attribute [irreducible] mergeInfo
 
-def mergeFieldInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.mergeFieldInfo" [])
+def mergeFieldInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.mergeFieldInfo" [])
 
 attribute [irreducible] mergeFieldInfo
 
-def unmarshalInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.unmarshalInfo" [])
+def unmarshalInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.unmarshalInfo" [])
 
 attribute [irreducible] unmarshalInfo
 
-def unmarshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.unmarshaler" [])
+def unmarshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.unmarshaler" [])
 
 attribute [irreducible] unmarshaler
 
-def unmarshalFieldInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.unmarshalFieldInfo" [])
+def unmarshalFieldInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.unmarshalFieldInfo" [])
 
 attribute [irreducible] unmarshalFieldInfo
 
-def writer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.writer" [])
+def writer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.writer" [])
 
 attribute [irreducible] writer
 
-def textWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.textWriter" [])
+def textWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.textWriter" [])
 
 attribute [irreducible] textWriter
 
-def int32Slice [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.int32Slice" [])
+def int32Slice [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.int32Slice" [])
 
 attribute [irreducible] int32Slice
 
-def TextMarshaler [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.TextMarshaler" [])
+def TextMarshaler [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.TextMarshaler" [])
 
 attribute [irreducible] TextMarshaler
 
-def ParseError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.ParseError" [])
+def ParseError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.ParseError" [])
 
 attribute [irreducible] ParseError
 
-def token [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.token" [])
+def token [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.token" [])
 
 attribute [irreducible] token
 
-def textParser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.textParser" [])
+def textParser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.textParser" [])
 
 attribute [irreducible] textParser
 
-def timestamp [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.timestamp" [])
+def timestamp [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.timestamp" [])
 
 attribute [irreducible] timestamp
 
-def float64Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.float64Value" [])
+def float64Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.float64Value" [])
 
 attribute [irreducible] float64Value
 
-def float32Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.float32Value" [])
+def float32Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.float32Value" [])
 
 attribute [irreducible] float32Value
 
-def int64Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.int64Value" [])
+def int64Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.int64Value" [])
 
 attribute [irreducible] int64Value
 
-def uint64Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.uint64Value" [])
+def uint64Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.uint64Value" [])
 
 attribute [irreducible] uint64Value
 
-def int32Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.int32Value" [])
+def int32Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.int32Value" [])
 
 attribute [irreducible] int32Value
 
-def uint32Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.uint32Value" [])
+def uint32Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.uint32Value" [])
 
 attribute [irreducible] uint32Value
 
-def boolValue [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.boolValue" [])
+def boolValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.boolValue" [])
 
 attribute [irreducible] boolValue
 
-def stringValue [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.stringValue" [])
+def stringValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.stringValue" [])
 
 attribute [irreducible] stringValue
 
-def bytesValue [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/gogo/protobuf/proto.bytesValue" [])
+def bytesValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/gogo/protobuf/proto.bytesValue" [])
 
 attribute [irreducible] bytesValue
 
-axiom «discardInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «discardInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «extPropKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «extPropKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «scalarFieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «scalarFieldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «mapKeySorterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «mapKeySorterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «OneofPropertiesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «OneofPropertiesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Propertiesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Propertiesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «marshalInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «marshalInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «marshalFieldInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «marshalFieldInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «mergeInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «mergeInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «unmarshalInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «unmarshalInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom maxSeconds [ffi_syntax] [GoGlobalContext] : val
+axiom maxSeconds [FfiSyntax] [GoGlobalContext] : val
 
-axiom minSeconds [ffi_syntax] [GoGlobalContext] : val
+axiom minSeconds [FfiSyntax] [GoGlobalContext] : val
 
-axiom maxVarintBytes [ffi_syntax] [GoGlobalContext] : val
+axiom maxVarintBytes [FfiSyntax] [GoGlobalContext] : val
 
-axiom GoGoProtoPackageIsVersion3 [ffi_syntax] [GoGlobalContext] : val
+axiom GoGoProtoPackageIsVersion3 [FfiSyntax] [GoGlobalContext] : val
 
-axiom GoGoProtoPackageIsVersion2 [ffi_syntax] [GoGlobalContext] : val
+axiom GoGoProtoPackageIsVersion2 [FfiSyntax] [GoGlobalContext] : val
 
-axiom GoGoProtoPackageIsVersion1 [ffi_syntax] [GoGlobalContext] : val
+axiom GoGoProtoPackageIsVersion1 [FfiSyntax] [GoGlobalContext] : val
 
-axiom unsafeAllowed [ffi_syntax] [GoGlobalContext] : val
+axiom unsafeAllowed [FfiSyntax] [GoGlobalContext] : val
 
-axiom invalidField [ffi_syntax] [GoGlobalContext] : val
+axiom invalidField [FfiSyntax] [GoGlobalContext] : val
 
-axiom zeroField [ffi_syntax] [GoGlobalContext] : val
+axiom zeroField [FfiSyntax] [GoGlobalContext] : val
 
-axiom debug [ffi_syntax] [GoGlobalContext] : val
+axiom debug [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireVarint [ffi_syntax] [GoGlobalContext] : val
+axiom WireVarint [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireFixed64 [ffi_syntax] [GoGlobalContext] : val
+axiom WireFixed64 [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireBytes [ffi_syntax] [GoGlobalContext] : val
+axiom WireBytes [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireStartGroup [ffi_syntax] [GoGlobalContext] : val
+axiom WireStartGroup [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireEndGroup [ffi_syntax] [GoGlobalContext] : val
+axiom WireEndGroup [FfiSyntax] [GoGlobalContext] : val
 
-axiom WireFixed32 [ffi_syntax] [GoGlobalContext] : val
+axiom WireFixed32 [FfiSyntax] [GoGlobalContext] : val
 
-axiom tagMapFastLimit [ffi_syntax] [GoGlobalContext] : val
+axiom tagMapFastLimit [FfiSyntax] [GoGlobalContext] : val
 
-axiom anyRepeatedlyUnpacked [ffi_syntax] [GoGlobalContext] : val
+axiom anyRepeatedlyUnpacked [FfiSyntax] [GoGlobalContext] : val
 
-axiom minValidSeconds [ffi_syntax] [GoGlobalContext] : val
+axiom minValidSeconds [FfiSyntax] [GoGlobalContext] : val
 
-axiom maxValidSeconds [ffi_syntax] [GoGlobalContext] : val
+axiom maxValidSeconds [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def customType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def customType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.customType"
 
-axiom customType'init [ffi_syntax] [GoGlobalContext] : val
+axiom customType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errOverflow"
 
-axiom errOverflow'init [ffi_syntax] [GoGlobalContext] : val
+axiom errOverflow'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInternalBadWireType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ErrInternalBadWireType"
 
-axiom ErrInternalBadWireType'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrInternalBadWireType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def discardInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardInfoMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.discardInfoMap"
 
-axiom discardInfoMap'init [ffi_syntax] [GoGlobalContext] : val
+axiom discardInfoMap'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def discardInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardInfoLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.discardInfoLock"
 
-noncomputable def durationType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.durationType"
 
-axiom durationType'init [ffi_syntax] [GoGlobalContext] : val
+axiom durationType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errRepeatedHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errRepeatedHasNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errRepeatedHasNil"
 
-axiom errRepeatedHasNil'init [ffi_syntax] [GoGlobalContext] : val
+axiom errRepeatedHasNil'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errOneofHasNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOneofHasNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errOneofHasNil"
 
-axiom errOneofHasNil'init [ffi_syntax] [GoGlobalContext] : val
+axiom errOneofHasNil'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ErrNil"
 
-axiom ErrNil'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrNil'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooLarge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ErrTooLarge"
 
-axiom ErrTooLarge'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrTooLarge'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrMissingExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrMissingExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ErrMissingExtension"
 
-axiom ErrMissingExtension'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrMissingExtension'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errNotExtendable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNotExtendable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errNotExtendable"
 
-axiom errNotExtendable'init [ffi_syntax] [GoGlobalContext] : val
+axiom errNotExtendable'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def extProp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extProp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.extProp"
 
-axiom extProp'init [ffi_syntax] [GoGlobalContext] : val
+axiom extProp'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def extensionMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extensionMaps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.extensionMaps"
 
-axiom extensionMaps'init [ffi_syntax] [GoGlobalContext] : val
+axiom extensionMaps'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errInvalidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalidUTF8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errInvalidUTF8"
 
-axiom errInvalidUTF8'init [ffi_syntax] [GoGlobalContext] : val
+axiom errInvalidUTF8'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def defaultMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultMu [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.defaultMu"
 
-noncomputable def defaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaults [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.defaults"
 
-axiom defaults'init [ffi_syntax] [GoGlobalContext] : val
+axiom defaults'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def int32PtrType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int32PtrType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.int32PtrType"
 
-axiom int32PtrType'init [ffi_syntax] [GoGlobalContext] : val
+axiom int32PtrType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errNoMessageTypeID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoMessageTypeID [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errNoMessageTypeID"
 
-axiom errNoMessageTypeID'init [ffi_syntax] [GoGlobalContext] : val
+axiom errNoMessageTypeID'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ptrSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ptrSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ptrSize"
 
-axiom ptrSize'init [ffi_syntax] [GoGlobalContext] : val
+axiom ptrSize'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def protoMessageType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoMessageType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.protoMessageType"
 
-axiom protoMessageType'init [ffi_syntax] [GoGlobalContext] : val
+axiom protoMessageType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def marshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalerType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.marshalerType"
 
-axiom marshalerType'init [ffi_syntax] [GoGlobalContext] : val
+axiom marshalerType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def propertiesMu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def propertiesMu [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.propertiesMu"
 
-noncomputable def propertiesMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def propertiesMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.propertiesMap"
 
-axiom propertiesMap'init [ffi_syntax] [GoGlobalContext] : val
+axiom propertiesMap'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def enumValueMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enumValueMaps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.enumValueMaps"
 
-axiom enumValueMaps'init [ffi_syntax] [GoGlobalContext] : val
+axiom enumValueMaps'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def enumStringMaps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def enumStringMaps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.enumStringMaps"
 
-axiom enumStringMaps'init [ffi_syntax] [GoGlobalContext] : val
+axiom enumStringMaps'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def protoTypedNils [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoTypedNils [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.protoTypedNils"
 
-axiom protoTypedNils'init [ffi_syntax] [GoGlobalContext] : val
+axiom protoTypedNils'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def protoMapTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoMapTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.protoMapTypes"
 
-axiom protoMapTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom protoMapTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def revProtoTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def revProtoTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.revProtoTypes"
 
-axiom revProtoTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom revProtoTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def protoFiles [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protoFiles [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.protoFiles"
 
-axiom protoFiles'init [ffi_syntax] [GoGlobalContext] : val
+axiom protoFiles'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def sizerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizerType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizerType"
 
-axiom sizerType'init [ffi_syntax] [GoGlobalContext] : val
+axiom sizerType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def protosizerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def protosizerType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.protosizerType"
 
-axiom protosizerType'init [ffi_syntax] [GoGlobalContext] : val
+axiom protosizerType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def marshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalInfoMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.marshalInfoMap"
 
-axiom marshalInfoMap'init [ffi_syntax] [GoGlobalContext] : val
+axiom marshalInfoMap'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def marshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def marshalInfoLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.marshalInfoLock"
 
-noncomputable def uint8SliceType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint8SliceType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.uint8SliceType"
 
-axiom uint8SliceType'init [ffi_syntax] [GoGlobalContext] : val
+axiom uint8SliceType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def mergeInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeInfoMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mergeInfoMap"
 
-axiom mergeInfoMap'init [ffi_syntax] [GoGlobalContext] : val
+axiom mergeInfoMap'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def mergeInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeInfoLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mergeInfoLock"
 
-noncomputable def unmarshalInfoMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInfoMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInfoMap"
 
-axiom unmarshalInfoMap'init [ffi_syntax] [GoGlobalContext] : val
+axiom unmarshalInfoMap'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def unmarshalInfoLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInfoLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInfoLock"
 
-noncomputable def emptyBuf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyBuf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.emptyBuf"
 
-noncomputable def errInternalBadWireType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInternalBadWireType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errInternalBadWireType"
 
-axiom errInternalBadWireType'init [ffi_syntax] [GoGlobalContext] : val
+axiom errInternalBadWireType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def newline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.newline"
 
-axiom newline'init [ffi_syntax] [GoGlobalContext] : val
+axiom newline'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def spaces [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spaces [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.spaces"
 
-axiom spaces'init [ffi_syntax] [GoGlobalContext] : val
+axiom spaces'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def endBraceNewline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endBraceNewline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.endBraceNewline"
 
-axiom endBraceNewline'init [ffi_syntax] [GoGlobalContext] : val
+axiom endBraceNewline'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def backslashN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.backslashN"
 
-axiom backslashN'init [ffi_syntax] [GoGlobalContext] : val
+axiom backslashN'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def backslashR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashR [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.backslashR"
 
-axiom backslashR'init [ffi_syntax] [GoGlobalContext] : val
+axiom backslashR'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def backslashT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.backslashT"
 
-axiom backslashT'init [ffi_syntax] [GoGlobalContext] : val
+axiom backslashT'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def backslashDQ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashDQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.backslashDQ"
 
-axiom backslashDQ'init [ffi_syntax] [GoGlobalContext] : val
+axiom backslashDQ'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def backslashBS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def backslashBS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.backslashBS"
 
-axiom backslashBS'init [ffi_syntax] [GoGlobalContext] : val
+axiom backslashBS'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def posInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def posInf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.posInf"
 
-axiom posInf'init [ffi_syntax] [GoGlobalContext] : val
+axiom posInf'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def negInf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def negInf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.negInf"
 
-axiom negInf'init [ffi_syntax] [GoGlobalContext] : val
+axiom negInf'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def nan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nan [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.nan"
 
-axiom nan'init [ffi_syntax] [GoGlobalContext] : val
+axiom nan'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def textMarshalerType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def textMarshalerType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.textMarshalerType"
 
-axiom textMarshalerType'init [ffi_syntax] [GoGlobalContext] : val
+axiom textMarshalerType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def defaultTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultTextMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.defaultTextMarshaler"
 
-axiom defaultTextMarshaler'init [ffi_syntax] [GoGlobalContext] : val
+axiom defaultTextMarshaler'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def compactTextMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compactTextMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.compactTextMarshaler"
 
-axiom compactTextMarshaler'init [ffi_syntax] [GoGlobalContext] : val
+axiom compactTextMarshaler'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errBadUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errBadUTF8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.errBadUTF8"
 
-axiom errBadUTF8'init [ffi_syntax] [GoGlobalContext] : val
+axiom errBadUTF8'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.timeType"
 
-axiom timeType'init [ffi_syntax] [GoGlobalContext] : val
+axiom timeType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Clone"
 
-noncomputable def Merge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Merge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Merge"
 
-noncomputable def mergeStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeStruct [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mergeStruct"
 
-noncomputable def mergeAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mergeAny"
 
-noncomputable def mergeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mergeExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mergeExtension"
 
-noncomputable def DecodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DecodeVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.DecodeVarint"
 
-noncomputable def Unmarshal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unmarshal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Unmarshal"
 
-noncomputable def UnmarshalMerge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMerge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMerge"
 
-noncomputable def GetStats [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetStats [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetStats"
 
-noncomputable def MarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalMessageSet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MarshalMessageSet"
 
-noncomputable def UnmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMessageSet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMessageSet"
 
-noncomputable def MarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalMessageSetJSON [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MarshalMessageSetJSON"
 
-noncomputable def UnmarshalMessageSetJSON [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalMessageSetJSON [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.UnmarshalMessageSetJSON"
 
-noncomputable def RegisterMessageSetType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterMessageSetType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterMessageSetType"
 
-noncomputable def DiscardUnknown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DiscardUnknown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.DiscardUnknown"
 
-noncomputable def getDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getDiscardInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getDiscardInfo"
 
-noncomputable def discardLegacy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def discardLegacy [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.discardLegacy"
 
-noncomputable def validateDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateDuration [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.validateDuration"
 
-noncomputable def durationFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationFromProto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.durationFromProto"
 
-noncomputable def durationProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def durationProto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.durationProto"
 
-noncomputable def EncodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EncodeVarint"
 
-noncomputable def SizeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SizeVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SizeVarint"
 
-noncomputable def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isNil"
 
-noncomputable def NewRequiredNotSetError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRequiredNotSetError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.NewRequiredNotSetError"
 
-noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Equal"
 
-noncomputable def equalStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalStruct [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.equalStruct"
 
-noncomputable def equalAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.equalAny"
 
-noncomputable def equalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalExtensions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.equalExtensions"
 
-noncomputable def equalExtMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def equalExtMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.equalExtMap"
 
-noncomputable def extendable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extendable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.extendable"
 
-noncomputable def isNilPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNilPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isNilPtr"
 
-noncomputable def SetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetRawExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SetRawExtension"
 
-noncomputable def isExtensionField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isExtensionField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isExtensionField"
 
-noncomputable def checkExtensionTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkExtensionTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.checkExtensionTypes"
 
-noncomputable def extensionProperties [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def extensionProperties [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.extensionProperties"
 
-noncomputable def HasExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.HasExtension"
 
-noncomputable def ClearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClearExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ClearExtension"
 
-noncomputable def clearExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.clearExtension"
 
-noncomputable def GetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetExtension"
 
-noncomputable def defaultExtensionValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultExtensionValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.defaultExtensionValue"
 
-noncomputable def decodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.decodeExtension"
 
-noncomputable def GetExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetExtensions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetExtensions"
 
-noncomputable def ExtensionDescs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExtensionDescs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ExtensionDescs"
 
-noncomputable def SetExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SetExtension"
 
-noncomputable def ClearAllExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ClearAllExtensions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.ClearAllExtensions"
 
-noncomputable def RegisterExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterExtension"
 
-noncomputable def RegisteredExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisteredExtensions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisteredExtensions"
 
-noncomputable def GetBoolExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetBoolExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetBoolExtension"
 
-noncomputable def SizeOfInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SizeOfInternalExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SizeOfInternalExtension"
 
-noncomputable def newSortableExtensionsFromMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSortableExtensionsFromMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.newSortableExtensionsFromMap"
 
-noncomputable def StringFromInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromInternalExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.StringFromInternalExtension"
 
-noncomputable def StringFromExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromExtensionsMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.StringFromExtensionsMap"
 
-noncomputable def StringFromExtensionsBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringFromExtensionsBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.StringFromExtensionsBytes"
 
-noncomputable def EncodeInternalExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeInternalExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EncodeInternalExtension"
 
-noncomputable def EncodeInternalExtensionBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeInternalExtensionBackwards [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EncodeInternalExtensionBackwards"
 
-noncomputable def EncodeExtensionMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeExtensionMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EncodeExtensionMap"
 
-noncomputable def EncodeExtensionMapBackwards [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EncodeExtensionMapBackwards [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EncodeExtensionMapBackwards"
 
-noncomputable def GetRawExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetRawExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetRawExtension"
 
-noncomputable def size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def size [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.size"
 
-noncomputable def BytesToExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BytesToExtensionsMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.BytesToExtensionsMap"
 
-noncomputable def NewExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.NewExtension"
 
-noncomputable def AppendExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AppendExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.AppendExtension"
 
-noncomputable def encodeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.encodeExtension"
 
-noncomputable def decodeExtensionFromBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeExtensionFromBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.decodeExtensionFromBytes"
 
-noncomputable def SetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetUnsafeExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SetUnsafeExtension"
 
-noncomputable def GetUnsafeExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetUnsafeExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetUnsafeExtension"
 
-noncomputable def NewUnsafeXXX_InternalExtensions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewUnsafeXXX_InternalExtensions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.NewUnsafeXXX_InternalExtensions"
 
-noncomputable def GetUnsafeExtensionsMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetUnsafeExtensionsMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetUnsafeExtensionsMap"
 
-noncomputable def deleteExtension [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deleteExtension [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.deleteExtension"
 
-noncomputable def isNonFatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNonFatal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isNonFatal"
 
-noncomputable def NewBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.NewBuffer"
 
-noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Bool"
 
-noncomputable def Int32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Int32"
 
-noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Int"
 
-noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Int64"
 
-noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Float32"
 
-noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Float64"
 
-noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Uint32"
 
-noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Uint64"
 
-noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.String"
 
-noncomputable def EnumName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnumName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EnumName"
 
-noncomputable def UnmarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalJSONEnum [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.UnmarshalJSONEnum"
 
-noncomputable def SetDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetDefaults [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.SetDefaults"
 
-noncomputable def setDefaults [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setDefaults [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.setDefaults"
 
-noncomputable def buildDefaultMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildDefaultMessage [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.buildDefaultMessage"
 
-noncomputable def fieldDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fieldDefault [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.fieldDefault"
 
-noncomputable def mapKeys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mapKeys [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.mapKeys"
 
-noncomputable def isProto3Zero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isProto3Zero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isProto3Zero"
 
-noncomputable def MarshalJSONEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalJSONEnum [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MarshalJSONEnum"
 
-noncomputable def skipVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.skipVarint"
 
-noncomputable def unmarshalMessageSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalMessageSet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalMessageSet"
 
-noncomputable def toField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.toField"
 
-noncomputable def toPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.toPointer"
 
-noncomputable def toAddrPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toAddrPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.toAddrPointer"
 
-noncomputable def valToPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def valToPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.valToPointer"
 
-noncomputable def atomicLoadUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadUnmarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicLoadUnmarshalInfo"
 
-noncomputable def atomicStoreUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreUnmarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicStoreUnmarshalInfo"
 
-noncomputable def atomicLoadMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadMarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicLoadMarshalInfo"
 
-noncomputable def atomicStoreMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreMarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicStoreMarshalInfo"
 
-noncomputable def atomicLoadMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadMergeInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicLoadMergeInfo"
 
-noncomputable def atomicStoreMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreMergeInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicStoreMergeInfo"
 
-noncomputable def atomicLoadDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicLoadDiscardInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicLoadDiscardInfo"
 
-noncomputable def atomicStoreDiscardInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atomicStoreDiscardInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.atomicStoreDiscardInfo"
 
-noncomputable def GetProperties [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GetProperties [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.GetProperties"
 
-noncomputable def getPropertiesLocked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPropertiesLocked [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getPropertiesLocked"
 
-noncomputable def RegisterEnum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterEnum [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterEnum"
 
-noncomputable def EnumValueMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EnumValueMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.EnumValueMap"
 
-noncomputable def RegisterType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterType"
 
-noncomputable def RegisterMapType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterMapType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterMapType"
 
-noncomputable def MessageName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MessageName"
 
-noncomputable def MessageType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MessageType"
 
-noncomputable def RegisterFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RegisterFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.RegisterFile"
 
-noncomputable def FileDescriptor [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileDescriptor [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.FileDescriptor"
 
-noncomputable def Skip [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Skip [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Skip"
 
-noncomputable def getMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getMarshalInfo"
 
-noncomputable def getMessageMarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMessageMarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getMessageMarshalInfo"
 
-noncomputable def wiretype [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wiretype [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.wiretype"
 
-noncomputable def typeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.typeMarshaler"
 
-noncomputable def sizeFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Value"
 
-noncomputable def sizeFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32ValueNoZero"
 
-noncomputable def sizeFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Ptr"
 
-noncomputable def sizeFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32Slice"
 
-noncomputable def sizeFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed32PackedSlice"
 
-noncomputable def sizeFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Value"
 
-noncomputable def sizeFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32ValueNoZero"
 
-noncomputable def sizeFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Ptr"
 
-noncomputable def sizeFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32Slice"
 
-noncomputable def sizeFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS32PackedSlice"
 
-noncomputable def sizeFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Value"
 
-noncomputable def sizeFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32ValueNoZero"
 
-noncomputable def sizeFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Ptr"
 
-noncomputable def sizeFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32Slice"
 
-noncomputable def sizeFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat32PackedSlice"
 
-noncomputable def sizeFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Value"
 
-noncomputable def sizeFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64ValueNoZero"
 
-noncomputable def sizeFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Ptr"
 
-noncomputable def sizeFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64Slice"
 
-noncomputable def sizeFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixed64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixed64PackedSlice"
 
-noncomputable def sizeFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Value"
 
-noncomputable def sizeFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64ValueNoZero"
 
-noncomputable def sizeFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Ptr"
 
-noncomputable def sizeFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64Slice"
 
-noncomputable def sizeFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFixedS64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFixedS64PackedSlice"
 
-noncomputable def sizeFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Value"
 
-noncomputable def sizeFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64ValueNoZero"
 
-noncomputable def sizeFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Ptr"
 
-noncomputable def sizeFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64Slice"
 
-noncomputable def sizeFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeFloat64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeFloat64PackedSlice"
 
-noncomputable def sizeVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Value"
 
-noncomputable def sizeVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32ValueNoZero"
 
-noncomputable def sizeVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Ptr"
 
-noncomputable def sizeVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32Slice"
 
-noncomputable def sizeVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint32PackedSlice"
 
-noncomputable def sizeVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Value"
 
-noncomputable def sizeVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32ValueNoZero"
 
-noncomputable def sizeVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Ptr"
 
-noncomputable def sizeVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32Slice"
 
-noncomputable def sizeVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS32PackedSlice"
 
-noncomputable def sizeVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Value"
 
-noncomputable def sizeVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64ValueNoZero"
 
-noncomputable def sizeVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Ptr"
 
-noncomputable def sizeVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64Slice"
 
-noncomputable def sizeVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarint64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarint64PackedSlice"
 
-noncomputable def sizeVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Value"
 
-noncomputable def sizeVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64ValueNoZero"
 
-noncomputable def sizeVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Ptr"
 
-noncomputable def sizeVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64Slice"
 
-noncomputable def sizeVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeVarintS64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeVarintS64PackedSlice"
 
-noncomputable def sizeZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Value"
 
-noncomputable def sizeZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32ValueNoZero"
 
-noncomputable def sizeZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Ptr"
 
-noncomputable def sizeZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32Slice"
 
-noncomputable def sizeZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag32PackedSlice"
 
-noncomputable def sizeZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Value"
 
-noncomputable def sizeZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64ValueNoZero"
 
-noncomputable def sizeZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Ptr"
 
-noncomputable def sizeZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64Slice"
 
-noncomputable def sizeZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeZigzag64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeZigzag64PackedSlice"
 
-noncomputable def sizeBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBoolValue"
 
-noncomputable def sizeBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBoolValueNoZero"
 
-noncomputable def sizeBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBoolPtr"
 
-noncomputable def sizeBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBoolSlice"
 
-noncomputable def sizeBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBoolPackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBoolPackedSlice"
 
-noncomputable def sizeStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeStringValue"
 
-noncomputable def sizeStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeStringValueNoZero"
 
-noncomputable def sizeStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeStringPtr"
 
-noncomputable def sizeStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeStringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeStringSlice"
 
-noncomputable def sizeBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBytes"
 
-noncomputable def sizeBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytes3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBytes3"
 
-noncomputable def sizeBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytesOneof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBytesOneof"
 
-noncomputable def sizeBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sizeBytesSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.sizeBytesSlice"
 
-noncomputable def appendFixed32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32"
 
-noncomputable def appendFixed64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64"
 
-noncomputable def appendVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint"
 
-noncomputable def appendFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Value"
 
-noncomputable def appendFixed32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32ValueNoZero"
 
-noncomputable def appendFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Ptr"
 
-noncomputable def appendFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32Slice"
 
-noncomputable def appendFixed32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed32PackedSlice"
 
-noncomputable def appendFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Value"
 
-noncomputable def appendFixedS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32ValueNoZero"
 
-noncomputable def appendFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Ptr"
 
-noncomputable def appendFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32Slice"
 
-noncomputable def appendFixedS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS32PackedSlice"
 
-noncomputable def appendFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Value"
 
-noncomputable def appendFloat32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat32ValueNoZero"
 
-noncomputable def appendFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Ptr"
 
-noncomputable def appendFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat32Slice"
 
-noncomputable def appendFloat32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat32PackedSlice"
 
-noncomputable def appendFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Value"
 
-noncomputable def appendFixed64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64ValueNoZero"
 
-noncomputable def appendFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Ptr"
 
-noncomputable def appendFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64Slice"
 
-noncomputable def appendFixed64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixed64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixed64PackedSlice"
 
-noncomputable def appendFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Value"
 
-noncomputable def appendFixedS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64ValueNoZero"
 
-noncomputable def appendFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Ptr"
 
-noncomputable def appendFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64Slice"
 
-noncomputable def appendFixedS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFixedS64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFixedS64PackedSlice"
 
-noncomputable def appendFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Value"
 
-noncomputable def appendFloat64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat64ValueNoZero"
 
-noncomputable def appendFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Ptr"
 
-noncomputable def appendFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat64Slice"
 
-noncomputable def appendFloat64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendFloat64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendFloat64PackedSlice"
 
-noncomputable def appendVarint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Value"
 
-noncomputable def appendVarint32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint32ValueNoZero"
 
-noncomputable def appendVarint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Ptr"
 
-noncomputable def appendVarint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint32Slice"
 
-noncomputable def appendVarint32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint32PackedSlice"
 
-noncomputable def appendVarintS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Value"
 
-noncomputable def appendVarintS32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32ValueNoZero"
 
-noncomputable def appendVarintS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Ptr"
 
-noncomputable def appendVarintS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32Slice"
 
-noncomputable def appendVarintS32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS32PackedSlice"
 
-noncomputable def appendVarint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Value"
 
-noncomputable def appendVarint64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint64ValueNoZero"
 
-noncomputable def appendVarint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Ptr"
 
-noncomputable def appendVarint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint64Slice"
 
-noncomputable def appendVarint64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarint64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarint64PackedSlice"
 
-noncomputable def appendVarintS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Value"
 
-noncomputable def appendVarintS64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64ValueNoZero"
 
-noncomputable def appendVarintS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Ptr"
 
-noncomputable def appendVarintS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64Slice"
 
-noncomputable def appendVarintS64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendVarintS64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendVarintS64PackedSlice"
 
-noncomputable def appendZigzag32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Value"
 
-noncomputable def appendZigzag32ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32ValueNoZero"
 
-noncomputable def appendZigzag32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Ptr"
 
-noncomputable def appendZigzag32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32Slice"
 
-noncomputable def appendZigzag32PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag32PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag32PackedSlice"
 
-noncomputable def appendZigzag64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Value"
 
-noncomputable def appendZigzag64ValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64ValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64ValueNoZero"
 
-noncomputable def appendZigzag64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Ptr"
 
-noncomputable def appendZigzag64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64Slice"
 
-noncomputable def appendZigzag64PackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZigzag64PackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendZigzag64PackedSlice"
 
-noncomputable def appendBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBoolValue"
 
-noncomputable def appendBoolValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBoolValueNoZero"
 
-noncomputable def appendBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBoolPtr"
 
-noncomputable def appendBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBoolSlice"
 
-noncomputable def appendBoolPackedSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBoolPackedSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBoolPackedSlice"
 
-noncomputable def appendStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendStringValue"
 
-noncomputable def appendStringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendStringValueNoZero"
 
-noncomputable def appendStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendStringPtr"
 
-noncomputable def appendStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendStringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendStringSlice"
 
-noncomputable def appendUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringValue"
 
-noncomputable def appendUTF8StringValueNoZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringValueNoZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringValueNoZero"
 
-noncomputable def appendUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringPtr"
 
-noncomputable def appendUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendUTF8StringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendUTF8StringSlice"
 
-noncomputable def appendBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBytes"
 
-noncomputable def appendBytes3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytes3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBytes3"
 
-noncomputable def appendBytesOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytesOneof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBytesOneof"
 
-noncomputable def appendBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendBytesSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.appendBytesSlice"
 
-noncomputable def makeGroupMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGroupMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeGroupMarshaler"
 
-noncomputable def makeGroupSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeGroupSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeGroupSliceMarshaler"
 
-noncomputable def makeMessageMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeMessageMarshaler"
 
-noncomputable def makeMessageSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeMessageSliceMarshaler"
 
-noncomputable def makeMapMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMapMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeMapMarshaler"
 
-noncomputable def makeOneOfMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeOneOfMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeOneOfMarshaler"
 
-noncomputable def Size [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Size [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Size"
 
-noncomputable def Marshal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Marshal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.Marshal"
 
-noncomputable def makeMessageRefMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageRefMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeMessageRefMarshaler"
 
-noncomputable def makeMessageRefSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeMessageRefSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeMessageRefSliceMarshaler"
 
-noncomputable def makeCustomPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeCustomPtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeCustomPtrMarshaler"
 
-noncomputable def makeCustomMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeCustomMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeCustomMarshaler"
 
-noncomputable def makeTimeMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimeMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeTimeMarshaler"
 
-noncomputable def makeTimePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeTimePtrMarshaler"
 
-noncomputable def makeTimeSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimeSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeTimeSliceMarshaler"
 
-noncomputable def makeTimePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeTimePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeTimePtrSliceMarshaler"
 
-noncomputable def makeDurationMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeDurationMarshaler"
 
-noncomputable def makeDurationPtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationPtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeDurationPtrMarshaler"
 
-noncomputable def makeDurationSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeDurationSliceMarshaler"
 
-noncomputable def makeDurationPtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeDurationPtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeDurationPtrSliceMarshaler"
 
-noncomputable def getMergeInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getMergeInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getMergeInfo"
 
-noncomputable def getUnmarshalInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getUnmarshalInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.getUnmarshalInfo"
 
-noncomputable def fieldUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fieldUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.fieldUnmarshaler"
 
-noncomputable def typeUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.typeUnmarshaler"
 
-noncomputable def unmarshalInt64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Value"
 
-noncomputable def unmarshalInt64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Ptr"
 
-noncomputable def unmarshalInt64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt64Slice"
 
-noncomputable def unmarshalSint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Value"
 
-noncomputable def unmarshalSint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Ptr"
 
-noncomputable def unmarshalSint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint64Slice"
 
-noncomputable def unmarshalUint64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Value"
 
-noncomputable def unmarshalUint64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Ptr"
 
-noncomputable def unmarshalUint64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint64Slice"
 
-noncomputable def unmarshalInt32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Value"
 
-noncomputable def unmarshalInt32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Ptr"
 
-noncomputable def unmarshalInt32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalInt32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalInt32Slice"
 
-noncomputable def unmarshalSint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Value"
 
-noncomputable def unmarshalSint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Ptr"
 
-noncomputable def unmarshalSint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalSint32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalSint32Slice"
 
-noncomputable def unmarshalUint32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Value"
 
-noncomputable def unmarshalUint32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Ptr"
 
-noncomputable def unmarshalUint32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUint32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUint32Slice"
 
-noncomputable def unmarshalFixed64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Value"
 
-noncomputable def unmarshalFixed64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Ptr"
 
-noncomputable def unmarshalFixed64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed64Slice"
 
-noncomputable def unmarshalFixedS64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Value"
 
-noncomputable def unmarshalFixedS64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Ptr"
 
-noncomputable def unmarshalFixedS64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS64Slice"
 
-noncomputable def unmarshalFixed32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Value"
 
-noncomputable def unmarshalFixed32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Ptr"
 
-noncomputable def unmarshalFixed32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixed32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixed32Slice"
 
-noncomputable def unmarshalFixedS32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Value"
 
-noncomputable def unmarshalFixedS32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Ptr"
 
-noncomputable def unmarshalFixedS32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFixedS32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFixedS32Slice"
 
-noncomputable def unmarshalBoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolValue"
 
-noncomputable def unmarshalBoolPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolPtr"
 
-noncomputable def unmarshalBoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBoolSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalBoolSlice"
 
-noncomputable def unmarshalFloat64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Value"
 
-noncomputable def unmarshalFloat64Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Ptr"
 
-noncomputable def unmarshalFloat64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat64Slice"
 
-noncomputable def unmarshalFloat32Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Value"
 
-noncomputable def unmarshalFloat32Ptr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Ptr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Ptr"
 
-noncomputable def unmarshalFloat32Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalFloat32Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalFloat32Slice"
 
-noncomputable def unmarshalStringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringValue"
 
-noncomputable def unmarshalStringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringPtr"
 
-noncomputable def unmarshalStringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalStringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalStringSlice"
 
-noncomputable def unmarshalUTF8StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringValue"
 
-noncomputable def unmarshalUTF8StringPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringPtr"
 
-noncomputable def unmarshalUTF8StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalUTF8StringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalUTF8StringSlice"
 
-noncomputable def unmarshalBytesValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBytesValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalBytesValue"
 
-noncomputable def unmarshalBytesSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unmarshalBytesSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unmarshalBytesSlice"
 
-noncomputable def makeUnmarshalMessagePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessagePtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessagePtr"
 
-noncomputable def makeUnmarshalMessageSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessageSlicePtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessageSlicePtr"
 
-noncomputable def makeUnmarshalGroupPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalGroupPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalGroupPtr"
 
-noncomputable def makeUnmarshalGroupSlicePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalGroupSlicePtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalGroupSlicePtr"
 
-noncomputable def makeUnmarshalMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMap"
 
-noncomputable def makeUnmarshalOneof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalOneof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalOneof"
 
-noncomputable def skipField [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipField [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.skipField"
 
-noncomputable def findEndGroup [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findEndGroup [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.findEndGroup"
 
-noncomputable def encodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.encodeVarint"
 
-noncomputable def decodeVarint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def decodeVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.decodeVarint"
 
-noncomputable def makeUnmarshalMessage [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessage [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessage"
 
-noncomputable def makeUnmarshalMessageSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalMessageSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalMessageSlice"
 
-noncomputable def makeUnmarshalCustomPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustomPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustomPtr"
 
-noncomputable def makeUnmarshalCustomSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustomSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustomSlice"
 
-noncomputable def makeUnmarshalCustom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalCustom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalCustom"
 
-noncomputable def makeUnmarshalTime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTime [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTime"
 
-noncomputable def makeUnmarshalTimePtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimePtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimePtr"
 
-noncomputable def makeUnmarshalTimePtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimePtrSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimePtrSlice"
 
-noncomputable def makeUnmarshalTimeSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalTimeSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalTimeSlice"
 
-noncomputable def makeUnmarshalDurationPtr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationPtr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationPtr"
 
-noncomputable def makeUnmarshalDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDuration [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDuration"
 
-noncomputable def makeUnmarshalDurationPtrSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationPtrSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationPtrSlice"
 
-noncomputable def makeUnmarshalDurationSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeUnmarshalDurationSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeUnmarshalDurationSlice"
 
-noncomputable def writeName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.writeName"
 
-noncomputable def requiresQuotes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def requiresQuotes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.requiresQuotes"
 
-noncomputable def isAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isAny"
 
-noncomputable def isprint [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isprint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isprint"
 
-noncomputable def writeString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.writeString"
 
-noncomputable def writeUnknownStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeUnknownStruct [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.writeUnknownStruct"
 
-noncomputable def writeUnknownInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeUnknownInt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.writeUnknownInt"
 
-noncomputable def MarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalText [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MarshalText"
 
-noncomputable def MarshalTextString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalTextString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.MarshalTextString"
 
-noncomputable def CompactText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompactText [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.CompactText"
 
-noncomputable def CompactTextString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CompactTextString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.CompactTextString"
 
-noncomputable def newTextParser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newTextParser [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.newTextParser"
 
-noncomputable def isIdentOrNumberChar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isIdentOrNumberChar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isIdentOrNumberChar"
 
-noncomputable def isWhitespace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isWhitespace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isWhitespace"
 
-noncomputable def isQuote [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isQuote [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.isQuote"
 
-noncomputable def unquoteC [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unquoteC [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unquoteC"
 
-noncomputable def unescape [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unescape [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.unescape"
 
-noncomputable def structFieldByName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def structFieldByName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.structFieldByName"
 
-noncomputable def UnmarshalText [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UnmarshalText [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.UnmarshalText"
 
-noncomputable def validateTimestamp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateTimestamp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.validateTimestamp"
 
-noncomputable def timestampFromProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timestampFromProto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.timestampFromProto"
 
-noncomputable def timestampProto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timestampProto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.timestampProto"
 
-noncomputable def makeStdDoubleValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueMarshaler"
 
-noncomputable def makeStdDoubleValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrMarshaler"
 
-noncomputable def makeStdDoubleValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueSliceMarshaler"
 
-noncomputable def makeStdDoubleValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrSliceMarshaler"
 
-noncomputable def makeStdDoubleValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueUnmarshaler"
 
-noncomputable def makeStdDoubleValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrUnmarshaler"
 
-noncomputable def makeStdDoubleValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdDoubleValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdDoubleValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdDoubleValueSliceUnmarshaler"
 
-noncomputable def makeStdFloatValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueMarshaler"
 
-noncomputable def makeStdFloatValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrMarshaler"
 
-noncomputable def makeStdFloatValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueSliceMarshaler"
 
-noncomputable def makeStdFloatValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrSliceMarshaler"
 
-noncomputable def makeStdFloatValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueUnmarshaler"
 
-noncomputable def makeStdFloatValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrUnmarshaler"
 
-noncomputable def makeStdFloatValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdFloatValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdFloatValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdFloatValueSliceUnmarshaler"
 
-noncomputable def makeStdInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueMarshaler"
 
-noncomputable def makeStdInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrMarshaler"
 
-noncomputable def makeStdInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueSliceMarshaler"
 
-noncomputable def makeStdInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrSliceMarshaler"
 
-noncomputable def makeStdInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueUnmarshaler"
 
-noncomputable def makeStdInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrUnmarshaler"
 
-noncomputable def makeStdInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt64ValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt64ValueSliceUnmarshaler"
 
-noncomputable def makeStdUInt64ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueMarshaler"
 
-noncomputable def makeStdUInt64ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrMarshaler"
 
-noncomputable def makeStdUInt64ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueSliceMarshaler"
 
-noncomputable def makeStdUInt64ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrSliceMarshaler"
 
-noncomputable def makeStdUInt64ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueUnmarshaler"
 
-noncomputable def makeStdUInt64ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrUnmarshaler"
 
-noncomputable def makeStdUInt64ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdUInt64ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt64ValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt64ValueSliceUnmarshaler"
 
-noncomputable def makeStdInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueMarshaler"
 
-noncomputable def makeStdInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrMarshaler"
 
-noncomputable def makeStdInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueSliceMarshaler"
 
-noncomputable def makeStdInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrSliceMarshaler"
 
-noncomputable def makeStdInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueUnmarshaler"
 
-noncomputable def makeStdInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrUnmarshaler"
 
-noncomputable def makeStdInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdInt32ValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdInt32ValueSliceUnmarshaler"
 
-noncomputable def makeStdUInt32ValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueMarshaler"
 
-noncomputable def makeStdUInt32ValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrMarshaler"
 
-noncomputable def makeStdUInt32ValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueSliceMarshaler"
 
-noncomputable def makeStdUInt32ValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrSliceMarshaler"
 
-noncomputable def makeStdUInt32ValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueUnmarshaler"
 
-noncomputable def makeStdUInt32ValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrUnmarshaler"
 
-noncomputable def makeStdUInt32ValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdUInt32ValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdUInt32ValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdUInt32ValueSliceUnmarshaler"
 
-noncomputable def makeStdBoolValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueMarshaler"
 
-noncomputable def makeStdBoolValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrMarshaler"
 
-noncomputable def makeStdBoolValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueSliceMarshaler"
 
-noncomputable def makeStdBoolValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrSliceMarshaler"
 
-noncomputable def makeStdBoolValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueUnmarshaler"
 
-noncomputable def makeStdBoolValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrUnmarshaler"
 
-noncomputable def makeStdBoolValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdBoolValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBoolValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBoolValueSliceUnmarshaler"
 
-noncomputable def makeStdStringValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueMarshaler"
 
-noncomputable def makeStdStringValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrMarshaler"
 
-noncomputable def makeStdStringValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueSliceMarshaler"
 
-noncomputable def makeStdStringValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrSliceMarshaler"
 
-noncomputable def makeStdStringValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueUnmarshaler"
 
-noncomputable def makeStdStringValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrUnmarshaler"
 
-noncomputable def makeStdStringValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdStringValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdStringValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdStringValueSliceUnmarshaler"
 
-noncomputable def makeStdBytesValueMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueMarshaler"
 
-noncomputable def makeStdBytesValuePtrMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrMarshaler"
 
-noncomputable def makeStdBytesValueSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueSliceMarshaler"
 
-noncomputable def makeStdBytesValuePtrSliceMarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrSliceMarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrSliceMarshaler"
 
-noncomputable def makeStdBytesValueUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueUnmarshaler"
 
-noncomputable def makeStdBytesValuePtrUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrUnmarshaler"
 
-noncomputable def makeStdBytesValuePtrSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValuePtrSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValuePtrSliceUnmarshaler"
 
-noncomputable def makeStdBytesValueSliceUnmarshaler [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeStdBytesValueSliceUnmarshaler [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/gogo/protobuf/proto.makeStdBytesValueSliceUnmarshaler"
 
 instance info' : PkgInfo pkg_id.github_com.gogo.protobuf.proto where
-  pkg_imported_pkgs := [pkg_id.io, pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.io, pkg_id.sync]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.gogo.protobuf.proto)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val timeType'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errBadUTF8'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val compactTextMarshaler'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val defaultTextMarshaler'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val textMarshalerType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val nan'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val negInf'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val posInf'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val backslashBS'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val backslashDQ'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val backslashT'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val backslashR'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val backslashN'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val endBraceNewline'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val spaces'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val newline'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errInternalBadWireType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val unmarshalInfoMap'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val mergeInfoMap'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uint8SliceType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val marshalInfoMap'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val protosizerType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val sizerType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val protoFiles'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val revProtoTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val protoMapTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val protoTypedNils'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val enumStringMaps'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val enumValueMaps'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val propertiesMap'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val marshalerType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val protoMessageType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ptrSize'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errNoMessageTypeID'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val int32PtrType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val defaults'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errInvalidUTF8'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val extensionMaps'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val extProp'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errNotExtendable'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrMissingExtension'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrTooLarge'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrNil'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errOneofHasNil'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errRepeatedHasNil'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val durationType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val discardInfoMap'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrInternalBadWireType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errOverflow'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val customType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.io.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
 namespace Merger
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Merger
 
-@[reducible] def «Mergerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Merge" (go.signature.Signature [Message] false []))])
+@[reducible] def «Mergerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Merge" (go.signature.Signature [Message] false []))])
 
-class Merger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Merger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Merger_underlying : go.UnderlyingDirectedEq Merger «Mergerⁱᵐᵖˡ»
 
 attribute [instance] Merger_Assumptions.Merger_underlying
 
 namespace generatedMerger
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end generatedMerger
 
-@[reducible] def «generatedMergerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_Merge" (go.signature.Signature [Message] false []))])
+@[reducible] def «generatedMergerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_Merge" (go.signature.Signature [Message] false []))])
 
-class generatedMerger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class generatedMerger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   generatedMerger_underlying : go.UnderlyingDirectedEq generatedMerger «generatedMergerⁱᵐᵖˡ»
 
 attribute [instance] generatedMerger_Assumptions.generatedMerger_underlying
 
 namespace custom
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end custom
 
-@[reducible] def «customⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Marshal" (go.signature.Signature [] false [(go.type.SliceType go.byte), go.error])), (go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.interface_elem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.error]))])
+@[reducible] def «customⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Marshal" (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))])
 
-class custom_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class custom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   custom_underlying : go.UnderlyingDirectedEq custom «customⁱᵐᵖˡ»
 
 attribute [instance] custom_Assumptions.custom_underlying
 
 namespace Unmarshaler
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Unmarshaler
 
-@[reducible] def «Unmarshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.error]))])
+@[reducible] def «Unmarshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unmarshal" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))])
 
-class Unmarshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Unmarshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Unmarshaler_underlying : go.UnderlyingDirectedEq Unmarshaler «Unmarshalerⁱᵐᵖˡ»
 
 attribute [instance] Unmarshaler_Assumptions.Unmarshaler_underlying
 
 namespace newUnmarshaler
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end newUnmarshaler
 
-@[reducible] def «newUnmarshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_Unmarshal" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.error]))])
+@[reducible] def «newUnmarshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_Unmarshal" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))])
 
-class newUnmarshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class newUnmarshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   newUnmarshaler_underlying : go.UnderlyingDirectedEq newUnmarshaler «newUnmarshalerⁱᵐᵖˡ»
 
 attribute [instance] newUnmarshaler_Assumptions.newUnmarshaler_underlying
 
 namespace Stats
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Emalloc' : w64
   Dmalloc' : w64
@@ -2341,11 +2341,11 @@ structure t [ffi_syntax] where
   Cmiss' : w64
   Size' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Stats
 
-@[reducible] def Stats'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Stats'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Emalloc" go.uint64),
 (go.field_decl.FieldDecl go!"Dmalloc" go.uint64),
 (go.field_decl.FieldDecl go!"Encode" go.uint64),
@@ -2354,17 +2354,17 @@ end Stats
 (go.field_decl.FieldDecl go!"Cmiss" go.uint64),
 (go.field_decl.FieldDecl go!"Size" go.uint64)]
 
-@[irreducible] def Stats'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Stats'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Stats'fds_unsealed
 
-instance equals_unfold_Stats [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Stats [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Stats'fds Stats'fds_unsealed :=
   ⟨by unfold Stats'fds; rfl⟩
 
-@[reducible] def «Statsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Stats'fds)
+@[reducible] def «Statsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Stats'fds)
 
-class Stats_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Stats_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Stats_type_repr : go.TypeReprUnderlying «Statsⁱᵐᵖˡ» Stats.t
   Stats_underlying : go.UnderlyingDirectedEq Stats «Statsⁱᵐᵖˡ»
   Stats_get_Emalloc : ∀ (x : Stats.t), go.IsGoStepPureDetTagged under (StructFieldGet «Statsⁱᵐᵖˡ» go!"Emalloc") #x (Val #(x.Emalloc'))
@@ -2400,13 +2400,13 @@ attribute [instance] Stats_Assumptions.Stats_type_repr
   Stats_Assumptions.Stats_set_Size
 
 namespace generatedDiscarder
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end generatedDiscarder
 
-@[reducible] def «generatedDiscarderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_DiscardUnknown" (go.signature.Signature [] false []))])
+@[reducible] def «generatedDiscarderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_DiscardUnknown" (go.signature.Signature [] false []))])
 
-class generatedDiscarder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class generatedDiscarder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   generatedDiscarder_underlying : go.UnderlyingDirectedEq generatedDiscarder «generatedDiscarderⁱᵐᵖˡ»
 
 attribute [instance] generatedDiscarder_Assumptions.generatedDiscarder_underlying
@@ -2417,7 +2417,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end discardInfo
 
-class discardInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class discardInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   discardInfo_type_repr : go.TypeReprUnderlying «discardInfoⁱᵐᵖˡ» discardInfo.t
   discardInfo_underlying : go.UnderlyingDirectedEq discardInfo «discardInfoⁱᵐᵖˡ»
   «discardInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «discardInfoⁱᵐᵖˡ» «discardInfoⁱᵐᵖˡ»
@@ -2427,42 +2427,42 @@ attribute [instance] discardInfo_Assumptions.discardInfo_type_repr
   discardInfo_Assumptions.«discardInfoⁱᵐᵖˡ_underlying»
 
 namespace field
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end field
 
-@[reducible] def «fieldⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «fieldⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uintptr
 
-class field_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class field_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   field_underlying : go.UnderlyingDirectedEq field «fieldⁱᵐᵖˡ»
 
 attribute [instance] field_Assumptions.field_underlying
 
 namespace discardFieldInfo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   field' : field.t
   discard' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end discardFieldInfo
 
-@[reducible] def discardFieldInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def discardFieldInfo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" field),
-(go.field_decl.FieldDecl go!"discard" (go.type.FunctionType (go.signature.Signature [pointer] false [])))]
+(go.field_decl.FieldDecl go!"discard" (go.GoType.FunctionType (go.signature.Signature [pointer] false [])))]
 
-@[irreducible] def discardFieldInfo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def discardFieldInfo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   discardFieldInfo'fds_unsealed
 
-instance equals_unfold_discardFieldInfo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_discardFieldInfo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold discardFieldInfo'fds discardFieldInfo'fds_unsealed :=
   ⟨by unfold discardFieldInfo'fds; rfl⟩
 
-@[reducible] def «discardFieldInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType discardFieldInfo'fds)
+@[reducible] def «discardFieldInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType discardFieldInfo'fds)
 
-class discardFieldInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class discardFieldInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   discardFieldInfo_type_repr : go.TypeReprUnderlying «discardFieldInfoⁱᵐᵖˡ» discardFieldInfo.t
   discardFieldInfo_underlying : go.UnderlyingDirectedEq discardFieldInfo «discardFieldInfoⁱᵐᵖˡ»
   discardFieldInfo_get_field : ∀ (x : discardFieldInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «discardFieldInfoⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
@@ -2478,30 +2478,30 @@ attribute [instance] discardFieldInfo_Assumptions.discardFieldInfo_type_repr
   discardFieldInfo_Assumptions.discardFieldInfo_set_discard
 
 namespace duration
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Seconds' : w64
   Nanos' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end duration
 
-@[reducible] def duration'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def duration'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Seconds" go.int64),
 (go.field_decl.FieldDecl go!"Nanos" go.int32)]
 
-@[irreducible] def duration'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def duration'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   duration'fds_unsealed
 
-instance equals_unfold_duration [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_duration [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold duration'fds duration'fds_unsealed :=
   ⟨by unfold duration'fds; rfl⟩
 
-@[reducible] def «durationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType duration'fds)
+@[reducible] def «durationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType duration'fds)
 
-class duration_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class duration_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   duration_type_repr : go.TypeReprUnderlying «durationⁱᵐᵖˡ» duration.t
   duration_underlying : go.UnderlyingDirectedEq duration «durationⁱᵐᵖˡ»
   duration_get_Seconds : ∀ (x : duration.t), go.IsGoStepPureDetTagged under (StructFieldGet «durationⁱᵐᵖˡ» go!"Seconds") #x (Val #(x.Seconds'))
@@ -2517,42 +2517,42 @@ attribute [instance] duration_Assumptions.duration_type_repr
   duration_Assumptions.duration_set_Nanos
 
 namespace Marshaler
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Marshaler
 
-@[reducible] def «Marshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Marshal" (go.signature.Signature [] false [(go.type.SliceType go.byte), go.error]))])
+@[reducible] def «Marshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Marshal" (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))])
 
-class Marshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Marshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Marshaler_underlying : go.UnderlyingDirectedEq Marshaler «Marshalerⁱᵐᵖˡ»
 
 attribute [instance] Marshaler_Assumptions.Marshaler_underlying
 
 namespace ExtensionRange
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Start' : w32
   End' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end ExtensionRange
 
-@[reducible] def ExtensionRange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ExtensionRange'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Start" go.int32),
 (go.field_decl.FieldDecl go!"End" go.int32)]
 
-@[irreducible] def ExtensionRange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ExtensionRange'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ExtensionRange'fds_unsealed
 
-instance equals_unfold_ExtensionRange [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ExtensionRange [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ExtensionRange'fds ExtensionRange'fds_unsealed :=
   ⟨by unfold ExtensionRange'fds; rfl⟩
 
-@[reducible] def «ExtensionRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ExtensionRange'fds)
+@[reducible] def «ExtensionRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ExtensionRange'fds)
 
-class ExtensionRange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ExtensionRange_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ExtensionRange_type_repr : go.TypeReprUnderlying «ExtensionRangeⁱᵐᵖˡ» ExtensionRange.t
   ExtensionRange_underlying : go.UnderlyingDirectedEq ExtensionRange «ExtensionRangeⁱᵐᵖˡ»
   ExtensionRange_get_Start : ∀ (x : ExtensionRange.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionRangeⁱᵐᵖˡ» go!"Start") #x (Val #(x.Start'))
@@ -2568,52 +2568,52 @@ attribute [instance] ExtensionRange_Assumptions.ExtensionRange_type_repr
   ExtensionRange_Assumptions.ExtensionRange_set_End
 
 namespace extendableProto
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end extendableProto
 
-@[reducible] def «extendableProtoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.type.SliceType ExtensionRange)])), (go.interface_elem.MethodElem go!"extensionsRead" (go.signature.Signature [] false [(go.type.MapType go.int32 Extension), _root_.Perennial.sync.Locker])), (go.interface_elem.MethodElem go!"extensionsWrite" (go.signature.Signature [] false [(go.type.MapType go.int32 Extension)])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Message)])])
+@[reducible] def «extendableProtoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.GoType.SliceType ExtensionRange)])), (go.InterfaceElem.MethodElem go!"extensionsRead" (go.signature.Signature [] false [(go.GoType.MapType go.int32 Extension), _root_.Perennial.sync.Locker])), (go.InterfaceElem.MethodElem go!"extensionsWrite" (go.signature.Signature [] false [(go.GoType.MapType go.int32 Extension)])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Message)])])
 
-class extendableProto_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class extendableProto_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   extendableProto_underlying : go.UnderlyingDirectedEq extendableProto «extendableProtoⁱᵐᵖˡ»
 
 attribute [instance] extendableProto_Assumptions.extendableProto_underlying
 
 namespace extendableProtoV1
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end extendableProtoV1
 
-@[reducible] def «extendableProtoV1ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ExtensionMap" (go.signature.Signature [] false [(go.type.MapType go.int32 Extension)])), (go.interface_elem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.type.SliceType ExtensionRange)])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Message)])])
+@[reducible] def «extendableProtoV1ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ExtensionMap" (go.signature.Signature [] false [(go.GoType.MapType go.int32 Extension)])), (go.InterfaceElem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.GoType.SliceType ExtensionRange)])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Message)])])
 
-class extendableProtoV1_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class extendableProtoV1_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   extendableProtoV1_underlying : go.UnderlyingDirectedEq extendableProtoV1 «extendableProtoV1ⁱᵐᵖˡ»
 
 attribute [instance] extendableProtoV1_Assumptions.extendableProtoV1_underlying
 
 namespace extensionAdapter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   extendableProtoV1' : extendableProtoV1.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end extensionAdapter
 
-@[reducible] def extensionAdapter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def extensionAdapter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"extendableProtoV1" extendableProtoV1)]
 
-@[irreducible] def extensionAdapter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def extensionAdapter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   extensionAdapter'fds_unsealed
 
-instance equals_unfold_extensionAdapter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_extensionAdapter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold extensionAdapter'fds extensionAdapter'fds_unsealed :=
   ⟨by unfold extensionAdapter'fds; rfl⟩
 
-@[reducible] def «extensionAdapterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType extensionAdapter'fds)
+@[reducible] def «extensionAdapterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType extensionAdapter'fds)
 
-class extensionAdapter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class extensionAdapter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   extensionAdapter_type_repr : go.TypeReprUnderlying «extensionAdapterⁱᵐᵖˡ» extensionAdapter.t
   extensionAdapter_underlying : go.UnderlyingDirectedEq extensionAdapter «extensionAdapterⁱᵐᵖˡ»
   extensionAdapter_get_extendableProtoV1 : ∀ (x : extensionAdapter.t), go.IsGoStepPureDetTagged under (StructFieldGet «extensionAdapterⁱᵐᵖˡ» go!"extendableProtoV1") #x (Val #(x.extendableProtoV1'))
@@ -2625,27 +2625,27 @@ attribute [instance] extensionAdapter_Assumptions.extensionAdapter_type_repr
   extensionAdapter_Assumptions.extensionAdapter_set_extendableProtoV1
 
 namespace notLocker
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end notLocker
 
-@[reducible] def notLocker'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def notLocker'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def notLocker'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def notLocker'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   notLocker'fds_unsealed
 
-instance equals_unfold_notLocker [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_notLocker [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold notLocker'fds notLocker'fds_unsealed :=
   ⟨by unfold notLocker'fds; rfl⟩
 
-@[reducible] def «notLockerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType notLocker'fds)
+@[reducible] def «notLockerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType notLocker'fds)
 
-class notLocker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class notLocker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   notLocker_type_repr : go.TypeReprUnderlying «notLockerⁱᵐᵖˡ» notLocker.t
   notLocker_underlying : go.UnderlyingDirectedEq notLocker «notLockerⁱᵐᵖˡ»
 
@@ -2653,33 +2653,33 @@ attribute [instance] notLocker_Assumptions.notLocker_type_repr
   notLocker_Assumptions.notLocker_underlying
 
 namespace XXX_InternalExtensions
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  p' : loc
+  p' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end XXX_InternalExtensions
 
-@[reducible] def XXX_InternalExtensions'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"p" (go.type.PointerType (go.type.StructType [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
-(go.field_decl.FieldDecl go!"extensionMap" (go.type.MapType go.int32 Extension))])))]
+@[reducible] def XXX_InternalExtensions'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"p" (go.GoType.PointerType (go.GoType.StructType [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
+(go.field_decl.FieldDecl go!"extensionMap" (go.GoType.MapType go.int32 Extension))])))]
 
-@[irreducible] def XXX_InternalExtensions'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def XXX_InternalExtensions'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   XXX_InternalExtensions'fds_unsealed
 
-instance equals_unfold_XXX_InternalExtensions [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_XXX_InternalExtensions [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold XXX_InternalExtensions'fds XXX_InternalExtensions'fds_unsealed :=
   ⟨by unfold XXX_InternalExtensions'fds; rfl⟩
 
-@[reducible] def «XXX_InternalExtensionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType XXX_InternalExtensions'fds)
+@[reducible] def «XXX_InternalExtensionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType XXX_InternalExtensions'fds)
 
-class XXX_InternalExtensions_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class XXX_InternalExtensions_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   XXX_InternalExtensions_type_repr : go.TypeReprUnderlying «XXX_InternalExtensionsⁱᵐᵖˡ» XXX_InternalExtensions.t
   XXX_InternalExtensions_underlying : go.UnderlyingDirectedEq XXX_InternalExtensions «XXX_InternalExtensionsⁱᵐᵖˡ»
   XXX_InternalExtensions_get_p : ∀ (x : XXX_InternalExtensions.t), go.IsGoStepPureDetTagged under (StructFieldGet «XXX_InternalExtensionsⁱᵐᵖˡ» go!"p") #x (Val #(x.p'))
-  XXX_InternalExtensions_set_p : ∀ (x : XXX_InternalExtensions.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «XXX_InternalExtensionsⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : XXX_InternalExtensions.t)))
+  XXX_InternalExtensions_set_p : ∀ (x : XXX_InternalExtensions.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «XXX_InternalExtensionsⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : XXX_InternalExtensions.t)))
 
 attribute [instance] XXX_InternalExtensions_Assumptions.XXX_InternalExtensions_type_repr
   XXX_InternalExtensions_Assumptions.XXX_InternalExtensions_underlying
@@ -2687,50 +2687,50 @@ attribute [instance] XXX_InternalExtensions_Assumptions.XXX_InternalExtensions_t
   XXX_InternalExtensions_Assumptions.XXX_InternalExtensions_set_p
 
 namespace Message
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Message
 
-@[reducible] def «Messageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ProtoMessage" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"Reset" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
+@[reducible] def «Messageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ProtoMessage" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Reset" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class Message_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Message_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Message_underlying : go.UnderlyingDirectedEq Message «Messageⁱᵐᵖˡ»
 
 attribute [instance] Message_Assumptions.Message_underlying
 
 namespace ExtensionDesc
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ExtendedType' : Message.t
   ExtensionType' : interface.t
   Field' : w32
-  Name' : go_string
-  Tag' : go_string
-  Filename' : go_string
+  Name' : GoString
+  Tag' : GoString
+  Filename' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ExtensionDesc
 
-@[reducible] def ExtensionDesc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ExtensionDesc'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ExtendedType" Message),
-(go.field_decl.FieldDecl go!"ExtensionType" (go.type.InterfaceType [])),
+(go.field_decl.FieldDecl go!"ExtensionType" (go.GoType.InterfaceType [])),
 (go.field_decl.FieldDecl go!"Field" go.int32),
 (go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"Tag" go.string),
 (go.field_decl.FieldDecl go!"Filename" go.string)]
 
-@[irreducible] def ExtensionDesc'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ExtensionDesc'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ExtensionDesc'fds_unsealed
 
-instance equals_unfold_ExtensionDesc [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ExtensionDesc [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ExtensionDesc'fds ExtensionDesc'fds_unsealed :=
   ⟨by unfold ExtensionDesc'fds; rfl⟩
 
-@[reducible] def «ExtensionDescⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ExtensionDesc'fds)
+@[reducible] def «ExtensionDescⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ExtensionDesc'fds)
 
-class ExtensionDesc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ExtensionDesc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ExtensionDesc_type_repr : go.TypeReprUnderlying «ExtensionDescⁱᵐᵖˡ» ExtensionDesc.t
   ExtensionDesc_underlying : go.UnderlyingDirectedEq ExtensionDesc «ExtensionDescⁱᵐᵖˡ»
   ExtensionDesc_get_ExtendedType : ∀ (x : ExtensionDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionDescⁱᵐᵖˡ» go!"ExtendedType") #x (Val #(x.ExtendedType'))
@@ -2740,11 +2740,11 @@ class ExtensionDesc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] 
   ExtensionDesc_get_Field : ∀ (x : ExtensionDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionDescⁱᵐᵖˡ» go!"Field") #x (Val #(x.Field'))
   ExtensionDesc_set_Field : ∀ (x : ExtensionDesc.t) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Field") (PairV #x #y) (Val #(({ x with Field' := y } : ExtensionDesc.t)))
   ExtensionDesc_get_Name : ∀ (x : ExtensionDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionDescⁱᵐᵖˡ» go!"Name") #x (Val #(x.Name'))
-  ExtensionDesc_set_Name : ∀ (x : ExtensionDesc.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : ExtensionDesc.t)))
+  ExtensionDesc_set_Name : ∀ (x : ExtensionDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : ExtensionDesc.t)))
   ExtensionDesc_get_Tag : ∀ (x : ExtensionDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionDescⁱᵐᵖˡ» go!"Tag") #x (Val #(x.Tag'))
-  ExtensionDesc_set_Tag : ∀ (x : ExtensionDesc.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Tag") (PairV #x #y) (Val #(({ x with Tag' := y } : ExtensionDesc.t)))
+  ExtensionDesc_set_Tag : ∀ (x : ExtensionDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Tag") (PairV #x #y) (Val #(({ x with Tag' := y } : ExtensionDesc.t)))
   ExtensionDesc_get_Filename : ∀ (x : ExtensionDesc.t), go.IsGoStepPureDetTagged under (StructFieldGet «ExtensionDescⁱᵐᵖˡ» go!"Filename") #x (Val #(x.Filename'))
-  ExtensionDesc_set_Filename : ∀ (x : ExtensionDesc.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Filename") (PairV #x #y) (Val #(({ x with Filename' := y } : ExtensionDesc.t)))
+  ExtensionDesc_set_Filename : ∀ (x : ExtensionDesc.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ExtensionDescⁱᵐᵖˡ» go!"Filename") (PairV #x #y) (Val #(({ x with Filename' := y } : ExtensionDesc.t)))
 
 attribute [instance] ExtensionDesc_Assumptions.ExtensionDesc_type_repr
   ExtensionDesc_Assumptions.ExtensionDesc_underlying
@@ -2762,36 +2762,36 @@ attribute [instance] ExtensionDesc_Assumptions.ExtensionDesc_type_repr
   ExtensionDesc_Assumptions.ExtensionDesc_set_Filename
 
 namespace Extension
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  desc' : loc
+  desc' : Loc
   value' : interface.t
   enc' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Extension
 
-@[reducible] def Extension'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"desc" (go.type.PointerType ExtensionDesc)),
-(go.field_decl.FieldDecl go!"value" (go.type.InterfaceType [])),
-(go.field_decl.FieldDecl go!"enc" (go.type.SliceType go.byte))]
+@[reducible] def Extension'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"desc" (go.GoType.PointerType ExtensionDesc)),
+(go.field_decl.FieldDecl go!"value" (go.GoType.InterfaceType [])),
+(go.field_decl.FieldDecl go!"enc" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def Extension'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Extension'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Extension'fds_unsealed
 
-instance equals_unfold_Extension [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Extension [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Extension'fds Extension'fds_unsealed :=
   ⟨by unfold Extension'fds; rfl⟩
 
-@[reducible] def «Extensionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Extension'fds)
+@[reducible] def «Extensionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Extension'fds)
 
-class Extension_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Extension_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Extension_type_repr : go.TypeReprUnderlying «Extensionⁱᵐᵖˡ» Extension.t
   Extension_underlying : go.UnderlyingDirectedEq Extension «Extensionⁱᵐᵖˡ»
   Extension_get_desc : ∀ (x : Extension.t), go.IsGoStepPureDetTagged under (StructFieldGet «Extensionⁱᵐᵖˡ» go!"desc") #x (Val #(x.desc'))
-  Extension_set_desc : ∀ (x : Extension.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Extensionⁱᵐᵖˡ» go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : Extension.t)))
+  Extension_set_desc : ∀ (x : Extension.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Extensionⁱᵐᵖˡ» go!"desc") (PairV #x #y) (Val #(({ x with desc' := y } : Extension.t)))
   Extension_get_value : ∀ (x : Extension.t), go.IsGoStepPureDetTagged under (StructFieldGet «Extensionⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
   Extension_set_value : ∀ (x : Extension.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Extensionⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Extension.t)))
   Extension_get_enc : ∀ (x : Extension.t), go.IsGoStepPureDetTagged under (StructFieldGet «Extensionⁱᵐᵖˡ» go!"enc") #x (Val #(x.enc'))
@@ -2812,7 +2812,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end extPropKey
 
-class extPropKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class extPropKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   extPropKey_type_repr : go.TypeReprUnderlying «extPropKeyⁱᵐᵖˡ» extPropKey.t
   extPropKey_underlying : go.UnderlyingDirectedEq extPropKey «extPropKeyⁱᵐᵖˡ»
   «extPropKeyⁱᵐᵖˡ_underlying» : go.IsUnderlying «extPropKeyⁱᵐᵖˡ» «extPropKeyⁱᵐᵖˡ»
@@ -2822,40 +2822,40 @@ attribute [instance] extPropKey_Assumptions.extPropKey_type_repr
   extPropKey_Assumptions.«extPropKeyⁱᵐᵖˡ_underlying»
 
 namespace extensionsBytes
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end extensionsBytes
 
-@[reducible] def «extensionsBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.type.SliceType ExtensionRange)])), (go.interface_elem.MethodElem go!"GetExtensions" (go.signature.Signature [] false [(go.type.PointerType (go.type.SliceType go.byte))])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Message)])])
+@[reducible] def «extensionsBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ExtensionRangeArray" (go.signature.Signature [] false [(go.GoType.SliceType ExtensionRange)])), (go.InterfaceElem.MethodElem go!"GetExtensions" (go.signature.Signature [] false [(go.GoType.PointerType (go.GoType.SliceType go.byte))])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Message)])])
 
-class extensionsBytes_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class extensionsBytes_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   extensionsBytes_underlying : go.UnderlyingDirectedEq extensionsBytes «extensionsBytesⁱᵐᵖˡ»
 
 attribute [instance] extensionsBytes_Assumptions.extensionsBytes_underlying
 
 namespace slowExtensionAdapter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   extensionsBytes' : extensionsBytes.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end slowExtensionAdapter
 
-@[reducible] def slowExtensionAdapter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def slowExtensionAdapter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"extensionsBytes" extensionsBytes)]
 
-@[irreducible] def slowExtensionAdapter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def slowExtensionAdapter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   slowExtensionAdapter'fds_unsealed
 
-instance equals_unfold_slowExtensionAdapter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_slowExtensionAdapter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold slowExtensionAdapter'fds slowExtensionAdapter'fds_unsealed :=
   ⟨by unfold slowExtensionAdapter'fds; rfl⟩
 
-@[reducible] def «slowExtensionAdapterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType slowExtensionAdapter'fds)
+@[reducible] def «slowExtensionAdapterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType slowExtensionAdapter'fds)
 
-class slowExtensionAdapter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class slowExtensionAdapter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   slowExtensionAdapter_type_repr : go.TypeReprUnderlying «slowExtensionAdapterⁱᵐᵖˡ» slowExtensionAdapter.t
   slowExtensionAdapter_underlying : go.UnderlyingDirectedEq slowExtensionAdapter «slowExtensionAdapterⁱᵐᵖˡ»
   slowExtensionAdapter_get_extensionsBytes : ∀ (x : slowExtensionAdapter.t), go.IsGoStepPureDetTagged under (StructFieldGet «slowExtensionAdapterⁱᵐᵖˡ» go!"extensionsBytes") #x (Val #(x.extensionsBytes'))
@@ -2867,30 +2867,30 @@ attribute [instance] slowExtensionAdapter_Assumptions.slowExtensionAdapter_type_
   slowExtensionAdapter_Assumptions.slowExtensionAdapter_set_extensionsBytes
 
 namespace sortableMapElem
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   field' : w32
   ext' : Extension.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end sortableMapElem
 
-@[reducible] def sortableMapElem'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def sortableMapElem'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" go.int32),
 (go.field_decl.FieldDecl go!"ext" Extension)]
 
-@[irreducible] def sortableMapElem'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def sortableMapElem'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   sortableMapElem'fds_unsealed
 
-instance equals_unfold_sortableMapElem [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_sortableMapElem [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold sortableMapElem'fds sortableMapElem'fds_unsealed :=
   ⟨by unfold sortableMapElem'fds; rfl⟩
 
-@[reducible] def «sortableMapElemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType sortableMapElem'fds)
+@[reducible] def «sortableMapElemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType sortableMapElem'fds)
 
-class sortableMapElem_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sortableMapElem_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortableMapElem_type_repr : go.TypeReprUnderlying «sortableMapElemⁱᵐᵖˡ» sortableMapElem.t
   sortableMapElem_underlying : go.UnderlyingDirectedEq sortableMapElem «sortableMapElemⁱᵐᵖˡ»
   sortableMapElem_get_field : ∀ (x : sortableMapElem.t), go.IsGoStepPureDetTagged under (StructFieldGet «sortableMapElemⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
@@ -2906,44 +2906,44 @@ attribute [instance] sortableMapElem_Assumptions.sortableMapElem_type_repr
   sortableMapElem_Assumptions.sortableMapElem_set_ext
 
 namespace sortableExtensions
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end sortableExtensions
 
-@[reducible] def «sortableExtensionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType (go.type.PointerType sortableMapElem))
+@[reducible] def «sortableExtensionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType (go.GoType.PointerType sortableMapElem))
 
-class sortableExtensions_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sortableExtensions_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortableExtensions_underlying : go.UnderlyingDirectedEq sortableExtensions «sortableExtensionsⁱᵐᵖˡ»
 
 attribute [instance] sortableExtensions_Assumptions.sortableExtensions_underlying
 
 namespace RequiredNotSetError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  field' : go_string
+  field' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end RequiredNotSetError
 
-@[reducible] def RequiredNotSetError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def RequiredNotSetError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" go.string)]
 
-@[irreducible] def RequiredNotSetError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def RequiredNotSetError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   RequiredNotSetError'fds_unsealed
 
-instance equals_unfold_RequiredNotSetError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_RequiredNotSetError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold RequiredNotSetError'fds RequiredNotSetError'fds_unsealed :=
   ⟨by unfold RequiredNotSetError'fds; rfl⟩
 
-@[reducible] def «RequiredNotSetErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType RequiredNotSetError'fds)
+@[reducible] def «RequiredNotSetErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType RequiredNotSetError'fds)
 
-class RequiredNotSetError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RequiredNotSetError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   RequiredNotSetError_type_repr : go.TypeReprUnderlying «RequiredNotSetErrorⁱᵐᵖˡ» RequiredNotSetError.t
   RequiredNotSetError_underlying : go.UnderlyingDirectedEq RequiredNotSetError «RequiredNotSetErrorⁱᵐᵖˡ»
   RequiredNotSetError_get_field : ∀ (x : RequiredNotSetError.t), go.IsGoStepPureDetTagged under (StructFieldGet «RequiredNotSetErrorⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
-  RequiredNotSetError_set_field : ∀ (x : RequiredNotSetError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «RequiredNotSetErrorⁱᵐᵖˡ» go!"field") (PairV #x #y) (Val #(({ x with field' := y } : RequiredNotSetError.t)))
+  RequiredNotSetError_set_field : ∀ (x : RequiredNotSetError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «RequiredNotSetErrorⁱᵐᵖˡ» go!"field") (PairV #x #y) (Val #(({ x with field' := y } : RequiredNotSetError.t)))
 
 attribute [instance] RequiredNotSetError_Assumptions.RequiredNotSetError_type_repr
   RequiredNotSetError_Assumptions.RequiredNotSetError_underlying
@@ -2951,32 +2951,32 @@ attribute [instance] RequiredNotSetError_Assumptions.RequiredNotSetError_type_re
   RequiredNotSetError_Assumptions.RequiredNotSetError_set_field
 
 namespace invalidUTF8Error
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  field' : go_string
+  field' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end invalidUTF8Error
 
-@[reducible] def invalidUTF8Error'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def invalidUTF8Error'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" go.string)]
 
-@[irreducible] def invalidUTF8Error'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def invalidUTF8Error'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   invalidUTF8Error'fds_unsealed
 
-instance equals_unfold_invalidUTF8Error [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_invalidUTF8Error [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold invalidUTF8Error'fds invalidUTF8Error'fds_unsealed :=
   ⟨by unfold invalidUTF8Error'fds; rfl⟩
 
-@[reducible] def «invalidUTF8Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType invalidUTF8Error'fds)
+@[reducible] def «invalidUTF8Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType invalidUTF8Error'fds)
 
-class invalidUTF8Error_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class invalidUTF8Error_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   invalidUTF8Error_type_repr : go.TypeReprUnderlying «invalidUTF8Errorⁱᵐᵖˡ» invalidUTF8Error.t
   invalidUTF8Error_underlying : go.UnderlyingDirectedEq invalidUTF8Error «invalidUTF8Errorⁱᵐᵖˡ»
   invalidUTF8Error_get_field : ∀ (x : invalidUTF8Error.t), go.IsGoStepPureDetTagged under (StructFieldGet «invalidUTF8Errorⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
-  invalidUTF8Error_set_field : ∀ (x : invalidUTF8Error.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «invalidUTF8Errorⁱᵐᵖˡ» go!"field") (PairV #x #y) (Val #(({ x with field' := y } : invalidUTF8Error.t)))
+  invalidUTF8Error_set_field : ∀ (x : invalidUTF8Error.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «invalidUTF8Errorⁱᵐᵖˡ» go!"field") (PairV #x #y) (Val #(({ x with field' := y } : invalidUTF8Error.t)))
 
 attribute [instance] invalidUTF8Error_Assumptions.invalidUTF8Error_type_repr
   invalidUTF8Error_Assumptions.invalidUTF8Error_underlying
@@ -2984,28 +2984,28 @@ attribute [instance] invalidUTF8Error_Assumptions.invalidUTF8Error_type_repr
   invalidUTF8Error_Assumptions.invalidUTF8Error_set_field
 
 namespace nonFatal
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   E' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end nonFatal
 
-@[reducible] def nonFatal'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nonFatal'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"E" go.error)]
 
-@[irreducible] def nonFatal'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def nonFatal'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nonFatal'fds_unsealed
 
-instance equals_unfold_nonFatal [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_nonFatal [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nonFatal'fds nonFatal'fds_unsealed :=
   ⟨by unfold nonFatal'fds; rfl⟩
 
-@[reducible] def «nonFatalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType nonFatal'fds)
+@[reducible] def «nonFatalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nonFatal'fds)
 
-class nonFatal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nonFatal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nonFatal_type_repr : go.TypeReprUnderlying «nonFatalⁱᵐᵖˡ» nonFatal.t
   nonFatal_underlying : go.UnderlyingDirectedEq nonFatal «nonFatalⁱᵐᵖˡ»
   nonFatal_get_E : ∀ (x : nonFatal.t), go.IsGoStepPureDetTagged under (StructFieldGet «nonFatalⁱᵐᵖˡ» go!"E") #x (Val #(x.E'))
@@ -3017,32 +3017,32 @@ attribute [instance] nonFatal_Assumptions.nonFatal_type_repr
   nonFatal_Assumptions.nonFatal_set_E
 
 namespace Buffer
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   buf' : slice.t
   index' : w64
   deterministic' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Buffer
 
-@[reducible] def Buffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"buf" (go.type.SliceType go.byte)),
+@[reducible] def Buffer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"index" go.int),
 (go.field_decl.FieldDecl go!"deterministic" go.bool)]
 
-@[irreducible] def Buffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Buffer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Buffer'fds_unsealed
 
-instance equals_unfold_Buffer [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Buffer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Buffer'fds Buffer'fds_unsealed :=
   ⟨by unfold Buffer'fds; rfl⟩
 
-@[reducible] def «Bufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Buffer'fds)
+@[reducible] def «Bufferⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Buffer'fds)
 
-class Buffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Buffer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Buffer_type_repr : go.TypeReprUnderlying «Bufferⁱᵐᵖˡ» Buffer.t
   Buffer_underlying : go.UnderlyingDirectedEq Buffer «Bufferⁱᵐᵖˡ»
   Buffer_get_buf : ∀ (x : Buffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bufferⁱᵐᵖˡ» go!"buf") #x (Val #(x.buf'))
@@ -3062,30 +3062,30 @@ attribute [instance] Buffer_Assumptions.Buffer_type_repr
   Buffer_Assumptions.Buffer_set_deterministic
 
 namespace defaultMessage
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   scalars' : slice.t
   nested' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end defaultMessage
 
-@[reducible] def defaultMessage'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"scalars" (go.type.SliceType scalarField)),
-(go.field_decl.FieldDecl go!"nested" (go.type.SliceType go.int))]
+@[reducible] def defaultMessage'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"scalars" (go.GoType.SliceType scalarField)),
+(go.field_decl.FieldDecl go!"nested" (go.GoType.SliceType go.int))]
 
-@[irreducible] def defaultMessage'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def defaultMessage'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   defaultMessage'fds_unsealed
 
-instance equals_unfold_defaultMessage [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_defaultMessage [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold defaultMessage'fds defaultMessage'fds_unsealed :=
   ⟨by unfold defaultMessage'fds; rfl⟩
 
-@[reducible] def «defaultMessageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType defaultMessage'fds)
+@[reducible] def «defaultMessageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType defaultMessage'fds)
 
-class defaultMessage_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class defaultMessage_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   defaultMessage_type_repr : go.TypeReprUnderlying «defaultMessageⁱᵐᵖˡ» defaultMessage.t
   defaultMessage_underlying : go.UnderlyingDirectedEq defaultMessage «defaultMessageⁱᵐᵖˡ»
   defaultMessage_get_scalars : ∀ (x : defaultMessage.t), go.IsGoStepPureDetTagged under (StructFieldGet «defaultMessageⁱᵐᵖˡ» go!"scalars") #x (Val #(x.scalars'))
@@ -3106,7 +3106,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end scalarField
 
-class scalarField_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class scalarField_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   scalarField_type_repr : go.TypeReprUnderlying «scalarFieldⁱᵐᵖˡ» scalarField.t
   scalarField_underlying : go.UnderlyingDirectedEq scalarField «scalarFieldⁱᵐᵖˡ»
   «scalarFieldⁱᵐᵖˡ_underlying» : go.IsUnderlying «scalarFieldⁱᵐᵖˡ» «scalarFieldⁱᵐᵖˡ»
@@ -3121,7 +3121,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end mapKeySorter
 
-class mapKeySorter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class mapKeySorter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   mapKeySorter_type_repr : go.TypeReprUnderlying «mapKeySorterⁱᵐᵖˡ» mapKeySorter.t
   mapKeySorter_underlying : go.UnderlyingDirectedEq mapKeySorter «mapKeySorterⁱᵐᵖˡ»
   «mapKeySorterⁱᵐᵖˡ_underlying» : go.IsUnderlying «mapKeySorterⁱᵐᵖˡ» «mapKeySorterⁱᵐᵖˡ»
@@ -3131,44 +3131,44 @@ attribute [instance] mapKeySorter_Assumptions.mapKeySorter_type_repr
   mapKeySorter_Assumptions.«mapKeySorterⁱᵐᵖˡ_underlying»
 
 namespace InternalMessageInfo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  marshal' : loc
-  unmarshal' : loc
-  merge' : loc
-  discard' : loc
+  marshal' : Loc
+  unmarshal' : Loc
+  merge' : Loc
+  discard' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end InternalMessageInfo
 
-@[reducible] def InternalMessageInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"marshal" (go.type.PointerType marshalInfo)),
-(go.field_decl.FieldDecl go!"unmarshal" (go.type.PointerType unmarshalInfo)),
-(go.field_decl.FieldDecl go!"merge" (go.type.PointerType mergeInfo)),
-(go.field_decl.FieldDecl go!"discard" (go.type.PointerType discardInfo))]
+@[reducible] def InternalMessageInfo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"marshal" (go.GoType.PointerType marshalInfo)),
+(go.field_decl.FieldDecl go!"unmarshal" (go.GoType.PointerType unmarshalInfo)),
+(go.field_decl.FieldDecl go!"merge" (go.GoType.PointerType mergeInfo)),
+(go.field_decl.FieldDecl go!"discard" (go.GoType.PointerType discardInfo))]
 
-@[irreducible] def InternalMessageInfo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def InternalMessageInfo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   InternalMessageInfo'fds_unsealed
 
-instance equals_unfold_InternalMessageInfo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_InternalMessageInfo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold InternalMessageInfo'fds InternalMessageInfo'fds_unsealed :=
   ⟨by unfold InternalMessageInfo'fds; rfl⟩
 
-@[reducible] def «InternalMessageInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType InternalMessageInfo'fds)
+@[reducible] def «InternalMessageInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType InternalMessageInfo'fds)
 
-class InternalMessageInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class InternalMessageInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   InternalMessageInfo_type_repr : go.TypeReprUnderlying «InternalMessageInfoⁱᵐᵖˡ» InternalMessageInfo.t
   InternalMessageInfo_underlying : go.UnderlyingDirectedEq InternalMessageInfo «InternalMessageInfoⁱᵐᵖˡ»
   InternalMessageInfo_get_marshal : ∀ (x : InternalMessageInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «InternalMessageInfoⁱᵐᵖˡ» go!"marshal") #x (Val #(x.marshal'))
-  InternalMessageInfo_set_marshal : ∀ (x : InternalMessageInfo.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"marshal") (PairV #x #y) (Val #(({ x with marshal' := y } : InternalMessageInfo.t)))
+  InternalMessageInfo_set_marshal : ∀ (x : InternalMessageInfo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"marshal") (PairV #x #y) (Val #(({ x with marshal' := y } : InternalMessageInfo.t)))
   InternalMessageInfo_get_unmarshal : ∀ (x : InternalMessageInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «InternalMessageInfoⁱᵐᵖˡ» go!"unmarshal") #x (Val #(x.unmarshal'))
-  InternalMessageInfo_set_unmarshal : ∀ (x : InternalMessageInfo.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"unmarshal") (PairV #x #y) (Val #(({ x with unmarshal' := y } : InternalMessageInfo.t)))
+  InternalMessageInfo_set_unmarshal : ∀ (x : InternalMessageInfo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"unmarshal") (PairV #x #y) (Val #(({ x with unmarshal' := y } : InternalMessageInfo.t)))
   InternalMessageInfo_get_merge : ∀ (x : InternalMessageInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «InternalMessageInfoⁱᵐᵖˡ» go!"merge") #x (Val #(x.merge'))
-  InternalMessageInfo_set_merge : ∀ (x : InternalMessageInfo.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"merge") (PairV #x #y) (Val #(({ x with merge' := y } : InternalMessageInfo.t)))
+  InternalMessageInfo_set_merge : ∀ (x : InternalMessageInfo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"merge") (PairV #x #y) (Val #(({ x with merge' := y } : InternalMessageInfo.t)))
   InternalMessageInfo_get_discard : ∀ (x : InternalMessageInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «InternalMessageInfoⁱᵐᵖˡ» go!"discard") #x (Val #(x.discard'))
-  InternalMessageInfo_set_discard : ∀ (x : InternalMessageInfo.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"discard") (PairV #x #y) (Val #(({ x with discard' := y } : InternalMessageInfo.t)))
+  InternalMessageInfo_set_discard : ∀ (x : InternalMessageInfo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «InternalMessageInfoⁱᵐᵖˡ» go!"discard") (PairV #x #y) (Val #(({ x with discard' := y } : InternalMessageInfo.t)))
 
 attribute [instance] InternalMessageInfo_Assumptions.InternalMessageInfo_type_repr
   InternalMessageInfo_Assumptions.InternalMessageInfo_underlying
@@ -3182,58 +3182,58 @@ attribute [instance] InternalMessageInfo_Assumptions.InternalMessageInfo_type_re
   InternalMessageInfo_Assumptions.InternalMessageInfo_set_discard
 
 namespace Sizer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Sizer
 
-@[reducible] def «Sizerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Size" (go.signature.Signature [] false [go.int]))])
+@[reducible] def «Sizerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.int]))])
 
-class Sizer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Sizer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Sizer_underlying : go.UnderlyingDirectedEq Sizer «Sizerⁱᵐᵖˡ»
 
 attribute [instance] Sizer_Assumptions.Sizer_underlying
 
 namespace ProtoSizer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ProtoSizer
 
-@[reducible] def «ProtoSizerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ProtoSize" (go.signature.Signature [] false [go.int]))])
+@[reducible] def «ProtoSizerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ProtoSize" (go.signature.Signature [] false [go.int]))])
 
-class ProtoSizer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ProtoSizer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ProtoSizer_underlying : go.UnderlyingDirectedEq ProtoSizer «ProtoSizerⁱᵐᵖˡ»
 
 attribute [instance] ProtoSizer_Assumptions.ProtoSizer_underlying
 
 namespace _MessageSet_Item
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  TypeId' : loc
+  TypeId' : Loc
   Message' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end _MessageSet_Item
 
-@[reducible] def _MessageSet_Item'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"TypeId" (go.type.PointerType go.int32)),
-(go.field_decl.FieldDecl go!"Message" (go.type.SliceType go.byte))]
+@[reducible] def _MessageSet_Item'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"TypeId" (go.GoType.PointerType go.int32)),
+(go.field_decl.FieldDecl go!"Message" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def _MessageSet_Item'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def _MessageSet_Item'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   _MessageSet_Item'fds_unsealed
 
-instance equals_unfold__MessageSet_Item [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold__MessageSet_Item [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold _MessageSet_Item'fds _MessageSet_Item'fds_unsealed :=
   ⟨by unfold _MessageSet_Item'fds; rfl⟩
 
-@[reducible] def «_MessageSet_Itemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType _MessageSet_Item'fds)
+@[reducible] def «_MessageSet_Itemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType _MessageSet_Item'fds)
 
-class _MessageSet_Item_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class _MessageSet_Item_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   _MessageSet_Item_type_repr : go.TypeReprUnderlying «_MessageSet_Itemⁱᵐᵖˡ» _MessageSet_Item.t
   _MessageSet_Item_underlying : go.UnderlyingDirectedEq _MessageSet_Item «_MessageSet_Itemⁱᵐᵖˡ»
   _MessageSet_Item_get_TypeId : ∀ (x : _MessageSet_Item.t), go.IsGoStepPureDetTagged under (StructFieldGet «_MessageSet_Itemⁱᵐᵖˡ» go!"TypeId") #x (Val #(x.TypeId'))
-  _MessageSet_Item_set_TypeId : ∀ (x : _MessageSet_Item.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «_MessageSet_Itemⁱᵐᵖˡ» go!"TypeId") (PairV #x #y) (Val #(({ x with TypeId' := y } : _MessageSet_Item.t)))
+  _MessageSet_Item_set_TypeId : ∀ (x : _MessageSet_Item.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «_MessageSet_Itemⁱᵐᵖˡ» go!"TypeId") (PairV #x #y) (Val #(({ x with TypeId' := y } : _MessageSet_Item.t)))
   _MessageSet_Item_get_Message : ∀ (x : _MessageSet_Item.t), go.IsGoStepPureDetTagged under (StructFieldGet «_MessageSet_Itemⁱᵐᵖˡ» go!"Message") #x (Val #(x.Message'))
   _MessageSet_Item_set_Message : ∀ (x : _MessageSet_Item.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «_MessageSet_Itemⁱᵐᵖˡ» go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : _MessageSet_Item.t)))
 
@@ -3245,30 +3245,30 @@ attribute [instance] _MessageSet_Item_Assumptions._MessageSet_Item_type_repr
   _MessageSet_Item_Assumptions._MessageSet_Item_set_Message
 
 namespace messageSet
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Item' : slice.t
   XXX_unrecognized' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end messageSet
 
-@[reducible] def messageSet'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Item" (go.type.SliceType (go.type.PointerType _MessageSet_Item))),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte))]
+@[reducible] def messageSet'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Item" (go.GoType.SliceType (go.GoType.PointerType _MessageSet_Item))),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def messageSet'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def messageSet'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   messageSet'fds_unsealed
 
-instance equals_unfold_messageSet [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_messageSet [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold messageSet'fds messageSet'fds_unsealed :=
   ⟨by unfold messageSet'fds; rfl⟩
 
-@[reducible] def «messageSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType messageSet'fds)
+@[reducible] def «messageSetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType messageSet'fds)
 
-class messageSet_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class messageSet_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   messageSet_type_repr : go.TypeReprUnderlying «messageSetⁱᵐᵖˡ» messageSet.t
   messageSet_underlying : go.UnderlyingDirectedEq messageSet «messageSetⁱᵐᵖˡ»
   messageSet_get_Item : ∀ (x : messageSet.t), go.IsGoStepPureDetTagged under (StructFieldGet «messageSetⁱᵐᵖˡ» go!"Item") #x (Val #(x.Item'))
@@ -3284,44 +3284,44 @@ attribute [instance] messageSet_Assumptions.messageSet_type_repr
   messageSet_Assumptions.messageSet_set_XXX_unrecognized
 
 namespace messageTypeIder
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end messageTypeIder
 
-@[reducible] def «messageTypeIderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"MessageTypeId" (go.signature.Signature [] false [go.int32]))])
+@[reducible] def «messageTypeIderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"MessageTypeId" (go.signature.Signature [] false [go.int32]))])
 
-class messageTypeIder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class messageTypeIder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   messageTypeIder_underlying : go.UnderlyingDirectedEq messageTypeIder «messageTypeIderⁱᵐᵖˡ»
 
 attribute [instance] messageTypeIder_Assumptions.messageTypeIder_underlying
 
 namespace pointer
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  p' : loc
+  p' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end pointer
 
-@[reducible] def pointer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def pointer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" «unsafe».Pointer)]
 
-@[irreducible] def pointer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def pointer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   pointer'fds_unsealed
 
-instance equals_unfold_pointer [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_pointer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold pointer'fds pointer'fds_unsealed :=
   ⟨by unfold pointer'fds; rfl⟩
 
-@[reducible] def «pointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType pointer'fds)
+@[reducible] def «pointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType pointer'fds)
 
-class pointer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pointer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   pointer_type_repr : go.TypeReprUnderlying «pointerⁱᵐᵖˡ» pointer.t
   pointer_underlying : go.UnderlyingDirectedEq pointer «pointerⁱᵐᵖˡ»
   pointer_get_p : ∀ (x : pointer.t), go.IsGoStepPureDetTagged under (StructFieldGet «pointerⁱᵐᵖˡ» go!"p") #x (Val #(x.p'))
-  pointer_set_p : ∀ (x : pointer.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «pointerⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : pointer.t)))
+  pointer_set_p : ∀ (x : pointer.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «pointerⁱᵐᵖˡ» go!"p") (PairV #x #y) (Val #(({ x with p' := y } : pointer.t)))
 
 attribute [instance] pointer_Assumptions.pointer_type_repr
   pointer_Assumptions.pointer_underlying
@@ -3329,30 +3329,30 @@ attribute [instance] pointer_Assumptions.pointer_type_repr
   pointer_Assumptions.pointer_set_p
 
 namespace tagMap
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   fastTags' : slice.t
   slowTags' : map.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end tagMap
 
-@[reducible] def tagMap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"fastTags" (go.type.SliceType go.int)),
-(go.field_decl.FieldDecl go!"slowTags" (go.type.MapType go.int go.int))]
+@[reducible] def tagMap'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"fastTags" (go.GoType.SliceType go.int)),
+(go.field_decl.FieldDecl go!"slowTags" (go.GoType.MapType go.int go.int))]
 
-@[irreducible] def tagMap'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def tagMap'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   tagMap'fds_unsealed
 
-instance equals_unfold_tagMap [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_tagMap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold tagMap'fds tagMap'fds_unsealed :=
   ⟨by unfold tagMap'fds; rfl⟩
 
-@[reducible] def «tagMapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType tagMap'fds)
+@[reducible] def «tagMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType tagMap'fds)
 
-class tagMap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class tagMap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   tagMap_type_repr : go.TypeReprUnderlying «tagMapⁱᵐᵖˡ» tagMap.t
   tagMap_underlying : go.UnderlyingDirectedEq tagMap «tagMapⁱᵐᵖˡ»
   tagMap_get_fastTags : ∀ (x : tagMap.t), go.IsGoStepPureDetTagged under (StructFieldGet «tagMapⁱᵐᵖˡ» go!"fastTags") #x (Val #(x.fastTags'))
@@ -3368,7 +3368,7 @@ attribute [instance] tagMap_Assumptions.tagMap_type_repr
   tagMap_Assumptions.tagMap_set_slowTags
 
 namespace StructProperties
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Prop' : slice.t
   reqCount' : w64
@@ -3377,29 +3377,29 @@ structure t [ffi_syntax] where
   order' : slice.t
   OneofTypes' : map.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end StructProperties
 
-@[reducible] def StructProperties'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Prop" (go.type.SliceType (go.type.PointerType Properties))),
+@[reducible] def StructProperties'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Prop" (go.GoType.SliceType (go.GoType.PointerType Properties))),
 (go.field_decl.FieldDecl go!"reqCount" go.int),
 (go.field_decl.FieldDecl go!"decoderTags" tagMap),
-(go.field_decl.FieldDecl go!"decoderOrigNames" (go.type.MapType go.string go.int)),
-(go.field_decl.FieldDecl go!"order" (go.type.SliceType go.int)),
-(go.field_decl.FieldDecl go!"OneofTypes" (go.type.MapType go.string (go.type.PointerType OneofProperties)))]
+(go.field_decl.FieldDecl go!"decoderOrigNames" (go.GoType.MapType go.string go.int)),
+(go.field_decl.FieldDecl go!"order" (go.GoType.SliceType go.int)),
+(go.field_decl.FieldDecl go!"OneofTypes" (go.GoType.MapType go.string (go.GoType.PointerType OneofProperties)))]
 
-@[irreducible] def StructProperties'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def StructProperties'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StructProperties'fds_unsealed
 
-instance equals_unfold_StructProperties [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_StructProperties [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold StructProperties'fds StructProperties'fds_unsealed :=
   ⟨by unfold StructProperties'fds; rfl⟩
 
-@[reducible] def «StructPropertiesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType StructProperties'fds)
+@[reducible] def «StructPropertiesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StructProperties'fds)
 
-class StructProperties_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StructProperties_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StructProperties_type_repr : go.TypeReprUnderlying «StructPropertiesⁱᵐᵖˡ» StructProperties.t
   StructProperties_underlying : go.UnderlyingDirectedEq StructProperties «StructPropertiesⁱᵐᵖˡ»
   StructProperties_get_Prop : ∀ (x : StructProperties.t), go.IsGoStepPureDetTagged under (StructFieldGet «StructPropertiesⁱᵐᵖˡ» go!"Prop") #x (Val #(x.Prop'))
@@ -3436,7 +3436,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end OneofProperties
 
-class OneofProperties_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class OneofProperties_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   OneofProperties_type_repr : go.TypeReprUnderlying «OneofPropertiesⁱᵐᵖˡ» OneofProperties.t
   OneofProperties_underlying : go.UnderlyingDirectedEq OneofProperties «OneofPropertiesⁱᵐᵖˡ»
   «OneofPropertiesⁱᵐᵖˡ_underlying» : go.IsUnderlying «OneofPropertiesⁱᵐᵖˡ» «OneofPropertiesⁱᵐᵖˡ»
@@ -3451,7 +3451,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Properties
 
-class Properties_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Properties_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Properties_type_repr : go.TypeReprUnderlying «Propertiesⁱᵐᵖˡ» Properties.t
   Properties_underlying : go.UnderlyingDirectedEq Properties «Propertiesⁱᵐᵖˡ»
   «Propertiesⁱᵐᵖˡ_underlying» : go.IsUnderlying «Propertiesⁱᵐᵖˡ» «Propertiesⁱᵐᵖˡ»
@@ -3461,49 +3461,49 @@ attribute [instance] Properties_Assumptions.Properties_type_repr
   Properties_Assumptions.«Propertiesⁱᵐᵖˡ_underlying»
 
 namespace oneofFuncsIface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end oneofFuncsIface
 
-@[reducible] def «oneofFuncsIfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_OneofFuncs" (go.signature.Signature [] false [(go.type.FunctionType (go.signature.Signature [Message, (go.type.PointerType Buffer)] false [go.error])), (go.type.FunctionType (go.signature.Signature [Message, go.int, go.int, (go.type.PointerType Buffer)] false [go.bool, go.error])), (go.type.FunctionType (go.signature.Signature [Message] false [go.int])), (go.type.SliceType (go.type.InterfaceType []))]))])
+@[reducible] def «oneofFuncsIfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_OneofFuncs" (go.signature.Signature [] false [(go.GoType.FunctionType (go.signature.Signature [Message, (go.GoType.PointerType Buffer)] false [go.error])), (go.GoType.FunctionType (go.signature.Signature [Message, go.int, go.int, (go.GoType.PointerType Buffer)] false [go.bool, go.error])), (go.GoType.FunctionType (go.signature.Signature [Message] false [go.int])), (go.GoType.SliceType (go.GoType.InterfaceType []))]))])
 
-class oneofFuncsIface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class oneofFuncsIface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   oneofFuncsIface_underlying : go.UnderlyingDirectedEq oneofFuncsIface «oneofFuncsIfaceⁱᵐᵖˡ»
 
 attribute [instance] oneofFuncsIface_Assumptions.oneofFuncsIface_underlying
 
 namespace oneofWrappersIface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end oneofWrappersIface
 
-@[reducible] def «oneofWrappersIfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_OneofWrappers" (go.signature.Signature [] false [(go.type.SliceType (go.type.InterfaceType []))]))])
+@[reducible] def «oneofWrappersIfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_OneofWrappers" (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.InterfaceType []))]))])
 
-class oneofWrappersIface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class oneofWrappersIface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   oneofWrappersIface_underlying : go.UnderlyingDirectedEq oneofWrappersIface «oneofWrappersIfaceⁱᵐᵖˡ»
 
 attribute [instance] oneofWrappersIface_Assumptions.oneofWrappersIface_underlying
 
 namespace sizer
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end sizer
 
-@[reducible] def «sizerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [pointer, go.int] false [go.int]))
+@[reducible] def «sizerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [pointer, go.int] false [go.int]))
 
-class sizer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sizer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sizer_underlying : go.UnderlyingDirectedEq sizer «sizerⁱᵐᵖˡ»
 
 attribute [instance] sizer_Assumptions.sizer_underlying
 
 namespace marshaler
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end marshaler
 
-@[reducible] def «marshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte), pointer, go.uint64, go.bool] false [(go.type.SliceType go.byte), go.error]))
+@[reducible] def «marshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.byte), pointer, go.uint64, go.bool] false [(go.GoType.SliceType go.byte), go.error]))
 
-class marshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class marshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   marshaler_underlying : go.UnderlyingDirectedEq marshaler «marshalerⁱᵐᵖˡ»
 
 attribute [instance] marshaler_Assumptions.marshaler_underlying
@@ -3514,7 +3514,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end marshalInfo
 
-class marshalInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class marshalInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   marshalInfo_type_repr : go.TypeReprUnderlying «marshalInfoⁱᵐᵖˡ» marshalInfo.t
   marshalInfo_underlying : go.UnderlyingDirectedEq marshalInfo «marshalInfoⁱᵐᵖˡ»
   «marshalInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «marshalInfoⁱᵐᵖˡ» «marshalInfoⁱᵐᵖˡ»
@@ -3529,7 +3529,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end marshalFieldInfo
 
-class marshalFieldInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class marshalFieldInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   marshalFieldInfo_type_repr : go.TypeReprUnderlying «marshalFieldInfoⁱᵐᵖˡ» marshalFieldInfo.t
   marshalFieldInfo_underlying : go.UnderlyingDirectedEq marshalFieldInfo «marshalFieldInfoⁱᵐᵖˡ»
   «marshalFieldInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «marshalFieldInfoⁱᵐᵖˡ» «marshalFieldInfoⁱᵐᵖˡ»
@@ -3539,7 +3539,7 @@ attribute [instance] marshalFieldInfo_Assumptions.marshalFieldInfo_type_repr
   marshalFieldInfo_Assumptions.«marshalFieldInfoⁱᵐᵖˡ_underlying»
 
 namespace marshalElemInfo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   wiretag' : w64
   tagsize' : w64
@@ -3547,28 +3547,28 @@ structure t [ffi_syntax] where
   marshaler' : marshaler.t
   isptr' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end marshalElemInfo
 
-@[reducible] def marshalElemInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def marshalElemInfo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wiretag" go.uint64),
 (go.field_decl.FieldDecl go!"tagsize" go.int),
 (go.field_decl.FieldDecl go!"sizer" sizer),
 (go.field_decl.FieldDecl go!"marshaler" marshaler),
 (go.field_decl.FieldDecl go!"isptr" go.bool)]
 
-@[irreducible] def marshalElemInfo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def marshalElemInfo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   marshalElemInfo'fds_unsealed
 
-instance equals_unfold_marshalElemInfo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_marshalElemInfo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold marshalElemInfo'fds marshalElemInfo'fds_unsealed :=
   ⟨by unfold marshalElemInfo'fds; rfl⟩
 
-@[reducible] def «marshalElemInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType marshalElemInfo'fds)
+@[reducible] def «marshalElemInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType marshalElemInfo'fds)
 
-class marshalElemInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class marshalElemInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   marshalElemInfo_type_repr : go.TypeReprUnderlying «marshalElemInfoⁱᵐᵖˡ» marshalElemInfo.t
   marshalElemInfo_underlying : go.UnderlyingDirectedEq marshalElemInfo «marshalElemInfoⁱᵐᵖˡ»
   marshalElemInfo_get_wiretag : ∀ (x : marshalElemInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «marshalElemInfoⁱᵐᵖˡ» go!"wiretag") #x (Val #(x.wiretag'))
@@ -3596,25 +3596,25 @@ attribute [instance] marshalElemInfo_Assumptions.marshalElemInfo_type_repr
   marshalElemInfo_Assumptions.marshalElemInfo_set_isptr
 
 namespace byTag
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end byTag
 
-@[reducible] def «byTagⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType (go.type.PointerType marshalFieldInfo))
+@[reducible] def «byTagⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType (go.GoType.PointerType marshalFieldInfo))
 
-class byTag_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class byTag_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   byTag_underlying : go.UnderlyingDirectedEq byTag «byTagⁱᵐᵖˡ»
 
 attribute [instance] byTag_Assumptions.byTag_underlying
 
 namespace newMarshaler
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end newMarshaler
 
-@[reducible] def «newMarshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"XXX_Marshal" (go.signature.Signature [(go.type.SliceType go.byte), go.bool] false [(go.type.SliceType go.byte), go.error])), (go.interface_elem.MethodElem go!"XXX_Size" (go.signature.Signature [] false [go.int]))])
+@[reducible] def «newMarshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"XXX_Marshal" (go.signature.Signature [(go.GoType.SliceType go.byte), go.bool] false [(go.GoType.SliceType go.byte), go.error])), (go.InterfaceElem.MethodElem go!"XXX_Size" (go.signature.Signature [] false [go.int]))])
 
-class newMarshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class newMarshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   newMarshaler_underlying : go.UnderlyingDirectedEq newMarshaler «newMarshalerⁱᵐᵖˡ»
 
 attribute [instance] newMarshaler_Assumptions.newMarshaler_underlying
@@ -3625,7 +3625,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end mergeInfo
 
-class mergeInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class mergeInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   mergeInfo_type_repr : go.TypeReprUnderlying «mergeInfoⁱᵐᵖˡ» mergeInfo.t
   mergeInfo_underlying : go.UnderlyingDirectedEq mergeInfo «mergeInfoⁱᵐᵖˡ»
   «mergeInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «mergeInfoⁱᵐᵖˡ» «mergeInfoⁱᵐᵖˡ»
@@ -3635,34 +3635,34 @@ attribute [instance] mergeInfo_Assumptions.mergeInfo_type_repr
   mergeInfo_Assumptions.«mergeInfoⁱᵐᵖˡ_underlying»
 
 namespace mergeFieldInfo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   field' : field.t
   isPointer' : Bool
   basicWidth' : w64
   merge' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end mergeFieldInfo
 
-@[reducible] def mergeFieldInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def mergeFieldInfo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" field),
 (go.field_decl.FieldDecl go!"isPointer" go.bool),
 (go.field_decl.FieldDecl go!"basicWidth" go.int),
-(go.field_decl.FieldDecl go!"merge" (go.type.FunctionType (go.signature.Signature [pointer, pointer] false [])))]
+(go.field_decl.FieldDecl go!"merge" (go.GoType.FunctionType (go.signature.Signature [pointer, pointer] false [])))]
 
-@[irreducible] def mergeFieldInfo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def mergeFieldInfo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   mergeFieldInfo'fds_unsealed
 
-instance equals_unfold_mergeFieldInfo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_mergeFieldInfo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold mergeFieldInfo'fds mergeFieldInfo'fds_unsealed :=
   ⟨by unfold mergeFieldInfo'fds; rfl⟩
 
-@[reducible] def «mergeFieldInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType mergeFieldInfo'fds)
+@[reducible] def «mergeFieldInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mergeFieldInfo'fds)
 
-class mergeFieldInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class mergeFieldInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   mergeFieldInfo_type_repr : go.TypeReprUnderlying «mergeFieldInfoⁱᵐᵖˡ» mergeFieldInfo.t
   mergeFieldInfo_underlying : go.UnderlyingDirectedEq mergeFieldInfo «mergeFieldInfoⁱᵐᵖˡ»
   mergeFieldInfo_get_field : ∀ (x : mergeFieldInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «mergeFieldInfoⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
@@ -3691,7 +3691,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end unmarshalInfo
 
-class unmarshalInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unmarshalInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unmarshalInfo_type_repr : go.TypeReprUnderlying «unmarshalInfoⁱᵐᵖˡ» unmarshalInfo.t
   unmarshalInfo_underlying : go.UnderlyingDirectedEq unmarshalInfo «unmarshalInfoⁱᵐᵖˡ»
   «unmarshalInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «unmarshalInfoⁱᵐᵖˡ» «unmarshalInfoⁱᵐᵖˡ»
@@ -3701,46 +3701,46 @@ attribute [instance] unmarshalInfo_Assumptions.unmarshalInfo_type_repr
   unmarshalInfo_Assumptions.«unmarshalInfoⁱᵐᵖˡ_underlying»
 
 namespace unmarshaler
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end unmarshaler
 
-@[reducible] def «unmarshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [(go.type.SliceType go.byte), pointer, go.int] false [(go.type.SliceType go.byte), go.error]))
+@[reducible] def «unmarshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.SliceType go.byte), pointer, go.int] false [(go.GoType.SliceType go.byte), go.error]))
 
-class unmarshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unmarshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unmarshaler_underlying : go.UnderlyingDirectedEq unmarshaler «unmarshalerⁱᵐᵖˡ»
 
 attribute [instance] unmarshaler_Assumptions.unmarshaler_underlying
 
 namespace unmarshalFieldInfo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   field' : field.t
   unmarshal' : unmarshaler.t
   reqMask' : w64
-  name' : go_string
+  name' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end unmarshalFieldInfo
 
-@[reducible] def unmarshalFieldInfo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unmarshalFieldInfo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"field" field),
 (go.field_decl.FieldDecl go!"unmarshal" unmarshaler),
 (go.field_decl.FieldDecl go!"reqMask" go.uint64),
 (go.field_decl.FieldDecl go!"name" go.string)]
 
-@[irreducible] def unmarshalFieldInfo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def unmarshalFieldInfo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   unmarshalFieldInfo'fds_unsealed
 
-instance equals_unfold_unmarshalFieldInfo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_unmarshalFieldInfo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold unmarshalFieldInfo'fds unmarshalFieldInfo'fds_unsealed :=
   ⟨by unfold unmarshalFieldInfo'fds; rfl⟩
 
-@[reducible] def «unmarshalFieldInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType unmarshalFieldInfo'fds)
+@[reducible] def «unmarshalFieldInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType unmarshalFieldInfo'fds)
 
-class unmarshalFieldInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unmarshalFieldInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unmarshalFieldInfo_type_repr : go.TypeReprUnderlying «unmarshalFieldInfoⁱᵐᵖˡ» unmarshalFieldInfo.t
   unmarshalFieldInfo_underlying : go.UnderlyingDirectedEq unmarshalFieldInfo «unmarshalFieldInfoⁱᵐᵖˡ»
   unmarshalFieldInfo_get_field : ∀ (x : unmarshalFieldInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «unmarshalFieldInfoⁱᵐᵖˡ» go!"field") #x (Val #(x.field'))
@@ -3750,7 +3750,7 @@ class unmarshalFieldInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalCont
   unmarshalFieldInfo_get_reqMask : ∀ (x : unmarshalFieldInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «unmarshalFieldInfoⁱᵐᵖˡ» go!"reqMask") #x (Val #(x.reqMask'))
   unmarshalFieldInfo_set_reqMask : ∀ (x : unmarshalFieldInfo.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «unmarshalFieldInfoⁱᵐᵖˡ» go!"reqMask") (PairV #x #y) (Val #(({ x with reqMask' := y } : unmarshalFieldInfo.t)))
   unmarshalFieldInfo_get_name : ∀ (x : unmarshalFieldInfo.t), go.IsGoStepPureDetTagged under (StructFieldGet «unmarshalFieldInfoⁱᵐᵖˡ» go!"name") #x (Val #(x.name'))
-  unmarshalFieldInfo_set_name : ∀ (x : unmarshalFieldInfo.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «unmarshalFieldInfoⁱᵐᵖˡ» go!"name") (PairV #x #y) (Val #(({ x with name' := y } : unmarshalFieldInfo.t)))
+  unmarshalFieldInfo_set_name : ∀ (x : unmarshalFieldInfo.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «unmarshalFieldInfoⁱᵐᵖˡ» go!"name") (PairV #x #y) (Val #(({ x with name' := y } : unmarshalFieldInfo.t)))
 
 attribute [instance] unmarshalFieldInfo_Assumptions.unmarshalFieldInfo_type_repr
   unmarshalFieldInfo_Assumptions.unmarshalFieldInfo_underlying
@@ -3764,46 +3764,46 @@ attribute [instance] unmarshalFieldInfo_Assumptions.unmarshalFieldInfo_type_repr
   unmarshalFieldInfo_Assumptions.unmarshalFieldInfo_set_name
 
 namespace writer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end writer
 
-@[reducible] def «writerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.io.Writer)])])
+@[reducible] def «writerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm _root_.Perennial.io.Writer)])])
 
-class writer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class writer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   writer_underlying : go.UnderlyingDirectedEq writer «writerⁱᵐᵖˡ»
 
 attribute [instance] writer_Assumptions.writer_underlying
 
 namespace textWriter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ind' : w64
   complete' : Bool
   compact' : Bool
   w' : writer.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end textWriter
 
-@[reducible] def textWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def textWriter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ind" go.int),
 (go.field_decl.FieldDecl go!"complete" go.bool),
 (go.field_decl.FieldDecl go!"compact" go.bool),
 (go.field_decl.FieldDecl go!"w" writer)]
 
-@[irreducible] def textWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def textWriter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   textWriter'fds_unsealed
 
-instance equals_unfold_textWriter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_textWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold textWriter'fds textWriter'fds_unsealed :=
   ⟨by unfold textWriter'fds; rfl⟩
 
-@[reducible] def «textWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType textWriter'fds)
+@[reducible] def «textWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType textWriter'fds)
 
-class textWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class textWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   textWriter_type_repr : go.TypeReprUnderlying «textWriterⁱᵐᵖˡ» textWriter.t
   textWriter_underlying : go.UnderlyingDirectedEq textWriter «textWriterⁱᵐᵖˡ»
   textWriter_get_ind : ∀ (x : textWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet «textWriterⁱᵐᵖˡ» go!"ind") #x (Val #(x.ind'))
@@ -3827,42 +3827,42 @@ attribute [instance] textWriter_Assumptions.textWriter_type_repr
   textWriter_Assumptions.textWriter_set_w
 
 namespace int32Slice
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end int32Slice
 
-@[reducible] def «int32Sliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.int32)
+@[reducible] def «int32Sliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.int32)
 
-class int32Slice_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int32Slice_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int32Slice_underlying : go.UnderlyingDirectedEq int32Slice «int32Sliceⁱᵐᵖˡ»
 
 attribute [instance] int32Slice_Assumptions.int32Slice_underlying
 
 namespace TextMarshaler
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Compact' : Bool
   ExpandAny' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end TextMarshaler
 
-@[reducible] def TextMarshaler'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TextMarshaler'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Compact" go.bool),
 (go.field_decl.FieldDecl go!"ExpandAny" go.bool)]
 
-@[irreducible] def TextMarshaler'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def TextMarshaler'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   TextMarshaler'fds_unsealed
 
-instance equals_unfold_TextMarshaler [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_TextMarshaler [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold TextMarshaler'fds TextMarshaler'fds_unsealed :=
   ⟨by unfold TextMarshaler'fds; rfl⟩
 
-@[reducible] def «TextMarshalerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType TextMarshaler'fds)
+@[reducible] def «TextMarshalerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TextMarshaler'fds)
 
-class TextMarshaler_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class TextMarshaler_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TextMarshaler_type_repr : go.TypeReprUnderlying «TextMarshalerⁱᵐᵖˡ» TextMarshaler.t
   TextMarshaler_underlying : go.UnderlyingDirectedEq TextMarshaler «TextMarshalerⁱᵐᵖˡ»
   TextMarshaler_get_Compact : ∀ (x : TextMarshaler.t), go.IsGoStepPureDetTagged under (StructFieldGet «TextMarshalerⁱᵐᵖˡ» go!"Compact") #x (Val #(x.Compact'))
@@ -3878,36 +3878,36 @@ attribute [instance] TextMarshaler_Assumptions.TextMarshaler_type_repr
   TextMarshaler_Assumptions.TextMarshaler_set_ExpandAny
 
 namespace ParseError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Message' : go_string
+  Message' : GoString
   Line' : w64
   Offset' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end ParseError
 
-@[reducible] def ParseError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ParseError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Message" go.string),
 (go.field_decl.FieldDecl go!"Line" go.int),
 (go.field_decl.FieldDecl go!"Offset" go.int)]
 
-@[irreducible] def ParseError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ParseError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ParseError'fds_unsealed
 
-instance equals_unfold_ParseError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ParseError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ParseError'fds ParseError'fds_unsealed :=
   ⟨by unfold ParseError'fds; rfl⟩
 
-@[reducible] def «ParseErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ParseError'fds)
+@[reducible] def «ParseErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ParseError'fds)
 
-class ParseError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ParseError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ParseError_type_repr : go.TypeReprUnderlying «ParseErrorⁱᵐᵖˡ» ParseError.t
   ParseError_underlying : go.UnderlyingDirectedEq ParseError «ParseErrorⁱᵐᵖˡ»
   ParseError_get_Message : ∀ (x : ParseError.t), go.IsGoStepPureDetTagged under (StructFieldGet «ParseErrorⁱᵐᵖˡ» go!"Message") #x (Val #(x.Message'))
-  ParseError_set_Message : ∀ (x : ParseError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «ParseErrorⁱᵐᵖˡ» go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : ParseError.t)))
+  ParseError_set_Message : ∀ (x : ParseError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ParseErrorⁱᵐᵖˡ» go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : ParseError.t)))
   ParseError_get_Line : ∀ (x : ParseError.t), go.IsGoStepPureDetTagged under (StructFieldGet «ParseErrorⁱᵐᵖˡ» go!"Line") #x (Val #(x.Line'))
   ParseError_set_Line : ∀ (x : ParseError.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ParseErrorⁱᵐᵖˡ» go!"Line") (PairV #x #y) (Val #(({ x with Line' := y } : ParseError.t)))
   ParseError_get_Offset : ∀ (x : ParseError.t), go.IsGoStepPureDetTagged under (StructFieldGet «ParseErrorⁱᵐᵖˡ» go!"Offset") #x (Val #(x.Offset'))
@@ -3923,48 +3923,48 @@ attribute [instance] ParseError_Assumptions.ParseError_type_repr
   ParseError_Assumptions.ParseError_set_Offset
 
 namespace token
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  value' : go_string
-  err' : loc
+  value' : GoString
+  err' : Loc
   line' : w64
   offset' : w64
-  unquoted' : go_string
+  unquoted' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end token
 
-@[reducible] def token'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def token'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
-(go.field_decl.FieldDecl go!"err" (go.type.PointerType ParseError)),
+(go.field_decl.FieldDecl go!"err" (go.GoType.PointerType ParseError)),
 (go.field_decl.FieldDecl go!"line" go.int),
 (go.field_decl.FieldDecl go!"offset" go.int),
 (go.field_decl.FieldDecl go!"unquoted" go.string)]
 
-@[irreducible] def token'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def token'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   token'fds_unsealed
 
-instance equals_unfold_token [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_token [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold token'fds token'fds_unsealed :=
   ⟨by unfold token'fds; rfl⟩
 
-@[reducible] def «tokenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType token'fds)
+@[reducible] def «tokenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType token'fds)
 
-class token_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class token_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   token_type_repr : go.TypeReprUnderlying «tokenⁱᵐᵖˡ» token.t
   token_underlying : go.UnderlyingDirectedEq token «tokenⁱᵐᵖˡ»
   token_get_value : ∀ (x : token.t), go.IsGoStepPureDetTagged under (StructFieldGet «tokenⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
-  token_set_value : ∀ (x : token.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : token.t)))
+  token_set_value : ∀ (x : token.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"value") (PairV #x #y) (Val #(({ x with value' := y } : token.t)))
   token_get_err : ∀ (x : token.t), go.IsGoStepPureDetTagged under (StructFieldGet «tokenⁱᵐᵖˡ» go!"err") #x (Val #(x.err'))
-  token_set_err : ∀ (x : token.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"err") (PairV #x #y) (Val #(({ x with err' := y } : token.t)))
+  token_set_err : ∀ (x : token.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"err") (PairV #x #y) (Val #(({ x with err' := y } : token.t)))
   token_get_line : ∀ (x : token.t), go.IsGoStepPureDetTagged under (StructFieldGet «tokenⁱᵐᵖˡ» go!"line") #x (Val #(x.line'))
   token_set_line : ∀ (x : token.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"line") (PairV #x #y) (Val #(({ x with line' := y } : token.t)))
   token_get_offset : ∀ (x : token.t), go.IsGoStepPureDetTagged under (StructFieldGet «tokenⁱᵐᵖˡ» go!"offset") #x (Val #(x.offset'))
   token_set_offset : ∀ (x : token.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : token.t)))
   token_get_unquoted : ∀ (x : token.t), go.IsGoStepPureDetTagged under (StructFieldGet «tokenⁱᵐᵖˡ» go!"unquoted") #x (Val #(x.unquoted'))
-  token_set_unquoted : ∀ (x : token.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"unquoted") (PairV #x #y) (Val #(({ x with unquoted' := y } : token.t)))
+  token_set_unquoted : ∀ (x : token.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «tokenⁱᵐᵖˡ» go!"unquoted") (PairV #x #y) (Val #(({ x with unquoted' := y } : token.t)))
 
 attribute [instance] token_Assumptions.token_type_repr
   token_Assumptions.token_underlying
@@ -3980,20 +3980,20 @@ attribute [instance] token_Assumptions.token_type_repr
   token_Assumptions.token_set_unquoted
 
 namespace textParser
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  s' : go_string
+  s' : GoString
   done' : Bool
   backed' : Bool
   offset' : w64
   line' : w64
   cur' : token.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end textParser
 
-@[reducible] def textParser'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def textParser'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"backed" go.bool),
@@ -4001,21 +4001,21 @@ end textParser
 (go.field_decl.FieldDecl go!"line" go.int),
 (go.field_decl.FieldDecl go!"cur" token)]
 
-@[irreducible] def textParser'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def textParser'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   textParser'fds_unsealed
 
-instance equals_unfold_textParser [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_textParser [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold textParser'fds textParser'fds_unsealed :=
   ⟨by unfold textParser'fds; rfl⟩
 
-@[reducible] def «textParserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType textParser'fds)
+@[reducible] def «textParserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType textParser'fds)
 
-class textParser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class textParser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   textParser_type_repr : go.TypeReprUnderlying «textParserⁱᵐᵖˡ» textParser.t
   textParser_underlying : go.UnderlyingDirectedEq textParser «textParserⁱᵐᵖˡ»
   textParser_get_s : ∀ (x : textParser.t), go.IsGoStepPureDetTagged under (StructFieldGet «textParserⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
-  textParser_set_s : ∀ (x : textParser.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «textParserⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : textParser.t)))
+  textParser_set_s : ∀ (x : textParser.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «textParserⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : textParser.t)))
   textParser_get_done : ∀ (x : textParser.t), go.IsGoStepPureDetTagged under (StructFieldGet «textParserⁱᵐᵖˡ» go!"done") #x (Val #(x.done'))
   textParser_set_done : ∀ (x : textParser.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «textParserⁱᵐᵖˡ» go!"done") (PairV #x #y) (Val #(({ x with done' := y } : textParser.t)))
   textParser_get_backed : ∀ (x : textParser.t), go.IsGoStepPureDetTagged under (StructFieldGet «textParserⁱᵐᵖˡ» go!"backed") #x (Val #(x.backed'))
@@ -4043,30 +4043,30 @@ attribute [instance] textParser_Assumptions.textParser_type_repr
   textParser_Assumptions.textParser_set_cur
 
 namespace timestamp
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Seconds' : w64
   Nanos' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end timestamp
 
-@[reducible] def timestamp'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def timestamp'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Seconds" go.int64),
 (go.field_decl.FieldDecl go!"Nanos" go.int32)]
 
-@[irreducible] def timestamp'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def timestamp'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   timestamp'fds_unsealed
 
-instance equals_unfold_timestamp [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_timestamp [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold timestamp'fds timestamp'fds_unsealed :=
   ⟨by unfold timestamp'fds; rfl⟩
 
-@[reducible] def «timestampⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType timestamp'fds)
+@[reducible] def «timestampⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType timestamp'fds)
 
-class timestamp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class timestamp_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   timestamp_type_repr : go.TypeReprUnderlying «timestampⁱᵐᵖˡ» timestamp.t
   timestamp_underlying : go.UnderlyingDirectedEq timestamp «timestampⁱᵐᵖˡ»
   timestamp_get_Seconds : ∀ (x : timestamp.t), go.IsGoStepPureDetTagged under (StructFieldGet «timestampⁱᵐᵖˡ» go!"Seconds") #x (Val #(x.Seconds'))
@@ -4082,28 +4082,28 @@ attribute [instance] timestamp_Assumptions.timestamp_type_repr
   timestamp_Assumptions.timestamp_set_Nanos
 
 namespace float64Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end float64Value
 
-@[reducible] def float64Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def float64Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.float64)]
 
-@[irreducible] def float64Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def float64Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   float64Value'fds_unsealed
 
-instance equals_unfold_float64Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_float64Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold float64Value'fds float64Value'fds_unsealed :=
   ⟨by unfold float64Value'fds; rfl⟩
 
-@[reducible] def «float64Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType float64Value'fds)
+@[reducible] def «float64Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType float64Value'fds)
 
-class float64Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class float64Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   float64Value_type_repr : go.TypeReprUnderlying «float64Valueⁱᵐᵖˡ» float64Value.t
   float64Value_underlying : go.UnderlyingDirectedEq float64Value «float64Valueⁱᵐᵖˡ»
   float64Value_get_Value : ∀ (x : float64Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «float64Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4115,28 +4115,28 @@ attribute [instance] float64Value_Assumptions.float64Value_type_repr
   float64Value_Assumptions.float64Value_set_Value
 
 namespace float32Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end float32Value
 
-@[reducible] def float32Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def float32Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.float32)]
 
-@[irreducible] def float32Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def float32Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   float32Value'fds_unsealed
 
-instance equals_unfold_float32Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_float32Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold float32Value'fds float32Value'fds_unsealed :=
   ⟨by unfold float32Value'fds; rfl⟩
 
-@[reducible] def «float32Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType float32Value'fds)
+@[reducible] def «float32Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType float32Value'fds)
 
-class float32Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class float32Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   float32Value_type_repr : go.TypeReprUnderlying «float32Valueⁱᵐᵖˡ» float32Value.t
   float32Value_underlying : go.UnderlyingDirectedEq float32Value «float32Valueⁱᵐᵖˡ»
   float32Value_get_Value : ∀ (x : float32Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «float32Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4148,28 +4148,28 @@ attribute [instance] float32Value_Assumptions.float32Value_type_repr
   float32Value_Assumptions.float32Value_set_Value
 
 namespace int64Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end int64Value
 
-@[reducible] def int64Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def int64Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int64)]
 
-@[irreducible] def int64Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def int64Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   int64Value'fds_unsealed
 
-instance equals_unfold_int64Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_int64Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold int64Value'fds int64Value'fds_unsealed :=
   ⟨by unfold int64Value'fds; rfl⟩
 
-@[reducible] def «int64Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType int64Value'fds)
+@[reducible] def «int64Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType int64Value'fds)
 
-class int64Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int64Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int64Value_type_repr : go.TypeReprUnderlying «int64Valueⁱᵐᵖˡ» int64Value.t
   int64Value_underlying : go.UnderlyingDirectedEq int64Value «int64Valueⁱᵐᵖˡ»
   int64Value_get_Value : ∀ (x : int64Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «int64Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4181,28 +4181,28 @@ attribute [instance] int64Value_Assumptions.int64Value_type_repr
   int64Value_Assumptions.int64Value_set_Value
 
 namespace uint64Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end uint64Value
 
-@[reducible] def uint64Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def uint64Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.uint64)]
 
-@[irreducible] def uint64Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def uint64Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   uint64Value'fds_unsealed
 
-instance equals_unfold_uint64Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_uint64Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold uint64Value'fds uint64Value'fds_unsealed :=
   ⟨by unfold uint64Value'fds; rfl⟩
 
-@[reducible] def «uint64Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType uint64Value'fds)
+@[reducible] def «uint64Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType uint64Value'fds)
 
-class uint64Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint64Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint64Value_type_repr : go.TypeReprUnderlying «uint64Valueⁱᵐᵖˡ» uint64Value.t
   uint64Value_underlying : go.UnderlyingDirectedEq uint64Value «uint64Valueⁱᵐᵖˡ»
   uint64Value_get_Value : ∀ (x : uint64Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «uint64Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4214,28 +4214,28 @@ attribute [instance] uint64Value_Assumptions.uint64Value_type_repr
   uint64Value_Assumptions.uint64Value_set_Value
 
 namespace int32Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end int32Value
 
-@[reducible] def int32Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def int32Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int32)]
 
-@[irreducible] def int32Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def int32Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   int32Value'fds_unsealed
 
-instance equals_unfold_int32Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_int32Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold int32Value'fds int32Value'fds_unsealed :=
   ⟨by unfold int32Value'fds; rfl⟩
 
-@[reducible] def «int32Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType int32Value'fds)
+@[reducible] def «int32Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType int32Value'fds)
 
-class int32Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class int32Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   int32Value_type_repr : go.TypeReprUnderlying «int32Valueⁱᵐᵖˡ» int32Value.t
   int32Value_underlying : go.UnderlyingDirectedEq int32Value «int32Valueⁱᵐᵖˡ»
   int32Value_get_Value : ∀ (x : int32Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «int32Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4247,28 +4247,28 @@ attribute [instance] int32Value_Assumptions.int32Value_type_repr
   int32Value_Assumptions.int32Value_set_Value
 
 namespace uint32Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end uint32Value
 
-@[reducible] def uint32Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def uint32Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.uint32)]
 
-@[irreducible] def uint32Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def uint32Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   uint32Value'fds_unsealed
 
-instance equals_unfold_uint32Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_uint32Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold uint32Value'fds uint32Value'fds_unsealed :=
   ⟨by unfold uint32Value'fds; rfl⟩
 
-@[reducible] def «uint32Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType uint32Value'fds)
+@[reducible] def «uint32Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType uint32Value'fds)
 
-class uint32Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uint32Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uint32Value_type_repr : go.TypeReprUnderlying «uint32Valueⁱᵐᵖˡ» uint32Value.t
   uint32Value_underlying : go.UnderlyingDirectedEq uint32Value «uint32Valueⁱᵐᵖˡ»
   uint32Value_get_Value : ∀ (x : uint32Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «uint32Valueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4280,28 +4280,28 @@ attribute [instance] uint32Value_Assumptions.uint32Value_type_repr
   uint32Value_Assumptions.uint32Value_set_Value
 
 namespace boolValue
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end boolValue
 
-@[reducible] def boolValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def boolValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.bool)]
 
-@[irreducible] def boolValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def boolValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   boolValue'fds_unsealed
 
-instance equals_unfold_boolValue [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_boolValue [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold boolValue'fds boolValue'fds_unsealed :=
   ⟨by unfold boolValue'fds; rfl⟩
 
-@[reducible] def «boolValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType boolValue'fds)
+@[reducible] def «boolValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType boolValue'fds)
 
-class boolValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class boolValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   boolValue_type_repr : go.TypeReprUnderlying «boolValueⁱᵐᵖˡ» boolValue.t
   boolValue_underlying : go.UnderlyingDirectedEq boolValue «boolValueⁱᵐᵖˡ»
   boolValue_get_Value : ∀ (x : boolValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «boolValueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4313,32 +4313,32 @@ attribute [instance] boolValue_Assumptions.boolValue_type_repr
   boolValue_Assumptions.boolValue_set_Value
 
 namespace stringValue
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Value' : go_string
+  Value' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end stringValue
 
-@[reducible] def stringValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def stringValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.string)]
 
-@[irreducible] def stringValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def stringValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stringValue'fds_unsealed
 
-instance equals_unfold_stringValue [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_stringValue [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stringValue'fds stringValue'fds_unsealed :=
   ⟨by unfold stringValue'fds; rfl⟩
 
-@[reducible] def «stringValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType stringValue'fds)
+@[reducible] def «stringValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stringValue'fds)
 
-class stringValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class stringValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   stringValue_type_repr : go.TypeReprUnderlying «stringValueⁱᵐᵖˡ» stringValue.t
   stringValue_underlying : go.UnderlyingDirectedEq stringValue «stringValueⁱᵐᵖˡ»
   stringValue_get_Value : ∀ (x : stringValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «stringValueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
-  stringValue_set_Value : ∀ (x : stringValue.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «stringValueⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : stringValue.t)))
+  stringValue_set_Value : ∀ (x : stringValue.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «stringValueⁱᵐᵖˡ» go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : stringValue.t)))
 
 attribute [instance] stringValue_Assumptions.stringValue_type_repr
   stringValue_Assumptions.stringValue_underlying
@@ -4346,28 +4346,28 @@ attribute [instance] stringValue_Assumptions.stringValue_type_repr
   stringValue_Assumptions.stringValue_set_Value
 
 namespace bytesValue
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end bytesValue
 
-@[reducible] def bytesValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Value" (go.type.SliceType go.byte))]
+@[reducible] def bytesValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Value" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def bytesValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def bytesValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   bytesValue'fds_unsealed
 
-instance equals_unfold_bytesValue [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_bytesValue [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold bytesValue'fds bytesValue'fds_unsealed :=
   ⟨by unfold bytesValue'fds; rfl⟩
 
-@[reducible] def «bytesValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType bytesValue'fds)
+@[reducible] def «bytesValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType bytesValue'fds)
 
-class bytesValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bytesValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   bytesValue_type_repr : go.TypeReprUnderlying «bytesValueⁱᵐᵖˡ» bytesValue.t
   bytesValue_underlying : go.UnderlyingDirectedEq bytesValue «bytesValueⁱᵐᵖˡ»
   bytesValue_get_Value : ∀ (x : bytesValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «bytesValueⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -4378,7 +4378,7 @@ attribute [instance] bytesValue_Assumptions.bytesValue_type_repr
   bytesValue_Assumptions.bytesValue_get_Value
   bytesValue_Assumptions.bytesValue_set_Value
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Merger_instance : Merger_Assumptions
   generatedMerger_instance : generatedMerger_Assumptions
   custom_instance : custom_Assumptions

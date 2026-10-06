@@ -15,16 +15,16 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
 omit package_sem in
 /-- Two full points-tos for the same `w64` location are contradictory. -/
-theorem w64_pointsto_excl (l : loc) (v w : w64) :
-    (typed_pointsto l v (DFrac.own 1) : IProp GF) ∗ typed_pointsto l w (DFrac.own 1) ⊢ False := by
-  rw [typed_pointsto_unseal]; unfold typedPointstoWrap
+theorem w64_pointsto_excl (l : Loc) (v w : w64) :
+    (typedPointsto l v (DFrac.own 1) : IProp GF) ∗ typedPointsto l w (DFrac.own 1) ⊢ False := by
+  rw [typedPointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨⟨H1, _⟩, ⟨H2, _⟩⟩
-  have e : ∀ u : w64, typed_pointsto_def (GF := GF) l u (DFrac.own 1) =
+  have e : ∀ u : w64, typedPointstoDef (GF := GF) l u (DFrac.own 1) =
       heapPointsto l (DFrac.own 1) #u := fun _ => rfl
   simp only [e]
   icombine H1 H2 gives % ⟨Hv, _⟩
@@ -39,11 +39,11 @@ theorem wp_testNestedStructUpdates : TestFunOk (GF := GF) testNestedStructUpdate
 theorem wp_testStructConstructions : TestFunOk (GF := GF) testStructConstructions := by
   semantics_auto
   by_cases h : p4_ptr = «$r0_ptr»
-  · -- Rocq: Admitted ("how to combine typed_pointsto to get sum of fractions?")
+  · -- Rocq: Admitted ("how to combine typedPointsto to get sum of fractions?")
     subst h
     iexfalso
-    rw [typed_pointsto_unseal_eq p4_ptr (_ : TwoInts.t), typed_pointsto_unseal_eq p4_ptr (_ : TwoInts.t)]
-    simp only [TypedPointsto.typed_pointsto_def]
+    rw [typedPointsto_unseal_eq p4_ptr (_ : TwoInts.t), typedPointsto_unseal_eq p4_ptr (_ : TwoInts.t)]
+    simp only [TypedPointsto.typedPointstoDef]
     icases p4 with ⟨⟨Hx, _⟩, _⟩
     icases «$r0» with ⟨⟨Hx', _⟩, _⟩
     iapply w64_pointsto_excl

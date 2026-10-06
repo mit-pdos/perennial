@@ -10,9 +10,9 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section into_val_typed_instances
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 attribute [local instance] go.tagged_internal_inst
@@ -42,12 +42,12 @@ instance intoVal_typed_int : IntoValTypedUnderlying (GF := GF) w64 go.int := by
   solve_into_val_typed
 instance intoVal_typed_bool : IntoValTypedUnderlying (GF := GF) Bool go.bool := by
   solve_into_val_typed
-instance intoVal_typed_string : IntoValTypedUnderlying (GF := GF) go_string go.string := by
+instance intoVal_typed_string : IntoValTypedUnderlying (GF := GF) GoString go.string := by
   solve_into_val_typed
-instance intoVal_typed_Pointer : IntoValTypedUnderlying (GF := GF) loc unsafe.Pointer := by
+instance intoVal_typed_Pointer : IntoValTypedUnderlying (GF := GF) Loc unsafe.Pointer := by
   solve_into_val_typed
 instance intoVal_typed_proph_id :
-    IntoValTypedUnderlying (GF := GF) Perennial.proph_id go.proph_id := by
+    IntoValTypedUnderlying (GF := GF) Perennial.proph_id go.prophId := by
   solve_into_val_typed
 instance intoVal_typed_float64 : IntoValTypedUnderlying (GF := GF) w64 go.float64 := by
   solve_into_val_typed

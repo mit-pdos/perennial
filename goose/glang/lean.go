@@ -10,9 +10,9 @@ package glang
 //
 // Every Expr can be printed in one of two modes:
 //
-//   - LeanTerm: a Lean term (the analogue of a Gallina term), e.g. a go.type,
-//     a go_string, a val (`#x`), a list.
-//   - LeanExpr: a GooseLang `expr`. Values are wrapped in `Val`, identifiers
+//   - LeanTerm: a Lean term (the analogue of a Gallina term), e.g. a go.GoType,
+//     a GoString, a val (`#x`), a list.
+//   - LeanExpr: a GooseLang `Expr`. Values are wrapped in `Val`, identifiers
 //     become `Var "x"`, applications become `App`.
 //
 // Generated code lives in `namespace Perennial` and then a namespace derived
@@ -123,7 +123,8 @@ func init() {
 	FuncUnfold MethodUnfold TypeRepr EqualsUnfold ZeroVal zero_val_def
 	PkgInfo GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder
 	GoAnd GoOr GoXor GoBitClear GoShiftl GoShiftr GoPos GoNeg GoNot GoComplement
-	struct_field_ref`) {
+	struct_field_ref intoVal exceptionSeq doExecute doReturn exceptionDo doBreak
+	doContinue doFor wrapDefer GoString Loc zeroValDef structFieldRef`) {
 		LeanShadowNames[w] = true
 	}
 }
@@ -172,24 +173,24 @@ func LeanQuote(s string) string {
 // constructors are not namespaced by their inductive) to their Lean names in
 // Perennial/Golang/Defn/PreLang.lean.
 var leanConstructors = map[string]string{
-	"go.Named":              "go.type.Named",
-	"go.ArrayType":          "go.type.ArrayType",
-	"go.StructType":         "go.type.StructType",
-	"go.PointerType":        "go.type.PointerType",
-	"go.FunctionType":       "go.type.FunctionType",
-	"go.InterfaceType":      "go.type.InterfaceType",
-	"go.SliceType":          "go.type.SliceType",
-	"go.MapType":            "go.type.MapType",
-	"go.ChannelType":        "go.type.ChannelType",
-	"go.UntypedType":        "go.type.UntypedType",
-	"go.sendrecv":           "go.chan_dir.sendrecv",
-	"go.sendonly":           "go.chan_dir.sendonly",
-	"go.recvonly":           "go.chan_dir.recvonly",
+	"go.Named":              "go.GoType.Named",
+	"go.ArrayType":          "go.GoType.ArrayType",
+	"go.StructType":         "go.GoType.StructType",
+	"go.PointerType":        "go.GoType.PointerType",
+	"go.FunctionType":       "go.GoType.FunctionType",
+	"go.InterfaceType":      "go.GoType.InterfaceType",
+	"go.SliceType":          "go.GoType.SliceType",
+	"go.MapType":            "go.GoType.MapType",
+	"go.ChannelType":        "go.GoType.ChannelType",
+	"go.UntypedType":        "go.GoType.UntypedType",
+	"go.sendrecv":           "go.ChanDir.sendrecv",
+	"go.sendonly":           "go.ChanDir.sendonly",
+	"go.recvonly":           "go.ChanDir.recvonly",
 	"go.FieldDecl":          "go.field_decl.FieldDecl",
 	"go.EmbeddedField":      "go.field_decl.EmbeddedField",
 	"go.Signature":          "go.signature.Signature",
-	"go.MethodElem":         "go.interface_elem.MethodElem",
-	"go.TypeElem":           "go.interface_elem.TypeElem",
+	"go.MethodElem":         "go.InterfaceElem.MethodElem",
+	"go.TypeElem":           "go.InterfaceElem.TypeElem",
 	"go.TypeTerm":           "go.type_term.TypeTerm",
 	"go.TypeTermUnderlying": "go.type_term.TypeTermUnderlying",
 }
@@ -202,11 +203,40 @@ var leanVerbatims = map[string]string{
 	"#interface.nil": "#interface.t.nil",
 }
 
+// leanRenames maps the Rocq names of framework definitions, which the shared
+// translator emits, to their Lean names (Lean naming conventions).
+var leanRenames = map[string]string{
+	"go_string":         "GoString",
+	"loc":               "Loc",
+	"go.type":           "go.GoType",
+	"exception_do":      "exceptionDo",
+	"zero_val_def":      "zeroValDef",
+	"struct_field_ref":  "structFieldRef",
+	"go.untyped_bool":   "go.untypedBool",
+	"go.untyped_int":    "go.untypedInt",
+	"go.untyped_float":  "go.untypedFloat",
+	"go.untyped_rune":   "go.untypedRune",
+	"go.untyped_string": "go.untypedString",
+	"go.untyped_nil":    "go.untypedNil",
+}
+
+// LeanRename maps the Rocq name of a framework definition to its Lean name
+// (unchanged if it has no Lean-specific name).
+func LeanRename(s string) string {
+	if c, ok := leanRenames[s]; ok {
+		return c
+	}
+	return s
+}
+
 // LeanIdent renders a (possibly qualified) Gallina identifier as a Lean
 // identifier: applies the keyword renaming of the Rocq printer (plus
 // LeanShadowNames) to the last component, and quotes components as needed.
 func LeanIdent(s string) string {
 	if c, ok := leanConstructors[s]; ok {
+		return c
+	}
+	if c, ok := leanRenames[s]; ok {
 		return c
 	}
 	return LeanQuote(GallinaIdent(s).Coq(false))
@@ -246,7 +276,7 @@ func LeanStringLit(s string) string {
 		for i := 0; i < len(s); i++ {
 			bs = append(bs, fmt.Sprintf("W8 %d", s[i]))
 		}
-		return "([" + strings.Join(bs, ", ") + "] : go_string)"
+		return "([" + strings.Join(bs, ", ") + "] : GoString)"
 	}
 	return "go!" + LeanRawString(s)
 }
@@ -430,7 +460,7 @@ func vLam(names []string, body string) string {
 
 // exception sequencing `e1 ;;; e2`
 func eExnSeq(e1, e2 string) string {
-	return eLetLike("App", []string{lapp("App", eVal("exception_seq"), eLam(nil, e2))}, e1)
+	return eLetLike("App", []string{lapp("App", eVal("exceptionSeq"), eLam(nil, e2))}, e1)
 }
 
 func ePair(es ...string) string {
@@ -482,6 +512,8 @@ func (e VerbatimExpr) Lean(m LeanMode) string {
 	if c, ok := leanConstructors[s]; ok {
 		s = c
 	} else if c, ok := leanVerbatims[s]; ok {
+		s = c
+	} else if c, ok := leanRenames[s]; ok {
 		s = c
 	}
 	if m == LeanExpr {
@@ -563,7 +595,7 @@ var leanHeads = map[string]leanHead{
 	"map.insert":       {kind: headValFn, name: "map.insert", nTerm: 1},
 	"package.init":     {kind: headValFn, name: "package.init", nTerm: 1},
 	"go.GlobalAlloc":   {kind: headValFn, name: "go.GlobalAlloc", nTerm: 2},
-	"exception_do":     {kind: headVal, name: "exception_do"},
+	"exception_do":     {kind: headVal, name: "exceptionDo"},
 	"with_defer:":      {kind: headWithDefer},
 	"Fst":              {kind: headExprCtor, name: "Fst", argModes: []LeanMode{LeanExpr}},
 	"Snd":              {kind: headExprCtor, name: "Snd", argModes: []LeanMode{LeanExpr}},
@@ -642,7 +674,7 @@ func (h leanHead) render(args []Expr, m LeanMode) string {
 		if len(args) != 1 {
 			panic("with_defer: expects one argument")
 		}
-		return eLetLike("App", []string{eVal("wrap_defer")},
+		return eLetLike("App", []string{eVal("wrapDefer")},
 			eLam([]string{"$defer"}, args[0].Lean(LeanExpr)))
 	case headTermCtor, headExprCtor:
 		var as []string
@@ -659,19 +691,19 @@ func (h leanHead) render(args []Expr, m LeanMode) string {
 }
 
 func (e ContinueExpr) Lean(m LeanMode) string {
-	return eApp(eVal("do_continue"), eVal("#()"))
+	return eApp(eVal("doContinue"), eVal("#()"))
 }
 
 func (e BreakExpr) Lean(m LeanMode) string {
-	return eApp(eVal("do_break"), eVal("#()"))
+	return eApp(eVal("doBreak"), eVal("#()"))
 }
 
 func (e ReturnExpr) Lean(m LeanMode) string {
-	return eLetLike("App", []string{eVal("do_return")}, e.Value.Lean(LeanExpr))
+	return eLetLike("App", []string{eVal("doReturn")}, e.Value.Lean(LeanExpr))
 }
 
 func (b DoExpr) Lean(m LeanMode) string {
-	return eLetLike("App", []string{eVal("do_execute")}, b.Expr.Lean(LeanExpr))
+	return eLetLike("App", []string{eVal("doExecute")}, b.Expr.Lean(LeanExpr))
 }
 
 func (b SeqExpr) Lean(m LeanMode) string {
@@ -900,26 +932,26 @@ func (ife IfExpr) Lean(m LeanMode) string {
 
 func (e ForLoopExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
-		lapp("App", lapp("App", eVal("do_for"), eLam(nil, e.Cond.Lean(LeanExpr))),
+		lapp("App", lapp("App", eVal("doFor"), eLam(nil, e.Cond.Lean(LeanExpr))),
 			eLam(nil, e.Body.Lean(LeanExpr)))},
 		eLam(nil, e.Post.Lean(LeanExpr)))
 }
 
 func (e ForRangeSliceExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
-		lapp("App", eVal(lapp("slice.for_range", e.Ty.Lean(LeanTerm))), e.Slice.Lean(LeanExpr))},
+		lapp("App", eVal(lapp("slice.forRange", e.Ty.Lean(LeanTerm))), e.Slice.Lean(LeanExpr))},
 		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
 }
 
 func (e ForRangeChanExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
-		lapp("App", eVal(lapp("chan.for_range", e.Elem.Lean(LeanTerm))), e.Chan.Lean(LeanExpr))},
+		lapp("App", eVal(lapp("chan.forRange", e.Elem.Lean(LeanTerm))), e.Chan.Lean(LeanExpr))},
 		eLam([]string{"$key"}, e.Body.Lean(LeanExpr)))
 }
 
 func (e ForRangeMapExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
-		lapp("App", eVal(lapp("map.for_range", e.KeyType.Lean(LeanTerm), e.ElemType.Lean(LeanTerm))),
+		lapp("App", eVal(lapp("map.forRange", e.KeyType.Lean(LeanTerm), e.ElemType.Lean(LeanTerm))),
 			e.Map.Lean(LeanExpr))},
 		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
 }
@@ -996,7 +1028,7 @@ func (d StructType) LeanFields() string {
 }
 
 func (d StructType) Lean(m LeanMode) string {
-	return lapp("go.type.StructType", d.LeanFields())
+	return lapp("go.GoType.StructType", d.LeanFields())
 }
 
 // ---- Decls ----
@@ -1006,7 +1038,7 @@ func (d StructType) Lean(m LeanMode) string {
 // prevent) was the bulk of elaboration time for large packages. So are the
 // go_string constants naming functions and globals. go.type definitions stay
 // computable since Golang/Defn uses some of them in computable definitions.
-const leanDeclParams = "[ffi_syntax] [GoGlobalContext]"
+const leanDeclParams = "[FfiSyntax] [GoGlobalContext]"
 
 func leanTypeParams(names []GallinaIdent) string {
 	if len(names) == 0 {
@@ -1016,7 +1048,7 @@ func leanTypeParams(names []GallinaIdent) string {
 	for _, n := range names {
 		ss = append(ss, LeanIdent(string(n)))
 	}
-	return " (" + strings.Join(ss, " ") + " : go.type)"
+	return " (" + strings.Join(ss, " ") + " : go.GoType)"
 }
 
 func (d FuncDecl) LeanDecl() string {
@@ -1066,7 +1098,7 @@ func (decl ImportDecl) LeanDecl() string {
 func (d TypeDecl) LeanDecl() string {
 	typeParams := ""
 	for _, t := range d.TypeParams {
-		typeParams += fmt.Sprintf(" (%s : go.type)", LeanIdent(t))
+		typeParams += fmt.Sprintf(" (%s : go.GoType)", LeanIdent(t))
 	}
 	attr := ""
 	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") || d.Alias {
@@ -1074,7 +1106,7 @@ func (d TypeDecl) LeanDecl() string {
 		// that instances for the aliased type apply
 		attr = "@[reducible] "
 	}
-	return fmt.Sprintf("%sdef %s %s%s : go.type :=\n  %s", attr, LeanIdent(d.Name), leanDeclParams, typeParams,
+	return fmt.Sprintf("%sdef %s %s%s : go.GoType :=\n  %s", attr, LeanIdent(d.Name), leanDeclParams, typeParams,
 		indent(2, d.Body.Lean(LeanTerm)))
 }
 

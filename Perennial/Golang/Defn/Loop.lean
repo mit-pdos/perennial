@@ -6,7 +6,7 @@ import Perennial.Golang.Defn.Exception
 namespace Perennial
 
 section goose_lang
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def breakValDef : val := glv((#"break", #()))
 @[irreducible] def breakVal : val := breakValDef
@@ -17,16 +17,16 @@ def continueValDef : val := glv((#"continue", #()))
 theorem continueVal_unseal : continueVal = continueValDef := by with_unfolding_all rfl
 
 def doBreakDef : val := λ: "v", (#"break", "v")
-@[irreducible] def do_break : val := doBreakDef
-theorem do_break_unseal : do_break = doBreakDef := by with_unfolding_all rfl
+@[irreducible] def doBreak : val := doBreakDef
+theorem doBreak_unseal : doBreak = doBreakDef := by with_unfolding_all rfl
 
 def doContinueDef : val := λ: "v", (#"continue", "v")
-@[irreducible] def do_continue : val := doContinueDef
-theorem do_continue_unseal : do_continue = doContinueDef := by with_unfolding_all rfl
+@[irreducible] def doContinue : val := doContinueDef
+theorem doContinue_unseal : doContinue = doContinueDef := by with_unfolding_all rfl
 
 def doForDef : val :=
   rec: "loop" "cond" "body" "post" :=
-   exception_do (
+   exceptionDo (
    if: ("cond" #()) then
      let: "b" := "body" #() in
      if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
@@ -36,21 +36,21 @@ def doForDef : val :=
    else (return: (do: #()))
   )
 
-@[irreducible] def do_for : val := doForDef
-theorem do_for_unseal : do_for = doForDef := by with_unfolding_all rfl
+@[irreducible] def doFor : val := doForDef
+theorem doFor_unseal : doFor = doForDef := by with_unfolding_all rfl
 
 end goose_lang
 
-/-- `break: e` is `do_break e`. -/
+/-- `break: e` is `doBreak e`. -/
 scoped syntax:16 "break: " term:17 : term
-/-- `continue: e` is `do_continue e`. -/
+/-- `continue: e` is `doContinue e`. -/
 scoped syntax:16 "continue: " term:17 : term
-/-- `for: cond ; post := e` is `do_for cond e post`. -/
+/-- `for: cond ; post := e` is `doFor cond e post`. -/
 scoped syntax:10 "for: " term:max " ; " term:max " := " term : term
 
 macro_rules
-  | `(break: $e) => `(App (Val do_break) gl($e))
-  | `(continue: $e) => `(App (Val do_continue) gl($e))
-  | `(for: $c ; $p := $e) => `(App (App (App (Val do_for) gl($c)) gl($e)) gl($p))
+  | `(break: $e) => `(App (Val doBreak) gl($e))
+  | `(continue: $e) => `(App (Val doContinue) gl($e))
+  | `(for: $c ; $p := $e) => `(App (App (App (Val doFor) gl($c)) gl($e)) gl($p))
 
 end Perennial

@@ -87,8 +87,8 @@ imports = ["!*"]
 
 **What is generated.** For each package, `Perennial/Code/<pkg>.lean` contains
 
-* `pkg_id.<pkg> : go_string` and a `PkgInfo` instance (the imported packages);
-* for every function `F`, its name `def F : go_string := go!"pkg.F"` and its
+* `pkg_id.<pkg> : GoString` and a `PkgInfo` instance (the imported packages);
+* for every function `F`, its name `def F : GoString := go!"pkg.F"` and its
   body `def «Fⁱᵐᵖˡ» : val` (methods are `«T__mⁱᵐᵖˡ»`);
 * types (`def S : go.type`), and the struct value types `S.t` with fields `a'`, `b'`, ...;
 * `initialize'`, the package initialization function;
@@ -124,7 +124,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 The unit-test package imports `github.com/goose-lang/primitive/disk`, so its
 FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude`)
 and the section does not bind it. Other packages are generic in the FFI and also
-bind `[ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]`,
+bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
 as in `Perennial/Proof/sync_proof/mutex.lean`. Proofs that need ghost state add
 `[allG GF]` (section 10).
 
@@ -145,7 +145,7 @@ before `RET` are optional (`{{ RET #(); True }}`).
 * A method call `r.m(x)` is `(App (Val (r @!! T @!! go!"m")) (Val #x))`, e.g.
   `(App (Val (m @!! go.type.PointerType Mutex @!! go!"Lock")) (Val #()))`.
 * `#x` turns a Lean value (`w64`, `w8`, `Bool`, `loc`, `slice.t`, a struct `S.t`,
-  `go_string`, `()`, ...) into a GooseLang `val`.
+  `GoString`, `()`, ...) into a GooseLang `val`.
 * Multiple return values are a pair: `RET (PairV #a #b)`.
 * The precondition starts with `isPkgInit (PROP := IProp GF) pkg`; the
   `(PROP := ...)` is needed when nothing else in the precondition fixes the
@@ -545,7 +545,7 @@ example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
 -- packages in order, and conclude `isPkgInit`.
-example (get_is_pkg_init : go_string → IProp GF)
+example (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))

@@ -12,97 +12,97 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def crypto.ed25519 : go_string := go!"crypto/ed25519"
+def crypto.ed25519 : GoString := go!"crypto/ed25519"
 end pkg_id
 
 namespace crypto.ed25519
 
-def PublicKey [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"crypto/ed25519.PublicKey" [])
+def PublicKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"crypto/ed25519.PublicKey" [])
 
 attribute [irreducible] PublicKey
 
-def PrivateKey [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"crypto/ed25519.PrivateKey" [])
+def PrivateKey [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"crypto/ed25519.PrivateKey" [])
 
 attribute [irreducible] PrivateKey
 
-def Options [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"crypto/ed25519.Options" [])
+def Options [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"crypto/ed25519.Options" [])
 
 attribute [irreducible] Options
 
-axiom «Optionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Optionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom PublicKeySize [ffi_syntax] [GoGlobalContext] : val
+axiom PublicKeySize [FfiSyntax] [GoGlobalContext] : val
 
-axiom PrivateKeySize [ffi_syntax] [GoGlobalContext] : val
+axiom PrivateKeySize [FfiSyntax] [GoGlobalContext] : val
 
-axiom SignatureSize [ffi_syntax] [GoGlobalContext] : val
+axiom SignatureSize [FfiSyntax] [GoGlobalContext] : val
 
-axiom SeedSize [ffi_syntax] [GoGlobalContext] : val
+axiom SeedSize [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def privateKeyCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def privateKeyCache [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.privateKeyCache"
 
-noncomputable def cryptocustomrand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cryptocustomrand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.cryptocustomrand"
 
-axiom cryptocustomrand'init [ffi_syntax] [GoGlobalContext] : val
+axiom cryptocustomrand'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def GenerateKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GenerateKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
 
-noncomputable def NewKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewKeyFromSeed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.NewKeyFromSeed"
 
-noncomputable def newKeyFromSeed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newKeyFromSeed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.newKeyFromSeed"
 
-noncomputable def Sign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sign [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.Sign"
 
-noncomputable def sign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sign [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.sign"
 
-noncomputable def Verify [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Verify [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.Verify"
 
-noncomputable def VerifyWithOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def VerifyWithOptions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.VerifyWithOptions"
 
 instance info' : PkgInfo pkg_id.crypto.ed25519 where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val cryptocustomrand'init) (Val #())))))))
 
 namespace PublicKey
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end PublicKey
 
-@[reducible] def «PublicKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.byte)
+@[reducible] def «PublicKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.byte)
 
-class PublicKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PublicKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PublicKey_underlying : go.UnderlyingDirectedEq PublicKey «PublicKeyⁱᵐᵖˡ»
 
 attribute [instance] PublicKey_Assumptions.PublicKey_underlying
 
 namespace PrivateKey
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end PrivateKey
 
-@[reducible] def «PrivateKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType go.byte)
+@[reducible] def «PrivateKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.byte)
 
-class PrivateKey_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PrivateKey_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PrivateKey_underlying : go.UnderlyingDirectedEq PrivateKey «PrivateKeyⁱᵐᵖˡ»
 
 attribute [instance] PrivateKey_Assumptions.PrivateKey_underlying
@@ -113,7 +113,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Options
 
-class Options_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Options_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Options_type_repr : go.TypeReprUnderlying «Optionsⁱᵐᵖˡ» Options.t
   Options_underlying : go.UnderlyingDirectedEq Options «Optionsⁱᵐᵖˡ»
   «Optionsⁱᵐᵖˡ_underlying» : go.IsUnderlying «Optionsⁱᵐᵖˡ» «Optionsⁱᵐᵖˡ»
@@ -122,7 +122,7 @@ attribute [instance] Options_Assumptions.Options_type_repr
   Options_Assumptions.Options_underlying
   Options_Assumptions.«Optionsⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PublicKey_instance : PublicKey_Assumptions
   PrivateKey_instance : PrivateKey_Assumptions
   Options_instance : Options_Assumptions

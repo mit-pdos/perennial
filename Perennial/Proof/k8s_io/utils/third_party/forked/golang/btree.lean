@@ -30,9 +30,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace k8s_io.utils.third_party.forked.golang.btree
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [cmp_sem : cmp.Assumptions] [sort_sem : sort.Assumptions] [sync_sem : sync.Assumptions]
 variable [package_sem : btree.Assumptions]
@@ -43,32 +43,32 @@ instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree :=
   build_get_is_pkg_init_wf
 
-axiom ownBTree (t : loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type}
+axiom ownBTree (t : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) (dq : DFrac) :
     IProp GF
 
-axiom ownBTree_dfractional (t : loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
+axiom ownBTree_dfractional (t : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {V : Type} (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) :
     DFractional (ownBTree t is_item less items)
 attribute [instance] ownBTree_dfractional
 
-axiom BTree.wp_Clone [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
+axiom BTree.wp_Clone [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.GoType}
     [IntoValTyped (GF := GF) T' T] {V : Type}
-    (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) (t : loc) :
+    (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V) (t : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items (DFrac.own 1) }}
-      (App (Val (t @!! go.type.PointerType (BTree T) @!! go!"Clone")) (Val #()))
-    {{ (t' : loc), RET #t';
+      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"Clone")) (Val #()))
+    {{ (t' : Loc), RET #t';
        ownBTree t is_item less items (DFrac.own 1) ∗
        ownBTree t' is_item less items (DFrac.own 1) }}
 
-axiom BTree.wp_Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
+axiom BTree.wp_Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.GoType}
     [IntoValTyped (GF := GF) T' T] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V)
-    (t : loc) (key_item : T') (key : V) (dq : DFrac) :
+    (t : Loc) (key_item : T') (key : V) (dq : DFrac) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items dq ∗ is_item key_item key }}
-      (App (Val (t @!! go.type.PointerType (BTree T) @!! go!"Get")) (Val #key_item))
+      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"Get")) (Val #key_item))
     {{ (item : T') (found : Bool), RET (PairV #item #found);
        ownBTree t is_item less items dq ∗
        (match found with
@@ -78,12 +78,12 @@ axiom BTree.wp_Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [T
 /-- TODO (from Rocq): this is a conservative but weak spec; it does not
 constrain the final tree state. -/
 axiom BTree.wp_ReplaceOrInsert [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
-    {T : go.type} [IntoValTyped (GF := GF) T' T] {V : Type}
+    {T : go.GoType} [IntoValTyped (GF := GF) T' T] {V : Type}
     (is_item : T' → V → IProp GF) (less : V → V → Prop) (items : List V)
-    (t : loc) (item : T') (itv : V) :
+    (t : Loc) (item : T') (itv : V) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.k8s_io.utils.third_party.forked.golang.btree ∗
        ownBTree t is_item less items (DFrac.own 1) ∗ is_item item itv }}
-      (App (Val (t @!! go.type.PointerType (BTree T) @!! go!"ReplaceOrInsert")) (Val #item))
+      (App (Val (t @!! go.GoType.PointerType (BTree T) @!! go!"ReplaceOrInsert")) (Val #item))
     {{ (old_item : T') (found : Bool) (items' : List V), RET (PairV #old_item #found);
        ownBTree t is_item less items' (DFrac.own 1) }}
 

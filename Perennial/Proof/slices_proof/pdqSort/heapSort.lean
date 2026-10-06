@@ -393,12 +393,12 @@ theorem heap_pop_heap (xs : List E) (A B i : Nat) (x0 xi : E) (HB : A + i < xs.l
 end heap
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : slices.Assumptions]
-variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
+variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 

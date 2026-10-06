@@ -36,9 +36,9 @@ theorem fib_succ (k : Nat) :
   cases k <;> rfl
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -46,7 +46,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 set_option goose.wp.extras true
 
 set_option maxHeartbeats 400000 in
-theorem wp_fibonacci (n : w64) (c0 : loc) (γ : SpscNames) (Hn : 0 < sint.Z n) :
+theorem wp_fibonacci (n : w64) (c0 : Loc) (γ : SpscNames) (Hn : 0 < sint.Z n) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         isSpsc γ c0 (fun i v => iprop(⌜v = fib i.toNat⌝))
           (fun sent => iprop(⌜sent = fibList (sint.nat n)⌝)) ∗

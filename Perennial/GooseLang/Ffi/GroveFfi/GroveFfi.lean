@@ -55,8 +55,8 @@ def groveTimeAuth (hG : GroveGS GF) (t : Nat) : IProp GF :=
 def groveTscAuth (hL : GroveNodeGS GF) (t : Nat) : IProp GF :=
   @MonoNat.auth_own GF hL.groveGPreS.grovePreGTscG hL.groveTscName (.own 1) (MaxNat.ofNat t)
 
-/-- The GooseLang `ffi_interp` for Grove. -/
-@[reducible] def grove_interp : ffi_interp grove_model where
+/-- The GooseLang `FfiInterp` for Grove. -/
+@[reducible] def grove_interp : FfiInterp grove_model where
   ffiGlobalGS := GroveGS
   ffiLocalGS := GroveNodeGS
   ffiLocalCtx hL σ :=
@@ -357,7 +357,7 @@ theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
     iframe Hc
     ipureintro; simpa using Hd
 
-theorem wp_FileReadOp (f : go_string) (q : DFrac) (c : List w8) :
+theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
     {{ (f f↦{q} c : IProp GF) }} (ExternalOp GroveOp.FileReadOp (Val (#f))) @ s; E
     {{ RET #c; f f↦{q} c }} := by
   iintro %Φ Hc HΦ
@@ -381,7 +381,7 @@ theorem wp_FileReadOp (f : go_string) (q : DFrac) (c : List w8) :
   iapply HΦ
   iexact Hc
 
-theorem wp_FileWriteOp (f : go_string) (old new : List w8) :
+theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
     {{ (f f↦ old : IProp GF) }} (ExternalOp GroveOp.FileWriteOp (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ new }} := by
   iintro %Φ Hc HΦ
@@ -403,7 +403,7 @@ theorem wp_FileWriteOp (f : go_string) (old new : List w8) :
   iapply HΦ
   iexact Hc
 
-theorem wp_FileAppendOp (f : go_string) (old new : List w8) :
+theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
     {{ (f f↦ old : IProp GF) }} (ExternalOp GroveOp.FileAppendOp (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ (old ++ new) }} := by
   iintro %Φ Hc HΦ
@@ -478,7 +478,7 @@ theorem wp_GetTimeRangeOp (Φ : val → IProp GF) :
   iapply wp_value'
   iexact HΦ
 
-theorem wp_time_acc (e : expr) (Φ : val → IProp GF) (h : toVal e = none) :
+theorem wp_time_acc (e : Expr) (Φ : val → IProp GF) (h : toVal e = none) :
     ⊢ (∀ t, ownTime (G := G) t ={E}=∗ ownTime t ∗ WP e @ s; E {{ Φ }}) -∗
       WP e @ s; E {{ Φ }} := by
   have h' : ToVal.toVal (Val := val) e = none := h

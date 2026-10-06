@@ -32,8 +32,8 @@ class DiskGS (GF : BundledGFunctors) where
 class DiskPreG (GF : BundledGFunctors) where
   diskPreGGenHeapG : genHeapPreS Int Block GF (GMap Int)
 
-/-- The GooseLang `ffi_interp` for the disk. -/
-@[reducible] def disk_interp : ffi_interp disk_model where
+/-- The GooseLang `FfiInterp` for the disk. -/
+@[reducible] def disk_interp : FfiInterp disk_model where
   ffiLocalGS := DiskGS
   ffiGlobalGS _ := Unit
   ffiLocalCtx hL d := genHeapInterp (G := hL.diskGGenHeapG) (d : DiskState)
@@ -53,7 +53,7 @@ instance diskPointsto_timeless {GF : BundledGFunctors} (hL : DiskGS GF) (a : Int
 section heap_array
 variable {V : Type}
 
-theorem heapArray_lookup_lt (l : loc) (vs : List V) (i : Int) (h : i < 0) :
+theorem heapArray_lookup_lt (l : Loc) (vs : List V) (i : Int) (h : i < 0) :
     heapArray l vs !! (l +ₗ i) = none := by
   induction vs generalizing l i with
   | nil => rfl
@@ -66,9 +66,9 @@ theorem heapArray_lookup_lt (l : loc) (vs : List V) (i : Int) (h : i < 0) :
 end heap_array
 
 section na_heap_alloc
-variable [ext : ffi_syntax] {GF : BundledGFunctors} [hG : NaHeapGS loc val GF]
+variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-theorem na_heap_alloc_list (σ : GMap loc (NonAtomic val)) (l : loc) (vs : List val)
+theorem na_heap_alloc_list (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val)
     (Hfresh : ∀ i : Int, σ !! (l +ₗ i) = none) :
     ⊢@{IProp GF} naHeapCtx tls σ ==∗ naHeapCtx tls (heapArray l (vs.map Free) ∪ σ) ∗
       [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
@@ -127,14 +127,14 @@ theorem disk_local_ctx_eq (d : DiskState) :
       genHeapInterp (G := (gooseDiskGS (L := L)).diskGGenHeapG) d := .rfl
 
 /-- Rocq `pointstoBlock` (see the file header for the representation). -/
-def pointstoBlock (l : loc) (q : DFrac) (b : Block) : IProp GF :=
+def pointstoBlock (l : Loc) (q : DFrac) (b : Block) : IProp GF :=
   iprop([∗list] i ↦ v ∈ BlockToVals b, heapPointsto (l +ₗ (i : Int)) q v)
 
-instance pointstoBlock_timeless (l : loc) (q : DFrac) (b : Block) :
+instance pointstoBlock_timeless (l : Loc) (q : DFrac) (b : Block) :
     Timeless (pointstoBlock (GF := GF) l q b) := by
   unfold pointstoBlock; infer_instance
 
-theorem pointstoBlock_extract (i : Int) (l : loc) (q : DFrac) (b : Block)
+theorem pointstoBlock_extract (i : Int) (l : Loc) (q : DFrac) (b : Block)
     (Hlow : 0 ≤ i) (Hhi : i < 4096) :
     ⊢ pointstoBlock (GF := GF) l q b -∗
       ∃ v, heapPointsto (l +ₗ i) q v ∗ ⌜(BlockToVals b)[i.toNat]? = some v⌝ := by
@@ -150,13 +150,13 @@ theorem pointstoBlock_extract (i : Int) (l : loc) (q : DFrac) (b : Block)
   ipureintro; exact hlk
 
 /-- The bytes of a block are in the heap. -/
-def BlockInHeap (h : GMap loc (NonAtomic val)) (l : loc) (b : Block) : Prop :=
+def BlockInHeap (h : GMap Loc (NonAtomic val)) (l : Loc) (b : Block) : Prop :=
   ∀ i : Int, 0 ≤ i → i < 4096 →
     match h !! (l +ₗ i) with
     | some (Reading _, v) => (BlockToVals b)[i.toNat]? = some v
     | _ => False
 
-theorem heap_valid_block (l : loc) (b : Block) (q : DFrac) (σ : GMap loc (NonAtomic val)) :
+theorem heap_valid_block (l : Loc) (b : Block) (q : DFrac) (σ : GMap Loc (NonAtomic val)) :
     ⊢ naHeapCtx (hG := L.goose_na_heapGS) tls σ -∗ pointstoBlock (GF := GF) l q b -∗
       ⌜BlockInHeap σ l b⌝ := by
   iintro Hσ Hm
@@ -193,7 +193,7 @@ theorem blockToVals_ext_eq (b1 b2 : Block)
   have := (List.map_inj_right (fun x y h => Hinj h)).mp Hl
   exact Vector.toList_inj.mp this
 
-theorem blockInHeap_inj {h : GMap loc (NonAtomic val)} {l : loc} {b1 b2 : Block}
+theorem blockInHeap_inj {h : GMap Loc (NonAtomic val)} {l : Loc} {b1 b2 : Block}
     (H1 : BlockInHeap h l b1) (H2 : BlockInHeap h l b2) : b1 = b2 := by
   apply blockToVals_ext_eq
   intro i h0 h1
@@ -206,17 +206,17 @@ theorem blockInHeap_inj {h : GMap loc (NonAtomic val)} {l : loc} {b1 b2 : Block}
     | Writing => simp
     | Reading _ => intro e1 e2; rw [e1, e2]
 
-theorem diskFfiStep_ReadOp_inv {v : val} {σg σg' : CfgState} {e' : expr}
+theorem diskFfiStep_ReadOp_inv {v : val} {σg σg' : CfgState} {e' : Expr}
     (h : DiskFfiStep .ReadOp v σg e' σg') :
-    ∃ (a : w64) (b : Block) (l : loc), v = #a ∧ diskWorld σg.1 !! uint.Z a = some b ∧
+    ∃ (a : w64) (b : Block) (l : Loc), v = #a ∧ diskWorld σg.1 !! uint.Z a = some b ∧
       IsFresh σg l ∧ e' = Val (#l) ∧
       σg' = (stateInsertList l (BlockToVals b) σg.1, σg.2) := by
   cases h with
   | ReadS a b l _ h1 h2 => exact ⟨a, b, l, rfl, h1, h2, rfl, rfl⟩
 
-theorem diskFfiStep_WriteOp_inv {v : val} {σg σg' : CfgState} {e' : expr}
+theorem diskFfiStep_WriteOp_inv {v : val} {σg σg' : CfgState} {e' : Expr}
     (h : DiskFfiStep .WriteOp v σg e' σg') :
-    ∃ (a : w64) (l : loc) (b0 b : Block), v = PairV (#a) (#l) ∧
+    ∃ (a : w64) (l : Loc) (b0 b : Block), v = PairV (#a) (#l) ∧
       diskWorld σg.1 !! uint.Z a = some b0 ∧ BlockInHeap σg.1.heap l b ∧ e' = Val (#()) ∧
       σg' = ({ σg.1 with world := <[uint.Z a := b]> (diskWorld σg.1) }, σg.2) := by
   cases h with
@@ -226,7 +226,7 @@ open EctxLanguage
 
 theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
     {{ ▷ diskPointsto (gooseDiskGS (L := L)) (uint.Z a) q b }} (ExternalOp DiskOp.ReadOp (Val (#a))) @ s; E
-    {{ (l : loc), RET #l; uint.Z a d↦{q} b ∗ pointstoBlock l (.own 1) b }} := by
+    {{ (l : Loc), RET #l; uint.Z a d↦{q} b ∗ pointstoBlock l (.own 1) b }} := by
   iintro %Φ >Ha HΦ
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
@@ -280,7 +280,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
   intro k x _
   exact na_pointsto_to_heap _ _ _ (Hfresh.1 _).1
 
-theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : loc) :
+theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
     {{ ▷ ((∃ b0, diskPointsto (gooseDiskGS (L := L)) (uint.Z a) (.own 1) b0) ∗
         pointstoBlock l q b) }}
       (ExternalOp DiskOp.WriteOp (Val (PairV (#a) (#l)))) @ s; E

@@ -18,54 +18,54 @@ namespace go_etcd_io.etcd.server.v3.etcdserver.errors
 namespace DiscoveryError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.errors.Assumptions]
 
 instance DiscoveryError_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t where
-  typed_pointsto_def l v dq := iprop(
-    "Op" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq ∗
-    "Err" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Op" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance DiscoveryError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go_etcd_io.etcd.server.v3.etcdserver.errors.«DiscoveryErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance DiscoveryError_access_load_Op (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
+instance DiscoveryError_access_load_Op (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance DiscoveryError_access_store_Op (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Op' : go_string) :
+instance DiscoveryError_access_store_Op (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Op' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) Op' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) v.Op' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Op" l) Op' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := Op' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance DiscoveryError_access_load_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
+instance DiscoveryError_access_load_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance DiscoveryError_access_store_Err (l : loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Err' : error.t) :
+instance DiscoveryError_access_store_Err (l : Loc) (v : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) Err' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t go!"Err" l) Err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : go_etcd_io.etcd.server.v3.etcdserver.errors.DiscoveryError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

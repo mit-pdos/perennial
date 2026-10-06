@@ -12,58 +12,58 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.server.v3.config : go_string := go!"go.etcd.io/etcd/server/v3/config"
+def go_etcd_io.etcd.server.v3.config : GoString := go!"go.etcd.io/etcd/server/v3/config"
 end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.config
 
-def ServerConfig [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/config.ServerConfig" [])
+def ServerConfig [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/config.ServerConfig" [])
 
 attribute [irreducible] ServerConfig
 
-def V2DeprecationEnum [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/config.V2DeprecationEnum" [])
+def V2DeprecationEnum [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/config.V2DeprecationEnum" [])
 
 attribute [irreducible] V2DeprecationEnum
 
-axiom «ServerConfigⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «ServerConfigⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom grpcOverheadBytes [ffi_syntax] [GoGlobalContext] : val
+axiom grpcOverheadBytes [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2Depr0NotYet [ffi_syntax] [GoGlobalContext] : val
+axiom V2Depr0NotYet [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2_DEPR_0_NOT_YET [ffi_syntax] [GoGlobalContext] : val
+axiom V2_DEPR_0_NOT_YET [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2Depr1WriteOnly [ffi_syntax] [GoGlobalContext] : val
+axiom V2Depr1WriteOnly [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2_DEPR_1_WRITE_ONLY [ffi_syntax] [GoGlobalContext] : val
+axiom V2_DEPR_1_WRITE_ONLY [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2Depr1WriteOnlyDrop [ffi_syntax] [GoGlobalContext] : val
+axiom V2Depr1WriteOnlyDrop [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2_DEPR_1_WRITE_ONLY_DROP [ffi_syntax] [GoGlobalContext] : val
+axiom V2_DEPR_1_WRITE_ONLY_DROP [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2Depr2Gone [ffi_syntax] [GoGlobalContext] : val
+axiom V2Depr2Gone [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2_DEPR_2_GONE [ffi_syntax] [GoGlobalContext] : val
+axiom V2_DEPR_2_GONE [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2DeprDefault [ffi_syntax] [GoGlobalContext] : val
+axiom V2DeprDefault [FfiSyntax] [GoGlobalContext] : val
 
-axiom V2_DEPR_DEFAULT [ffi_syntax] [GoGlobalContext] : val
+axiom V2_DEPR_DEFAULT [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def CheckDuplicateURL [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CheckDuplicateURL [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/config.CheckDuplicateURL"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.config where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.config)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace ServerConfig
@@ -72,7 +72,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ServerConfig
 
-class ServerConfig_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ServerConfig_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ServerConfig_type_repr : go.TypeReprUnderlying «ServerConfigⁱᵐᵖˡ» ServerConfig.t
   ServerConfig_underlying : go.UnderlyingDirectedEq ServerConfig «ServerConfigⁱᵐᵖˡ»
   «ServerConfigⁱᵐᵖˡ_underlying» : go.IsUnderlying «ServerConfigⁱᵐᵖˡ» «ServerConfigⁱᵐᵖˡ»
@@ -82,18 +82,18 @@ attribute [instance] ServerConfig_Assumptions.ServerConfig_type_repr
   ServerConfig_Assumptions.«ServerConfigⁱᵐᵖˡ_underlying»
 
 namespace V2DeprecationEnum
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end V2DeprecationEnum
 
-@[reducible] def «V2DeprecationEnumⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «V2DeprecationEnumⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class V2DeprecationEnum_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class V2DeprecationEnum_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   V2DeprecationEnum_underlying : go.UnderlyingDirectedEq V2DeprecationEnum «V2DeprecationEnumⁱᵐᵖˡ»
 
 attribute [instance] V2DeprecationEnum_Assumptions.V2DeprecationEnum_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ServerConfig_instance : ServerConfig_Assumptions
   V2DeprecationEnum_instance : V2DeprecationEnum_Assumptions
 

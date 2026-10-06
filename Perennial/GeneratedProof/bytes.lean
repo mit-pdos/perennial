@@ -17,71 +17,71 @@ namespace bytes
 namespace Buffer
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : bytes.Assumptions]
 
 instance Buffer_typed_pointsto :
     TypedPointsto (GF := GF) bytes.Buffer.t where
-  typed_pointsto_def l v dq := iprop(
-    "buf" ∷ typed_pointsto (struct_field_ref bytes.Buffer.t go!"buf" l) v.buf' dq ∗
-    "off" ∷ typed_pointsto (struct_field_ref bytes.Buffer.t go!"off" l) v.off' dq ∗
-    "lastRead" ∷ typed_pointsto (struct_field_ref bytes.Buffer.t go!"lastRead" l) v.lastRead' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "buf" ∷ typedPointsto (structFieldRef bytes.Buffer.t go!"buf" l) v.buf' dq ∗
+    "off" ∷ typedPointsto (structFieldRef bytes.Buffer.t go!"off" l) v.off' dq ∗
+    "lastRead" ∷ typedPointsto (structFieldRef bytes.Buffer.t go!"lastRead" l) v.lastRead' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Buffer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) bytes.Buffer.t bytes.«Bufferⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Buffer_access_load_buf (l : loc) (v : bytes.Buffer.t) (dq : DFrac) :
+instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"buf" l) v.buf' dq)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"buf" l) v.buf' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"buf" l) v.buf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_buf (l : loc) (v : bytes.Buffer.t) (buf' : slice.t) :
+instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer.t) (buf' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"buf" l) v.buf' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"buf" l) buf' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with buf' := buf' } : bytes.Buffer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : bytes.Buffer.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_load_off (l : loc) (v : bytes.Buffer.t) (dq : DFrac) :
+instance Buffer_access_load_off (l : Loc) (v : bytes.Buffer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"off" l) v.off' dq)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"off" l) v.off' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"off" l) v.off' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_off (l : loc) (v : bytes.Buffer.t) (off' : w64) :
+instance Buffer_access_store_off (l : Loc) (v : bytes.Buffer.t) (off' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"off" l) v.off' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"off" l) off' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with off' := off' } : bytes.Buffer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"off" l) v.off' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"off" l) off' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := off' } : bytes.Buffer.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_load_lastRead (l : loc) (v : bytes.Buffer.t) (dq : DFrac) :
+instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"lastRead" l) v.lastRead' dq)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"lastRead" l) v.lastRead' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"lastRead" l) v.lastRead' dq)
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"lastRead" l) v.lastRead' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_lastRead (l : loc) (v : bytes.Buffer.t) (lastRead' : bytes.readOp.t) :
+instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer.t) (lastRead' : bytes.readOp.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"lastRead" l) v.lastRead' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Buffer.t go!"lastRead" l) lastRead' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with lastRead' := lastRead' } : bytes.Buffer.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"lastRead" l) v.lastRead' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Buffer.t go!"lastRead" l) lastRead' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lastRead' := lastRead' } : bytes.Buffer.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -91,71 +91,71 @@ end Buffer
 namespace Reader
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : bytes.Assumptions]
 
 instance Reader_typed_pointsto :
     TypedPointsto (GF := GF) bytes.Reader.t where
-  typed_pointsto_def l v dq := iprop(
-    "s" ∷ typed_pointsto (struct_field_ref bytes.Reader.t go!"s" l) v.s' dq ∗
-    "i" ∷ typed_pointsto (struct_field_ref bytes.Reader.t go!"i" l) v.i' dq ∗
-    "prevRune" ∷ typed_pointsto (struct_field_ref bytes.Reader.t go!"prevRune" l) v.prevRune' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "s" ∷ typedPointsto (structFieldRef bytes.Reader.t go!"s" l) v.s' dq ∗
+    "i" ∷ typedPointsto (structFieldRef bytes.Reader.t go!"i" l) v.i' dq ∗
+    "prevRune" ∷ typedPointsto (structFieldRef bytes.Reader.t go!"prevRune" l) v.prevRune' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Reader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) bytes.Reader.t bytes.«Readerⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Reader_access_load_s (l : loc) (v : bytes.Reader.t) (dq : DFrac) :
+instance Reader_access_load_s (l : Loc) (v : bytes.Reader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"s" l) v.s' dq)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"s" l) v.s' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef bytes.Reader.t go!"s" l) v.s' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : loc) (v : bytes.Reader.t) (s' : slice.t) :
+instance Reader_access_store_s (l : Loc) (v : bytes.Reader.t) (s' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"s" l) v.s' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"s" l) s' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with s' := s' } : bytes.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"s" l) v.s' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Reader.t go!"s" l) s' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : bytes.Reader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_i (l : loc) (v : bytes.Reader.t) (dq : DFrac) :
+instance Reader_access_load_i (l : Loc) (v : bytes.Reader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"i" l) v.i' dq)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"i" l) v.i' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"i" l) v.i' dq)
+      (typedPointsto (structFieldRef bytes.Reader.t go!"i" l) v.i' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : loc) (v : bytes.Reader.t) (i' : w64) :
+instance Reader_access_store_i (l : Loc) (v : bytes.Reader.t) (i' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"i" l) v.i' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"i" l) i' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with i' := i' } : bytes.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"i" l) v.i' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Reader.t go!"i" l) i' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with i' := i' } : bytes.Reader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_prevRune (l : loc) (v : bytes.Reader.t) (dq : DFrac) :
+instance Reader_access_load_prevRune (l : Loc) (v : bytes.Reader.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"prevRune" l) v.prevRune' dq)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"prevRune" l) v.prevRune' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"prevRune" l) v.prevRune' dq)
+      (typedPointsto (structFieldRef bytes.Reader.t go!"prevRune" l) v.prevRune' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : loc) (v : bytes.Reader.t) (prevRune' : w64) :
+instance Reader_access_store_prevRune (l : Loc) (v : bytes.Reader.t) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"prevRune" l) v.prevRune' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref bytes.Reader.t go!"prevRune" l) prevRune' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with prevRune' := prevRune' } : bytes.Reader.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef bytes.Reader.t go!"prevRune" l) v.prevRune' (DFrac.own 1))
+      (typedPointsto (structFieldRef bytes.Reader.t go!"prevRune" l) prevRune' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prevRune' := prevRune' } : bytes.Reader.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -26,13 +26,13 @@ open github_com.mit_pdos.perennial.goose.model
 namespace chan
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
-instance pure_wp_chan_for_range (c : chan.t) (elem_type : go.type) (body : val) :
-    PureWp (G := G) (L := L) True (App (App (Val (chan.for_range elem_type)) (Val #c)) (Val body))
+instance pure_wp_chan_for_range (c : chan.t) (elem_type : go.GoType) (body : val) :
+    PureWp (G := G) (L := L) True (App (App (Val (chan.forRange elem_type)) (Val #c)) (Val body))
       gl(for: (λ: <>, #true : val) ; (λ: <>, #() : val) := (λ: <>,
           let: ("v", "ok") := chan.receive elem_type #c in
           if: "ok" then
@@ -41,7 +41,7 @@ instance pure_wp_chan_for_range (c : chan.t) (elem_type : go.type) (body : val) 
             -- channel is closed
             break: #() : val)) where
   pure_wp_wp s E Φ K _ := by
-    unfold chan.for_range
+    unfold chan.forRange
     iintro H
     wp_call_lc Hlc
     iapply H $$ Hlc
@@ -49,13 +49,13 @@ instance pure_wp_chan_for_range (c : chan.t) (elem_type : go.type) (body : val) 
 end proof
 
 section proof2
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 -- (Rocq:) These are carefully ordered so that when the lemmas are applied, typeclass search
 -- can fill everything in.
-variable {ct : go.type} {dir : go.chan_dir} {t : go.type} [Hunder : ct ↓u go.ChannelType dir t]
+variable {ct : go.GoType} {dir : go.ChanDir} {t : go.GoType} [Hunder : ct ↓u go.ChannelType dir t]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V]
   [IntoValTyped (GF := GF) V t]
 
@@ -65,7 +65,7 @@ include Hunder in
 theorem wp_make2 (cap : w64) :
     {{ (⌜0 ≤ sint.Z cap⌝ : IProp GF) }}
       (App (Val #(functions go.make2 [ct])) (Val #cap))
-    {{ (ch : loc) (γ : ChanNames), RET #ch;
+    {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = cap⌝ ∗
         ownChan γ V (if cap = W64 0 then chanstate.t.Idle else chanstate.t.Buffered ([] : List V)) }} := by
@@ -78,7 +78,7 @@ include Hunder in
 theorem wp_make1 :
     {{ (True : IProp GF) }}
       (App (Val #(functions go.make1 [ct])) (Val #()))
-    {{ (ch : loc) (γ : ChanNames), RET #ch;
+    {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = W64 0⌝ ∗
         ownChan γ V chanstate.t.Idle }} := by
@@ -89,7 +89,7 @@ theorem wp_make1 :
   iapply HΦ
   iexact H
 
-theorem wp_send (ch : loc) (v : V) (γ : ChanNames) :
+theorem wp_send (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ sendAu γ v (Φ #())) -∗
       WP (App (App (Val (chan.send t)) (Val #ch)) (Val #v)) {{ Φ }} := by
@@ -99,7 +99,7 @@ theorem wp_send (ch : loc) (v : V) (γ : ChanNames) :
   iapply wp_Send $$ Hch HΦ
 
 include Hunder in
-theorem wp_close (ch : loc) (γ : ChanNames) :
+theorem wp_close (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ closeAu γ V (Φ #())) -∗
       WP (App (Val #(functions go.close [ct])) (Val #ch)) {{ Φ }} := by
@@ -108,7 +108,7 @@ theorem wp_close (ch : loc) (γ : ChanNames) :
   wp_auto
   iapply wp_Close $$ Hch HΦ
 
-theorem wp_receive (ch : loc) (γ : ChanNames) :
+theorem wp_receive (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ recvAu γ V (fun v ok => Φ (PairV #v #ok))) -∗
       WP (App (Val (chan.receive t)) (Val #ch)) {{ Φ }} := by
@@ -118,7 +118,7 @@ theorem wp_receive (ch : loc) (γ : ChanNames) :
   iapply wp_Receive $$ Hch HΦ
 
 include Hunder in
-theorem wp_cap (ch : loc) (γ : ChanNames) :
+theorem wp_cap (ch : Loc) (γ : ChanNames) :
     {{ isChan (GF := GF) ch γ V }}
       (App (Val #(functions go.cap [ct])) (Val #ch))
     {{ RET #γ.chanCap; True }} := by
@@ -138,9 +138,9 @@ theorem sep_and_persistent {GF : BundledGFunctors} {P Q R : IProp GF} [Persisten
       (sep_mono persistently_elim (and_mono sep_elim_right .rfl)))
 
 section select_proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
 /-- The precondition for a blocking select case (Rocq inlines this `match`). -/
@@ -149,14 +149,14 @@ def blockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
   | .CommClause (.SendCase t send_chan_expr send_val) send_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (send_chan : loc) (γ : ChanNames) (v : V),
+          (send_chan : Loc) (γ : ChanNames) (v : V),
         ⌜send_val = Val #v ∧ send_chan_expr = Val #send_chan⌝ ∗
         isChan send_chan γ V ∗
         sendAu γ v (WP send_handler {{ Ψ }}))
   | .CommClause (.RecvCase t recv_chan_expr) recv_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (recv_chan : loc) (γ : ChanNames),
+          (recv_chan : Loc) (γ : ChanNames),
         ⌜recv_chan_expr = Val #recv_chan⌝ ∗
         isChan recv_chan γ V ∗
         recvAu γ V (fun v ok => WP (App recv_handler (Val (PairV #v #ok))) {{ Ψ }}))
@@ -316,14 +316,14 @@ def nonblockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
   | .CommClause (.SendCase t send_chan_expr send_val) send_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (send_chan : loc) (γ : ChanNames) (v : V),
+          (send_chan : Loc) (γ : ChanNames) (v : V),
         ⌜send_val = Val #v ∧ send_chan_expr = Val #send_chan⌝ ∗
         isChan send_chan γ V ∗
         nonblockingSendAu γ v (WP send_handler {{ Ψ }}) iprop(True))
   | .CommClause (.RecvCase t recv_chan_expr) recv_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (recv_chan : loc) (γ : ChanNames),
+          (recv_chan : Loc) (γ : ChanNames),
         ⌜recv_chan_expr = Val #recv_chan⌝ ∗
         isChan recv_chan γ V ∗
         nonblockingRecvAu γ V (fun v ok => WP (App recv_handler (Val (PairV #v #ok))) {{ Ψ }})
@@ -434,7 +434,7 @@ theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → I
       wp_auto
       iapply Hwand $$ Hr
 
-theorem wp_SelectStmt_nonblocking {s : Stuckness} {E : CoPset} (dflt : expr)
+theorem wp_SelectStmt_nonblocking {s : Stuckness} {E : CoPset} (dflt : Expr)
     (clauses : List comm_clause) (Φ : val → IProp GF) :
     (∀ clauses' : List comm_clause, ⌜clauses'.Perm clauses⌝ -∗
       WP gl(let: ("v", "succeeded") := chan.trySelect false clauses' in
@@ -459,7 +459,7 @@ theorem wp_SelectStmt_nonblocking {s : Stuckness} {E : CoPset} (dflt : expr)
   iframe Hctx
   iapply HΦ $$ %clauses' %Hperm
 
-theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : expr) (Φ : val → IProp GF) :
+theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Φ) ∧ WP dflt {{ Φ }}) -∗
       WP (App (Val (GoInstruction SelectStmt)) (Val (SelectStmtClausesV (some dflt) clauses)))
         {{ Φ }} := by
@@ -510,14 +510,14 @@ def nonblockingAltClausePre (c : comm_clause) (Ψ : val → IProp GF) (Pnr : IPr
   | .CommClause (.SendCase t send_chan_expr send_val) send_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (send_chan : loc) (γ : ChanNames) (v : V),
+          (send_chan : Loc) (γ : ChanNames) (v : V),
         ⌜send_val = Val #v ∧ send_chan_expr = Val #send_chan⌝ ∗
         isChan send_chan γ V ∗
         nonblockingSendAuAlt γ v (WP send_handler {{ Ψ }}) Pnr)
   | .CommClause (.RecvCase t recv_chan_expr) recv_handler =>
       iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
           (_ : IntoValTyped (GF := GF) V t) (_ : Pos.Countable V)
-          (recv_chan : loc) (γ : ChanNames),
+          (recv_chan : Loc) (γ : ChanNames),
         ⌜recv_chan_expr = Val #recv_chan⌝ ∗
         isChan recv_chan γ V ∗
         nonblockingRecvAuAlt γ V
@@ -628,7 +628,7 @@ The reason this uses `au1 ∗ au2 ∗ ...` instead of `au1 ∧ au2 ∧ ...` is b
 that the default case is chosen, ALL of the case's atomic updates will have to be fired to
 produce witnesses that all the cases were not ready (`[∗] Φnrs`). -/
 theorem wp_select_nonblocking_alt (Φnrs : List (IProp GF)) (P : IProp GF)
-    (clauses : List comm_clause) (dflt : expr) (Φ : val → IProp GF) :
+    (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
     ⊢ ([∗list] c;Φnr ∈ clauses;Φnrs, P -∗ nonblockingAltClausePre c Φ iprop(P ∗ Φnr)) -∗
       P -∗
       (P -∗ ([∗list] Φnr ∈ Φnrs, Φnr) -∗ WP dflt {{ Φ }}) -∗

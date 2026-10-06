@@ -13,113 +13,113 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def internal.synctest : go_string := go!"internal/synctest"
+def internal.synctest : GoString := go!"internal/synctest"
 end pkg_id
 
 namespace internal.synctest
 
-def Association [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/synctest.Association" [])
+def Association [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/synctest.Association" [])
 
 attribute [irreducible] Association
 
-def Bubble [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"internal/synctest.Bubble" [])
+def Bubble [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/synctest.Bubble" [])
 
 attribute [irreducible] Bubble
 
-axiom Unbubbled [ffi_syntax] [GoGlobalContext] : val
+axiom Unbubbled [FfiSyntax] [GoGlobalContext] : val
 
-axiom CurrentBubble [ffi_syntax] [GoGlobalContext] : val
+axiom CurrentBubble [FfiSyntax] [GoGlobalContext] : val
 
-axiom OtherBubble [ffi_syntax] [GoGlobalContext] : val
+axiom OtherBubble [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Run [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Run [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Run"
 
-noncomputable def Wait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Wait [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Wait"
 
-noncomputable def IsInBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsInBubble [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.IsInBubble"
 
-noncomputable def Associate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Associate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Associate"
 
-noncomputable def associate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def associate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.associate"
 
-noncomputable def Disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Disassociate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Disassociate"
 
-noncomputable def disassociate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disassociate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.disassociate"
 
-noncomputable def IsAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsAssociated [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.IsAssociated"
 
-noncomputable def isAssociated [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAssociated [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.isAssociated"
 
-noncomputable def acquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def acquire [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.acquire"
 
-noncomputable def release [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def release [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.release"
 
-noncomputable def inBubble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def inBubble [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.inBubble"
 
-noncomputable def Acquire [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Acquire [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Acquire"
 
 instance info' : PkgInfo pkg_id.internal.synctest where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.synctest)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace Association
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end Association
 
-@[reducible] def «Associationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Associationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Association_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Association_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Association_underlying : go.UnderlyingDirectedEq Association «Associationⁱᵐᵖˡ»
 
 attribute [instance] Association_Assumptions.Association_underlying
 
 namespace Bubble
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   b' : interface.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Bubble
 
-@[reducible] def Bubble'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bubble'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" go.any)]
 
-@[irreducible] def Bubble'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Bubble'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Bubble'fds_unsealed
 
-instance equals_unfold_Bubble [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Bubble'fds Bubble'fds_unsealed :=
   ⟨by unfold Bubble'fds; rfl⟩
 
-@[reducible] def «Bubbleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Bubble'fds)
+@[reducible] def «Bubbleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bubble'fds)
 
-class Bubble_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bubble_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bubble_type_repr : go.TypeReprUnderlying «Bubbleⁱᵐᵖˡ» Bubble.t
   Bubble_underlying : go.UnderlyingDirectedEq Bubble «Bubbleⁱᵐᵖˡ»
   Bubble_get_b : ∀ (x : Bubble.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bubbleⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
@@ -130,7 +130,7 @@ attribute [instance] Bubble_Assumptions.Bubble_type_repr
   Bubble_Assumptions.Bubble_get_b
   Bubble_Assumptions.Bubble_set_b
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Association_instance : Association_Assumptions
   Bubble_instance : Bubble_Assumptions
   Run_unfold : FuncUnfold Run [] «Runⁱᵐᵖˡ»

@@ -40,9 +40,9 @@ open go_etcd_io.etcd.pkg.v3.idutil go_etcd_io.etcd.pkg.v3.wait go_etcd_io.raft.v
 namespace go_etcd_io.etcd.server.v3.etcdserver
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : etcdserver.Assumptions]
 
@@ -83,14 +83,14 @@ axiom EtcdServerNames : Type
 axiom raftGn : EtcdServerNames → RaftNames
 
 section defs
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 
 def waitR (_id' : w64) (v : interface.t) : IProp GF :=
   iprop(⌜v = interface.nil⌝ ∨
-    ∃ (res_ptr : loc) (res : apply.Result.t),
+    ∃ (res_ptr : Loc) (res : apply.Result.t),
       ⌜v = interface.mkOk apply.Result #res_ptr⌝ ∗ res_ptr ↦ res)
 
 def isSimpleRequest (r : api.v3.etcdserverpb.InternalRaftRequest.t) : IProp GF :=
@@ -102,9 +102,9 @@ def isSimpleRequest (r : api.v3.etcdserverpb.InternalRaftRequest.t) : IProp GF :
 end defs
 
 axiom ownID {GF : BundledGFunctors} (γ : EtcdServerNames) (i : w64) : IProp GF
-axiom ownEtcdServer {GF : BundledGFunctors} (s : loc) (γ : EtcdServerNames) : IProp GF
+axiom ownEtcdServer {GF : BundledGFunctors} (s : Loc) (γ : EtcdServerNames) : IProp GF
 /-- (Rocq: `#[local] Axiom`) -/
-axiom isEtcdServerInternal {GF : BundledGFunctors} (s : loc) (γ : EtcdServerNames) : IProp GF
+axiom isEtcdServerInternal {GF : BundledGFunctors} (s : Loc) (γ : EtcdServerNames) : IProp GF
 
 /-- (Rocq: an axiom too.) `ownEtcdServer_access` can be used any number of
 times; `isGenerator` is persistent and `idutil.Generator.wp_Next` needs no
@@ -112,13 +112,13 @@ further resource (it is proved with time receipts, see `idutil.lean`), so
 `reqIDGen.Next()` can be called each time. As in Rocq, there is no premise on
 the time-receipt bound: `Next` is safe for every bound, and only the
 `ownID γ i` token it returns is conditional on `receiptBound GF ≤ 2^48`. -/
-axiom ownEtcdServer_access [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
-    [hG : heapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
+axiom ownEtcdServer_access [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
+    [hG : HeapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
     [package_sem : etcdserver.Assumptions]
-    (s : loc) (γ : EtcdServerNames) :
+    (s : Loc) (γ : EtcdServerNames) :
   ⊢ ownEtcdServer (GF := GF) s γ -∗
-    ∃ (reqIDGen : loc) (MaxRequestBytes : w64) (w : interface.t_ok)
+    ∃ (reqIDGen : Loc) (MaxRequestBytes : w64) (w : interface.t_ok)
       (γw : WaitParams GF) (rn : interface.t_ok),
       "#reqIDGen" ∷ s.[etcdserver.EtcdServer.t, go!"reqIDGen"] ↦□ reqIDGen ∗
       "#HreqIDGen" ∷ isGenerator reqIDGen (ownID γ) ∗
@@ -133,7 +133,7 @@ axiom ownEtcdServer_access [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
       "Hw" ∷ ownWait γw w waitR ∗
       "Hclose" ∷ (ownWait γw w waitR -∗ ownEtcdServer s γ)
 
-axiom isEtcdServerInternal_pers {GF : BundledGFunctors} (s : loc) (γ : EtcdServerNames) :
+axiom isEtcdServerInternal_pers {GF : BundledGFunctors} (s : Loc) (γ : EtcdServerNames) :
   Persistent (isEtcdServerInternal (GF := GF) s γ)
 attribute [instance] isEtcdServerInternal_pers
 
@@ -158,47 +158,47 @@ authStore.IsAuthEnabled -> RWMutex.RLock`, so its precondition is the full
 `ownEtcdServer`.
 -/
 
-axiom EtcdServer.wp_getAppliedIndex [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [hG : heapGS hlc GF] [sem : go.Semantics] [package_sem : etcdserver.Assumptions]
-    (s : loc) (γ : EtcdServerNames) :
+axiom EtcdServer.wp_getAppliedIndex [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
+    [hG : HeapGS hlc GF] [sem : go.Semantics] [package_sem : etcdserver.Assumptions]
+    (s : Loc) (γ : EtcdServerNames) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       isEtcdServerInternal s γ }}
-    (App (Val (s @!! go.type.PointerType etcdserver.EtcdServer @!! go!"getAppliedIndex")) (Val #()))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"getAppliedIndex")) (Val #()))
   {{ (a : w64), RET #a; True }}
 
-axiom EtcdServer.wp_getCommittedIndex [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [hG : heapGS hlc GF] [sem : go.Semantics] [package_sem : etcdserver.Assumptions]
-    (s : loc) (γ : EtcdServerNames) :
+axiom EtcdServer.wp_getCommittedIndex [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
+    [hG : HeapGS hlc GF] [sem : go.Semantics] [package_sem : etcdserver.Assumptions]
+    (s : Loc) (γ : EtcdServerNames) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       isEtcdServerInternal s γ }}
-    (App (Val (s @!! go.type.PointerType etcdserver.EtcdServer @!! go!"getCommittedIndex")) (Val #()))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"getCommittedIndex")) (Val #()))
   {{ (a : w64), RET #a; True }}
 
-axiom EtcdServer.wp_AuthInfoFromCtx [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
-    [hG : heapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
+axiom EtcdServer.wp_AuthInfoFromCtx [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
+    [hG : HeapGS HasLC.hasLC GF] [AllG GF] [sem : go.Semantics]
     [package_sem : etcdserver.Assumptions]
-    (s : loc) (γ : EtcdServerNames) (ctx : interface.t_ok)
+    (s : Loc) (γ : EtcdServerNames) (ctx : interface.t_ok)
     (ctx_desc : context.Context_desc.t (IProp GF)) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
       ownEtcdServer s γ ∗ context.isContext ctx ctx_desc }}
-    (App (Val (s @!! go.type.PointerType etcdserver.EtcdServer @!! go!"AuthInfoFromCtx"))
+    (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer @!! go!"AuthInfoFromCtx"))
       (Val #(interface.ok ctx)))
-  {{ (a_ptr : loc) (err : interface.t), RET (PairV #a_ptr #err);
+  {{ (a_ptr : Loc) (err : interface.t), RET (PairV #a_ptr #err);
       ownEtcdServer s γ ∗
       if a_ptr = null then iprop(True)
       else ∃ (a : auth.AuthInfo.t), a_ptr ↦ a }}
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : etcdserver.Assumptions]
 
-theorem wp_optional (R : IProp GF) (e : expr) :
+theorem wp_optional (R : IProp GF) (e : Expr) :
     ⊢ ∀ Φ : val → IProp GF, R -∗
       (R -∗ WP e {{ v, ⌜v = executeVal⌝ ∗ R }}) -∗
       (R -∗ Φ executeVal) -∗ WP e {{ Φ }} := by
@@ -218,7 +218,7 @@ is `⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ ownID γ id`, and the token stands for
 `Register` may panic on a duplicate ID, as IDs wrap around after `2^48`
 calls). The call to `Next` itself needs no premise. -/
 theorem EtcdServer.wp_processInternalRaftRequestOnce (Hbound : receiptBound GF ≤ 2 ^ 48)
-    (s : loc) (γ : EtcdServerNames)
+    (s : Loc) (γ : EtcdServerNames)
     (ctx : interface.t_ok) (ctx_desc : context.Context_desc.t (IProp GF))
     (req : api.v3.etcdserverpb.InternalRaftRequest.t) (req_abs : InternalRaftRequestC) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.server.v3.etcdserver ∗
@@ -226,9 +226,9 @@ theorem EtcdServer.wp_processInternalRaftRequestOnce (Hbound : receiptBound GF �
         "req" ∷ ownInternalRaftRequest req req_abs ∗
         "#Hsimple" ∷ isSimpleRequest req ∗
         "#Hctx" ∷ context.isContext ctx ctx_desc }}
-      (App (App (Val (s @!! go.type.PointerType etcdserver.EtcdServer
+      (App (App (Val (s @!! go.GoType.PointerType etcdserver.EtcdServer
           @!! go!"processInternalRaftRequestOnce")) (Val #(interface.ok ctx))) (Val #req))
-    {{ (a : loc) (err : interface.t), RET (PairV #a #err); ownEtcdServer s γ }} := by
+    {{ (a : Loc) (err : interface.t), RET (PairV #a #err); ownEtcdServer s γ }} := by
   -- Unprovable: calls opaque packages (prometheus, otel `SpanFromContext`, `strconv.FormatBool`) and `context.WithTimeout` (unprovable).
   -- `reqIDGen.Next()` is no longer a blocker: `idutil.Generator.wp_Next` needs only the persistent `isGenerator` from `ownEtcdServer_access` (it is proved with time receipts); `Hbound` is used only to specialize its result `⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ ownID γ id` before `w.Register(id)` (whose `ownUnregisteredId` is a Rocq FIXME).
   sorry -- Rocq: Admitted

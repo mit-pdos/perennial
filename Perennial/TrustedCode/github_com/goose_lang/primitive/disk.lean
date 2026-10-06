@@ -26,7 +26,7 @@ specialized to a concrete FFI is the Assumptions propclass. So, only `ⁱᵐᵖ�
 stuff should be specialized to the ffi in trusted code.
 -/
 section disk_consts
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 def BlockSize : val :=
   #(W64 4096)
 end disk_consts

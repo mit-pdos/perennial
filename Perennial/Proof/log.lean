@@ -14,9 +14,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace log
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : log.Assumptions]
 
@@ -25,7 +25,7 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.log :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.log :=
   build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.log get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -34,7 +34,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
   -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
   sorry -- Rocq: Admitted
 
-theorem wp_Printf (msg : go_string) (arg : slice.t) :
+theorem wp_Printf (msg : GoString) (arg : slice.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.log }}
       (App (App (Val (@! Printf)) (Val #msg)) (Val #arg))
     {{ RET #(); True }} := by

@@ -99,7 +99,7 @@ namespace Context_desc
 Done channel and its names, fixed when the context is created) are replaced by
 `Done_gn : ContextNames`, the ghost names through which the Done channel is determined
 later (see the file header). -/
-structure t [ffi_syntax] (PROP : Type) where
+structure t [FfiSyntax] (PROP : Type) where
   mk ::
   Values : GMap interface.t interface.t
   Deadline : Option time.Time.t
@@ -108,9 +108,9 @@ structure t [ffi_syntax] (PROP : Type) where
 end Context_desc
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
@@ -130,9 +130,9 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.context :=
 end init
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
@@ -145,34 +145,34 @@ theorem isInit_access :
 /-- `&cancelCtxKey` converted to `any`: the key for which `Value` returns the
 innermost enclosing `*cancelCtx`. -/
 def cancelCtxKeyAny [GoSemanticsFunctions] : interface.t :=
-  interface.mkOk (go.type.PointerType go.int) #(globalAddr context.cancelCtxKey)
+  interface.mkOk (go.GoType.PointerType go.int) #(globalAddr context.cancelCtxKey)
 
 /-- Lock invariant of `c.mu` for a `*cancelCtx` `c`: the fields that the Go
 code only accesses with `c.mu` held (`children` and `cause`; `done` and `err`
 are `atomic.Value`s, also read without the lock). -/
-def cancelCtxLockInv (c : loc) : IProp GF :=
+def cancelCtxLockInv (c : Loc) : IProp GF :=
   iprop(∃ (children : map.t) (cause : error.t),
-    "children" ∷ struct_field_ref context.cancelCtx.t go!"children" c ↦ children ∗
-    "cause" ∷ struct_field_ref context.cancelCtx.t go!"cause" c ↦ cause)
+    "children" ∷ structFieldRef context.cancelCtx.t go!"children" c ↦ children ∗
+    "cause" ∷ structFieldRef context.cancelCtx.t go!"cause" c ↦ cause)
 
 /-- `c` is a (shared) `*cancelCtx`. `atomic.Value` is implemented with
 `unsafe.Pointer` conversions that the model cannot verify, so the spec of
 `c.done.Load()` (it holds `nil` or a `chan struct{}`) is part of the
 predicate. -/
-def isCancelCtx (c : loc) : IProp GF :=
+def isCancelCtx (c : Loc) : IProp GF :=
   iprop(
-  "#Hmu" ∷ sync.isMutex (struct_field_ref context.cancelCtx.t go!"mu" c) (cancelCtxLockInv c) ∗
+  "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx.t go!"mu" c) (cancelCtxLockInv c) ∗
   "#Hdone_Load" ∷
     □ (∀ Φ : val → IProp GF, True -∗
       ▷ (∀ ch : Option chan.t,
           Φ #(match ch with
               | none => interface.nil
               | some ch => interface.mkOk
-                  (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) #ch)) -∗
-      WP (App (Val (struct_field_ref context.cancelCtx.t go!"done" c @!!
-        go.type.PointerType sync.atomic.Value @!! go!"Load")) (Val #())) {{ Φ }}))
+                  (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) #ch)) -∗
+      WP (App (Val (structFieldRef context.cancelCtx.t go!"done" c @!!
+        go.GoType.PointerType sync.atomic.Value @!! go!"Load")) (Val #())) {{ Φ }}))
 
-instance isCancelCtx_pers (c : loc) : Persistent (isCancelCtx (GF := GF) c) := by
+instance isCancelCtx_pers (c : Loc) : Persistent (isCancelCtx (GF := GF) c) := by
   unfold isCancelCtx; infer_instance
 
 /-- The result of `Value(&cancelCtxKey)`: if it is a `*cancelCtx`, then it is a
@@ -180,8 +180,8 @@ valid one. -/
 def isCancelCtxAny (v : interface.t) : IProp GF :=
   match v with
   | interface.ok ii =>
-    if ii.ty = go.type.PointerType context.cancelCtx then
-      iprop(∃ c : loc, ⌜ii.v = #c⌝ ∗ isCancelCtx c)
+    if ii.ty = go.GoType.PointerType context.cancelCtx then
+      iprop(∃ c : Loc, ⌜ii.v = #c⌝ ∗ isCancelCtx c)
     else iprop(True)
   | interface.nil => iprop(True)
 
@@ -448,7 +448,7 @@ theorem wp_Cause (ctx : interface.t_ok) (ctx_desc : Context_desc.t (IProp GF)) :
       wp_auto
       wp_end
     | ok ii =>
-      by_cases hty : ii.ty = go.type.PointerType context.cancelCtx
+      by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx
       · simp only [isCancelCtxAny, hty, ↓reduceIte, decide_true]
         icases Hv with ⟨%cc, %hv, #Hcc⟩
         rw [hv]
@@ -482,9 +482,9 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "#Hctx" ∷ isContext parent parent_desc }}
       (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok parent)))
-    {{ (ctx : loc) (ok : Bool), RET (PairV #ctx #ok);
+    {{ (ctx : Loc) (ok : Bool), RET (PairV #ctx #ok);
         if ok then isCancelCtx ctx
-        else iprop(⌜ctx = loc.null⌝) }} := by
+        else iprop(⌜ctx = Loc.null⌝) }} := by
   wp_start as #Hctx
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.context $$ []
   · iPkgInit
@@ -519,7 +519,7 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
     simp only [Bool.false_eq_true, ↓reduceIte]
     ipureintro; trivial
   | ok ii =>
-    by_cases hty : ii.ty = go.type.PointerType context.cancelCtx
+    by_cases hty : ii.ty = go.GoType.PointerType context.cancelCtx
     · simp only [isCancelCtxAny, hty, ↓reduceIte, _root_.decide_true]
       icases Hv with ⟨%c, %hv, #Hc⟩
       rw [hv]
@@ -558,12 +558,12 @@ theorem wp_parentCancelCtx (parent : interface.t_ok) (parent_desc : Context_desc
       simp only [Bool.false_eq_true, ↓reduceIte]
       ipureintro; trivial
 
-theorem wp_propagateCancel (c : loc) (parent : interface.t_ok)
+theorem wp_propagateCancel (c : Loc) (parent : interface.t_ok)
     (parent_desc : Context_desc.t (IProp GF)) (child : interface.t_ok) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "Hparent" ∷ isContext parent parent_desc ∗
         "Hc" ∷ c ↦ (zero_val context.cancelCtx.t) }}
-      (App (App (Val (c @!! go.type.PointerType context.cancelCtx @!! go!"propagateCancel"))
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx @!! go!"propagateCancel"))
         (Val #(interface.ok parent))) (Val #(interface.ok child)))
     {{ RET #(); True }} := by
   -- Still unprovable as stated (with `#HValue` the `parentCancelCtx` call is now covered):
@@ -596,7 +596,7 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : interface.t_ok)
   -- `v` of a `Value` as an `efaceWords` struct of two `unsafe.Pointer`s (`Load`: `vp :=
   -- (*efaceWords)(unsafe.Pointer(v)); LoadPointer(&vp.typ)`, likewise `Store`/`Swap`/
   -- `CompareAndSwap`, which also use `runtime_procPin`). The model has no such layout law:
-  -- `struct_field_ref efaceWords.t "typ" l` is unrelated to `struct_field_ref Value.t "v" l`,
+  -- `structFieldRef efaceWords.t "typ" l` is unrelated to `structFieldRef Value.t "v" l`,
   -- and an `interface.t` value is not a pair of words, so no spec of `Value.Load`/`Store` is
   -- provable from `l ↦ (v : Value.t)` (the loads hit unowned memory). With trusted models of
   -- `atomic.Value`'s methods (as for `sync.Mutex`), the remaining proof obligations are:

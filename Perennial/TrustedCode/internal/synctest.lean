@@ -10,7 +10,7 @@ namespace Perennial
 
 namespace internal.synctest
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def «Runⁱᵐᵖˡ» : val := λ: "f", Panic "not supported"
 

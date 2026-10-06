@@ -49,6 +49,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument("inventory")
 ap.add_argument("--apply", action="store_true")
 ap.add_argument("--report", default=None)
+ap.add_argument("--include-generated", action="store_true",
+                help="phase B: also rename names used by generated code, rewriting the generated files "
+                     "(goose/proofgen must be changed to emit the new names)")
 ap.add_argument("--ilean", default=None, help="directory holding the .ilean files (default: .lake/build/lib/lean)")
 args = ap.parse_args()
 
@@ -195,13 +198,18 @@ for n, (m, k, s) in inv.items():
     cand[n] = (m, k, s, last)
 
 
-KEEP = {"Perennial.gmap.dom"}   # conventional set-like names
+KEEP = {"Perennial.gmap.dom", "Perennial.GMap.dom"}   # conventional set-like names
+# full-name overrides: `go.type` cannot become the keyword `Type`; `val` would clash
+# with GooseLang's expression constructor `Val`
+FULL_OVERRIDES = {"Perennial.go.type": "GoType", "Perennial.val": "Value"}
 
 
 def new_last(n):
     m, k, s, last = cand[n]
     if n in KEEP:
         return None if k == "thm" else last
+    if n in FULL_OVERRIDES:
+        return FULL_OVERRIDES[n]
     if k in ("class", "structure", "inductive") or (k in ("def", "opaque", "axiom") and s in ("Type", "Prop")):
         return upper_camel(last)
     if k in ("def", "opaque", "axiom", "proj", "ctor") and s == "term":
@@ -209,11 +217,19 @@ def new_last(n):
     return None   # proofs: handled below
 
 
+# constructors by inductive (an inductive whose new name equals one of its
+# constructors, e.g. `comm_clause` with constructor `CommClause`, keeps its name:
+# the exported constructor and the type would be ambiguous)
+ctors_of = collections.defaultdict(set)
+for n, (m, k, s) in inv.items():
+    if k == "ctor":
+        ctors_of[".".join(split_name(n)[:-1])].add(split_name(n)[-1])
+
 # first pass: non-proof renames (the vocabulary for theorem names)
 rename = {}
 for n in cand:
     nl = new_last(n)
-    if nl is not None and nl != cand[n][3]:
+    if nl is not None and nl != cand[n][3] and nl not in ctors_of.get(n, ()):
         rename[n] = nl
 
 # ---------------------------------------------------------------- deferral
@@ -223,6 +239,10 @@ for n, us in uses.items():
         if is_generated(mod):
             gen_used.add(n)
             break
+
+
+if args.include_generated:
+    gen_used = set()
 
 
 def deferred(n):
@@ -404,7 +424,7 @@ for n in affected:
     if n in defs:
         plan_edit(*defs[n], n)
     for (mod, r) in uses.get(n, []):
-        if is_generated(mod):
+        if is_generated(mod) and not args.include_generated:
             continue
         plan_edit(mod, r, n)
 

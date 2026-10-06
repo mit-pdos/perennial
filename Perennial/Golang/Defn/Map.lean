@@ -27,31 +27,31 @@ namespace Perennial
 
 namespace map
 section defs
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
-def lookup2 (key_type elem_type : go.type) : val :=
+def lookup2 (key_type elem_type : go.GoType) : val :=
   λ: "m" "k",
     InternalMapCheckKey key_type "k" ;;
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       (GoZeroVal elem_type #(), #false)
     else InternalMapLookup (Read "m", "k")
 
-def lookup1 (key_type elem_type : go.type) : val :=
+def lookup1 (key_type elem_type : go.GoType) : val :=
   λ: "m" "k", Fst (lookup2 key_type elem_type "m" "k")
 
-def insert (key_type : go.type) : val :=
+def insert (key_type : go.GoType) : val :=
   λ: "m" "k" "v",
     InternalMapCheckKey key_type "k" ;;
     Store "m" (InternalMapInsert (Read "m", "k", "v"))
 
 /-- Does not support modifications to the map during the loop. -/
-def for_range (key_type elem_type : go.type) : val :=
+def forRange (key_type elem_type : go.GoType) : val :=
   λ: "m" "body",
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       do: #()
     else
       let: "mv" := StartRead "m" in
-      let: "v" := exception_do (InternalMapForRange key_type elem_type ("mv", "body")) in
+      let: "v" := exceptionDo (InternalMapForRange key_type elem_type ("mv", "body")) in
       FinishRead "m" ;;
       "v"
 
@@ -60,7 +60,7 @@ end map
 
 namespace go
 section defs
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step_pure (m k : val) :
@@ -74,9 +74,9 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_length_step_pure (m : val) (ks : List val) (H : is_map_domain m ks) :
     ⟦InternalMapLength, m⟧ ⤳ #(W64 ks.length)
   internal_map_domain_literal_step_pure (mv : val) (m : val → Bool × val) (body : val)
-    (key_type elem_type : go.type) (Hm : is_map_pure mv m) :
+    (key_type elem_type : go.GoType) (Hm : is_map_pure mv m) :
     is_go_step_pure (InternalMapForRange key_type elem_type) glv((mv, body)) =
-    (fun (e : expr) => ∃ ks, ∃ (_ : is_map_domain mv ks),
+    (fun (e : Expr) => ∃ ks, ∃ (_ : is_map_domain mv ks),
         e =
         List.foldr (fun key remaining_loop =>
                  gl(let: "b" := body (Val key) (m key).2 in
@@ -88,13 +88,13 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
           ) gl(return: (do: #())) ks)
   internal_map_make_step_pure (v : val) :
     ⟦InternalMapMake, v⟧ ⤳ (mapEmpty v)
-  internal_map_check_key_step (key_type : go.type) (k : val) :
+  internal_map_check_key_step (key_type : go.GoType) (k : val) :
     ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k)
 
   -- special cases for equality
-  is_go_op_go_equals_map_nil_l (kt vt : go.type) (s : map.t) :
+  is_go_op_go_equals_map_nil_l (kt vt : go.GoType) (s : map.t) :
     ⟦GoOp GoEquals (go.MapType kt vt), (#map.nil, #s)⟧ ⤳[under] #(decide (s = map.nil))
-  is_go_op_go_equals_map_nil_r (kt vt : go.type) (s : map.t) :
+  is_go_op_go_equals_map_nil_r (kt vt : go.GoType) (s : map.t) :
     ⟦GoOp GoEquals (go.MapType kt vt), (#s, #map.nil)⟧ ⤳[under] #(decide (s = map.nil))
 
   -- internal deterministic steps
@@ -128,20 +128,20 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     is_map_domain mv ks →
     ks.Nodup ∧ (∀ k, (m k).1 = true ↔ k ∈ ks)
 
-  clear_map (key_type elem_type : go.type) :
+  clear_map (key_type elem_type : go.GoType) :
     FuncUnfold go.clear [go.MapType key_type elem_type]
     (λ: "m", Store "m" (Read
                (FuncResolve go.make1 [go.MapType key_type elem_type] #() #())) : val)
-  delete_map (key_type elem_type : go.type) :
+  delete_map (key_type elem_type : go.GoType) :
     FuncUnfold go.delete [go.MapType key_type elem_type]
     (λ: "m" "k",
        InternalMapCheckKey key_type "k" ;;
        Store "m" (InternalMapDelete (Read "m", "k")) : val)
-  make2_map (key_type elem_type : go.type) :
+  make2_map (key_type elem_type : go.GoType) :
     FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",
        Alloc (InternalMapMake (GoZeroVal elem_type #())) : val)
-  make1_map (key_type elem_type : go.type) :
+  make1_map (key_type elem_type : go.GoType) :
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0) : val)
   /-- Lean deviation: Rocq's `len_map key_type elem_type` unfolds `len` only at a
@@ -149,11 +149,11 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   named map type (e.g. raft's `quorum.MajorityConfig`). Go's `len` works on any
   type whose underlying type is a map, so (like `len_slice`/`len_chan`) this
   takes `[t ↓u go.MapType key_type elem_type]`. -/
-  len_map {t key_type elem_type : go.type} [t ↓u go.MapType key_type elem_type] :
+  len_map {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type] :
     FuncUnfold go.len [t]
     (λ: "m", InternalMapLength (Read "m") : val)
 
-  composite_literal_map (key_type elem_type : go.type) (l : List keyed_element) :
+  composite_literal_map (key_type elem_type : go.GoType) (l : List keyed_element) :
     ⟦CompositeLiteral (go.MapType key_type elem_type), (LiteralValueV l)⟧ ⤳[under]
     (let: "m" := FuncResolve go.make1 [go.MapType key_type elem_type] #() #() in
      (List.foldl (fun expr_so_far ke =>
@@ -170,7 +170,7 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
                                       gl(CompositeLiteral elem_type (LiteralValue l)))
                    gl(expr_so_far ;; (map.insert key_type "m" k_expr v_expr))
                | _ => Panic "invalid map literal")
-        (#() : expr)
+        (#() : Expr)
         l
      ) ;;
      "m"

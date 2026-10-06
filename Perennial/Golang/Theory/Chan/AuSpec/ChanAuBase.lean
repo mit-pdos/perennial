@@ -136,9 +136,9 @@ def ChanCapValid {V : Type} (s : chanstate.t V) (cap : Int) : Prop :=
   | _ => cap = 0  -- All other states are unbuffered
 
 section au_defns
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 def chanstate (q : Qp) (s : chanstate.t V) : IProp GF :=
@@ -319,11 +319,11 @@ def closeAu (Φ : IProp GF) : IProp GF :=
 end au_defns
 
 section defns
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
-variable (ch : loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
+variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 variable [ZeroVal V] [TypedPointsto (GF := GF) V]
 
 /-- Maps physical channel states to their heap representations. Each state
@@ -452,7 +452,7 @@ theorem chanInvInner_intro (s : ChanPhysState V) :
   iframe
 
 def isChanDef : IProp GF :=
-  iprop(∃ (mu_loc : loc),
+  iprop(∃ (mu_loc : Loc),
     "#cap" ∷ ch.[channel.Channel.t V, go!"cap"] ↦□ γ.chanCap ∗
     "#mu" ∷ ch.[channel.Channel.t V, go!"mu"] ↦□ mu_loc ∗
     "#lock" ∷ isLock mu_loc (chanInvInner ch γ V) ∗
@@ -466,9 +466,9 @@ theorem isChan_unseal : @isChan = @isChanDef := by funext; with_unfolding_all rf
 end defns
 
 section lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem blocking_rcv_implies_nonblocking [ZeroVal V] (Φ : V → Bool → IProp GF) :
@@ -683,11 +683,11 @@ theorem nonblockingRecvAuAlt_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF
 end lemmas
 
 section ghost_lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
-variable (ch : loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
+variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem ghostVar_halves {A : Type} [Pos.Countable A] (γ : GName) (a : A) :
     ghostVar (GF := GF) γ 1 a ⊢ ghostVar γ (1 : Qp).half a ∗ ghostVar γ (1 : Qp).half a := by
@@ -910,15 +910,15 @@ theorem internal_eq_rewrite_wand {GF : BundledGFunctors} {P Q : IProp GF} :
   iapply H2
   iexact HQ
 
-theorem val_bool_eq [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+theorem val_bool_eq [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
     [go.PreSemantics] (b1 b2 : Bool) : ((#b1 : val) = #b2) = (b1 = b2) := by
   rw [go.intoVal_unfold Bool]
   simp
 
 section lc_lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem savedOffer_lc_agree (lock1 : Option (OfferLock V)) (parked1 cont1 : IProp GF)

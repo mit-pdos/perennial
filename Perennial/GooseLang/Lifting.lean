@@ -100,10 +100,10 @@ attribute [local instance] GSet.lawfulSet
 /-! ## The heap points-to -/
 
 section definitions
-variable [ext : ffi_syntax] {GF : BundledGFunctors} [hG : NaHeapGS loc val GF]
+variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
 /-- Rocq `heapPointsto`: a non-null location with a non-atomic points-to. -/
-def heapPointsto (l : loc) (dq : DFrac) (v : val) : IProp GF :=
+def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
   iprop(⌜l ≠ null⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
@@ -119,18 +119,18 @@ end goose_heap
 open goose_heap
 
 section heapPointsto
-variable [ext : ffi_syntax] {GF : BundledGFunctors} [hG : NaHeapGS loc val GF]
+variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 open ProofMode
 
-instance heapPointsto_persistent (l : loc) (v : val) :
+instance heapPointsto_persistent (l : Loc) (v : val) :
     Persistent (heapPointsto (hG := hG) l .discard v) := by
   unfold heapPointsto; infer_instance
 
-instance heapPointsto_timeless (l : loc) (dq : DFrac) (v : val) :
+instance heapPointsto_timeless (l : Loc) (dq : DFrac) (v : val) :
     Timeless (heapPointsto (hG := hG) l dq v) := by
   unfold heapPointsto; infer_instance
 
-theorem heapPointsto_persist (l : loc) (dq : DFrac) (v : val) :
+theorem heapPointsto_persist (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ |==> heapPointsto l .discard v := by
   unfold heapPointsto
   iintro ⟨%Ha, Hb⟩
@@ -139,7 +139,7 @@ theorem heapPointsto_persist (l : loc) (dq : DFrac) (v : val) :
   iframe Hb
   ipureintro; exact Ha
 
-instance heapPointsto_dfractional (l : loc) (v : val) :
+instance heapPointsto_dfractional (l : Loc) (v : val) :
     DFractional (fun dq => heapPointsto (hG := hG) l dq v) where
   dfractional dp dq := by
     unfold heapPointsto
@@ -157,20 +157,20 @@ instance heapPointsto_dfractional (l : loc) (v : val) :
   dfractional_persistent := heapPointsto_persistent l v
   dfractional_persist dq := heapPointsto_persist l dq v
 
-instance heapPointsto_as_dfractional (l : loc) (dq : DFrac) (v : val) :
+instance heapPointsto_as_dfractional (l : Loc) (dq : DFrac) (v : val) :
     AsDFractional (heapPointsto (hG := hG) l dq v) (fun dq => heapPointsto l dq v) dq :=
   ⟨.rfl, heapPointsto_dfractional l v⟩
 
-instance heapPointsto_fractional (l : loc) (v : val) :
+instance heapPointsto_fractional (l : Loc) (v : val) :
     Fractional (fun q => heapPointsto (hG := hG) l (.own q) v) :=
   fractional_of_dfractional (fun dq => heapPointsto l dq v)
 
-instance heapPointsto_as_fractional (l : loc) (q : Qp) (v : val) :
+instance heapPointsto_as_fractional (l : Loc) (q : Qp) (v : val) :
     AsFractional (heapPointsto (hG := hG) l (.own q) v) ioΦ
       (fun q => heapPointsto l (.own q) v) ioq q :=
   ⟨.rfl, heapPointsto_fractional l v⟩
 
-instance heapPointsto_combine_sep_gives (l : loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
+instance heapPointsto_combine_sep_gives (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
     CombineSepGives (heapPointsto (hG := hG) l dq1 v1) (heapPointsto l dq2 v2)
       iprop(⌜✓ (dq1 • dq2) ∧ v1 = v2⌝) where
   combine_sep_gives := by
@@ -179,20 +179,20 @@ instance heapPointsto_combine_sep_gives (l : loc) (dq1 dq2 : DFrac) (v1 v2 : val
     icombine H1 H2 gives %H
     imodintro; ipureintro; exact H
 
-theorem heapPointsto_agree (l : loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
+theorem heapPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
     heapPointsto (hG := hG) l dq1 v1 ∗ heapPointsto l dq2 v2 ⊢ ⌜v1 = v2⌝ := by
   iintro ⟨H1, H2⟩
   icombine H1 H2 gives %⟨_, H⟩
   ipureintro; exact H
 
-theorem na_pointsto_to_heap (l : loc) (dq : DFrac) (v : val) (H : l ≠ null) :
+theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l ≠ null) :
     naHeapPointsto (hG := hG) l dq v ⊢ heapPointsto l dq v := by
   unfold heapPointsto
   iintro Hl
   iframe Hl
   ipureintro; exact H
 
-theorem heapPointsto_na_acc (l : loc) (dq : DFrac) (v : val) :
+theorem heapPointsto_na_acc (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢
       naHeapPointsto l dq v ∗ (∀ v', naHeapPointsto l dq v' -∗ heapPointsto l dq v') := by
   unfold heapPointsto
@@ -202,17 +202,17 @@ theorem heapPointsto_na_acc (l : loc) (dq : DFrac) (v : val) :
   iframe H'
   ipureintro; exact Hl
 
-theorem heapPointsto_valid (l : loc) (dq : DFrac) (v : val) :
+theorem heapPointsto_valid (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜✓ dq⌝ := by
   unfold heapPointsto
   iintro ⟨_, H⟩
   iapply naHeapPointsto_valid $$ H
 
-theorem heapPointsto_frac_valid (l : loc) (q : Qp) (v : val) :
+theorem heapPointsto_frac_valid (l : Loc) (q : Qp) (v : val) :
     heapPointsto (hG := hG) l (.own q) v ⊢ ⌜q.val ≤ 1⌝ :=
   heapPointsto_valid l (.own q) v
 
-theorem heapPointsto_non_null (l : loc) (dq : DFrac) (v : val) :
+theorem heapPointsto_non_null (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜l ≠ null⌝ := by
   unfold heapPointsto
   iintro ⟨%Hl, _⟩
@@ -225,11 +225,11 @@ end heapPointsto
 section go_state_definitions
 
 class GoStateGS (GF : BundledGFunctors) where
-  package_inited_inG : GhostVarG GF (GMap go_string Bool)
+  package_inited_inG : GhostVarG GF (GMap GoString Bool)
   packageInitedName : GName
 
 class GoStatePreG (GF : BundledGFunctors) where
-  package_inited_preG_inG : GhostVarG GF (GMap go_string Bool)
+  package_inited_preG_inG : GhostVarG GF (GMap GoString Bool)
 
 attribute [reducible, instance] GoStateGS.package_inited_inG GoStatePreG.package_inited_preG_inG
 
@@ -243,13 +243,13 @@ abbrev goStateGSUpdate (GF : BundledGFunctors) (hT : GoStateGS GF) (γ : GName) 
 
 variable {GF : BundledGFunctors}
 
-def ownGoStateCtx [hG : GoStateGS GF] (package_inited : GMap go_string Bool) : IProp GF :=
+def ownGoStateCtx [hG : GoStateGS GF] (package_inited : GMap GoString Bool) : IProp GF :=
   ghost_var hG.packageInitedName (.own (1 : Qp).half) package_inited
 
-def ownGoState [hG : GoStateGS GF] (package_inited : GMap go_string Bool) : IProp GF :=
+def ownGoState [hG : GoStateGS GF] (package_inited : GMap GoString Bool) : IProp GF :=
   ghost_var hG.packageInitedName (.own (1 : Qp).half) package_inited
 
-instance ownGoStateCtx_combine_sep_gives [GoStateGS GF] (v1 v2 : GMap go_string Bool) :
+instance ownGoStateCtx_combine_sep_gives [GoStateGS GF] (v1 v2 : GMap GoString Bool) :
     ProofMode.CombineSepGives (ownGoStateCtx (GF := GF) v1) (ownGoState v2)
       iprop(⌜v1 = v2⌝) where
   combine_sep_gives := by
@@ -258,18 +258,18 @@ instance ownGoStateCtx_combine_sep_gives [GoStateGS GF] (v1 v2 : GMap go_string 
     icombine H1 H2 gives %⟨_, H⟩
     imodintro; ipureintro; exact H
 
-instance ownGoState_timeless [GoStateGS GF] (v : GMap go_string Bool) :
+instance ownGoState_timeless [GoStateGS GF] (v : GMap GoString Bool) :
     Timeless (ownGoState (GF := GF) v) := by
   unfold ownGoState; infer_instance
 
-theorem ownGoState_update [GoStateGS GF] (v v' v'' : GMap go_string Bool) :
+theorem ownGoState_update [GoStateGS GF] (v v' v'' : GMap GoString Bool) :
     ⊢@{IProp GF} ownGoState v -∗ ownGoStateCtx v' ==∗
       ownGoState v'' ∗ ownGoStateCtx v'' := by
   unfold ownGoState ownGoStateCtx
   iintro H1 H2
   iapply ghost_var_update_halves $$ H1 H2
 
-theorem goState_init (hT : GoStatePreG GF) (package_inited : GMap go_string Bool) :
+theorem goState_init (hT : GoStatePreG GF) (package_inited : GMap GoString Bool) :
     ⊢@{IProp GF} |==> ∃ γ : GName,
       ownGoStateCtx (hG := goStateGSUpdatePre GF hT γ) package_inited ∗
       ownGoState (hG := goStateGSUpdatePre GF hT γ) package_inited := by
@@ -289,16 +289,16 @@ end go_state_definitions
 ghost names it uses, and `ffiLocalCtx`/`ffiGlobalCtx` interpret its states.
 (Rocq's `ffiGlobalStart`, `ffiLocalStart`, `ffi_restart` and
 `ffi_crash_rel` are crash/adequacy machinery and are omitted.) -/
-class ffi_interp (ffi : ffi_model) where
+class FfiInterp (ffi : FfiModel) where
   ffiLocalGS : BundledGFunctors → Type
   ffiGlobalGS : BundledGFunctors → Type
   ffiGlobalCtx : ∀ {GF : BundledGFunctors}, ffiGlobalGS GF → ffi_global_state → IProp GF
   ffiLocalCtx : ∀ {GF : BundledGFunctors}, ffiLocalGS GF → ffi_state → IProp GF
 
-export ffi_interp (ffiLocalGS ffiGlobalGS ffiGlobalCtx ffiLocalCtx)
+export FfiInterp (ffiLocalGS ffiGlobalGS ffiGlobalCtx ffiLocalCtx)
 
 section goose_lang
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
 
 /-- Global ghost state for GooseLang. -/
 class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
@@ -314,7 +314,7 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
 class GooseLocalGS (GF : BundledGFunctors) where
   gooseFfiLocalGS : @ffiLocalGS ffi _ GF
   goose_go_local_context : GoLocalContext
-  goose_na_heapGS : NaHeapGS loc val GF
+  goose_na_heapGS : NaHeapGS Loc val GF
   goose_go_stateGS : GoStateGS GF
 
 attribute [reducible, instance] GooseGlobalGS.goose_prophGS GooseGlobalGS.goose_receiptGS
@@ -323,11 +323,11 @@ attribute [reducible, instance] GooseGlobalGS.goose_prophGS GooseGlobalGS.goose_
 
 /-- Bundles the global and local ghost state (Rocq `heapGS`, minus `allG` and
 `GoGlobalContext`). -/
-class heapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
+class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   goose_globalGS : GooseGlobalGS hlc GF
   goose_localGS : GooseLocalGS GF
 
-attribute [reducible, instance] heapGS.goose_globalGS heapGS.goose_localGS
+attribute [reducible, instance] HeapGS.goose_globalGS HeapGS.goose_localGS
 
 export GooseGlobalGS (gooseInvGS gooseFfiGlobalGS)
 export GooseLocalGS (gooseFfiLocalGS goose_go_local_context)
@@ -364,9 +364,9 @@ instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
   stateInterp σ _ κs _ := gooseBstateInterp σ κs
 
-variable [ffi_semantics ext ffi] [GoGlobalContext]
+variable [FfiSemantics ext ffi] [GoGlobalContext]
 
-instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc expr GF where
+instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc Expr GF where
   invGS := G.gooseInvGS
   numLatersPerStep _ := 0
   forkPost _ := iprop(True)
@@ -379,12 +379,12 @@ end goose_lang
 /-! ## Atomicity -/
 
 section atomic
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
 /-- Atomicity from the real base step. Counted redexes (Go instructions) may
 stutter in the bounded semantics and are not atomic, hence `hnc`. -/
-theorem goose_atomic {e : expr} (a : Language.Atomicity)
+theorem goose_atomic {e : Expr} (a : Language.Atomicity)
     (h : ∀ σ κ e' σ' efs, BaseStep e σ κ e' σ' efs → (toVal e').isSome)
     (hsub : ∀ Ki e', e = fillItem Ki e' → (toVal e').isSome)
     (hnc : isCounted e = false := by rfl) :
@@ -435,7 +435,7 @@ instance finish_read_atomic (a : Language.Atomicity) (v : val) :
     Language.Atomic a (FinishRead (Val v)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
-instance fork_atomic (a : Language.Atomicity) (e : expr) : Language.Atomic a (Fork e) :=
+instance fork_atomic (a : Language.Atomicity) (e : Expr) : Language.Atomic a (Fork e) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 instance resolve_atomic (a : Language.Atomicity) (p w : val) :
@@ -450,12 +450,12 @@ iris-lean provides `PureExec` and `wp_pure_step_later`/`wp_pure_step_fupd`.
 `pureExec_of_base_step` builds a one-step `PureExec` from the base step relation. -/
 
 section pure
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
 /-- A one-step `PureExec` from the real base step relation (for an uncounted
 redex, which steps in the bounded semantics exactly as in the real one). -/
-theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : expr}
+theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : Expr}
     (Hsafe : φ → ∀ σ, BaseStep e₁ σ [] e₂ σ [])
     (Hdet : φ → ∀ σ κ e' σ' efs, BaseStep e₁ σ κ e' σ' efs →
       κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = [])
@@ -470,7 +470,7 @@ theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : expr}
     subst h2
     exact ⟨h1, rfl, h3.symm, h4⟩
 
-instance pure_recc (f x : binder) (e : expr) :
+instance pure_recc (f x : Binder) (e : Expr) :
     Language.PureExec True 1 (Rec f x e) (Val (RecV f x e)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.RecS f x e σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
@@ -480,26 +480,26 @@ instance pure_pairc (v1 v2 : val) :
   pureExec_of_base_step (fun _ σ => BaseStep.PairS v1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
-instance pure_beta (f x : binder) (e1 : expr) (v2 : val) :
+instance pure_beta (f x : Binder) (e1 : Expr) (v2 : val) :
     Language.PureExec True 1 (App (Val (RecV f x e1)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e1) e1)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.BetaS f x e1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
-theorem baseStep_If_inv {v : val} {e1 e2 : expr} {σ σ' : CfgState} {κ : List Observation}
-    {e' : expr} {efs : List expr} (h : BaseStep (If (Val v) e1 e2) σ κ e' σ' efs) :
+theorem baseStep_If_inv {v : val} {e1 e2 : Expr} {σ σ' : CfgState} {κ : List Observation}
+    {e' : Expr} {efs : List Expr} (h : BaseStep (If (Val v) e1 e2) σ κ e' σ' efs) :
     κ = [] ∧ σ' = σ ∧ efs = [] ∧ ((v = #true ∧ e' = e1) ∨ (v = #false ∧ e' = e2)) := by
   cases h
   · exact ⟨rfl, rfl, rfl, .inl ⟨rfl, rfl⟩⟩
   · exact ⟨rfl, rfl, rfl, .inr ⟨rfl, rfl⟩⟩
 
-instance pure_if_true (e1 e2 : expr) : Language.PureExec True 1 (If (Val #true) e1 e2) e1 :=
+instance pure_if_true (e1 e2 : Expr) : Language.PureExec True 1 (If (Val #true) e1 e2) e1 :=
   pureExec_of_base_step (fun _ σ => BaseStep.IfTrueS e1 e2 σ) fun _ _ _ _ _ _ h => by
     obtain ⟨h1, h2, h3, ⟨_, h4⟩ | ⟨hv, _⟩⟩ := baseStep_If_inv h
     · exact ⟨h1, h2, h4, h3⟩
     · exact absurd (GoGlobalContext.intoVal_inj_bool hv) (by decide)
 
-instance pure_if_false (e1 e2 : expr) : Language.PureExec True 1 (If (Val #false) e1 e2) e2 :=
+instance pure_if_false (e1 e2 : Expr) : Language.PureExec True 1 (If (Val #false) e1 e2) e2 :=
   pureExec_of_base_step (fun _ σ => BaseStep.IfFalseS e1 e2 σ) fun _ _ _ _ _ _ h => by
     obtain ⟨h1, h2, h3, ⟨hv, _⟩ | ⟨_, h4⟩⟩ := baseStep_If_inv h
     · exact absurd (GoGlobalContext.intoVal_inj_bool hv) (by decide)
@@ -518,7 +518,7 @@ instance pure_literal_value (l : List keyed_element) :
   pureExec_of_base_step (fun _ σ => BaseStep.LiteralValueS l σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
-instance pure_select_stmt_clauses (d : Option expr) (cs : List comm_clause) :
+instance pure_select_stmt_clauses (d : Option Expr) (cs : List comm_clause) :
     Language.PureExec True 1 (SelectStmtClauses d cs) (Val (SelectStmtClausesV d cs)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.SelectStmtClausesS d cs σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
@@ -528,14 +528,14 @@ end pure
 /-! ## Inversion lemmas for `base_step` -/
 
 section inversion
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
-variable {σ σ' : CfgState} {κ : List Observation} {e' : expr} {efs : List expr}
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable {σ σ' : CfgState} {κ : List Observation} {e' : Expr} {efs : List Expr}
 
 theorem baseStep_ArbitraryInt_inv (h : BaseStep ArbitraryInt σ κ e' σ' efs) :
     ∃ x : w64, κ = [] ∧ e' = Val #x ∧ σ' = σ ∧ efs = [] := by
   cases h; exact ⟨_, rfl, rfl, rfl, rfl⟩
 
-theorem baseStep_Fork_inv {e : expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
+theorem baseStep_Fork_inv {e : Expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
     κ = [] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [e] := by
   cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
@@ -603,7 +603,7 @@ theorem baseStep_ResolveProph_inv {v w : val}
     ∃ p : proph_id, v = #p ∧ κ = [(p, w)] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [] := by
   cases h; exact ⟨_, rfl, rfl, rfl, rfl, rfl⟩
 
-theorem baseStep_GoInstruction_inv {op : go_instruction} {arg : val}
+theorem baseStep_GoInstruction_inv {op : GoInstruction} {arg : val}
     (h : BaseStep (App (Val (GoInstruction op)) (Val arg)) σ κ e' σ' efs) :
     ∃ s', @IsGoStep _ _ σ.1.goState.goLctx op arg e' σ.1.goState.packageState s' ∧
       κ = [] ∧ efs = [] ∧
@@ -615,7 +615,7 @@ end inversion
 /-! ## Lifting lemmas -/
 
 section lifting
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
@@ -623,7 +623,7 @@ variable {s : Stuckness} {E : CoPset}
 open EctxLanguage ProofMode
 
 /-- Real base reducibility. -/
-def GooseBaseReducible (e : expr) (σ : CfgState) : Prop :=
+def GooseBaseReducible (e : Expr) (σ : CfgState) : Prop :=
   ∃ κ e' σ' efs, BaseStep e σ κ e' σ' efs
 
 /-- `gooseStateInterp` with the (unused) step and thread counts of iris-lean's
@@ -646,14 +646,14 @@ theorem goose_bstateInterp_eq (σ : CfgState) (c : Nat) (ns : Nat) (κs : List O
     stateInterp (GF := GF) ((σ, c) : BcfgState) ns κs nt ⊣⊢
       iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c) := .rfl
 
-theorem goose_baseReducible_of {e : expr} {σ : CfgState} {c : Nat} (hnc : isCounted e = false)
+theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Nat} (hnc : isCounted e = false)
     (h : GooseBaseReducible e σ) : BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
   obtain ⟨κ, e', σ', efs, h⟩ := h
   exact ⟨κ, e', (σ', c), efs, .step hnc h⟩
 
 /-- iris-lean's `wp_lift_base_step` for an uncounted redex, in terms of the real
 `base_step` and `gooseStateInterp`. -/
-theorem goose_wp_lift_base_step {e₁ : expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
+theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
     (hnc : isCounted e₁ = false) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E,∅}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
@@ -681,7 +681,7 @@ theorem goose_wp_lift_base_step {e₁ : expr} {Φ : val → IProp GF} (h : toVal
   iframe
 
 /-- iris-lean's `wp_lift_atomic_base_step` for an uncounted redex. -/
-theorem goose_wp_lift_atomic_base_step {e₁ : expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
+theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
     (hnc : isCounted e₁ = false) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
@@ -709,7 +709,7 @@ theorem goose_wp_lift_atomic_base_step {e₁ : expr} {Φ : val → IProp GF} (h 
   iframe
 
 /-- iris-lean's `wp_lift_atomic_base_step_no_fork` for an uncounted redex. -/
-theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : expr} {Φ : val → IProp GF}
+theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp GF}
     (h : toVal e₁ = none) (hnc : isCounted e₁ = false) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
@@ -734,7 +734,7 @@ theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : expr} {Φ : val → IProp
   itrivial
 
 /-- A lifting lemma for atomic steps that only change the heap. -/
-theorem wp_lift_atomic_heap_step {e₁ : expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
+theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
     (hnc : isCounted e₁ = false) :
     (∀ σ₁ : CfgState, naHeapCtx tls σ₁.1.heap ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
@@ -792,7 +792,7 @@ theorem wp_ArbitraryInt :
     iapply HΦ $$ %x
     itrivial
 
-theorem wp_load (l : loc) (q : DFrac) (v : val) :
+theorem wp_load (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l q v }} (Load (Val #l)) @ s; E
     {{ RET v; heapPointsto l q v }} := by
   iintro %Φ >Hl HΦ
@@ -822,7 +822,7 @@ theorem wp_load (l : loc) (q : DFrac) (v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_prepare_write (l : loc) (v : val) :
+theorem wp_prepare_write (l : Loc) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v }} (PrepareWrite (Val #l)) @ s; E
     {{ RET #(); naHeapPointstoSt WSt l (.own 1) v ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }} := by
@@ -855,7 +855,7 @@ theorem wp_prepare_write (l : loc) (v : val) :
   iapply HΦ
   iframe
 
-theorem wp_finish_store (l : loc) (v v' : val) :
+theorem wp_finish_store (l : Loc) (v v' : val) :
     {{ ▷ naHeapPointstoSt (GF := GF) WSt l (.own 1) v' ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }}
       (FinishStore (Val #l) (Val v)) @ s; E
@@ -905,7 +905,7 @@ theorem naModeRl_is_read_lock : IsReadLock tls naModeRl := by
 theorem naModeUrl_is_read_unlock : IsReadUnlock tls naModeUrl := by
   intro lk n h; cases lk <;> simp_all [tls, naModeUrl]
 
-theorem wp_start_read (l : loc) (q : DFrac) (v : val) :
+theorem wp_start_read (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l q v }} (StartRead (Val #l)) @ s; E
     {{ RET v; naHeapPointstoSt (RSt 1) l q v ∗
         (∀ v', naHeapPointsto l q v' -∗ heapPointsto l q v') }} := by
@@ -937,7 +937,7 @@ theorem wp_start_read (l : loc) (q : DFrac) (v : val) :
   iapply HΦ
   iframe
 
-theorem wp_finish_read (l : loc) (q : DFrac) (v : val) :
+theorem wp_finish_read (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ naHeapPointstoSt (GF := GF) (RSt 1) l q v ∗
         (∀ v', naHeapPointsto l q v' -∗ heapPointsto l q v') }}
       (FinishRead (Val #l)) @ s; E
@@ -970,7 +970,7 @@ theorem wp_finish_read (l : loc) (q : DFrac) (v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_atomic_swap (l : loc) (v0 v : val) :
+theorem wp_atomic_swap (l : Loc) (v0 v : val) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicSwap (Val #l) (Val v)) @ s; E
     {{ RET v0; heapPointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
@@ -1002,7 +1002,7 @@ theorem wp_atomic_swap (l : loc) (v0 v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_atomic_add (l : loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = some v) :
+theorem wp_atomic_add (l : Loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = some v) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicAdd (Val #l) (Val v1)) @ s; E
     {{ RET v; heapPointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
@@ -1035,7 +1035,7 @@ theorem wp_atomic_add (l : loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = som
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_cmpxchg_fail (l : loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1) :
+theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1) :
     {{ ▷ heapPointsto (GF := GF) l q v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #false); heapPointsto l q v' }} := by
   iintro %Φ >Hl HΦ
@@ -1069,7 +1069,7 @@ theorem wp_cmpxchg_fail (l : loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
     rw [Hlookup] at Heq'; cases Heq'
     exact (Hne Hvl).elim
 
-theorem wp_cmpxchg_suc (l : loc) (v1 v2 v' : val) (Heq : v' = v1) :
+theorem wp_cmpxchg_suc (l : Loc) (v1 v2 v' : val) (Heq : v' = v1) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #true); heapPointsto l (.own 1) v2 }} := by
   iintro %Φ >Hl HΦ
@@ -1123,7 +1123,7 @@ theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
     exact absurd ((GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)) (freshLocs_fresh _ i)
 
 /-- Rocq `pointstoVals`. -/
-def pointstoVals (l : loc) (q : DFrac) (vs : List val) : IProp GF :=
+def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
 theorem wp_allocN_seq (v : val) :
@@ -1174,7 +1174,7 @@ theorem wp_alloc_untyped (v : val) :
 
 /-! ### Fork -/
 
-theorem wp_fork (e : expr) (Φ : val → IProp GF) :
+theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
     ⊢ ▷ WP e @ s; ⊤ {{ _v, True }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply goose_wp_lift_atomic_base_step rfl rfl
@@ -1205,7 +1205,7 @@ are the counted steps of the bounded semantics: below the bound the step yields
 an exclusive receipt `⧗ 1` and increments a persistent receipt `⧖ m` (the
 paper's `{⧖ m} tick v {⧗ 1 ∗ ⧖ (m + 1)}`); at the bound the step stutters,
 which is handled by Löb induction. -/
-theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : go_instruction) (arg : val)
+theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg : val)
     (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
     ⧖ m ∗ ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ⧖ (m + 1) -∗ ownGoStateCtx gs ={E}=∗
@@ -1275,7 +1275,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : go_instruction) (arg
 
 /-- `wp_GoInstruction_preceipt` without persistent receipts: a Go instruction
 step yields an exclusive time receipt `⧗ 1`. -/
-theorem wp_GoInstruction_receipt (K : List EctxItem) (op : go_instruction) (arg : val)
+theorem wp_GoInstruction_receipt (K : List EctxItem) (op : GoInstruction) (arg : val)
     (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
@@ -1289,7 +1289,7 @@ theorem wp_GoInstruction_receipt (K : List EctxItem) (op : go_instruction) (arg 
   iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hr Hgs
 
 /-- WP for go instructions. -/
-theorem wp_GoInstruction (K : List EctxItem) (op : go_instruction) (arg : val)
+theorem wp_GoInstruction (K : List EctxItem) (op : GoInstruction) (arg : val)
     (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
@@ -1301,7 +1301,7 @@ theorem wp_GoInstruction (K : List EctxItem) (op : go_instruction) (arg : val)
   iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hgs
 
 /-- `wp_GoInstruction` with an empty evaluation context. -/
-theorem wp_GoInstruction' (op : go_instruction) (arg : val)
+theorem wp_GoInstruction' (op : GoInstruction) (arg : val)
     (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP e' @ s; E {{ Φ }}))

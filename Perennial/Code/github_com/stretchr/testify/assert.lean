@@ -12,947 +12,947 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.stretchr.testify.assert : go_string := go!"github.com/stretchr/testify/assert"
+def github_com.stretchr.testify.assert : GoString := go!"github.com/stretchr/testify/assert"
 end pkg_id
 
 namespace github_com.stretchr.testify.assert
 
-def compareResult [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.compareResult" [])
+def compareResult [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.compareResult" [])
 
 attribute [irreducible] compareResult
 
-def TestingT [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.TestingT" [])
+def TestingT [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.TestingT" [])
 
 attribute [irreducible] TestingT
 
-def ComparisonAssertionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.ComparisonAssertionFunc" [])
+def ComparisonAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.ComparisonAssertionFunc" [])
 
 attribute [irreducible] ComparisonAssertionFunc
 
-def ValueAssertionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.ValueAssertionFunc" [])
+def ValueAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.ValueAssertionFunc" [])
 
 attribute [irreducible] ValueAssertionFunc
 
-def BoolAssertionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.BoolAssertionFunc" [])
+def BoolAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.BoolAssertionFunc" [])
 
 attribute [irreducible] BoolAssertionFunc
 
-def ErrorAssertionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.ErrorAssertionFunc" [])
+def ErrorAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.ErrorAssertionFunc" [])
 
 attribute [irreducible] ErrorAssertionFunc
 
-def Comparison [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.Comparison" [])
+def Comparison [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.Comparison" [])
 
 attribute [irreducible] Comparison
 
-def failNower [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.failNower" [])
+def failNower [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.failNower" [])
 
 attribute [irreducible] failNower
 
-def labeledContent [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.labeledContent" [])
+def labeledContent [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.labeledContent" [])
 
 attribute [irreducible] labeledContent
 
-def PanicTestFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.PanicTestFunc" [])
+def PanicTestFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.PanicTestFunc" [])
 
 attribute [irreducible] PanicTestFunc
 
-def CollectT [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.CollectT" [])
+def CollectT [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.CollectT" [])
 
 attribute [irreducible] CollectT
 
-def Assertions [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/stretchr/testify/assert.Assertions" [])
+def Assertions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/stretchr/testify/assert.Assertions" [])
 
 attribute [irreducible] Assertions
 
-@[reducible] def CompareType [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def CompareType [FfiSyntax] [GoGlobalContext] : go.GoType :=
   compareResult
 
-@[reducible] def PanicAssertionFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [TestingT, PanicTestFunc, (go.type.SliceType (go.type.InterfaceType []))] true [go.bool]))
+@[reducible] def PanicAssertionFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT, PanicTestFunc, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-@[reducible] def tHelper [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Helper" (go.signature.Signature [] false []))])
+@[reducible] def tHelper [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Helper" (go.signature.Signature [] false []))])
 
-axiom compareLess [ffi_syntax] [GoGlobalContext] : val
+axiom compareLess [FfiSyntax] [GoGlobalContext] : val
 
-axiom compareEqual [ffi_syntax] [GoGlobalContext] : val
+axiom compareEqual [FfiSyntax] [GoGlobalContext] : val
 
-axiom compareGreater [ffi_syntax] [GoGlobalContext] : val
+axiom compareGreater [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def intType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.intType"
 
-axiom intType'init [ffi_syntax] [GoGlobalContext] : val
+axiom intType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def int8Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int8Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.int8Type"
 
-axiom int8Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom int8Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def int16Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int16Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.int16Type"
 
-axiom int16Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom int16Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def int32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int32Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.int32Type"
 
-axiom int32Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom int32Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def int64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int64Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.int64Type"
 
-axiom int64Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom int64Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uintType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uintType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uintType"
 
-axiom uintType'init [ffi_syntax] [GoGlobalContext] : val
+axiom uintType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uint8Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint8Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uint8Type"
 
-axiom uint8Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom uint8Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uint16Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint16Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uint16Type"
 
-axiom uint16Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom uint16Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uint32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint32Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uint32Type"
 
-axiom uint32Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom uint32Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uint64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uint64Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uint64Type"
 
-axiom uint64Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom uint64Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def uintptrType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def uintptrType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.uintptrType"
 
-axiom uintptrType'init [ffi_syntax] [GoGlobalContext] : val
+axiom uintptrType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def float32Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float32Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.float32Type"
 
-axiom float32Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom float32Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def float64Type [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64Type [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.float64Type"
 
-axiom float64Type'init [ffi_syntax] [GoGlobalContext] : val
+axiom float64Type'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def stringType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.stringType"
 
-axiom stringType'init [ffi_syntax] [GoGlobalContext] : val
+axiom stringType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def timeType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def timeType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.timeType"
 
-axiom timeType'init [ffi_syntax] [GoGlobalContext] : val
+axiom timeType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def bytesType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bytesType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.bytesType"
 
-axiom bytesType'init [ffi_syntax] [GoGlobalContext] : val
+axiom bytesType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def spewConfig [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spewConfig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.spewConfig"
 
-axiom spewConfig'init [ffi_syntax] [GoGlobalContext] : val
+axiom spewConfig'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def spewConfigStringerEnabled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def spewConfigStringerEnabled [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.spewConfigStringerEnabled"
 
-axiom spewConfigStringerEnabled'init [ffi_syntax] [GoGlobalContext] : val
+axiom spewConfigStringerEnabled'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def AnError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AnError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.AnError"
 
-axiom AnError'init [ffi_syntax] [GoGlobalContext] : val
+axiom AnError'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compare [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.compare"
 
-noncomputable def Greater [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Greater [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Greater"
 
-noncomputable def GreaterOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GreaterOrEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.GreaterOrEqual"
 
-noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Less"
 
-noncomputable def LessOrEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LessOrEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.LessOrEqual"
 
-noncomputable def Positive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Positive [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Positive"
 
-noncomputable def Negative [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Negative [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Negative"
 
-noncomputable def compareTwoValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def compareTwoValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.compareTwoValues"
 
-noncomputable def containsValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.containsValue"
 
-noncomputable def Conditionf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Conditionf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Conditionf"
 
-noncomputable def Containsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Containsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Containsf"
 
-noncomputable def DirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirExistsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.DirExistsf"
 
-noncomputable def ElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ElementsMatchf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ElementsMatchf"
 
-noncomputable def Emptyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Emptyf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Emptyf"
 
-noncomputable def Equalf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equalf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Equalf"
 
-noncomputable def EqualErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualErrorf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualErrorf"
 
-noncomputable def EqualExportedValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualExportedValuesf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualExportedValuesf"
 
-noncomputable def EqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualValuesf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualValuesf"
 
-noncomputable def Errorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Errorf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Errorf"
 
-noncomputable def ErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorAsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorAsf"
 
-noncomputable def ErrorContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorContainsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorContainsf"
 
-noncomputable def ErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorIsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorIsf"
 
-noncomputable def Eventuallyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Eventuallyf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Eventuallyf"
 
-noncomputable def EventuallyWithTf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EventuallyWithTf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EventuallyWithTf"
 
-noncomputable def Exactlyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exactlyf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Exactlyf"
 
-noncomputable def Failf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Failf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Failf"
 
-noncomputable def FailNowf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailNowf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.FailNowf"
 
-noncomputable def Falsef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Falsef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Falsef"
 
-noncomputable def FileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileExistsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.FileExistsf"
 
-noncomputable def Greaterf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Greaterf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Greaterf"
 
-noncomputable def GreaterOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def GreaterOrEqualf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.GreaterOrEqualf"
 
-noncomputable def HTTPBodyContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyContainsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPBodyContainsf"
 
-noncomputable def HTTPBodyNotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyNotContainsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPBodyNotContainsf"
 
-noncomputable def HTTPErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPErrorf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPErrorf"
 
-noncomputable def HTTPRedirectf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPRedirectf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPRedirectf"
 
-noncomputable def HTTPStatusCodef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPStatusCodef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPStatusCodef"
 
-noncomputable def HTTPSuccessf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPSuccessf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPSuccessf"
 
-noncomputable def Implementsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Implementsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Implementsf"
 
-noncomputable def InDeltaf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDeltaf"
 
-noncomputable def InDeltaMapValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaMapValuesf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDeltaMapValuesf"
 
-noncomputable def InDeltaSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaSlicef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDeltaSlicef"
 
-noncomputable def InEpsilonf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InEpsilonf"
 
-noncomputable def InEpsilonSlicef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonSlicef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InEpsilonSlicef"
 
-noncomputable def IsDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsDecreasingf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsDecreasingf"
 
-noncomputable def IsIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsIncreasingf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsIncreasingf"
 
-noncomputable def IsNonDecreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonDecreasingf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNonDecreasingf"
 
-noncomputable def IsNonIncreasingf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonIncreasingf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNonIncreasingf"
 
-noncomputable def IsNotTypef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotTypef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNotTypef"
 
-noncomputable def IsTypef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsTypef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsTypef"
 
-noncomputable def JSONEqf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def JSONEqf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.JSONEqf"
 
-noncomputable def Lenf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lenf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Lenf"
 
-noncomputable def Lessf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lessf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Lessf"
 
-noncomputable def LessOrEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LessOrEqualf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.LessOrEqualf"
 
-noncomputable def Negativef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Negativef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Negativef"
 
-noncomputable def Neverf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Neverf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Neverf"
 
-noncomputable def Nilf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Nilf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Nilf"
 
-noncomputable def NoDirExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoDirExistsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoDirExistsf"
 
-noncomputable def NoErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoErrorf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoErrorf"
 
-noncomputable def NoFileExistsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoFileExistsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoFileExistsf"
 
-noncomputable def NotContainsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotContainsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotContainsf"
 
-noncomputable def NotElementsMatchf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotElementsMatchf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotElementsMatchf"
 
-noncomputable def NotEmptyf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEmptyf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEmptyf"
 
-noncomputable def NotEqualf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEqualf"
 
-noncomputable def NotEqualValuesf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualValuesf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEqualValuesf"
 
-noncomputable def NotErrorAsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorAsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotErrorAsf"
 
-noncomputable def NotErrorIsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorIsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotErrorIsf"
 
-noncomputable def NotImplementsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotImplementsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotImplementsf"
 
-noncomputable def NotNilf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotNilf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotNilf"
 
-noncomputable def NotPanicsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotPanicsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotPanicsf"
 
-noncomputable def NotRegexpf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotRegexpf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotRegexpf"
 
-noncomputable def NotSamef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSamef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotSamef"
 
-noncomputable def NotSubsetf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSubsetf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotSubsetf"
 
-noncomputable def NotZerof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotZerof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotZerof"
 
-noncomputable def Panicsf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panicsf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Panicsf"
 
-noncomputable def PanicsWithErrorf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithErrorf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.PanicsWithErrorf"
 
-noncomputable def PanicsWithValuef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithValuef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.PanicsWithValuef"
 
-noncomputable def Positivef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Positivef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Positivef"
 
-noncomputable def Regexpf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Regexpf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Regexpf"
 
-noncomputable def Samef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Samef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Samef"
 
-noncomputable def Subsetf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Subsetf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Subsetf"
 
-noncomputable def Truef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Truef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Truef"
 
-noncomputable def WithinDurationf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinDurationf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.WithinDurationf"
 
-noncomputable def WithinRangef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinRangef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.WithinRangef"
 
-noncomputable def YAMLEqf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def YAMLEqf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.YAMLEqf"
 
-noncomputable def Zerof [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Zerof [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Zerof"
 
-noncomputable def isOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isOrdered [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isOrdered"
 
-noncomputable def IsIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsIncreasing [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsIncreasing"
 
-noncomputable def IsNonIncreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonIncreasing [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNonIncreasing"
 
-noncomputable def IsDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsDecreasing [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsDecreasing"
 
-noncomputable def IsNonDecreasing [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNonDecreasing [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNonDecreasing"
 
-noncomputable def ObjectsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsAreEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ObjectsAreEqual"
 
-noncomputable def copyExportedFields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyExportedFields [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.copyExportedFields"
 
-noncomputable def ObjectsExportedFieldsAreEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsExportedFieldsAreEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ObjectsExportedFieldsAreEqual"
 
-noncomputable def ObjectsAreEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ObjectsAreEqualValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ObjectsAreEqualValues"
 
-noncomputable def isNumericType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNumericType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isNumericType"
 
-noncomputable def CallerInfo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CallerInfo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.CallerInfo"
 
-noncomputable def isTest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isTest [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isTest"
 
-noncomputable def messageFromMsgAndArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def messageFromMsgAndArgs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.messageFromMsgAndArgs"
 
-noncomputable def indentMessageLines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indentMessageLines [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.indentMessageLines"
 
-noncomputable def FailNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FailNow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.FailNow"
 
-noncomputable def Fail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fail [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Fail"
 
-noncomputable def labeledOutput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def labeledOutput [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.labeledOutput"
 
-noncomputable def Implements [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Implements [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Implements"
 
-noncomputable def NotImplements [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotImplements [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotImplements"
 
-noncomputable def isType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isType"
 
-noncomputable def IsType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsType"
 
-noncomputable def IsNotType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.IsNotType"
 
-noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Equal"
 
-noncomputable def validateEqualArgs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateEqualArgs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.validateEqualArgs"
 
-noncomputable def Same [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Same [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Same"
 
-noncomputable def NotSame [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSame [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotSame"
 
-noncomputable def samePointers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def samePointers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.samePointers"
 
-noncomputable def formatUnequalValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def formatUnequalValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.formatUnequalValues"
 
-noncomputable def truncatingFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def truncatingFormat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.truncatingFormat"
 
-noncomputable def EqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualValues"
 
-noncomputable def EqualExportedValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualExportedValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualExportedValues"
 
-noncomputable def Exactly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exactly [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Exactly"
 
-noncomputable def NotNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotNil"
 
-noncomputable def isNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isNil"
 
-noncomputable def Nil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Nil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Nil"
 
-noncomputable def isEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isEmpty [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isEmpty"
 
-noncomputable def isEmptyValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isEmptyValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isEmptyValue"
 
-noncomputable def Empty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Empty [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Empty"
 
-noncomputable def NotEmpty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEmpty [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEmpty"
 
-noncomputable def getLen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.getLen"
 
-noncomputable def Len [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Len"
 
-noncomputable def True' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def True' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.True"
 
-noncomputable def False' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def False' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.False"
 
-noncomputable def NotEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEqual"
 
-noncomputable def NotEqualValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotEqualValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotEqualValues"
 
-noncomputable def containsElement [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsElement [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.containsElement"
 
-noncomputable def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Contains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Contains"
 
-noncomputable def NotContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotContains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotContains"
 
-noncomputable def Subset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Subset [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Subset"
 
-noncomputable def NotSubset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotSubset [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotSubset"
 
-noncomputable def ElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ElementsMatch [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ElementsMatch"
 
-noncomputable def isList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isList [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isList"
 
-noncomputable def diffLists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def diffLists [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.diffLists"
 
-noncomputable def formatListDiff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def formatListDiff [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.formatListDiff"
 
-noncomputable def NotElementsMatch [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotElementsMatch [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotElementsMatch"
 
-noncomputable def Condition [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Condition [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Condition"
 
-noncomputable def didPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def didPanic [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.didPanic"
 
-noncomputable def Panics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panics [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Panics"
 
-noncomputable def PanicsWithValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.PanicsWithValue"
 
-noncomputable def PanicsWithError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def PanicsWithError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.PanicsWithError"
 
-noncomputable def NotPanics [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotPanics [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotPanics"
 
-noncomputable def WithinDuration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinDuration [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.WithinDuration"
 
-noncomputable def WithinRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WithinRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.WithinRange"
 
-noncomputable def toFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def toFloat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.toFloat"
 
-noncomputable def InDelta [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDelta [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDelta"
 
-noncomputable def InDeltaSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDeltaSlice"
 
-noncomputable def InDeltaMapValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InDeltaMapValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InDeltaMapValues"
 
-noncomputable def calcRelativeError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def calcRelativeError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.calcRelativeError"
 
-noncomputable def InEpsilon [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilon [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InEpsilon"
 
-noncomputable def InEpsilonSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def InEpsilonSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.InEpsilonSlice"
 
-noncomputable def NoError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoError"
 
-noncomputable def Error [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Error [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Error"
 
-noncomputable def EqualError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EqualError"
 
-noncomputable def ErrorContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorContains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorContains"
 
-noncomputable def matchRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def matchRegexp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.matchRegexp"
 
-noncomputable def Regexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Regexp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Regexp"
 
-noncomputable def NotRegexp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotRegexp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotRegexp"
 
-noncomputable def Zero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Zero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Zero"
 
-noncomputable def NotZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotZero"
 
-noncomputable def FileExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FileExists [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.FileExists"
 
-noncomputable def NoFileExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoFileExists [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoFileExists"
 
-noncomputable def DirExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirExists [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.DirExists"
 
-noncomputable def NoDirExists [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NoDirExists [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NoDirExists"
 
-noncomputable def JSONEq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def JSONEq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.JSONEq"
 
-noncomputable def YAMLEq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def YAMLEq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.YAMLEq"
 
-noncomputable def typeAndKind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def typeAndKind [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.typeAndKind"
 
-noncomputable def diff [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def diff [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.diff"
 
-noncomputable def isFunction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isFunction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.isFunction"
 
-noncomputable def Eventually [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Eventually [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Eventually"
 
-noncomputable def EventuallyWithT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EventuallyWithT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.EventuallyWithT"
 
-noncomputable def Never [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Never [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.Never"
 
-noncomputable def ErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorIs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorIs"
 
-noncomputable def NotErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorIs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotErrorIs"
 
-noncomputable def ErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrorAs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.ErrorAs"
 
-noncomputable def NotErrorAs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NotErrorAs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.NotErrorAs"
 
-noncomputable def unwrapAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def unwrapAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.unwrapAll"
 
-noncomputable def buildErrorChainString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def buildErrorChainString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.buildErrorChainString"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.New"
 
-noncomputable def httpCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def httpCode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.httpCode"
 
-noncomputable def HTTPSuccess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPSuccess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPSuccess"
 
-noncomputable def HTTPRedirect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPRedirect [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPRedirect"
 
-noncomputable def HTTPError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPError"
 
-noncomputable def HTTPStatusCode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPStatusCode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPStatusCode"
 
-noncomputable def HTTPBody [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBody [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPBody"
 
-noncomputable def HTTPBodyContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyContains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPBodyContains"
 
-noncomputable def HTTPBodyNotContains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HTTPBodyNotContains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/stretchr/testify/assert.HTTPBodyNotContains"
 
 instance info' : PkgInfo pkg_id.github_com.stretchr.testify.assert where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.stretchr.testify.assert)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val AnError'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val spewConfigStringerEnabled'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val spewConfig'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val bytesType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val timeType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val stringType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val float64Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val float32Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uintptrType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uint64Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uint32Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uint16Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uint8Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val uintType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val int64Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val int32Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val int16Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val int8Type'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val intType'init) (Val #()))))))))
 
 namespace compareResult
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end compareResult
 
-@[reducible] def «compareResultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «compareResultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class compareResult_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class compareResult_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   compareResult_underlying : go.UnderlyingDirectedEq compareResult «compareResultⁱᵐᵖˡ»
 
 attribute [instance] compareResult_Assumptions.compareResult_underlying
 
 namespace TestingT
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end TestingT
 
-@[reducible] def «TestingTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.type.SliceType (go.type.InterfaceType []))] true []))])
+@[reducible] def «TestingTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType (go.GoType.InterfaceType []))] true []))])
 
-class TestingT_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class TestingT_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TestingT_underlying : go.UnderlyingDirectedEq TestingT «TestingTⁱᵐᵖˡ»
 
 attribute [instance] TestingT_Assumptions.TestingT_underlying
 
 namespace ComparisonAssertionFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end ComparisonAssertionFunc
 
-@[reducible] def «ComparisonAssertionFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [TestingT, (go.type.InterfaceType []), (go.type.InterfaceType []), (go.type.SliceType (go.type.InterfaceType []))] true [go.bool]))
+@[reducible] def «ComparisonAssertionFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT, (go.GoType.InterfaceType []), (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-class ComparisonAssertionFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ComparisonAssertionFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ComparisonAssertionFunc_underlying : go.UnderlyingDirectedEq ComparisonAssertionFunc «ComparisonAssertionFuncⁱᵐᵖˡ»
 
 attribute [instance] ComparisonAssertionFunc_Assumptions.ComparisonAssertionFunc_underlying
 
 namespace ValueAssertionFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end ValueAssertionFunc
 
-@[reducible] def «ValueAssertionFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [TestingT, (go.type.InterfaceType []), (go.type.SliceType (go.type.InterfaceType []))] true [go.bool]))
+@[reducible] def «ValueAssertionFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT, (go.GoType.InterfaceType []), (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-class ValueAssertionFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ValueAssertionFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ValueAssertionFunc_underlying : go.UnderlyingDirectedEq ValueAssertionFunc «ValueAssertionFuncⁱᵐᵖˡ»
 
 attribute [instance] ValueAssertionFunc_Assumptions.ValueAssertionFunc_underlying
 
 namespace BoolAssertionFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end BoolAssertionFunc
 
-@[reducible] def «BoolAssertionFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [TestingT, go.bool, (go.type.SliceType (go.type.InterfaceType []))] true [go.bool]))
+@[reducible] def «BoolAssertionFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT, go.bool, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-class BoolAssertionFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class BoolAssertionFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   BoolAssertionFunc_underlying : go.UnderlyingDirectedEq BoolAssertionFunc «BoolAssertionFuncⁱᵐᵖˡ»
 
 attribute [instance] BoolAssertionFunc_Assumptions.BoolAssertionFunc_underlying
 
 namespace ErrorAssertionFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end ErrorAssertionFunc
 
-@[reducible] def «ErrorAssertionFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [TestingT, go.error, (go.type.SliceType (go.type.InterfaceType []))] true [go.bool]))
+@[reducible] def «ErrorAssertionFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [TestingT, go.error, (go.GoType.SliceType (go.GoType.InterfaceType []))] true [go.bool]))
 
-class ErrorAssertionFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ErrorAssertionFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ErrorAssertionFunc_underlying : go.UnderlyingDirectedEq ErrorAssertionFunc «ErrorAssertionFuncⁱᵐᵖˡ»
 
 attribute [instance] ErrorAssertionFunc_Assumptions.ErrorAssertionFunc_underlying
 
 namespace Comparison
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end Comparison
 
-@[reducible] def «Comparisonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [] false [go.bool]))
+@[reducible] def «Comparisonⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))
 
-class Comparison_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Comparison_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Comparison_underlying : go.UnderlyingDirectedEq Comparison «Comparisonⁱᵐᵖˡ»
 
 attribute [instance] Comparison_Assumptions.Comparison_underlying
 
 namespace failNower
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end failNower
 
-@[reducible] def «failNowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"FailNow" (go.signature.Signature [] false []))])
+@[reducible] def «failNowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false []))])
 
-class failNower_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class failNower_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   failNower_underlying : go.UnderlyingDirectedEq failNower «failNowerⁱᵐᵖˡ»
 
 attribute [instance] failNower_Assumptions.failNower_underlying
 
 namespace labeledContent
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  label' : go_string
-  content' : go_string
+  label' : GoString
+  content' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end labeledContent
 
-@[reducible] def labeledContent'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def labeledContent'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"label" go.string),
 (go.field_decl.FieldDecl go!"content" go.string)]
 
-@[irreducible] def labeledContent'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def labeledContent'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   labeledContent'fds_unsealed
 
-instance equals_unfold_labeledContent [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_labeledContent [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold labeledContent'fds labeledContent'fds_unsealed :=
   ⟨by unfold labeledContent'fds; rfl⟩
 
-@[reducible] def «labeledContentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType labeledContent'fds)
+@[reducible] def «labeledContentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType labeledContent'fds)
 
-class labeledContent_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class labeledContent_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   labeledContent_type_repr : go.TypeReprUnderlying «labeledContentⁱᵐᵖˡ» labeledContent.t
   labeledContent_underlying : go.UnderlyingDirectedEq labeledContent «labeledContentⁱᵐᵖˡ»
   labeledContent_get_label : ∀ (x : labeledContent.t), go.IsGoStepPureDetTagged under (StructFieldGet «labeledContentⁱᵐᵖˡ» go!"label") #x (Val #(x.label'))
-  labeledContent_set_label : ∀ (x : labeledContent.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «labeledContentⁱᵐᵖˡ» go!"label") (PairV #x #y) (Val #(({ x with label' := y } : labeledContent.t)))
+  labeledContent_set_label : ∀ (x : labeledContent.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «labeledContentⁱᵐᵖˡ» go!"label") (PairV #x #y) (Val #(({ x with label' := y } : labeledContent.t)))
   labeledContent_get_content : ∀ (x : labeledContent.t), go.IsGoStepPureDetTagged under (StructFieldGet «labeledContentⁱᵐᵖˡ» go!"content") #x (Val #(x.content'))
-  labeledContent_set_content : ∀ (x : labeledContent.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «labeledContentⁱᵐᵖˡ» go!"content") (PairV #x #y) (Val #(({ x with content' := y } : labeledContent.t)))
+  labeledContent_set_content : ∀ (x : labeledContent.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «labeledContentⁱᵐᵖˡ» go!"content") (PairV #x #y) (Val #(({ x with content' := y } : labeledContent.t)))
 
 attribute [instance] labeledContent_Assumptions.labeledContent_type_repr
   labeledContent_Assumptions.labeledContent_underlying
@@ -962,40 +962,40 @@ attribute [instance] labeledContent_Assumptions.labeledContent_type_repr
   labeledContent_Assumptions.labeledContent_set_content
 
 namespace PanicTestFunc
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end PanicTestFunc
 
-@[reducible] def «PanicTestFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [] false []))
+@[reducible] def «PanicTestFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [] false []))
 
-class PanicTestFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PanicTestFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PanicTestFunc_underlying : go.UnderlyingDirectedEq PanicTestFunc «PanicTestFuncⁱᵐᵖˡ»
 
 attribute [instance] PanicTestFunc_Assumptions.PanicTestFunc_underlying
 
 namespace CollectT
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   errors' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end CollectT
 
-@[reducible] def CollectT'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"errors" (go.type.SliceType go.error))]
+@[reducible] def CollectT'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"errors" (go.GoType.SliceType go.error))]
 
-@[irreducible] def CollectT'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def CollectT'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   CollectT'fds_unsealed
 
-instance equals_unfold_CollectT [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_CollectT [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold CollectT'fds CollectT'fds_unsealed :=
   ⟨by unfold CollectT'fds; rfl⟩
 
-@[reducible] def «CollectTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType CollectT'fds)
+@[reducible] def «CollectTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType CollectT'fds)
 
-class CollectT_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class CollectT_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   CollectT_type_repr : go.TypeReprUnderlying «CollectTⁱᵐᵖˡ» CollectT.t
   CollectT_underlying : go.UnderlyingDirectedEq CollectT «CollectTⁱᵐᵖˡ»
   CollectT_get_errors : ∀ (x : CollectT.t), go.IsGoStepPureDetTagged under (StructFieldGet «CollectTⁱᵐᵖˡ» go!"errors") #x (Val #(x.errors'))
@@ -1007,28 +1007,28 @@ attribute [instance] CollectT_Assumptions.CollectT_type_repr
   CollectT_Assumptions.CollectT_set_errors
 
 namespace Assertions
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   t' : TestingT.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Assertions
 
-@[reducible] def Assertions'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Assertions'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" TestingT)]
 
-@[irreducible] def Assertions'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Assertions'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Assertions'fds_unsealed
 
-instance equals_unfold_Assertions [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Assertions [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Assertions'fds Assertions'fds_unsealed :=
   ⟨by unfold Assertions'fds; rfl⟩
 
-@[reducible] def «Assertionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Assertions'fds)
+@[reducible] def «Assertionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Assertions'fds)
 
-class Assertions_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assertions_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Assertions_type_repr : go.TypeReprUnderlying «Assertionsⁱᵐᵖˡ» Assertions.t
   Assertions_underlying : go.UnderlyingDirectedEq Assertions «Assertionsⁱᵐᵖˡ»
   Assertions_get_t : ∀ (x : Assertions.t), go.IsGoStepPureDetTagged under (StructFieldGet «Assertionsⁱᵐᵖˡ» go!"t") #x (Val #(x.t'))
@@ -1039,7 +1039,7 @@ attribute [instance] Assertions_Assumptions.Assertions_type_repr
   Assertions_Assumptions.Assertions_get_t
   Assertions_Assumptions.Assertions_set_t
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   compareResult_instance : compareResult_Assumptions
   TestingT_instance : TestingT_Assumptions
   ComparisonAssertionFunc_instance : ComparisonAssertionFunc_Assumptions

@@ -16,181 +16,181 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session"
+def github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
 
-noncomputable def sessionc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sessionc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.sessionc"
 
-noncomputable def mu [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mu [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.mu"
 
-noncomputable def newSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSession [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.newSession"
 
-noncomputable def waitForSessionExpiration [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitForSessionExpiration [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.waitForSessionExpiration"
 
-noncomputable def monitorSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def monitorSession [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.monitorSession"
 
-noncomputable def waitSession [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def waitSession [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.waitSession"
 
-noncomputable def sessionMain [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sessionMain [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/etcd_session.sessionMain"
 
 /-- Mock something that might take a while, and can fail
 
     go: e.go:15:6 -/
-noncomputable def «newSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «newSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Let "$a0" (Val #(go!"session failed"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
 
 /-- Mock something that might take a while.
 
     go: e.go:23:6 -/
-noncomputable def «waitForSessionExpirationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitForSessionExpirationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))
 
 /-- go: e.go:26:6 -/
-noncomputable def «monitorSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «monitorSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newSession []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Var "$a0")))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil))))))
-  (App (Val do_continue) (Val #()))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
-  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val do_execute)
-  (Val #()))) [(CommClause (RecvCase (go.type.StructType []) (Var "$ch0")) (Lam "$recvVal"
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #()))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())) (Var "$r0")))))))]))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doExecute)
+  (Val #()))) [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())) (Var "$r0")))))))]))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
+  (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve waitForSessionExpiration []))) (Val #())) (Val #()))))))
   (Lam BAnon
   (Val #()))))))
 
 /-- go: e.go:49:6 -/
-noncomputable def «waitSessionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (A : go.type) : val :=
+noncomputable def «waitSessionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=
   (LamV "cancel"
-  (App (Val exception_do)
-  (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.recvonly A)))) (Var "cancel"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "s"))
-  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly A)))) (Var "cancel"))
-  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.type.StructType []) (Var "$ch0")) (Lam "$recvVal"
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_nil go.error))) (Val UntypedNil))))),
+  (App (Val exceptionDo)
+  (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "s"))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))),
   (CommClause (RecvCase A (Var "$ch1")) (Lam "$recvVal"
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (Val #(go!"cancelled"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0"))))))]))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "s") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GlobalVarAddr mu))) (Val #()))) (Val #())))))))
 
 /-- go: e.go:61:6 -/
-noncomputable def «sessionMainⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «sessionMainⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$go" (App (Val (GoInstruction (FuncResolve monitorSession []))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Let "$a0" (Val _root_.Perennial.time.Second)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve waitSession [_root_.Perennial.time.Time]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #())))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session where
-  pkg_imported_pkgs := [pkg_id.errors, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #()))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())) (Var "$r0")))))))
+  (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (go.GlobalAlloc sessionc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc sessionc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc mu _root_.Perennial.sync.Mutex)) (Val #()))))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   newSession_unfold : FuncUnfold newSession [] «newSessionⁱᵐᵖˡ»
   waitForSessionExpiration_unfold : FuncUnfold waitForSessionExpiration [] «waitForSessionExpirationⁱᵐᵖˡ»
   monitorSession_unfold : FuncUnfold monitorSession [] «monitorSessionⁱᵐᵖˡ»
-  waitSession_unfold : ∀ (A : go.type), FuncUnfold waitSession [A] («waitSessionⁱᵐᵖˡ» A)
+  waitSession_unfold : ∀ (A : go.GoType), FuncUnfold waitSession [A] («waitSessionⁱᵐᵖˡ» A)
   sessionMain_unfold : FuncUnfold sessionMain [] «sessionMainⁱᵐᵖˡ»
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions

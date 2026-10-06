@@ -98,24 +98,24 @@ instance isTermLb_pers (γ : RaftNames) (node_id term : w64) :
     Persistent (isTermLb (GF := GF) γ node_id term) := by
   unfold isTermLb; infer_instance
 
-def ownUnusedHeartbeatCtx (γ : RaftNames) (term : w64) (ctx : go_string) : IProp GF :=
+def ownUnusedHeartbeatCtx (γ : RaftNames) (term : w64) (ctx : GoString) : IProp GF :=
   iprop(∃ (per_term_gn ctx_gn : GName),
     term ↪[γ.heartbeatGn]□ per_term_gn ∗
     ctx ↪[per_term_gn]□ ctx_gn ∗
     dghostVar ctx_gn (DFrac.own 1) (∅ : GSet w64))
 
-def isHeartbeatCtx (γ : RaftNames) (term : w64) (ctx : go_string) (srvs : GSet w64) :
+def isHeartbeatCtx (γ : RaftNames) (term : w64) (ctx : GoString) (srvs : GSet w64) :
     IProp GF :=
   iprop(∃ (per_term_gn ctx_gn : GName),
     term ↪[γ.heartbeatGn]□ per_term_gn ∗
     ctx ↪[per_term_gn]□ ctx_gn ∗
     dghostVar ctx_gn DFrac.discard srvs)
 
-instance isHeartbeatCtx_pers (γ : RaftNames) (term : w64) (ctx : go_string)
+instance isHeartbeatCtx_pers (γ : RaftNames) (term : w64) (ctx : GoString)
     (srvs : GSet w64) : Persistent (isHeartbeatCtx (GF := GF) γ term ctx srvs) := by
   unfold isHeartbeatCtx; infer_instance
 
-theorem isHeartbeatCtx_agree (γ : RaftNames) (term : w64) (ctx : go_string)
+theorem isHeartbeatCtx_agree (γ : RaftNames) (term : w64) (ctx : GoString)
     (srvs1 srvs2 : GSet w64) :
     ⊢ isHeartbeatCtx (GF := GF) γ term ctx srvs1 -∗
       isHeartbeatCtx γ term ctx srvs2 -∗
@@ -471,13 +471,13 @@ theorem try_read (γ : RaftNames) (term : w64) (log : List (List w8))
     exact Hquorum
 
 /-- Rocq `isHeartbeatCtxStale`. -/
-def isHeartbeatCtxStale (γ : RaftNames) (term : w64) (ctx : go_string)
+def isHeartbeatCtxStale (γ : RaftNames) (term : w64) (ctx : GoString)
     (stale_ids : GSet w64) : IProp GF :=
   iprop(isHeartbeatCtx γ term ctx stale_ids ∗
     □ (∀ id, ⌜id ∈ stale_ids⌝ → ∃ term', isTermLb γ id term' ∗
         ⌜sint.nat term < sint.nat term'⌝))
 
-instance isHeartbeatCtxStale_pers (γ : RaftNames) (term : w64) (ctx : go_string)
+instance isHeartbeatCtxStale_pers (γ : RaftNames) (term : w64) (ctx : GoString)
     (stale_ids : GSet w64) : Persistent (isHeartbeatCtxStale (GF := GF) γ term ctx stale_ids) := by
   unfold isHeartbeatCtxStale; infer_instance
 
@@ -493,14 +493,14 @@ def isHeartbeatResp (γ : RaftNames) («from» : w64) (term : w64) (ctx : List w
 /-- Rocq `isHeartbeatAck`: witnesses that `from` acknowledged heartbeat
 context `ctx` in `term`, confirming `from` was not stale at that point. Similar
 to `isHeartbeatResp` but used as a precondition for `recvAck`. -/
-def isHeartbeatAck (γ : RaftNames) («from» : w64) (term : w64) (ctx : go_string) : IProp GF :=
+def isHeartbeatAck (γ : RaftNames) («from» : w64) (term : w64) (ctx : GoString) : IProp GF :=
   iprop(∃ srvs, isHeartbeatCtx γ term ctx srvs ∗ ⌜«from» ∉ srvs⌝)
 
-instance isHeartbeatAck_pers (γ : RaftNames) («from» : w64) (term : w64) (ctx : go_string) :
+instance isHeartbeatAck_pers (γ : RaftNames) («from» : w64) (term : w64) (ctx : GoString) :
     Persistent (isHeartbeatAck (GF := GF) γ «from» term ctx) := by
   unfold isHeartbeatAck; infer_instance
 
-theorem heartbeat_ack_not_stale (γ : RaftNames) («from» : w64) (term : w64) (ctx : go_string)
+theorem heartbeat_ack_not_stale (γ : RaftNames) («from» : w64) (term : w64) (ctx : GoString)
     (stale_ids : GSet w64) :
     ⊢ isHeartbeatCtx (GF := GF) γ term ctx stale_ids -∗
       isHeartbeatAck γ «from» term ctx -∗
@@ -513,7 +513,7 @@ theorem heartbeat_ack_not_stale (γ : RaftNames) («from» : w64) (term : w64) (
   ipureintro
   exact Hnot_in
 
-theorem start_heartbeat (stale_ids : GSet w64) (γ : RaftNames) (term : w64) (ctx : go_string) :
+theorem start_heartbeat (stale_ids : GSet w64) (γ : RaftNames) (term : w64) (ctx : GoString) :
     ⊢ □ (∀ id, ⌜id ∈ stale_ids⌝ → ∃ term', isTermLb (GF := GF) γ id term' ∗
           ⌜sint.nat term < sint.nat term'⌝) -∗
       ownUnusedHeartbeatCtx γ term ctx ==∗
@@ -531,13 +531,13 @@ theorem start_heartbeat (stale_ids : GSet w64) (γ : RaftNames) (term : w64) (ct
   · iexact Hstale
 
 /-- Rocq `ownReadReqCtx`. -/
-def ownReadReqCtx (γ : RaftNames) (read_req_ctx : go_string) : IProp GF :=
+def ownReadReqCtx (γ : RaftNames) (read_req_ctx : GoString) : IProp GF :=
   iprop(∃ γreq : GName,
     "#Hγreq" ∷ read_req_ctx ↪[γ.readReqGn]□ γreq ∗
     "Hreq" ∷ savedPredOwn γreq (DFrac.own 1) (fun (_ : List (List w8)) => iprop(True)))
 
 /-- Rocq `isReadReqCtx`. -/
-def isReadReqCtx (γ : RaftNames) (read_req_ctx : go_string)
+def isReadReqCtx (γ : RaftNames) (read_req_ctx : GoString)
     (Φ : List (List w8) → IProp GF) : IProp GF :=
   iprop(∃ γreq : GName,
     "#Hγreq" ∷ read_req_ctx ↪[γ.readReqGn]□ γreq ∗
@@ -545,11 +545,11 @@ def isReadReqCtx (γ : RaftNames) (read_req_ctx : go_string)
     "#Hau" ∷ □ (|={⊤ \ ↑N, ∅}=> ∃ log, ownCommit γ log ∗
       (ownCommit γ log ={∅, ⊤ \ ↑N}=∗ □ Φ log)))
 
-instance isReadReqCtx_pers (γ : RaftNames) (read_req_ctx : go_string)
+instance isReadReqCtx_pers (γ : RaftNames) (read_req_ctx : GoString)
     (Φ : List (List w8) → IProp GF) : Persistent (isReadReqCtx γ read_req_ctx Φ) := by
   unfold isReadReqCtx; infer_instance
 
-theorem start_req_ctx (Φ : List (List w8) → IProp GF) (req_ctx : go_string) (index : w64)
+theorem start_req_ctx (Φ : List (List w8) → IProp GF) (req_ctx : GoString) (index : w64)
     (γ : RaftNames) :
     ownReadReqCtx γ req_ctx ∗
     □ (|={⊤ \ ↑N, ∅}=> ∃ log, ownCommit γ log ∗ (ownCommit γ log ={∅, ⊤ \ ↑N}=∗ □ Φ log)) ⊢
@@ -564,17 +564,17 @@ theorem start_req_ctx (Φ : List (List w8) → IProp GF) (req_ctx : go_string) (
   iframe # ∗
 
 /-- Rocq `isMsgReadIndex`. -/
-def isMsgReadIndex (γ : RaftNames) (read_req_ctx : go_string) : IProp GF :=
+def isMsgReadIndex (γ : RaftNames) (read_req_ctx : GoString) : IProp GF :=
   iprop(∃ Φ, isReadReqCtx γ read_req_ctx Φ)
 
 /-- Rocq `isMsgReadIndexResp`. -/
-def isMsgReadIndexResp (γ : RaftNames) (read_req_ctx : go_string) (index : w64) : IProp GF :=
+def isMsgReadIndexResp (γ : RaftNames) (read_req_ctx : GoString) (index : w64) : IProp GF :=
   iprop(∃ Φ, isReadReqCtx γ read_req_ctx Φ ∗ isReadIndex γ index Φ)
 
 /-- If a quorum of servers acked a heartbeat context, and the stale set for that
 context were also a quorum, they would intersect — but each acking server is
 provably NOT in the stale set. Contradiction. -/
-theorem heartbeat_ack_quorum_not_stale (γ : RaftNames) (term : w64) (ctx : go_string)
+theorem heartbeat_ack_quorum_not_stale (γ : RaftNames) (term : w64) (ctx : GoString)
     (stale_ids ack_srvs : GSet w64) :
     IsQuorum cfg ack_srvs →
     IsQuorum cfg stale_ids →
@@ -591,23 +591,23 @@ theorem heartbeat_ack_quorum_not_stale (γ : RaftNames) (term : w64) (ctx : go_s
 end global_proof
 
 /-- Rocq `Axiom ownRaft`. -/
-axiom ownRaft [ffi_syntax] {GF : BundledGFunctors} (γ : RaftNames) (rf : v3.raft.t) : IProp GF
+axiom ownRaft [FfiSyntax] {GF : BundledGFunctors} (γ : RaftNames) (rf : v3.raft.t) : IProp GF
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 
 /-- Lean addition: `array_acc`, putting back the same element. -/
-theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : loc) (i : Int)
+theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : Loc) (i : Int)
     (dq : DFrac) (n : Int) (a : array.t V n) (v : V)
     (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
-    typed_pointsto (GF := GF) p a dq ⊢
-      iprop(typed_pointsto (arrayIndexRef V i p) v dq ∗
-        (typed_pointsto (arrayIndexRef V i p) v dq -∗ typed_pointsto p a dq)) := by
+    typedPointsto (GF := GF) p a dq ⊢
+      iprop(typedPointsto (arrayIndexRef V i p) v dq ∗
+        (typedPointsto (arrayIndexRef V i p) v dq -∗ typedPointsto p a dq)) := by
   have hset : a.arr.set i.toNat v = a.arr := by
     obtain ⟨h, rfl⟩ := List.getElem?_eq_some_iff.1 hlookup
     exact List.set_getElem_self h
@@ -625,20 +625,20 @@ single-voter configuration). The true spec: given the `ProgressTracker` and
 its two voter maps (`Voters[0]`, `Voters[1]`, both non-nil), the result is
 `len(Voters[0]) == 1 && len(Voters[1]) == 0`, where `len` is the (wrapping)
 `int` size of the map. -/
-theorem ProgressTracker.wp_IsSingleton (p : loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker.t)
-    (v0 v1 : loc) (m0 m1 : GMap w64 Unit) (dq0 dq1 : DFrac) :
+theorem ProgressTracker.wp_IsSingleton (p : Loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker.t)
+    (v0 v1 : Loc) (m0 m1 : GMap w64 Unit) (dq0 dq1 : DFrac) :
     {{ "Hp" ∷ p ↦{dq} pt ∗
         "%Hvoters" ∷ ⌜pt.Config'.Voters'.arr = [v0, v1]⌝ ∗
         "Hm0" ∷ (v0 ↦${dq0} m0 : IProp GF) ∗
         "Hm1" ∷ (v1 ↦${dq1} m1 : IProp GF) }}
-      (App (Val (p @!! go.type.PointerType v3.tracker.ProgressTracker @!! go!"IsSingleton"))
+      (App (Val (p @!! go.GoType.PointerType v3.tracker.ProgressTracker @!! go!"IsSingleton"))
         (Val #()))
     {{ RET #(decide (W64 (GMap.size m0) = W64 1 ∧ W64 (GMap.size m1) = W64 0));
         p ↦{dq} pt ∗ v0 ↦${dq0} m0 ∗ v1 ↦${dq1} m1 }} := by
   wp_start as ⟨Hp, %Hvoters, Hm0, Hm1⟩
-  icases typed_pointsto_not_null_dup _ _ _ $$ Hp with ⟨Hp, %Hnn⟩
+  icases typedPointsto_not_null_dup _ _ _ $$ Hp with ⟨Hp, %Hnn⟩
   iStructNamed Hp
-  icases typed_pointsto_not_null_dup _ _ _ $$ Config with ⟨Config, %HnnC⟩
+  icases typedPointsto_not_null_dup _ _ _ $$ Config with ⟨Config, %HnnC⟩
   iStructNamed Config
   icases array_acc_same (GF := GF) _ (sint.Z (W64 0)) _ _ _ v0 (by decide) (by simp [Hvoters])
     $$ Voters with ⟨Hv0, Voters⟩
@@ -655,26 +655,26 @@ theorem ProgressTracker.wp_IsSingleton (p : loc) (dq : DFrac) (pt : v3.tracker.P
       by simp [Hif]]
     iapply HΦ
     iframe Hm0 Hm1
-    iapply typed_pointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef, named]
     iframe Progress Votes MaxInflight MaxInflightBytes
-    iapply typed_pointsto_combine _ _ _ HnnC
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    iapply typedPointsto_combine _ _ _ HnnC
+    simp only [TypedPointsto.typedPointstoDef, named]
     iframe
   · rw [show decide (W64 ↑m0.size = W64 1 ∧ W64 ↑m1.size = W64 0) = false from
       decide_eq_false (fun h => Hif h.1)]
     iapply HΦ
     iframe Hm0 Hm1
-    iapply typed_pointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef, named]
     iframe Progress Votes MaxInflight MaxInflightBytes
-    iapply typed_pointsto_combine _ _ _ HnnC
-    simp only [TypedPointsto.typed_pointsto_def, named]
+    iapply typedPointsto_combine _ _ _ HnnC
+    simp only [TypedPointsto.typedPointstoDef, named]
     iframe
 
-theorem raft.wp_committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : RaftNames) :
+theorem raft.wp_committedEntryInCurrentTerm (r : Loc) (rf : v3.raft.t) (γ : RaftNames) :
     {{ r ↦ rf ∗ ownRaft (GF := GF) γ rf }}
-      (App (Val (r @!! go.type.PointerType v3.raft @!! go!"committedEntryInCurrentTerm"))
+      (App (Val (r @!! go.GoType.PointerType v3.raft @!! go!"committedEntryInCurrentTerm"))
         (Val #()))
     {{ (c : Bool), RET #c; r ↦ rf ∗ ownRaft γ rf ∗
         if c then ∃ l, isCommittedInTerm γ rf.Term' l else True }} := by
@@ -688,7 +688,7 @@ theorem raft.wp_committedEntryInCurrentTerm (r : loc) (rf : v3.raft.t) (γ : Raf
   sorry -- Rocq: Admitted (trusted)
 
 /-- Rocq `isReadIndexRequest`. -/
-def isReadIndexRequest (γ : RaftNames) (r : loc) (read_req_ctx : go_string) (index : w64) :
+def isReadIndexRequest (γ : RaftNames) (r : Loc) (read_req_ctx : GoString) (index : w64) :
     IProp GF :=
   iprop(∃ read_req : v3.readIndexRequest.t,
     "#r" ∷ r ↦□ read_req ∗
@@ -696,13 +696,13 @@ def isReadIndexRequest (γ : RaftNames) (r : loc) (read_req_ctx : go_string) (in
     "%Hindex" ∷ ⌜read_req.index' = index⌝ ∗
     "#His_read" ∷ (∃ Φ, isReadReqCtx γ read_req_ctx Φ))
 
-instance isReadIndexRequest_pers (γ : RaftNames) (r : loc) (read_req_ctx : go_string)
+instance isReadIndexRequest_pers (γ : RaftNames) (r : Loc) (read_req_ctx : GoString)
     (index : w64) : Persistent (isReadIndexRequest (GF := GF) γ r read_req_ctx index) := by
   unfold isReadIndexRequest; infer_instance
 
 /-- Rocq `ownHeartbeatAuth`. -/
 def ownHeartbeatAuth (γ : RaftNames) (term : w64) (highest_index : w64) : IProp GF :=
-  iprop(∃ (per_term_gn : GName) (used : GMap go_string GName),
+  iprop(∃ (per_term_gn : GName) (used : GMap GoString GName),
     term ↪[γ.heartbeatGn]□ per_term_gn ∗
     ghostMapAuth per_term_gn 1 used ∗
     ⌜∀ k, k ∈ used → k = [] ∨ k.length = 8 ∧ uint.Z (leToU64 k) ≤ uint.Z highest_index⌝)
@@ -716,9 +716,9 @@ so far (`confirmedReads + len(unconfirmedReads)` without wrap-around), with
 The heartbeat context of a new request is `u64Le (n + 1)`, which must not
 wrap around to an already used context, so `wp_readOnly_addRequest` requires
 `n < 2^64 - 1` (Rocq: no `n`, and the overflow side condition is admitted). -/
-def ownReadOnly (γ : RaftNames) (r : loc) (term : w64) (n : Nat) : IProp GF :=
-  iprop(∃ (ro : v3.readOnly.t) (acks : GMap w64 w64) (unconfirmedReads : List loc)
-      (read_reqs : List ((go_string × w64) × GSet w64)),
+def ownReadOnly (γ : RaftNames) (r : Loc) (term : w64) (n : Nat) : IProp GF :=
+  iprop(∃ (ro : v3.readOnly.t) (acks : GMap w64 w64) (unconfirmedReads : List Loc)
+      (read_reqs : List ((GoString × w64) × GSet w64)),
     "r" ∷ r ↦ ro ∗
     "Hacks" ∷ ro.acks' ↦$ acks ∗
     "#Hacks_wits" ∷ □ (∀ (voterId ackedIdx : w64),
@@ -727,7 +727,7 @@ def ownReadOnly (γ : RaftNames) (r : loc) (term : w64) (n : Nat) : IProp GF :=
     "%Hoption" ∷ ⌜ro.option' = W64 0⌝ ∗ -- equals ReadOnlySafe
     "%Hcount" ∷ ⌜uint.nat ro.confirmedReads' + unconfirmedReads.length = n ∧ n < 2 ^ 64⌝ ∗
     "unconfirmedReads" ∷ ro.unconfirmedReads' ↦* unconfirmedReads ∗
-    "unconfirmedReads_cap" ∷ ownSliceCap loc ro.unconfirmedReads' (DFrac.own 1) ∗
+    "unconfirmedReads_cap" ∷ ownSliceCap Loc ro.unconfirmedReads' (DFrac.own 1) ∗
     "#HunconfirmedReads" ∷ □ ([∗list] i ↦ r; x ∈ unconfirmedReads; read_reqs,
         "#readIndexRequest" ∷ isReadIndexRequest γ r x.1.1 x.1.2 ∗
         "#Hhb" ∷ isHeartbeatCtxStale γ term
@@ -780,7 +780,7 @@ theorem ownHeartbeatAuth_new (stale_ids : GSet w64) (γ : RaftNames) (term : w64
     iframe #
 
 theorem ownHeartbeatAuth_agree (stale_ids : GSet w64) (γ : RaftNames) (term : w64)
-    (ctx : go_string) (highest_index : w64) :
+    (ctx : GoString) (highest_index : w64) :
     ctx ≠ [] →
     ⊢ isHeartbeatCtx (GF := GF) γ term ctx stale_ids -∗
       ownHeartbeatAuth γ term highest_index -∗
@@ -800,13 +800,13 @@ theorem ownHeartbeatAuth_agree (stale_ids : GSet w64) (γ : RaftNames) (term : w
 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 400000 in
-theorem wp_readOnly_recvAck (γ : RaftNames) (r : loc) (term : w64) («from» : w64)
+theorem wp_readOnly_recvAck (γ : RaftNames) (r : Loc) (term : w64) («from» : w64)
     (ctx_sl : slice.t) (ctx : List w8) (v : w64) (n : Nat) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
         "Hctx" ∷ ctx_sl ↦* ctx ∗
         "#Hack" ∷ isHeartbeatAck γ «from» term ctx }}
-      (App (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"recvAck")) (Val #«from»))
+      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"recvAck")) (Val #«from»))
         (Val #ctx_sl))
     {{ RET #(); ownReadOnly cfg γ r term n }} := by
   wp_start as ⟨Hown, Hctx, #Hack⟩
@@ -891,10 +891,10 @@ end wps
 /-- Rocq `Axiom JointConfig.wp_CommittedIndex`. (Rocq's statement does not bind
 the `quorum` package assumptions; here they are bound explicitly.) -/
 axiom JointConfig.wp_CommittedIndex (cfg : GSet w64)
-    [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF]
+    [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : go_etcd_io.raft.v3.quorum.Assumptions]
-    (l : interface.t_ok) (acks : GMap w64 w64) (c : v3.quorum.JointConfig.t) (voters_ref : loc)
+    (l : interface.t_ok) (acks : GMap w64 w64) (c : v3.quorum.JointConfig.t) (voters_ref : Loc)
     (voters : GMap w64 Unit) (I : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.raft.v3.quorum ∗
         "Hl" ∷ ownAckedIndexer l acks I ∗
@@ -926,9 +926,9 @@ theorem big_sepL2_drop {PROP : Type _} [BI PROP] [BIAffine PROP] {A B : Type _}
         funext k x y; rw [Nat.add_right_comm]]
 
 section wps2
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
@@ -936,7 +936,7 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 /-- Rocq `MsgReadIndex`. -/
 def MsgReadIndex : w32 := W32 15
 
-theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : loc) (rf : v3.raft.t)
+theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raft.t)
     (m : v3.raftpb.Message.t) :
     {{ "Hr" ∷ r ↦ rf ∗
         "Hrf" ∷ ownRaft (GF := GF) γ rf ∗
@@ -952,7 +952,7 @@ theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : loc) (rf : v3.raf
   -- (`trk.Visit` with a closure, `sendHeartbeat`, `send`, which calls `Logger` methods).
   sorry -- Rocq: Admitted
 
-theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : loc) (rf : v3.raft.t)
+theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft.t)
     (m : v3.raftpb.Message.t) :
     {{ "Hr" ∷ r ↦ rf ∗
         "Hrf" ∷ ownRaft (GF := GF) γ rf ∗
@@ -968,8 +968,8 @@ theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : loc) (rf : v3.raft
 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
-theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
-    (c : v3.quorum.JointConfig.t) (voters_ref : loc) (voters : GMap w64 Unit) (n : Nat) :
+theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : Loc) (term : w64)
+    (c : v3.quorum.JointConfig.t) (voters_ref : Loc) (voters : GMap w64 Unit) (n : Nat) :
     0 < GMap.size cfg →
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
@@ -977,14 +977,14 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
         "%Hc" ∷ ⌜c.arr = [voters_ref, map.nil]⌝ ∗
         "voters" ∷ voters_ref ↦$ voters ∗
         "%Hvoters_cfg" ∷ ⌜domSet voters = cfg⌝ }}
-      (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"maybeAdvance")) (Val #c))
-    {{ (rs : slice.t) (reads : List loc), RET #rs;
+      (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"maybeAdvance")) (Val #c))
+    {{ (rs : slice.t) (reads : List Loc), RET #rs;
         ownReadOnly cfg γ r term n ∗
         voters_ref ↦$ voters ∗
         rs ↦* reads ∗
         -- Every returned read request has a valid read index witness.
-        □ (∀ (i : Nat) (rp : loc), ⌜reads[i]? = some rp⌝ →
-            ∃ (read_req_ctx : go_string) (index : w64) (Φ : List (List w8) → IProp GF),
+        □ (∀ (i : Nat) (rp : Loc), ⌜reads[i]? = some rp⌝ →
+            ∃ (read_req_ctx : GoString) (index : w64) (Φ : List (List w8) → IProp GF),
               isReadIndexRequest γ rp read_req_ctx index ∗
               isReadReqCtx γ read_req_ctx Φ ∗
               isReadIndex γ index Φ) }} := by
@@ -997,7 +997,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
   wp_method_call
   wp_call
   wp_auto
-  ihave HAI : ownAckedIndexer (interface.mk (go.type.PointerType v3.readOnly) #r) acks
+  ihave HAI : ownAckedIndexer (interface.mk (go.GoType.PointerType v3.readOnly) #r) acks
       iprop(r ↦ ro ∗ ro.acks' ↦$ acks) $$ [r Hacks]
   · unfold ownAckedIndexer
     isplitl [r Hacks]
@@ -1019,8 +1019,8 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
   icases HAI with ⟨⟨r, Hacks⟩, -⟩
   wp_auto
   wp_if_destruct
-  · iapply HΦ $$ %slice.nil %([] : List loc)
-    ihave Hnil := ownSlice_nil (V := loc) (GF := GF) (DFrac.own 1)
+  · iapply HΦ $$ %slice.nil %([] : List Loc)
+    ihave Hnil := ownSlice_nil (V := Loc) (GF := GF) (DFrac.own 1)
     iframe Hnil voters
     isplitl
     · unfold ownReadOnly
@@ -1115,7 +1115,7 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
   isplitl
   · unfold ownReadOnly
     iexists { ro with
-        unconfirmedReads' := slice.slice ro.unconfirmedReads' loc
+        unconfirmedReads' := slice.slice ro.unconfirmedReads' Loc
           (newConfirmedReads - ro.confirmedReads') ro.unconfirmedReads'.len,
         confirmedReads' := newConfirmedReads },
       acks, unconfirmedReads.drop k, read_reqs.drop k
@@ -1193,8 +1193,8 @@ theorem wp_readOnly_maybeAdvance (γ : RaftNames) (r : loc) (term : w64)
 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
-theorem wp_readOnly_addRequest (γ : RaftNames) (r : loc) (term commitIndex : w64)
-    (req : v3.raftpb.Message.t) (read_req_ctx : go_string) (log : List (List w8)) (dq : DFrac)
+theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w64)
+    (req : v3.raftpb.Message.t) (read_req_ctx : GoString) (log : List (List w8)) (dq : DFrac)
     (Ψ : List (List w8) → IProp GF) (n : Nat) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "#Hinv" ∷ isRaftCommitInv γ ∗
@@ -1205,7 +1205,7 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : loc) (term commitIndex : w6
         "%Hn" ∷ ⌜n < 2 ^ 64 - 1⌝ ∗
         "Hctx" ∷ req.Context' ↦*{dq} read_req_ctx ∗
         "#Hread_ctx" ∷ isReadReqCtx γ read_req_ctx Ψ }}
-      (App (App (Val (r @!! go.type.PointerType v3.readOnly @!! go!"addRequest"))
+      (App (App (Val (r @!! go.GoType.PointerType v3.readOnly @!! go!"addRequest"))
         (Val #commitIndex)) (Val #req))
     {{ RET #(); ownReadOnly cfg γ r term (n + 1) }} := by
   wp_start as ⟨#Hinv, Hown, Hcom, %HcommitIndex, %Hn, Hctx, #Hread_ctx⟩
@@ -1215,13 +1215,13 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : loc) (term commitIndex : w6
   wp_auto
   irename «$sl0» => Hreq
   wp_bind (App (Val (GoInstruction (CompositeLiteral _))) (Val (LiteralValueV _)))
-  iapply wp_slice_literal (V := loc) (t := go.type.PointerType v3.readIndexRequest) [«$sl0_ptr»]
+  iapply wp_slice_literal (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest) [«$sl0_ptr»]
   wp_auto
   isplitl []
   · ipureintro; rfl
   iintro %sl_ptr ⟨Hsl, -⟩
   wp_auto
-  wp_apply +noauto wp_slice_append (V := loc) (t := go.type.PointerType v3.readIndexRequest)
+  wp_apply +noauto wp_slice_append (V := Loc) (t := go.GoType.PointerType v3.readIndexRequest)
     ro.unconfirmedReads' unconfirmedReads _ [«$sl0_ptr»] (DFrac.own 1)
     $$ [unconfirmedReads unconfirmedReads_cap Hsl]
   · iframe

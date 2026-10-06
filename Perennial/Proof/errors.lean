@@ -14,9 +14,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace errors
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
@@ -27,7 +27,7 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
 
 /-- Proven first because it is used during package initialization (to create
 global error variables). -/
-theorem wp_New (msg : go_string) :
+theorem wp_New (msg : GoString) :
     {{ (True : IProp GF) }}
       (App (Val (@! New)) (Val #msg))
     {{ (err : interface.t_ok), RET #(interface.ok err); True }} := by
@@ -47,7 +47,7 @@ theorem wp_errorType_init :
   -- an axiomatized `errorType'init : val`, which has no semantics.
   sorry -- Rocq: Admitted
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.errors get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -129,7 +129,7 @@ made those return paths stuck. -/
 `T'` (for an interface type `T` the assertion returns the interface value
 itself, otherwise the dynamic value). This is guaranteed by Go's typing; it is
 not derivable in the model, which has no typing of interface values. -/
-def AsTypeTyped [GoSemanticsFunctions] (T' : Type) (T : go.type) (ii : interface.t_ok) : Prop :=
+def AsTypeTyped [GoSemanticsFunctions] (T' : Type) (T : go.GoType) (ii : interface.t_ok) : Prop :=
   if go.isInterfaceType (underlying T) then
     go.typeSetContains ii.ty T = true → ∃ x : T', (#x : val) = #(interface.ok ii)
   else ii.ty = T → ∃ x : T', (#x : val) = ii.v
@@ -140,11 +140,11 @@ def AsTypeTyped [GoSemanticsFunctions] (T' : Type) (T : go.type) (ii : interface
 * `Unwrap() error` returns an error in `S`;
 * `Unwrap() []error` returns a slice of errors in `S`. -/
 def asTypeNode (S : error.t → Prop) (T' : Type) [ZeroVal T'] [TypedPointsto (GF := GF) T']
-    (T : go.type) (ii : interface.t_ok) : IProp GF :=
+    (T : go.GoType) (ii : interface.t_ok) : IProp GF :=
   iprop(
     "%Htyped" ∷ ⌜AsTypeTyped T' T ii⌝ ∗
     "#HAs" ∷ (if methodSet ii.ty !! go!"As" = some (go.Signature [go.any] false [go.bool]) then
-      iprop(∀ (l : loc) (v : T'),
+      iprop(∀ (l : Loc) (v : T'),
         {{ l ↦ v }}
           (App (Val #(methods ii.ty go!"As" ii.v)) (Val #(interface.mkOk (go.PointerType T) #l)))
         {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }})
@@ -154,15 +154,15 @@ def asTypeNode (S : error.t → Prop) (T' : Type) [ZeroVal T'] [TypedPointsto (G
         (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
       {{ (e : error.t), RET #e; ⌜S e⌝ }})
       else if methodSet ii.ty !! go!"Unwrap" =
-          some (go.Signature [] false [go.type.SliceType go.error]) then
+          some (go.Signature [] false [go.GoType.SliceType go.error]) then
       iprop({{ True }}
         (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
       {{ (s : slice.t) (dq : DFrac) (es : List error.t), RET #s;
           s ↦*{dq} es ∗ ⌜∀ e ∈ es, S e⌝ }})
       else iprop(True)))
 
-omit ffi [ffi_interp ffi] [ffi_semantics ext ffi] in
-theorem asTypeTyped_val [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.type}
+omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] in
+theorem asTypeTyped_val [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.GoType}
     {ii : interface.t_ok} (h : AsTypeTyped T' T ii) :
     ∃ x : T', (if go.isInterfaceType (underlying T) = true then
         (if go.typeSetContains ii.ty T = true then #(interface.ok ii) else #(zero_val T'))
@@ -182,11 +182,11 @@ theorem asTypeTyped_val [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.
 
 /-- Every non-nil error of `S` satisfies `asTypeNode`. -/
 abbrev isErrorTree (S : error.t → Prop) (T' : Type) [ZeroVal T'] [TypedPointsto (GF := GF) T']
-    (T : go.type) : IProp GF :=
+    (T : go.GoType) : IProp GF :=
   iprop(□ ∀ ii : interface.t_ok, ⌜S (interface.ok ii)⌝ -∗ asTypeNode (GF := GF) S T' T ii)
 
 instance isErrorTree_persistent (S : error.t → Prop) (T' : Type) [ZeroVal T']
-    [TypedPointsto (GF := GF) T'] (T : go.type) :
+    [TypedPointsto (GF := GF) T'] (T : go.GoType) :
     Persistent (isErrorTree (GF := GF) S T' T) := by
   unfold isErrorTree; infer_instance
 
@@ -195,23 +195,23 @@ instance isErrorTree_persistent (S : error.t → Prop) (T' : Type) [ZeroVal T']
 every hypothesis mentioning `▷` at every symbolic execution step. -/
 def asTypeHide (P : IProp GF) : IProp GF := P
 
-omit ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx hG sem package_sem in
+omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx hG sem package_sem in
 theorem asTypeHide_intro {P Q : IProp GF} : (□ asTypeHide P -∗ Q) ⊢ (□ P -∗ Q) := .rfl
 
-omit ffi [ffi_interp ffi] [ffi_semantics ext ffi] go_gctx hG sem package_sem in
+omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx hG sem package_sem in
 theorem asTypeHide_elim {P Q : IProp GF} : (□ P -∗ Q) ⊢ (□ asTypeHide P -∗ Q) := .rfl
 
 /-- Spec of the recursive helper `asType(err, ppe)`. `ppe` points to the
 lazily allocated `*E` target passed to `As` methods. (New in Lean.) -/
-theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
+theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : Loc)
     {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
-    {T : go.type} [IntoValTyped (GF := GF) T' T] :
+    {T : go.GoType} [IntoValTyped (GF := GF) T' T] :
     {{ "#Htree" ∷ isErrorTree (GF := GF) S T' T ∗ "%HS" ∷ ⌜S err⌝ ∗
         "Hppe" ∷ ppe ↦ pe ∗
-        "Hpe" ∷ (⌜pe = loc.null⌝ ∨ ∃ v : T', pe ↦ v) }}
+        "Hpe" ∷ (⌜pe = Loc.null⌝ ∨ ∃ v : T', pe ↦ v) }}
       (App (App (Val #(functions asType [T])) (Val #err)) (Val #ppe))
-    {{ (e : T') (found : Bool) (pe' : loc), RET (PairV #e #found);
-        ppe ↦ pe' ∗ (⌜pe' = loc.null⌝ ∨ ∃ v : T', pe' ↦ v) }} := by
+    {{ (e : T') (found : Bool) (pe' : Loc), RET (PairV #e #found);
+        ppe ↦ pe' ∗ (⌜pe' = Loc.null⌝ ∨ ∃ v : T', pe' ↦ v) }} := by
   iloeb as IH generalizing %err %pe
   irevert IH
   iapply asTypeHide_intro
@@ -223,9 +223,9 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
   wp_alloc r2 as Hr2
   wp_auto
   iclear Hr1 Hr2
-  ihave HI : (∃ (e : error.t) (pe' : loc),
+  ihave HI : (∃ (e : error.t) (pe' : Loc),
       "err" ∷ err_ptr ↦ e ∗ "%HSe" ∷ ⌜S e⌝ ∗ "Hppe" ∷ ppe ↦ pe' ∗
-      "Hpe" ∷ (⌜pe' = loc.null⌝ ∨ ∃ v : T', pe' ↦ v) :
+      "Hpe" ∷ (⌜pe' = Loc.null⌝ ∨ ∃ v : T', pe' ↦ v) :
       IProp GF) $$ [err Hppe Hpe]
   · iexists err, pe
     iframe
@@ -258,10 +258,10 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
     -- the `As` statement, joined before the `Unwrap` switch: it either returns
     -- or falls through with an updated `*ppe`
     wp_join (Q := fun v => iprop(
-        (⌜v = executeVal⌝ ∗ ∃ q : loc, "ppe" ∷ ppe_ptr ↦ ppe ∗ "err" ∷ err_ptr ↦ interface.ok ii ∗
-          "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v)) ∨
-        (∃ (e : T') (q : loc), ⌜v = returnVal (PairV #e #true)⌝ ∗ ppe ↦ q ∗
-          (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next with [ppe err Hppe Hpe]
+        (⌜v = executeVal⌝ ∗ ∃ q : Loc, "ppe" ∷ ppe_ptr ↦ ppe ∗ "err" ∷ err_ptr ↦ interface.ok ii ∗
+          "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)) ∨
+        (∃ (e : T') (q : Loc), ⌜v = returnVal (PairV #e #true)⌝ ∗ ppe ↦ q ∗
+          (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next with [ppe err Hppe Hpe]
     wp_auto
     have hu : underlying (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) =
         go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])] :=
@@ -273,7 +273,7 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
         List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hAs
       simp only [hAs, ↓reduceIte]
       wp_auto
-      by_cases hnull : pe' = loc.null
+      by_cases hnull : pe' = Loc.null
       case' pos =>
         subst hnull
         wp_auto
@@ -284,7 +284,7 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
           wp_auto
           iright; iexists _, _; iframe; ipureintro; rfl
         wp_auto
-        ihave Hpe : (⌜«$r0_ptr» = loc.null⌝ ∨ ∃ v : T', «$r0_ptr» ↦ v : IProp GF) $$ [Hv]
+        ihave Hpe : (⌜«$r0_ptr» = Loc.null⌝ ∨ ∃ v : T', «$r0_ptr» ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
         ileft; iframe; ipureintro; rfl
       case' neg =>
@@ -298,7 +298,7 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
           wp_auto
           iright; iexists _, _; iframe; ipureintro; rfl
         wp_auto
-        ihave Hpe : (⌜pe' = loc.null⌝ ∨ ∃ v : T', pe' ↦ v : IProp GF) $$ [Hv]
+        ihave Hpe : (⌜pe' = Loc.null⌝ ∨ ∃ v : T', pe' ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
         ileft; iframe; ipureintro; rfl
     case' false =>
@@ -320,8 +320,8 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
         go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])] :=
       go.is_underlying
     have hu2 : underlying (go.InterfaceType
-        [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])]) =
-        go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])] :=
+        [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])]) =
+        go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])] :=
       go.is_underlying
     cases hU : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
@@ -351,7 +351,7 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
       simp only [Bool.false_eq_true, ↓reduceIte]
       wp_auto
       cases hU2 : go.typeSetContains ii.ty
-        (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.type.SliceType go.error])])
+        (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])])
       case true =>
         simp only [go.typeSetContains, hu2, go.typeSetElemsContains, go.typeSetElemContains,
           List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU2
@@ -360,9 +360,9 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
         wp_auto
         wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
         ihave %Hlen := ownSlice_len _ _ _ $$ Hs
-        ihave HI2 : (∃ (j : w64) (q : loc) (e2 : error.t),
+        ihave HI2 : (∃ (j : w64) (q : Loc) (e2 : error.t),
             "i" ∷ i_ptr ↦ j ∗ "Hs" ∷ s ↦*{dq} es ∗ "err" ∷ err_ptr ↦ e2 ∗
-            "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗
+            "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗
             "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ : IProp GF) $$ [i Hs err Hppe Hpe]
         · iexists W64 0, _, _
           iframe
@@ -416,7 +416,7 @@ theorem wp_asType (S : error.t → Prop) (err : error.t) (ppe pe : loc)
 /-- Lean deviation from Rocq: new parameter `S` and precondition
 `isErrorTree S T' T ∗ ⌜S err⌝` (Rocq: `True`); see the section comment. -/
 theorem wp_AsType (S : error.t → Prop) (err : error.t) {T' : Type} [ZeroVal T']
-    [TypedPointsto (GF := GF) T'] {T : go.type} [IntoValTyped (GF := GF) T' T] :
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] :
     {{ "#Htree" ∷ isErrorTree (GF := GF) S T' T ∗ "%HS" ∷ ⌜S err⌝ }}
       (App (Val #(functions AsType [T])) (Val #err))
     {{ (e : T') (found : Bool), RET (PairV #e #found); True }} := by
@@ -429,7 +429,7 @@ theorem wp_AsType (S : error.t → Prop) (err : error.t) {T' : Type} [ZeroVal T'
     wp_end
   | ok ii =>
     wp_auto
-    wp_apply wp_asType S (interface.ok ii) pe_ptr (zero_val loc) $$ [pe] as %e %found %pe' _
+    wp_apply wp_asType S (interface.ok ii) pe_ptr (zero_val Loc) $$ [pe] as %e %found %pe' _
     · iframe; iframe #; iframe %; ileft; ipureintro; rfl
     wp_end
 

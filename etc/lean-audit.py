@@ -203,7 +203,10 @@ if os.path.exists(_rn):
             rocq_name[_p[1]] = _p[0]
 
 def rocq_lookup(name, module):
-    name = rocq_name.get(name, name)
+    seen = set()
+    while name in rocq_name and name not in seen:   # renamed in several steps
+        seen.add(name)
+        name = rocq_name[name]
     sn = short(name)
     cands = rocq.get(sn, []) or rocq.get(sn.replace("'", ""), [])  # Lean renames clashes `Int` -> `Int'`
     if not cands:

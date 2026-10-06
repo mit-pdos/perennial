@@ -18,14 +18,14 @@ def blen8 (i : Nat) : Nat :=
   if i < 1 then 0 else if i < 2 then 1 else if i < 4 then 2 else if i < 8 then 3 else
   if i < 16 then 4 else if i < 32 then 5 else if i < 64 then 6 else if i < 128 then 7 else 8
 
-theorem len8tab_lookup {s : go_string} (h : s = (List.range 256).map (fun i => W8 (blen8 i))) :
+theorem len8tab_lookup {s : GoString} (h : s = (List.range 256).map (fun i => W8 (blen8 i))) :
     ∀ i < 256, s[i]? = some (W8 (blen8 i)) := by
   intro i hi; subst h; simp [hi]
 
 -- (one list comparison instead of 256 lookups)
 set_option maxRecDepth 10000 in
-theorem len8tab_exact [ffi_syntax] [GoGlobalContext] :
-    ∃ s : go_string, len8tab = #s ∧ s.length = 256 ∧
+theorem len8tab_exact [FfiSyntax] [GoGlobalContext] :
+    ∃ s : GoString, len8tab = #s ∧ s.length = 256 ∧
       ∀ i < 256, s[i]? = some (W8 (blen8 i)) :=
   ⟨_, rfl, rfl, len8tab_lookup (by decide)⟩
 
@@ -81,7 +81,7 @@ def LenInv (X b : Nat) (x n : w64) : Prop :=
 theorem lenInv_init (X : Nat) (x : w64) (hX : uint.nat x = X) :
     LenInv X 64 x (zero_val w64) := by
   have := x.isLt
-  simp only [LenInv, zero_val, ZeroVal.zero_val_def]
+  simp only [LenInv, zero_val, ZeroVal.zeroValDef]
   refine ⟨?_, ?_, ?_, Or.inl ?_⟩ <;> simp [uint.nat] at * <;> omega
 
 theorem lenInv_yes (X s : Nat) (x n x' n' : w64) (h : LenInv X (2 * s) x n)
@@ -102,9 +102,9 @@ theorem lenInv_no (X s : Nat) (x n : w64) (h : LenInv X (2 * s) x n)
   ⟨h.1, hlt, by have := h.2.2.1; omega, h.2.2.2⟩
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.bits.Assumptions]
 
@@ -123,7 +123,7 @@ theorem wp_Len64_exact (x : w64) :
       "%Hinv" ∷ ⌜LenInv (uint.nat x) 32 x' n'⌝) with [x n] as ⟨%x1, %n1, x, n, %Hinv⟩
   · iexists _, _; iframe; ipureintro
     exact lenInv_yes _ 32 x (zero_val w64) _ _ (lenInv_init _ x rfl) (by word) (by word)
-      (by simp only [zero_val, ZeroVal.zero_val_def]; word)
+      (by simp only [zero_val, ZeroVal.zeroValDef]; word)
   · iexists _, _; iframe; ipureintro
     exact lenInv_no _ 32 x _ (lenInv_init _ x rfl) (by word)
   wp_join iprop(∃ (x' n' : w64), "x" ∷ x_ptr ↦ x' ∗ "n" ∷ n_ptr ↦ n' ∗

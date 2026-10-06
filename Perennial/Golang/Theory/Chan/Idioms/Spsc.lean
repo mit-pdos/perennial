@@ -32,11 +32,11 @@ structure SpscNames where
   spscRecvName : GName
 
 section spsc
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 /-- Producer maintains (1/2) permission of sent history. -/
@@ -86,11 +86,11 @@ def spscInvMatch (γ : SpscNames) (P : Int → V → IProp GF) (R : List V → I
 The invariant maintains `sent = received + inflight(channel_state)`, `P` for all
 in-flight values; when closed, the producer permission is parked to prevent further
 sends, and when closed and drained, the consumer gets `R`. -/
-def isSpsc (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF) :
+def isSpsc (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF) :
     IProp GF :=
   iprop(isChan ch γ.chanName V ∗ inv nroot (spscInv γ P R))
 
-instance isSpsc_persistent (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF)
+instance isSpsc_persistent (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF)
     (R : List V → IProp GF) : Persistent (isSpsc γ ch P R) := by
   unfold isSpsc; infer_instance
 
@@ -143,7 +143,7 @@ theorem spsc_push (P : Int → V → IProp GF) (recv buff : List V) (v : V) :
 
 omit [IntoValTyped (GF := GF) V t] in
 /-- Create an SPSC channel from a basic channel. -/
-theorem start_spsc (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF) (γ : ChanNames) :
+theorem start_spsc (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF) (γ : ChanNames) :
     ⊢ isChan ch γ V -∗ (ownChan γ V .Idle ∨ ownChan γ V (.Buffered [])) ={⊤}=∗
       ∃ γspsc, isSpsc γspsc ch P R ∗ spscProducer γspsc ([] : List V) ∗
         spscConsumer γspsc ([] : List V) := by
@@ -201,7 +201,7 @@ theorem spscInv_elim (γ : SpscNames) (P : Int → V → IProp GF) (R : List V �
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 400000 in
-theorem spsc_rcv_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
+theorem spsc_rcv_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
     (received : List V) (Φ : V → Bool → IProp GF) :
     ⊢ isSpsc γ ch P R -∗ £ 1 ∗ £ 1 -∗ spscConsumer γ received -∗
       ▷ (∀ (v : V) (ok : Bool),
@@ -379,7 +379,7 @@ theorem spsc_rcv_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R 
   | _ => itrivial
 
 /-- SPSC receive operation with history tracking. -/
-theorem wp_spsc_receive (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF)
+theorem wp_spsc_receive (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF)
     (R : List V → IProp GF) (received : List V) :
     {{ isSpsc γ ch P R ∗ spscConsumer γ received }}
       (App (Val (chan.receive t)) (Val #ch))
@@ -398,7 +398,7 @@ theorem wp_spsc_receive (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF)
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 400000 in
-theorem spsc_send_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
+theorem spsc_send_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
     (sent : List V) (v : V) (Φ : IProp GF) :
     ⊢ isSpsc γ ch P R -∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ spscProducer γ sent ∗ P sent.length v -∗
       ▷ (spscProducer γ (sent ++ [v]) -∗ Φ) -∗ sendAu γ.chanName v Φ := by
@@ -512,7 +512,7 @@ theorem spsc_send_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R
   | _ => itrivial
 
 /-- SPSC send operation with history tracking. -/
-theorem wp_spsc_send (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
+theorem wp_spsc_send (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
     (sent : List V) (v : V) :
     {{ isSpsc γ ch P R ∗ spscProducer γ sent ∗ P sent.length v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
@@ -526,7 +526,7 @@ theorem wp_spsc_send (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 400000 in
-theorem spsc_close_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
+theorem spsc_close_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
     (sent : List V) (Φ : IProp GF) :
     ⊢ isSpsc γ ch P R -∗ £ 1 -∗ spscProducer γ sent ∗ R sent -∗ ▷ Φ -∗
       closeAu γ.chanName V Φ := by
@@ -595,8 +595,8 @@ theorem spsc_close_au (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (
   | _ => itrivial
 
 /-- SPSC close operation. -/
-theorem wp_spsc_close (γ : SpscNames) (ch : loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
-    (sent : List V) {ct : go.type} {dir : go.chan_dir} [ct ↓u go.ChannelType dir t] :
+theorem wp_spsc_close (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R : List V → IProp GF)
+    (sent : List V) {ct : go.GoType} {dir : go.ChanDir} [ct ↓u go.ChannelType dir t] :
     {{ isSpsc γ ch P R ∗ spscProducer γ sent ∗ R sent }}
       (App (Val #(functions go.close [ct])) (Val #ch))
     {{ RET #(); True }} := by

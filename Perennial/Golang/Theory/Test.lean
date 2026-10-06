@@ -10,37 +10,37 @@ namespace Perennial
 open Iris Iris.BI
 
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 /-- `func addOne(x uint64) uint64 { return x + 1 }` -/
 def addOne : val :=
-  LamV "x" (App (Val exception_do)
+  LamV "x" (App (Val exceptionDo)
     (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-    (App (Val do_return)
+    (App (Val doReturn)
       (App (Val (GoInstruction (GoOp GoPlus go.uint64)))
         (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 1)))))))
 
 /-- `func callAddOne(y uint64) uint64 { return addOne(y) }` -/
 def callAddOne : val :=
-  LamV "y" (App (Val exception_do)
+  LamV "y" (App (Val exceptionDo)
     (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
-    (App (Val do_return)
+    (App (Val doReturn)
       (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
       (App (Val addOne) (Var "$a0"))))))
 
 /-- `func countTo(n uint64) uint64 { var i uint64; for i < n { i = i + 1 }; return i }` -/
 def countTo : val :=
-  LamV "n" (App (Val exception_do)
+  LamV "n" (App (Val exceptionDo)
     (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
     (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64)))
       (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-    (App (App (Val exception_seq) (Lam BAnon
-      (App (Val do_return) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))
-    (App (App (App (Val do_for)
+    (App (App (Val exceptionSeq) (Lam BAnon
+      (App (Val doReturn) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))
+    (App (App (App (Val doFor)
       (Lam BAnon (App (Val (GoInstruction (GoOp GoLt go.uint64)))
         (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
               (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))))
-      (Lam BAnon (App (Val do_execute)
+      (Lam BAnon (App (Val doExecute)
         (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i")
           (App (Val (GoInstruction (GoOp GoPlus go.uint64)))
             (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))
@@ -49,9 +49,9 @@ def countTo : val :=
 end code
 
 section proofs
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- A pure computation: `wp_pures` steps through `let:` and `if:`. -/
@@ -120,7 +120,7 @@ theorem wp_countTo (n : w64) :
   wp_auto
   -- the loop invariant
   ihave HI : (∃ i : w64, "i" ∷ i_ptr ↦ i ∗ "%Hi" ∷ ⌜uint.Z i ≤ uint.Z n⌝ : IProp GF) $$ [i]
-  · iexists _; iframe i; ipureintro; simp [zero_val, ZeroVal.zero_val_def, uint.Z]
+  · iexists _; iframe i; ipureintro; simp [zero_val, ZeroVal.zeroValDef, uint.Z]
   wp_for HI
   wp_if_destruct
   · -- loop body: prove the invariant again
@@ -138,7 +138,7 @@ theorem wp_countTo (n : w64) :
 /-! ### Regression tests for the tactic fixes -/
 
 /-- `wp_apply ... $$ [..] as pats`: the `as` is not swallowed by the spec pattern. -/
-example (l : loc) (v : w64) (Φ : val → IProp GF) :
+example (l : Loc) (v : w64) (Φ : val → IProp GF) :
     (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(![go.uint64] #l) {{ Φ }} := by
   iintro ⟨Hl, H⟩
   wp_apply IntoValTyped.wp_load (t := go.uint64) l (DFrac.own 1) v $$ [$Hl] as Hl
@@ -169,7 +169,7 @@ example (l : List Nat) (_h : (l ++ [1]).length = 3) (Φ : val → IProp GF) : Φ
 
 set_option goose.wp.extras true in
 /-- With `goose.wp.extras`, `wp_auto` stores function literals (`RecV`) as `#(func.mk ..)`. -/
-example (l : loc) (f : func.t) (Φ : val → IProp GF) :
+example (l : Loc) (f : func.t) (Φ : val → IProp GF) :
     (l ↦ f) ∗ (l ↦ func.mk BAnon BAnon (Val #()) -∗ Φ #()) ⊢
       WP (App (Val (GoInstruction (GoStore (go.FunctionType (go.Signature [] false [])))))
         (Pair (Val #l) (Rec BAnon BAnon (Val #())))) {{ Φ }} := by
@@ -198,7 +198,7 @@ example (Φ : val → IProp GF) :
   iapply H $$ Hlc1
 
 /-- `+noauto` with a spec pattern and `as`. -/
-example (l : loc) (v : w64) (Φ : val → IProp GF) :
+example (l : Loc) (v : w64) (Φ : val → IProp GF) :
     (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(let: "x" := ![go.uint64] #l in "x") {{ Φ }} := by
   iintro ⟨Hl, H⟩
   wp_apply +noauto (IntoValTyped.wp_load (t := go.uint64) l (DFrac.own 1) v) $$ [$Hl] as Hl
@@ -290,7 +290,7 @@ example (v : w64) (P : List w64 → IProp GF) : P [v] ⊢ P ([] ++ [v]) := by
   iframe
 
 /-- `iframe` matches `W64 7` and `7#64` (e.g. after a bare `simp`). -/
-example (l : loc) (x : w64) : (l ↦ (x + 1#64) : IProp GF) ⊢ l ↦ (x + W64 1) := by
+example (l : Loc) (x : w64) : (l ↦ (x + 1#64) : IProp GF) ⊢ l ↦ (x + W64 1) := by
   iintro H
   iframe
 
@@ -312,8 +312,8 @@ example (h : uint.Z (W64 300) = 3) : sint.Z (W64 7) = 7 ∧ False := by
 
 /-- `wp_auto` keeps points-to facts of locations that are not Go local variables
 (e.g. obtained from a spec), even if the location occurs nowhere else. -/
-example (l : loc) (v : w64) (Φ : val → IProp GF) :
-    (l ↦ v) ∗ (∀ w : w64, (∃ l' : loc, l' ↦ v) -∗ Φ #w) ⊢ WP gl(let: "x" := #(W64 1) in "x") {{ Φ }} := by
+example (l : Loc) (v : w64) (Φ : val → IProp GF) :
+    (l ↦ v) ∗ (∀ w : w64, (∃ l' : Loc, l' ↦ v) -∗ Φ #w) ⊢ WP gl(let: "x" := #(W64 1) in "x") {{ Φ }} := by
   iintro ⟨Hl, H⟩
   wp_auto
   iapply H
@@ -332,14 +332,14 @@ example (sl : slice.t) (x : w64) (Φ : val → IProp GF) :
 
 set_option goose.wp.extras true in
 /-- Projections of interface values are reduced (extras). -/
-example (Φ : val → IProp GF) (t : go.type) (v : val) :
+example (Φ : val → IProp GF) (t : go.GoType) (v : val) :
     Φ v ⊢ WP (Val (interface.mk t v).v) {{ Φ }} := by
   iintro H; wp_pures; iexact H
 
 end proofs
 
 section consts
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 /-- A package constant, as goose generates it. -/
 def testConst : val := #(W64 3)
 /-- An implementation constant, as `wp_func_call`/`wp_method_call` produce. -/
@@ -347,9 +347,9 @@ def «testFnⁱᵐᵖˡ» : val := LamV "x" (Var "x")
 end consts
 
 section proofs2
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 set_option goose.wp.extras true in
@@ -377,25 +377,25 @@ named field conjuncts, and `@[reducible]` `'fds_unsealed`/`ⁱᵐᵖˡ` definiti
 noncomputable section
 namespace testpkg
 
-def pt [ffi_syntax] [GoGlobalContext] : go.type := (go.type.Named go!"testpkg.pt" [])
+def pt [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.pt" [])
 attribute [irreducible] pt
 
 namespace pt
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
-instance zero_val [ffi_syntax] : ZeroVal t := ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef zeroValDef⟩
 end pt
 
-@[reducible] def pt'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def pt'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64), (go.field_decl.FieldDecl go!"y" go.uint64)]
-@[irreducible] def pt'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl := pt'fds_unsealed
-instance equals_unfold_pt [ffi_syntax] [GoGlobalContext] : EqualsUnfold pt'fds pt'fds_unsealed :=
+@[irreducible] def pt'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl := pt'fds_unsealed
+instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt'fds pt'fds_unsealed :=
   ⟨by unfold pt'fds; rfl⟩
-@[reducible] def «ptⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type := (go.type.StructType pt'fds)
+@[reducible] def «ptⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt'fds)
 
-class pt_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   pt_type_repr : go.TypeReprUnderlying «ptⁱᵐᵖˡ» pt.t
   pt_underlying : go.UnderlyingDirectedEq pt «ptⁱᵐᵖˡ»
   pt_get_x : ∀ (x : pt.t), go.IsGoStepPureDetTagged under (StructFieldGet «ptⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
@@ -406,52 +406,52 @@ attribute [instance] pt_Assumptions.pt_type_repr pt_Assumptions.pt_underlying pt
   pt_Assumptions.pt_set_x pt_Assumptions.pt_get_y pt_Assumptions.pt_set_y
 
 section def_
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : pt_Assumptions]
 
 instance pt_typed_pointsto : TypedPointsto (GF := GF) pt.t where
-  typed_pointsto_def l v dq := iprop(
-    "x" ∷ typed_pointsto (struct_field_ref pt.t go!"x" l) v.x' dq ∗
-    "y" ∷ typed_pointsto (struct_field_ref pt.t go!"y" l) v.y' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "x" ∷ typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq ∗
+    "y" ∷ typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance pt_access_load_x (l : loc) (v : pt.t) (dq : DFrac) :
+instance pt_access_load_x (l : Loc) (v : pt.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref pt.t go!"x" l) v.x' dq)
-      (typed_pointsto (struct_field_ref pt.t go!"x" l) v.x' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance pt_access_store_x (l : loc) (v : pt.t) (x' : w64) :
+instance pt_access_store_x (l : Loc) (v : pt.t) (x' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref pt.t go!"x" l) v.x' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref pt.t go!"x" l) x' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with x' := x' } : pt.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef pt.t go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef pt.t go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : pt.t) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
-instance pt_access_load_y (l : loc) (v : pt.t) (dq : DFrac) :
+instance pt_access_load_y (l : Loc) (v : pt.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref pt.t go!"y" l) v.y' dq)
-      (typed_pointsto (struct_field_ref pt.t go!"y" l) v.y' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq)
+      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance pt_access_store_y (l : loc) (v : pt.t) (y' : w64) :
+instance pt_access_store_y (l : Loc) (v : pt.t) (y' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref pt.t go!"y" l) v.y' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref pt.t go!"y" l) y' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with y' := y' } : pt.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef pt.t go!"y" l) v.y' (DFrac.own 1))
+      (typedPointsto (structFieldRef pt.t go!"y" l) y' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with y' := y' } : pt.t) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
 instance pt_into_val_typed : IntoValTypedUnderlying (GF := GF) pt.t «ptⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-example (l : loc) (v : pt.t) :
+example (l : Loc) (v : pt.t) :
     {{ (l ↦ v : IProp GF) }}
       gl(let: "a" := ![go.uint64] (StructFieldRef pt "x" #l) in
          StructFieldRef pt "y" #l <-[go.uint64] "a" ;; ![go.uint64] (StructFieldRef pt "y" #l))
@@ -477,24 +477,24 @@ end
 noncomputable section
 namespace testpkg
 
-def ub [ffi_syntax] [GoGlobalContext] : go.type := (go.type.Named go!"testpkg.ub" [])
+def ub [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.ub" [])
 attribute [irreducible] ub
 
 namespace ub
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   p' : w64
-instance zero_val [ffi_syntax] : ZeroVal t := ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t := ⟨t.mk zeroValDef⟩
 end ub
 
-@[reducible] def ub'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ub'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" go.uintptr)]
-@[irreducible] def ub'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl := ub'fds_unsealed
-instance equals_unfold_ub [ffi_syntax] [GoGlobalContext] : EqualsUnfold ub'fds ub'fds_unsealed :=
+@[irreducible] def ub'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl := ub'fds_unsealed
+instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub'fds ub'fds_unsealed :=
   ⟨by unfold ub'fds; rfl⟩
-@[reducible] def «ubⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type := (go.type.StructType ub'fds)
+@[reducible] def «ubⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub'fds)
 
-class ub_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ub_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ub_type_repr : go.TypeReprUnderlying «ubⁱᵐᵖˡ» ub.t
   ub_underlying : go.UnderlyingDirectedEq ub «ubⁱᵐᵖˡ»
   ub_get_p : ∀ (x : ub.t), go.IsGoStepPureDetTagged under (StructFieldGet «ubⁱᵐᵖˡ» go!"p") #x (Val #(x.p'))
@@ -503,38 +503,38 @@ attribute [instance] ub_Assumptions.ub_type_repr ub_Assumptions.ub_underlying
   ub_Assumptions.ub_get_p ub_Assumptions.ub_set_p
 
 section def_
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : ub_Assumptions]
 
 instance ub_typed_pointsto : TypedPointsto (GF := GF) ub.t where
-  typed_pointsto_def l v dq := iprop(
-    "p" ∷ typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "p" ∷ typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance ub_access_load_p (l : loc) (v : ub.t) (dq : DFrac) :
+instance ub_access_load_p (l : Loc) (v : ub.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq)
-      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) := by
+      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance ub_access_store_p (l : loc) (v : ub.t) (p' : w64) :
+instance ub_access_store_p (l : Loc) (v : ub.t) (p' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref ub.t go!"p" l) v.p' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref ub.t go!"p" l) p' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with p' := p' } : ub.t) (DFrac.own 1)) := by
+      (typedPointsto (structFieldRef ub.t go!"p" l) v.p' (DFrac.own 1))
+      (typedPointsto (structFieldRef ub.t go!"p" l) p' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : ub.t) (DFrac.own 1)) := by
   solve_pointsto_access_struct
 
 instance ub_into_val_typed : IntoValTypedUnderlying (GF := GF) ub.t «ubⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
 /-- Load, increment and store the `uintptr` field. -/
-example (l : loc) (v : ub.t) :
+example (l : Loc) (v : ub.t) :
     {{ (l ↦ v : IProp GF) }}
       gl(StructFieldRef ub "p" #l <-[go.uintptr]
            (![go.uintptr] (StructFieldRef ub "p" #l) +⟨go.uintptr⟩ #(W64 1)) ;;
@@ -550,9 +550,9 @@ end
 
 /-! ### `uintptr` (Lean addition, see `go.UintptrSemantics`): a 64-bit unsigned integer -/
 section uintptr_tests
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Allocation, load, store and wrapping addition at `uintptr`. -/
@@ -569,7 +569,7 @@ example : ⊢ WP (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #()))
   ipureintro; rfl
 
 /-- Typed points-to and `wp_load` at `uintptr`. -/
-example (l : loc) (v : w64) (Φ : val → IProp GF) :
+example (l : Loc) (v : w64) (Φ : val → IProp GF) :
     (l ↦ v) ∗ (l ↦ v -∗ Φ #v) ⊢ WP gl(![go.uintptr] #l) {{ Φ }} := by
   iintro ⟨Hl, H⟩
   wp_apply IntoValTyped.wp_load (t := go.uintptr) l (DFrac.own 1) v $$ [$Hl] as Hl

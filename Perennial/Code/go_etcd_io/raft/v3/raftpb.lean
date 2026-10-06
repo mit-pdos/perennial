@@ -12,431 +12,431 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.raft.v3.raftpb : go_string := go!"go.etcd.io/raft/v3/raftpb"
+def go_etcd_io.raft.v3.raftpb : GoString := go!"go.etcd.io/raft/v3/raftpb"
 end pkg_id
 
 namespace go_etcd_io.raft.v3.raftpb
 
-def ConfChangeI [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeI" [])
+def ConfChangeI [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeI" [])
 
 attribute [irreducible] ConfChangeI
 
-def EntryType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.EntryType" [])
+def EntryType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.EntryType" [])
 
 attribute [irreducible] EntryType
 
-def MessageType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.MessageType" [])
+def MessageType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.MessageType" [])
 
 attribute [irreducible] MessageType
 
-def ConfChangeTransition [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition" [])
+def ConfChangeTransition [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition" [])
 
 attribute [irreducible] ConfChangeTransition
 
-def ConfChangeType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeType" [])
+def ConfChangeType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeType" [])
 
 attribute [irreducible] ConfChangeType
 
-def Entry [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.Entry" [])
+def Entry [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.Entry" [])
 
 attribute [irreducible] Entry
 
-def SnapshotMetadata [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.SnapshotMetadata" [])
+def SnapshotMetadata [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.SnapshotMetadata" [])
 
 attribute [irreducible] SnapshotMetadata
 
-def Snapshot [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.Snapshot" [])
+def Snapshot [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.Snapshot" [])
 
 attribute [irreducible] Snapshot
 
-def Message [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.Message" [])
+def Message [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.Message" [])
 
 attribute [irreducible] Message
 
-def HardState [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.HardState" [])
+def HardState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.HardState" [])
 
 attribute [irreducible] HardState
 
-def ConfState [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfState" [])
+def ConfState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfState" [])
 
 attribute [irreducible] ConfState
 
-def ConfChange [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChange" [])
+def ConfChange [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChange" [])
 
 attribute [irreducible] ConfChange
 
-def ConfChangeSingle [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeSingle" [])
+def ConfChangeSingle [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeSingle" [])
 
 attribute [irreducible] ConfChangeSingle
 
-def ConfChangeV2 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeV2" [])
+def ConfChangeV2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/raft/v3/raftpb.ConfChangeV2" [])
 
 attribute [irreducible] ConfChangeV2
 
-@[reducible] noncomputable def EntryNormal [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryNormal [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] noncomputable def EntryConfChange [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryConfChange [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] noncomputable def EntryConfChangeV2 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def EntryConfChangeV2 [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] noncomputable def MsgHup [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHup [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] noncomputable def MsgBeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgBeat [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] noncomputable def MsgProp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgProp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] noncomputable def MsgApp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgApp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] noncomputable def MsgAppResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgAppResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 4)
 
-@[reducible] noncomputable def MsgVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgVote [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 5)
 
-@[reducible] noncomputable def MsgVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgVoteResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 6)
 
-@[reducible] noncomputable def MsgSnap [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgSnap [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 7)
 
-@[reducible] noncomputable def MsgHeartbeat [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHeartbeat [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 8)
 
-@[reducible] noncomputable def MsgHeartbeatResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgHeartbeatResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 9)
 
-@[reducible] noncomputable def MsgUnreachable [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgUnreachable [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 10)
 
-@[reducible] noncomputable def MsgSnapStatus [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgSnapStatus [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 11)
 
-@[reducible] noncomputable def MsgCheckQuorum [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgCheckQuorum [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 12)
 
-@[reducible] noncomputable def MsgTransferLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgTransferLeader [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 13)
 
-@[reducible] noncomputable def MsgTimeoutNow [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgTimeoutNow [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 14)
 
-@[reducible] noncomputable def MsgReadIndex [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgReadIndex [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 15)
 
-@[reducible] noncomputable def MsgReadIndexResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgReadIndexResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 16)
 
-@[reducible] noncomputable def MsgPreVote [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgPreVote [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 17)
 
-@[reducible] noncomputable def MsgPreVoteResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgPreVoteResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 18)
 
-@[reducible] noncomputable def MsgStorageAppend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageAppend [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 19)
 
-@[reducible] noncomputable def MsgStorageAppendResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageAppendResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 20)
 
-@[reducible] noncomputable def MsgStorageApply [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageApply [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 21)
 
-@[reducible] noncomputable def MsgStorageApplyResp [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgStorageApplyResp [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 22)
 
-@[reducible] noncomputable def MsgForgetLeader [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MsgForgetLeader [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 23)
 
-axiom ConfChangeTransitionAuto [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeTransitionAuto [FfiSyntax] [GoGlobalContext] : val
 
-axiom ConfChangeTransitionJointImplicit [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeTransitionJointImplicit [FfiSyntax] [GoGlobalContext] : val
 
-axiom ConfChangeTransitionJointExplicit [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeTransitionJointExplicit [FfiSyntax] [GoGlobalContext] : val
 
-@[reducible] noncomputable def ConfChangeAddNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeAddNode [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] noncomputable def ConfChangeRemoveNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeRemoveNode [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-@[reducible] noncomputable def ConfChangeUpdateNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeUpdateNode [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 2)
 
-@[reducible] noncomputable def ConfChangeAddLearnerNode [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ConfChangeAddLearnerNode [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-noncomputable def EntryType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EntryType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.EntryType_name"
 
-axiom EntryType_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom EntryType_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def EntryType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EntryType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.EntryType_value"
 
-axiom EntryType_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom EntryType_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MessageType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.MessageType_name"
 
-axiom MessageType_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom MessageType_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MessageType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MessageType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.MessageType_value"
 
-axiom MessageType_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom MessageType_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ConfChangeTransition_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeTransition_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"
 
-axiom ConfChangeTransition_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeTransition_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ConfChangeTransition_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeTransition_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeTransition_value"
 
-axiom ConfChangeTransition_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeTransition_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ConfChangeType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeType_name"
 
-axiom ConfChangeType_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeType_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ConfChangeType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangeType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangeType_value"
 
-axiom ConfChangeType_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom ConfChangeType_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def xxx_messageInfo_Entry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Entry [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"
 
-noncomputable def xxx_messageInfo_SnapshotMetadata [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_SnapshotMetadata [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"
 
-noncomputable def xxx_messageInfo_Snapshot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Snapshot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"
 
-noncomputable def xxx_messageInfo_Message [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Message [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"
 
-noncomputable def xxx_messageInfo_HardState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_HardState [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"
 
-noncomputable def xxx_messageInfo_ConfState [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfState [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfState"
 
-noncomputable def xxx_messageInfo_ConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"
 
-noncomputable def xxx_messageInfo_ConfChangeSingle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChangeSingle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeSingle"
 
-noncomputable def xxx_messageInfo_ConfChangeV2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_ConfChangeV2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"
 
-noncomputable def fileDescriptor_b042552c306ae59b [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_b042552c306ae59b [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.fileDescriptor_b042552c306ae59b"
 
-axiom fileDescriptor_b042552c306ae59b'init [ffi_syntax] [GoGlobalContext] : val
+axiom fileDescriptor_b042552c306ae59b'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrInvalidLengthRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ErrInvalidLengthRaft"
 
-axiom ErrInvalidLengthRaft'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrInvalidLengthRaft'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrIntOverflowRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ErrIntOverflowRaft"
 
-axiom ErrIntOverflowRaft'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrIntOverflowRaft'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrUnexpectedEndOfGroupRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ErrUnexpectedEndOfGroupRaft"
 
-axiom ErrUnexpectedEndOfGroupRaft'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrUnexpectedEndOfGroupRaft'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MarshalConfChange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MarshalConfChange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.MarshalConfChange"
 
-noncomputable def ConfChangesFromString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangesFromString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangesFromString"
 
-noncomputable def ConfChangesToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ConfChangesToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.ConfChangesToString"
 
-noncomputable def encodeVarintRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.encodeVarintRaft"
 
-noncomputable def sovRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.sovRaft"
 
-noncomputable def sozRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.sozRaft"
 
-noncomputable def skipRaft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipRaft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/raft/v3/raftpb.skipRaft"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.raft.v3.raftpb where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.raft.v3.raftpb)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val ErrUnexpectedEndOfGroupRaft'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrIntOverflowRaft'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrInvalidLengthRaft'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val fileDescriptor_b042552c306ae59b'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ConfChangeType_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ConfChangeType_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ConfChangeTransition_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ConfChangeTransition_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MessageType_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MessageType_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val EntryType_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val EntryType_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))))
 
 namespace ConfChangeI
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ConfChangeI
 
-@[reducible] def «ConfChangeIⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"AsV1" (go.signature.Signature [] false [ConfChange, go.bool])), (go.interface_elem.MethodElem go!"AsV2" (go.signature.Signature [] false [ConfChangeV2]))])
+@[reducible] def «ConfChangeIⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AsV1" (go.signature.Signature [] false [ConfChange, go.bool])), (go.InterfaceElem.MethodElem go!"AsV2" (go.signature.Signature [] false [ConfChangeV2]))])
 
-class ConfChangeI_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChangeI_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeI_underlying : go.UnderlyingDirectedEq ConfChangeI «ConfChangeIⁱᵐᵖˡ»
 
 attribute [instance] ConfChangeI_Assumptions.ConfChangeI_underlying
 
 namespace EntryType
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end EntryType
 
-@[reducible] def «EntryTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «EntryTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class EntryType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class EntryType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   EntryType_underlying : go.UnderlyingDirectedEq EntryType «EntryTypeⁱᵐᵖˡ»
 
 attribute [instance] EntryType_Assumptions.EntryType_underlying
 
 namespace MessageType
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end MessageType
 
-@[reducible] def «MessageTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «MessageTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class MessageType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MessageType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MessageType_underlying : go.UnderlyingDirectedEq MessageType «MessageTypeⁱᵐᵖˡ»
 
 attribute [instance] MessageType_Assumptions.MessageType_underlying
 
 namespace ConfChangeTransition
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end ConfChangeTransition
 
-@[reducible] def «ConfChangeTransitionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeTransitionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class ConfChangeTransition_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChangeTransition_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeTransition_underlying : go.UnderlyingDirectedEq ConfChangeTransition «ConfChangeTransitionⁱᵐᵖˡ»
 
 attribute [instance] ConfChangeTransition_Assumptions.ConfChangeTransition_underlying
 
 namespace ConfChangeType
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end ConfChangeType
 
-@[reducible] def «ConfChangeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «ConfChangeTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class ConfChangeType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChangeType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeType_underlying : go.UnderlyingDirectedEq ConfChangeType «ConfChangeTypeⁱᵐᵖˡ»
 
 attribute [instance] ConfChangeType_Assumptions.ConfChangeType_underlying
 
 namespace Entry
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Term' : w64
   Index' : w64
   Type' : EntryType.t
   Data' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Entry
 
-@[reducible] def Entry'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Entry'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"Type" EntryType),
-(go.field_decl.FieldDecl go!"Data" (go.type.SliceType go.byte))]
+(go.field_decl.FieldDecl go!"Data" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def Entry'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Entry'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Entry'fds_unsealed
 
-instance equals_unfold_Entry [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Entry [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Entry'fds Entry'fds_unsealed :=
   ⟨by unfold Entry'fds; rfl⟩
 
-@[reducible] def «Entryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Entry'fds)
+@[reducible] def «Entryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Entry'fds)
 
-class Entry_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Entry_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Entry_type_repr : go.TypeReprUnderlying «Entryⁱᵐᵖˡ» Entry.t
   Entry_underlying : go.UnderlyingDirectedEq Entry «Entryⁱᵐᵖˡ»
   Entry_get_Term : ∀ (x : Entry.t), go.IsGoStepPureDetTagged under (StructFieldGet «Entryⁱᵐᵖˡ» go!"Term") #x (Val #(x.Term'))
@@ -460,7 +460,7 @@ attribute [instance] Entry_Assumptions.Entry_type_repr
   Entry_Assumptions.Entry_set_Data
 
 namespace ConfState
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Voters' : slice.t
   Learners' : slice.t
@@ -468,28 +468,28 @@ structure t [ffi_syntax] where
   LearnersNext' : slice.t
   AutoLeave' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ConfState
 
-@[reducible] def ConfState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Voters" (go.type.SliceType go.uint64)),
-(go.field_decl.FieldDecl go!"Learners" (go.type.SliceType go.uint64)),
-(go.field_decl.FieldDecl go!"VotersOutgoing" (go.type.SliceType go.uint64)),
-(go.field_decl.FieldDecl go!"LearnersNext" (go.type.SliceType go.uint64)),
+@[reducible] def ConfState'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Voters" (go.GoType.SliceType go.uint64)),
+(go.field_decl.FieldDecl go!"Learners" (go.GoType.SliceType go.uint64)),
+(go.field_decl.FieldDecl go!"VotersOutgoing" (go.GoType.SliceType go.uint64)),
+(go.field_decl.FieldDecl go!"LearnersNext" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"AutoLeave" go.bool)]
 
-@[irreducible] def ConfState'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ConfState'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ConfState'fds_unsealed
 
-instance equals_unfold_ConfState [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ConfState [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ConfState'fds ConfState'fds_unsealed :=
   ⟨by unfold ConfState'fds; rfl⟩
 
-@[reducible] def «ConfStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ConfState'fds)
+@[reducible] def «ConfStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ConfState'fds)
 
-class ConfState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfState_type_repr : go.TypeReprUnderlying «ConfStateⁱᵐᵖˡ» ConfState.t
   ConfState_underlying : go.UnderlyingDirectedEq ConfState «ConfStateⁱᵐᵖˡ»
   ConfState_get_Voters : ∀ (x : ConfState.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfStateⁱᵐᵖˡ» go!"Voters") #x (Val #(x.Voters'))
@@ -517,32 +517,32 @@ attribute [instance] ConfState_Assumptions.ConfState_type_repr
   ConfState_Assumptions.ConfState_set_AutoLeave
 
 namespace SnapshotMetadata
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ConfState' : ConfState.t
   Index' : w64
   Term' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end SnapshotMetadata
 
-@[reducible] def SnapshotMetadata'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SnapshotMetadata'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ConfState" ConfState),
 (go.field_decl.FieldDecl go!"Index" go.uint64),
 (go.field_decl.FieldDecl go!"Term" go.uint64)]
 
-@[irreducible] def SnapshotMetadata'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SnapshotMetadata'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SnapshotMetadata'fds_unsealed
 
-instance equals_unfold_SnapshotMetadata [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SnapshotMetadata [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SnapshotMetadata'fds SnapshotMetadata'fds_unsealed :=
   ⟨by unfold SnapshotMetadata'fds; rfl⟩
 
-@[reducible] def «SnapshotMetadataⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SnapshotMetadata'fds)
+@[reducible] def «SnapshotMetadataⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SnapshotMetadata'fds)
 
-class SnapshotMetadata_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SnapshotMetadata_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SnapshotMetadata_type_repr : go.TypeReprUnderlying «SnapshotMetadataⁱᵐᵖˡ» SnapshotMetadata.t
   SnapshotMetadata_underlying : go.UnderlyingDirectedEq SnapshotMetadata «SnapshotMetadataⁱᵐᵖˡ»
   SnapshotMetadata_get_ConfState : ∀ (x : SnapshotMetadata.t), go.IsGoStepPureDetTagged under (StructFieldGet «SnapshotMetadataⁱᵐᵖˡ» go!"ConfState") #x (Val #(x.ConfState'))
@@ -562,30 +562,30 @@ attribute [instance] SnapshotMetadata_Assumptions.SnapshotMetadata_type_repr
   SnapshotMetadata_Assumptions.SnapshotMetadata_set_Term
 
 namespace Snapshot
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Data' : slice.t
   Metadata' : SnapshotMetadata.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Snapshot
 
-@[reducible] def Snapshot'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Data" (go.type.SliceType go.byte)),
+@[reducible] def Snapshot'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Data" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Metadata" SnapshotMetadata)]
 
-@[irreducible] def Snapshot'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Snapshot'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Snapshot'fds_unsealed
 
-instance equals_unfold_Snapshot [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Snapshot [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Snapshot'fds Snapshot'fds_unsealed :=
   ⟨by unfold Snapshot'fds; rfl⟩
 
-@[reducible] def «Snapshotⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Snapshot'fds)
+@[reducible] def «Snapshotⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Snapshot'fds)
 
-class Snapshot_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Snapshot_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Snapshot_type_repr : go.TypeReprUnderlying «Snapshotⁱᵐᵖˡ» Snapshot.t
   Snapshot_underlying : go.UnderlyingDirectedEq Snapshot «Snapshotⁱᵐᵖˡ»
   Snapshot_get_Data : ∀ (x : Snapshot.t), go.IsGoStepPureDetTagged under (StructFieldGet «Snapshotⁱᵐᵖˡ» go!"Data") #x (Val #(x.Data'))
@@ -601,7 +601,7 @@ attribute [instance] Snapshot_Assumptions.Snapshot_type_repr
   Snapshot_Assumptions.Snapshot_set_Metadata
 
 namespace Message
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Type' : MessageType.t
   To' : w64
@@ -612,43 +612,43 @@ structure t [ffi_syntax] where
   Entries' : slice.t
   Commit' : w64
   Vote' : w64
-  Snapshot' : loc
+  Snapshot' : Loc
   Reject' : Bool
   RejectHint' : w64
   Context' : slice.t
   Responses' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Message
 
-@[reducible] def Message'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Message'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" MessageType),
 (go.field_decl.FieldDecl go!"To" go.uint64),
 (go.field_decl.FieldDecl go!"From" go.uint64),
 (go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"LogTerm" go.uint64),
 (go.field_decl.FieldDecl go!"Index" go.uint64),
-(go.field_decl.FieldDecl go!"Entries" (go.type.SliceType Entry)),
+(go.field_decl.FieldDecl go!"Entries" (go.GoType.SliceType Entry)),
 (go.field_decl.FieldDecl go!"Commit" go.uint64),
 (go.field_decl.FieldDecl go!"Vote" go.uint64),
-(go.field_decl.FieldDecl go!"Snapshot" (go.type.PointerType Snapshot)),
+(go.field_decl.FieldDecl go!"Snapshot" (go.GoType.PointerType Snapshot)),
 (go.field_decl.FieldDecl go!"Reject" go.bool),
 (go.field_decl.FieldDecl go!"RejectHint" go.uint64),
-(go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"Responses" (go.type.SliceType Message))]
+(go.field_decl.FieldDecl go!"Context" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Responses" (go.GoType.SliceType Message))]
 
-@[irreducible] def Message'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Message'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Message'fds_unsealed
 
-instance equals_unfold_Message [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Message [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Message'fds Message'fds_unsealed :=
   ⟨by unfold Message'fds; rfl⟩
 
-@[reducible] def «Messageⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Message'fds)
+@[reducible] def «Messageⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Message'fds)
 
-class Message_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Message_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Message_type_repr : go.TypeReprUnderlying «Messageⁱᵐᵖˡ» Message.t
   Message_underlying : go.UnderlyingDirectedEq Message «Messageⁱᵐᵖˡ»
   Message_get_Type : ∀ (x : Message.t), go.IsGoStepPureDetTagged under (StructFieldGet «Messageⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
@@ -670,7 +670,7 @@ class Message_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSem
   Message_get_Vote : ∀ (x : Message.t), go.IsGoStepPureDetTagged under (StructFieldGet «Messageⁱᵐᵖˡ» go!"Vote") #x (Val #(x.Vote'))
   Message_set_Vote : ∀ (x : Message.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Messageⁱᵐᵖˡ» go!"Vote") (PairV #x #y) (Val #(({ x with Vote' := y } : Message.t)))
   Message_get_Snapshot : ∀ (x : Message.t), go.IsGoStepPureDetTagged under (StructFieldGet «Messageⁱᵐᵖˡ» go!"Snapshot") #x (Val #(x.Snapshot'))
-  Message_set_Snapshot : ∀ (x : Message.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Messageⁱᵐᵖˡ» go!"Snapshot") (PairV #x #y) (Val #(({ x with Snapshot' := y } : Message.t)))
+  Message_set_Snapshot : ∀ (x : Message.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Messageⁱᵐᵖˡ» go!"Snapshot") (PairV #x #y) (Val #(({ x with Snapshot' := y } : Message.t)))
   Message_get_Reject : ∀ (x : Message.t), go.IsGoStepPureDetTagged under (StructFieldGet «Messageⁱᵐᵖˡ» go!"Reject") #x (Val #(x.Reject'))
   Message_set_Reject : ∀ (x : Message.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Messageⁱᵐᵖˡ» go!"Reject") (PairV #x #y) (Val #(({ x with Reject' := y } : Message.t)))
   Message_get_RejectHint : ∀ (x : Message.t), go.IsGoStepPureDetTagged under (StructFieldGet «Messageⁱᵐᵖˡ» go!"RejectHint") #x (Val #(x.RejectHint'))
@@ -712,32 +712,32 @@ attribute [instance] Message_Assumptions.Message_type_repr
   Message_Assumptions.Message_set_Responses
 
 namespace HardState
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Term' : w64
   Vote' : w64
   Commit' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end HardState
 
-@[reducible] def HardState'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def HardState'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Term" go.uint64),
 (go.field_decl.FieldDecl go!"Vote" go.uint64),
 (go.field_decl.FieldDecl go!"Commit" go.uint64)]
 
-@[irreducible] def HardState'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def HardState'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   HardState'fds_unsealed
 
-instance equals_unfold_HardState [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_HardState [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold HardState'fds HardState'fds_unsealed :=
   ⟨by unfold HardState'fds; rfl⟩
 
-@[reducible] def «HardStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType HardState'fds)
+@[reducible] def «HardStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType HardState'fds)
 
-class HardState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class HardState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   HardState_type_repr : go.TypeReprUnderlying «HardStateⁱᵐᵖˡ» HardState.t
   HardState_underlying : go.UnderlyingDirectedEq HardState «HardStateⁱᵐᵖˡ»
   HardState_get_Term : ∀ (x : HardState.t), go.IsGoStepPureDetTagged under (StructFieldGet «HardStateⁱᵐᵖˡ» go!"Term") #x (Val #(x.Term'))
@@ -757,34 +757,34 @@ attribute [instance] HardState_Assumptions.HardState_type_repr
   HardState_Assumptions.HardState_set_Commit
 
 namespace ConfChange
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Type' : ConfChangeType.t
   NodeID' : w64
   Context' : slice.t
   ID' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end ConfChange
 
-@[reducible] def ConfChange'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfChange'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" ConfChangeType),
 (go.field_decl.FieldDecl go!"NodeID" go.uint64),
-(go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Context" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"ID" go.uint64)]
 
-@[irreducible] def ConfChange'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ConfChange'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ConfChange'fds_unsealed
 
-instance equals_unfold_ConfChange [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ConfChange [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ConfChange'fds ConfChange'fds_unsealed :=
   ⟨by unfold ConfChange'fds; rfl⟩
 
-@[reducible] def «ConfChangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ConfChange'fds)
+@[reducible] def «ConfChangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ConfChange'fds)
 
-class ConfChange_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChange_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChange_type_repr : go.TypeReprUnderlying «ConfChangeⁱᵐᵖˡ» ConfChange.t
   ConfChange_underlying : go.UnderlyingDirectedEq ConfChange «ConfChangeⁱᵐᵖˡ»
   ConfChange_get_Type : ∀ (x : ConfChange.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfChangeⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
@@ -808,30 +808,30 @@ attribute [instance] ConfChange_Assumptions.ConfChange_type_repr
   ConfChange_Assumptions.ConfChange_set_ID
 
 namespace ConfChangeSingle
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Type' : ConfChangeType.t
   NodeID' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end ConfChangeSingle
 
-@[reducible] def ConfChangeSingle'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfChangeSingle'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" ConfChangeType),
 (go.field_decl.FieldDecl go!"NodeID" go.uint64)]
 
-@[irreducible] def ConfChangeSingle'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ConfChangeSingle'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ConfChangeSingle'fds_unsealed
 
-instance equals_unfold_ConfChangeSingle [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ConfChangeSingle [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ConfChangeSingle'fds ConfChangeSingle'fds_unsealed :=
   ⟨by unfold ConfChangeSingle'fds; rfl⟩
 
-@[reducible] def «ConfChangeSingleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ConfChangeSingle'fds)
+@[reducible] def «ConfChangeSingleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ConfChangeSingle'fds)
 
-class ConfChangeSingle_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChangeSingle_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeSingle_type_repr : go.TypeReprUnderlying «ConfChangeSingleⁱᵐᵖˡ» ConfChangeSingle.t
   ConfChangeSingle_underlying : go.UnderlyingDirectedEq ConfChangeSingle «ConfChangeSingleⁱᵐᵖˡ»
   ConfChangeSingle_get_Type : ∀ (x : ConfChangeSingle.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfChangeSingleⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
@@ -847,32 +847,32 @@ attribute [instance] ConfChangeSingle_Assumptions.ConfChangeSingle_type_repr
   ConfChangeSingle_Assumptions.ConfChangeSingle_set_NodeID
 
 namespace ConfChangeV2
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Transition' : ConfChangeTransition.t
   Changes' : slice.t
   Context' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end ConfChangeV2
 
-@[reducible] def ConfChangeV2'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ConfChangeV2'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Transition" ConfChangeTransition),
-(go.field_decl.FieldDecl go!"Changes" (go.type.SliceType ConfChangeSingle)),
-(go.field_decl.FieldDecl go!"Context" (go.type.SliceType go.byte))]
+(go.field_decl.FieldDecl go!"Changes" (go.GoType.SliceType ConfChangeSingle)),
+(go.field_decl.FieldDecl go!"Context" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def ConfChangeV2'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ConfChangeV2'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ConfChangeV2'fds_unsealed
 
-instance equals_unfold_ConfChangeV2 [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ConfChangeV2 [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ConfChangeV2'fds ConfChangeV2'fds_unsealed :=
   ⟨by unfold ConfChangeV2'fds; rfl⟩
 
-@[reducible] def «ConfChangeV2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ConfChangeV2'fds)
+@[reducible] def «ConfChangeV2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ConfChangeV2'fds)
 
-class ConfChangeV2_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ConfChangeV2_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeV2_type_repr : go.TypeReprUnderlying «ConfChangeV2ⁱᵐᵖˡ» ConfChangeV2.t
   ConfChangeV2_underlying : go.UnderlyingDirectedEq ConfChangeV2 «ConfChangeV2ⁱᵐᵖˡ»
   ConfChangeV2_get_Transition : ∀ (x : ConfChangeV2.t), go.IsGoStepPureDetTagged under (StructFieldGet «ConfChangeV2ⁱᵐᵖˡ» go!"Transition") #x (Val #(x.Transition'))
@@ -891,7 +891,7 @@ attribute [instance] ConfChangeV2_Assumptions.ConfChangeV2_type_repr
   ConfChangeV2_Assumptions.ConfChangeV2_get_Context
   ConfChangeV2_Assumptions.ConfChangeV2_set_Context
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ConfChangeI_instance : ConfChangeI_Assumptions
   EntryType_instance : EntryType_Assumptions
   MessageType_instance : MessageType_Assumptions

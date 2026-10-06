@@ -15,7 +15,7 @@ Differences from Rocq:
 * `do` is a Lean keyword, so it is `«do»`.
 * The `Settable` instances are dropped: Lean has record-update syntax.
 * `RangeRequest.default`/`PutRequest.default` use the zero values directly
-  rather than `zero_val` (so they do not need `ffi_syntax`).
+  rather than `zero_val` (so they do not need `FfiSyntax`).
 * `StronglySorted` is `List.Pairwise`, `Permutation` is `List.Perm`, stdpp
   `filter` is `List.filter`, `default d o` is `o.getD d`.
 * `DeleteRange` and `Txn` are `Admitted` definitions in Rocq; here they are
@@ -305,7 +305,7 @@ structure t where
 end RangeResponse
 
 inductive Error where
-  | Bad (msg : go_string)
+  | Bad (msg : GoString)
 
 /-
 txn.go:152 which calls kvstore_txn.go:72

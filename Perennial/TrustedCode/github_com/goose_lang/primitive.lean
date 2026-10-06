@@ -15,7 +15,7 @@ namespace Perennial
 
 namespace github_com.goose_lang.primitive
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 /-- `Assume c` goes into an endless loop if `c` does not hold. So proofs can
 assume that it holds. -/
@@ -51,7 +51,7 @@ def «ResolveProphⁱᵐᵖˡ» : val := λ: "p" "val", ResolveProph (Var "p") (
 
 def «Linearizeⁱᵐᵖˡ» : val := λ: <>, #()
 
-@[reducible] def «Mutexⁱᵐᵖˡ» : go.type := go.bool
+@[reducible] def «Mutexⁱᵐᵖˡ» : go.GoType := go.bool
 
 def «Mutex__Lockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.lock "m"
@@ -59,7 +59,7 @@ def «Mutex__Lockⁱᵐᵖˡ» : val :=
 def «Mutex__Unlockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.unlock "m"
 
-@[reducible] def «ProphIdⁱᵐᵖˡ» : go.type := go.proph_id
+@[reducible] def «ProphIdⁱᵐᵖˡ» : go.GoType := go.prophId
 
 end code
 

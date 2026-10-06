@@ -12,179 +12,179 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.api.v3.authpb : go_string := go!"go.etcd.io/etcd/api/v3/authpb"
+def go_etcd_io.etcd.api.v3.authpb : GoString := go!"go.etcd.io/etcd/api/v3/authpb"
 end pkg_id
 
 namespace go_etcd_io.etcd.api.v3.authpb
 
-def Permission_Type [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/authpb.Permission_Type" [])
+def Permission_Type [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/authpb.Permission_Type" [])
 
 attribute [irreducible] Permission_Type
 
-def UserAddOptions [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/authpb.UserAddOptions" [])
+def UserAddOptions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/authpb.UserAddOptions" [])
 
 attribute [irreducible] UserAddOptions
 
-def User [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/authpb.User" [])
+def User [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/authpb.User" [])
 
 attribute [irreducible] User
 
-def Permission [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/authpb.Permission" [])
+def Permission [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/authpb.Permission" [])
 
 attribute [irreducible] Permission
 
-def Role [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/authpb.Role" [])
+def Role [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/authpb.Role" [])
 
 attribute [irreducible] Role
 
-axiom Permission_READ [ffi_syntax] [GoGlobalContext] : val
+axiom Permission_READ [FfiSyntax] [GoGlobalContext] : val
 
-axiom Permission_WRITE [ffi_syntax] [GoGlobalContext] : val
+axiom Permission_WRITE [FfiSyntax] [GoGlobalContext] : val
 
-axiom Permission_READWRITE [ffi_syntax] [GoGlobalContext] : val
+axiom Permission_READWRITE [FfiSyntax] [GoGlobalContext] : val
 
-axiom READ [ffi_syntax] [GoGlobalContext] : val
+axiom READ [FfiSyntax] [GoGlobalContext] : val
 
-axiom WRITE [ffi_syntax] [GoGlobalContext] : val
+axiom WRITE [FfiSyntax] [GoGlobalContext] : val
 
-axiom READWRITE [ffi_syntax] [GoGlobalContext] : val
+axiom READWRITE [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Permission_Type_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Permission_Type_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.Permission_Type_name"
 
-axiom Permission_Type_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom Permission_Type_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Permission_Type_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Permission_Type_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.Permission_Type_value"
 
-axiom Permission_Type_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom Permission_Type_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def xxx_messageInfo_UserAddOptions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_UserAddOptions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.xxx_messageInfo_UserAddOptions"
 
-noncomputable def xxx_messageInfo_User [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_User [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.xxx_messageInfo_User"
 
-noncomputable def xxx_messageInfo_Permission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Permission [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.xxx_messageInfo_Permission"
 
-noncomputable def xxx_messageInfo_Role [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Role [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.xxx_messageInfo_Role"
 
-noncomputable def fileDescriptor_8bbd6f3875b0e874 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_8bbd6f3875b0e874 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.fileDescriptor_8bbd6f3875b0e874"
 
-axiom fileDescriptor_8bbd6f3875b0e874'init [ffi_syntax] [GoGlobalContext] : val
+axiom fileDescriptor_8bbd6f3875b0e874'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrInvalidLengthAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.ErrInvalidLengthAuth"
 
-axiom ErrInvalidLengthAuth'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrInvalidLengthAuth'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrIntOverflowAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.ErrIntOverflowAuth"
 
-axiom ErrIntOverflowAuth'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrIntOverflowAuth'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrUnexpectedEndOfGroupAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.ErrUnexpectedEndOfGroupAuth"
 
-axiom ErrUnexpectedEndOfGroupAuth'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrUnexpectedEndOfGroupAuth'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def encodeVarintAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.encodeVarintAuth"
 
-noncomputable def sovAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.sovAuth"
 
-noncomputable def sozAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.sozAuth"
 
-noncomputable def skipAuth [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipAuth [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/authpb.skipAuth"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.authpb where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.authpb)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val ErrUnexpectedEndOfGroupAuth'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrIntOverflowAuth'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrInvalidLengthAuth'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val fileDescriptor_8bbd6f3875b0e874'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Permission_Type_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Permission_Type_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))))
 
 namespace Permission_Type
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end Permission_Type
 
-@[reducible] def «Permission_Typeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Permission_Typeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class Permission_Type_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Permission_Type_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Permission_Type_underlying : go.UnderlyingDirectedEq Permission_Type «Permission_Typeⁱᵐᵖˡ»
 
 attribute [instance] Permission_Type_Assumptions.Permission_Type_underlying
 
 namespace UserAddOptions
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   NoPassword' : Bool
   XXX_NoUnkeyedLiteral' : Unit
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end UserAddOptions
 
-@[reducible] def UserAddOptions'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def UserAddOptions'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"NoPassword" go.bool),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def UserAddOptions'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def UserAddOptions'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   UserAddOptions'fds_unsealed
 
-instance equals_unfold_UserAddOptions [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_UserAddOptions [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold UserAddOptions'fds UserAddOptions'fds_unsealed :=
   ⟨by unfold UserAddOptions'fds; rfl⟩
 
-@[reducible] def «UserAddOptionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType UserAddOptions'fds)
+@[reducible] def «UserAddOptionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType UserAddOptions'fds)
 
-class UserAddOptions_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class UserAddOptions_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   UserAddOptions_type_repr : go.TypeReprUnderlying «UserAddOptionsⁱᵐᵖˡ» UserAddOptions.t
   UserAddOptions_underlying : go.UnderlyingDirectedEq UserAddOptions «UserAddOptionsⁱᵐᵖˡ»
   UserAddOptions_get_NoPassword : ∀ (x : UserAddOptions.t), go.IsGoStepPureDetTagged under (StructFieldGet «UserAddOptionsⁱᵐᵖˡ» go!"NoPassword") #x (Val #(x.NoPassword'))
@@ -208,40 +208,40 @@ attribute [instance] UserAddOptions_Assumptions.UserAddOptions_type_repr
   UserAddOptions_Assumptions.UserAddOptions_set_XXX_sizecache
 
 namespace User
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Name' : slice.t
   Password' : slice.t
   Roles' : slice.t
-  Options' : loc
+  Options' : Loc
   XXX_NoUnkeyedLiteral' : Unit
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end User
 
-@[reducible] def User'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Name" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"Password" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"Roles" (go.type.SliceType go.string)),
-(go.field_decl.FieldDecl go!"Options" (go.type.PointerType UserAddOptions)),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+@[reducible] def User'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Name" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Password" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Roles" (go.GoType.SliceType go.string)),
+(go.field_decl.FieldDecl go!"Options" (go.GoType.PointerType UserAddOptions)),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def User'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def User'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   User'fds_unsealed
 
-instance equals_unfold_User [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_User [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold User'fds User'fds_unsealed :=
   ⟨by unfold User'fds; rfl⟩
 
-@[reducible] def «Userⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType User'fds)
+@[reducible] def «Userⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType User'fds)
 
-class User_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class User_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   User_type_repr : go.TypeReprUnderlying «Userⁱᵐᵖˡ» User.t
   User_underlying : go.UnderlyingDirectedEq User «Userⁱᵐᵖˡ»
   User_get_Name : ∀ (x : User.t), go.IsGoStepPureDetTagged under (StructFieldGet «Userⁱᵐᵖˡ» go!"Name") #x (Val #(x.Name'))
@@ -251,7 +251,7 @@ class User_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   User_get_Roles : ∀ (x : User.t), go.IsGoStepPureDetTagged under (StructFieldGet «Userⁱᵐᵖˡ» go!"Roles") #x (Val #(x.Roles'))
   User_set_Roles : ∀ (x : User.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Userⁱᵐᵖˡ» go!"Roles") (PairV #x #y) (Val #(({ x with Roles' := y } : User.t)))
   User_get_Options : ∀ (x : User.t), go.IsGoStepPureDetTagged under (StructFieldGet «Userⁱᵐᵖˡ» go!"Options") #x (Val #(x.Options'))
-  User_set_Options : ∀ (x : User.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Userⁱᵐᵖˡ» go!"Options") (PairV #x #y) (Val #(({ x with Options' := y } : User.t)))
+  User_set_Options : ∀ (x : User.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Userⁱᵐᵖˡ» go!"Options") (PairV #x #y) (Val #(({ x with Options' := y } : User.t)))
   User_get_XXX_NoUnkeyedLiteral : ∀ (x : User.t), go.IsGoStepPureDetTagged under (StructFieldGet «Userⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
   User_set_XXX_NoUnkeyedLiteral : ∀ (x : User.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «Userⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : User.t)))
   User_get_XXX_unrecognized : ∀ (x : User.t), go.IsGoStepPureDetTagged under (StructFieldGet «Userⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
@@ -277,7 +277,7 @@ attribute [instance] User_Assumptions.User_type_repr
   User_Assumptions.User_set_XXX_sizecache
 
 namespace Permission
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   PermType' : Permission_Type.t
   Key' : slice.t
@@ -286,29 +286,29 @@ structure t [ffi_syntax] where
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Permission
 
-@[reducible] def Permission'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Permission'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"PermType" Permission_Type),
-(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"RangeEnd" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Key" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"RangeEnd" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Permission'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Permission'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Permission'fds_unsealed
 
-instance equals_unfold_Permission [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Permission [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Permission'fds Permission'fds_unsealed :=
   ⟨by unfold Permission'fds; rfl⟩
 
-@[reducible] def «Permissionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Permission'fds)
+@[reducible] def «Permissionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Permission'fds)
 
-class Permission_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Permission_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Permission_type_repr : go.TypeReprUnderlying «Permissionⁱᵐᵖˡ» Permission.t
   Permission_underlying : go.UnderlyingDirectedEq Permission «Permissionⁱᵐᵖˡ»
   Permission_get_PermType : ∀ (x : Permission.t), go.IsGoStepPureDetTagged under (StructFieldGet «Permissionⁱᵐᵖˡ» go!"PermType") #x (Val #(x.PermType'))
@@ -340,7 +340,7 @@ attribute [instance] Permission_Assumptions.Permission_type_repr
   Permission_Assumptions.Permission_set_XXX_sizecache
 
 namespace Role
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Name' : slice.t
   KeyPermission' : slice.t
@@ -348,28 +348,28 @@ structure t [ffi_syntax] where
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Role
 
-@[reducible] def Role'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Name" (go.type.SliceType go.byte)),
-(go.field_decl.FieldDecl go!"KeyPermission" (go.type.SliceType (go.type.PointerType Permission))),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+@[reducible] def Role'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Name" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"KeyPermission" (go.GoType.SliceType (go.GoType.PointerType Permission))),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Role'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Role'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Role'fds_unsealed
 
-instance equals_unfold_Role [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Role [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Role'fds Role'fds_unsealed :=
   ⟨by unfold Role'fds; rfl⟩
 
-@[reducible] def «Roleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Role'fds)
+@[reducible] def «Roleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Role'fds)
 
-class Role_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Role_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Role_type_repr : go.TypeReprUnderlying «Roleⁱᵐᵖˡ» Role.t
   Role_underlying : go.UnderlyingDirectedEq Role «Roleⁱᵐᵖˡ»
   Role_get_Name : ∀ (x : Role.t), go.IsGoStepPureDetTagged under (StructFieldGet «Roleⁱᵐᵖˡ» go!"Name") #x (Val #(x.Name'))
@@ -396,7 +396,7 @@ attribute [instance] Role_Assumptions.Role_type_repr
   Role_Assumptions.Role_get_XXX_sizecache
   Role_Assumptions.Role_set_XXX_sizecache
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Permission_Type_instance : Permission_Type_Assumptions
   UserAddOptions_instance : UserAddOptions_Assumptions
   User_instance : User_Assumptions

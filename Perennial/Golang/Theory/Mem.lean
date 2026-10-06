@@ -16,24 +16,24 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 section goose_lang
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Atomic operations on a typed points-to. -/
 class AtomicWps (V : Type) [TypedPointsto (GF := GF) V] [ZeroVal V] : Prop where
-  wp_cmpxchg_fail : ∀ (l : loc) (v' v1 v2 : V) (dq : DFrac) (s : Stuckness) (E : CoPset),
+  wp_cmpxchg_fail : ∀ (l : Loc) (v' v1 v2 : V) (dq : DFrac) (s : Stuckness) (E : CoPset),
     v' ≠ v1 →
     {{ ▷ (l ↦{dq} v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
     {{ RET (PairV #v' #false); l ↦{dq} v' }}
-  wp_cmpxchg_suc : ∀ (l : loc) (v' v1 v2 : V) (s : Stuckness) (E : CoPset),
+  wp_cmpxchg_suc : ∀ (l : Loc) (v' v1 v2 : V) (s : Stuckness) (E : CoPset),
     v' = v1 →
     {{ ▷ (l ↦ v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
     {{ RET (PairV #v' #true); l ↦ v2 }}
-  wp_atomic_load : ∀ (s : Stuckness) (E : CoPset) (l : loc) (dq : DFrac) (v : V),
+  wp_atomic_load : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (dq : DFrac) (v : V),
     {{ ▷ (l ↦{dq} v : IProp GF) }} (Load (Val #l)) @ s; E {{ RET #v; l ↦{dq} v }}
-  wp_atomic_swap : ∀ (s : Stuckness) (E : CoPset) (l : loc) (v v' : V),
+  wp_atomic_swap : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (v v' : V),
     {{ (l ↦ v : IProp GF) }} (AtomicSwap (Val #l) (Val #v')) @ s; E {{ RET #v; l ↦ v' }}
 
 export AtomicWps (wp_cmpxchg_fail wp_cmpxchg_suc wp_atomic_load wp_atomic_swap)
@@ -42,7 +42,7 @@ export AtomicWps (wp_cmpxchg_fail wp_cmpxchg_suc wp_atomic_load wp_atomic_swap)
 `heapPointsto l dq #v` (Rocq `solve_atomic_wps`). -/
 macro "solve_atomic_wps" : tactic => `(tactic| (
   constructor
-  all_goals try simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap]
+  all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
   · intro l v' v1 v2 dq s E Hne
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, >%Hnn⟩
@@ -73,7 +73,7 @@ instance atomic_wps_uint32 : AtomicWps (GF := GF) w32 := by solve_atomic_wps
 instance atomic_wps_uint16 : AtomicWps (GF := GF) w16 := by solve_atomic_wps
 instance atomic_wps_uint8 : AtomicWps (GF := GF) w8 := by solve_atomic_wps
 instance atomic_wps_bool : AtomicWps (GF := GF) Bool := by solve_atomic_wps
-instance atomic_wps_loc : AtomicWps (GF := GF) loc := by solve_atomic_wps
+instance atomic_wps_loc : AtomicWps (GF := GF) Loc := by solve_atomic_wps
 
 end goose_lang
 
@@ -111,9 +111,9 @@ instance access_trivial {PROP : Type _} [BI PROP] (P P' : PROP) : Access P P' P 
 /-! ## Tactic lemmas -/
 
 section tac_lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem access_split {Δ Δ' P A : IProp GF} {p : Bool} [h : Access A A P P]
@@ -137,8 +137,8 @@ theorem access_split {Δ Δ' P A : IProp GF} {p : Bool} [h : Access A A P P]
     iapply hsplit.2
     iframe HΔ' HP
 
-theorem tac_wp_load {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
-    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : loc} {v : V} {dq : DFrac}
+theorem tac_wp_load {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
+    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : Loc} {v : V} {dq : DFrac}
     {Δ Δ' P : IProp GF} {p : Bool} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     [hacc : Access (l ↦{dq} v) (l ↦{dq} v) P P]
     (hsplit : Δ ⊣⊢ Δ' ∗ iprop(□?p P)) (h : Δ ⊢ WP (fill K (Val #v)) @ s; E {{ Φ }}) :
@@ -152,8 +152,8 @@ theorem tac_wp_load {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (G
   iapply h
   iapply Hclose $$ HA
 
-theorem tac_wp_store {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
-    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : loc} {v w : V}
+theorem tac_wp_store {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
+    [IntoValTyped (GF := GF) V t] {K : List EctxItem} {l : Loc} {v w : V}
     {Δ Δ' Δ'' P P' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     [hacc : Access (l ↦ v) (l ↦ w) P P']
     (hsplit : Δ ⊣⊢ Δ' ∗ P) (hadd : Δ' ∗ P' ⊣⊢ Δ'')
@@ -171,10 +171,10 @@ theorem tac_wp_store {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (
   iframe HΔ'
   iapply Hclose $$ HA
 
-theorem tac_wp_alloc {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
+theorem tac_wp_alloc {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
     [IntoValTyped (GF := GF) V t] {K : List EctxItem} {v : V}
     {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
-    (h : ∀ l : loc, Δ ∗ (l ↦ v) ⊢ WP (fill K (Val #l)) @ s; E {{ Φ }}) :
+    (h : ∀ l : Loc, Δ ∗ (l ↦ v) ⊢ WP (fill K (Val #l)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (App (Val (GoInstruction (GoAlloc t))) (Val #v))) @ s; E {{ Φ }} := by
   refine .trans ?_ (wp_bind (fill K))
   iintro HΔ
@@ -188,11 +188,11 @@ theorem tac_wp_alloc {V : Type} {t : go.type} [ZeroVal V] [tpt : TypedPointsto (
 end tac_lemmas
 
 section func_lit
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- A function literal value is the Go function value `#(func.mk f x e)` (used
 by `wp_store` to store function literals). -/
-theorem recv_eq_func_mk (f x : binder) (e : expr) : (RecV f x e : val) = #(func.mk f x e) := by
+theorem recv_eq_func_mk (f x : Binder) (e : Expr) : (RecV f x e : val) = #(func.mk f x e) := by
   rw [go.intoVal_unfold func.t]
 
 end func_lit
@@ -203,7 +203,7 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- If `e` is `#x` (`intoVal x`), return `(V, x)`. -/
-def isIntoVal? (e : Expr) : MetaM (Option (Expr × Expr)) := do
+def isIntoVal? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← instantiateMVars e
   let e := e.consumeMData
   if e.isAppOfArity ``GoGlobalContext.intoVal 4 then
@@ -212,9 +212,9 @@ def isIntoVal? (e : Expr) : MetaM (Option (Expr × Expr)) := do
 
 /-- If `e` is `Val (GoInstruction i)` applied to `arg` with `i` satisfying
 `instr`, return `(i, arg)`. -/
-def isGoInstrApp? (e : Expr) (instr : Name) : MetaM (Option (Expr × Expr)) := do
+def isGoInstrApp? (e : Lean.Expr) (instr : Name) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR (← instantiateMVars e)
-  let_expr Perennial.expr.App _ f arg := e | return none
+  let_expr Perennial.Expr.App _ f arg := e | return none
   let some fv ← isGooseVal? f | return none
   let fv ← whnfR fv
   let_expr Perennial.val.GoInstruction _ i := fv | return none
@@ -229,31 +229,31 @@ def isGoInstrApp? (e : Expr) (instr : Name) : MetaM (Option (Expr × Expr)) := d
 points-to at exactly the address `l` first: these are tried first by
 `wp_load`/`wp_store`, so that the common case needs a single `Access` search
 instead of one per hypothesis. -/
-def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) (l : Expr) :
+def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) (l : Lean.Expr) :
     MetaM (List (Name × IVarId × Q(Bool) × Q($prop))) := do
   let mut exact := #[]
   let mut rest := #[]
   for h@(_, _, _, ty) in hypsList hyps do
     let ty ← instantiateMVars ty
-    if ty.isAppOfArity ``typed_pointsto 6 && ty.getArg! 3 == l then exact := exact.push h
+    if ty.isAppOfArity ``typedPointsto 6 && ty.getArg! 3 == l then exact := exact.push h
     else rest := rest.push h
   return exact.toList ++ rest.toList
 
-/-- The typed points-to `@typed_pointsto GF V inst l v dq`, with fresh
+/-- The typed points-to `@typedPointsto GF V inst l v dq`, with fresh
 metavariables for `V`, the `TypedPointsto` instance, `v` (unless given) and
 `dq` (unless given). -/
-def mkTypedPointstoMVars (GF l : Expr) (V? v? dq? : Option Expr) :
-    MetaM (Expr × Expr × Expr × Expr × Expr) := do
+def mkTypedPointstoMVars (GF l : Lean.Expr) (V? v? dq? : Option Lean.Expr) :
+    MetaM (Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) := do
   let V ← match V? with | some V => pure V | none => mkFreshExprMVar (mkSort (mkLevelSucc .zero))
   let instTy ← mkAppOptM ``TypedPointsto #[some GF, some V]
   let inst ← mkFreshExprMVar instTy
   let v ← match v? with | some v => pure v | none => mkFreshExprMVar V
   let dq ← match dq? with | some dq => pure dq | none => mkFreshExprMVar (mkConst ``DFrac)
-  let pt ← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some dq]
+  let pt ← mkAppOptM ``typedPointsto #[some GF, some V, some inst, some l, some v, some dq]
   return (pt, V, inst, v, dq)
 
 /-- Search for `Access A A' P ?P'` with the proof mode's typeclass search. -/
-def synthAccess (A A' P : Expr) : ProofModeM (Option (Expr × Expr)) := do
+def synthAccess (A A' P : Lean.Expr) : ProofModeM (Option (Lean.Expr × Lean.Expr)) := do
   let P' ← mkFreshExprMVar (← inferType P)
   let ty ← mkAppM ``Access #[A, A', P, P']
   match ← ProofMode.trySynthInstance ty with
@@ -265,9 +265,9 @@ def synthAccess (A A' P : Expr) : ProofModeM (Option (Expr × Expr)) := do
 the load returns `#v` and keeps the context. Also returns the loaded value `#v`. -/
 def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr) × Expr) := do
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr) × Lean.Expr) := do
   let some ((t, l), K, _) ← findEctx wp.e (fun _ e => do
-      let some (i, lv) ← isGoInstrApp? e ``go_instruction.GoLoad | throwError "no"
+      let some (i, lv) ← isGoInstrApp? e ``GoInstruction.GoLoad | throwError "no"
       let some (_, l) ← isIntoVal? lv | throwError "no"
       return (i.getArg! 1, l))
     | throwIPMError "could not find a load `![t] #l`"
@@ -281,8 +281,8 @@ def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
         let v ← instantiateMVars v
         let vv ← instantiateMVars (← mkAppOptM ``GoGlobalContext.intoVal
           #[none, none, some (← instantiateMVars V), some v])
-        let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext vv)
-        let k := fun (h : Expr) => do
+        let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext vv)
+        let k := fun (h : Lean.Expr) => do
           let V ← instantiateMVars V
           let inst ← instantiateMVars inst
           wp.mkAppNamed ``tac_wp_load
@@ -299,7 +299,7 @@ def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 /-- `iWpLoadStepV` without the loaded value. -/
 def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let ⟨_, hyps', e', k, _⟩ ← iWpLoadStepV hyps wp
   return ⟨_, hyps', e', k⟩
 
@@ -307,9 +307,9 @@ def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 `P` with `Access (l ↦ v) (l ↦ w) P P'`; `P` is replaced by `P'` (same name). -/
 def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let some ((t, l, W, w), K, _) ← findEctx wp.e (fun _ e => do
-      let some (i, arg) ← isGoInstrApp? e ``go_instruction.GoStore | throwError "no"
+      let some (i, arg) ← isGoInstrApp? e ``GoInstruction.GoStore | throwError "no"
       let arg ← whnfR arg
       let_expr Perennial.val.PairV _ lv wv := arg | throwError "no"
       let some (_, l) ← isIntoVal? lv | throwError "no"
@@ -325,14 +325,14 @@ def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     if isTrue p then continue
     let saved ← saveState
     let (A, _, inst, v, _) ← mkTypedPointstoMVars GF l (some W) none (some own1)
-    let A' ← mkAppOptM ``typed_pointsto #[some GF, some W, some inst, some l, some w, some own1]
+    let A' ← mkAppOptM ``typedPointsto #[some GF, some W, some inst, some l, some w, some own1]
     if let some (hacc, P') ← synthAccess A A' P then
       let r := hyps.remove true ivar
       let ⟨ehyps'', hyps'', hadd⟩ := r.hyps'.add bi name ivar q(false) P'
       let unitV ← instantiateMVars (← mkAppOptM ``GoGlobalContext.intoVal
         #[none, none, some (mkConst ``Unit), some (mkConst ``Unit.unit)])
-      let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext unitV)
-      let k := fun (h : Expr) => do
+      let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext unitV)
+      let k := fun (h : Lean.Expr) => do
         wp.mkAppNamed ``tac_wp_store
           [("Δ", ehyps), ("Δ'", r.e'), ("Δ''", ehyps''), ("Φ", wp.Φ),
            ("V", W), ("t", t), ("K", wp.quoteK K), ("l", l), ("v", ← instantiateMVars v),
@@ -348,13 +348,13 @@ rewrite the stored value to the Go function value `#(func.mk f x e)`
 (`recv_eq_func_mk`), so that `wp_store` can use the typed points-to at `func.t`.
 Returns the new (inner) expression and a function turning a proof of the new goal
 into a proof of the old one. -/
-def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Expr) :
-    ProofModeM (Option (Expr × (Expr → MetaM Expr))) := do
-  let some ((sv, lv, f, x, body), K, _) ← findEctx (α := Expr × Expr × Expr × Expr × Expr) wp.e
+def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+    ProofModeM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
+  let some ((sv, lv, f, x, body), K, _) ← findEctx (α := Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) wp.e
       (fun _ e => do
         let e ← whnfR e
-        let_expr Perennial.expr.App _ fe arg := e | throwError "no"
-        let some _ ← isGoInstrApp? e ``go_instruction.GoStore | throwError "no"
+        let_expr Perennial.Expr.App _ fe arg := e | throwError "no"
+        let some _ ← isGoInstrApp? e ``GoInstruction.GoStore | throwError "no"
         let some argv ← isGooseVal? arg | throwError "no"
         let argv ← whnfR argv
         let_expr Perennial.val.PairV _ lv wv := argv | throwError "no"
@@ -369,7 +369,7 @@ def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Expr) :
   let valTy := mkApp (mkConst ``Perennial.val) ext
   let motive ← withLocalDeclD `w valTy fun w => do
     let pair := mkApp3 (mkConst ``Perennial.val.PairV) ext lv w
-    let inner := mkApp3 (mkConst ``Perennial.expr.App) ext sv (mkApp2 (mkConst ``Perennial.expr.Val) ext pair)
+    let inner := mkApp3 (mkConst ``Perennial.Expr.App) ext sv (mkApp2 (mkConst ``Perennial.Expr.Val) ext pair)
     mkLambdaFVars #[w] (wp.wrap (← fillExpr K inner))
   let heq ← mkCongrArg motive pf
   let some (_, _, rhs) := (← instantiateMVars (← inferType heq)).eq? | return none
@@ -389,10 +389,10 @@ the `let:` binder when `auto`: `x_ptr` and `x`). -/
 def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (auto : Bool)
     (names : Option (Name × Name))
-    (k : ∀ {ehyps' : Q($prop)}, Hyps bi ehyps' → GooseWpGoal → ProofModeM Expr) :
-    ProofModeM Expr := do
+    (k : ∀ {ehyps' : Q($prop)}, Hyps bi ehyps' → GooseWpGoal → ProofModeM Lean.Expr) :
+    ProofModeM Lean.Expr := do
   let some ((t, V, v, letName?), K, _) ← findEctx wp.e (fun K e => do
-      let some (i, vv) ← isGoInstrApp? e ``go_instruction.GoAlloc | throwError "no"
+      let some (i, vv) ← isGoInstrApp? e ``GoInstruction.GoAlloc | throwError "no"
       let some (V, v) ← isIntoVal? vv | throwError "no"
       -- the `let:` binder name, from the enclosing evaluation context item
       let letName? ← match K with
@@ -401,11 +401,11 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
           if Ki.isAppOfArity ``EctxItem.AppRCtx 2 then
             let f ← whnfR (Ki.getArg! 1)
             match_expr f with
-            | Perennial.expr.Rec _ fb xb _ =>
+            | Perennial.Expr.Rec _ fb xb _ =>
               let fb ← whnfR fb; let xb ← whnfR xb
-              if fb.isAppOf ``binder.BAnon then
+              if fb.isAppOf ``Binder.BAnon then
                 match_expr xb with
-                | binder.BNamed s =>
+                | Binder.BNamed s =>
                   match (← whnfR s) with
                   | .lit (.strVal s) => pure (some s)
                   | _ => pure none
@@ -428,16 +428,16 @@ def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     #[← mkAppOptM ``OfNat.ofNat #[some (mkConst ``Iris.Qp), some (mkRawNatLit 1), none]])
   let instTy ← mkAppOptM ``TypedPointsto #[some GF, some V]
   let inst ← synthInstance instTy
-  let locTy := mkConst ``Perennial.loc
+  let locTy := mkConst ``Perennial.Loc
   -- the continuation `∀ l, Δ ∗ l ↦ v ⊢ WP K[#l]` is a metavariable, introduced with
   -- `MVarId.intro` (a delayed assignment), so that the (large) continuation proof is
   -- not abstracted over `l` here (that made `wp_auto` quadratic)
-  let mkParts (l : Expr) : MetaM (Expr × Expr) := do
+  let mkParts (l : Lean.Expr) : MetaM (Lean.Expr × Lean.Expr) := do
     let pt ← instantiateMVars
-      (← mkAppOptM ``typed_pointsto #[some GF, some V, some inst, some l, some v, some own1])
+      (← mkAppOptM ``typedPointsto #[some GF, some V, some inst, some l, some v, some own1])
     let lv ← instantiateMVars
       (← mkAppOptM ``GoGlobalContext.intoVal #[none, none, some locTy, some l])
-    let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext lv)
+    let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext lv)
     return (pt, filled)
   let hTy ← withLocalDeclD lName locTy fun l => do
     let (pt, filled) ← mkParts l
@@ -524,7 +524,7 @@ elab "wp_alloc_anon" : tactic =>
     mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
 section access_struct
-variable [ffi_syntax] {GF : BundledGFunctors} {V : Type} [TypedPointsto (GF := GF) V]
+variable [FfiSyntax] {GF : BundledGFunctors} {V : Type} [TypedPointsto (GF := GF) V]
 open ProofMode
 
 /-- Focusing on a conjunct of a right-nested `∗`-chain: here. -/
@@ -538,12 +538,12 @@ theorem sep_focus_last {F X : IProp GF} : iprop(F ∗ X) ⊣⊢ iprop(X ∗ F) :
 
 /-- An `AccessStrict` instance for a struct field from the focusing of the field
 in the struct's points-to before and after the update (with the same rest `R`). -/
-theorem access_struct_field {l : loc} {v v' : V} {dq : DFrac} {A A' R : IProp GF}
-    (hP : typed_pointsto_def l v dq ⊣⊢ iprop(A ∗ R))
-    (hP' : typed_pointsto_def l v' dq ⊣⊢ iprop(A' ∗ R)) :
-    AccessStrict A A' (typed_pointsto l v dq) (typed_pointsto l v' dq) where
+theorem access_struct_field {l : Loc} {v v' : V} {dq : DFrac} {A A' R : IProp GF}
+    (hP : typedPointstoDef l v dq ⊣⊢ iprop(A ∗ R))
+    (hP' : typedPointstoDef l v' dq ⊣⊢ iprop(A' ∗ R)) :
+    AccessStrict A A' (typedPointsto l v dq) (typedPointsto l v' dq) where
   access_strict := by
-    rw [typed_pointsto_unseal]; unfold typedPointstoWrap
+    rw [typedPointsto_unseal]; unfold typedPointstoWrap
     iintro ⟨H, %Hnn⟩
     icases hP.1 $$ H with ⟨HA, HR⟩
     iframe HA
@@ -558,7 +558,7 @@ section access_struct_tac
 open Lean Elab Tactic Meta
 
 /-- The conjuncts of a right-nested `∗`-chain (`named` wrappers are kept). -/
-partial def sepChain (e : Expr) : MetaM (Array Expr) := do
+partial def sepChain (e : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let e ← whnfR e
   if e.isAppOfArity ``Iris.BI.BIBase.sep 4 then
     return #[e.getArg! 2] ++ (← sepChain (e.getArg! 3))
@@ -566,7 +566,7 @@ partial def sepChain (e : Expr) : MetaM (Array Expr) := do
 
 /-- A proof of `chain ⊣⊢ X ∗ R` (and `R`) focusing on the conjunct number `k` of
 the chain `P` (`P` itself as an expression). -/
-partial def focusPf (P : Expr) (k : Nat) : MetaM (Expr × Expr) := do
+partial def focusPf (P : Lean.Expr) (k : Nat) : MetaM (Lean.Expr × Lean.Expr) := do
   let P' ← whnfR P
   unless P'.isAppOfArity ``Iris.BI.BIBase.sep 4 do throwError "focusPf: not a ∗"
   let F := P'.getArg! 2; let T := P'.getArg! 3
@@ -595,22 +595,22 @@ elab "solve_pointsto_access_struct" : tactic => withMainContext do
   let args := ty.getAppArgs
   let A := args[args.size - 4]!; let A' := args[args.size - 3]!
   let P := args[args.size - 2]!; let P' := args[args.size - 1]!
-  -- `P = typed_pointsto l v dq`
+  -- `P = typedPointsto l v dq`
   let P ← instantiateMVars P; let P' ← instantiateMVars P'
-  let defOf (Q : Expr) : MetaM (Expr × Expr) := do
-    unless Q.isAppOf ``typed_pointsto do throwError "solve_pointsto_access_struct: {Q} is not a typed points-to"
+  let defOf (Q : Lean.Expr) : MetaM (Lean.Expr × Lean.Expr) := do
+    unless Q.isAppOf ``typedPointsto do throwError "solve_pointsto_access_struct: {Q} is not a typed points-to"
     let a := Q.getAppArgs
-    -- `typed_pointsto_def l v dq` (same implicit arguments)
-    let d ← mkAppOptM ``TypedPointsto.typed_pointsto_def
+    -- `typedPointstoDef l v dq` (same implicit arguments)
+    let d ← mkAppOptM ``TypedPointsto.typedPointstoDef
       #[none, a[a.size - 5]!, a[a.size - 4]!, a[a.size - 3]!, a[a.size - 2]!, a[a.size - 1]!]
     -- unfold the instance to the chain of fields
     let some d' ← unfoldProjInst? d | throwError "solve_pointsto_access_struct: cannot unfold {d}"
-    return ((d, d'.headBeta) : Expr × Expr)
+    return ((d, d'.headBeta) : Lean.Expr × Lean.Expr)
   let (d, chain) ← defOf P
   let (d', chain') ← defOf P'
   let cs ← sepChain chain
   -- the field: the conjunct (up to `named`) that is `A`
-  let unNamed (e : Expr) : Expr := if e.isAppOfArity ``named 3 then e.getArg! 2 else e
+  let unNamed (e : Lean.Expr) : Lean.Expr := if e.isAppOfArity ``named 3 then e.getArg! 2 else e
   let mut k? := none
   for h : i in [:cs.size] do
     if ← withReducible (isDefEq (unNamed cs[i]) A) then k? := some i; break

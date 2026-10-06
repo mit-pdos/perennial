@@ -17,9 +17,9 @@ namespace Perennial
 namespace sync
 
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
-@[reducible] def «Mutexⁱᵐᵖˡ» : go.type := go.bool
+@[reducible] def «Mutexⁱᵐᵖˡ» : go.GoType := go.bool
 
 def «Mutex__TryLockⁱᵐᵖˡ» : val :=
   λ: "m" <>, lock.trylock "m"
@@ -58,7 +58,7 @@ func cansemacquire(addr *uint32) bool {
 ```
 -/
 def «runtime_Semacquireⁱᵐᵖˡ» : val :=
-  λ: "addr", exception_do
+  λ: "addr", exceptionDo
     (for: (λ: <>, #true) ; (λ: <>, #()) := λ: <>,
        let: "v" := Load "addr" in
        (if: "v" =⟨go.uint32⟩ #(W32 0) then
@@ -91,7 +91,7 @@ def «runtime_SemacquireRWMutexⁱᵐᵖˡ» : val :=
 `uintptr(unsafe.Pointer(c))`. goose supports neither `uintptr` nor
 pointer-to-integer conversions, so it is modeled as an `unsafe.Pointer` (a
 `loc`): `0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself. -/
-@[reducible] def «copyCheckerⁱᵐᵖˡ» : go.type := «unsafe».Pointer
+@[reducible] def «copyCheckerⁱᵐᵖˡ» : go.GoType := «unsafe».Pointer
 
 /-- Lean addition. Model of (sync/cond.go)
 ```
@@ -117,7 +117,7 @@ end code
 
 namespace copyChecker
 /-- Lean addition: see `«copyCheckerⁱᵐᵖˡ»`. -/
-abbrev t := loc
+abbrev t := Loc
 end copyChecker
 
 namespace Mutex

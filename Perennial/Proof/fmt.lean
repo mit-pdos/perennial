@@ -14,9 +14,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace fmt
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
@@ -25,7 +25,7 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.fmt :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.fmt :=
   build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.fmt get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -61,7 +61,7 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 
 /-- This is unsound (Rocq comment): really need to know that all of the args are
 safe to convert into string. -/
-theorem wp_Errorf (format : go_string) (args_sl : slice.t) (args : List any.t) :
+theorem wp_Errorf (format : GoString) (args_sl : slice.t) (args : List any.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
     {{ (err : interface.t_ok), RET #(interface.ok err); True }} := by

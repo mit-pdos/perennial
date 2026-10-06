@@ -11,7 +11,7 @@ namespace go
 
 /-- `go.Semantics` is the top-level typeclass covering all of Go language
 semantics guarantees. -/
-class Semantics [ffi_syntax] [GoLocalContext] [GoGlobalContext] where
+class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] where
   [sem_fn : GoSemanticsFunctions]
   [core_sem : go.PreSemantics]
   [chan_sem : go.ChanSemantics]

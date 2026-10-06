@@ -17,24 +17,24 @@ open github_com.goose_lang.primitive (isMutex isMutex_unseal isMutexDef ownMutex
   ownMutexDef Mutex.wp_Lock Mutex.wp_Unlock)
 
 section atomic_specs
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 set_option goose.wp.extras true
 
 omit [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] in
 /-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`, as in Rocq). -/
-theorem isLock_eq_is_Mutex (m : loc) (R : IProp GF) : isLock m R = isMutex m R := by
+theorem isLock_eq_is_Mutex (m : Loc) (R : IProp GF) : isLock m R = isMutex m R := by
   rw [isMutex_unseal]; rfl
 
 set_option maxHeartbeats 400000 in
-theorem wp_Cap (ch : loc) (γ : ChanNames) :
+theorem wp_Cap (ch : Loc) (γ : ChanNames) :
     {{ isChan (GF := GF) ch γ V }}
-      (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Cap")) (Val #()))
+      (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Cap")) (Val #()))
     {{ RET #γ.chanCap; True }} := by
   wp_start as #Hch
   wp_auto
@@ -47,9 +47,9 @@ theorem wp_Cap (ch : loc) (γ : ChanNames) :
   itrivial
 
 set_option maxHeartbeats 400000 in
-theorem wp_Len (ch : loc) (γ : ChanNames) :
+theorem wp_Len (ch : Loc) (γ : ChanNames) :
     {{ isChan (GF := GF) ch γ V }}
-      (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Len")) (Val #()))
+      (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Len")) (Val #()))
     {{ (l : w64), RET #l; ⌜0 ≤ sint.Z l ∧ sint.Z l ≤ sint.Z γ.chanCap⌝ }} := by
   wp_start as #His
   wp_auto
@@ -164,9 +164,9 @@ theorem wp_Len (ch : loc) (γ : ChanNames) :
       word
 
 set_option maxHeartbeats 400000 in
-theorem wp_TrySend_blocking (ch : loc) (v : V) (γ : ChanNames) :
+theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗ (sendAu γ v (Φ #true) ∧ Φ #false) -∗
-      WP (App (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
+      WP (App (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
         (Val #true)) {{ Φ }} := by
   wp_start as Hunb
   rw [isChan_unseal]
@@ -407,9 +407,9 @@ theorem wp_TrySend_blocking (ch : loc) (v : V) (γ : ChanNames) :
       iexact Hcont
 
 set_option maxHeartbeats 400000 in
-theorem wp_TrySend_nonblocking (ch : loc) (v : V) (γ : ChanNames) :
+theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗ nonblockingSendAu γ v (Φ #true) (Φ #false) -∗
-      WP (App (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
+      WP (App (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
         (Val #false)) {{ Φ }} := by
   wp_start as Hunb
   rw [isChan_unseal]
@@ -555,9 +555,9 @@ theorem wp_TrySend_nonblocking (ch : loc) (v : V) (γ : ChanNames) :
       iexact Hcont
 
 set_option maxHeartbeats 400000 in
-theorem wp_TrySend_nonblocking_alt (ch : loc) (v : V) (γ : ChanNames) :
+theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗ nonblockingSendAuAlt γ v (Φ #true) (Φ #false) -∗
-      WP (App (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
+      WP (App (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
         (Val #false)) {{ Φ }} := by
   wp_start as Hunb
   rw [isChan_unseal]
@@ -761,12 +761,12 @@ theorem wp_TrySend_nonblocking_alt (ch : loc) (v : V) (γ : ChanNames) :
       iexfalso
       iexact Hcont
 
-theorem wp_TrySend (ch : loc) (v : V) (γ : ChanNames) (blocking : Bool) :
+theorem wp_TrySend (ch : Loc) (v : V) (γ : ChanNames) (blocking : Bool) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (if blocking then iprop(sendAu γ v (Φ #true) ∧ Φ #false)
        else iprop(nonblockingSendAu γ v (Φ #true) (Φ #false) ∨
          nonblockingSendAuAlt γ v (Φ #true) (Φ #false))) -∗
-      WP (App (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
+      WP (App (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"TrySend")) (Val #v))
         (Val #blocking)) {{ Φ }} := by
   iintro %Φ #Hch HΦ
   cases blocking with
@@ -780,10 +780,10 @@ theorem wp_TrySend (ch : loc) (v : V) (γ : ChanNames) (blocking : Bool) :
     · iapply wp_TrySend_nonblocking_alt $$ Hch HΦ
 
 set_option maxHeartbeats 400000 in
-theorem wp_Send (ch : loc) (v : V) (γ : ChanNames) :
+theorem wp_Send (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ sendAu γ v (Φ #())) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Send")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Send")) (Val #v)) {{ Φ }} := by
   wp_start as #Hic
   ihave %Hnn := isChan_not_null _ _ _ $$ Hic
   wp_auto_lc 4
@@ -808,10 +808,10 @@ theorem wp_Send (ch : loc) (v : V) (γ : ChanNames) :
     iframe
 
 /-- Demo of a simple-to-understand AU (Rocq: `#[local]`). -/
-theorem wp_BlockingSend (ch : loc) (v : V) (γ : ChanNames) (Hcapnz : sint.Z γ.chanCap > 0) :
+theorem wp_BlockingSend (ch : Loc) (v : V) (γ : ChanNames) (Hcapnz : sint.Z γ.chanCap > 0) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ bufferedSendAu γ v (Φ #())) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Send")) (Val #v)) {{ Φ }} := by
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Send")) (Val #v)) {{ Φ }} := by
   iintro %Φ #Hunb HΦ
   iapply wp_Send $$ Hunb
   iintro Hlc
@@ -830,9 +830,9 @@ theorem wp_BlockingSend (ch : loc) (v : V) (γ : ChanNames) (Hcapnz : sint.Z γ.
     | (exfalso; simp only [ChanCapValid] at Hcv; word)
 
 set_option maxHeartbeats 400000 in
-theorem wp_tryClose (ch : loc) (γ : ChanNames) :
+theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗ (closeAu γ V (Φ #true) ∧ Φ #false) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"tryClose")) (Val #())) {{ Φ }} := by
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"tryClose")) (Val #())) {{ Φ }} := by
   wp_start as #Hunb
   rw [isChan_unseal]
   iNamed Hunb
@@ -967,10 +967,10 @@ theorem wp_tryClose (ch : loc) (γ : ChanNames) :
       iexact Hcontinner
 
 set_option maxHeartbeats 400000 in
-theorem wp_Close (ch : loc) (γ : ChanNames) :
+theorem wp_Close (ch : Loc) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ closeAu γ V (Φ #())) -∗
-      WP (App (Val (ch @!! go.type.PointerType (channel.Channel t) @!! go!"Close")) (Val #())) {{ Φ }} := by
+      WP (App (Val (ch @!! go.GoType.PointerType (channel.Channel t) @!! go!"Close")) (Val #())) {{ Φ }} := by
   wp_start as #Hic
   ihave %Hnn := isChan_not_null _ _ _ $$ Hic
   wp_auto_lc 4

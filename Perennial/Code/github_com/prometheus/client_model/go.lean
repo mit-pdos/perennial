@@ -12,205 +12,205 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.prometheus.client_model.go : go_string := go!"github.com/prometheus/client_model/go"
+def github_com.prometheus.client_model.go : GoString := go!"github.com/prometheus/client_model/go"
 end pkg_id
 
 namespace github_com.prometheus.client_model.go
 
-def MetricType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.MetricType" [])
+def MetricType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.MetricType" [])
 
 attribute [irreducible] MetricType
 
-def LabelPair [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.LabelPair" [])
+def LabelPair [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.LabelPair" [])
 
 attribute [irreducible] LabelPair
 
-def Gauge [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Gauge" [])
+def Gauge [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Gauge" [])
 
 attribute [irreducible] Gauge
 
-def Counter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Counter" [])
+def Counter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Counter" [])
 
 attribute [irreducible] Counter
 
-def Quantile [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Quantile" [])
+def Quantile [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Quantile" [])
 
 attribute [irreducible] Quantile
 
-def Summary [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Summary" [])
+def Summary [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Summary" [])
 
 attribute [irreducible] Summary
 
-def Untyped [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Untyped" [])
+def Untyped [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Untyped" [])
 
 attribute [irreducible] Untyped
 
-def Histogram [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Histogram" [])
+def Histogram [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Histogram" [])
 
 attribute [irreducible] Histogram
 
-def Bucket [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Bucket" [])
+def Bucket [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Bucket" [])
 
 attribute [irreducible] Bucket
 
-def BucketSpan [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.BucketSpan" [])
+def BucketSpan [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.BucketSpan" [])
 
 attribute [irreducible] BucketSpan
 
-def Exemplar [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Exemplar" [])
+def Exemplar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Exemplar" [])
 
 attribute [irreducible] Exemplar
 
-def Metric [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.Metric" [])
+def Metric [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.Metric" [])
 
 attribute [irreducible] Metric
 
-def MetricFamily [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/prometheus/client_model/go.MetricFamily" [])
+def MetricFamily [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/prometheus/client_model/go.MetricFamily" [])
 
 attribute [irreducible] MetricFamily
 
-axiom «LabelPairⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «LabelPairⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Gaugeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Gaugeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Counterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Counterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Quantileⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Quantileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Summaryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Summaryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Untypedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Untypedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Histogramⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Histogramⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Bucketⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Bucketⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «BucketSpanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «BucketSpanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Exemplarⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Exemplarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Metricⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Metricⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «MetricFamilyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «MetricFamilyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom MetricType_COUNTER [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_COUNTER [FfiSyntax] [GoGlobalContext] : val
 
-axiom MetricType_GAUGE [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_GAUGE [FfiSyntax] [GoGlobalContext] : val
 
-axiom MetricType_SUMMARY [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_SUMMARY [FfiSyntax] [GoGlobalContext] : val
 
-axiom MetricType_UNTYPED [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_UNTYPED [FfiSyntax] [GoGlobalContext] : val
 
-axiom MetricType_HISTOGRAM [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_HISTOGRAM [FfiSyntax] [GoGlobalContext] : val
 
-axiom MetricType_GAUGE_HISTOGRAM [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_GAUGE_HISTOGRAM [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetricType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetricType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.MetricType_name"
 
-axiom MetricType_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def MetricType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MetricType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.MetricType_value"
 
-axiom MetricType_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom MetricType_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def File_io_prometheus_client_metrics_proto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def File_io_prometheus_client_metrics_proto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.File_io_prometheus_client_metrics_proto"
 
-noncomputable def file_io_prometheus_client_metrics_proto_rawDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_rawDesc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDesc"
 
-axiom file_io_prometheus_client_metrics_proto_rawDesc'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_rawDesc'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_rawDescOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_rawDescOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescOnce"
 
-noncomputable def file_io_prometheus_client_metrics_proto_rawDescData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_rawDescData [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescData"
 
-axiom file_io_prometheus_client_metrics_proto_rawDescData'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_rawDescData'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_enumTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_enumTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_enumTypes"
 
-axiom file_io_prometheus_client_metrics_proto_enumTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_enumTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_msgTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_msgTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_msgTypes"
 
-axiom file_io_prometheus_client_metrics_proto_msgTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_msgTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_goTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_goTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_goTypes"
 
-axiom file_io_prometheus_client_metrics_proto_goTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_goTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_depIdxs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_depIdxs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_depIdxs"
 
-axiom file_io_prometheus_client_metrics_proto_depIdxs'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_io_prometheus_client_metrics_proto_depIdxs'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_io_prometheus_client_metrics_proto_rawDescGZIP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_rawDescGZIP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_rawDescGZIP"
 
-noncomputable def file_io_prometheus_client_metrics_proto_init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_io_prometheus_client_metrics_proto_init [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/prometheus/client_model/go.file_io_prometheus_client_metrics_proto_init"
 
 instance info' : PkgInfo pkg_id.github_com.prometheus.client_model.go where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.prometheus.client_model.go)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_depIdxs'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_goTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_msgTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_enumTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_rawDescData'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_io_prometheus_client_metrics_proto_rawDesc'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetricType_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val MetricType_name'init) (Val #()))))))))
 
 namespace MetricType
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end MetricType
 
-@[reducible] def «MetricTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «MetricTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class MetricType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MetricType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MetricType_underlying : go.UnderlyingDirectedEq MetricType «MetricTypeⁱᵐᵖˡ»
 
 attribute [instance] MetricType_Assumptions.MetricType_underlying
@@ -221,7 +221,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end LabelPair
 
-class LabelPair_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LabelPair_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LabelPair_type_repr : go.TypeReprUnderlying «LabelPairⁱᵐᵖˡ» LabelPair.t
   LabelPair_underlying : go.UnderlyingDirectedEq LabelPair «LabelPairⁱᵐᵖˡ»
   «LabelPairⁱᵐᵖˡ_underlying» : go.IsUnderlying «LabelPairⁱᵐᵖˡ» «LabelPairⁱᵐᵖˡ»
@@ -236,7 +236,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Gauge
 
-class Gauge_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Gauge_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Gauge_type_repr : go.TypeReprUnderlying «Gaugeⁱᵐᵖˡ» Gauge.t
   Gauge_underlying : go.UnderlyingDirectedEq Gauge «Gaugeⁱᵐᵖˡ»
   «Gaugeⁱᵐᵖˡ_underlying» : go.IsUnderlying «Gaugeⁱᵐᵖˡ» «Gaugeⁱᵐᵖˡ»
@@ -251,7 +251,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Counter
 
-class Counter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Counter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Counter_type_repr : go.TypeReprUnderlying «Counterⁱᵐᵖˡ» Counter.t
   Counter_underlying : go.UnderlyingDirectedEq Counter «Counterⁱᵐᵖˡ»
   «Counterⁱᵐᵖˡ_underlying» : go.IsUnderlying «Counterⁱᵐᵖˡ» «Counterⁱᵐᵖˡ»
@@ -266,7 +266,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Quantile
 
-class Quantile_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Quantile_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Quantile_type_repr : go.TypeReprUnderlying «Quantileⁱᵐᵖˡ» Quantile.t
   Quantile_underlying : go.UnderlyingDirectedEq Quantile «Quantileⁱᵐᵖˡ»
   «Quantileⁱᵐᵖˡ_underlying» : go.IsUnderlying «Quantileⁱᵐᵖˡ» «Quantileⁱᵐᵖˡ»
@@ -281,7 +281,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Summary
 
-class Summary_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Summary_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Summary_type_repr : go.TypeReprUnderlying «Summaryⁱᵐᵖˡ» Summary.t
   Summary_underlying : go.UnderlyingDirectedEq Summary «Summaryⁱᵐᵖˡ»
   «Summaryⁱᵐᵖˡ_underlying» : go.IsUnderlying «Summaryⁱᵐᵖˡ» «Summaryⁱᵐᵖˡ»
@@ -296,7 +296,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Untyped
 
-class Untyped_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Untyped_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Untyped_type_repr : go.TypeReprUnderlying «Untypedⁱᵐᵖˡ» Untyped.t
   Untyped_underlying : go.UnderlyingDirectedEq Untyped «Untypedⁱᵐᵖˡ»
   «Untypedⁱᵐᵖˡ_underlying» : go.IsUnderlying «Untypedⁱᵐᵖˡ» «Untypedⁱᵐᵖˡ»
@@ -311,7 +311,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Histogram
 
-class Histogram_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Histogram_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Histogram_type_repr : go.TypeReprUnderlying «Histogramⁱᵐᵖˡ» Histogram.t
   Histogram_underlying : go.UnderlyingDirectedEq Histogram «Histogramⁱᵐᵖˡ»
   «Histogramⁱᵐᵖˡ_underlying» : go.IsUnderlying «Histogramⁱᵐᵖˡ» «Histogramⁱᵐᵖˡ»
@@ -326,7 +326,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Bucket
 
-class Bucket_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bucket_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bucket_type_repr : go.TypeReprUnderlying «Bucketⁱᵐᵖˡ» Bucket.t
   Bucket_underlying : go.UnderlyingDirectedEq Bucket «Bucketⁱᵐᵖˡ»
   «Bucketⁱᵐᵖˡ_underlying» : go.IsUnderlying «Bucketⁱᵐᵖˡ» «Bucketⁱᵐᵖˡ»
@@ -341,7 +341,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end BucketSpan
 
-class BucketSpan_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class BucketSpan_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   BucketSpan_type_repr : go.TypeReprUnderlying «BucketSpanⁱᵐᵖˡ» BucketSpan.t
   BucketSpan_underlying : go.UnderlyingDirectedEq BucketSpan «BucketSpanⁱᵐᵖˡ»
   «BucketSpanⁱᵐᵖˡ_underlying» : go.IsUnderlying «BucketSpanⁱᵐᵖˡ» «BucketSpanⁱᵐᵖˡ»
@@ -356,7 +356,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Exemplar
 
-class Exemplar_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Exemplar_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Exemplar_type_repr : go.TypeReprUnderlying «Exemplarⁱᵐᵖˡ» Exemplar.t
   Exemplar_underlying : go.UnderlyingDirectedEq Exemplar «Exemplarⁱᵐᵖˡ»
   «Exemplarⁱᵐᵖˡ_underlying» : go.IsUnderlying «Exemplarⁱᵐᵖˡ» «Exemplarⁱᵐᵖˡ»
@@ -371,7 +371,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Metric
 
-class Metric_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Metric_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Metric_type_repr : go.TypeReprUnderlying «Metricⁱᵐᵖˡ» Metric.t
   Metric_underlying : go.UnderlyingDirectedEq Metric «Metricⁱᵐᵖˡ»
   «Metricⁱᵐᵖˡ_underlying» : go.IsUnderlying «Metricⁱᵐᵖˡ» «Metricⁱᵐᵖˡ»
@@ -386,7 +386,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end MetricFamily
 
-class MetricFamily_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MetricFamily_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MetricFamily_type_repr : go.TypeReprUnderlying «MetricFamilyⁱᵐᵖˡ» MetricFamily.t
   MetricFamily_underlying : go.UnderlyingDirectedEq MetricFamily «MetricFamilyⁱᵐᵖˡ»
   «MetricFamilyⁱᵐᵖˡ_underlying» : go.IsUnderlying «MetricFamilyⁱᵐᵖˡ» «MetricFamilyⁱᵐᵖˡ»
@@ -395,7 +395,7 @@ attribute [instance] MetricFamily_Assumptions.MetricFamily_type_repr
   MetricFamily_Assumptions.MetricFamily_underlying
   MetricFamily_Assumptions.«MetricFamilyⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MetricType_instance : MetricType_Assumptions
   LabelPair_instance : LabelPair_Assumptions
   Gauge_instance : Gauge_Assumptions

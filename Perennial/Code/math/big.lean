@@ -13,554 +13,554 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math.big : go_string := go!"math/big"
+def math.big : GoString := go!"math/big"
 end pkg_id
 
 namespace math.big
 
-def Word [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.Word" [])
+def Word [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.Word" [])
 
 attribute [irreducible] Word
 
-def decimal [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.decimal" [])
+def decimal [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.decimal" [])
 
 attribute [irreducible] decimal
 
-def Float [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.Float" [])
+def Float [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.Float" [])
 
 attribute [irreducible] Float
 
-def ErrNaN [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.ErrNaN" [])
+def ErrNaN [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.ErrNaN" [])
 
 attribute [irreducible] ErrNaN
 
-def form [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.form" [])
+def form [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.form" [])
 
 attribute [irreducible] form
 
-def RoundingMode [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.RoundingMode" [])
+def RoundingMode [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.RoundingMode" [])
 
 attribute [irreducible] RoundingMode
 
-def Accuracy [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.Accuracy" [])
+def Accuracy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.Accuracy" [])
 
 attribute [irreducible] Accuracy
 
-def Int' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.Int" [])
+def Int' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.Int" [])
 
 attribute [irreducible] Int'
 
-def byteReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.byteReader" [])
+def byteReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.byteReader" [])
 
 attribute [irreducible] byteReader
 
-def nat [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.nat" [])
+def nat [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.nat" [])
 
 attribute [irreducible] nat
 
-def stack [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.stack" [])
+def stack [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.stack" [])
 
 attribute [irreducible] stack
 
-def divisor [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.divisor" [])
+def divisor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.divisor" [])
 
 attribute [irreducible] divisor
 
-def Rat [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/big.Rat" [])
+def Rat [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.Rat" [])
 
 attribute [irreducible] Rat
 
-axiom _Accuracy_name [ffi_syntax] [GoGlobalContext] : val
+axiom _Accuracy_name [FfiSyntax] [GoGlobalContext] : val
 
-axiom _S [ffi_syntax] [GoGlobalContext] : val
+axiom _S [FfiSyntax] [GoGlobalContext] : val
 
-axiom _W [ffi_syntax] [GoGlobalContext] : val
+axiom _W [FfiSyntax] [GoGlobalContext] : val
 
-axiom _B [ffi_syntax] [GoGlobalContext] : val
+axiom _B [FfiSyntax] [GoGlobalContext] : val
 
-axiom _M [ffi_syntax] [GoGlobalContext] : val
+axiom _M [FfiSyntax] [GoGlobalContext] : val
 
-axiom maxShift [ffi_syntax] [GoGlobalContext] : val
+axiom maxShift [FfiSyntax] [GoGlobalContext] : val
 
-axiom debugFloat [ffi_syntax] [GoGlobalContext] : val
+axiom debugFloat [FfiSyntax] [GoGlobalContext] : val
 
-axiom MaxExp [ffi_syntax] [GoGlobalContext] : val
+axiom MaxExp [FfiSyntax] [GoGlobalContext] : val
 
-axiom MinExp [ffi_syntax] [GoGlobalContext] : val
+axiom MinExp [FfiSyntax] [GoGlobalContext] : val
 
-axiom MaxPrec [ffi_syntax] [GoGlobalContext] : val
+axiom MaxPrec [FfiSyntax] [GoGlobalContext] : val
 
-axiom zero [ffi_syntax] [GoGlobalContext] : val
+axiom zero [FfiSyntax] [GoGlobalContext] : val
 
-axiom finite [ffi_syntax] [GoGlobalContext] : val
+axiom finite [FfiSyntax] [GoGlobalContext] : val
 
-axiom inf [ffi_syntax] [GoGlobalContext] : val
+axiom inf [FfiSyntax] [GoGlobalContext] : val
 
-axiom ToNearestEven [ffi_syntax] [GoGlobalContext] : val
+axiom ToNearestEven [FfiSyntax] [GoGlobalContext] : val
 
-axiom ToNearestAway [ffi_syntax] [GoGlobalContext] : val
+axiom ToNearestAway [FfiSyntax] [GoGlobalContext] : val
 
-axiom ToZero [ffi_syntax] [GoGlobalContext] : val
+axiom ToZero [FfiSyntax] [GoGlobalContext] : val
 
-axiom AwayFromZero [ffi_syntax] [GoGlobalContext] : val
+axiom AwayFromZero [FfiSyntax] [GoGlobalContext] : val
 
-axiom ToNegativeInf [ffi_syntax] [GoGlobalContext] : val
+axiom ToNegativeInf [FfiSyntax] [GoGlobalContext] : val
 
-axiom ToPositiveInf [ffi_syntax] [GoGlobalContext] : val
+axiom ToPositiveInf [FfiSyntax] [GoGlobalContext] : val
 
-axiom Below [ffi_syntax] [GoGlobalContext] : val
+axiom Below [FfiSyntax] [GoGlobalContext] : val
 
-axiom Exact [ffi_syntax] [GoGlobalContext] : val
+axiom Exact [FfiSyntax] [GoGlobalContext] : val
 
-axiom Above [ffi_syntax] [GoGlobalContext] : val
+axiom Above [FfiSyntax] [GoGlobalContext] : val
 
-axiom floatGobVersion [ffi_syntax] [GoGlobalContext] : val
+axiom floatGobVersion [FfiSyntax] [GoGlobalContext] : val
 
-axiom intGobVersion [ffi_syntax] [GoGlobalContext] : val
+axiom intGobVersion [FfiSyntax] [GoGlobalContext] : val
 
-axiom digits [ffi_syntax] [GoGlobalContext] : val
+axiom digits [FfiSyntax] [GoGlobalContext] : val
 
-axiom MaxBase [ffi_syntax] [GoGlobalContext] : val
+axiom MaxBase [FfiSyntax] [GoGlobalContext] : val
 
-axiom maxBaseSmall [ffi_syntax] [GoGlobalContext] : val
+axiom maxBaseSmall [FfiSyntax] [GoGlobalContext] : val
 
-axiom ratGobVersion [ffi_syntax] [GoGlobalContext] : val
+axiom ratGobVersion [FfiSyntax] [GoGlobalContext] : val
 
-axiom _RoundingMode_name [ffi_syntax] [GoGlobalContext] : val
+axiom _RoundingMode_name [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _Accuracy_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Accuracy_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"
 
-axiom _Accuracy_index'init [ffi_syntax] [GoGlobalContext] : val
+axiom _Accuracy_index'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def hasADX [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hasADX [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.hasADX"
 
-axiom hasADX'init [ffi_syntax] [GoGlobalContext] : val
+axiom hasADX'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def floatZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def floatZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.floatZero"
 
-noncomputable def pow5tab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pow5tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.pow5tab"
 
-axiom pow5tab'init [ffi_syntax] [GoGlobalContext] : val
+axiom pow5tab'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def intOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.intOne"
 
-axiom intOne'init [ffi_syntax] [GoGlobalContext] : val
+axiom intOne'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def natOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natOne"
 
-axiom natOne'init [ffi_syntax] [GoGlobalContext] : val
+axiom natOne'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def natTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTwo"
 
-axiom natTwo'init [ffi_syntax] [GoGlobalContext] : val
+axiom natTwo'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def natFive [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natFive [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natFive"
 
-axiom natFive'init [ffi_syntax] [GoGlobalContext] : val
+axiom natFive'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def natTen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def natTen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTen"
 
-axiom natTen'init [ffi_syntax] [GoGlobalContext] : val
+axiom natTen'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def stackPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stackPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.stackPool"
 
-noncomputable def errNoDigits [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoDigits [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errNoDigits"
 
-axiom errNoDigits'init [ffi_syntax] [GoGlobalContext] : val
+axiom errNoDigits'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errInvalSep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalSep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errInvalSep"
 
-axiom errInvalSep'init [ffi_syntax] [GoGlobalContext] : val
+axiom errInvalSep'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def leafSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def leafSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.leafSize"
 
-axiom leafSize'init [ffi_syntax] [GoGlobalContext] : val
+axiom leafSize'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def cacheBase10 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def cacheBase10 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.cacheBase10"
 
-noncomputable def divRecursiveThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divRecursiveThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divRecursiveThreshold"
 
-axiom divRecursiveThreshold'init [ffi_syntax] [GoGlobalContext] : val
+axiom divRecursiveThreshold'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def karatsubaThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaThreshold"
 
-axiom karatsubaThreshold'init [ffi_syntax] [GoGlobalContext] : val
+axiom karatsubaThreshold'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def basicSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.basicSqrThreshold"
 
-axiom basicSqrThreshold'init [ffi_syntax] [GoGlobalContext] : val
+axiom basicSqrThreshold'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def karatsubaSqrThreshold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaSqrThreshold"
 
-axiom karatsubaSqrThreshold'init [ffi_syntax] [GoGlobalContext] : val
+axiom karatsubaSqrThreshold'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ratZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ratZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ratZero"
 
-noncomputable def _RoundingMode_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _RoundingMode_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._RoundingMode_index"
 
-axiom _RoundingMode_index'init [ffi_syntax] [GoGlobalContext] : val
+axiom _RoundingMode_index'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def threeOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def threeOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.threeOnce"
 
-noncomputable def mulWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulWW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulWW"
 
-noncomputable def mulAddWWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddWWW_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulAddWWW_g"
 
-noncomputable def nlz [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nlz [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.nlz"
 
-noncomputable def addVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVV_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addVV_g"
 
-noncomputable def subVV_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVV_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.subVV_g"
 
-noncomputable def addVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addVW"
 
-noncomputable def addVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVW_ref [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addVW_ref"
 
-noncomputable def subVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.subVW"
 
-noncomputable def subVW_ref [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVW_ref [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.subVW_ref"
 
-noncomputable def lshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lshVU_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.lshVU_g"
 
-noncomputable def rshVU_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rshVU_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.rshVU_g"
 
-noncomputable def mulAddVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddVWW_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulAddVWW_g"
 
-noncomputable def addMulVVWW_g [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVWW_g [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addMulVVWW_g"
 
-noncomputable def divWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divWW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divWW"
 
-noncomputable def reciprocalWord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reciprocalWord [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.reciprocalWord"
 
-noncomputable def addVV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addVV [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addVV"
 
-noncomputable def subVV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def subVV [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.subVV"
 
-noncomputable def shlVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shlVU [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.shlVU"
 
-noncomputable def lshVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lshVU [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.lshVU"
 
-noncomputable def rshVU [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rshVU [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.rshVU"
 
-noncomputable def mulAddVWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulAddVWW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulAddVWW"
 
-noncomputable def addMulVVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addMulVVW"
 
-noncomputable def addMulVVWW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addMulVVWW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addMulVVWW"
 
-noncomputable def rsh [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rsh [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.rsh"
 
-noncomputable def appendZeros [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def appendZeros [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.appendZeros"
 
-noncomputable def shouldRoundUp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shouldRoundUp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.shouldRoundUp"
 
-noncomputable def trim [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trim [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.trim"
 
-noncomputable def NewFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFloat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.NewFloat"
 
-noncomputable def makeAcc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeAcc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.makeAcc"
 
-noncomputable def fnorm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fnorm [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.fnorm"
 
-noncomputable def msb32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msb32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.msb32"
 
-noncomputable def msb64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def msb64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.msb64"
 
-noncomputable def validateBinaryOperands [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def validateBinaryOperands [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.validateBinaryOperands"
 
-noncomputable def ParseFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ParseFloat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ParseFloat"
 
-noncomputable def roundShortest [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def roundShortest [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.roundShortest"
 
-noncomputable def fmtE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtE [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.fmtE"
 
-noncomputable def fmtF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fmtF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.fmtF"
 
-noncomputable def NewInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewInt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.NewInt"
 
-noncomputable def low32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def low32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.low32"
 
-noncomputable def low64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def low64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.low64"
 
-noncomputable def lehmerSimulate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lehmerSimulate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.lehmerSimulate"
 
-noncomputable def lehmerUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lehmerUpdate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.lehmerUpdate"
 
-noncomputable def mulW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulW"
 
-noncomputable def euclidUpdate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def euclidUpdate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.euclidUpdate"
 
-noncomputable def Jacobi [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Jacobi [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.Jacobi"
 
-noncomputable def writeMultiple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeMultiple [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.writeMultiple"
 
-noncomputable def scanSign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanSign [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.scanSign"
 
-noncomputable def «alias» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «alias» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.alias"
 
-noncomputable def addTo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addTo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.addTo"
 
-noncomputable def getStack [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getStack [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.getStack"
 
-noncomputable def same [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def same [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.same"
 
-noncomputable def bigEndianWord [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bigEndianWord [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.bigEndianWord"
 
-noncomputable def maxPow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def maxPow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.maxPow"
 
-noncomputable def pow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.pow"
 
-noncomputable def divisors [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divisors [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divisors"
 
-noncomputable def divWVW [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divWVW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divWVW"
 
-noncomputable def greaterThan [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def greaterThan [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.greaterThan"
 
-noncomputable def basicSqr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicSqr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.basicSqr"
 
-noncomputable def basicMul [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def basicMul [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.basicMul"
 
-noncomputable def karatsuba [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsuba [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsuba"
 
-noncomputable def karatsubaSqr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def karatsubaSqr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaSqr"
 
-noncomputable def ifmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ifmt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ifmt"
 
-noncomputable def trace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.trace"
 
-noncomputable def NewRat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewRat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.NewRat"
 
-noncomputable def quotToFloat32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quotToFloat32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.quotToFloat32"
 
-noncomputable def quotToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def quotToFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.quotToFloat64"
 
-noncomputable def mulDenom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mulDenom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.mulDenom"
 
-noncomputable def ratTok [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ratTok [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ratTok"
 
-noncomputable def scanExponent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def scanExponent [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.scanExponent"
 
-noncomputable def three [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def three [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.three"
 
-noncomputable def newFloat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFloat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.newFloat"
 
 instance info' : PkgInfo pkg_id.math.big where
-  pkg_imported_pkgs := [pkg_id.fmt]
+  pkgImportedPkgs := [pkg_id.fmt]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.big)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _RoundingMode_index'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val karatsubaSqrThreshold'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val basicSqrThreshold'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val karatsubaThreshold'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val divRecursiveThreshold'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val leafSize'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errInvalSep'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errNoDigits'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val natTen'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val natFive'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val natTwo'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val intOne'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val natOne'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val pow5tab'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val hasADX'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _Accuracy_index'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))))
 
 namespace Word
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end Word
 
-@[reducible] def «Wordⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Wordⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint
 
-class Word_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Word_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Word_underlying : go.UnderlyingDirectedEq Word «Wordⁱᵐᵖˡ»
 
 attribute [instance] Word_Assumptions.Word_underlying
 
 namespace decimal
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   mant' : slice.t
   exp' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end decimal
 
-@[reducible] def decimal'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"mant" (go.type.SliceType go.byte)),
+@[reducible] def decimal'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mant" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"exp" go.int)]
 
-@[irreducible] def decimal'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def decimal'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   decimal'fds_unsealed
 
-instance equals_unfold_decimal [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_decimal [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold decimal'fds decimal'fds_unsealed :=
   ⟨by unfold decimal'fds; rfl⟩
 
-@[reducible] def «decimalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType decimal'fds)
+@[reducible] def «decimalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType decimal'fds)
 
-class decimal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class decimal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   decimal_type_repr : go.TypeReprUnderlying «decimalⁱᵐᵖˡ» decimal.t
   decimal_underlying : go.UnderlyingDirectedEq decimal «decimalⁱᵐᵖˡ»
   decimal_get_mant : ∀ (x : decimal.t), go.IsGoStepPureDetTagged under (StructFieldGet «decimalⁱᵐᵖˡ» go!"mant") #x (Val #(x.mant'))
@@ -576,55 +576,55 @@ attribute [instance] decimal_Assumptions.decimal_type_repr
   decimal_Assumptions.decimal_set_exp
 
 namespace RoundingMode
-abbrev t [ffi_syntax] : Type := w8
+abbrev t [FfiSyntax] : Type := w8
 end RoundingMode
 
-@[reducible] def «RoundingModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «RoundingModeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
-class RoundingMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RoundingMode_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   RoundingMode_underlying : go.UnderlyingDirectedEq RoundingMode «RoundingModeⁱᵐᵖˡ»
 
 attribute [instance] RoundingMode_Assumptions.RoundingMode_underlying
 
 namespace Accuracy
-abbrev t [ffi_syntax] : Type := w8
+abbrev t [FfiSyntax] : Type := w8
 end Accuracy
 
-@[reducible] def «Accuracyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Accuracyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int8
 
-class Accuracy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Accuracy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Accuracy_underlying : go.UnderlyingDirectedEq Accuracy «Accuracyⁱᵐᵖˡ»
 
 attribute [instance] Accuracy_Assumptions.Accuracy_underlying
 
 namespace form
-abbrev t [ffi_syntax] : Type := w8
+abbrev t [FfiSyntax] : Type := w8
 end form
 
-@[reducible] def «formⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «formⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
-class form_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class form_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   form_underlying : go.UnderlyingDirectedEq form «formⁱᵐᵖˡ»
 
 attribute [instance] form_Assumptions.form_underlying
 
 namespace nat
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end nat
 
-@[reducible] def «natⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType Word)
+@[reducible] def «natⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType Word)
 
-class nat_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nat_underlying : go.UnderlyingDirectedEq nat «natⁱᵐᵖˡ»
 
 attribute [instance] nat_Assumptions.nat_underlying
 
 namespace Float
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   prec' : w32
   mode' : RoundingMode.t
@@ -634,11 +634,11 @@ structure t [ffi_syntax] where
   mant' : nat.t
   exp' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Float
 
-@[reducible] def Float'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Float'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prec" go.uint32),
 (go.field_decl.FieldDecl go!"mode" RoundingMode),
 (go.field_decl.FieldDecl go!"acc" Accuracy),
@@ -647,17 +647,17 @@ end Float
 (go.field_decl.FieldDecl go!"mant" nat),
 (go.field_decl.FieldDecl go!"exp" go.int32)]
 
-@[irreducible] def Float'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Float'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Float'fds_unsealed
 
-instance equals_unfold_Float [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Float [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Float'fds Float'fds_unsealed :=
   ⟨by unfold Float'fds; rfl⟩
 
-@[reducible] def «Floatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Float'fds)
+@[reducible] def «Floatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Float'fds)
 
-class Float_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Float_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Float_type_repr : go.TypeReprUnderlying «Floatⁱᵐᵖˡ» Float.t
   Float_underlying : go.UnderlyingDirectedEq Float «Floatⁱᵐᵖˡ»
   Float_get_prec : ∀ (x : Float.t), go.IsGoStepPureDetTagged under (StructFieldGet «Floatⁱᵐᵖˡ» go!"prec") #x (Val #(x.prec'))
@@ -693,32 +693,32 @@ attribute [instance] Float_Assumptions.Float_type_repr
   Float_Assumptions.Float_set_exp
 
 namespace ErrNaN
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  msg' : go_string
+  msg' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end ErrNaN
 
-@[reducible] def ErrNaN'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ErrNaN'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"msg" go.string)]
 
-@[irreducible] def ErrNaN'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ErrNaN'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ErrNaN'fds_unsealed
 
-instance equals_unfold_ErrNaN [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ErrNaN [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ErrNaN'fds ErrNaN'fds_unsealed :=
   ⟨by unfold ErrNaN'fds; rfl⟩
 
-@[reducible] def «ErrNaNⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ErrNaN'fds)
+@[reducible] def «ErrNaNⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ErrNaN'fds)
 
-class ErrNaN_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ErrNaN_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ErrNaN_type_repr : go.TypeReprUnderlying «ErrNaNⁱᵐᵖˡ» ErrNaN.t
   ErrNaN_underlying : go.UnderlyingDirectedEq ErrNaN «ErrNaNⁱᵐᵖˡ»
   ErrNaN_get_msg : ∀ (x : ErrNaN.t), go.IsGoStepPureDetTagged under (StructFieldGet «ErrNaNⁱᵐᵖˡ» go!"msg") #x (Val #(x.msg'))
-  ErrNaN_set_msg : ∀ (x : ErrNaN.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «ErrNaNⁱᵐᵖˡ» go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN.t)))
+  ErrNaN_set_msg : ∀ (x : ErrNaN.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «ErrNaNⁱᵐᵖˡ» go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN.t)))
 
 attribute [instance] ErrNaN_Assumptions.ErrNaN_type_repr
   ErrNaN_Assumptions.ErrNaN_underlying
@@ -726,30 +726,30 @@ attribute [instance] ErrNaN_Assumptions.ErrNaN_type_repr
   ErrNaN_Assumptions.ErrNaN_set_msg
 
 namespace Int'
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   neg' : Bool
   abs' : nat.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Int'
 
-@[reducible] def Int'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Int'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"neg" go.bool),
 (go.field_decl.FieldDecl go!"abs" nat)]
 
-@[irreducible] def Int'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Int'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Int'fds_unsealed
 
-instance equals_unfold_Int [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Int [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Int'fds Int'fds_unsealed :=
   ⟨by unfold Int'fds; rfl⟩
 
-@[reducible] def «Int'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Int'fds)
+@[reducible] def «Int'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Int'fds)
 
-class Int_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Int_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int_type_repr : go.TypeReprUnderlying «Int'ⁱᵐᵖˡ» Int'.t
   Int_underlying : go.UnderlyingDirectedEq Int' «Int'ⁱᵐᵖˡ»
   Int_get_neg : ∀ (x : Int'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Int'ⁱᵐᵖˡ» go!"neg") #x (Val #(x.neg'))
@@ -765,28 +765,28 @@ attribute [instance] Int_Assumptions.Int_type_repr
   Int_Assumptions.Int_set_abs
 
 namespace byteReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ScanState' : _root_.Perennial.fmt.ScanState.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end byteReader
 
-@[reducible] def byteReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def byteReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"ScanState" _root_.Perennial.fmt.ScanState)]
 
-@[irreducible] def byteReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def byteReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   byteReader'fds_unsealed
 
-instance equals_unfold_byteReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_byteReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold byteReader'fds byteReader'fds_unsealed :=
   ⟨by unfold byteReader'fds; rfl⟩
 
-@[reducible] def «byteReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType byteReader'fds)
+@[reducible] def «byteReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType byteReader'fds)
 
-class byteReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class byteReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   byteReader_type_repr : go.TypeReprUnderlying «byteReaderⁱᵐᵖˡ» byteReader.t
   byteReader_underlying : go.UnderlyingDirectedEq byteReader «byteReaderⁱᵐᵖˡ»
   byteReader_get_ScanState : ∀ (x : byteReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «byteReaderⁱᵐᵖˡ» go!"ScanState") #x (Val #(x.ScanState'))
@@ -798,28 +798,28 @@ attribute [instance] byteReader_Assumptions.byteReader_type_repr
   byteReader_Assumptions.byteReader_set_ScanState
 
 namespace stack
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   w' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end stack
 
-@[reducible] def stack'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"w" (go.type.SliceType Word))]
+@[reducible] def stack'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"w" (go.GoType.SliceType Word))]
 
-@[irreducible] def stack'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def stack'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stack'fds_unsealed
 
-instance equals_unfold_stack [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_stack [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stack'fds stack'fds_unsealed :=
   ⟨by unfold stack'fds; rfl⟩
 
-@[reducible] def «stackⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType stack'fds)
+@[reducible] def «stackⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stack'fds)
 
-class stack_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class stack_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   stack_type_repr : go.TypeReprUnderlying «stackⁱᵐᵖˡ» stack.t
   stack_underlying : go.UnderlyingDirectedEq stack «stackⁱᵐᵖˡ»
   stack_get_w : ∀ (x : stack.t), go.IsGoStepPureDetTagged under (StructFieldGet «stackⁱᵐᵖˡ» go!"w") #x (Val #(x.w'))
@@ -831,32 +831,32 @@ attribute [instance] stack_Assumptions.stack_type_repr
   stack_Assumptions.stack_set_w
 
 namespace divisor
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   bbb' : nat.t
   nbits' : w64
   ndigits' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end divisor
 
-@[reducible] def divisor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def divisor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bbb" nat),
 (go.field_decl.FieldDecl go!"nbits" go.int),
 (go.field_decl.FieldDecl go!"ndigits" go.int)]
 
-@[irreducible] def divisor'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def divisor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   divisor'fds_unsealed
 
-instance equals_unfold_divisor [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_divisor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold divisor'fds divisor'fds_unsealed :=
   ⟨by unfold divisor'fds; rfl⟩
 
-@[reducible] def «divisorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType divisor'fds)
+@[reducible] def «divisorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType divisor'fds)
 
-class divisor_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class divisor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   divisor_type_repr : go.TypeReprUnderlying «divisorⁱᵐᵖˡ» divisor.t
   divisor_underlying : go.UnderlyingDirectedEq divisor «divisorⁱᵐᵖˡ»
   divisor_get_bbb : ∀ (x : divisor.t), go.IsGoStepPureDetTagged under (StructFieldGet «divisorⁱᵐᵖˡ» go!"bbb") #x (Val #(x.bbb'))
@@ -876,30 +876,30 @@ attribute [instance] divisor_Assumptions.divisor_type_repr
   divisor_Assumptions.divisor_set_ndigits
 
 namespace Rat
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   a' : Int'.t
   b' : Int'.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Rat
 
-@[reducible] def Rat'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rat'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" Int'),
 (go.field_decl.FieldDecl go!"b" Int')]
 
-@[irreducible] def Rat'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Rat'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Rat'fds_unsealed
 
-instance equals_unfold_Rat [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Rat [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Rat'fds Rat'fds_unsealed :=
   ⟨by unfold Rat'fds; rfl⟩
 
-@[reducible] def «Ratⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Rat'fds)
+@[reducible] def «Ratⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Rat'fds)
 
-class Rat_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Rat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Rat_type_repr : go.TypeReprUnderlying «Ratⁱᵐᵖˡ» Rat.t
   Rat_underlying : go.UnderlyingDirectedEq Rat «Ratⁱᵐᵖˡ»
   Rat_get_a : ∀ (x : Rat.t), go.IsGoStepPureDetTagged under (StructFieldGet «Ratⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
@@ -914,7 +914,7 @@ attribute [instance] Rat_Assumptions.Rat_type_repr
   Rat_Assumptions.Rat_get_b
   Rat_Assumptions.Rat_set_b
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Word_instance : Word_Assumptions
   decimal_instance : decimal_Assumptions
   Float_instance : Float_Assumptions

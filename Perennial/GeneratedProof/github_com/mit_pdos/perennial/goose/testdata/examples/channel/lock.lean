@@ -17,37 +17,37 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 namespace Lock
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions]
 
 instance Lock_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t where
-  typed_pointsto_def l v dq := iprop(
-    "ch" ∷ typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "ch" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Lock_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.«Lockⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance Lock_access_load_ch (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (dq : DFrac) :
+instance Lock_access_load_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq)
-      (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance Lock_access_store_ch (l : loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (ch' : chan.t) :
+instance Lock_access_store_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (ch' : chan.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) ch' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ch' := ch' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) v.ch' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t go!"ch" l) ch' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := ch' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

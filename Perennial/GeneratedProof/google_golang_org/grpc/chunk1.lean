@@ -22,37 +22,37 @@ namespace google_golang_org.grpc
 namespace BackoffConfig
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance BackoffConfig_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.BackoffConfig.t where
-  typed_pointsto_def l v dq := iprop(
-    "MaxDelay" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MaxDelay" ∷ typedPointsto (structFieldRef google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance BackoffConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.BackoffConfig.t google_golang_org.grpc.«BackoffConfigⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance BackoffConfig_access_load_MaxDelay (l : loc) (v : google_golang_org.grpc.BackoffConfig.t) (dq : DFrac) :
+instance BackoffConfig_access_load_MaxDelay (l : Loc) (v : google_golang_org.grpc.BackoffConfig.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance BackoffConfig_access_store_MaxDelay (l : loc) (v : google_golang_org.grpc.BackoffConfig.t) (MaxDelay' : time.Duration.t) :
+instance BackoffConfig_access_store_MaxDelay (l : Loc) (v : google_golang_org.grpc.BackoffConfig.t) (MaxDelay' : time.Duration.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) MaxDelay' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxDelay' := MaxDelay' } : google_golang_org.grpc.BackoffConfig.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) v.MaxDelay' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.BackoffConfig.t go!"MaxDelay" l) MaxDelay' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxDelay' := MaxDelay' } : google_golang_org.grpc.BackoffConfig.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -62,8 +62,8 @@ end BackoffConfig
 namespace ConnectParams
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -81,8 +81,8 @@ end ConnectParams
 namespace ccBalancerWrapper
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -100,8 +100,8 @@ end ccBalancerWrapper
 namespace acBalancerWrapper
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -119,8 +119,8 @@ end acBalancerWrapper
 namespace healthData
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -138,8 +138,8 @@ end healthData
 namespace refCountedProducer
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -157,37 +157,37 @@ end refCountedProducer
 namespace defaultConfigSelector
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance defaultConfigSelector_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.defaultConfigSelector.t where
-  typed_pointsto_def l v dq := iprop(
-    "sc" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "sc" ∷ typedPointsto (structFieldRef google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance defaultConfigSelector_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.defaultConfigSelector.t google_golang_org.grpc.«defaultConfigSelectorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance defaultConfigSelector_access_load_sc (l : loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (dq : DFrac) :
+instance defaultConfigSelector_access_load_sc (l : Loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance defaultConfigSelector_access_store_sc (l : loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (sc' : loc) :
+instance defaultConfigSelector_access_store_sc (l : Loc) (v : google_golang_org.grpc.defaultConfigSelector.t) (sc' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) sc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with sc' := sc' } : google_golang_org.grpc.defaultConfigSelector.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) v.sc' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.defaultConfigSelector.t go!"sc" l) sc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sc' := sc' } : google_golang_org.grpc.defaultConfigSelector.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -197,8 +197,8 @@ end defaultConfigSelector
 namespace ClientConn
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -216,8 +216,8 @@ end ClientConn
 namespace connectivityStateManager
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -235,8 +235,8 @@ end connectivityStateManager
 namespace addrConn
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -254,18 +254,18 @@ end addrConn
 namespace securityLevelKey
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance securityLevelKey_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.securityLevelKey.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance securityLevelKey_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.securityLevelKey.t google_golang_org.grpc.«securityLevelKeyⁱᵐᵖˡ» := by
@@ -277,105 +277,105 @@ end securityLevelKey
 namespace retryThrottler
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance retryThrottler_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.retryThrottler.t where
-  typed_pointsto_def l v dq := iprop(
-    "max" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq ∗
-    "thresh" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq ∗
-    "ratio" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq ∗
-    "mu" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq ∗
-    "tokens" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "max" ∷ typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq ∗
+    "thresh" ∷ typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq ∗
+    "ratio" ∷ typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq ∗
+    "tokens" ∷ typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance retryThrottler_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.retryThrottler.t google_golang_org.grpc.«retryThrottlerⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance retryThrottler_access_load_max (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
+instance retryThrottler_access_load_max (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_store_max (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (max' : w64) :
+instance retryThrottler_access_store_max (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (max' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"max" l) max' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with max' := max' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"max" l) v.max' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"max" l) max' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with max' := max' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_load_thresh (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
+instance retryThrottler_access_load_thresh (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_store_thresh (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (thresh' : w64) :
+instance retryThrottler_access_store_thresh (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (thresh' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"thresh" l) thresh' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with thresh' := thresh' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"thresh" l) v.thresh' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"thresh" l) thresh' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with thresh' := thresh' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_load_ratio (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
+instance retryThrottler_access_load_ratio (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_store_ratio (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (ratio' : w64) :
+instance retryThrottler_access_store_ratio (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (ratio' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"ratio" l) ratio' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ratio' := ratio' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"ratio" l) v.ratio' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"ratio" l) ratio' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ratio' := ratio' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_load_mu (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
+instance retryThrottler_access_load_mu (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_store_mu (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (mu' : sync.Mutex.t) :
+instance retryThrottler_access_store_mu (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (mu' : sync.Mutex.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"mu" l) mu' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with mu' := mu' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_load_tokens (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
+instance retryThrottler_access_load_tokens (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance retryThrottler_access_store_tokens (l : loc) (v : google_golang_org.grpc.retryThrottler.t) (tokens' : w64) :
+instance retryThrottler_access_store_tokens (l : Loc) (v : google_golang_org.grpc.retryThrottler.t) (tokens' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.retryThrottler.t go!"tokens" l) tokens' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with tokens' := tokens' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"tokens" l) v.tokens' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.retryThrottler.t go!"tokens" l) tokens' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tokens' := tokens' } : google_golang_org.grpc.retryThrottler.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -385,8 +385,8 @@ end retryThrottler
 namespace baseCodec
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -404,37 +404,37 @@ end baseCodec
 namespace codecV0Bridge
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance codecV0Bridge_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.codecV0Bridge.t where
-  typed_pointsto_def l v dq := iprop(
-    "codec" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "codec" ∷ typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance codecV0Bridge_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.codecV0Bridge.t google_golang_org.grpc.«codecV0Bridgeⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance codecV0Bridge_access_load_codec (l : loc) (v : google_golang_org.grpc.codecV0Bridge.t) (dq : DFrac) :
+instance codecV0Bridge_access_load_codec (l : Loc) (v : google_golang_org.grpc.codecV0Bridge.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance codecV0Bridge_access_store_codec (l : loc) (v : google_golang_org.grpc.codecV0Bridge.t) (codec' : interface.t) :
+instance codecV0Bridge_access_store_codec (l : Loc) (v : google_golang_org.grpc.codecV0Bridge.t) (codec' : interface.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.codecV0Bridge.t go!"codec" l) codec' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with codec' := codec' } : google_golang_org.grpc.codecV0Bridge.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge.t go!"codec" l) v.codec' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.codecV0Bridge.t go!"codec" l) codec' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with codec' := codec' } : google_golang_org.grpc.codecV0Bridge.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -444,8 +444,8 @@ end codecV0Bridge
 namespace dialOptions
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -463,8 +463,8 @@ end dialOptions
 namespace perTargetDialOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -482,18 +482,18 @@ end perTargetDialOption
 namespace EmptyDialOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance EmptyDialOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.EmptyDialOption.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyDialOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyDialOption.t google_golang_org.grpc.«EmptyDialOptionⁱᵐᵖˡ» := by
@@ -505,18 +505,18 @@ end EmptyDialOption
 namespace disableGlobalDialOptions
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance disableGlobalDialOptions_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance disableGlobalDialOptions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.disableGlobalDialOptions.t google_golang_org.grpc.«disableGlobalDialOptionsⁱᵐᵖˡ» := by
@@ -528,37 +528,37 @@ end disableGlobalDialOptions
 namespace funcDialOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance funcDialOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.funcDialOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "f" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "f" ∷ typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance funcDialOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.funcDialOption.t google_golang_org.grpc.«funcDialOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance funcDialOption_access_load_f (l : loc) (v : google_golang_org.grpc.funcDialOption.t) (dq : DFrac) :
+instance funcDialOption_access_load_f (l : Loc) (v : google_golang_org.grpc.funcDialOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance funcDialOption_access_store_f (l : loc) (v : google_golang_org.grpc.funcDialOption.t) (f' : func.t) :
+instance funcDialOption_access_store_f (l : Loc) (v : google_golang_org.grpc.funcDialOption.t) (f' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.funcDialOption.t go!"f" l) f' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with f' := f' } : google_golang_org.grpc.funcDialOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption.t go!"f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.funcDialOption.t go!"f" l) f' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : google_golang_org.grpc.funcDialOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -568,37 +568,37 @@ end funcDialOption
 namespace joinDialOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance joinDialOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.joinDialOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "opts" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "opts" ∷ typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance joinDialOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.joinDialOption.t google_golang_org.grpc.«joinDialOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance joinDialOption_access_load_opts (l : loc) (v : google_golang_org.grpc.joinDialOption.t) (dq : DFrac) :
+instance joinDialOption_access_load_opts (l : Loc) (v : google_golang_org.grpc.joinDialOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance joinDialOption_access_store_opts (l : loc) (v : google_golang_org.grpc.joinDialOption.t) (opts' : slice.t) :
+instance joinDialOption_access_store_opts (l : Loc) (v : google_golang_org.grpc.joinDialOption.t) (opts' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.joinDialOption.t go!"opts" l) opts' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with opts' := opts' } : google_golang_org.grpc.joinDialOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption.t go!"opts" l) v.opts' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.joinDialOption.t go!"opts" l) opts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with opts' := opts' } : google_golang_org.grpc.joinDialOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -608,37 +608,37 @@ end joinDialOption
 namespace MaxHeaderListSizeDialOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxHeaderListSizeDialOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "MaxHeaderListSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MaxHeaderListSize" ∷ typedPointsto (structFieldRef google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxHeaderListSizeDialOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxHeaderListSizeDialOption.t google_golang_org.grpc.«MaxHeaderListSizeDialOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MaxHeaderListSizeDialOption_access_load_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (dq : DFrac) :
+instance MaxHeaderListSizeDialOption_access_load_MaxHeaderListSize (l : Loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MaxHeaderListSizeDialOption_access_store_MaxHeaderListSize (l : loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (MaxHeaderListSize' : w32) :
+instance MaxHeaderListSizeDialOption_access_store_MaxHeaderListSize (l : Loc) (v : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (MaxHeaderListSize' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) MaxHeaderListSize' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxHeaderListSize' := MaxHeaderListSize' } : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) v.MaxHeaderListSize' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxHeaderListSizeDialOption.t go!"MaxHeaderListSize" l) MaxHeaderListSize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxHeaderListSize' := MaxHeaderListSize' } : google_golang_org.grpc.MaxHeaderListSizeDialOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -648,54 +648,54 @@ end MaxHeaderListSizeDialOption
 namespace UnaryServerInfo
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance UnaryServerInfo_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.UnaryServerInfo.t where
-  typed_pointsto_def l v dq := iprop(
-    "Server" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq ∗
-    "FullMethod" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Server" ∷ typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq ∗
+    "FullMethod" ∷ typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance UnaryServerInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.UnaryServerInfo.t google_golang_org.grpc.«UnaryServerInfoⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance UnaryServerInfo_access_load_Server (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
+instance UnaryServerInfo_access_load_Server (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UnaryServerInfo_access_store_Server (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (Server' : interface.t) :
+instance UnaryServerInfo_access_store_Server (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (Server' : interface.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) Server' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Server' := Server' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) v.Server' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"Server" l) Server' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Server' := Server' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance UnaryServerInfo_access_load_FullMethod (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
+instance UnaryServerInfo_access_load_FullMethod (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance UnaryServerInfo_access_store_FullMethod (l : loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (FullMethod' : go_string) :
+instance UnaryServerInfo_access_store_FullMethod (l : Loc) (v : google_golang_org.grpc.UnaryServerInfo.t) (FullMethod' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.UnaryServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.UnaryServerInfo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -705,71 +705,71 @@ end UnaryServerInfo
 namespace StreamServerInfo
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance StreamServerInfo_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.StreamServerInfo.t where
-  typed_pointsto_def l v dq := iprop(
-    "FullMethod" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
-    "IsClientStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq ∗
-    "IsServerStream" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "FullMethod" ∷ typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq ∗
+    "IsClientStream" ∷ typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq ∗
+    "IsServerStream" ∷ typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance StreamServerInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.StreamServerInfo.t google_golang_org.grpc.«StreamServerInfoⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance StreamServerInfo_access_load_FullMethod (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+instance StreamServerInfo_access_load_FullMethod (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance StreamServerInfo_access_store_FullMethod (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (FullMethod' : go_string) :
+instance StreamServerInfo_access_store_FullMethod (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (FullMethod' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) v.FullMethod' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"FullMethod" l) FullMethod' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FullMethod' := FullMethod' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance StreamServerInfo_access_load_IsClientStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+instance StreamServerInfo_access_load_IsClientStream (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance StreamServerInfo_access_store_IsClientStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsClientStream' : Bool) :
+instance StreamServerInfo_access_store_IsClientStream (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsClientStream' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) IsClientStream' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsClientStream' := IsClientStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) v.IsClientStream' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsClientStream" l) IsClientStream' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsClientStream' := IsClientStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance StreamServerInfo_access_load_IsServerStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
+instance StreamServerInfo_access_load_IsServerStream (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance StreamServerInfo_access_store_IsServerStream (l : loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsServerStream' : Bool) :
+instance StreamServerInfo_access_store_IsServerStream (l : Loc) (v : google_golang_org.grpc.StreamServerInfo.t) (IsServerStream' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) IsServerStream' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with IsServerStream' := IsServerStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) v.IsServerStream' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.StreamServerInfo.t go!"IsServerStream" l) IsServerStream' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsServerStream' := IsServerStream' } : google_golang_org.grpc.StreamServerInfo.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -779,8 +779,8 @@ end StreamServerInfo
 namespace pickerGeneration
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -798,8 +798,8 @@ end pickerGeneration
 namespace pick
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -817,37 +817,37 @@ end pick
 namespace dropError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance dropError_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.dropError.t where
-  typed_pointsto_def l v dq := iprop(
-    "error" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "error" ∷ typedPointsto (structFieldRef google_golang_org.grpc.dropError.t go!"error" l) v.error' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance dropError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.dropError.t google_golang_org.grpc.«dropErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance dropError_access_load_error (l : loc) (v : google_golang_org.grpc.dropError.t) (dq : DFrac) :
+instance dropError_access_load_error (l : Loc) (v : google_golang_org.grpc.dropError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.dropError.t go!"error" l) v.error' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance dropError_access_store_error (l : loc) (v : google_golang_org.grpc.dropError.t) (error' : error.t) :
+instance dropError_access_store_error (l : Loc) (v : google_golang_org.grpc.dropError.t) (error' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) v.error' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.dropError.t go!"error" l) error' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with error' := error' } : google_golang_org.grpc.dropError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.dropError.t go!"error" l) v.error' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.dropError.t go!"error" l) error' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with error' := error' } : google_golang_org.grpc.dropError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -857,8 +857,8 @@ end dropError
 namespace PreparedMsg
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -876,8 +876,8 @@ end PreparedMsg
 namespace ccResolverWrapper
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -895,37 +895,37 @@ end ccResolverWrapper
 namespace gzipCompressor
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance gzipCompressor_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.gzipCompressor.t where
-  typed_pointsto_def l v dq := iprop(
-    "pool" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "pool" ∷ typedPointsto (structFieldRef google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gzipCompressor_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.gzipCompressor.t google_golang_org.grpc.«gzipCompressorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance gzipCompressor_access_load_pool (l : loc) (v : google_golang_org.grpc.gzipCompressor.t) (dq : DFrac) :
+instance gzipCompressor_access_load_pool (l : Loc) (v : google_golang_org.grpc.gzipCompressor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance gzipCompressor_access_store_pool (l : loc) (v : google_golang_org.grpc.gzipCompressor.t) (pool' : sync.Pool.t) :
+instance gzipCompressor_access_store_pool (l : Loc) (v : google_golang_org.grpc.gzipCompressor.t) (pool' : sync.Pool.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipCompressor.t go!"pool" l) pool' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with pool' := pool' } : google_golang_org.grpc.gzipCompressor.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipCompressor.t go!"pool" l) v.pool' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipCompressor.t go!"pool" l) pool' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pool' := pool' } : google_golang_org.grpc.gzipCompressor.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -935,37 +935,37 @@ end gzipCompressor
 namespace gzipDecompressor
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance gzipDecompressor_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.gzipDecompressor.t where
-  typed_pointsto_def l v dq := iprop(
-    "pool" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "pool" ∷ typedPointsto (structFieldRef google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance gzipDecompressor_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.gzipDecompressor.t google_golang_org.grpc.«gzipDecompressorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance gzipDecompressor_access_load_pool (l : loc) (v : google_golang_org.grpc.gzipDecompressor.t) (dq : DFrac) :
+instance gzipDecompressor_access_load_pool (l : Loc) (v : google_golang_org.grpc.gzipDecompressor.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance gzipDecompressor_access_store_pool (l : loc) (v : google_golang_org.grpc.gzipDecompressor.t) (pool' : sync.Pool.t) :
+instance gzipDecompressor_access_store_pool (l : Loc) (v : google_golang_org.grpc.gzipDecompressor.t) (pool' : sync.Pool.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.gzipDecompressor.t go!"pool" l) pool' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with pool' := pool' } : google_golang_org.grpc.gzipDecompressor.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipDecompressor.t go!"pool" l) v.pool' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.gzipDecompressor.t go!"pool" l) pool' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pool' := pool' } : google_golang_org.grpc.gzipDecompressor.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -975,8 +975,8 @@ end gzipDecompressor
 namespace callInfo
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -994,18 +994,18 @@ end callInfo
 namespace EmptyCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance EmptyCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.EmptyCallOption.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EmptyCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.EmptyCallOption.t google_golang_org.grpc.«EmptyCallOptionⁱᵐᵖˡ» := by
@@ -1017,8 +1017,8 @@ end EmptyCallOption
 namespace HeaderCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1036,8 +1036,8 @@ end HeaderCallOption
 namespace TrailerCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1055,8 +1055,8 @@ end TrailerCallOption
 namespace PeerCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1074,37 +1074,37 @@ end PeerCallOption
 namespace FailFastCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance FailFastCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.FailFastCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "FailFast" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "FailFast" ∷ typedPointsto (structFieldRef google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance FailFastCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.FailFastCallOption.t google_golang_org.grpc.«FailFastCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance FailFastCallOption_access_load_FailFast (l : loc) (v : google_golang_org.grpc.FailFastCallOption.t) (dq : DFrac) :
+instance FailFastCallOption_access_load_FailFast (l : Loc) (v : google_golang_org.grpc.FailFastCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance FailFastCallOption_access_store_FailFast (l : loc) (v : google_golang_org.grpc.FailFastCallOption.t) (FailFast' : Bool) :
+instance FailFastCallOption_access_store_FailFast (l : Loc) (v : google_golang_org.grpc.FailFastCallOption.t) (FailFast' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) FailFast' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with FailFast' := FailFast' } : google_golang_org.grpc.FailFastCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) v.FailFast' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.FailFastCallOption.t go!"FailFast" l) FailFast' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FailFast' := FailFast' } : google_golang_org.grpc.FailFastCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1114,37 +1114,37 @@ end FailFastCallOption
 namespace OnFinishCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance OnFinishCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.OnFinishCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "OnFinish" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "OnFinish" ∷ typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance OnFinishCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.OnFinishCallOption.t google_golang_org.grpc.«OnFinishCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance OnFinishCallOption_access_load_OnFinish (l : loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (dq : DFrac) :
+instance OnFinishCallOption_access_load_OnFinish (l : Loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance OnFinishCallOption_access_store_OnFinish (l : loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (OnFinish' : func.t) :
+instance OnFinishCallOption_access_store_OnFinish (l : Loc) (v : google_golang_org.grpc.OnFinishCallOption.t) (OnFinish' : func.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) OnFinish' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with OnFinish' := OnFinish' } : google_golang_org.grpc.OnFinishCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) v.OnFinish' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.OnFinishCallOption.t go!"OnFinish" l) OnFinish' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with OnFinish' := OnFinish' } : google_golang_org.grpc.OnFinishCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1154,37 +1154,37 @@ end OnFinishCallOption
 namespace MaxRecvMsgSizeCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxRecvMsgSizeCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "MaxRecvMsgSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MaxRecvMsgSize" ∷ typedPointsto (structFieldRef google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxRecvMsgSizeCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRecvMsgSizeCallOption.t google_golang_org.grpc.«MaxRecvMsgSizeCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MaxRecvMsgSizeCallOption_access_load_MaxRecvMsgSize (l : loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (dq : DFrac) :
+instance MaxRecvMsgSizeCallOption_access_load_MaxRecvMsgSize (l : Loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MaxRecvMsgSizeCallOption_access_store_MaxRecvMsgSize (l : loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (MaxRecvMsgSize' : w64) :
+instance MaxRecvMsgSizeCallOption_access_store_MaxRecvMsgSize (l : Loc) (v : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (MaxRecvMsgSize' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) MaxRecvMsgSize' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxRecvMsgSize' := MaxRecvMsgSize' } : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) v.MaxRecvMsgSize' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRecvMsgSizeCallOption.t go!"MaxRecvMsgSize" l) MaxRecvMsgSize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxRecvMsgSize' := MaxRecvMsgSize' } : google_golang_org.grpc.MaxRecvMsgSizeCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1194,37 +1194,37 @@ end MaxRecvMsgSizeCallOption
 namespace AuthorityOverrideCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance AuthorityOverrideCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "Authority" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Authority" ∷ typedPointsto (structFieldRef google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance AuthorityOverrideCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.AuthorityOverrideCallOption.t google_golang_org.grpc.«AuthorityOverrideCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance AuthorityOverrideCallOption_access_load_Authority (l : loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (dq : DFrac) :
+instance AuthorityOverrideCallOption_access_load_Authority (l : Loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance AuthorityOverrideCallOption_access_store_Authority (l : loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (Authority' : go_string) :
+instance AuthorityOverrideCallOption_access_store_Authority (l : Loc) (v : google_golang_org.grpc.AuthorityOverrideCallOption.t) (Authority' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) Authority' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Authority' := Authority' } : google_golang_org.grpc.AuthorityOverrideCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) v.Authority' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.AuthorityOverrideCallOption.t go!"Authority" l) Authority' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Authority' := Authority' } : google_golang_org.grpc.AuthorityOverrideCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1234,37 +1234,37 @@ end AuthorityOverrideCallOption
 namespace MaxSendMsgSizeCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxSendMsgSizeCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "MaxSendMsgSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MaxSendMsgSize" ∷ typedPointsto (structFieldRef google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxSendMsgSizeCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxSendMsgSizeCallOption.t google_golang_org.grpc.«MaxSendMsgSizeCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MaxSendMsgSizeCallOption_access_load_MaxSendMsgSize (l : loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (dq : DFrac) :
+instance MaxSendMsgSizeCallOption_access_load_MaxSendMsgSize (l : Loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MaxSendMsgSizeCallOption_access_store_MaxSendMsgSize (l : loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (MaxSendMsgSize' : w64) :
+instance MaxSendMsgSizeCallOption_access_store_MaxSendMsgSize (l : Loc) (v : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (MaxSendMsgSize' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) MaxSendMsgSize' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxSendMsgSize' := MaxSendMsgSize' } : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) v.MaxSendMsgSize' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxSendMsgSizeCallOption.t go!"MaxSendMsgSize" l) MaxSendMsgSize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxSendMsgSize' := MaxSendMsgSize' } : google_golang_org.grpc.MaxSendMsgSizeCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1274,8 +1274,8 @@ end MaxSendMsgSizeCallOption
 namespace PerRPCCredsCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1293,37 +1293,37 @@ end PerRPCCredsCallOption
 namespace CompressorCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance CompressorCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.CompressorCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "CompressorType" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "CompressorType" ∷ typedPointsto (structFieldRef google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance CompressorCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.CompressorCallOption.t google_golang_org.grpc.«CompressorCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance CompressorCallOption_access_load_CompressorType (l : loc) (v : google_golang_org.grpc.CompressorCallOption.t) (dq : DFrac) :
+instance CompressorCallOption_access_load_CompressorType (l : Loc) (v : google_golang_org.grpc.CompressorCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance CompressorCallOption_access_store_CompressorType (l : loc) (v : google_golang_org.grpc.CompressorCallOption.t) (CompressorType' : go_string) :
+instance CompressorCallOption_access_store_CompressorType (l : Loc) (v : google_golang_org.grpc.CompressorCallOption.t) (CompressorType' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) CompressorType' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with CompressorType' := CompressorType' } : google_golang_org.grpc.CompressorCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) v.CompressorType' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.CompressorCallOption.t go!"CompressorType" l) CompressorType' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with CompressorType' := CompressorType' } : google_golang_org.grpc.CompressorCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1333,37 +1333,37 @@ end CompressorCallOption
 namespace acceptCompressorsCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance acceptCompressorsCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "names" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "names" ∷ typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance acceptCompressorsCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.acceptCompressorsCallOption.t google_golang_org.grpc.«acceptCompressorsCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance acceptCompressorsCallOption_access_load_names (l : loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (dq : DFrac) :
+instance acceptCompressorsCallOption_access_load_names (l : Loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance acceptCompressorsCallOption_access_store_names (l : loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (names' : slice.t) :
+instance acceptCompressorsCallOption_access_store_names (l : Loc) (v : google_golang_org.grpc.acceptCompressorsCallOption.t) (names' : slice.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) names' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with names' := names' } : google_golang_org.grpc.acceptCompressorsCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) v.names' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.acceptCompressorsCallOption.t go!"names" l) names' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with names' := names' } : google_golang_org.grpc.acceptCompressorsCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1373,37 +1373,37 @@ end acceptCompressorsCallOption
 namespace ContentSubtypeCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ContentSubtypeCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "ContentSubtype" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "ContentSubtype" ∷ typedPointsto (structFieldRef google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance ContentSubtypeCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ContentSubtypeCallOption.t google_golang_org.grpc.«ContentSubtypeCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance ContentSubtypeCallOption_access_load_ContentSubtype (l : loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (dq : DFrac) :
+instance ContentSubtypeCallOption_access_load_ContentSubtype (l : Loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance ContentSubtypeCallOption_access_store_ContentSubtype (l : loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (ContentSubtype' : go_string) :
+instance ContentSubtypeCallOption_access_store_ContentSubtype (l : Loc) (v : google_golang_org.grpc.ContentSubtypeCallOption.t) (ContentSubtype' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) ContentSubtype' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with ContentSubtype' := ContentSubtype' } : google_golang_org.grpc.ContentSubtypeCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) v.ContentSubtype' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.ContentSubtypeCallOption.t go!"ContentSubtype" l) ContentSubtype' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ContentSubtype' := ContentSubtype' } : google_golang_org.grpc.ContentSubtypeCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -1413,8 +1413,8 @@ end ContentSubtypeCallOption
 namespace ForceCodecCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1432,8 +1432,8 @@ end ForceCodecCallOption
 namespace ForceCodecV2CallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
@@ -1451,37 +1451,37 @@ end ForceCodecV2CallOption
 namespace MaxRetryRPCBufferSizeCallOption
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance MaxRetryRPCBufferSizeCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t where
-  typed_pointsto_def l v dq := iprop(
-    "MaxRetryRPCBufferSize" ∷ typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "MaxRetryRPCBufferSize" ∷ typedPointsto (structFieldRef google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance MaxRetryRPCBufferSizeCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t google_golang_org.grpc.«MaxRetryRPCBufferSizeCallOptionⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance MaxRetryRPCBufferSizeCallOption_access_load_MaxRetryRPCBufferSize (l : loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (dq : DFrac) :
+instance MaxRetryRPCBufferSizeCallOption_access_load_MaxRetryRPCBufferSize (l : Loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance MaxRetryRPCBufferSizeCallOption_access_store_MaxRetryRPCBufferSize (l : loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (MaxRetryRPCBufferSize' : w64) :
+instance MaxRetryRPCBufferSizeCallOption_access_store_MaxRetryRPCBufferSize (l : Loc) (v : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (MaxRetryRPCBufferSize' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) MaxRetryRPCBufferSize' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with MaxRetryRPCBufferSize' := MaxRetryRPCBufferSize' } : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) v.MaxRetryRPCBufferSize' (DFrac.own 1))
+      (typedPointsto (structFieldRef google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t go!"MaxRetryRPCBufferSize" l) MaxRetryRPCBufferSize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MaxRetryRPCBufferSize' := MaxRetryRPCBufferSize' } : google_golang_org.grpc.MaxRetryRPCBufferSizeCallOption.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

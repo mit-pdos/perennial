@@ -115,12 +115,12 @@ theorem header_contra (xs : List E) (a b : Nat) (x0 x1 : E)
 end pure
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : slices.Assumptions]
-variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.type}
+variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
@@ -142,7 +142,7 @@ omit package_sem in
 /-- The inner loop of `insertionSortCmpFunc` (a separate theorem, so that it
 elaborates in parallel). -/
 private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp : func.t)
-    (xs : List E) (cmp_ptr a_ptr data_ptr j_ptr : loc) (Φ : val → IProp GF)
+    (xs : List E) (cmp_ptr a_ptr data_ptr j_ptr : Loc) (Φ : val → IProp GF)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
     (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ max (sint.Z a + 1) (sint.Z b))
@@ -158,7 +158,7 @@ private theorem ins_wp_insertion_inner (data : slice.t) (a b i_val : w64) (cmp :
       (∀ xs'' : List E, data ↦* xs'' ∗ cmp_ptr ↦ cmp ∗ a_ptr ↦ a ∗ data_ptr ↦ data ∗
         ⌜xs ≡ₚ xs'' ∧ IsSortedSeg R xs'' (sint.nat a) (sint.nat i_val + 1) ∧
           OutsideSame xs xs'' (sint.nat a) (sint.nat b)⌝ -∗ Φ executeVal) -∗
-      WP (((do_for
+      WP (((doFor
           glv(λ: <>,
               if: ![go.int] #j_ptr >⟨go.int⟩ ![go.int] #a_ptr then
                 (let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
@@ -309,7 +309,7 @@ omit package_sem in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the smaller element
 `data[i-1]` to the left (a separate theorem, so that it elaborates in parallel). -/
 private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
-    (xs : List E) (cmp_ptr a_ptr data_ptr i_ptr j_ptr : loc)
+    (xs : List E) (cmp_ptr a_ptr data_ptr i_ptr j_ptr : Loc)
     (Header : header R xs (sint.nat a) (sint.nat b))
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
@@ -324,10 +324,10 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
         "%Hperm3" ∷ ⌜xs ≡ₚ xs3⌝ ∗
         "%HsortedBr" ∷ ⌜InsBr R xs3 (sint.nat a) (sint.nat i_val - 1) (sint.nat jl)⌝ ∗
         "%Houtside3" ∷ ⌜OutsideSame xs xs3 (sint.nat a) (sint.nat b)⌝ : IProp GF) -∗
-      WP (((do_for glv(λ: <>, ![go.int] #j_ptr ≥⟨go.int⟩ #(W64 1)))
+      WP (((doFor glv(λ: <>, ![go.int] #j_ptr ≥⟨go.int⟩ #(W64 1)))
         glv(λ: <>,
             (if:
-                (Convert go.untyped_bool go.bool)
+                (Convert go.untypedBool go.bool)
                   ((GoUnOp GoNot go.bool)
                     ((let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
                         let: "$a1" :=
@@ -336,7 +336,7 @@ private theorem ins_wp_shift_left (data : slice.t) (a b i_val : w64) (cmp_code :
                               (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                           (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0") "$a1") <⟨go.int⟩
                       #(W64 0))) then
-                do_break #() else do: #()) ;;;
+                doBreak #() else do: #()) ;;;
               let: "$r0" :=
                 ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                 let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
@@ -442,7 +442,7 @@ omit package_sem [StrictWeakOrder R] in
 /-- The loop of `partialInsertionSortCmpFunc` that shifts the greater element
 `data[i]` to the right (a separate theorem, so that it elaborates in parallel). -/
 private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code : func.t)
-    (xs : List E) (cmp_ptr b_ptr data_ptr j_ptr : loc) (Φ : val → IProp GF)
+    (xs : List E) (cmp_ptr b_ptr data_ptr j_ptr : Loc) (Φ : val → IProp GF)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ xs.length ∧ xs.length ≤ 2 ^ 62)
     (Hlen : xs.length = sint.nat data.len ∧ 0 ≤ sint.Z data.len)
     (irange : sint.Z a + 1 ≤ sint.Z i_val ∧ sint.Z i_val ≤ sint.Z b) :
@@ -457,10 +457,10 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
       (∀ xs4 : List E, data ↦* xs4 ∗ cmp_ptr ↦ cmp_code ∗ b_ptr ↦ b ∗ data_ptr ↦ data ∗
         ⌜xs ≡ₚ xs4 ∧ IsSortedSeg R xs4 (sint.nat a) (sint.nat i_val) ∧
           OutsideSame xs xs4 (sint.nat a) (sint.nat b)⌝ -∗ Φ executeVal) -∗
-      WP (((do_for glv(λ: <>, ![go.int] #j_ptr <⟨go.int⟩ ![go.int] #b_ptr))
+      WP (((doFor glv(λ: <>, ![go.int] #j_ptr <⟨go.int⟩ ![go.int] #b_ptr))
         glv(λ: <>,
             (if:
-                (Convert go.untyped_bool go.bool)
+                (Convert go.untypedBool go.bool)
                   ((GoUnOp GoNot go.bool)
                     ((let: "$a0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
                         let: "$a1" :=
@@ -469,7 +469,7 @@ private theorem ins_wp_shift_right (data : slice.t) (a b i_val : w64) (cmp_code 
                               (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                           (![go.FunctionType (go.Signature [Et, Et] false [go.int])] #cmp_ptr "$a0") "$a1") <⟨go.int⟩
                       #(W64 0))) then
-                do_break #() else do: #()) ;;;
+                doBreak #() else do: #()) ;;;
               let: "$r0" :=
                 ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                 let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in

@@ -14,317 +14,317 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.server.v3.etcdserver.errors : go_string := go!"go.etcd.io/etcd/server/v3/etcdserver/errors"
+def go_etcd_io.etcd.server.v3.etcdserver.errors : GoString := go!"go.etcd.io/etcd/server/v3/etcdserver/errors"
 end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.etcdserver.errors
 
-def DiscoveryError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/errors.DiscoveryError" [])
+def DiscoveryError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/errors.DiscoveryError" [])
 
 attribute [irreducible] DiscoveryError
 
-noncomputable def ErrUnknownMethod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnknownMethod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnknownMethod"
 
-noncomputable def ErrStopped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrStopped [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrStopped"
 
-noncomputable def ErrCanceled [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCanceled [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrCanceled"
 
-noncomputable def ErrTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeout"
 
-noncomputable def ErrTimeoutDueToLeaderFail [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToLeaderFail [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutDueToLeaderFail"
 
-noncomputable def ErrTimeoutDueToConnectionLost [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutDueToConnectionLost [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutDueToConnectionLost"
 
-noncomputable def ErrTimeoutLeaderTransfer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutLeaderTransfer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutLeaderTransfer"
 
-noncomputable def ErrTimeoutWaitAppliedIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTimeoutWaitAppliedIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTimeoutWaitAppliedIndex"
 
-noncomputable def ErrLeaderChanged [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLeaderChanged [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrLeaderChanged"
 
-noncomputable def ErrNotEnoughStartedMembers [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotEnoughStartedMembers [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNotEnoughStartedMembers"
 
-noncomputable def ErrLearnerNotReady [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrLearnerNotReady [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrLearnerNotReady"
 
-noncomputable def ErrNoLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoLeader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNoLeader"
 
-noncomputable def ErrNotLeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotLeader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNotLeader"
 
-noncomputable def ErrRequestTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrRequestTooLarge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrRequestTooLarge"
 
-noncomputable def ErrNoSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoSpace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrNoSpace"
 
-noncomputable def ErrTooManyRequests [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooManyRequests [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrTooManyRequests"
 
-noncomputable def ErrUnhealthy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnhealthy [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnhealthy"
 
-noncomputable def ErrCorrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrCorrupt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrCorrupt"
 
-noncomputable def ErrBadLeaderTransferee [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrBadLeaderTransferee [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrBadLeaderTransferee"
 
-noncomputable def ErrClusterVersionUnavailable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClusterVersionUnavailable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrClusterVersionUnavailable"
 
-noncomputable def ErrWrongDowngradeVersionFormat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrWrongDowngradeVersionFormat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrWrongDowngradeVersionFormat"
 
-noncomputable def ErrKeyNotFound [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrKeyNotFound [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/errors.ErrKeyNotFound"
 
 /-- go: errors.go:53:25 -/
-noncomputable def «DiscoveryError__Errorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «DiscoveryError__Errorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "e" (App (Val (GoInstruction (GoAlloc DiscoveryError))) (Var "e"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (Val #(go!"failed to %s discovery cluster (%v)"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.string go.any))) (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef DiscoveryError go!"Op"))) (Var "e"))))
   (Let "$sl1" (App (Val (GoInstruction (Convert go.error go.any))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef DiscoveryError go!"Err"))) (Var "e"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0"))), (KeyedElement none (ElementExpression go.any (Var "$sl1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0"))), (KeyedElement none (ElementExpression go.any (Var "$sl1")))]))))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.fmt.Sprintf []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors where
-  pkg_imported_pkgs := [pkg_id.errors, pkg_id.fmt]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.fmt]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver.errors)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: unknown method"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: server stopped"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request cancelled"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request timed out"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request timed out, possibly due to previous leader failure"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request timed out, possibly due to connection lost"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request timed out, leader transfer took too long"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request timed out, waiting for the applied index took too long"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: leader changed"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: re-configuration failed due to not enough started members"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: can only promote a learner member which is in sync with leader"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: no leader"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: not leader"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: request is too large"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: no space"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: too many requests"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: unhealthy cluster"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: corrupt cluster"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: bad leader transferee"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: cluster version not found during downgrade"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: wrong downgrade target version format"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"etcdserver: key not found"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrKeyNotFound))) (Val #())) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrWrongDowngradeVersionFormat))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrClusterVersionUnavailable))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrBadLeaderTransferee))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrCorrupt))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnhealthy))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTooManyRequests))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrNoSpace))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrRequestTooLarge))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrNotLeader))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrNoLeader))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrLearnerNotReady))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrNotEnoughStartedMembers))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrLeaderChanged))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTimeoutWaitAppliedIndex))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTimeoutLeaderTransfer))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTimeoutDueToConnectionLost))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTimeoutDueToLeaderFail))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTimeout))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrCanceled))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrStopped))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnknownMethod))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnknownMethod go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrStopped go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrCanceled go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTimeout go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTimeoutDueToLeaderFail go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTimeoutDueToConnectionLost go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTimeoutLeaderTransfer go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTimeoutWaitAppliedIndex go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrLeaderChanged go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrNotEnoughStartedMembers go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrLearnerNotReady go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrNoLeader go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrNotLeader go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrRequestTooLarge go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrNoSpace go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTooManyRequests go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnhealthy go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrCorrupt go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrBadLeaderTransferee go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrClusterVersionUnavailable go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrWrongDowngradeVersionFormat go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrKeyNotFound go.error)) (Val #()))))))))
 
 namespace DiscoveryError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Op' : go_string
+  Op' : GoString
   Err' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end DiscoveryError
 
-@[reducible] def DiscoveryError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def DiscoveryError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def DiscoveryError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def DiscoveryError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   DiscoveryError'fds_unsealed
 
-instance equals_unfold_DiscoveryError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_DiscoveryError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold DiscoveryError'fds DiscoveryError'fds_unsealed :=
   ⟨by unfold DiscoveryError'fds; rfl⟩
 
-@[reducible] def «DiscoveryErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType DiscoveryError'fds)
+@[reducible] def «DiscoveryErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType DiscoveryError'fds)
 
-class DiscoveryError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class DiscoveryError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   DiscoveryError_type_repr : go.TypeReprUnderlying «DiscoveryErrorⁱᵐᵖˡ» DiscoveryError.t
   DiscoveryError_underlying : go.UnderlyingDirectedEq DiscoveryError «DiscoveryErrorⁱᵐᵖˡ»
   DiscoveryError_get_Op : ∀ (x : DiscoveryError.t), go.IsGoStepPureDetTagged under (StructFieldGet «DiscoveryErrorⁱᵐᵖˡ» go!"Op") #x (Val #(x.Op'))
-  DiscoveryError_set_Op : ∀ (x : DiscoveryError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «DiscoveryErrorⁱᵐᵖˡ» go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : DiscoveryError.t)))
+  DiscoveryError_set_Op : ∀ (x : DiscoveryError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «DiscoveryErrorⁱᵐᵖˡ» go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : DiscoveryError.t)))
   DiscoveryError_get_Err : ∀ (x : DiscoveryError.t), go.IsGoStepPureDetTagged under (StructFieldGet «DiscoveryErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
   DiscoveryError_set_Err : ∀ (x : DiscoveryError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «DiscoveryErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : DiscoveryError.t)))
   DiscoveryError_Error_unfold : MethodUnfold DiscoveryError go!"Error" «DiscoveryError__Errorⁱᵐᵖˡ»
-  DiscoveryError'ptr_Error_unfold : MethodUnfold (go.type.PointerType DiscoveryError) go!"Error" (LamV "$r"
+  DiscoveryError'ptr_Error_unfold : MethodUnfold (go.GoType.PointerType DiscoveryError) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve DiscoveryError go!"Error"))) (App (Val (GoInstruction (GoLoad DiscoveryError))) (Var "$r"))))
 
 attribute [instance] DiscoveryError_Assumptions.DiscoveryError_type_repr
@@ -336,7 +336,7 @@ attribute [instance] DiscoveryError_Assumptions.DiscoveryError_type_repr
   DiscoveryError_Assumptions.DiscoveryError_Error_unfold
   DiscoveryError_Assumptions.DiscoveryError'ptr_Error_unfold
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   DiscoveryError_instance : DiscoveryError_Assumptions
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions

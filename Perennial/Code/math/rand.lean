@@ -13,275 +13,275 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math.rand : go_string := go!"math/rand"
+def math.rand : GoString := go!"math/rand"
 end pkg_id
 
 namespace math.rand
 
-def Source [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.Source" [])
+def Source [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.Source" [])
 
 attribute [irreducible] Source
 
-def Source64 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.Source64" [])
+def Source64 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.Source64" [])
 
 attribute [irreducible] Source64
 
-def Rand [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.Rand" [])
+def Rand [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.Rand" [])
 
 attribute [irreducible] Rand
 
-def runtimeSource [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.runtimeSource" [])
+def runtimeSource [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.runtimeSource" [])
 
 attribute [irreducible] runtimeSource
 
-def lockedSource [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.lockedSource" [])
+def lockedSource [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.lockedSource" [])
 
 attribute [irreducible] lockedSource
 
-def rngSource [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.rngSource" [])
+def rngSource [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.rngSource" [])
 
 attribute [irreducible] rngSource
 
-def Zipf [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"math/rand.Zipf" [])
+def Zipf [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/rand.Zipf" [])
 
 attribute [irreducible] Zipf
 
-axiom re [ffi_syntax] [GoGlobalContext] : val
+axiom re [FfiSyntax] [GoGlobalContext] : val
 
-axiom rn [ffi_syntax] [GoGlobalContext] : val
+axiom rn [FfiSyntax] [GoGlobalContext] : val
 
-axiom rngLen [ffi_syntax] [GoGlobalContext] : val
+axiom rngLen [FfiSyntax] [GoGlobalContext] : val
 
-axiom rngTap [ffi_syntax] [GoGlobalContext] : val
+axiom rngTap [FfiSyntax] [GoGlobalContext] : val
 
-axiom rngMax [ffi_syntax] [GoGlobalContext] : val
+axiom rngMax [FfiSyntax] [GoGlobalContext] : val
 
-axiom rngMask [ffi_syntax] [GoGlobalContext] : val
+axiom rngMask [FfiSyntax] [GoGlobalContext] : val
 
-axiom int32max [ffi_syntax] [GoGlobalContext] : val
+axiom int32max [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ke [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ke [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.ke"
 
-axiom ke'init [ffi_syntax] [GoGlobalContext] : val
+axiom ke'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def we [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def we [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.we"
 
-axiom we'init [ffi_syntax] [GoGlobalContext] : val
+axiom we'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def fe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.fe"
 
-axiom fe'init [ffi_syntax] [GoGlobalContext] : val
+axiom fe'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def kn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def kn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.kn"
 
-axiom kn'init [ffi_syntax] [GoGlobalContext] : val
+axiom kn'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def wn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.wn"
 
-axiom wn'init [ffi_syntax] [GoGlobalContext] : val
+axiom wn'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def fn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.fn"
 
-axiom fn'init [ffi_syntax] [GoGlobalContext] : val
+axiom fn'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def globalRandGenerator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRandGenerator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRandGenerator"
 
-noncomputable def randautoseed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randautoseed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.randautoseed"
 
-axiom randautoseed'init [ffi_syntax] [GoGlobalContext] : val
+axiom randautoseed'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def randseednop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def randseednop [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.randseednop"
 
-axiom randseednop'init [ffi_syntax] [GoGlobalContext] : val
+axiom randseednop'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def rngCooked [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rngCooked [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.rngCooked"
 
-axiom rngCooked'init [ffi_syntax] [GoGlobalContext] : val
+axiom rngCooked'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def absInt32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def absInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.absInt32"
 
-noncomputable def NewSource [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSource [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.NewSource"
 
-noncomputable def newSource [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSource [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.newSource"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.New"
 
-noncomputable def read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def read [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.read"
 
-noncomputable def globalRand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def globalRand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRand"
 
-noncomputable def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_rand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.runtime_rand"
 
-noncomputable def Seed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Seed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Seed"
 
-noncomputable def Int63 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int63 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Int63"
 
-noncomputable def Uint32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Uint32"
 
-noncomputable def Uint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Uint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Uint64"
 
-noncomputable def Int31 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int31 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Int31"
 
-noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Int"
 
-noncomputable def Int63n [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int63n [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Int63n"
 
-noncomputable def Int31n [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int31n [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Int31n"
 
-noncomputable def Intn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Intn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Intn"
 
-noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Float64"
 
-noncomputable def Float32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Float32"
 
-noncomputable def Perm [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Perm [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Perm"
 
-noncomputable def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Shuffle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Shuffle"
 
-noncomputable def Read [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.Read"
 
-noncomputable def NormFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NormFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.NormFloat64"
 
-noncomputable def ExpFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExpFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.ExpFloat64"
 
-noncomputable def seedrand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def seedrand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.seedrand"
 
-noncomputable def NewZipf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewZipf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/rand.NewZipf"
 
 instance info' : PkgInfo pkg_id.math.rand where
-  pkg_imported_pkgs := [pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.sync]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.rand)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val rngCooked'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val randseednop'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val randautoseed'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val fn'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val wn'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val kn'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val fe'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val we'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ke'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
 namespace Source
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Source
 
-@[reducible] def «Sourceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.interface_elem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false []))])
+@[reducible] def «Sourceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.InterfaceElem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false []))])
 
-class Source_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Source_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Source_underlying : go.UnderlyingDirectedEq Source «Sourceⁱᵐᵖˡ»
 
 attribute [instance] Source_Assumptions.Source_underlying
 
 namespace Source64
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Source64
 
-@[reducible] def «Source64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Source)])])
+@[reducible] def «Source64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Source)])])
 
-class Source64_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Source64_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Source64_underlying : go.UnderlyingDirectedEq Source64 «Source64ⁱᵐᵖˡ»
 
 attribute [instance] Source64_Assumptions.Source64_underlying
 
 namespace Rand
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   src' : Source.t
   s64' : Source64.t
   readVal' : w64
   readPos' : w8
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Rand
 
-@[reducible] def Rand'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rand'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"src" Source),
 (go.field_decl.FieldDecl go!"s64" Source64),
 (go.field_decl.FieldDecl go!"readVal" go.int64),
 (go.field_decl.FieldDecl go!"readPos" go.int8)]
 
-@[irreducible] def Rand'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Rand'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Rand'fds_unsealed
 
-instance equals_unfold_Rand [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Rand [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Rand'fds Rand'fds_unsealed :=
   ⟨by unfold Rand'fds; rfl⟩
 
-@[reducible] def «Randⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Rand'fds)
+@[reducible] def «Randⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Rand'fds)
 
-class Rand_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Rand_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Rand_type_repr : go.TypeReprUnderlying «Randⁱᵐᵖˡ» Rand.t
   Rand_underlying : go.UnderlyingDirectedEq Rand «Randⁱᵐᵖˡ»
   Rand_get_src : ∀ (x : Rand.t), go.IsGoStepPureDetTagged under (StructFieldGet «Randⁱᵐᵖˡ» go!"src") #x (Val #(x.src'))
@@ -305,28 +305,28 @@ attribute [instance] Rand_Assumptions.Rand_type_repr
   Rand_Assumptions.Rand_set_readPos
 
 namespace runtimeSource
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   mu' : _root_.Perennial.sync.Mutex.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end runtimeSource
 
-@[reducible] def runtimeSource'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def runtimeSource'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex)]
 
-@[irreducible] def runtimeSource'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def runtimeSource'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   runtimeSource'fds_unsealed
 
-instance equals_unfold_runtimeSource [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_runtimeSource [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold runtimeSource'fds runtimeSource'fds_unsealed :=
   ⟨by unfold runtimeSource'fds; rfl⟩
 
-@[reducible] def «runtimeSourceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType runtimeSource'fds)
+@[reducible] def «runtimeSourceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType runtimeSource'fds)
 
-class runtimeSource_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class runtimeSource_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   runtimeSource_type_repr : go.TypeReprUnderlying «runtimeSourceⁱᵐᵖˡ» runtimeSource.t
   runtimeSource_underlying : go.UnderlyingDirectedEq runtimeSource «runtimeSourceⁱᵐᵖˡ»
   runtimeSource_get_mu : ∀ (x : runtimeSource.t), go.IsGoStepPureDetTagged under (StructFieldGet «runtimeSourceⁱᵐᵖˡ» go!"mu") #x (Val #(x.mu'))
@@ -338,36 +338,36 @@ attribute [instance] runtimeSource_Assumptions.runtimeSource_type_repr
   runtimeSource_Assumptions.runtimeSource_set_mu
 
 namespace lockedSource
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   lk' : _root_.Perennial.sync.Mutex.t
-  s' : loc
+  s' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end lockedSource
 
-@[reducible] def lockedSource'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def lockedSource'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lk" _root_.Perennial.sync.Mutex),
-(go.field_decl.FieldDecl go!"s" (go.type.PointerType rngSource))]
+(go.field_decl.FieldDecl go!"s" (go.GoType.PointerType rngSource))]
 
-@[irreducible] def lockedSource'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def lockedSource'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   lockedSource'fds_unsealed
 
-instance equals_unfold_lockedSource [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_lockedSource [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold lockedSource'fds lockedSource'fds_unsealed :=
   ⟨by unfold lockedSource'fds; rfl⟩
 
-@[reducible] def «lockedSourceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType lockedSource'fds)
+@[reducible] def «lockedSourceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType lockedSource'fds)
 
-class lockedSource_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class lockedSource_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   lockedSource_type_repr : go.TypeReprUnderlying «lockedSourceⁱᵐᵖˡ» lockedSource.t
   lockedSource_underlying : go.UnderlyingDirectedEq lockedSource «lockedSourceⁱᵐᵖˡ»
   lockedSource_get_lk : ∀ (x : lockedSource.t), go.IsGoStepPureDetTagged under (StructFieldGet «lockedSourceⁱᵐᵖˡ» go!"lk") #x (Val #(x.lk'))
   lockedSource_set_lk : ∀ (x : lockedSource.t) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet «lockedSourceⁱᵐᵖˡ» go!"lk") (PairV #x #y) (Val #(({ x with lk' := y } : lockedSource.t)))
   lockedSource_get_s : ∀ (x : lockedSource.t), go.IsGoStepPureDetTagged under (StructFieldGet «lockedSourceⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
-  lockedSource_set_s : ∀ (x : lockedSource.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «lockedSourceⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : lockedSource.t)))
+  lockedSource_set_s : ∀ (x : lockedSource.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «lockedSourceⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : lockedSource.t)))
 
 attribute [instance] lockedSource_Assumptions.lockedSource_type_repr
   lockedSource_Assumptions.lockedSource_underlying
@@ -377,32 +377,32 @@ attribute [instance] lockedSource_Assumptions.lockedSource_type_repr
   lockedSource_Assumptions.lockedSource_set_s
 
 namespace rngSource
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   tap' : w64
   feed' : w64
   vec' : (array.t w64 607)
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end rngSource
 
-@[reducible] def rngSource'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def rngSource'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"tap" go.int),
 (go.field_decl.FieldDecl go!"feed" go.int),
-(go.field_decl.FieldDecl go!"vec" (go.type.ArrayType 607 go.int64))]
+(go.field_decl.FieldDecl go!"vec" (go.GoType.ArrayType 607 go.int64))]
 
-@[irreducible] def rngSource'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def rngSource'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   rngSource'fds_unsealed
 
-instance equals_unfold_rngSource [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_rngSource [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold rngSource'fds rngSource'fds_unsealed :=
   ⟨by unfold rngSource'fds; rfl⟩
 
-@[reducible] def «rngSourceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType rngSource'fds)
+@[reducible] def «rngSourceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType rngSource'fds)
 
-class rngSource_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rngSource_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   rngSource_type_repr : go.TypeReprUnderlying «rngSourceⁱᵐᵖˡ» rngSource.t
   rngSource_underlying : go.UnderlyingDirectedEq rngSource «rngSourceⁱᵐᵖˡ»
   rngSource_get_tap : ∀ (x : rngSource.t), go.IsGoStepPureDetTagged under (StructFieldGet «rngSourceⁱᵐᵖˡ» go!"tap") #x (Val #(x.tap'))
@@ -422,9 +422,9 @@ attribute [instance] rngSource_Assumptions.rngSource_type_repr
   rngSource_Assumptions.rngSource_set_vec
 
 namespace Zipf
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  r' : loc
+  r' : Loc
   imax' : w64
   v' : w64
   q' : w64
@@ -434,12 +434,12 @@ structure t [ffi_syntax] where
   hxm' : w64
   hx0minusHxm' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Zipf
 
-@[reducible] def Zipf'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"r" (go.type.PointerType Rand)),
+@[reducible] def Zipf'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"r" (go.GoType.PointerType Rand)),
 (go.field_decl.FieldDecl go!"imax" go.float64),
 (go.field_decl.FieldDecl go!"v" go.float64),
 (go.field_decl.FieldDecl go!"q" go.float64),
@@ -449,21 +449,21 @@ end Zipf
 (go.field_decl.FieldDecl go!"hxm" go.float64),
 (go.field_decl.FieldDecl go!"hx0minusHxm" go.float64)]
 
-@[irreducible] def Zipf'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Zipf'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Zipf'fds_unsealed
 
-instance equals_unfold_Zipf [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Zipf [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Zipf'fds Zipf'fds_unsealed :=
   ⟨by unfold Zipf'fds; rfl⟩
 
-@[reducible] def «Zipfⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Zipf'fds)
+@[reducible] def «Zipfⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Zipf'fds)
 
-class Zipf_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Zipf_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Zipf_type_repr : go.TypeReprUnderlying «Zipfⁱᵐᵖˡ» Zipf.t
   Zipf_underlying : go.UnderlyingDirectedEq Zipf «Zipfⁱᵐᵖˡ»
   Zipf_get_r : ∀ (x : Zipf.t), go.IsGoStepPureDetTagged under (StructFieldGet «Zipfⁱᵐᵖˡ» go!"r") #x (Val #(x.r'))
-  Zipf_set_r : ∀ (x : Zipf.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Zipfⁱᵐᵖˡ» go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Zipf.t)))
+  Zipf_set_r : ∀ (x : Zipf.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Zipfⁱᵐᵖˡ» go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Zipf.t)))
   Zipf_get_imax : ∀ (x : Zipf.t), go.IsGoStepPureDetTagged under (StructFieldGet «Zipfⁱᵐᵖˡ» go!"imax") #x (Val #(x.imax'))
   Zipf_set_imax : ∀ (x : Zipf.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Zipfⁱᵐᵖˡ» go!"imax") (PairV #x #y) (Val #(({ x with imax' := y } : Zipf.t)))
   Zipf_get_v : ∀ (x : Zipf.t), go.IsGoStepPureDetTagged under (StructFieldGet «Zipfⁱᵐᵖˡ» go!"v") #x (Val #(x.v'))
@@ -502,7 +502,7 @@ attribute [instance] Zipf_Assumptions.Zipf_type_repr
   Zipf_Assumptions.Zipf_get_hx0minusHxm
   Zipf_Assumptions.Zipf_set_hx0minusHxm
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Source_instance : Source_Assumptions
   Source64_instance : Source64_Assumptions
   Rand_instance : Rand_Assumptions

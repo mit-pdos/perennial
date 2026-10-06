@@ -15,207 +15,207 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.model.channel : go_string := go!"github.com/mit-pdos/perennial/goose/model/channel"
+def github_com.mit_pdos.perennial.goose.model.channel : GoString := go!"github.com/mit-pdos/perennial/goose/model/channel"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.channel
 
-def offerState [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/model/channel.offerState" [])
+def offerState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.offerState" [])
 
 attribute [irreducible] offerState
 
-def Channel [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/model/channel.Channel" [T])
+def Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.Channel" [T])
 
 attribute [irreducible] Channel
 
-def SelectDir [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/model/channel.SelectDir" [])
+def SelectDir [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.SelectDir" [])
 
 attribute [irreducible] SelectDir
 
-@[reducible] noncomputable def buffered [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def buffered [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] noncomputable def idle [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def idle [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def sndPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndPending [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] noncomputable def rcvPending [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvPending [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] noncomputable def sndCommit [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndCommit [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 4)
 
-@[reducible] noncomputable def rcvDone [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvDone [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 5)
 
-@[reducible] noncomputable def closed [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def closed [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 6)
 
 /-- case ch <- Send -/
-@[reducible] noncomputable def SelectSend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectSend [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- case <-ch: -/
-@[reducible] noncomputable def SelectRecv [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectRecv [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
-noncomputable def NewChannel [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewChannel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NewChannel"
 
-noncomputable def NonBlockingSelect1 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect1 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect1"
 
-noncomputable def BlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BlockingSelect2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect2"
 
-noncomputable def NonBlockingSelect2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect2"
 
-noncomputable def BlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect3"
 
-noncomputable def NonBlockingSelect3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NonBlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect3"
 
 /-- go: channel.go:31:6 -/
-noncomputable def «NewChannelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewChannelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "cap"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
   (Let "local_state" (App (Val (GoInstruction (GoAlloc offerState))) (App (Val (GoInstruction (GoZeroVal offerState))) (Val #())))
   (Let "$r0" (Val idle)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc (Channel T)))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.int))) (Var "cap"))
   (Let "$v1" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.Mutex))) (Val #())))
-  (Let "$v2" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType T)]))) (Val #())) (Val #(W64 0)))
+  (Let "$v2" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType T)]))) (Val #())) (Val #(W64 0)))
   (Let "$v3" (App (Val (GoInstruction (GoLoad offerState))) (Var "local_state"))
-  (App (Val (GoInstruction (CompositeLiteral (Channel T)))) (LiteralValue [(KeyedElement (some (KeyField go!"cap")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"mu")) (ElementExpression (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) (Var "$v1"))), (KeyedElement (some (KeyField go!"buffer")) (ElementExpression (go.type.SliceType T) (Var "$v2"))), (KeyedElement (some (KeyField go!"state")) (ElementExpression offerState (Var "$v3")))]))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 0)))))
+  (App (Val (GoInstruction (CompositeLiteral (Channel T)))) (LiteralValue [(KeyedElement (some (KeyField go!"cap")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"mu")) (ElementExpression (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) (Var "$v1"))), (KeyedElement (some (KeyField go!"buffer")) (ElementExpression (go.GoType.SliceType T) (Var "$v2"))), (KeyedElement (some (KeyField go!"state")) (ElementExpression offerState (Var "$v3")))]))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 0)))))
   (Let "$r0" (Val buffered)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore offerState))) (Pair (Var "local_state") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore offerState))) (Pair (Var "local_state") (Var "$r0"))))))))))
 
 /-- Non-Blocking send operation for select statements. Blocking send and blocking select
     statements simply call this in a for loop until it returns true.
 
     go: channel.go:46:22 -/
-noncomputable def «Channel__TrySendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__TrySendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "val"
   (Lam "blocking"
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
   (Let "blocking" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "blocking"))
   (Let "val" (App (Val (GoInstruction (GoAlloc T))) (Var "val"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val closed)))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"send on closed channel")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"send on closed channel")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val buffered)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"cap"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")))))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"cap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (Var "val"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val rcvPending)))
   (Let "$r0" (Val sndCommit)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "val"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val idle)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "blocking"))
   (Let "$r0" (Val sndPending)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "val"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val rcvDone)))
   (Let "$r0" (Val idle)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val sndPending)))
   (Let "$r0" (Val idle)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"Invalid state transition with open receive offer")))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"Invalid state transition with open receive offer")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
 
 /-- c.Send(val)
 
@@ -224,32 +224,32 @@ noncomputable def «Channel__TrySendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
     c <- val
 
     go: channel.go:105:22 -/
-noncomputable def «Channel__Sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Sendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
   (Let "v" (App (Val (GoInstruction (GoAlloc T))) (Var "v"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "v"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$a0")) (Var "$a1"))))))) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$a0")) (Var "$a1"))))))) (Lam BAnon
+  (App (Val doExecute)
   (Val #()))))
   (Lam BAnon
   (Val #())))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (Channel T))))) (Val UntypedNil)))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel T))))) (Val UntypedNil)))))
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))
   (Lam BAnon
   (Val #())))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))
 
 /-- Non-blocking receive function used for select statements.
@@ -259,182 +259,182 @@ noncomputable def «Channel__Sendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
     with another non-blocking send.
 
     go: channel.go:120:22 -/
-noncomputable def «Channel__TryReceiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__TryReceiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
   (Let "blocking" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "blocking"))
   (Let "local_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val buffered)))
   (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #false) (App (Val (GoInstruction (GoLoad T))) (Var "v"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.type.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.type.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #true) (App (Val (GoInstruction (GoLoad T))) (Var "val_copy"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "val_copy") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val closed)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #true) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #false)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.type.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.type.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #true) (App (Val (GoInstruction (GoLoad T))) (Var "val_copy"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "val_copy") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val sndPending)))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val rcvDone)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #true) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "local_val") (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val idle)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #false) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "blocking"))
   (Let "$r0" (Val rcvPending)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val rcvPending)))
   (Let "$r0" (Val idle)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #false) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val sndCommit)))
   (Let "$r0" (Val idle)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #true) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "local_val") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"not supposed to be here!")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"not supposed to be here!")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Val #false) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))))
 
 /-- go: channel.go:189:22 -/
-noncomputable def «Channel__Receiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Receiveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "success" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "success"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "v")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "v") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "success") (Var "$r0")))))))))))))))))
   (Lam BAnon
   (Val #())))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (Channel T))))) (Val UntypedNil)))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel T))))) (Val UntypedNil)))))
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))
   (Lam BAnon
   (Val #())))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- This is a non-blocking attempt at closing. The only reason close blocks ever is because there
@@ -442,34 +442,34 @@ noncomputable def «Channel__Receiveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext]
     the closer must still obtain the channel's lock
 
     go: channel.go:206:22 -/
-noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad offerState))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val closed)))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"close of closed channel")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"close of closed channel")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (If (If (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val buffered))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals offerState))) (Pair (Var "$sw") (Val idle))))
   (Let "$r0" (Val closed)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore offerState))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$r0"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))))
 
 /-- c.Close()
 
@@ -478,26 +478,26 @@ noncomputable def «Channel__tryCloseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext
     close(c)
 
     go: channel.go:228:22 -/
-noncomputable def «Channel__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Closeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"tryClose"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Val #()))))) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"tryClose"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Val #()))))) (Lam BAnon
+  (App (Val doExecute)
   (Val #()))))
   (Lam BAnon
   (Val #())))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (Channel T))))) (Val UntypedNil)))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"close of nil channel")))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel T))))) (Val UntypedNil)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"close of nil channel")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- v := c.ReceiveDiscardOk
@@ -506,24 +506,24 @@ noncomputable def «Channel__Closeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (
     v := c<-
 
     go: channel.go:240:22 -/
-noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
   (Let "return_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"Receive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Val #()))
+  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"Receive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad T))) (Var "return_val")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r1")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "return_val") (Var "$r0")))))))))))))))
 
 /-- c.Len()
@@ -535,30 +535,30 @@ noncomputable def «Channel__ReceiveDiscardOkⁱᵐᵖˡ» [ffi_syntax] [GoGloba
     semantics.
 
     go: channel.go:252:22 -/
-noncomputable def «Channel__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "chan_len" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType T)]))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.int))) (Var "chan_len")))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "chan_len") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (Channel T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #(W64 0)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- c.Cap()
@@ -567,73 +567,73 @@ noncomputable def «Channel__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T 
     cap(c)
 
     go: channel.go:266:22 -/
-noncomputable def «Channel__Capⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Capⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"cap"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (Channel T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (Channel T) go!"cap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #(W64 0)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
     go: channel.go:274:22 -/
-noncomputable def «Channel__Iterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Channel__Iterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "c"))
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "c"))
+  (App (Val doReturn)
   (Lam "yield"
-  (App (Val exception_do)
-  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [T] false [go.bool]))))) (Var "yield"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))))) (Var "yield"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "c"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "c"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "v"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [T] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
-  (App (Val do_return)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected")))
-  (App (Val do_continue) (Val #()))
-  (App (Val do_execute)
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "v") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))))))))))))
   (Lam BAnon
   (Val #()))))))))))))
@@ -643,136 +643,136 @@ noncomputable def «Channel__Iterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
     Returns (selected, received_value, ok)
 
     go: select.go:19:6 -/
-noncomputable def «NonBlockingSelect1ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NonBlockingSelect1ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "ch"
   (Lam "dir"
   (Lam "value"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "value" (App (Val (GoInstruction (GoAlloc T))) (Var "value"))
   (Let "dir" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir"))
-  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T))))) (Var "ch"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T))))) (Var "ch"))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir")) (Val SelectSend))))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "value"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "ch"))) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "ch"))) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected")) (App (Val (GoInstruction (GoLoad T))) (Var "zero"))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T))))) (Var "ch"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T))))) (Var "ch"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected")) (App (Val (GoInstruction (GoLoad T))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))))))
 
 /-- Blocking select with 2 cases
     Returns (caseIndex, received_value1, received_value2, ok)
 
     go: select.go:33:6 -/
-noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
+noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
   (Lam "ch2"
   (Lam "dir2"
   (Lam "val2"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "val2" (App (Val (GoInstruction (GoAlloc T2))) (Var "val2"))
   (Let "dir2" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir2"))
-  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T2))))) (Var "ch2"))
+  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T2))))) (Var "ch2"))
   (Let "val1" (App (Val (GoInstruction (GoAlloc T1))) (Var "val1"))
   (Let "dir1" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir1"))
-  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T1))))) (Var "ch1"))
+  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T1))))) (Var "ch1"))
   (Let "zero1" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "zero2" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T1))) (Var "val1"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T2))) (Var "val2"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))))))))))))))
   (Lam BAnon
   (Val #()))))))))))))))))))
@@ -782,163 +782,163 @@ noncomputable def «BlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     caseIndex = 2 means no selection
 
     go: select.go:73:6 -/
-noncomputable def «NonBlockingSelect2ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 : go.type) : val :=
+noncomputable def «NonBlockingSelect2ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
   (Lam "ch2"
   (Lam "dir2"
   (Lam "val2"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "val2" (App (Val (GoInstruction (GoAlloc T2))) (Var "val2"))
   (Let "dir2" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir2"))
-  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T2))))) (Var "ch2"))
+  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T2))))) (Var "ch2"))
   (Let "val1" (App (Val (GoInstruction (GoAlloc T1))) (Var "val1"))
   (Let "dir1" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir1"))
-  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T1))))) (Var "ch1"))
+  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T1))))) (Var "ch1"))
   (Let "zero1" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "zero2" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 2)))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T2))) (Var "val2"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T1))) (Var "val1"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))))))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T1))) (Var "val1"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T2))) (Var "val2"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))))))))))))))))
 
 /-- go: select.go:135:6 -/
-noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
+noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -948,127 +948,127 @@ noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
   (Lam "ch3"
   (Lam "dir3"
   (Lam "val3"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "val3" (App (Val (GoInstruction (GoAlloc T3))) (Var "val3"))
   (Let "dir3" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir3"))
-  (Let "ch3" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T3))))) (Var "ch3"))
+  (Let "ch3" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T3))))) (Var "ch3"))
   (Let "val2" (App (Val (GoInstruction (GoAlloc T2))) (Var "val2"))
   (Let "dir2" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir2"))
-  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T2))))) (Var "ch2"))
+  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T2))))) (Var "ch2"))
   (Let "val1" (App (Val (GoInstruction (GoAlloc T1))) (Var "val1"))
   (Let "dir1" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir1"))
-  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T1))))) (Var "ch1"))
+  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T1))))) (Var "ch1"))
   (Let "zero1" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "zero2" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "zero3" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 3))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r"))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T1))) (Var "val1"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T2))) (Var "val2"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir3")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir3")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T3))) (Var "val3"))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T3)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T3)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T3))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))))))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "r") (Var "$r0")))))))))
   (Lam BAnon
   (Val #())))))))))))))))))))))))))
@@ -1078,7 +1078,7 @@ noncomputable def «BlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
     caseIndex = 3 means no selection
 
     go: select.go:189:6 -/
-noncomputable def «NonBlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T1 T2 T3 : go.type) : val :=
+noncomputable def «NonBlockingSelect3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1088,219 +1088,219 @@ noncomputable def «NonBlockingSelect3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
   (Lam "ch3"
   (Lam "dir3"
   (Lam "val3"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "val3" (App (Val (GoInstruction (GoAlloc T3))) (Var "val3"))
   (Let "dir3" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir3"))
-  (Let "ch3" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T3))))) (Var "ch3"))
+  (Let "ch3" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T3))))) (Var "ch3"))
   (Let "val2" (App (Val (GoInstruction (GoAlloc T2))) (Var "val2"))
   (Let "dir2" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir2"))
-  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T2))))) (Var "ch2"))
+  (Let "ch2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T2))))) (Var "ch2"))
   (Let "val1" (App (Val (GoInstruction (GoAlloc T1))) (Var "val1"))
   (Let "dir1" (App (Val (GoInstruction (GoAlloc SelectDir))) (Var "dir1"))
-  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (Channel T1))))) (Var "ch1"))
+  (Let "ch1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel T1))))) (Var "ch1"))
   (Let "zero1" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "zero2" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "zero3" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
   (Let "start" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 3))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 3)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
   (Let "caseIdx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "start")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))) (Val #(W64 3))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "caseIdx")) (Val #(W64 0)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "caseIdx")) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir1")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T1))) (Var "val1"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "caseIdx")) (Val #(W64 1)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "caseIdx")) (Val #(W64 1)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir2")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T2))) (Var "val2"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir3")) (Val SelectSend))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir))) (Pair (App (Val (GoInstruction (GoLoad SelectDir))) (Var "dir3")) (Val SelectSend))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad T3))) (Var "val3"))
   (Let "$a1" (Val #false)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T3)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T3)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")) (Var "$a1"))))
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
   (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (Channel T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel T3))))) (Var "ch3"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "recv_val"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T3))) (Pair (Var "recv_val") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "caseIdx") (Var "$r0")))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "start") (Var "$r0")))))))))))))))))))))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.channel where
-  pkg_imported_pkgs := [pkg_id.github_com.goose_lang.primitive]
+  pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.channel)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #())))))))
 
 namespace offerState
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end offerState
 
-@[reducible] def «offerStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «offerStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class offerState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class offerState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   offerState_underlying : go.UnderlyingDirectedEq offerState «offerStateⁱᵐᵖˡ»
 
 attribute [instance] offerState_Assumptions.offerState_underlying
 
 namespace Channel
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   cap' : w64
-  mu' : loc
+  mu' : Loc
   state' : offerState.t
   buffer' : slice.t
   v' : T
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Channel
 
-@[reducible] def Channel'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def Channel'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cap" go.int),
-(go.field_decl.FieldDecl go!"mu" (go.type.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)),
+(go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex)),
 (go.field_decl.FieldDecl go!"state" offerState),
-(go.field_decl.FieldDecl go!"buffer" (go.type.SliceType T)),
+(go.field_decl.FieldDecl go!"buffer" (go.GoType.SliceType T)),
 (go.field_decl.FieldDecl go!"v" T)]
 
-@[irreducible] def Channel'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def Channel'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (Channel'fds_unsealed T)
 
-instance equals_unfold_Channel [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (Channel'fds T) (Channel'fds_unsealed T) :=
   ⟨by unfold Channel'fds; rfl⟩
 
-@[reducible] def «Channelⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (Channel'fds T))
+@[reducible] def «Channelⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Channel'fds T))
 
-class Channel_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Channel_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Channelⁱᵐᵖˡ» T) (Channel.t T')
-  Channel_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (Channel T) («Channelⁱᵐᵖˡ» T)
-  Channel_get_cap : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"cap") #x (Val #(x.cap'))
-  Channel_set_cap : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel.t T'))))
-  Channel_get_mu : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
-  Channel_set_mu : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (Channel.t T'))))
-  Channel_get_state : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"state") #x (Val #(x.state'))
-  Channel_set_state : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')) (y : offerState.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel.t T'))))
-  Channel_get_buffer : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"buffer") #x (Val #(x.buffer'))
-  Channel_set_buffer : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel.t T'))))
-  Channel_get_v : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"v") #x (Val #(x.v'))
-  Channel_set_v : ∀ (T : go.type) (T' : Type) (x : (Channel.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel.t T'))))
-  Channel'ptr_Cap_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Cap" («Channel__Capⁱᵐᵖˡ» T)
-  Channel'ptr_Close_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Close" («Channel__Closeⁱᵐᵖˡ» T)
-  Channel'ptr_Iter_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Iter" («Channel__Iterⁱᵐᵖˡ» T)
-  Channel'ptr_Len_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Len" («Channel__Lenⁱᵐᵖˡ» T)
-  Channel'ptr_Receive_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Receive" («Channel__Receiveⁱᵐᵖˡ» T)
-  Channel'ptr_ReceiveDiscardOk_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"ReceiveDiscardOk" («Channel__ReceiveDiscardOkⁱᵐᵖˡ» T)
-  Channel'ptr_Send_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"Send" («Channel__Sendⁱᵐᵖˡ» T)
-  Channel'ptr_TryReceive_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"TryReceive" («Channel__TryReceiveⁱᵐᵖˡ» T)
-  Channel'ptr_TrySend_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"TrySend" («Channel__TrySendⁱᵐᵖˡ» T)
-  Channel'ptr_tryClose_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (Channel T)) go!"tryClose" («Channel__tryCloseⁱᵐᵖˡ» T)
+class Channel_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Channel_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («Channelⁱᵐᵖˡ» T) (Channel.t T')
+  Channel_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel T) («Channelⁱᵐᵖˡ» T)
+  Channel_get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"cap") #x (Val #(x.cap'))
+  Channel_set_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel.t T'))))
+  Channel_get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
+  Channel_set_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (Channel.t T'))))
+  Channel_get_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"state") #x (Val #(x.state'))
+  Channel_set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : offerState.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel.t T'))))
+  Channel_get_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"buffer") #x (Val #(x.buffer'))
+  Channel_set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel.t T'))))
+  Channel_get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («Channelⁱᵐᵖˡ» T) go!"v") #x (Val #(x.v'))
+  Channel_set_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («Channelⁱᵐᵖˡ» T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel.t T'))))
+  Channel'ptr_Cap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Cap" («Channel__Capⁱᵐᵖˡ» T)
+  Channel'ptr_Close_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Close" («Channel__Closeⁱᵐᵖˡ» T)
+  Channel'ptr_Iter_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Iter" («Channel__Iterⁱᵐᵖˡ» T)
+  Channel'ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Len" («Channel__Lenⁱᵐᵖˡ» T)
+  Channel'ptr_Receive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Receive" («Channel__Receiveⁱᵐᵖˡ» T)
+  Channel'ptr_ReceiveDiscardOk_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"ReceiveDiscardOk" («Channel__ReceiveDiscardOkⁱᵐᵖˡ» T)
+  Channel'ptr_Send_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"Send" («Channel__Sendⁱᵐᵖˡ» T)
+  Channel'ptr_TryReceive_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TryReceive" («Channel__TryReceiveⁱᵐᵖˡ» T)
+  Channel'ptr_TrySend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"TrySend" («Channel__TrySendⁱᵐᵖˡ» T)
+  Channel'ptr_tryClose_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel T)) go!"tryClose" («Channel__tryCloseⁱᵐᵖˡ» T)
 
 attribute [instance] Channel_Assumptions.Channel_type_repr
   Channel_Assumptions.Channel_underlying
@@ -1326,27 +1326,27 @@ attribute [instance] Channel_Assumptions.Channel_type_repr
   Channel_Assumptions.Channel'ptr_tryClose_unfold
 
 namespace SelectDir
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end SelectDir
 
-@[reducible] def «SelectDirⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «SelectDirⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class SelectDir_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SelectDir_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SelectDir_underlying : go.UnderlyingDirectedEq SelectDir «SelectDirⁱᵐᵖˡ»
 
 attribute [instance] SelectDir_Assumptions.SelectDir_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   offerState_instance : offerState_Assumptions
   Channel_instance : Channel_Assumptions
   SelectDir_instance : SelectDir_Assumptions
-  NewChannel_unfold : ∀ (T : go.type), FuncUnfold NewChannel [T] («NewChannelⁱᵐᵖˡ» T)
-  NonBlockingSelect1_unfold : ∀ (T : go.type), FuncUnfold NonBlockingSelect1 [T] («NonBlockingSelect1ⁱᵐᵖˡ» T)
-  BlockingSelect2_unfold : ∀ (T1 T2 : go.type), FuncUnfold BlockingSelect2 [T1, T2] («BlockingSelect2ⁱᵐᵖˡ» T1 T2)
-  NonBlockingSelect2_unfold : ∀ (T1 T2 : go.type), FuncUnfold NonBlockingSelect2 [T1, T2] («NonBlockingSelect2ⁱᵐᵖˡ» T1 T2)
-  BlockingSelect3_unfold : ∀ (T1 T2 T3 : go.type), FuncUnfold BlockingSelect3 [T1, T2, T3] («BlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
-  NonBlockingSelect3_unfold : ∀ (T1 T2 T3 : go.type), FuncUnfold NonBlockingSelect3 [T1, T2, T3] («NonBlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
+  NewChannel_unfold : ∀ (T : go.GoType), FuncUnfold NewChannel [T] («NewChannelⁱᵐᵖˡ» T)
+  NonBlockingSelect1_unfold : ∀ (T : go.GoType), FuncUnfold NonBlockingSelect1 [T] («NonBlockingSelect1ⁱᵐᵖˡ» T)
+  BlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold BlockingSelect2 [T1, T2] («BlockingSelect2ⁱᵐᵖˡ» T1 T2)
+  NonBlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold NonBlockingSelect2 [T1, T2] («NonBlockingSelect2ⁱᵐᵖˡ» T1 T2)
+  BlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold BlockingSelect3 [T1, T2, T3] («BlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
+  NonBlockingSelect3_unfold : ∀ (T1 T2 T3 : go.GoType), FuncUnfold NonBlockingSelect3 [T1, T2, T3] («NonBlockingSelect3ⁱᵐᵖˡ» T1 T2 T3)
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
 attribute [instance] Assumptions.offerState_instance

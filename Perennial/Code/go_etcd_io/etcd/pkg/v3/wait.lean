@@ -14,436 +14,436 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.pkg.v3.wait : go_string := go!"go.etcd.io/etcd/pkg/v3/wait"
+def go_etcd_io.etcd.pkg.v3.wait : GoString := go!"go.etcd.io/etcd/pkg/v3/wait"
 end pkg_id
 
 namespace go_etcd_io.etcd.pkg.v3.wait
 
-def Wait [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.Wait" [])
+def Wait [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.Wait" [])
 
 attribute [irreducible] Wait
 
-def list' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.list" [])
+def list' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.list" [])
 
 attribute [irreducible] list'
 
-def listElement [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.listElement" [])
+def listElement [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.listElement" [])
 
 attribute [irreducible] listElement
 
-def waitWithResponse [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.waitWithResponse" [])
+def waitWithResponse [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.waitWithResponse" [])
 
 attribute [irreducible] waitWithResponse
 
-def WaitTime [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.WaitTime" [])
+def WaitTime [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.WaitTime" [])
 
 attribute [irreducible] WaitTime
 
-def timeList [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/pkg/v3/wait.timeList" [])
+def timeList [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/pkg/v3/wait.timeList" [])
 
 attribute [irreducible] timeList
 
-@[reducible] noncomputable def defaultListElementLength [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def defaultListElementLength [FfiSyntax] [GoGlobalContext] : val :=
   #(64 : Int)
 
-noncomputable def closec [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def closec [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/wait.closec"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/wait.New"
 
-noncomputable def NewWithResponse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWithResponse [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/wait.NewWithResponse"
 
-noncomputable def NewTimeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewTimeList [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/pkg/v3/wait.NewTimeList"
 
 /-- New creates a Wait.
 
     go: wait.go:53:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "res" (App (Val (GoInstruction (GoAlloc list'))) (App (Val (GoInstruction (GoZeroVal list'))) (Val #())))
-  (Let "$r0" (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType listElement)]))) (Val #())) (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val defaultListElementLength)))
-  (App (Val (GoInstruction (CompositeLiteral list'))) (LiteralValue [(KeyedElement (some (KeyField go!"e")) (ElementExpression (go.type.SliceType listElement) (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.PointerType list') Wait))) (Var "res")))))
+  (Let "$r0" (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType listElement)]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val defaultListElementLength)))
+  (App (Val (GoInstruction (CompositeLiteral list'))) (LiteralValue [(KeyedElement (some (KeyField go!"e")) (ElementExpression (go.GoType.SliceType listElement) (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType list') Wait))) (Var "res")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (Var "res")))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType listElement)]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))]))) (Val #())) (Val #()))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (Pair (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (Var "res"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Var "$r0")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (Var "res")))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType listElement)]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))]))) (Val #())) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (Pair (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (Var "res"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Var "$r0")))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore list'))) (Pair (Var "res") (Var "$r0")))))))))
 
 /-- go: wait.go:63:16 -/
-noncomputable def «list__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType list')))) (Var "w"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType list')))) (Var "w"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
   (Let "idx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val defaultListElementLength))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "newCh" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.ChannelType go.chan_dir.sendrecv go.any)]))) (Val #())) (Val #(W64 1)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.ChannelType go.chan_dir.sendrecv go.any) (go.type.ChannelType go.chan_dir.recvonly go.any)))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Var "newCh"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val defaultListElementLength))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "newCh" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv go.any)]))) (Val #())) (Val #(W64 1)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv go.any) (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "newCh"))))))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "__p" (App (App (Val (map.lookup2 go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
+  (Let "__p" (App (App (Val (map.lookup2 go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Var "newCh"))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))) (Var "$r0"))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "newCh"))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))) (Var "$r0"))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(go!"dup id %x"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.uint64 go.any))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.log.Panicf []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0"))))))))))))
-  (App (Val do_execute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Pair (Var "newCh") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Pair (Var "newCh") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:76:16 -/
-noncomputable def «list__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
-  (App (Val exception_do)
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType list')))) (Var "w"))
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType list')))) (Var "w"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "idx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val defaultListElementLength))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Val #())))
-  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Var "ch")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Val UntypedNil))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Var "ch"))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.type.ChannelType go.chan_dir.sendrecv go.any)]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Var "ch"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val defaultListElementLength))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Val #())))
+  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "ch")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Val UntypedNil))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "ch"))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv go.any)]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "ch"))
   (Let "$v" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
   (App (App (Val (chan.send go.any)) (Var "$chan")) (Var "$v"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv go.any)))) (Pair (Var "ch") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Pair (Var "ch") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))))
 
 /-- go: wait.go:88:16 -/
-noncomputable def «list__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «list__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType list')))) (Var "w"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType list')))) (Var "w"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
   (Let "idx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val defaultListElementLength))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val defaultListElementLength))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "__p" (App (App (Val (map.lookup2 go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
+  (Let "__p" (App (App (Val (map.lookup2 go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any))))) (App (Val (GoInstruction (StructFieldRef listElement go!"m"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "id")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0")))))))))))
-  (App (Val do_execute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RUnlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"RUnlock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx")))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.type.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.RWMutex) go!"RLock"))) (App (Val (GoInstruction (StructFieldRef listElement go!"l"))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType listElement)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType listElement)))) (App (Val (GoInstruction (StructFieldRef list' go!"e"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType list')))) (Var "w")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "idx"))))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "idx") (Var "$r0")))))))))))))
 
 /-- go: wait.go:100:6 -/
-noncomputable def «NewWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewWithResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ch"
-  (App (Val exception_do)
-  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.recvonly go.any)))) (Var "ch"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.PointerType waitWithResponse) Wait))) (App (Val (GoInstruction (GoAlloc waitWithResponse))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly go.any)))) (Var "ch"))
-  (App (Val (GoInstruction (CompositeLiteral waitWithResponse))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.type.ChannelType go.chan_dir.recvonly go.any) (Var "$v0")))])))))))))
+  (App (Val exceptionDo)
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Var "ch"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType waitWithResponse) Wait))) (App (Val (GoInstruction (GoAlloc waitWithResponse))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (Var "ch"))
+  (App (Val (GoInstruction (CompositeLiteral waitWithResponse))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.GoType.ChannelType go.ChanDir.recvonly go.any) (Var "$v0")))])))))))))
 
 /-- go: wait.go:104:28 -/
-noncomputable def «waitWithResponse__Registerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__Registerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
-  (App (Val exception_do)
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType waitWithResponse)))) (Var "w"))
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType waitWithResponse)))) (Var "w"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.recvonly go.any)))) (App (Val (GoInstruction (StructFieldRef waitWithResponse go!"ch"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType waitWithResponse)))) (Var "w"))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly go.any)))) (App (Val (GoInstruction (StructFieldRef waitWithResponse go!"ch"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType waitWithResponse)))) (Var "w"))))))))))
 
 /-- go: wait.go:107:28 -/
-noncomputable def «waitWithResponse__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
   (Lam "x"
-  (App (Val exception_do)
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType waitWithResponse)))) (Var "w"))
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType waitWithResponse)))) (Var "w"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- go: wait.go:108:28 -/
-noncomputable def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «waitWithResponse__IsRegisteredⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "id"
-  (App (Val exception_do)
-  (Let "w" (App (Val (GoInstruction (GoAlloc (go.type.PointerType waitWithResponse)))) (Var "w"))
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType waitWithResponse)))) (Var "w"))
   (Let "id" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "id"))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"waitWithResponse.IsRegistered() shouldn't be called")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"waitWithResponse.IsRegistered() shouldn't be called")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: wait_time.go:38:6 -/
-noncomputable def «NewTimeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewTimeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoAlloc timeList))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]))) (Val #())) (Val #()))
-  (App (Val (GoInstruction (CompositeLiteral timeList))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))) (Var "$v0")))])))))))
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoAlloc timeList))) (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]))) (Val #())) (Val #()))
+  (App (Val (GoInstruction (CompositeLiteral timeList))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))) (Var "$v0")))])))))))
 
 /-- go: wait_time.go:42:21 -/
-noncomputable def «timeList__Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timeList__Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "tl" (App (Val (GoInstruction (GoAlloc (go.type.PointerType timeList)))) (Var "tl"))
+  (Let "tl" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType timeList)))) (Var "tl"))
   (Let "deadline" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "deadline"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
-  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "ch"))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "ch")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val UntypedNil)))))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "ch"))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline"))) (Var "$r0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
+  (Let "$r0" (App (App (Val (map.lookup1 go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch"))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val UntypedNil)))))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch"))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef timeList go!"lastTriggerDeadline"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef timeList go!"lastTriggerDeadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl")))) (Val #()))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl")))) (Val #()))))))))))
 
 /-- go: wait_time.go:56:21 -/
-noncomputable def «timeList__Triggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «timeList__Triggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "tl"
   (Lam "deadline"
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "tl" (App (Val (GoInstruction (GoAlloc (go.type.PointerType timeList)))) (Var "tl"))
+  (Let "tl" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType timeList)))) (Var "tl"))
   (Let "deadline" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "deadline"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))
-  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
   (Let "t" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val (map.for_range go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))) (Var "$range"))
+  (App (App (Val (map.forRange go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Var "ch"))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "deadline")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch"))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (App (Val (GoInstruction (StructFieldRef timeList go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$key")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (Var "ch") (Var "$value")))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef timeList go!"lastTriggerDeadline"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef timeList go!"lastTriggerDeadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl"))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #()))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType timeList)))) (Var "tl")))) (Val #())))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef timeList go!"l"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timeList)))) (Var "tl")))) (Val #())))))))))))
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.pkg.v3.wait where
-  pkg_imported_pkgs := [pkg_id.log, pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.log, pkg_id.sync]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.pkg.v3.wait)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())) (Var "$r0"))))))))) (Val #())))))
-  (App (Val do_execute)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr closec))) (Val #())) (Var "$r0"))))))))) (Val #())))))
+  (App (Val doExecute)
   (App (Val _root_.Perennial.log.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (go.GlobalAlloc closec (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc closec (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))) (Val #()))))))))
 
 namespace Wait
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Wait
 
-@[reducible] def «Waitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"IsRegistered" (go.signature.Signature [go.uint64] false [go.bool])), (go.interface_elem.MethodElem go!"Register" (go.signature.Signature [go.uint64] false [(go.type.ChannelType go.chan_dir.recvonly go.any)])), (go.interface_elem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64, go.any] false []))])
+@[reducible] def «Waitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"IsRegistered" (go.signature.Signature [go.uint64] false [go.bool])), (go.InterfaceElem.MethodElem go!"Register" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly go.any)])), (go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64, go.any] false []))])
 
-class Wait_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Wait_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Wait_underlying : go.UnderlyingDirectedEq Wait «Waitⁱᵐᵖˡ»
 
 attribute [instance] Wait_Assumptions.Wait_underlying
 
 namespace list'
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   e' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end list'
 
-@[reducible] def list'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"e" (go.type.SliceType listElement))]
+@[reducible] def list'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"e" (go.GoType.SliceType listElement))]
 
-@[irreducible] def list'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def list'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   list'fds_unsealed
 
-instance equals_unfold_list [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_list [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold list'fds list'fds_unsealed :=
   ⟨by unfold list'fds; rfl⟩
 
-@[reducible] def «list'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType list'fds)
+@[reducible] def «list'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType list'fds)
 
-class list_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class list_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   list_type_repr : go.TypeReprUnderlying «list'ⁱᵐᵖˡ» list'.t
   list_underlying : go.UnderlyingDirectedEq list' «list'ⁱᵐᵖˡ»
   list_get_e : ∀ (x : list'.t), go.IsGoStepPureDetTagged under (StructFieldGet «list'ⁱᵐᵖˡ» go!"e") #x (Val #(x.e'))
   list_set_e : ∀ (x : list'.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «list'ⁱᵐᵖˡ» go!"e") (PairV #x #y) (Val #(({ x with e' := y } : list'.t)))
-  list'ptr_IsRegistered_unfold : MethodUnfold (go.type.PointerType list') go!"IsRegistered" «list__IsRegisteredⁱᵐᵖˡ»
-  list'ptr_Register_unfold : MethodUnfold (go.type.PointerType list') go!"Register" «list__Registerⁱᵐᵖˡ»
-  list'ptr_Trigger_unfold : MethodUnfold (go.type.PointerType list') go!"Trigger" «list__Triggerⁱᵐᵖˡ»
+  list'ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType list') go!"IsRegistered" «list__IsRegisteredⁱᵐᵖˡ»
+  list'ptr_Register_unfold : MethodUnfold (go.GoType.PointerType list') go!"Register" «list__Registerⁱᵐᵖˡ»
+  list'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType list') go!"Trigger" «list__Triggerⁱᵐᵖˡ»
 
 attribute [instance] list_Assumptions.list_type_repr
   list_Assumptions.list_underlying
@@ -454,30 +454,30 @@ attribute [instance] list_Assumptions.list_type_repr
   list_Assumptions.list'ptr_Trigger_unfold
 
 namespace listElement
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   l' : _root_.Perennial.sync.RWMutex.t
   m' : map.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end listElement
 
-@[reducible] def listElement'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def listElement'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.RWMutex),
-(go.field_decl.FieldDecl go!"m" (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv go.any)))]
+(go.field_decl.FieldDecl go!"m" (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))]
 
-@[irreducible] def listElement'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def listElement'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   listElement'fds_unsealed
 
-instance equals_unfold_listElement [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_listElement [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold listElement'fds listElement'fds_unsealed :=
   ⟨by unfold listElement'fds; rfl⟩
 
-@[reducible] def «listElementⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType listElement'fds)
+@[reducible] def «listElementⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType listElement'fds)
 
-class listElement_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class listElement_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   listElement_type_repr : go.TypeReprUnderlying «listElementⁱᵐᵖˡ» listElement.t
   listElement_underlying : go.UnderlyingDirectedEq listElement «listElementⁱᵐᵖˡ»
   listElement_get_l : ∀ (x : listElement.t), go.IsGoStepPureDetTagged under (StructFieldGet «listElementⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
@@ -493,35 +493,35 @@ attribute [instance] listElement_Assumptions.listElement_type_repr
   listElement_Assumptions.listElement_set_m
 
 namespace waitWithResponse
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ch' : chan.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end waitWithResponse
 
-@[reducible] def waitWithResponse'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"ch" (go.type.ChannelType go.chan_dir.recvonly go.any))]
+@[reducible] def waitWithResponse'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.recvonly go.any))]
 
-@[irreducible] def waitWithResponse'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def waitWithResponse'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   waitWithResponse'fds_unsealed
 
-instance equals_unfold_waitWithResponse [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_waitWithResponse [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold waitWithResponse'fds waitWithResponse'fds_unsealed :=
   ⟨by unfold waitWithResponse'fds; rfl⟩
 
-@[reducible] def «waitWithResponseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType waitWithResponse'fds)
+@[reducible] def «waitWithResponseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType waitWithResponse'fds)
 
-class waitWithResponse_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class waitWithResponse_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   waitWithResponse_type_repr : go.TypeReprUnderlying «waitWithResponseⁱᵐᵖˡ» waitWithResponse.t
   waitWithResponse_underlying : go.UnderlyingDirectedEq waitWithResponse «waitWithResponseⁱᵐᵖˡ»
   waitWithResponse_get_ch : ∀ (x : waitWithResponse.t), go.IsGoStepPureDetTagged under (StructFieldGet «waitWithResponseⁱᵐᵖˡ» go!"ch") #x (Val #(x.ch'))
   waitWithResponse_set_ch : ∀ (x : waitWithResponse.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «waitWithResponseⁱᵐᵖˡ» go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : waitWithResponse.t)))
-  waitWithResponse'ptr_IsRegistered_unfold : MethodUnfold (go.type.PointerType waitWithResponse) go!"IsRegistered" «waitWithResponse__IsRegisteredⁱᵐᵖˡ»
-  waitWithResponse'ptr_Register_unfold : MethodUnfold (go.type.PointerType waitWithResponse) go!"Register" «waitWithResponse__Registerⁱᵐᵖˡ»
-  waitWithResponse'ptr_Trigger_unfold : MethodUnfold (go.type.PointerType waitWithResponse) go!"Trigger" «waitWithResponse__Triggerⁱᵐᵖˡ»
+  waitWithResponse'ptr_IsRegistered_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"IsRegistered" «waitWithResponse__IsRegisteredⁱᵐᵖˡ»
+  waitWithResponse'ptr_Register_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Register" «waitWithResponse__Registerⁱᵐᵖˡ»
+  waitWithResponse'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType waitWithResponse) go!"Trigger" «waitWithResponse__Triggerⁱᵐᵖˡ»
 
 attribute [instance] waitWithResponse_Assumptions.waitWithResponse_type_repr
   waitWithResponse_Assumptions.waitWithResponse_underlying
@@ -532,44 +532,44 @@ attribute [instance] waitWithResponse_Assumptions.waitWithResponse_type_repr
   waitWithResponse_Assumptions.waitWithResponse'ptr_Trigger_unfold
 
 namespace WaitTime
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end WaitTime
 
-@[reducible] def «WaitTimeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64] false [])), (go.interface_elem.MethodElem go!"Wait" (go.signature.Signature [go.uint64] false [(go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))]))])
+@[reducible] def «WaitTimeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Trigger" (go.signature.Signature [go.uint64] false [])), (go.InterfaceElem.MethodElem go!"Wait" (go.signature.Signature [go.uint64] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))])
 
-class WaitTime_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WaitTime_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   WaitTime_underlying : go.UnderlyingDirectedEq WaitTime «WaitTimeⁱᵐᵖˡ»
 
 attribute [instance] WaitTime_Assumptions.WaitTime_underlying
 
 namespace timeList
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   l' : _root_.Perennial.sync.Mutex.t
   lastTriggerDeadline' : w64
   m' : map.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end timeList
 
-@[reducible] def timeList'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def timeList'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"l" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"lastTriggerDeadline" go.uint64),
-(go.field_decl.FieldDecl go!"m" (go.type.MapType go.uint64 (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))]
+(go.field_decl.FieldDecl go!"m" (go.GoType.MapType go.uint64 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))]
 
-@[irreducible] def timeList'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def timeList'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   timeList'fds_unsealed
 
-instance equals_unfold_timeList [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_timeList [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold timeList'fds timeList'fds_unsealed :=
   ⟨by unfold timeList'fds; rfl⟩
 
-@[reducible] def «timeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType timeList'fds)
+@[reducible] def «timeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType timeList'fds)
 
-class timeList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class timeList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   timeList_type_repr : go.TypeReprUnderlying «timeListⁱᵐᵖˡ» timeList.t
   timeList_underlying : go.UnderlyingDirectedEq timeList «timeListⁱᵐᵖˡ»
   timeList_get_l : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet «timeListⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
@@ -578,8 +578,8 @@ class timeList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSe
   timeList_set_lastTriggerDeadline : ∀ (x : timeList.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «timeListⁱᵐᵖˡ» go!"lastTriggerDeadline") (PairV #x #y) (Val #(({ x with lastTriggerDeadline' := y } : timeList.t)))
   timeList_get_m : ∀ (x : timeList.t), go.IsGoStepPureDetTagged under (StructFieldGet «timeListⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
   timeList_set_m : ∀ (x : timeList.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «timeListⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : timeList.t)))
-  timeList'ptr_Trigger_unfold : MethodUnfold (go.type.PointerType timeList) go!"Trigger" «timeList__Triggerⁱᵐᵖˡ»
-  timeList'ptr_Wait_unfold : MethodUnfold (go.type.PointerType timeList) go!"Wait" «timeList__Waitⁱᵐᵖˡ»
+  timeList'ptr_Trigger_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Trigger" «timeList__Triggerⁱᵐᵖˡ»
+  timeList'ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType timeList) go!"Wait" «timeList__Waitⁱᵐᵖˡ»
 
 attribute [instance] timeList_Assumptions.timeList_type_repr
   timeList_Assumptions.timeList_underlying
@@ -592,7 +592,7 @@ attribute [instance] timeList_Assumptions.timeList_type_repr
   timeList_Assumptions.timeList'ptr_Trigger_unfold
   timeList_Assumptions.timeList'ptr_Wait_unfold
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Wait_instance : Wait_Assumptions
   list_instance : list_Assumptions
   listElement_instance : listElement_Assumptions

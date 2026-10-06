@@ -18,54 +18,54 @@ namespace go_etcd_io.etcd.api.v3.v3rpc.rpctypes
 namespace EtcdError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.Assumptions]
 
 instance EtcdError_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t where
-  typed_pointsto_def l v dq := iprop(
-    "code" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq ∗
-    "desc" ∷ typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "code" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq ∗
+    "desc" ∷ typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance EtcdError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.«EtcdErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance EtcdError_access_load_code (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
+instance EtcdError_access_load_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_store_code (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (code' : google_golang_org.grpc.codes.Code.t) :
+instance EtcdError_access_store_code (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (code' : google_golang_org.grpc.codes.Code.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) code' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) v.code' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"code" l) code' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with code' := code' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_load_desc (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
+instance EtcdError_access_load_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance EtcdError_access_store_desc (l : loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (desc' : go_string) :
+instance EtcdError_access_store_desc (l : Loc) (v : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (desc' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) desc' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) v.desc' (DFrac.own 1))
+      (typedPointsto (structFieldRef go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t go!"desc" l) desc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with desc' := desc' } : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.EtcdError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -75,18 +75,18 @@ end EtcdError
 namespace TokenFieldNameGRPCKey
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : go_etcd_io.etcd.api.v3.v3rpc.rpctypes.Assumptions]
 
 instance TokenFieldNameGRPCKey_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance TokenFieldNameGRPCKey_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.v3rpc.rpctypes.TokenFieldNameGRPCKey.t go_etcd_io.etcd.api.v3.v3rpc.rpctypes.«TokenFieldNameGRPCKeyⁱᵐᵖˡ» := by

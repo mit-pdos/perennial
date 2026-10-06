@@ -13,287 +13,287 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def bytes : go_string := go!"bytes"
+def bytes : GoString := go!"bytes"
 end pkg_id
 
 namespace bytes
 
-def Buffer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"bytes.Buffer" [])
+def Buffer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"bytes.Buffer" [])
 
 attribute [irreducible] Buffer
 
-def readOp [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"bytes.readOp" [])
+def readOp [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"bytes.readOp" [])
 
 attribute [irreducible] readOp
 
-def asciiSet [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"bytes.asciiSet" [])
+def asciiSet [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"bytes.asciiSet" [])
 
 attribute [irreducible] asciiSet
 
-def Reader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"bytes.Reader" [])
+def Reader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"bytes.Reader" [])
 
 attribute [irreducible] Reader
 
-axiom smallBufferSize [ffi_syntax] [GoGlobalContext] : val
+axiom smallBufferSize [FfiSyntax] [GoGlobalContext] : val
 
-axiom opRead [ffi_syntax] [GoGlobalContext] : val
+axiom opRead [FfiSyntax] [GoGlobalContext] : val
 
-axiom opInvalid [ffi_syntax] [GoGlobalContext] : val
+axiom opInvalid [FfiSyntax] [GoGlobalContext] : val
 
-axiom opReadRune1 [ffi_syntax] [GoGlobalContext] : val
+axiom opReadRune1 [FfiSyntax] [GoGlobalContext] : val
 
-axiom opReadRune2 [ffi_syntax] [GoGlobalContext] : val
+axiom opReadRune2 [FfiSyntax] [GoGlobalContext] : val
 
-axiom opReadRune3 [ffi_syntax] [GoGlobalContext] : val
+axiom opReadRune3 [FfiSyntax] [GoGlobalContext] : val
 
-axiom opReadRune4 [ffi_syntax] [GoGlobalContext] : val
+axiom opReadRune4 [FfiSyntax] [GoGlobalContext] : val
 
-axiom maxInt [ffi_syntax] [GoGlobalContext] : val
+axiom maxInt [FfiSyntax] [GoGlobalContext] : val
 
-axiom MinRead [ffi_syntax] [GoGlobalContext] : val
+axiom MinRead [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrTooLarge [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrTooLarge [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ErrTooLarge"
 
-noncomputable def errNegativeRead [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNegativeRead [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.errNegativeRead"
 
-noncomputable def errUnreadByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errUnreadByte [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.errUnreadByte"
 
-noncomputable def asciiSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def asciiSpace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.asciiSpace"
 
-noncomputable def growSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def growSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.growSlice"
 
-noncomputable def NewBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.NewBuffer"
 
-noncomputable def NewBufferString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewBufferString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.NewBufferString"
 
-noncomputable def Equal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Equal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Equal"
 
-noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Compare"
 
-noncomputable def explode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def explode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.explode"
 
-noncomputable def Count [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Count [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Count"
 
-noncomputable def Contains [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Contains [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Contains"
 
-noncomputable def ContainsAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ContainsAny"
 
-noncomputable def ContainsRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsRune [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ContainsRune"
 
-noncomputable def ContainsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ContainsFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ContainsFunc"
 
-noncomputable def IndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexByte [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.IndexByte"
 
-noncomputable def indexBytePortable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexBytePortable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.indexBytePortable"
 
-noncomputable def LastIndex [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.LastIndex"
 
-noncomputable def LastIndexByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexByte [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.LastIndexByte"
 
-noncomputable def IndexRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexRune [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.IndexRune"
 
-noncomputable def IndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.IndexAny"
 
-noncomputable def LastIndexAny [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexAny [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.LastIndexAny"
 
-noncomputable def genSplit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genSplit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.genSplit"
 
-noncomputable def SplitN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.SplitN"
 
-noncomputable def SplitAfterN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfterN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.SplitAfterN"
 
-noncomputable def Split [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Split [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Split"
 
-noncomputable def SplitAfter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.SplitAfter"
 
-noncomputable def Fields [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fields [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Fields"
 
-noncomputable def FieldsFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.FieldsFunc"
 
-noncomputable def Join [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Join [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Join"
 
-noncomputable def HasPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.HasPrefix"
 
-noncomputable def HasSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def HasSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.HasSuffix"
 
-noncomputable def Map [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Map [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Map"
 
-noncomputable def Repeat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Repeat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Repeat"
 
-noncomputable def ToUpper [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToUpper [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToUpper"
 
-noncomputable def ToLower [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToLower [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToLower"
 
-noncomputable def ToTitle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToTitle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToTitle"
 
-noncomputable def ToUpperSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToUpperSpecial [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToUpperSpecial"
 
-noncomputable def ToLowerSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToLowerSpecial [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToLowerSpecial"
 
-noncomputable def ToTitleSpecial [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToTitleSpecial [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToTitleSpecial"
 
-noncomputable def ToValidUTF8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ToValidUTF8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ToValidUTF8"
 
-noncomputable def isSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isSeparator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.isSeparator"
 
-noncomputable def Title [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Title [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Title"
 
-noncomputable def TrimLeftFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimLeftFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimLeftFunc"
 
-noncomputable def TrimRightFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimRightFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimRightFunc"
 
-noncomputable def TrimFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimFunc"
 
-noncomputable def TrimPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimPrefix"
 
-noncomputable def TrimSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimSuffix"
 
-noncomputable def IndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IndexFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.IndexFunc"
 
-noncomputable def LastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LastIndexFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.LastIndexFunc"
 
-noncomputable def indexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def indexFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.indexFunc"
 
-noncomputable def lastIndexFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lastIndexFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.lastIndexFunc"
 
-noncomputable def makeASCIISet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeASCIISet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.makeASCIISet"
 
-noncomputable def containsRune [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def containsRune [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.containsRune"
 
-noncomputable def Trim [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Trim [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Trim"
 
-noncomputable def TrimLeft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimLeft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimLeft"
 
-noncomputable def trimLeftByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftByte [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimLeftByte"
 
-noncomputable def trimLeftASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftASCII [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimLeftASCII"
 
-noncomputable def trimLeftUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimLeftUnicode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimLeftUnicode"
 
-noncomputable def TrimRight [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimRight [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimRight"
 
-noncomputable def trimRightByte [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightByte [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimRightByte"
 
-noncomputable def trimRightASCII [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightASCII [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimRightASCII"
 
-noncomputable def trimRightUnicode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def trimRightUnicode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.trimRightUnicode"
 
-noncomputable def TrimSpace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrimSpace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.TrimSpace"
 
-noncomputable def Runes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Runes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Runes"
 
-noncomputable def Replace [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Replace [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Replace"
 
-noncomputable def ReplaceAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReplaceAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.ReplaceAll"
 
-noncomputable def EqualFold [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EqualFold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.EqualFold"
 
-noncomputable def Index' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Index' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Index"
 
-noncomputable def Cut [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Cut [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Cut"
 
-noncomputable def Clone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clone [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Clone"
 
-noncomputable def CutPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CutPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.CutPrefix"
 
-noncomputable def CutSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CutSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.CutSuffix"
 
-noncomputable def Lines [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lines [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.Lines"
 
-noncomputable def splitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitSeq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.splitSeq"
 
-noncomputable def SplitSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitSeq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.SplitSeq"
 
-noncomputable def SplitAfterSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SplitAfterSeq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.SplitAfterSeq"
 
-noncomputable def FieldsSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsSeq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.FieldsSeq"
 
-noncomputable def FieldsFuncSeq [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FieldsFuncSeq [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.FieldsFuncSeq"
 
-noncomputable def NewReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"bytes.NewReader"
 
 /-- Equal reports whether a and b
@@ -301,123 +301,123 @@ noncomputable def NewReader [ffi_syntax] [GoGlobalContext] : go_string :=
     A nil argument is equivalent to an empty slice.
 
     go: bytes.go:20:6 -/
-noncomputable def «Equalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Equalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "a"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.type.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "a"))) (App (Val (GoInstruction (Convert (go.type.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")))))))))))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "a"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "a"))) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")))))))))))
 
 /-- Clone returns a copy of b[:len(b)].
     The result may have additional unused capacity.
     Clone(nil) returns nil.
 
     go: bytes.go:1384:6 -/
-noncomputable def «Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Let "$a0" (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue []))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil)))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil)))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue []))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil)))
+  (App (Val doExecute)
   (Val #())))))))
 
 instance info' : PkgInfo pkg_id.bytes where
-  pkg_imported_pkgs := [pkg_id.errors]
+  pkgImportedPkgs := [pkg_id.errors]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.bytes)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"bytes.Buffer: too large"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"bytes.Buffer: reader returned negative count from Read"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"bytes.Buffer: UnreadByte: previous operation was not a successful read"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W8 1))
   (Let "$v1" (Val #(W8 1))
   (Let "$v2" (Val #(W8 1))
   (Let "$v3" (Val #(W8 1))
   (Let "$v4" (Val #(W8 1))
   (Let "$v5" (Val #(W8 1))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 256 go.uint8)))) (LiteralValue [(KeyedElement (some (KeyInteger 9)) (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement (some (KeyInteger 10)) (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement (some (KeyInteger 11)) (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement (some (KeyInteger 12)) (ElementExpression go.uint8 (Var "$v3"))), (KeyedElement (some (KeyInteger 13)) (ElementExpression go.uint8 (Var "$v4"))), (KeyedElement (some (KeyInteger 32)) (ElementExpression go.uint8 (Var "$v5")))]))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr asciiSpace))) (Val #())) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 256 go.uint8)))) (LiteralValue [(KeyedElement (some (KeyInteger 9)) (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement (some (KeyInteger 10)) (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement (some (KeyInteger 11)) (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement (some (KeyInteger 12)) (ElementExpression go.uint8 (Var "$v3"))), (KeyedElement (some (KeyInteger 13)) (ElementExpression go.uint8 (Var "$v4"))), (KeyedElement (some (KeyInteger 32)) (ElementExpression go.uint8 (Var "$v5")))]))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr asciiSpace))) (Val #())) (Var "$r0")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errUnreadByte))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errNegativeRead))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTooLarge))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTooLarge go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errNegativeRead go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errUnreadByte go.error)) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (go.GlobalAlloc asciiSpace (go.type.ArrayType 256 go.uint8))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc asciiSpace (go.GoType.ArrayType 256 go.uint8))) (Val #()))))))))
 
 namespace readOp
-abbrev t [ffi_syntax] : Type := w8
+abbrev t [FfiSyntax] : Type := w8
 end readOp
 
-@[reducible] def «readOpⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «readOpⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int8
 
-class readOp_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class readOp_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   readOp_underlying : go.UnderlyingDirectedEq readOp «readOpⁱᵐᵖˡ»
 
 attribute [instance] readOp_Assumptions.readOp_underlying
 
 namespace Buffer
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   buf' : slice.t
   off' : w64
   lastRead' : readOp.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Buffer
 
-@[reducible] def Buffer'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"buf" (go.type.SliceType go.byte)),
+@[reducible] def Buffer'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" go.int),
 (go.field_decl.FieldDecl go!"lastRead" readOp)]
 
-@[irreducible] def Buffer'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Buffer'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Buffer'fds_unsealed
 
-instance equals_unfold_Buffer [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Buffer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Buffer'fds Buffer'fds_unsealed :=
   ⟨by unfold Buffer'fds; rfl⟩
 
-@[reducible] def «Bufferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Buffer'fds)
+@[reducible] def «Bufferⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Buffer'fds)
 
-class Buffer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Buffer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Buffer_type_repr : go.TypeReprUnderlying «Bufferⁱᵐᵖˡ» Buffer.t
   Buffer_underlying : go.UnderlyingDirectedEq Buffer «Bufferⁱᵐᵖˡ»
   Buffer_get_buf : ∀ (x : Buffer.t), go.IsGoStepPureDetTagged under (StructFieldGet «Bufferⁱᵐᵖˡ» go!"buf") #x (Val #(x.buf'))
@@ -437,44 +437,44 @@ attribute [instance] Buffer_Assumptions.Buffer_type_repr
   Buffer_Assumptions.Buffer_set_lastRead
 
 namespace asciiSet
-abbrev t [ffi_syntax] : Type := (array.t w32 8)
+abbrev t [FfiSyntax] : Type := (array.t w32 8)
 end asciiSet
 
-@[reducible] def «asciiSetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.ArrayType 8 go.uint32)
+@[reducible] def «asciiSetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.ArrayType 8 go.uint32)
 
-class asciiSet_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class asciiSet_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   asciiSet_underlying : go.UnderlyingDirectedEq asciiSet «asciiSetⁱᵐᵖˡ»
 
 attribute [instance] asciiSet_Assumptions.asciiSet_underlying
 
 namespace Reader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   s' : slice.t
   i' : w64
   prevRune' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Reader
 
-@[reducible] def Reader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"s" (go.type.SliceType go.byte)),
+@[reducible] def Reader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"i" go.int64),
 (go.field_decl.FieldDecl go!"prevRune" go.int)]
 
-@[irreducible] def Reader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Reader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Reader'fds_unsealed
 
-instance equals_unfold_Reader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Reader'fds Reader'fds_unsealed :=
   ⟨by unfold Reader'fds; rfl⟩
 
-@[reducible] def «Readerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Reader'fds)
+@[reducible] def «Readerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Reader'fds)
 
-class Reader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Reader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Reader_type_repr : go.TypeReprUnderlying «Readerⁱᵐᵖˡ» Reader.t
   Reader_underlying : go.UnderlyingDirectedEq Reader «Readerⁱᵐᵖˡ»
   Reader_get_s : ∀ (x : Reader.t), go.IsGoStepPureDetTagged under (StructFieldGet «Readerⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
@@ -493,7 +493,7 @@ attribute [instance] Reader_Assumptions.Reader_type_repr
   Reader_Assumptions.Reader_get_prevRune
   Reader_Assumptions.Reader_set_prevRune
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Buffer_instance : Buffer_Assumptions
   readOp_instance : readOp_Assumptions
   asciiSet_instance : asciiSet_Assumptions

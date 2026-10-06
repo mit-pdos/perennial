@@ -12,7 +12,7 @@
 
 {{ define "LeanIntoValParams" -}}
 {{- range $p:= . -}}
-({{$p}} : go.type) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped (GF := GF) {{$p}}' {{$p}}] {{ end -}}
+({{$p}} : go.GoType) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped (GF := GF) {{$p}}' {{$p}}] {{ end -}}
 {{- end -}}
 
 {{- range $t := .Types -}}
@@ -20,12 +20,12 @@ namespace {{$t.Name}}
 section def_
 
 {{ if eq $.Ffi "" -}}
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
 {{ else -}}
 -- the FFI instances are global (from the {{ $.Ffi }} prelude)
 variable [go_gctx : GoGlobalContext]
 {{ end -}}
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 {{ if $.Bootstrap -}}
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 {{ else -}}
@@ -45,14 +45,14 @@ set_option synthInstance.maxHeartbeats 200000 in
 {{ end -}}
 instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}:
     TypedPointsto (GF := GF) {{template "LeanGallinaType" $t}} where
-  typed_pointsto_def l v dq := iprop(
+  typedPointstoDef l v dq := iprop(
 {{- range $f := $t.LeanFields }}
-    {{$f.HypName}} ∷ typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq ∗
+    {{$f.HypName}} ∷ typedPointsto (structFieldRef {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq ∗
 {{- end }}
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 {{- end }}
 
 instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "LeanIntoValParams" $t.TypeParams }}:
@@ -63,19 +63,19 @@ instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "LeanIntoVal
   solve_into_val_typed_struct
 {{- end }}
 {{ range $f := $t.LeanFields }}
-instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) (dq : DFrac) :
+instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "LeanGallinaType" $t}}) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
-      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
+      (typedPointsto (structFieldRef {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : loc) (v : {{ template "LeanGallinaType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
+instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "LeanTypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "LeanGallinaType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
-      (typed_pointsto (struct_field_ref {{template "LeanGallinaType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "LeanGallinaType" $t}}) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef {{template "LeanGallinaType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
+      (typedPointsto (structFieldRef {{template "LeanGallinaType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "LeanGallinaType" $t}}) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 {{ end }}

@@ -44,9 +44,9 @@ inductive Op.t where
   | Txn (req : TxnRequest.t)
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.etcd.client.v3.Assumptions]
 variable [AllG GF]
@@ -99,9 +99,9 @@ instance isOp_persistent (op : v3.Op.t) (o : Op.t) :
   rw [isOp_unseal]; unfold isOpDef
   cases o <;> dsimp only <;> (try unfold isOpRangeRequest) <;> (try unfold isOpPutRequest) <;> infer_instance
 
-theorem Op.wp_applyOpts (op : loc) :
+theorem Op.wp_applyOpts (op : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
-      (App (Val (op @!! go.type.PointerType v3.Op @!! go!"applyOpts")) (Val #slice.nil))
+      (App (Val (op @!! go.GoType.PointerType v3.Op @!! go!"applyOpts")) (Val #slice.nil))
     {{ RET #(); True }} := by
   wp_start
   wp_auto
@@ -112,7 +112,7 @@ theorem Op.wp_applyOpts (op : loc) :
 theorem wp_NewOp :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! v3.NewOp)) (Val #()))
-    {{ (l : loc), RET #l; ∃ op : v3.Op.t, l ↦ op ∗
+    {{ (l : Loc), RET #l; ∃ op : v3.Op.t, l ↦ op ∗
         ⌜op.isOptsWithPrefix' = false ∧ op.isOptsWithFromKey' = false⌝ }} := by
   wp_start
   wp_apply wp_string_to_bytes as %key_sl ⟨key_sl, -⟩
@@ -157,7 +157,7 @@ theorem wp_IsOptsWithFromKey_nil :
   itrivial
 
 /-- NOTE (Rocq): for simplicity, this only supports empty opts list. -/
-theorem wp_OpGet (key : go_string) :
+theorem wp_OpGet (key : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
     {{ (op : v3.Op.t), RET #op;
@@ -190,7 +190,7 @@ Calling `f` on `l ↦ op` returns with `l ↦ op'`, where
 Every option of `op.go` used with `OpGet` satisfies it (`WithPrefix` with
 `pfx = true`, `WithFromKey` with `fk = true`, the others for all `pfx fk`). -/
 abbrev isOpOption (f : func.t) (pfx fk : Bool) : IProp GF :=
-  iprop(□ (∀ (l : loc) (op : v3.Op.t) (Φ : val → IProp GF),
+  iprop(□ (∀ (l : Loc) (op : v3.Op.t) (Φ : val → IProp GF),
     l ↦ op -∗
     ▷ (∀ op' : v3.Op.t,
         (l ↦ op' ∗
@@ -309,11 +309,11 @@ theorem wp_IsOptsWithFromKey (opts_sl : slice.t) (opts : List func.t) (dq : DFra
 
 /-- Lean addition (generalizes `Op.wp_applyOpts`): applying options to a `Get` op
 gives a `Get` op. -/
-theorem Op.wp_applyOpts_Get (l : loc) (op : v3.Op.t) (req : RangeRequest.t) (opts_sl : slice.t)
+theorem Op.wp_applyOpts_Get (l : Loc) (op : v3.Op.t) (req : RangeRequest.t) (opts_sl : slice.t)
     (opts : List func.t) (dq : DFrac) (pfx fk : Bool) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ l ↦ op ∗ isOp op (.Get req) ∗
         opts_sl ↦*{dq} opts ∗ isOpOptions opts pfx fk }}
-      (App (Val (l @!! go.type.PointerType v3.Op @!! go!"applyOpts")) (Val #opts_sl))
+      (App (Val (l @!! go.GoType.PointerType v3.Op @!! go!"applyOpts")) (Val #opts_sl))
     {{ (op' : v3.Op.t) (req' : RangeRequest.t), RET #();
         l ↦ op' ∗ isOp op' (.Get req') ∗ opts_sl ↦*{dq} opts }} := by
   wp_start as ⟨Hl, #Hop, Hs, #Hopts⟩
@@ -349,7 +349,7 @@ theorem Op.wp_applyOpts_Get (l : loc) (op : v3.Op.t) (req : RangeRequest.t) (opt
 
 /-- Lean addition: `OpGet` with options (generalizes `wp_OpGet`). The options may not
 be both a `WithPrefix` and a `WithFromKey` (else `OpGet` panics). -/
-theorem wp_OpGet_opts (key : go_string) (opts_sl : slice.t) (opts : List func.t) (dq : DFrac)
+theorem wp_OpGet_opts (key : GoString) (opts_sl : slice.t) (opts : List func.t) (dq : DFrac)
     (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ isOpOptions opts pfx fk }}
       (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #opts_sl))
@@ -385,7 +385,7 @@ theorem wp_OpGet_opts (key : go_string) (opts_sl : slice.t) (opts : List func.t)
     iapply HΦ
     iframe # ∗
 
-theorem wp_OpPut (key v : go_string) :
+theorem wp_OpPut (key v : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (App (Val (@! v3.OpPut)) (Val #key)) (Val #v)) (Val #slice.nil))
     {{ (op : v3.Op.t), RET #op;

@@ -17,9 +17,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : generics.Assumptions]
 
@@ -40,7 +40,7 @@ instance get_isPkgInit_wf_inst :
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
 
 section generic_proofs
-variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.type}
+variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {T : go.GoType}
   [IntoValTyped (GF := GF) T' T]
 
 theorem wp_BoxGet (b : Box.t T') :
@@ -59,9 +59,9 @@ theorem Box.wp_Get' (b : Box.t T') :
   wp_auto
   wp_end
 
-theorem Box.wp_Get (l : loc) (b : Box.t T') :
+theorem Box.wp_Get (l : Loc) (b : Box.t T') :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ l ↦ b }}
-      (App (Val (l @!! go.type.PointerType (Box T) @!! go!"Get")) (Val #()))
+      (App (Val (l @!! go.GoType.PointerType (Box T) @!! go!"Get")) (Val #()))
     {{ RET #(b.Value'); True }} := by
   wp_start
   wp_auto
@@ -122,9 +122,9 @@ theorem wp_useMultiParam :
   wp_auto
   wp_end
 
-theorem wp_multiParamFunc {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] {A : go.type}
+theorem wp_multiParamFunc {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] {A : go.GoType}
     [IntoValTyped (GF := GF) A' A]
-    {B' : Type} [ZeroVal B'] [TypedPointsto (GF := GF) B'] {B : go.type}
+    {B' : Type} [ZeroVal B'] [TypedPointsto (GF := GF) B'] {B : go.GoType}
     [IntoValTyped (GF := GF) B' B] (x : A') (y : B') :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val #(functions multiParamFunc [A, B])) (Val #x)) (Val #y))

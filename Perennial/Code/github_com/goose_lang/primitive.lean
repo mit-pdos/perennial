@@ -13,79 +13,79 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.primitive : go_string := go!"github.com/goose-lang/primitive"
+def github_com.goose_lang.primitive : GoString := go!"github.com/goose-lang/primitive"
 end pkg_id
 
 namespace github_com.goose_lang.primitive
 
-def Mutex [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/primitive.Mutex" [])
+def Mutex [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/primitive.Mutex" [])
 
 attribute [irreducible] Mutex
 
-def ProphId [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/goose-lang/primitive.ProphId" [])
+def ProphId [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/goose-lang/primitive.ProphId" [])
 
 attribute [irreducible] ProphId
 
-noncomputable def RandomUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RandomUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.RandomUint64"
 
-noncomputable def UInt64ToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UInt64ToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.UInt64ToString"
 
-noncomputable def Linearize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Linearize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.Linearize"
 
-noncomputable def Assume [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assume [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.Assume"
 
-noncomputable def Assert [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Assert [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.Assert"
 
-noncomputable def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.Exit"
 
-noncomputable def TimeNow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TimeNow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.TimeNow"
 
-noncomputable def Sleep [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sleep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.Sleep"
 
-noncomputable def NewProph [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewProph [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.NewProph"
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.primitive)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
-class Mutex_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Mutex_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Mutex_type_repr : go.TypeReprUnderlying «Mutexⁱᵐᵖˡ» Mutex.t
   Mutex_underlying : go.UnderlyingDirectedEq Mutex «Mutexⁱᵐᵖˡ»
-  Mutex'ptr_Lock_unfold : MethodUnfold (go.type.PointerType Mutex) go!"Lock" «Mutex__Lockⁱᵐᵖˡ»
-  Mutex'ptr_Unlock_unfold : MethodUnfold (go.type.PointerType Mutex) go!"Unlock" «Mutex__Unlockⁱᵐᵖˡ»
+  Mutex'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Lock" «Mutex__Lockⁱᵐᵖˡ»
+  Mutex'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex) go!"Unlock" «Mutex__Unlockⁱᵐᵖˡ»
 
 attribute [instance] Mutex_Assumptions.Mutex_type_repr
   Mutex_Assumptions.Mutex_underlying
   Mutex_Assumptions.Mutex'ptr_Lock_unfold
   Mutex_Assumptions.Mutex'ptr_Unlock_unfold
 
-class ProphId_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ProphId_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ProphId_type_repr : go.TypeReprUnderlying «ProphIdⁱᵐᵖˡ» ProphId.t
   ProphId_underlying : go.UnderlyingDirectedEq ProphId «ProphIdⁱᵐᵖˡ»
 
 attribute [instance] ProphId_Assumptions.ProphId_type_repr
   ProphId_Assumptions.ProphId_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Mutex_instance : Mutex_Assumptions
   ProphId_instance : ProphId_Assumptions
   RandomUint64_unfold : FuncUnfold RandomUint64 [] «RandomUint64ⁱᵐᵖˡ»

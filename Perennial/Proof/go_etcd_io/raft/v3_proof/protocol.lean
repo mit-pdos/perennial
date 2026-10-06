@@ -70,9 +70,9 @@ instance isRaftLog_pers_inst {GF : BundledGFunctors} (γ : RaftNames) (log : Lis
   isRaftLog_pers γ log
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
@@ -138,7 +138,7 @@ def isNodeInner (γraft : RaftNames) (n : v3.node.t) : IProp GF :=
     "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) broadcast.t.Unknown)
 
 /-- Rocq `is_node`. -/
-def is_node (γraft : RaftNames) (n : loc) : IProp GF :=
+def is_node (γraft : RaftNames) (n : Loc) : IProp GF :=
   iprop(∃ nd : v3.node.t,
     "n_ptr" ∷ n ↦□ nd ∗
     "Hinner" ∷ isNodeInner γraft nd)
@@ -147,13 +147,13 @@ instance isNodeInner_pers (γraft : RaftNames) (n : v3.node.t) :
     Persistent (isNodeInner (GF := GF) γraft n) := by
   unfold isNodeInner; infer_instance
 
-instance is_node_pers (γraft : RaftNames) (n : loc) :
+instance is_node_pers (γraft : RaftNames) (n : Loc) :
     Persistent (is_node (GF := GF) γraft n) := by
   unfold is_node; infer_instance
 
-theorem node.wp_Ready (γraft : RaftNames) (n : loc) :
+theorem node.wp_Ready (γraft : RaftNames) (n : Loc) :
     {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
-      (App (Val (n @!! go.type.PointerType v3.node @!! go!"Ready")) (Val #()))
+      (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Ready")) (Val #()))
     {{ (ready : chan.t), RET #ready; True }} := by
   wp_start as Hpre
   iNamed Hpre
@@ -161,9 +161,9 @@ theorem node.wp_Ready (γraft : RaftNames) (n : loc) :
   wp_auto
   wp_end
 
-theorem node.wp_Advance (γraft : RaftNames) (n : loc) :
+theorem node.wp_Advance (γraft : RaftNames) (n : Loc) :
     {{ isPkgInit (PROP := IProp GF) raft ∗ is_node γraft n }}
-      (App (Val (n @!! go.type.PointerType v3.node @!! go!"Advance")) (Val #()))
+      (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Advance")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as Hpre
   iNamed Hpre
@@ -202,7 +202,7 @@ theorem node.wp_Advance (γraft : RaftNames) (n : loc) :
 /-- (Rocq: admitted. Proved here by inlining `stepWait` and
 `stepWithWaitOption (wait := true)`, with the changed `isNodeInner` and
 `ownProposeMessage`.) -/
-theorem node.wp_Propose (γraft : RaftNames) (n : loc) (ctx : interface.t_ok)
+theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : interface.t_ok)
     (ctx_desc : context.Context_desc.t (IProp GF)) (data_sl : slice.t) (data : List w8) :
     {{ isPkgInit (PROP := IProp GF) raft ∗
         "#Hctx" ∷ context.isContext ctx ctx_desc ∗
@@ -210,7 +210,7 @@ theorem node.wp_Propose (γraft : RaftNames) (n : loc) (ctx : interface.t_ok)
         "#data_sl" ∷ data_sl ↦*□ data ∗
         "Hupd" ∷ (|={⊤,∅}=> ∃ log, ownRaftLog γraft log ∗
           (ownRaftLog γraft (log ++ [data]) ={∅,⊤}=∗ True)) }}
-      (App (App (Val (n @!! go.type.PointerType v3.node @!! go!"Propose"))
+      (App (App (Val (n @!! go.GoType.PointerType v3.node @!! go!"Propose"))
         (Val #(interface.ok ctx))) (Val #data_sl))
     {{ (err : interface.t), RET #err; if err = interface.nil then True else True }} := by
   wp_start as ⟨#Hctx, #Hnode, #data_sl, Hupd⟩

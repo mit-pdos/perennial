@@ -64,7 +64,7 @@ instance : Pos.Countable GroveVal where
     | _ => none
   decode_encode v := by cases v <;> simp [Pos.Countable.decode_encode]
 
-@[reducible] def grove_op : ffi_syntax where
+@[reducible] def grove_op : FfiSyntax where
   ffi_opcode := GroveOp
   ffi_val := GroveVal
 
@@ -94,7 +94,7 @@ structure GroveNodeState where
 instance groveNodeState_inhabited : Inhabited GroveNodeState :=
   ⟨{ groveNodeTsc := 0, groveNodeFiles := ∅ }⟩
 
-@[reducible] def grove_model : ffi_model where
+@[reducible] def grove_model : FfiModel where
   ffi_state := GroveNodeState
   ffi_global_state := GroveGlobalState
 
@@ -111,7 +111,7 @@ def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
 
 theorem gen_isFreshChan (σg : GroveGlobalState) : IsFreshChan σg none := trivial
 
-def IsGroveFfiStep (op : GroveOp) (v : val) (e' : expr)
+def IsGroveFfiStep (op : GroveOp) (v : val) (e' : Expr)
     (σ σ' : GroveNodeState) (g g' : GroveGlobalState) : Prop :=
   match op with
   | .ListenOp =>
@@ -147,17 +147,17 @@ def IsGroveFfiStep (op : GroveOp) (v : val) (e' : expr)
           | none => e' = Panic "invalid")
   | .FileReadOp =>
       σ = σ' ∧ g = g' ∧
-      (∀ name : go_string, v = #name →
+      (∀ name : GoString, v = #name →
         match σ.groveNodeFiles !! name with
         | some data => e' = Val (#data)
         | none => e' = Panic "invalid")
   | .FileWriteOp =>
       g = g' ∧
-      (∀ (name : go_string) (data : List w8), v = PairV (#name) (#data) →
+      (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
         e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles })
   | .FileAppendOp =>
       g = g' ∧
-      (∀ (name : go_string) (data : List w8), v = PairV (#name) (#data) →
+      (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
         match σ.groveNodeFiles !! name with
         | some old =>
             σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
@@ -178,13 +178,13 @@ def IsGroveFfiStep (op : GroveOp) (v : val) (e' : expr)
 
 /-- Rocq `ffi_step` (as a relation): the operation either stutters or takes an
 `IsGroveFfiStep`; only the FFI parts of the state change. -/
-def GroveFfiStep (op : GroveOp) (v : val) (σg : CfgState) (e' : expr) (σg' : CfgState) :
+def GroveFfiStep (op : GroveOp) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) :
     Prop :=
   ∃ s' w', σg' = ({ σg.1 with world := s' }, { σg.2 with globalWorld := w' }) ∧
     ((s' = σg.1.world ∧ w' = σg.2.globalWorld ∧ e' = ExternalOp op (Val v)) ∨
       IsGroveFfiStep op v e' σg.1.world s' σg.2.globalWorld w')
 
-@[reducible] def grove_semantics : ffi_semantics grove_op grove_model where
+@[reducible] def grove_semantics : FfiSemantics grove_op grove_model where
   ffi_step := GroveFfiStep
 
 end grove

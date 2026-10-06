@@ -11,7 +11,7 @@ namespace Perennial
 
 namespace github_com.mit_pdos.gokv.trusted_proph
 section defs
-variable [ffi_syntax]
+variable [FfiSyntax]
 
 def «NewProphⁱᵐᵖˡ» : val :=
   λ: <>, NewProph

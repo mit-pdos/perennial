@@ -21,14 +21,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-instance Result.countable [ffi_syntax] : Pos.Countable Result.t :=
+instance Result.countable [FfiSyntax] : Pos.Countable Result.t :=
   .ofInjective (fun r => Pos.Countable.encode (r.value', r.primary_won'))
     (by rintro ⟨a, b⟩ ⟨c, d⟩ h; have h := Pos.encode_inj h; simp_all)
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -37,7 +37,7 @@ set_option goose.wp.extras true
 
 /-! ### Hedged requests -/
 
-theorem wp_GetPrimary (q : go_string) :
+theorem wp_GetPrimary (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! GetPrimary)) (Val #q))
     {{ RET #(q ++ go!"_primary.html"); True }} := by
@@ -45,7 +45,7 @@ theorem wp_GetPrimary (q : go_string) :
   wp_auto
   wp_end
 
-theorem wp_GetSecondary (q : go_string) :
+theorem wp_GetSecondary (q : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! GetSecondary)) (Val #q))
     {{ RET #(q ++ go!"_secondary.html"); True }} := by
@@ -65,14 +65,14 @@ theorem wp_sys_hello_world :
 theorem wp_HelloWorldAsync :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HelloWorldAsync)) (Val #()))
-    {{ (ch : loc) (γfut : ChanNames), RET #ch;
-        isChan ch γfut go_string ∗
-        isChanBag γfut ch (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) }} := by
+    {{ (ch : Loc) (γfut : ChanNames), RET #ch;
+        isChan ch γfut GoString ∗
+        isChanBag γfut ch (fun (v : GoString) => iprop(⌜v = go!"Hello, World!"⌝)) }} := by
   wp_start
   wp_auto
-  wp_apply chan.wp_make2 (V := go_string) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
+  wp_apply chan.wp_make2 (V := GoString) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
-  imod start_bag (fun (v : go_string) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc
+  imod start_bag (fun (v : GoString) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc
     with #Hbag
   ipersist ch
   wp_apply wp_fork $$ []
@@ -111,10 +111,10 @@ theorem wp_simple_join :
   ipersist ch
   wp_apply wp_fork $$ [Hpromise message]
   · wp_auto
-    wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise message]
+    wp_apply wp_future_fulfill (t := go.GoType.StructType []) γfut ch () $$ [$Hfut Hpromise message]
     · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
-  wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
+  wp_apply wp_future_await (t := go.GoType.StructType []) γfut ch _ $$ [$Hfut $HAwait]
     as %v %P %pre %post ⟨%Hsplit, HP, -⟩
   rcases pre with _ | ⟨_, pre⟩
   · simp only [List.nil_append, List.cons.injEq] at Hsplit
@@ -140,21 +140,21 @@ theorem wp_simple_multi_join :
   ipersist ch
   wp_apply wp_fork $$ [Hpromise1 hello]
   · wp_auto
-    wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise1 hello]
+    wp_apply wp_future_fulfill (t := go.GoType.StructType []) γfut ch () $$ [$Hfut Hpromise1 hello]
     · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
   wp_apply wp_fork $$ [Hpromise2 world]
   · wp_auto
-    wp_apply wp_future_fulfill (t := go.type.StructType []) γfut ch () $$ [$Hfut Hpromise2 world]
+    wp_apply wp_future_fulfill (t := go.GoType.StructType []) γfut ch () $$ [$Hfut Hpromise2 world]
     · unfold Fulfilled; iexists _; iframe; iassumption
     itrivial
-  wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
+  wp_apply wp_future_await (t := go.GoType.StructType []) γfut ch _ $$ [$Hfut $HAwait]
     as %v1 %P1 %pre1 %post1 ⟨%Hsplit1, HP1, HAwait⟩
   -- which contract was fulfilled first
   rcases pre1 with _ | ⟨_, _ | ⟨_, pre1⟩⟩
   · simp only [List.nil_append] at Hsplit1
     obtain ⟨rfl, rfl⟩ := Hsplit1
-    wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
+    wp_apply wp_future_await (t := go.GoType.StructType []) γfut ch _ $$ [$Hfut $HAwait]
       as %v2 %P2 %pre2 %post2 ⟨%Hsplit2, HP2, -⟩
     rcases pre2 with _ | ⟨_, pre2⟩
     · simp only [List.nil_append] at Hsplit2
@@ -165,7 +165,7 @@ theorem wp_simple_multi_join :
     · simp at Hsplit2
   · simp only [List.cons_append, List.nil_append, List.cons.injEq] at Hsplit1
     obtain ⟨rfl, rfl, rfl⟩ := Hsplit1
-    wp_apply wp_future_await (t := go.type.StructType []) γfut ch _ $$ [$Hfut $HAwait]
+    wp_apply wp_future_await (t := go.GoType.StructType []) γfut ch _ $$ [$Hfut $HAwait]
       as %v2 %P2 %pre2 %post2 ⟨%Hsplit2, HP2, -⟩
     rcases pre2 with _ | ⟨_, pre2⟩
     · simp only [List.nil_append] at Hsplit2
@@ -190,9 +190,9 @@ theorem wp_exchangePointer :
   ipersist ch
   wp_apply wp_fork $$ [x]
   · wp_auto
-    wp_apply wp_handshake_send (t := go.type.StructType []) γ ch () _ _ $$ [$H $x] as y
+    wp_apply wp_handshake_send (t := go.GoType.StructType []) γ ch () _ _ $$ [$H $x] as y
     itrivial
-  wp_apply wp_handshake_receive (t := go.type.StructType []) γ ch _ _ $$ [$H $y] as %v x
+  wp_apply wp_handshake_receive (t := go.GoType.StructType []) γ ch _ _ $$ [$H $y] as %v x
   wp_end
 
 /-! ### Broadcast -/
@@ -237,7 +237,7 @@ theorem wp_BroadcastExample :
     · ipureintro; decide
     itrivial
   ipersist sharedValue
-  wp_apply wp_broadcast_chan_close (ty := go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))
+  wp_apply wp_broadcast_chan_close (ty := go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))
     done_ch γdone _ $$ [$Hown_done $sharedValue] as -
   wp_apply wp_bag_receive γr1 result1_ch _ $$ Hbag1 as %v1 %Hv1
   subst Hv1
@@ -248,12 +248,12 @@ theorem wp_BroadcastExample :
 
 /-! ### Cancellation -/
 
-theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : go_string)
+theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : Loc) (err_msg : GoString)
     (γdone : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ownBroadcastChan done_ch γdone iprop(err_ptr1 ↦□ err_msg) .Unknown }}
       (App (App (Val (@! HelloWorldCancellable)) (Val #done_ch)) (Val #err_ptr1))
-    {{ (result : go_string), RET #result;
+    {{ (result : GoString), RET #result;
         ⌜result = err_msg ∨ result = go!"Hello, World!"⌝ }} := by
   wp_start as #Hdone_bc
   ihave #Hdone_chan := ownBroadcastChan_is_chan _ _ _ _ $$ Hdone_bc
@@ -269,7 +269,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
   iapply BigAndL.bigAndL_cons.2
   isplit
   · dsimp only [chan.blockingClausePre]
-    iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, ch, γfut
+    iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, ch, γfut
     isplitr
     · ipureintro; rfl
     iframe Hch
@@ -298,7 +298,7 @@ theorem wp_HelloWorldCancellable (done_ch : chan.t) (err_ptr1 : loc) (err_msg : 
 theorem wp_HelloWorldWithTimeout :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! HelloWorldWithTimeout)) (Val #()))
-    {{ (result : go_string), RET #result;
+    {{ (result : GoString), RET #result;
         ⌜result = go!"Hello, World!" ∨ result = go!"operation timed out"⌝ }} := by
   wp_start
   wp_pures
@@ -313,7 +313,7 @@ theorem wp_HelloWorldWithTimeout :
   · wp_auto
     wp_apply time.wp_Sleep
     ipersist errMsg
-    wp_apply wp_broadcast_chan_close (ty := go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))
+    wp_apply wp_broadcast_chan_close (ty := go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))
       ch γ _ $$ [$Hown $errMsg] as -
     itrivial
   wp_apply wp_HelloWorldCancellable $$ [$Hdone_bc] as %result %Hres
@@ -321,14 +321,14 @@ theorem wp_HelloWorldWithTimeout :
   ipureintro
   rcases Hres with h | h <;> simp [h]
 
-theorem wp_CancellableHedgedRequest (query : go_string) (hedgeThreshold : time.Duration.t)
-    (errStr_ptr' : loc) (done_ch : chan.t) (γdone : ChanNames) :
+theorem wp_CancellableHedgedRequest (query : GoString) (hedgeThreshold : time.Duration.t)
+    (errStr_ptr' : Loc) (done_ch : chan.t) (γdone : ChanNames) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         ownBroadcastChan done_ch γdone iprop(True) .Unknown ∗
         errStr_ptr' ↦ go!"" }}
       (App (App (App (App (Val (@! CancellableHedgedRequest)) (Val #query)) (Val #hedgeThreshold))
         (Val #errStr_ptr')) (Val #done_ch))
-    {{ (v : go_string) (b : Bool), RET #(Result.t.mk v b);
+    {{ (v : GoString) (b : Bool), RET #(Result.t.mk v b);
         -- primary won, or the hedged request won
         iprop(⌜(v = query ++ go!"_primary.html" ∧ b = true) ∨
           (v = query ++ go!"_secondary.html" ∧ b = false)⌝) ∨

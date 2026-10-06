@@ -10,7 +10,7 @@ namespace Perennial
 
 namespace fmt
 section code
-variable [ffi_syntax]
+variable [FfiSyntax]
 
 -- FIXME: Returns some stuff
 def «Printⁱᵐᵖˡ» : val :=

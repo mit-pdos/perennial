@@ -17,44 +17,44 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_continue_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val continueVal))
+    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v1)) (Val continueVal))
       (Val continueVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [exception_seq_unseal, continueVal_unseal]
+    rw [exceptionSeq_unseal, continueVal_unseal]
     simp only [continueValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_break_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exception_seq) (Val v1)) (Val breakVal))
+    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v1)) (Val breakVal))
       (Val breakVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [exception_seq_unseal, breakVal_unseal]
+    rw [exceptionSeq_unseal, breakVal_unseal]
     simp only [breakValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_do_continue_val :
-    PureWp (G := G) (L := L) True (App (Val do_continue) (Val #())) (Val continueVal) where
+    PureWp (G := G) (L := L) True (App (Val doContinue) (Val #())) (Val continueVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [do_continue_unseal, continueVal_unseal]
+    rw [doContinue_unseal, continueVal_unseal]
     simp only [continueValDef]
     iintro Hwp
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
 instance pure_do_break_val :
-    PureWp (G := G) (L := L) True (App (Val do_break) (Val #())) (Val breakVal) where
+    PureWp (G := G) (L := L) True (App (Val doBreak) (Val #())) (Val breakVal) where
   pure_wp_wp s E Φ K _ := by
-    rw [do_break_unseal, breakVal_unseal]
+    rw [doBreak_unseal, breakVal_unseal]
     simp only [breakValDef]
     iintro Hwp
     wp_call_lc Hlc
@@ -63,9 +63,9 @@ instance pure_do_break_val :
 end wps
 
 noncomputable section for_post
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
 /-- The postcondition of a loop body (sealed; use the `wp_for_post_*` lemmas
 to prove it). -/
@@ -87,7 +87,7 @@ theorem forPostcondition_unseal :
 end for_post
 
 section wp_for
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -108,9 +108,9 @@ theorem pure_test_break :
 end wp_for
 
 section wp_for2
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 attribute [local instance] pure_test_execute pure_test_continue pure_test_break
 
@@ -122,9 +122,9 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
             if decide (v = #true) then
               WP (App (Val body) (Val #())) @ s; E {{ forPostcondition s E post P Φ }}
             else if decide (v = #false) then Φ executeVal else False }}) -∗
-    WP (App (App (App (Val do_for) (Val cond)) (Val body)) (Val post)) @ s; E {{ Φ }} := by
+    WP (App (App (App (Val doFor) (Val cond)) (Val body)) (Val post)) @ s; E {{ Φ }} := by
   iintro HP #Hloop
-  rw [do_for_unseal, forPostcondition_unseal]
+  rw [doFor_unseal, forPostcondition_unseal]
   unfold forPostconditionDef
   iloeb as IH generalizing HP
   wp_call
@@ -222,7 +222,7 @@ set_option hygiene false in
 generalizing the whole spatial context into the invariant with `iNamedAccu`,
 and introduce the loop-body goal with the invariant destructed by `iNamed`. -/
 macro "wp_for_core" : tactic => `(tactic| (
-  wp_bind (App (App (App (Val do_for) _) _) _)
+  wp_bind (App (App (App (Val doFor) _) _) _)
   iapply wp_for _ _ _ _ _ _ _ $$ [-] []
   iNamedAccu
   iintro !> __CTX

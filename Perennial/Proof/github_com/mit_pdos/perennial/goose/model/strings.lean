@@ -19,14 +19,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace github_com.mit_pdos.perennial.goose.model.strings
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : go.StringSemantics]
 variable {s : Stuckness} {E : CoPset}
 
-theorem wp_string_len (str : go_string) {t : go.type} [t ↓u go.string] :
+theorem wp_string_len (str : GoString) {t : go.GoType} [t ↓u go.string] :
     {{ (True : IProp GF) }}
       (App (Val #(functions go.len [t])) (Val #str)) @ s; E
     {{ RET #(W64 str.length); ⌜str.length < 2 ^ 63⌝ }} := by
@@ -39,7 +39,7 @@ theorem wp_string_len (str : go_string) {t : go.type} [t ↓u go.string] :
   · rw [ite_eq_right h]
     iapply wp_AngelicExit
 
-theorem wp_StringToByteSlice (str : go_string) :
+theorem wp_StringToByteSlice (str : GoString) :
     {{ (True : IProp GF) }}
       (App (Val (@! StringToByteSlice)) (Val #str)) @ s; E
     {{ (sl : slice.t), RET #sl; sl ↦* str ∗ ownSliceCap w8 sl (DFrac.own 1) }} := by

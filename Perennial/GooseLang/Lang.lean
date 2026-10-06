@@ -7,7 +7,7 @@ a customizable FFI (foreign-function interface) for new primitive operations.
 Differences from the Rocq version:
 * There is no crash semantics (`ffi_crash_step`, `goose_crash`).
 * The base step is an inductive relation (`base_step`) instead of being written
-  with the `Transitions` monad, and FFI steps (`ffi_semantics.ffi_step`) are a
+  with the `Transitions` monad, and FFI steps (`FfiSemantics.ffi_step`) are a
   plain relation.
 * The real semantics is `gooseRealEctxiLang`, an iris-lean
   `EctxItemLanguage` whose state is the pair `state × GlobalState`
@@ -35,16 +35,16 @@ open Iris.ProgramLogic
 abbrev proph_id := Nat
 
 /-- Rocq stdpp `binder`. -/
-inductive binder where
+inductive Binder where
   | BAnon
   | BNamed (s : String)
 deriving DecidableEq, Inhabited, Repr
 
-export binder (BAnon BNamed)
+export Binder (BAnon BNamed)
 
-instance : Coe String binder := ⟨BNamed⟩
+instance : Coe String Binder := ⟨BNamed⟩
 
-class ffi_syntax where
+class FfiSyntax where
   ffi_opcode : Type
   [ffi_opcode_eq_dec : DecidableEq ffi_opcode]
   [ffi_opcode_countable : Pos.Countable ffi_opcode]
@@ -52,29 +52,29 @@ class ffi_syntax where
   [ffi_val_eq_dec : DecidableEq ffi_val]
   [ffi_val_countable : Pos.Countable ffi_val]
 
-attribute [instance] ffi_syntax.ffi_opcode_eq_dec ffi_syntax.ffi_val_eq_dec
-  ffi_syntax.ffi_opcode_countable ffi_syntax.ffi_val_countable
-export ffi_syntax (ffi_opcode ffi_val)
+attribute [instance] FfiSyntax.ffi_opcode_eq_dec FfiSyntax.ffi_val_eq_dec
+  FfiSyntax.ffi_opcode_countable FfiSyntax.ffi_val_countable
+export FfiSyntax (ffi_opcode ffi_val)
 
-class ffi_model where
+class FfiModel where
   ffi_state : Type
   ffi_global_state : Type
   [ffi_state_inhabited : Inhabited ffi_state]
   [ffi_global_state_inhabited : Inhabited ffi_global_state]
 
-attribute [instance] ffi_model.ffi_state_inhabited ffi_model.ffi_global_state_inhabited
-export ffi_model (ffi_state ffi_global_state)
+attribute [instance] FfiModel.ffi_state_inhabited FfiModel.ffi_global_state_inhabited
+export FfiModel (ffi_state ffi_global_state)
 
 namespace slice
 structure t where
-  ptr : loc
+  ptr : Loc
   len : w64
   cap : w64
 deriving DecidableEq, Inhabited
 
 def nil : slice.t := ⟨null, 0, 0⟩
 /-- Rocq `slice.mk`. -/
-abbrev mk (ptr : loc) (len cap : w64) : slice.t := ⟨ptr, len, cap⟩
+abbrev mk (ptr : Loc) (len cap : w64) : slice.t := ⟨ptr, len, cap⟩
 end slice
 
 /-- Primitive (non-composite) values, injected into `val` by `LitV`. -/
@@ -87,7 +87,7 @@ inductive BaseLit where
   | LitString (s : byte_string)
   | LitUnit
   | LitPoison
-  | LitLoc (l : loc)
+  | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
   | LitSlice (s : slice.t)
 deriving DecidableEq, Inhabited
@@ -120,166 +120,166 @@ inductive PrimOp2 where
   | AtomicAddOp
 deriving DecidableEq
 
-inductive go_operator where
+inductive GoOperator where
   | GoEquals | GoLt | GoLe | GoGt | GoGe
   | GoPlus | GoSub | GoMul | GoDiv | GoRemainder
   | GoAnd | GoOr | GoXor | GoBitClear | GoShiftl | GoShiftr
 deriving DecidableEq
 
-inductive go_unary_operator where
+inductive GoUnaryOperator where
   | GoPos | GoNeg | GoNot | GoComplement
 deriving DecidableEq
 
-inductive go_instruction where
+inductive GoInstruction where
   | AngelicExit
-  | Convert (from_ to : go.type)
-  | GoOp (o : go_operator) (t : go.type)
-  | GoUnOp (o : go_unary_operator) (t : go.type)
-  | CheckComparable (t : go.type)
-  | GoLoad (t : go.type)
-  | GoStore (t : go.type)
-  | GoAlloc (t : go.type)
+  | Convert (from_ to : go.GoType)
+  | GoOp (o : GoOperator) (t : go.GoType)
+  | GoUnOp (o : GoUnaryOperator) (t : go.GoType)
+  | CheckComparable (t : go.GoType)
+  | GoLoad (t : go.GoType)
+  | GoStore (t : go.GoType)
+  | GoAlloc (t : go.GoType)
   | GoPrealloc
-  | GoZeroVal (t : go.type)
-  | FuncResolve (f : go_string) (type_args : List go.type)
-  | MethodResolve (t : go.type) (m : go_string)
-  | TypeAssert (t : go.type)
-  | TypeAssert2 (t : go.type)
-  | PackageInitCheck (pkg_name : go_string)
-  | PackageInitStart (pkg_name : go_string)
-  | PackageInitFinish (pkg_name : go_string)
-  | GlobalVarAddr (var_name : go_string)
-  | StructFieldRef (t : go.type) (f : go_string)
-  | StructFieldGet (t : go.type) (f : go_string)
-  | StructFieldSet (t : go.type) (f : go_string)
+  | GoZeroVal (t : go.GoType)
+  | FuncResolve (f : GoString) (type_args : List go.GoType)
+  | MethodResolve (t : go.GoType) (m : GoString)
+  | TypeAssert (t : go.GoType)
+  | TypeAssert2 (t : go.GoType)
+  | PackageInitCheck (pkg_name : GoString)
+  | PackageInitStart (pkg_name : GoString)
+  | PackageInitFinish (pkg_name : GoString)
+  | GlobalVarAddr (var_name : GoString)
+  | StructFieldRef (t : go.GoType) (f : GoString)
+  | StructFieldGet (t : go.GoType) (f : GoString)
+  | StructFieldSet (t : go.GoType) (f : GoString)
   /- can do slice, array, string, map, etc. for these ops; the internal ones
      should not be directly called by GooseLang. -/
   | InternalSliceLen
   | InternalSliceCap
-  | InternalDynamicArrayAlloc (elem_type : go.type)
+  | InternalDynamicArrayAlloc (elem_type : go.GoType)
   | InternalMakeSlice
-  | IndexRef (t : go.type)
-  | Index (t : go.type)
-  | Slice (t : go.type)
-  | FullSlice (t : go.type)
+  | IndexRef (t : go.GoType)
+  | Index (t : go.GoType)
+  | Slice (t : go.GoType)
+  | FullSlice (t : go.GoType)
   | ArraySet
   | ArrayLength
   /- internal steps; the Go map lookup has to be implemented as multiple
      instructions because it is not atomic. -/
-  | InternalMapCheckKey (key_type : go.type)
+  | InternalMapCheckKey (key_type : go.GoType)
   | InternalMapLookup
   | InternalMapInsert
   | InternalMapDelete
   | InternalMapLength
-  | InternalMapForRange (key_type elem_type : go.type)
+  | InternalMapForRange (key_type elem_type : go.GoType)
   | InternalMapMake
-  | CompositeLiteral (t : go.type)
+  | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
 
-noncomputable instance : DecidableEq go_instruction := fun a b => Classical.propDecidable (a = b)
+noncomputable instance : DecidableEq GoInstruction := fun a b => Classical.propDecidable (a = b)
 
 section goose_syntax
-variable [ext : ffi_syntax]
+variable [ext : FfiSyntax]
 
 mutual
-inductive expr where
+inductive Expr where
   -- Values
   | Val (v : val)
   -- Base lambda calculus
   | Var (x : String)
-  | Rec (f x : binder) (e : expr)
-  | App (e1 e2 : expr)
-  | If (e0 e1 e2 : expr)
+  | Rec (f x : Binder) (e : Expr)
+  | App (e1 e2 : Expr)
+  | If (e0 e1 e2 : Expr)
   -- Products
-  | Pair (e1 e2 : expr)
-  | Fst (e : expr)
-  | Snd (e : expr)
+  | Pair (e1 e2 : Expr)
+  | Fst (e : Expr)
+  | Snd (e : Expr)
   -- Concurrency
-  | Fork (e : expr)
+  | Fork (e : Expr)
   -- Heap-based primitives
   | Primitive0 (op : PrimOp0)
-  | Primitive1 (op : PrimOp1) (e : expr)
-  | Primitive2 (op : PrimOp2) (e1 e2 : expr)
+  | Primitive1 (op : PrimOp1) (e : Expr)
+  | Primitive2 (op : PrimOp2) (e1 e2 : Expr)
   /-- Compare-exchange -/
-  | CmpXchg (e0 e1 e2 : expr)
+  | CmpXchg (e0 e1 e2 : Expr)
   /-- External FFI operation -/
-  | ExternalOp (op : ffi_opcode) (e : expr)
+  | ExternalOp (op : ffi_opcode) (e : Expr)
   -- Prophecy
   | NewProph
-  | ResolveProph (e1 e2 : expr)
+  | ResolveProph (e1 e2 : Expr)
   | LiteralValue (l : List keyed_element)
-  | SelectStmtClauses (default_handler : Option expr) (l : List comm_clause)
+  | SelectStmtClauses (default_handler : Option Expr) (l : List comm_clause)
 
 inductive val where
   | LitV (l : BaseLit)
-  | RecV (f x : binder) (e : expr)
+  | RecV (f x : Binder) (e : Expr)
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
   /-- Pointers to opaque types that FFI operations may return. -/
   | ExtV (ev : ffi_val)
   -- Go stuff
-  | GoInstruction (o : go_instruction)
+  | GoInstruction (o : GoInstruction)
   | ArrayV (vs : List val)
-  | InterfaceV (t : Option (go.type × val))
+  | InterfaceV (t : Option (go.GoType × val))
   | LiteralValueV (l : List keyed_element)
-  | SelectStmtClausesV (default_handler : Option expr) (l : List comm_clause)
+  | SelectStmtClausesV (default_handler : Option Expr) (l : List comm_clause)
   | UntypedNil
 
 /-- https://go.dev/ref/spec#Composite_literals -/
 inductive keyed_element where
-  | KeyedElement (k : Option key) (v : element)
+  | KeyedElement (k : Option key) (v : Element)
 
 inductive key where
-  | KeyField (f : go_string)
+  | KeyField (f : GoString)
   | KeyInteger (s : Int)
-  | KeyExpression (t : go.type) (e : expr)
+  | KeyExpression (t : go.GoType) (e : Expr)
   | KeyLiteralValue (l : List keyed_element)
 
-inductive element where
-  | ElementExpression (t : go.type) (e : expr)
+inductive Element where
+  | ElementExpression (t : go.GoType) (e : Expr)
   | ElementLiteralValue (l : List keyed_element)
 
 inductive comm_clause where
-  | CommClause (c : comm_case) (body : expr)
+  | CommClause (c : CommCase) (body : Expr)
 
 /-- Variable bindings are desugared by goose into the body, so the send and
 receives don't need to consider bindings or assignments. (`default` is
 inlined into `SelectStmtClauses`.) -/
-inductive comm_case where
-  | SendCase (elem_type : go.type) (ch : expr) (e : expr)
-  | RecvCase (elem_type : go.type) (ch : expr)
+inductive CommCase where
+  | SendCase (elem_type : go.GoType) (ch : Expr) (e : Expr)
+  | RecvCase (elem_type : go.GoType) (ch : Expr)
 end
 
-noncomputable instance : DecidableEq expr := fun a b => Classical.propDecidable (a = b)
+noncomputable instance : DecidableEq Expr := fun a b => Classical.propDecidable (a = b)
 noncomputable instance : DecidableEq val := fun a b => Classical.propDecidable (a = b)
 noncomputable instance : DecidableEq keyed_element := fun a b => Classical.propDecidable (a = b)
 noncomputable instance : DecidableEq key := fun a b => Classical.propDecidable (a = b)
-noncomputable instance : DecidableEq element := fun a b => Classical.propDecidable (a = b)
+noncomputable instance : DecidableEq Element := fun a b => Classical.propDecidable (a = b)
 noncomputable instance : DecidableEq comm_clause := fun a b => Classical.propDecidable (a = b)
-noncomputable instance : DecidableEq comm_case := fun a b => Classical.propDecidable (a = b)
+noncomputable instance : DecidableEq CommCase := fun a b => Classical.propDecidable (a = b)
 
 instance : Inhabited val := ⟨.LitV .LitUnit⟩
-instance : Inhabited expr := ⟨.Val default⟩
+instance : Inhabited Expr := ⟨.Val default⟩
 
 end goose_syntax
 
-export expr (Val Var Rec App If Pair Fst Snd Fork Primitive0 Primitive1 Primitive2 CmpXchg
+export Expr (Val Var Rec App If Pair Fst Snd Fork Primitive0 Primitive1 Primitive2 CmpXchg
   ExternalOp NewProph ResolveProph LiteralValue SelectStmtClauses)
 export val (LitV RecV PairV InjLV InjRV ExtV GoInstruction ArrayV InterfaceV LiteralValueV
   SelectStmtClausesV UntypedNil)
 export keyed_element (KeyedElement)
 export key (KeyField KeyInteger KeyExpression KeyLiteralValue)
-export element (ElementExpression ElementLiteralValue)
+export Element (ElementExpression ElementLiteralValue)
 export comm_clause (CommClause)
-export comm_case (SendCase RecvCase)
+export CommCase (SendCase RecvCase)
 export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
   LitProphecy LitSlice)
-export go_operator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
+export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
-export go_unary_operator (GoPos GoNeg GoNot GoComplement)
-export go_instruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
+export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
+export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
   GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
@@ -288,29 +288,29 @@ export go_instruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad Go
   SelectStmt InternalStringLen)
 
 section derived
-variable [ext : ffi_syntax]
+variable [ext : FfiSyntax]
 
-instance : Coe val expr := ⟨Val⟩
-instance : Coe String expr := ⟨Var⟩
-instance : CoeFun expr (fun _ => expr → expr) := ⟨App⟩
+instance : Coe val Expr := ⟨Val⟩
+instance : Coe String Expr := ⟨Var⟩
+instance : CoeFun Expr (fun _ => Expr → Expr) := ⟨App⟩
 
-abbrev Panic (s : String) : expr := Primitive0 (.PanicOp s)
-abbrev ArbitraryInt : expr := Primitive0 .ArbitraryIntOp
-abbrev Alloc (e : expr) : expr := Primitive1 .AllocOp e
-abbrev PrepareWrite (e : expr) : expr := Primitive1 .PrepareWriteOp e
-abbrev StartRead (e : expr) : expr := Primitive1 .StartReadOp e
-abbrev FinishRead (e : expr) : expr := Primitive1 .FinishReadOp e
-abbrev Load (e : expr) : expr := Primitive1 .LoadOp e
-abbrev FinishStore (e1 e2 : expr) : expr := Primitive2 .FinishStoreOp e1 e2
-abbrev AtomicSwap (e1 e2 : expr) : expr := Primitive2 .AtomicSwapOp e1 e2
-abbrev AtomicAdd (e1 e2 : expr) : expr := Primitive2 .AtomicAddOp e1 e2
+abbrev Panic (s : String) : Expr := Primitive0 (.PanicOp s)
+abbrev ArbitraryInt : Expr := Primitive0 .ArbitraryIntOp
+abbrev Alloc (e : Expr) : Expr := Primitive1 .AllocOp e
+abbrev PrepareWrite (e : Expr) : Expr := Primitive1 .PrepareWriteOp e
+abbrev StartRead (e : Expr) : Expr := Primitive1 .StartReadOp e
+abbrev FinishRead (e : Expr) : Expr := Primitive1 .FinishReadOp e
+abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
+abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
+abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
+abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
 
-abbrev Lam (x : binder) (e : expr) : expr := Rec BAnon x e
-abbrev Let (x : binder) (e1 e2 : expr) : expr := App (Lam x e2) e1
-abbrev Seq (e1 e2 : expr) : expr := Let BAnon e1 e2
-abbrev LamV (x : binder) (e : expr) : val := RecV BAnon x e
+abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
+abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
+abbrev Seq (e1 e2 : Expr) : Expr := Let BAnon e1 e2
+abbrev LamV (x : Binder) (e : Expr) : val := RecV BAnon x e
 /-- Compare-and-set returns just a boolean indicating success or failure. -/
-abbrev CAS (l e1 e2 : expr) : expr := Snd (CmpXchg l e1 e2)
+abbrev CAS (l e1 e2 : Expr) : Expr := Snd (CmpXchg l e1 e2)
 
 def Store : val :=
   LamV "l" (Lam "v" (Seq (PrepareWrite (Var "l")) (FinishStore (Var "l") (Var "v"))))
@@ -321,24 +321,24 @@ def Read : val :=
 end derived
 
 namespace func
-structure t [ffi_syntax] where
-  f : binder
-  x : binder
-  e : expr
+structure t [FfiSyntax] where
+  f : Binder
+  x : Binder
+  e : Expr
 
-def nil [ffi_syntax] : func.t := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
+def nil [FfiSyntax] : func.t := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 
-instance [ffi_syntax] : Inhabited func.t := ⟨nil⟩
+instance [FfiSyntax] : Inhabited func.t := ⟨nil⟩
 /-- Rocq `func.mk`. -/
-abbrev mk [ffi_syntax] (f x : binder) (e : expr) : func.t := ⟨f, x, e⟩
+abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : func.t := ⟨f, x, e⟩
 end func
 
 /-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
 semantics to state constraints on `intoVal` (e.g. injectivity for certain
 types). -/
-class GoGlobalContext [ffi_syntax] where
+class GoGlobalContext [FfiSyntax] where
   intoVal : {V : Type} → V → val
-  intoVal_inj_loc : Function.Injective (intoVal (V := loc))
+  intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
   intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
   intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
   intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
@@ -351,31 +351,31 @@ scoped prefix:max "#" => intoVal
 
 /-- `GoLocalContext` contains several low-level Go functions for typed memory
 access, map updates, etc. -/
-class GoLocalContext [ffi_syntax] where
-  is_go_step_pure : go_instruction → val → expr → Prop
+class GoLocalContext [FfiSyntax] where
+  is_go_step_pure : GoInstruction → val → Expr → Prop
 
 export GoLocalContext (is_go_step_pure)
 
 namespace chan
-abbrev t := loc
+abbrev t := Loc
 def nil : chan.t := null
 end chan
 
 namespace interface
 
-structure t_ok [ffi_syntax] where
-  ty : go.type
+structure t_ok [FfiSyntax] where
+  ty : go.GoType
   v : val
 
-inductive t [ffi_syntax] where
+inductive t [FfiSyntax] where
   | ok (i : t_ok)
   | nil
 
 export t (ok nil)
 
-abbrev mkOk [ffi_syntax] (ty : go.type) (v : val) : t := .ok ⟨ty, v⟩
+abbrev mkOk [FfiSyntax] (ty : go.GoType) (v : val) : t := .ok ⟨ty, v⟩
 /-- Rocq `interface.mk`. -/
-abbrev mk [ffi_syntax] (ty : go.type) (v : val) : t_ok := ⟨ty, v⟩
+abbrev mk [FfiSyntax] (ty : go.GoType) (v : val) : t_ok := ⟨ty, v⟩
 
 end interface
 
@@ -401,22 +401,22 @@ abbrev NonAtomic (T : Type) := NaMode × T
 def Free {T} (v : T) : NonAtomic T := (Reading 0, v)
 
 class ZeroVal (V : Type) where
-  zero_val_def : V
+  zeroValDef : V
 
-export ZeroVal (zero_val_def)
+export ZeroVal (zeroValDef)
 
-abbrev zero_val (V : Type) [ZeroVal V] : V := ZeroVal.zero_val_def
+abbrev zero_val (V : Type) [ZeroVal V] : V := ZeroVal.zeroValDef
 
 section zero_val_instances
-variable [ffi_syntax]
-instance : ZeroVal loc := ⟨null⟩
+variable [FfiSyntax]
+instance : ZeroVal Loc := ⟨null⟩
 instance : ZeroVal w64 := ⟨0⟩
 instance : ZeroVal w32 := ⟨0⟩
 instance : ZeroVal w16 := ⟨0⟩
 instance : ZeroVal w8 := ⟨0⟩
 instance : ZeroVal Unit := ⟨()⟩
 instance : ZeroVal Bool := ⟨false⟩
-instance : ZeroVal go_string := ⟨[]⟩
+instance : ZeroVal GoString := ⟨[]⟩
 instance : ZeroVal func.t := ⟨func.nil⟩
 instance {V} [ZeroVal V] (n : Int) : ZeroVal (array.t V n) :=
   ⟨⟨List.replicate n.toNat (zero_val V)⟩⟩
@@ -426,17 +426,17 @@ instance : ZeroVal proph_id := ⟨1⟩
 end zero_val_instances
 
 section state
-variable [ffi_syntax] [ffi_model]
+variable [FfiSyntax] [FfiModel]
 
 structure GoState where
   goLctx : GoLocalContext
-  packageState : GMap go_string Bool
+  packageState : GMap GoString Bool
 
 instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False⟩⟩
 instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
 structure state where
-  heap : GMap loc (NonAtomic val)
+  heap : GMap Loc (NonAtomic val)
   goState : GoState
   world : ffi_state
 
@@ -455,8 +455,8 @@ abbrev Observation := proph_id × val
 
 end state
 
-def IsGoStep [ffi_syntax] [GoGlobalContext] [GoLocalContext]
-    (op : go_instruction) (arg : val) (e' : expr) (s s' : GMap go_string Bool) : Prop :=
+def IsGoStep [FfiSyntax] [GoGlobalContext] [GoLocalContext]
+    (op : GoInstruction) (arg : val) (e' : Expr) (s s' : GMap GoString Bool) : Prop :=
   match op with
   | PackageInitCheck p => arg = #() ∧ e' = Val #((s !! p).getD false) ∧ s' = s
   | PackageInitStart p => arg = #() ∧ e' = Val #() ∧ s' = <[p := false]> s
@@ -465,45 +465,45 @@ def IsGoStep [ffi_syntax] [GoGlobalContext] [GoLocalContext]
 
 /-- FFI semantics: `ffi_step op v σg e' σg'` says that the external operation
 `op` applied to `v` in state `σg` can produce `e'` and state `σg'`. -/
-class ffi_semantics (ext : ffi_syntax) (ffi : ffi_model) where
-  ffi_step : ffi_opcode → val → CfgState → expr → CfgState → Prop
+class FfiSemantics (ext : FfiSyntax) (ffi : FfiModel) where
+  ffi_step : ffi_opcode → val → CfgState → Expr → CfgState → Prop
 
-export ffi_semantics (ffi_step)
+export FfiSemantics (ffi_step)
 
 /-! ## Evaluation contexts and substitution -/
 
 section lang
-variable [ext : ffi_syntax]
+variable [ext : FfiSyntax]
 
-def toVal : expr → Option val
+def toVal : Expr → Option val
   | Val v => some v
   | _ => none
 
 @[simp] theorem to_of_val (v : val) : toVal (Val v) = some v := rfl
 
-theorem of_to_val {e : expr} {v : val} : toVal e = some v → Val v = e := by
+theorem of_to_val {e : Expr} {v : val} : toVal e = some v → Val v = e := by
   cases e <;> simp [toVal]; exact Eq.symm
 
 inductive EctxItem where
   | AppLCtx (v2 : val)
-  | AppRCtx (e1 : expr)
-  | IfCtx (e1 e2 : expr)
-  | PairLCtx (e2 : expr)
+  | AppRCtx (e1 : Expr)
+  | IfCtx (e1 e2 : Expr)
+  | PairLCtx (e2 : Expr)
   | PairRCtx (v1 : val)
   | FstCtx
   | SndCtx
   | Primitive1Ctx (op : PrimOp1)
-  | Primitive2LCtx (op : PrimOp2) (e2 : expr)
+  | Primitive2LCtx (op : PrimOp2) (e2 : Expr)
   | Primitive2RCtx (op : PrimOp2) (v1 : val)
   | ExternalOpCtx (op : ffi_opcode)
-  | CmpXchgLCtx (e1 e2 : expr)
-  | CmpXchgMCtx (v1 : val) (e2 : expr)
+  | CmpXchgLCtx (e1 e2 : Expr)
+  | CmpXchgMCtx (v1 : val) (e2 : Expr)
   | CmpXchgRCtx (v1 v2 : val)
   | ResolveProphLCtx (v2 : val)
-  | ResolveProphRCtx (e1 : expr)
+  | ResolveProphRCtx (e1 : Expr)
 
 open EctxItem in
-def fillItem (Ki : EctxItem) (e : expr) : expr :=
+def fillItem (Ki : EctxItem) (e : Expr) : Expr :=
   match Ki with
   | AppLCtx v2 => App e (Val v2)
   | AppRCtx e1 => App e1 e
@@ -523,7 +523,7 @@ def fillItem (Ki : EctxItem) (e : expr) : expr :=
   | ResolveProphRCtx e1 => ResolveProph e1 e
 
 mutual
-def subst (x : String) (v : val) : expr → expr
+def subst (x : String) (v : val) : Expr → Expr
   | Val v' => Val v'
   | Var y => if x = y then Val v else Var y
   | Rec f y e => Rec f y (if BNamed x ≠ f ∧ BNamed x ≠ y then subst x v e else e)
@@ -543,7 +543,7 @@ def subst (x : String) (v : val) : expr → expr
   | LiteralValue l => LiteralValue (substKeyedElements x v l)
   | SelectStmtClauses d l => SelectStmtClauses (substOpt x v d) (substCommClauses x v l)
 
-def substOpt (x : String) (v : val) : Option expr → Option expr
+def substOpt (x : String) (v : val) : Option Expr → Option Expr
   | none => none
   | some e => some (subst x v e)
 
@@ -560,7 +560,7 @@ def substOptKey (x : String) (v : val) : Option key → Option key
   | some (KeyLiteralValue l) => some (KeyLiteralValue (substKeyedElements x v l))
   | some k => some k
 
-def substElement (x : String) (v : val) : element → element
+def substElement (x : String) (v : val) : Element → Element
   | ElementExpression t e => ElementExpression t (subst x v e)
   | ElementLiteralValue l => ElementLiteralValue (substKeyedElements x v l)
 
@@ -573,7 +573,7 @@ def substCommClause (x : String) (v : val) : comm_clause → comm_clause
   | CommClause (RecvCase t e) body => CommClause (RecvCase t (subst x v e)) (subst x v body)
 end
 
-def subst' (mx : binder) (v : val) : expr → expr :=
+def subst' (mx : Binder) (v : val) : Expr → Expr :=
   match mx with
   | BNamed x => subst x v
   | BAnon => id
@@ -583,15 +583,15 @@ end lang
 /-! ## The base step relation -/
 
 section step
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
-def stateInitHeap (l : loc) (v : val) (σ : state) : state :=
+def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
 
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- `l` is the start of a fresh block in `σg`. -/
-def IsFresh (σg : CfgState) (l : loc) : Prop :=
+def IsFresh (σg : CfgState) (l : Loc) : Prop :=
   (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addrOffset = 0
 
 def atomicAddEval (v1 v2 : val) : Option val :=
@@ -602,14 +602,14 @@ def atomicAddEval (v1 v2 : val) : Option val :=
   | LitV (LitByte n1), LitV (LitByte n2) => some #(n1 + n2)
   | _, _ => none
 
-def setHeap (f : GMap loc (NonAtomic val) → GMap loc (NonAtomic val)) (σg : CfgState) :
+def setHeap (f : GMap Loc (NonAtomic val) → GMap Loc (NonAtomic val)) (σg : CfgState) :
     CfgState :=
   ({ σg.1 with heap := f σg.1.heap }, σg.2)
 
 open Classical in
 /-- Rocq `base_trans`/`base_step`, as an inductive relation:
 `base_step e σg κs e' σg' efs`. -/
-inductive BaseStep : expr → CfgState → List Observation → expr → CfgState → List expr → Prop
+inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgState → List Expr → Prop
   | RecS f x e σg : BaseStep (Rec f x e) σg [] (Val (RecV f x e)) σg []
   | PairS v1 v2 σg : BaseStep (Pair (Val v1) (Val v2)) σg [] (Val (PairV v1 v2)) σg []
   | BetaS f x e1 v2 σg :
@@ -680,20 +680,20 @@ inductive BaseStep : expr → CfgState → List Observation → expr → CfgStat
 theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl
 
-theorem fillItem_val (Ki : EctxItem) (e : expr) :
+theorem fillItem_val (Ki : EctxItem) (e : Expr) :
     (toVal (fillItem Ki e)).isSome → (toVal e).isSome := by
   cases Ki <;> simp [fillItem, toVal]
 
 theorem fillItem_inj (Ki : EctxItem) : Function.Injective (fillItem Ki) := by
   intro e1 e2 h; cases Ki <;> simp_all [fillItem]
 
-theorem fillItem_no_val_inj (Ki1 Ki2 : EctxItem) {e1 e2 : expr} :
+theorem fillItem_no_val_inj (Ki1 Ki2 : EctxItem) {e1 e2 : Expr} :
     toVal e1 = none → toVal e2 = none → fillItem Ki1 e1 = fillItem Ki2 e2 → Ki1 = Ki2 := by
   intro h1 h2 h
   cases Ki1 <;> cases Ki2 <;> simp only [fillItem, reduceCtorEq] at h <;>
-    (try simp only [expr.App.injEq, expr.Pair.injEq,
-    expr.If.injEq, expr.Fst.injEq, expr.Snd.injEq, expr.Primitive1.injEq, expr.Primitive2.injEq,
-    expr.ExternalOp.injEq, expr.CmpXchg.injEq, expr.ResolveProph.injEq] at h) <;>
+    (try simp only [Expr.App.injEq, Expr.Pair.injEq,
+    Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq] at h) <;>
     (try subst_eqs) <;> (first | (obtain ⟨_, _, _⟩ := h) | (obtain ⟨_, _⟩ := h) | skip) <;>
     subst_vars <;> simp_all [toVal]
 
@@ -707,9 +707,9 @@ end step
 /-! ## The iris-lean language instance -/
 
 section language
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
-instance goose_toVal : ToVal expr val where
+instance goose_toVal : ToVal Expr val where
   toVal := toVal
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
@@ -718,7 +718,7 @@ instance goose_toVal : ToVal expr val where
 /-- The real GooseLang semantics as an iris-lean `EctxItemLanguage` (the trusted
 model). Not an instance: the program logic uses the bounded layer
 `goose_ectxi_lang` (`BoundedLang.lean`). -/
-@[reducible] def gooseRealEctxiLang : EctxItemLanguage expr EctxItem CfgState Observation val where
+@[reducible] def gooseRealEctxiLang : EctxItemLanguage Expr EctxItem CfgState Observation val where
   toVal := toVal
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val

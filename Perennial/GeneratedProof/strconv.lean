@@ -16,71 +16,71 @@ namespace strconv
 namespace NumError
 section def_
 
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strconv.Assumptions]
 
 instance NumError_typed_pointsto :
     TypedPointsto (GF := GF) strconv.NumError.t where
-  typed_pointsto_def l v dq := iprop(
-    "Func" ∷ typed_pointsto (struct_field_ref strconv.NumError.t go!"Func" l) v.Func' dq ∗
-    "Num" ∷ typed_pointsto (struct_field_ref strconv.NumError.t go!"Num" l) v.Num' dq ∗
-    "Err" ∷ typed_pointsto (struct_field_ref strconv.NumError.t go!"Err" l) v.Err' dq ∗
+  typedPointstoDef l v dq := iprop(
+    "Func" ∷ typedPointsto (structFieldRef strconv.NumError.t go!"Func" l) v.Func' dq ∗
+    "Num" ∷ typedPointsto (structFieldRef strconv.NumError.t go!"Num" l) v.Num' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef strconv.NumError.t go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
-  typed_pointsto_def_dfractional := by solve_typed_pointsto_dfractional
-  typed_pointsto_def_timeless := by solve_typed_pointsto_timeless
-  typed_pointsto_agree := by solve_typed_pointsto_agree
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance NumError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strconv.NumError.t strconv.«NumErrorⁱᵐᵖˡ» := by
   solve_into_val_typed_struct
 
-instance NumError_access_load_Func (l : loc) (v : strconv.NumError.t) (dq : DFrac) :
+instance NumError_access_load_Func (l : Loc) (v : strconv.NumError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Func" l) v.Func' dq)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Func" l) v.Func' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Func" l) v.Func' dq)
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Func" l) v.Func' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance NumError_access_store_Func (l : loc) (v : strconv.NumError.t) (Func' : go_string) :
+instance NumError_access_store_Func (l : Loc) (v : strconv.NumError.t) (Func' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Func" l) v.Func' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Func" l) Func' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Func' := Func' } : strconv.NumError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Func" l) v.Func' (DFrac.own 1))
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Func" l) Func' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Func' := Func' } : strconv.NumError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance NumError_access_load_Num (l : loc) (v : strconv.NumError.t) (dq : DFrac) :
+instance NumError_access_load_Num (l : Loc) (v : strconv.NumError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Num" l) v.Num' dq)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Num" l) v.Num' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Num" l) v.Num' dq)
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Num" l) v.Num' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance NumError_access_store_Num (l : loc) (v : strconv.NumError.t) (Num' : go_string) :
+instance NumError_access_store_Num (l : Loc) (v : strconv.NumError.t) (Num' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Num" l) v.Num' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Num" l) Num' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Num' := Num' } : strconv.NumError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Num" l) v.Num' (DFrac.own 1))
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Num" l) Num' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Num' := Num' } : strconv.NumError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-instance NumError_access_load_Err (l : loc) (v : strconv.NumError.t) (dq : DFrac) :
+instance NumError_access_load_Err (l : Loc) (v : strconv.NumError.t) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Err" l) v.Err' dq)
-      (typed_pointsto l v dq) (typed_pointsto l v dq) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Err" l) v.Err' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-instance NumError_access_store_Err (l : loc) (v : strconv.NumError.t) (Err' : error.t) :
+instance NumError_access_store_Err (l : Loc) (v : strconv.NumError.t) (Err' : error.t) :
     AccessStrict (PROP := IProp GF)
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Err" l) v.Err' (DFrac.own 1))
-      (typed_pointsto (struct_field_ref strconv.NumError.t go!"Err" l) Err' (DFrac.own 1))
-      (typed_pointsto l v (DFrac.own 1)) (typed_pointsto l ({ v with Err' := Err' } : strconv.NumError.t) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef strconv.NumError.t go!"Err" l) Err' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : strconv.NumError.t) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

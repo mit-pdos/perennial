@@ -74,9 +74,9 @@ theorem mask_ndot_ne (N : Namespace) (x y : String) (h : x ≠ y) :
 instance : Inhabited rwmutex := ⟨.Locked⟩
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -97,7 +97,7 @@ abbrev isInv (P : Qp → IProp GF) (γ : rwmutex.RWMutexNames) (γmax γrlocked 
 end rwmutex_guard
 
 open rwmutex_guard in
-def ownRWMutexDef (rw : loc) (P : Qp → IProp GF) : IProp GF :=
+def ownRWMutexDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   iprop(∃ (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName),
     "Hown" ∷ rwmutex.ownRLockToken γ ∗
     "Hmax" ∷ ownToks γmax 1 ∗
@@ -105,24 +105,24 @@ def ownRWMutexDef (rw : loc) (P : Qp → IProp GF) : IProp GF :=
     "#HPfrac" ∷ □ (∀ q1 q2, P (q1 + q2) ∗-∗ P q1 ∗ P q2) ∗
     "#Hauth" ∷ ownTokAuthDfrac γmax DFrac.discard (Int.toNat rwmutex.actualMaxReaders) ∗
     "#Hinv" ∷ isInv P γ γmax γrlocked γlocked)
-@[irreducible] def ownRWMutex (rw : loc) (P : Qp → IProp GF) : IProp GF := ownRWMutexDef rw P
+@[irreducible] def ownRWMutex (rw : Loc) (P : Qp → IProp GF) : IProp GF := ownRWMutexDef rw P
 theorem ownRWMutex_unseal : @ownRWMutex = @ownRWMutexDef := by funext; with_unfolding_all rfl
 
 open rwmutex_guard in
-def ownRWMutexRLockedDef (rw : loc) (P : Qp → IProp GF) : IProp GF :=
+def ownRWMutexRLockedDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   iprop(∃ (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName),
     "Hrlocked" ∷ ownToks γrlocked 1 ∗
     "#His" ∷ rwmutex.isRWMutex rw γ (nroot.@"rw") ∗
     "#HPfrac" ∷ □ (∀ q1 q2, P (q1 + q2) ∗-∗ P q1 ∗ P q2) ∗
     "#Hauth" ∷ ownTokAuthDfrac γmax DFrac.discard (Int.toNat rwmutex.actualMaxReaders) ∗
     "#Hinv" ∷ isInv P γ γmax γrlocked γlocked)
-@[irreducible] def ownRWMutexRLocked (rw : loc) (P : Qp → IProp GF) : IProp GF :=
+@[irreducible] def ownRWMutexRLocked (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   ownRWMutexRLockedDef rw P
 theorem ownRWMutexRLocked_unseal : @ownRWMutexRLocked = @ownRWMutexRLockedDef := by
   funext; with_unfolding_all rfl
 
 open rwmutex_guard in
-def ownRWMutexLockedDef (rw : loc) (P : Qp → IProp GF) : IProp GF :=
+def ownRWMutexLockedDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   iprop(∃ (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName),
     "Hlocked" ∷ ghostVar γlocked 1 () ∗
     "Hown_rlock" ∷ rwmutex.ownRLockToken γ ∗
@@ -131,16 +131,16 @@ def ownRWMutexLockedDef (rw : loc) (P : Qp → IProp GF) : IProp GF :=
     "#HPfrac" ∷ □ (∀ q1 q2, P (q1 + q2) ∗-∗ P q1 ∗ P q2) ∗
     "#Hauth" ∷ ownTokAuthDfrac γmax DFrac.discard (Int.toNat rwmutex.actualMaxReaders) ∗
     "#Hinv" ∷ isInv P γ γmax γrlocked γlocked)
-@[irreducible] def ownRWMutexLocked (rw : loc) (P : Qp → IProp GF) : IProp GF :=
+@[irreducible] def ownRWMutexLocked (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   ownRWMutexLockedDef rw P
 theorem ownRWMutexLocked_unseal : @ownRWMutexLocked = @ownRWMutexLockedDef := by
   funext; with_unfolding_all rfl
 
 open rwmutex_guard
 
-theorem RWMutex.wp_RLock (rw : loc) (P : Qp → IProp GF) :
+theorem RWMutex.wp_RLock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutex rw P }}
-      (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"RLock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RLock")) (Val #()))
     {{ RET #(); ownRWMutexRLocked rw P ∗ ▷ P rfrac }} := by
   wp_start_folded as Hpre
   simp only [ownRWMutex_unseal, ownRWMutexDef]
@@ -177,9 +177,9 @@ theorem RWMutex.wp_RLock (rw : loc) (P : Qp → IProp GF) :
   iframe Ht
   iframe #
 
-theorem RWMutex.wp_RUnlock (rw : loc) (P : Qp → IProp GF) :
+theorem RWMutex.wp_RUnlock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutexRLocked rw P ∗ ▷ P rfrac }}
-      (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"RUnlock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"RUnlock")) (Val #()))
     {{ RET #(); ownRWMutex rw P }} := by
   wp_start_folded as ⟨Ho, HP_in⟩
   simp only [ownRWMutexRLocked_unseal, ownRWMutexRLockedDef]
@@ -227,9 +227,9 @@ theorem RWMutex.wp_RUnlock (rw : loc) (P : Qp → IProp GF) :
   iframe Hrlock Htok
   iframe #
 
-theorem RWMutex.wp_Lock (rw : loc) (P : Qp → IProp GF) :
+theorem RWMutex.wp_Lock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutex rw P }}
-      (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"Lock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Lock")) (Val #()))
     {{ RET #(); ownRWMutexLocked rw P ∗ ▷ P 1 }} := by
   wp_start_folded as Ho
   simp only [ownRWMutex_unseal, ownRWMutexDef]
@@ -262,9 +262,9 @@ theorem RWMutex.wp_Lock (rw : loc) (P : Qp → IProp GF) :
   iframe Hl Hown Hmax
   iframe #
 
-theorem RWMutex.wp_Unlock (rw : loc) (P : Qp → IProp GF) :
+theorem RWMutex.wp_Unlock (rw : Loc) (P : Qp → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutexLocked rw P ∗ ▷ P 1 }}
-      (App (Val (rw @!! go.type.PointerType RWMutex @!! go!"Unlock")) (Val #()))
+      (App (Val (rw @!! go.GoType.PointerType RWMutex @!! go!"Unlock")) (Val #()))
     {{ RET #(); ownRWMutex rw P }} := by
   wp_start_folded as ⟨Ho, HP_in⟩
   simp only [ownRWMutexLocked_unseal, ownRWMutexLockedDef]
@@ -321,8 +321,8 @@ theorem replicate_helper (R Q : IProp GF) (γ : GName) (n : Nat) :
     · iapply Hmk $$ Hr Htok
     · iapply ih $$ [$Hmk $Htoks $Hrs]
 
-theorem init_RWMutex (P : Qp → IProp GF) {E : CoPset} (rw : loc) [HPfrac : Fractional P] :
-    ⊢ ▷ P 1 -∗ typed_pointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ={E}=∗
+theorem init_RWMutex (P : Qp → IProp GF) {E : CoPset} (rw : Loc) [HPfrac : Fractional P] :
+    ⊢ ▷ P 1 -∗ typedPointsto (GF := GF) rw (zero_val RWMutex.t) (DFrac.own 1) ={E}=∗
       [∗list] _x ∈ List.replicate (Int.toNat rwmutex.actualMaxReaders) (), ownRWMutex rw P := by
   iintro HP Hrw
   imod rwmutex.init_RWMutex (E := E) (nroot.@"rw") rw $$ Hrw with ⟨%γ, #His, Hstate, Hrtoks⟩

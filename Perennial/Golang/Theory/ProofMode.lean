@@ -39,27 +39,27 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 /-! ## The `PureWp` class -/
 
 section classes
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 /-- Classes that are used to tell `wp_pures` about steps it can take:
 `PureWp φ e e'` says that, under the pure side condition `φ`, `e` takes a
 step (yielding a later credit) to `e'`, in any evaluation context. -/
-class PureWp (φ : outParam Prop) (e : expr) (e' : outParam expr) : Prop where
+class PureWp (φ : outParam Prop) (e : Expr) (e' : outParam Expr) : Prop where
   pure_wp_wp : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF) (K : List EctxItem), φ →
     iprop(▷ (£ 1 -∗ WP (fill K e') @ s; E {{ Φ }})) ⊢ WP (fill K e) @ s; E {{ Φ }}
 
 export PureWp (pure_wp_wp)
 
-theorem tac_wp_pure_wp {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
+theorem tac_wp_pure_wp {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (h : Δ' ⊢ WP (fill K e2) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
   hlater.trans <| (later_mono (wand_intro (sep_elim_left.trans h))).trans
     (Hwp.pure_wp_wp s E Φ K hφ)
 
-theorem tac_wp_pure_wp_later_credit {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
+theorem tac_wp_pure_wp_later_credit {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (h : Δ' ⊢ iprop(£ 1 -∗ WP (fill K e2) @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
@@ -67,13 +67,13 @@ theorem tac_wp_pure_wp_later_credit {φ : Prop} {e1 e2 : expr} [Hwp : PureWp (G 
 
 /-- `tac_wp_pure_wp` with the reduct given up to an equation (used by the
 tactics, which simplify the reduct). -/
-theorem tac_wp_pure_wp' {φ : Prop} {e1 e2 e' : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
+theorem tac_wp_pure_wp' {φ : Prop} {e1 e2 e' : Expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (heq : fill K e2 = e') (h : Δ' ⊢ WP e' @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e1) @ s; E {{ Φ }} :=
   tac_wp_pure_wp (Hwp := Hwp) hφ hlater (heq ▸ h)
 
-theorem tac_wp_pure_wp_lc' {φ : Prop} {e1 e2 e' : expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
+theorem tac_wp_pure_wp_lc' {φ : Prop} {e1 e2 e' : Expr} [Hwp : PureWp (G := G) (L := L) φ e1 e2]
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hφ : φ) (hlater : Δ ⊢ ▷ Δ') (heq : fill K e2 = e')
     (h : Δ' ⊢ iprop(£ 1 -∗ WP e' @ s; E {{ Φ }})) :
@@ -81,7 +81,7 @@ theorem tac_wp_pure_wp_lc' {φ : Prop} {e1 e2 e' : expr} [Hwp : PureWp (G := G) 
   tac_wp_pure_wp_later_credit (Hwp := Hwp) hφ hlater (heq ▸ h)
 
 /-- Establish `PureWp` from a one-step `PureExec`. -/
-theorem pure_exec_pure_wp {φ : Prop} {e e' : expr} (H : Language.PureExec φ 1 e e') :
+theorem pure_exec_pure_wp {φ : Prop} {e e' : Expr} (H : Language.PureExec φ 1 e e') :
     PureWp (G := G) (L := L) φ e e' where
   pure_wp_wp s E Φ K hφ := by
     have := Language.pureExec_fill (fill K) H
@@ -89,7 +89,7 @@ theorem pure_exec_pure_wp {φ : Prop} {e e' : expr} (H : Language.PureExec φ 1 
 
 /-- Establish `PureWp` for an expression `e` that reduces (in any number of
 steps) to the value `v'`, given a WP for `e` itself. -/
-theorem pure_wp_val (φ : Prop) (e : expr) (v' : val)
+theorem pure_wp_val (φ : Prop) (e : Expr) (v' : val)
     (Hwp : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF), φ → iprop(▷ (£ 1 -∗ Φ v')) ⊢ WP e @ s; E {{ Φ }}) :
     PureWp (G := G) (L := L) φ e (Val v') where
   pure_wp_wp s E Φ K hφ := by
@@ -101,7 +101,7 @@ end classes
 /-! ## Basic instances -/
 
 section instances
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
@@ -111,7 +111,7 @@ instance wp_snd (v1 v2 : val) : PureWp (G := G) (L := L) True (Snd (Val (PairV v
 instance wp_fst (v1 v2 : val) : PureWp (G := G) (L := L) True (Fst (Val (PairV v1 v2))) (Val v1) :=
   pure_exec_pure_wp (pure_fst v1 v2)
 
-instance wp_recc (f x : binder) (erec : expr) :
+instance wp_recc (f x : Binder) (erec : Expr) :
     PureWp (G := G) (L := L) True (Rec f x erec) (Val (RecV f x erec)) :=
   pure_exec_pure_wp (pure_recc f x erec)
 
@@ -119,14 +119,14 @@ instance wp_pair (v1 v2 : val) :
     PureWp (G := G) (L := L) True (Pair (Val v1) (Val v2)) (Val (PairV v1 v2)) :=
   pure_exec_pure_wp (pure_pairc v1 v2)
 
-instance wp_if_false (e1 e2 : expr) : PureWp (G := G) (L := L) True (If (Val #false) e1 e2) e2 :=
+instance wp_if_false (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #false) e1 e2) e2 :=
   pure_exec_pure_wp (pure_if_false e1 e2)
 
-instance wp_if_true (e1 e2 : expr) : PureWp (G := G) (L := L) True (If (Val #true) e1 e2) e1 :=
+instance wp_if_true (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #true) e1 e2) e1 :=
   pure_exec_pure_wp (pure_if_true e1 e2)
 
 /-- Rocq `wp_call` (a `Hint Extern` there; see the module docstring). -/
-instance wp_call (v2 : val) (f x : binder) (e : expr) :
+instance wp_call (v2 : val) (f x : Binder) (e : Expr) :
     PureWp (G := G) (L := L) True (App (Val (RecV f x e)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e) e)) :=
   pure_exec_pure_wp (pure_beta f x e v2)
@@ -135,7 +135,7 @@ instance pure_wp_LiteralValue (l : List keyed_element) :
     PureWp (G := G) (L := L) True (LiteralValue l) (Val (LiteralValueV l)) :=
   pure_exec_pure_wp (pure_literal_value l)
 
-instance pure_wp_SelectStmtClauses (d : Option expr) (cs : List comm_clause) :
+instance pure_wp_SelectStmtClauses (d : Option Expr) (cs : List comm_clause) :
     PureWp (G := G) (L := L) True (SelectStmtClauses d cs) (Val (SelectStmtClausesV d cs)) :=
   pure_exec_pure_wp (pure_select_stmt_clauses d cs)
 
@@ -154,11 +154,11 @@ run is substituted, once. (Substituting each `let:` into the rest of the run
 instead costs the size of the rest of the run per `let:`.) -/
 
 section let_env
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
-theorem tac_wp_let_env {σ : String → Option val} {b : binder} {v : val} {e : expr}
+theorem tac_wp_let_env {σ : String → Option val} {b : Binder} {v : val} {e : Expr}
     {K : List EctxItem} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h1 : Δ ⊢ ▷ Δ1) (h2 : Δ1 ⊢ ▷ Δ2)
     (h : Δ2 ⊢ WP (fill K (substEnv (envInsB b v σ) e)) @ s; E {{ Φ }}) :
@@ -172,7 +172,7 @@ theorem tac_wp_let_env {σ : String → Option val} {b : binder} {v : val} {e : 
   rw [subst'_substEnv]
   exact h
 
-theorem tac_wp_env_enter {e : expr} {K : List EctxItem} {Δ : IProp GF} {s : Stuckness}
+theorem tac_wp_env_enter {e : Expr} {K : List EctxItem} {Δ : IProp GF} {s : Stuckness}
     {E : CoPset} {Φ : val → IProp GF}
     (h : Δ ⊢ WP (fill K (substEnv envNil e)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := by
@@ -183,10 +183,10 @@ end let_env
 /-! ## Lemmas used by the tactics -/
 
 section lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_semantics ext ffi] [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [ι : IrisGS_gen hlc expr GF]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [ι : IrisGS_gen hlc Expr GF]
 
-theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e' : expr}
+theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e' : Expr}
     {Φ : val → IProp GF}
     (H : Δ ⊢ WP e' @ s; E {{ v, WP (fill K (Val v)) @ s; E {{ Φ }} }}) :
     Δ ⊢ WP (fill K e') @ s; E {{ Φ }} :=
@@ -202,7 +202,7 @@ def wpNestedPost (s : Stuckness) (E : CoPset) (K : List EctxItem) (Φ : val → 
   | [] => Φ
   | Ki :: K' => fun v => WP (fillItem Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}
 
-theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
+theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : Expr}
     {Φ : val → IProp GF} :
     WP (fill K e) @ s; E {{ Φ }} ⊣⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := by
   induction K generalizing e with
@@ -212,11 +212,11 @@ theorem wp_nestedPost {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr
     · exact wp_bind_inv (fill [Ki]) (e := e)
     · exact wp_bind (fill [Ki]) (e := e)
 
-theorem tac_wp_focus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
+theorem tac_wp_focus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : Expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }}) :
     Δ ⊢ WP (fill K e) @ s; E {{ Φ }} := h.trans wp_nestedPost.2
 
-theorem tac_wp_unfocus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : expr}
+theorem tac_wp_unfocus {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e : Expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP (fill K e) @ s; E {{ Φ }}) :
     Δ ⊢ WP e @ s; E {{ wpNestedPost s E K Φ }} := h.trans wp_nestedPost.1
 
@@ -228,7 +228,7 @@ theorem tac_wp_value_nofupd {Δ : IProp GF} {s : Stuckness} {E : CoPset} {v : va
     {Φ : val → IProp GF} (H : Δ ⊢ Φ v) : Δ ⊢ WP (Val v) @ s; E {{ Φ }} :=
   H.trans <| fupd_intro.trans (wp_value_fupd (e := Val v) ⟨rfl⟩).2
 
-theorem tac_wp_expr_simp {Δ : IProp GF} {s : Stuckness} {E : CoPset} {e e' : expr}
+theorem tac_wp_expr_simp {Δ : IProp GF} {s : Stuckness} {E : CoPset} {e e' : Expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP e' @ s; E {{ Φ }}) (heq : e = e') :
     Δ ⊢ WP e @ s; E {{ Φ }} := heq ▸ h
 
@@ -249,10 +249,10 @@ end lemmas
 /-! ## Expression simplification -/
 
 section simp_lemmas
-variable [ext : ffi_syntax]
+variable [ext : FfiSyntax]
 
-@[goose_wp_simp] theorem subst'_BAnon (v : val) (e : expr) : subst' BAnon v e = e := rfl
-@[goose_wp_simp] theorem subst'_BNamed (x : String) (v : val) (e : expr) :
+@[goose_wp_simp] theorem subst'_BAnon (v : val) (e : Expr) : subst' BAnon v e = e := rfl
+@[goose_wp_simp] theorem subst'_BNamed (x : String) (v : val) (e : Expr) :
     subst' (BNamed x) v e = subst x v e := rfl
 
 -- The equations of `subst` are in `goose_wp_simp` too (`SubstSimp.lean`).
@@ -266,12 +266,12 @@ simproc [goose_wp_simp] gooseReduceStrEq (( _ : String) = _) := String.reduceEq
 simproc [goose_wp_simp] gooseReduceCtorEq (_ = _) := reduceCtorEq
 open Lean Meta in
 /-- Evaluate a closed `decide p` (e.g. comparisons of Go string literals in
-`exception_seq`), by reduction. -/
+`exceptionSeq`), by reduction. -/
 simproc [goose_wp_simp] gooseReduceDecide (decide _) := fun e => do
   let_expr Decidable.decide p inst := e | return .continue
   if p.hasMVar then return .continue
   -- free variables are only allowed if they are instances (e.g. the section
-  -- variable `[ffi_syntax]` in a word literal), which evaluation does not need
+  -- variable `[FfiSyntax]` in a word literal), which evaluation does not need
   if p.hasFVar then
     for fv in (collectFVars {} p).fvarIds do
       unless (← isClass? (← fv.getType)).isSome do return .continue
@@ -295,7 +295,7 @@ attribute [goose_wp_simp] List.foldr_cons List.foldr_nil List.foldl_cons List.fo
 
 attribute [goose_wp_simp] _root_.decide_true _root_.decide_false
 
-attribute [goose_wp_simp] ne_eq not_false_eq_true not_true_eq_false binder.BNamed.injEq
+attribute [goose_wp_simp] ne_eq not_false_eq_true not_true_eq_false Binder.BNamed.injEq
   _root_.and_self _root_.and_true _root_.true_and _root_.and_false _root_.false_and ite_true ite_false if_true if_false
   Bool.false_eq_true
 
@@ -322,47 +322,47 @@ theorem list_char_ne_nil_cons {d : Char} {ds : List Char} : ([] : List Char) ≠
 theorem list_char_ne_cons_nil {c : Char} {cs : List Char} : c :: cs ≠ ([] : List Char) := nofun
 
 section subst_pf
-variable [ext : ffi_syntax] {x : String} {v : val}
+variable [ext : FfiSyntax] {x : String} {v : val}
 
 theorem binder_named_ne_named {y : String} (h : x ≠ y) : BNamed x ≠ BNamed y :=
-  fun h' => h (binder.BNamed.inj h')
+  fun h' => h (Binder.BNamed.inj h')
 theorem binder_named_ne_anon : BNamed x ≠ BAnon := nofun
 
 theorem subst_pf_val (w : val) : subst x v (Val w) = Val w := rfl
 theorem subst_pf_var_eq : subst x v (Var x) = Val v := by simp [subst]
 theorem subst_pf_var_ne {y : String} (h : x ≠ y) : subst x v (Var y) = Var y := by simp [subst, h]
-theorem subst_pf_rec {f y : binder} {e e' : expr} (hf : BNamed x ≠ f) (hy : BNamed x ≠ y)
+theorem subst_pf_rec {f y : Binder} {e e' : Expr} (hf : BNamed x ≠ f) (hy : BNamed x ≠ y)
     (he : subst x v e = e') : subst x v (Rec f y e) = Rec f y e' := by
   simp only [subst]; rw [if_pos ⟨hf, hy⟩, he]
-theorem subst_pf_rec_f {y : binder} {e : expr} : subst x v (Rec (BNamed x) y e) = Rec (BNamed x) y e := by
+theorem subst_pf_rec_f {y : Binder} {e : Expr} : subst x v (Rec (BNamed x) y e) = Rec (BNamed x) y e := by
   simp [subst]
-theorem subst_pf_rec_y {f : binder} {e : expr} : subst x v (Rec f (BNamed x) e) = Rec f (BNamed x) e := by
+theorem subst_pf_rec_y {f : Binder} {e : Expr} : subst x v (Rec f (BNamed x) e) = Rec f (BNamed x) e := by
   simp [subst]
-theorem subst_pf_app {a b a' b' : expr} (ha : subst x v a = a') (hb : subst x v b = b') :
+theorem subst_pf_app {a b a' b' : Expr} (ha : subst x v a = a') (hb : subst x v b = b') :
     subst x v (App a b) = App a' b' := by simp only [subst, ha, hb]
-theorem subst_pf_if {a b c a' b' c' : expr} (ha : subst x v a = a') (hb : subst x v b = b')
+theorem subst_pf_if {a b c a' b' c' : Expr} (ha : subst x v a = a') (hb : subst x v b = b')
     (hc : subst x v c = c') : subst x v (If a b c) = If a' b' c' := by simp only [subst, ha, hb, hc]
-theorem subst_pf_pair {a b a' b' : expr} (ha : subst x v a = a') (hb : subst x v b = b') :
+theorem subst_pf_pair {a b a' b' : Expr} (ha : subst x v a = a') (hb : subst x v b = b') :
     subst x v (Pair a b) = Pair a' b' := by simp only [subst, ha, hb]
-theorem subst_pf_fst {a a' : expr} (ha : subst x v a = a') : subst x v (Fst a) = Fst a' := by
+theorem subst_pf_fst {a a' : Expr} (ha : subst x v a = a') : subst x v (Fst a) = Fst a' := by
   simp only [subst, ha]
-theorem subst_pf_snd {a a' : expr} (ha : subst x v a = a') : subst x v (Snd a) = Snd a' := by
+theorem subst_pf_snd {a a' : Expr} (ha : subst x v a = a') : subst x v (Snd a) = Snd a' := by
   simp only [subst, ha]
-theorem subst_pf_fork {a a' : expr} (ha : subst x v a = a') : subst x v (Fork a) = Fork a' := by
+theorem subst_pf_fork {a a' : Expr} (ha : subst x v a = a') : subst x v (Fork a) = Fork a' := by
   simp only [subst, ha]
 theorem subst_pf_prim0 (op : PrimOp0) : subst x v (Primitive0 op) = Primitive0 op := rfl
-theorem subst_pf_prim1 (op : PrimOp1) {a a' : expr} (ha : subst x v a = a') :
+theorem subst_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : subst x v a = a') :
     subst x v (Primitive1 op a) = Primitive1 op a' := by simp only [subst, ha]
-theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : expr} (ha : subst x v a = a')
+theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : subst x v a = a')
     (hb : subst x v b = b') : subst x v (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [subst, ha, hb]
-theorem subst_pf_extop (op : ffi_opcode) {a a' : expr} (ha : subst x v a = a') :
+theorem subst_pf_extop (op : ffi_opcode) {a a' : Expr} (ha : subst x v a = a') :
     subst x v (ExternalOp op a) = ExternalOp op a' := by simp only [subst, ha]
-theorem subst_pf_cmpxchg {a b c a' b' c' : expr} (ha : subst x v a = a') (hb : subst x v b = b')
+theorem subst_pf_cmpxchg {a b c a' b' c' : Expr} (ha : subst x v a = a') (hb : subst x v b = b')
     (hc : subst x v c = c') : subst x v (CmpXchg a b c) = CmpXchg a' b' c' := by
   simp only [subst, ha, hb, hc]
-theorem subst_pf_newproph : subst x v (NewProph : expr) = NewProph := rfl
-theorem subst_pf_resolve {a b a' b' : expr} (ha : subst x v a = a') (hb : subst x v b = b') :
+theorem subst_pf_newproph : subst x v (NewProph : Expr) = NewProph := rfl
+theorem subst_pf_resolve {a b a' b' : Expr} (ha : subst x v a = a') (hb : subst x v b = b') :
     subst x v (ResolveProph a b) = ResolveProph a' b' := by simp only [subst, ha, hb]
 
 -- composite literals (`LiteralValue`): without these the kernel would evaluate
@@ -373,32 +373,32 @@ theorem subst_pf_kes_nil : substKeyedElements x v [] = [] := by simp only [subst
 theorem subst_pf_kes_cons {ke ke' : keyed_element} {l l' : List keyed_element}
     (h1 : substKeyedElement x v ke = ke') (h2 : substKeyedElements x v l = l') :
     substKeyedElements x v (ke :: l) = ke' :: l' := by simp only [substKeyedElements, h1, h2]
-theorem subst_pf_ke {k k' : Option key} {el el' : element} (h1 : substOptKey x v k = k')
+theorem subst_pf_ke {k k' : Option key} {el el' : Element} (h1 : substOptKey x v k = k')
     (h2 : substElement x v el = el') :
     substKeyedElement x v (KeyedElement k el) = KeyedElement k' el' := by
   simp only [substKeyedElement, h1, h2]
 theorem subst_pf_okey_none : substOptKey x v none = none := by simp only [substOptKey]
-theorem subst_pf_okey_field (f : go_string) :
+theorem subst_pf_okey_field (f : GoString) :
     substOptKey x v (some (KeyField f)) = some (KeyField f) := by simp only [substOptKey]
 theorem subst_pf_okey_int (i : Int) :
     substOptKey x v (some (KeyInteger i)) = some (KeyInteger i) := by simp only [substOptKey]
-theorem subst_pf_okey_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
+theorem subst_pf_okey_expr (t : go.GoType) {e e' : Expr} (h : subst x v e = e') :
     substOptKey x v (some (KeyExpression t e)) = some (KeyExpression t e') := by
   simp only [substOptKey, h]
 theorem subst_pf_okey_lv {l l' : List keyed_element} (h : substKeyedElements x v l = l') :
     substOptKey x v (some (KeyLiteralValue l)) = some (KeyLiteralValue l') := by
   simp only [substOptKey, h]
-theorem subst_pf_el_expr (t : go.type) {e e' : expr} (h : subst x v e = e') :
+theorem subst_pf_el_expr (t : go.GoType) {e e' : Expr} (h : subst x v e = e') :
     substElement x v (ElementExpression t e) = ElementExpression t e' := by
   simp only [substElement, h]
 theorem subst_pf_el_lv {l l' : List keyed_element} (h : substKeyedElements x v l = l') :
     substElement x v (ElementLiteralValue l) = ElementLiteralValue l' := by
   simp only [substElement, h]
 
-theorem subst'_pf_anon {e e' : expr} (h : e = e') : subst' BAnon v e = e' := h
-theorem subst'_pf_named {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
+theorem subst'_pf_anon {e e' : Expr} (h : e = e') : subst' BAnon v e = e' := h
+theorem subst'_pf_named {e e1 e' : Expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
     subst' (BNamed x) v e = e' := by rw [h1]; exact h2
-theorem subst_pf_cong {e e1 e' : expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
+theorem subst_pf_cong {e e1 e' : Expr} (h1 : e = e1) (h2 : subst x v e1 = e') :
     subst x v e = e' := by rw [h1]; exact h2
 
 end subst_pf
@@ -414,14 +414,14 @@ the function at every `let:`. The annotations are removed before the goal is
 returned. -/
 
 /-- `e`, annotated with a set `S` of variables containing its free variables. -/
-@[reducible] def fvClosed [ffi_syntax] (_S : List String) (e : expr) : expr := e
+@[reducible] def fvClosed [FfiSyntax] (_S : List String) (e : Expr) : Expr := e
 
 section closed
-variable [ext : ffi_syntax]
+variable [ext : FfiSyntax]
 
 /-- `simp` (e.g. `goose_wp_simp` over the whole WP expression) only rewrites the
 annotated term, not the variable set of an annotation. -/
-@[congr] theorem fvClosed_congr {S : List String} {e e' : expr} (h : e = e') :
+@[congr] theorem fvClosed_congr {S : List String} {e e' : Expr} (h : e = e') :
     fvClosed S e = fvClosed S e' := h ▸ rfl
 
 /-- The environment `σ` binds none of the variables in `S`. -/
@@ -429,18 +429,18 @@ def EnvAvoids (S : List String) (σ : String → Option val) : Prop := ∀ s ∈
 
 /-- Substituting any environment that binds no variable of `S` does not change `e`
 (so in particular substituting a variable not in `S`, `subst_pf_fvClosed`). -/
-def ClosedUnder (S : List String) (e : expr) : Prop := ∀ σ, EnvAvoids S σ → substEnv σ e = e
+def ClosedUnder (S : List String) (e : Expr) : Prop := ∀ σ, EnvAvoids S σ → substEnv σ e = e
 def ClosedKEs (S : List String) (l : List keyed_element) : Prop :=
   ∀ σ, EnvAvoids S σ → substEnvKes σ l = l
 def ClosedKE (S : List String) (ke : keyed_element) : Prop :=
   ∀ σ, EnvAvoids S σ → substEnvKe σ ke = ke
 def ClosedOKey (S : List String) (k : Option key) : Prop :=
   ∀ σ, EnvAvoids S σ → substEnvOkey σ k = k
-def ClosedElem (S : List String) (el : element) : Prop :=
+def ClosedElem (S : List String) (el : Element) : Prop :=
   ∀ σ, EnvAvoids S σ → substEnvEl σ el = el
 
 /-- The variable names bound by binders `f`, `y`. -/
-def bnames : binder → List String
+def bnames : Binder → List String
   | BAnon => []
   | BNamed s => [s]
 
@@ -449,7 +449,7 @@ variable {S : List String}
 theorem closed_val (w : val) : ClosedUnder S (Val w) := fun _ _ => by simp only [substEnv]
 theorem closed_var {y : String} (h : y ∈ S) : ClosedUnder S (Var y) := by
   intro σ hσ; simp only [substEnv, hσ y h]
-theorem closed_rec {f y : binder} {e : expr} (h : ClosedUnder (bnames f ++ bnames y ++ S) e) :
+theorem closed_rec {f y : Binder} {e : Expr} (h : ClosedUnder (bnames f ++ bnames y ++ S) e) :
     ClosedUnder S (Rec f y e) := by
   intro σ hσ; simp only [substEnv]
   rw [h]
@@ -460,31 +460,31 @@ theorem closed_rec {f y : binder} {e : expr} (h : ClosedUnder (bnames f ++ bname
   · cases f <;> simp [bnames] at hm; subst hm; simp
   · cases y <;> simp [bnames] at hm; subst hm; simp
   · simp [hσ s hm]
-theorem closed_app {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+theorem closed_app {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (App a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_if {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) (hc : ClosedUnder S c) :
+theorem closed_if {a b c : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) (hc : ClosedUnder S c) :
     ClosedUnder S (If a b c) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ, hc σ hσ]
-theorem closed_pair {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+theorem closed_pair {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Pair a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_fst {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fst a) := by
+theorem closed_fst {a : Expr} (ha : ClosedUnder S a) : ClosedUnder S (Fst a) := by
   intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_snd {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Snd a) := by
+theorem closed_snd {a : Expr} (ha : ClosedUnder S a) : ClosedUnder S (Snd a) := by
   intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_fork {a : expr} (ha : ClosedUnder S a) : ClosedUnder S (Fork a) := by
+theorem closed_fork {a : Expr} (ha : ClosedUnder S a) : ClosedUnder S (Fork a) := by
   intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_prim0 (op : PrimOp0) : ClosedUnder S (Primitive0 op) := fun _ _ => by
   simp only [substEnv]
-theorem closed_prim1 (op : PrimOp1) {a : expr} (ha : ClosedUnder S a) :
+theorem closed_prim1 (op : PrimOp1) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_prim2 (op : PrimOp2) {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+theorem closed_prim2 (op : PrimOp2) {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_extop (op : ffi_opcode) {a : expr} (ha : ClosedUnder S a) :
+theorem closed_extop (op : ffi_opcode) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
-theorem closed_cmpxchg {a b c : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
+theorem closed_cmpxchg {a b c : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
     (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by
   intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ, hc σ hσ]
-theorem closed_newproph : ClosedUnder S (NewProph : expr) := fun _ _ => by simp only [substEnv]
-theorem closed_resolve {a b : expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
+theorem closed_newproph : ClosedUnder S (NewProph : Expr) := fun _ _ => by simp only [substEnv]
+theorem closed_resolve {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (ResolveProph a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
 theorem closed_litval {l : List keyed_element} (h : ClosedKEs S l) : ClosedUnder S (LiteralValue l) := by
   intro σ hσ; simp only [substEnv, h σ hσ]
@@ -492,24 +492,24 @@ theorem closed_kes_nil : ClosedKEs S [] := by intro σ _; simp only [substEnvKes
 theorem closed_kes_cons {ke : keyed_element} {l : List keyed_element} (h1 : ClosedKE S ke)
     (h2 : ClosedKEs S l) : ClosedKEs S (ke :: l) := by
   intro σ hσ; simp only [substEnvKes, h1 σ hσ, h2 σ hσ]
-theorem closed_ke {k : Option key} {el : element} (h1 : ClosedOKey S k) (h2 : ClosedElem S el) :
+theorem closed_ke {k : Option key} {el : Element} (h1 : ClosedOKey S k) (h2 : ClosedElem S el) :
     ClosedKE S (KeyedElement k el) := by
   intro σ hσ; simp only [substEnvKe, h1 σ hσ, h2 σ hσ]
 theorem closed_okey_none : ClosedOKey S none := by intro σ _; simp only [substEnvOkey]
-theorem closed_okey_field (f : go_string) : ClosedOKey S (some (KeyField f)) := by
+theorem closed_okey_field (f : GoString) : ClosedOKey S (some (KeyField f)) := by
   intro σ _; simp only [substEnvOkey]
 theorem closed_okey_int (i : Int) : ClosedOKey S (some (KeyInteger i)) := by
   intro σ _; simp only [substEnvOkey]
-theorem closed_okey_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
+theorem closed_okey_expr (t : go.GoType) {e : Expr} (h : ClosedUnder S e) :
     ClosedOKey S (some (KeyExpression t e)) := by intro σ hσ; simp only [substEnvOkey, h σ hσ]
 theorem closed_okey_lv {l : List keyed_element} (h : ClosedKEs S l) :
     ClosedOKey S (some (KeyLiteralValue l)) := by intro σ hσ; simp only [substEnvOkey, h σ hσ]
-theorem closed_el_expr (t : go.type) {e : expr} (h : ClosedUnder S e) :
+theorem closed_el_expr (t : go.GoType) {e : Expr} (h : ClosedUnder S e) :
     ClosedElem S (ElementExpression t e) := by intro σ hσ; simp only [substEnvEl, h σ hσ]
 theorem closed_el_lv {l : List keyed_element} (h : ClosedKEs S l) :
     ClosedElem S (ElementLiteralValue l) := by intro σ hσ; simp only [substEnvEl, h σ hσ]
 /-- A nested annotation with a smaller set. -/
-theorem closed_fv {T : List String} {e : expr} (h : ClosedUnder T e) (hsub : ∀ s ∈ T, s ∈ S) :
+theorem closed_fv {T : List String} {e : Expr} (h : ClosedUnder T e) (hsub : ∀ s ∈ T, s ∈ S) :
     ClosedUnder S (fvClosed T e) := fun σ hσ => h σ (fun s hs => hσ s (hsub s hs))
 theorem subset_nil : ∀ s ∈ ([] : List String), s ∈ S := by simp
 theorem subset_cons {a : String} {T : List String} (h1 : a ∈ S) (h2 : ∀ s ∈ T, s ∈ S) :
@@ -520,7 +520,7 @@ theorem not_mem_cons' {x a : String} {l : List String} (h1 : x ≠ a) (h2 : x �
   simp only [List.mem_cons, not_or]; exact ⟨h1, h2⟩
 
 /-- The substitution of a variable `x ∉ S` into an annotated term. -/
-theorem subst_pf_fvClosed {x : String} {v : val} {e : expr} (h : ClosedUnder S e) (hx : x ∉ S) :
+theorem subst_pf_fvClosed {x : String} {v : val} {e : Expr} (h : ClosedUnder S e) (hx : x ∉ S) :
     subst x v (fvClosed S e) = fvClosed S e := by
   rw [fvClosed, subst_eq_substEnv]
   apply h
@@ -534,7 +534,7 @@ theorem env_avoids_cons {σ : String → Option val} {a : String} {l : List Stri
   intro s hs; simp only [List.mem_cons] at hs; rcases hs with rfl | hs; exact h1; exact h2 s hs
 
 /-- The substitution of an environment avoiding `S` into an annotated term. -/
-theorem substEnv_pf_fvClosed {σ : String → Option val} {e : expr} (h : ClosedUnder S e)
+theorem substEnv_pf_fvClosed {σ : String → Option val} {e : Expr} (h : ClosedUnder S e)
     (hσ : EnvAvoids S σ) : substEnv σ (fvClosed S e) = fvClosed S e := h σ hσ
 
 end closed
@@ -560,7 +560,7 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Names of the binders of a (∀-)type, in order. -/
-private partial def binderNames : Expr → List Name
+private partial def binderNames : Lean.Expr → List Name
   | .forallE n _ b _ => n :: binderNames b
   | _ => []
 
@@ -573,8 +573,8 @@ instance-implicit ones (which are synthesized): the application is built
 directly, without unification. Only binder types with metavariables (e.g.
 universe levels) are unified with the types of the given arguments; the kernel
 checks the final proof. `none` if some argument is missing. -/
-def mkAppNamedDirect? (c : Name) (args : List (String × Expr)) (partialApp := false) :
-    MetaM (Option Expr) := do
+def mkAppNamedDirect? (c : Name) (args : List (String × Lean.Expr)) (partialApp := false) :
+    MetaM (Option Lean.Expr) := do
   let info ← getConstInfo c
   let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
   let mut ty ← instantiateTypeLevelParams info.toConstantVal us
@@ -610,7 +610,7 @@ arguments are synthesized. Types of the given arguments are checked with
 instance-implicit: then the application is built directly (`mkAppNamedDirect?`),
 which avoids unifying (and traversing) the large types of the arguments, and the
 kernel checks it. -/
-def mkAppNamed (c : Name) (args : List (String × Expr)) : MetaM Expr := do
+def mkAppNamed (c : Name) (args : List (String × Lean.Expr)) : MetaM Lean.Expr := do
   if let some r ← mkAppNamedDirect? c args then return r
   let info ← getConstInfo c
   let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
@@ -644,7 +644,7 @@ def mkAppNamed (c : Name) (args : List (String × Expr)) : MetaM Expr := do
         let inst ← synthInstance (← instantiateMVars (← inferType mv))
         unless ← isDefEq mv inst do
           throwError "mkAppNamed: could not assign instance argument {i} of {c}"
-  let mut raw : Std.HashMap Nat Expr := {}
+  let mut raw : Std.HashMap Nat Lean.Expr := {}
   for (n, v) in unchecked do
     let n := (n.drop 1).toString
     let some i := names.idxOf? (Name.mkSimple n) | throwError "mkAppNamed: {c} has no argument {n}"
@@ -669,35 +669,35 @@ then `tail` is `fill Kl` and `e` is the inner expression; the tactics then work
 inside `e` and treat `Kl` as the outermost part of every evaluation context. -/
 structure GooseWpGoal where
   /-- `Wp.wp` applied to its implicit and instance arguments. -/
-  wpHead : Expr
+  wpHead : Lean.Expr
   /-- The `IrisGS_gen` instance. -/
-  ι : Expr
-  /-- The `ffi_syntax` instance of the expression type. -/
-  ext : Expr
-  s : Expr
-  E : Expr
-  e : Expr
-  Φ : Expr
+  ι : Lean.Expr
+  /-- The `FfiSyntax` instance of the expression type. -/
+  ext : Lean.Expr
+  s : Lean.Expr
+  E : Lean.Expr
+  e : Lean.Expr
+  Φ : Lean.Expr
   /-- `fill Kl` (partially applied) and `Kl`, for an opaque outer context `Kl`. -/
-  tail : Option (Expr × Expr) := none
+  tail : Option (Lean.Expr × Lean.Expr) := none
 
 /-- Wrap an inner expression into the opaque outer context of the goal. -/
-def GooseWpGoal.wrap (g : GooseWpGoal) (e : Expr) : Expr :=
+def GooseWpGoal.wrap (g : GooseWpGoal) (e : Lean.Expr) : Lean.Expr :=
   match g.tail with
   | none => e
   | some (fillKl, _) => mkApp fillKl e
 
-def GooseWpGoal.mk' (g : GooseWpGoal) (e Φ : Expr) : Expr :=
+def GooseWpGoal.mk' (g : GooseWpGoal) (e Φ : Lean.Expr) : Lean.Expr :=
   mkAppN g.wpHead #[g.s, g.E, g.wrap e, Φ]
 
 /-- Parse `goal` as a WP over GooseLang expressions. -/
-def parseGooseWp? (goal : Expr) : MetaM (Option GooseWpGoal) := do
+def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
   let goal ← instantiateMVars goal
   let goal := goal.consumeMData
   unless goal.isAppOfArity ``Iris.Wp.wp 9 do return none
   let args := goal.getAppArgs
   let exprTy := args[1]!
-  let_expr Perennial.expr ext := exprTy.consumeMData | return none
+  let_expr Perennial.Expr ext := exprTy.consumeMData | return none
   let self := args[4]!
   let ι := if self.isAppOf ``Iris.wp.def then self.getAppArgs.back! else self
   let e := args[7]!.consumeMData
@@ -711,20 +711,20 @@ def parseGooseWp? (goal : Expr) : MetaM (Option GooseWpGoal) := do
 /-- Caches of `needsGooseSimp` (cleared by `wp_auto`/`wp_pures` at the start):
 the simp heads, the result per (shared) subterm, and per constant. -/
 initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
-initialize needsCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
+initialize needsCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
 initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
 
 /-- Results of `synthPureWp`, per thread (declarations are elaborated in parallel)
 and cleared by every WP tactic (`withNoSorry`). The keys contain the local
 instances, so that a result never mentions free variables of another context. -/
 initialize pureWpCache :
-    IO.Ref (Std.HashMap UInt64 (Std.HashMap Expr (Option (Expr × Expr × Expr)))) ← IO.mkRef {}
+    IO.Ref (Std.HashMap UInt64 (Std.HashMap Lean.Expr (Option (Lean.Expr × Lean.Expr × Lean.Expr)))) ← IO.mkRef {}
 
-def pureWpCacheFind? (key : Expr) : BaseIO (Option (Option (Expr × Expr × Expr))) := do
+def pureWpCacheFind? (key : Lean.Expr) : BaseIO (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr))) := do
   let tid ← IO.getTID
   return (← pureWpCache.get)[tid]? >>= (·[key]?)
 
-def pureWpCacheInsert (key : Expr) (r : Option (Expr × Expr × Expr)) : BaseIO Unit := do
+def pureWpCacheInsert (key : Lean.Expr) (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) : BaseIO Unit := do
   let tid ← IO.getTID
   pureWpCache.modify fun m =>
     let c := m.getD tid {}
@@ -773,84 +773,84 @@ def runTacticGooseWp {α} (tacName : Name)
 /-- One evaluation-context item of a GooseLang expression: the item (as a
 `ectx_item` expression) and the sub-expression in the hole. Mirrors
 `fillItem` in `Perennial/GooseLang/Lang.lean`. -/
-def extractEctxItem (e : Expr) : MetaM (Option (Expr × Expr)) := do
+def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR (← instantiateMVars e)
-  let isVal (e : Expr) : MetaM (Option Expr) := do
+  let isVal (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
     let e ← whnfR e
     match_expr e with
-    | Perennial.expr.Val _ v => return some v
+    | Perennial.Expr.Val _ v => return some v
     | _ => return none
-  let mk (n : Name) (ext : Expr) (args : Array Expr) : Expr :=
+  let mk (n : Name) (ext : Lean.Expr) (args : Array Lean.Expr) : Lean.Expr :=
     mkAppN (mkConst n) (#[ext] ++ args)
   match_expr e with
-  | Perennial.expr.App ext e1 e2 =>
+  | Perennial.Expr.App ext e1 e2 =>
     if let some v ← isVal e2 then return some (mk ``EctxItem.AppLCtx ext #[v], e1)
     else return some (mk ``EctxItem.AppRCtx ext #[e1], e2)
-  | Perennial.expr.If ext e0 e1 e2 => return some (mk ``EctxItem.IfCtx ext #[e1, e2], e0)
-  | Perennial.expr.Pair ext e1 e2 =>
+  | Perennial.Expr.If ext e0 e1 e2 => return some (mk ``EctxItem.IfCtx ext #[e1, e2], e0)
+  | Perennial.Expr.Pair ext e1 e2 =>
     if let some v ← isVal e1 then return some (mk ``EctxItem.PairRCtx ext #[v], e2)
     else return some (mk ``EctxItem.PairLCtx ext #[e2], e1)
-  | Perennial.expr.Fst ext e => return some (mk ``EctxItem.FstCtx ext #[], e)
-  | Perennial.expr.Snd ext e => return some (mk ``EctxItem.SndCtx ext #[], e)
-  | Perennial.expr.Primitive1 ext op e => return some (mk ``EctxItem.Primitive1Ctx ext #[op], e)
-  | Perennial.expr.Primitive2 ext op e1 e2 =>
+  | Perennial.Expr.Fst ext e => return some (mk ``EctxItem.FstCtx ext #[], e)
+  | Perennial.Expr.Snd ext e => return some (mk ``EctxItem.SndCtx ext #[], e)
+  | Perennial.Expr.Primitive1 ext op e => return some (mk ``EctxItem.Primitive1Ctx ext #[op], e)
+  | Perennial.Expr.Primitive2 ext op e1 e2 =>
     if let some v ← isVal e1 then return some (mk ``EctxItem.Primitive2RCtx ext #[op, v], e2)
     else return some (mk ``EctxItem.Primitive2LCtx ext #[op, e2], e1)
-  | Perennial.expr.ExternalOp ext op e => return some (mk ``EctxItem.ExternalOpCtx ext #[op], e)
-  | Perennial.expr.CmpXchg ext e0 e1 e2 =>
+  | Perennial.Expr.ExternalOp ext op e => return some (mk ``EctxItem.ExternalOpCtx ext #[op], e)
+  | Perennial.Expr.CmpXchg ext e0 e1 e2 =>
     match ← isVal e0, ← isVal e1 with
     | some v0, some v1 => return some (mk ``EctxItem.CmpXchgRCtx ext #[v0, v1], e2)
     | some v0, none => return some (mk ``EctxItem.CmpXchgMCtx ext #[v0, e2], e1)
     | none, _ => return some (mk ``EctxItem.CmpXchgLCtx ext #[e1, e2], e0)
-  | Perennial.expr.ResolveProph ext e1 e2 =>
+  | Perennial.Expr.ResolveProph ext e1 e2 =>
     if let some v ← isVal e2 then return some (mk ``EctxItem.ResolveProphLCtx ext #[v], e1)
     else return some (mk ``EctxItem.ResolveProphRCtx ext #[e1], e2)
   | _ => return none
 
 /-- `fillItem Ki e` at the meta level, producing constructor applications. -/
-def fillItemExpr (Ki e : Expr) : MetaM Expr := do
+def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
   let Ki ← whnfR Ki
   let ext := Ki.getAppArgs[0]!
   let a := Ki.getAppArgs
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
-  let val (v : Expr) : Expr := mk ``Perennial.expr.Val #[v]
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let val (v : Lean.Expr) : Lean.Expr := mk ``Perennial.Expr.Val #[v]
   match Ki.getAppFn.constName? with
-  | some ``EctxItem.AppLCtx => return mk ``Perennial.expr.App #[e, val a[1]!]
-  | some ``EctxItem.AppRCtx => return mk ``Perennial.expr.App #[a[1]!, e]
-  | some ``EctxItem.IfCtx => return mk ``Perennial.expr.If #[e, a[1]!, a[2]!]
-  | some ``EctxItem.PairLCtx => return mk ``Perennial.expr.Pair #[e, a[1]!]
-  | some ``EctxItem.PairRCtx => return mk ``Perennial.expr.Pair #[val a[1]!, e]
-  | some ``EctxItem.FstCtx => return mk ``Perennial.expr.Fst #[e]
-  | some ``EctxItem.SndCtx => return mk ``Perennial.expr.Snd #[e]
-  | some ``EctxItem.Primitive1Ctx => return mk ``Perennial.expr.Primitive1 #[a[1]!, e]
-  | some ``EctxItem.Primitive2LCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, e, a[2]!]
-  | some ``EctxItem.Primitive2RCtx => return mk ``Perennial.expr.Primitive2 #[a[1]!, val a[2]!, e]
-  | some ``EctxItem.ExternalOpCtx => return mk ``Perennial.expr.ExternalOp #[a[1]!, e]
-  | some ``EctxItem.CmpXchgLCtx => return mk ``Perennial.expr.CmpXchg #[e, a[1]!, a[2]!]
-  | some ``EctxItem.CmpXchgMCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, e, a[2]!]
-  | some ``EctxItem.CmpXchgRCtx => return mk ``Perennial.expr.CmpXchg #[val a[1]!, val a[2]!, e]
-  | some ``EctxItem.ResolveProphLCtx => return mk ``Perennial.expr.ResolveProph #[e, val a[1]!]
-  | some ``EctxItem.ResolveProphRCtx => return mk ``Perennial.expr.ResolveProph #[a[1]!, e]
+  | some ``EctxItem.AppLCtx => return mk ``Perennial.Expr.App #[e, val a[1]!]
+  | some ``EctxItem.AppRCtx => return mk ``Perennial.Expr.App #[a[1]!, e]
+  | some ``EctxItem.IfCtx => return mk ``Perennial.Expr.If #[e, a[1]!, a[2]!]
+  | some ``EctxItem.PairLCtx => return mk ``Perennial.Expr.Pair #[e, a[1]!]
+  | some ``EctxItem.PairRCtx => return mk ``Perennial.Expr.Pair #[val a[1]!, e]
+  | some ``EctxItem.FstCtx => return mk ``Perennial.Expr.Fst #[e]
+  | some ``EctxItem.SndCtx => return mk ``Perennial.Expr.Snd #[e]
+  | some ``EctxItem.Primitive1Ctx => return mk ``Perennial.Expr.Primitive1 #[a[1]!, e]
+  | some ``EctxItem.Primitive2LCtx => return mk ``Perennial.Expr.Primitive2 #[a[1]!, e, a[2]!]
+  | some ``EctxItem.Primitive2RCtx => return mk ``Perennial.Expr.Primitive2 #[a[1]!, val a[2]!, e]
+  | some ``EctxItem.ExternalOpCtx => return mk ``Perennial.Expr.ExternalOp #[a[1]!, e]
+  | some ``EctxItem.CmpXchgLCtx => return mk ``Perennial.Expr.CmpXchg #[e, a[1]!, a[2]!]
+  | some ``EctxItem.CmpXchgMCtx => return mk ``Perennial.Expr.CmpXchg #[val a[1]!, e, a[2]!]
+  | some ``EctxItem.CmpXchgRCtx => return mk ``Perennial.Expr.CmpXchg #[val a[1]!, val a[2]!, e]
+  | some ``EctxItem.ResolveProphLCtx => return mk ``Perennial.Expr.ResolveProph #[e, val a[1]!]
+  | some ``EctxItem.ResolveProphRCtx => return mk ``Perennial.Expr.ResolveProph #[a[1]!, e]
   | _ => throwError "fillItemExpr: unknown evaluation context item {Ki}"
 
 /-- `fill K e` at the meta level (`K` innermost item first). -/
-def fillExpr (K : List Expr) (e : Expr) : MetaM Expr :=
+def fillExpr (K : List Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr :=
   K.foldlM (fun e Ki => fillItemExpr Ki e) e
 
 /-- Quote a list of `ectx_item`s (innermost first), ending in the opaque tail
 `tail` (default `[]`). -/
-def quoteEctx (ext : Expr) (K : List Expr) (tail : Option Expr := none) : Expr :=
+def quoteEctx (ext : Lean.Expr) (K : List Lean.Expr) (tail : Option Lean.Expr := none) : Lean.Expr :=
   let ty := mkApp (mkConst ``EctxItem) ext
   K.foldr (fun Ki acc => mkApp3 (mkConst ``List.cons [0]) ty Ki acc)
     (tail.getD (mkApp (mkConst ``List.nil [0]) ty))
 
 /-- `quoteEctx` with the goal's opaque tail. -/
-def GooseWpGoal.quoteK (g : GooseWpGoal) (K : List Expr) : Expr :=
+def GooseWpGoal.quoteK (g : GooseWpGoal) (K : List Lean.Expr) : Lean.Expr :=
   quoteEctx g.ext K (g.tail.map (·.2))
 
 /-- A proof of `fill K e2 = wrap e'` from a proof `p? : fill_items K e2 = e'`
 (`none` for `rfl`). -/
-def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Expr) (p? : Option Expr) : MetaM Expr := do
+def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Lean.Expr) (p? : Option Lean.Expr) : MetaM Lean.Expr := do
   match p?, g.tail with
   | none, _ => mkEqRefl (g.wrap e')
   | some p, none => pure p
@@ -859,25 +859,25 @@ def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Expr) (p? : Option Expr) : MetaM 
 /-- Find the *outermost* evaluation context `K` and sub-expression `e'` with
 `fill K e' = e` such that `pred K e'` succeeds (Rocq `walk_expr`). Values are
 never visited. -/
-partial def findEctx {α} (e : Expr) (pred : List Expr → Expr → ProofModeM α) :
-    ProofModeM (Option (α × List Expr × Expr)) :=
+partial def findEctx {α} (e : Lean.Expr) (pred : List Lean.Expr → Lean.Expr → ProofModeM α) :
+    ProofModeM (Option (α × List Lean.Expr × Lean.Expr)) :=
   go e []
 where
-  go (e : Expr) (K : List Expr) : ProofModeM (Option (α × List Expr × Expr)) := do
+  go (e : Lean.Expr) (K : List Lean.Expr) : ProofModeM (Option (α × List Lean.Expr × Lean.Expr)) := do
     let e' ← whnfR (← instantiateMVars e)
-    if e'.isAppOf ``Perennial.expr.Val then return none
+    if e'.isAppOf ``Perennial.Expr.Val then return none
     if let some a ← observing? (pred K e) then return some (a, K, e)
     let some (Ki, e'') ← extractEctxItem e | return none
     go e'' (Ki :: K)
 
 /-- All evaluation-context decompositions of `e`, outermost first. -/
-partial def allEctx (e : Expr) : MetaM (List (List Expr × Expr)) :=
+partial def allEctx (e : Lean.Expr) : MetaM (List (List Lean.Expr × Lean.Expr)) :=
   go e [] []
 where
-  go (e : Expr) (K : List Expr) (acc : List (List Expr × Expr)) :
-      MetaM (List (List Expr × Expr)) := do
+  go (e : Lean.Expr) (K : List Lean.Expr) (acc : List (List Lean.Expr × Lean.Expr)) :
+      MetaM (List (List Lean.Expr × Lean.Expr)) := do
     let e' ← whnfR (← instantiateMVars e)
-    if e'.isAppOf ``Perennial.expr.Val then return acc.reverse
+    if e'.isAppOf ``Perennial.Expr.Val then return acc.reverse
     let acc := (K, e) :: acc
     let some (Ki, e'') ← extractEctxItem e | return acc.reverse
     go e'' (Ki :: K) acc
@@ -891,11 +891,11 @@ def gooseSimpSets (opts : Options) : List Name :=
 default transparency (e.g. `match interface.nil with ...` after `cases`, where
 `interface.nil` is a definition); `simp`'s `iota` only unfolds reducible
 definitions. The result is definitionally equal to `e`. -/
-def reduceMatchersDefault (e : Expr) : MetaM Expr := do
+def reduceMatchersDefault (e : Lean.Expr) : MetaM Lean.Expr := do
   unless goose.wp.extras.get (← getOptions) do return e
   let env ← getEnv
   unless (e.find? fun s => match s with
-      | .const n _ => (isMatcherCore env n).or ((n == ``ZeroVal.zero_val_def).or
+      | .const n _ => (isMatcherCore env n).or ((n == ``ZeroVal.zeroValDef).or
           ((env.getProjectionFnInfo? n).any (!·.fromClass)))
       | _ => false).isSome do return e
   Meta.transform e (post := fun s => do
@@ -905,7 +905,7 @@ def reduceMatchersDefault (e : Expr) : MetaM Expr := do
     if let some info := env.getProjectionFnInfo? n then
       -- `zero_val V` of a base type (`W64 0`, `false`, `slice.nil`, ...); the
       -- zero value of a struct stays folded
-      if n == ``ZeroVal.zero_val_def then
+      if n == ``ZeroVal.zeroValDef then
         let args := s.getAppArgs
         if h : 1 < args.size then
           let inst ← withTransparency .default (whnf args[1])
@@ -947,7 +947,7 @@ def reduceMatchersDefault (e : Expr) : MetaM Expr := do
 /-- Simplify a GooseLang expression with the `goose_wp_simp` simp set, returning
 the new expression and a proof of `e = e'` (or `none` if unchanged). `match`es
 on (definitions of) constructors are reduced first (`reduceMatchersDefault`). -/
-def gooseExprSimp (e : Expr) : MetaM (Expr × Option Expr) := do
+def gooseExprSimp (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
   let e0 := e
   let e ← reduceMatchersDefault e
   let p0? ← if e == e0 then pure none
@@ -958,7 +958,7 @@ def gooseExprSimp (e : Expr) : MetaM (Expr × Option Expr) := do
   | some p0, none => return (e', some p0)
   | some p0, some p => return (e', some (← mkEqTrans p0 p))
 where
-  gooseExprSimpCore (e : Expr) : MetaM (Expr × Option Expr) := do
+  gooseExprSimpCore (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
   let mut theorems := #[]
   let mut procs := #[]
   for attr in gooseSimpSets (← getOptions) do
@@ -999,7 +999,7 @@ matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
 would do nothing. The subterms `known` are known to be in normal form (e.g. the
 subterms of the WP expression that a step only moves around) and are skipped. -/
-def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
+def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := do
   let heads? ← match ← needsHeadsCache.get with
     | some h => pure h
     | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
@@ -1016,7 +1016,7 @@ def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
       else if extras.and ((← getReducibilityStatus n) == .reducible) then
         match (env.find? n).bind (·.value?) with
         | some v =>
-          let rec body : Expr → Expr
+          let rec body : Lean.Expr → Lean.Expr
             | .lam _ _ b _ => body b
             | b => b
           pure ((body v).getAppFn.constName?.any heads.contains)
@@ -1024,7 +1024,7 @@ def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
       else pure false
     needsConstCache.modify (·.insert n b)
     return b
-  let localNeeds (s : Expr) : MetaM Bool := do
+  let localNeeds (s : Lean.Expr) : MetaM Bool := do
     match s with
     | .const n _ => constNeeds n
     | .proj .. | .letE .. => return true
@@ -1037,14 +1037,14 @@ def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
           if h : info.numParams < args.size then
             match args[info.numParams].getAppFn with
             | .const c _ =>
-              let b1 := extras.and ((!info.fromClass).or (n == ``ZeroVal.zero_val_def))
+              let b1 := extras.and ((!info.fromClass).or (n == ``ZeroVal.zeroValDef))
               return b1.or ((env.find? c).any (·.isCtor))
             | _ => return false
           else return false
         | none => return false
       | _ => return false
     | _ => return false
-  let rec go (s : Expr) : MetaM Bool := do
+  let rec go (s : Lean.Expr) : MetaM Bool := do
     if known.contains s then return false
     if let some b := (← needsCache.get)[s]? then return b
     let b ← do
@@ -1062,7 +1062,7 @@ def needsGooseSimp (e : Expr) (known : Array Expr := #[]) : MetaM Bool := do
 
 /-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
 instance. -/
-def gooseGSArgs (ι : Expr) : MetaM (Array Expr) := do
+def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let ι ← instantiateMVars ι
   let ι ← if ι.isAppOf ``goose_irisGS then pure ι else whnfR ι
   unless ι.isAppOfArity ``goose_irisGS 9 do
@@ -1073,38 +1073,38 @@ def gooseGSArgs (ι : Expr) : MetaM (Array Expr) := do
   return #[a[0]!, a[1]!, a[2]!, a[5]!, a[6]!, a[3]!, a[4]!, a[7]!, a[8]!]
 
 /-- The context arguments `hlc`, `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
-def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Expr)) := do
+def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Lean.Expr)) := do
   let gs ← gooseGSArgs wp.ι
   return [("hlc", gs[5]!), ("GF", gs[6]!), ("ι", wp.ι)]
 
 /-- `mkAppNamed` with the context arguments of `wp` (`GooseWpGoal.ctxArgs`), so
 that the application can be built without unification (`mkAppNamedDirect?`). -/
-def GooseWpGoal.mkAppNamed (wp : GooseWpGoal) (c : Name) (args : List (String × Expr)) :
-    MetaM Expr := do
+def GooseWpGoal.mkAppNamed (wp : GooseWpGoal) (c : Name) (args : List (String × Lean.Expr)) :
+    MetaM Lean.Expr := do
   Perennial.mkAppNamed c ((← wp.ctxArgs) ++ args)
 
 /-- Is the goal's expression a value `Val v` (with no opaque outer context)? -/
-def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Expr) := do
+def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Lean.Expr) := do
   if g.tail.isSome then return none
   let e ← whnfR (← instantiateMVars g.e)
   match_expr e with
-  | Perennial.expr.Val _ v => return some v
+  | Perennial.Expr.Val _ v => return some v
   | _ => return none
 
 /-- Is `e` a GooseLang value `Val v`? -/
-def isGooseVal? (e : Expr) : MetaM (Option Expr) := do
+def isGooseVal? (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let e ← whnfR (← instantiateMVars e)
   match_expr e with
-  | Perennial.expr.Val _ v => return some v
+  | Perennial.Expr.Val _ v => return some v
   | _ => return none
 
 /-- A pure step found in a WP goal. -/
 structure PureStep where
-  K : List Expr
-  e1 : Expr
-  φ : Expr
-  e2 : Expr
-  inst : Expr
+  K : List Lean.Expr
+  e1 : Lean.Expr
+  φ : Lean.Expr
+  e2 : Lean.Expr
+  inst : Lean.Expr
 
 /-- The `PureWp` instance of a step that only rearranges `e1`: `Rec f x e`
 (`wp_recc`), a beta-redex `App (Val (RecV f x e)) (Val v)` (`wp_call`) and a pair
@@ -1112,16 +1112,16 @@ of values (`wp_pair`), built
 directly instead of by typeclass search: unifying the instance with `e1` assigns
 the (possibly large) body `e` to a metavariable, which costs a traversal of `e`
 at every step. Returns the same as `synthPureWp`. -/
-def directPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   unless gs.size == 9 do return none
   let ext := gs[0]!
   let e ← whnfR (← instantiateMVars e1)
-  let val (v : Expr) := mkApp2 (mkConst ``Perennial.expr.Val) ext v
+  let val (v : Lean.Expr) := mkApp2 (mkConst ``Perennial.Expr.Val) ext v
   match_expr e with
-  | Perennial.expr.Rec _ f x body =>
+  | Perennial.Expr.Rec _ f x body =>
     return some (mkConst ``True, val (mkApp4 (mkConst ``Perennial.val.RecV) ext f x body),
       mkAppN (mkConst ``wp_recc) (gs ++ #[f, x, body]))
-  | Perennial.expr.App _ a b =>
+  | Perennial.Expr.App _ a b =>
     let some fv ← isGooseVal? a | return none
     let some v2 ← isGooseVal? b | return none
     let fv ← whnfR fv
@@ -1130,7 +1130,7 @@ def directPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × 
     let s1 := mkApp4 (mkConst ``Perennial.subst') ext f recv body
     return some (mkConst ``True, mkApp4 (mkConst ``Perennial.subst') ext x v2 s1,
       mkAppN (mkConst ``wp_call) (gs ++ #[v2, f, x, body]))
-  | Perennial.expr.Pair _ a b =>
+  | Perennial.Expr.Pair _ a b =>
     let some v1 ← isGooseVal? a | return none
     let some v2 ← isGooseVal? b | return none
     return some (mkConst ``True, val (mkApp3 (mkConst ``Perennial.val.PairV) ext v1 v2),
@@ -1141,8 +1141,8 @@ def directPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × 
 arguments) and then to one argument per remaining binder: instance-implicit ones
 are synthesized, the others are `args` in order (each given the binder type).
 Built directly, without unification: the kernel checks it. -/
-def mkAppPositional? (c : Name) (gs : Array Expr) (args : Array (Expr → MetaM Expr)) :
-    MetaM (Option Expr) := do
+def mkAppPositional? (c : Name) (gs : Array Lean.Expr) (args : Array (Lean.Expr → MetaM Lean.Expr)) :
+    MetaM (Option Lean.Expr) := do
   let some info := (← getEnv).find? c | return none
   unless info.levelParams.isEmpty do return none
   let mut ty := info.type
@@ -1170,24 +1170,24 @@ and `n` a literal: one `PureWp` step to the array value (`pure_wp_array_lit` of
 `Golang/Theory/ArrayLit.lean`, if it is imported), instead of the `ArraySet` chain of
 `go.composite_literal_array`, whose stepping is quadratic in the length.
 Returns the same as `synthPureWp`. -/
-def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   unless gs.size == 9 do return none
   let e ← whnfR e
-  let_expr Perennial.expr.App _ f a := e | return none
+  let_expr Perennial.Expr.App _ f a := e | return none
   let some fv ← isGooseVal? f | return none
   let fv ← whnfR fv
   let_expr Perennial.val.GoInstruction _ i := fv | return none
   let i ← whnfR i
-  let_expr Perennial.go_instruction.CompositeLiteral ty := i | return none
+  let_expr Perennial.GoInstruction.CompositeLiteral ty := i | return none
   let ty ← whnfR ty
-  let_expr Perennial.go.type.ArrayType nE t := ty | return none
+  let_expr Perennial.go.GoType.ArrayType nE t := ty | return none
   let some lv ← isGooseVal? a | return none
   let lv ← whnfR lv
   let_expr Perennial.val.LiteralValueV _ kvs := lv | return none
   unless (← getEnv).contains `Perennial.pure_wp_array_lit do return none
   let some n ← getIntValue? nE | return none
   -- the elements `#x`, all of the same type `V`
-  let mut V? : Option Expr := none
+  let mut V? : Option Lean.Expr := none
   let mut xs := #[]
   let mut l ← whnfR kvs
   repeat
@@ -1197,7 +1197,7 @@ def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr �
       let_expr Perennial.keyed_element.KeyedElement _ k el := ke | return none
       unless (← whnfR k).isAppOfArity ``Option.none 1 do return none
       let el ← whnfR el
-      let_expr Perennial.element.ElementExpression _ t' ee := el | return none
+      let_expr Perennial.Element.ElementExpression _ t' ee := el | return none
       unless t' == t do return none
       let some v ← isGooseVal? ee | return none
       unless v.isAppOfArity ``GoGlobalContext.intoVal 4 do return none
@@ -1216,16 +1216,16 @@ def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr �
   let some zv ← synthInstance? (mkApp (mkConst ``ZeroVal) V) | return none
   let m := N - xs.size
   let xsE ← mkListLit V xs.toList
-  let ofDecide (d : Expr) : MetaM Expr := do
+  let ofDecide (d : Lean.Expr) : MetaM Lean.Expr := do
     let inst ← synthInstance (mkApp (mkConst ``Decidable) d)
     return mkApp3 (mkConst ``of_decide_eq_true) d inst
       (mkApp2 (mkConst ``Eq.refl [1]) (mkConst ``Bool) (mkConst ``Bool.true))
-  let hlen : Expr → MetaM Expr := fun _ => mkEqRefl (mkNatLit N)
-  let common : Array (Expr → MetaM Expr) := #[fun _ => pure nE, fun _ => pure t, fun _ => pure V,
+  let hlen : Lean.Expr → MetaM Lean.Expr := fun _ => mkEqRefl (mkNatLit N)
+  let common : Array (Lean.Expr → MetaM Lean.Expr) := #[fun _ => pure nE, fun _ => pure t, fun _ => pure V,
     fun _ => pure zv, fun _ => pure xsE]
-  let rest : Array (Expr → MetaM Expr) := #[fun _ => pure kvs, fun _ => mkEqRefl kvs, hlen,
+  let rest : Array (Lean.Expr → MetaM Lean.Expr) := #[fun _ => pure kvs, fun _ => mkEqRefl kvs, hlen,
     ofDecide]
-  let r? : Option Expr ← if m == 0 then
+  let r? : Option Lean.Expr ← if m == 0 then
       mkAppPositional? `Perennial.pure_wp_array_lit_full gs (common ++ rest)
     else
       mkAppPositional? `Perennial.pure_wp_array_lit gs
@@ -1236,19 +1236,19 @@ def arrayLitPureWp? (gs : Array Expr) (e : Expr) : MetaM (Option (Expr × Expr �
   unless args.size == gs.size + 3 do return none
   return some (args[gs.size]!, args[gs.size + 2]!, inst)
 
-/-- Is `e` an application of a constructor of `go.type` (e.g. a struct type with its
+/-- Is `e` an application of a constructor of `go.GoType` (e.g. a struct type with its
 field list)? Such subterms are treated as atoms by the keys of `synthPureWp`. -/
-def isGoTypeApp (e : Expr) : Bool :=
+def isGoTypeApp (e : Lean.Expr) : Bool :=
   match e.getAppFn with
-  | .const n _ => n.getPrefix == ``Perennial.go.type
+  | .const n _ => n.getPrefix == ``Perennial.go.GoType
   | _ => false
 
 /-- Is `e` small (at most `n` nodes, counting shared subterms repeatedly, and the
 payloads `x` of values `#x` as one node when `modPayloads`)? Takes `O(n)`. -/
-def exprSmall (e : Expr) (n : Nat) (modPayloads := false) : Bool :=
+def exprSmall (e : Lean.Expr) (n : Nat) (modPayloads := false) : Bool :=
   (go n e).isSome
 where
-  go : Nat → Expr → Option Nat
+  go : Nat → Lean.Expr → Option Nat
     | 0, _ => none
     | fuel + 1, e@(.app f a) =>
       if modPayloads && (e.isAppOfArity ``GoGlobalContext.intoVal 4 || isGoTypeApp e) then
@@ -1264,7 +1264,7 @@ in the key of a search (`synthPureWp`)? Machine words (`BitVec n`) and the struc
 types generated by goose: no instance matches on a particular word or struct.
 (Not locations, slices, maps, ...: e.g. the comparison of a map with `#map.nil`
 has its own instance.) -/
-def genericPayloadType (V : Expr) : MetaM Bool := do
+def genericPayloadType (V : Lean.Expr) : MetaM Bool := do
   let V ← whnfR V
   if V.isAppOfArity ``BitVec 1 then return true
   -- the struct types generated by goose (fields `f'`): Go structs are not compared
@@ -1280,21 +1280,21 @@ def genericPayloadType (V : Expr) : MetaM Bool := do
 /-- If `e` is `StructFieldRef t f` applied to a value: the instruction `StructFieldRef t f`
 and `f` (the instances are generic in the field name `f`, so that it can be
 abstracted in the key of the search, see `synthPureWp`). -/
-def fieldRefName? (e : Expr) : MetaM (Option (Expr × Expr)) := do
+def fieldRefName? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR e
-  let_expr Perennial.expr.App _ fe _ := e | return none
+  let_expr Perennial.Expr.App _ fe _ := e | return none
   let some fv ← isGooseVal? fe | return none
   let fv ← whnfR fv
   let_expr Perennial.val.GoInstruction _ i := fv | return none
   let i' ← whnfR i
-  unless i'.isAppOf ``go_instruction.StructFieldRef && i'.getAppNumArgs ≥ 2 do return none
+  unless i'.isAppOf ``GoInstruction.StructFieldRef && i'.getAppNumArgs ≥ 2 do return none
   return some (i, i'.appArg!)
 
 /-- The values `#x` in `e` (below applications) whose payload `x` has a generic type
 (`genericPayloadType`), as `(V, x)`, and for each value `#x` (in the order of
 `replaceGenericPayloads`) whether it is one of them. -/
-def genericPayloads (e : Expr) : MetaM (Array (Expr × Expr) × Array Bool) := do
-  let mut acc : Array (Expr × Expr) := #[]
+def genericPayloads (e : Lean.Expr) : MetaM (Array (Lean.Expr × Lean.Expr) × Array Bool) := do
+  let mut acc : Array (Lean.Expr × Lean.Expr) := #[]
   let mut flags : Array Bool := #[]
   for s in collectIntoVals e #[] do
     let x := s.getArg! 3
@@ -1303,7 +1303,7 @@ def genericPayloads (e : Expr) : MetaM (Array (Expr × Expr) × Array Bool) := d
     if g then acc := acc.push (s.getArg! 2, x)
   return (acc, flags)
 where
-  collectIntoVals (e : Expr) (acc : Array Expr) : Array Expr :=
+  collectIntoVals (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
     if e.isAppOfArity ``GoGlobalContext.intoVal 4 then acc.push e
     else if isGoTypeApp e then acc
     else match e with
@@ -1313,11 +1313,11 @@ where
 
 /-- Replace the payloads found by `genericPayloads e` (`isGeneric`, in the same
 order) by `ys`. -/
-def replaceGenericPayloads (e : Expr) (isGeneric : Array Bool) (ys : Array Expr) : Expr :=
+def replaceGenericPayloads (e : Lean.Expr) (isGeneric : Array Bool) (ys : Array Lean.Expr) : Lean.Expr :=
   (go e 0 0).1
 where
   -- returns the new expression, the index of the next `#x` and of the next `y`
-  go (e : Expr) (i j : Nat) : Expr × Nat × Nat :=
+  go (e : Lean.Expr) (i j : Nat) : Lean.Expr × Nat × Nat :=
     if e.isAppOfArity ``GoGlobalContext.intoVal 4 then
       if isGeneric[i]?.getD false then
         (mkApp e.appFn! ys[j]!, i + 1, j + 1)
@@ -1333,7 +1333,7 @@ where
 
 /-- The free variables of `e` that are neither let-bound nor local instances
 (sorted by declaration order), or `none` if `e` mentions a let-bound variable. -/
-def pureWpKeyVars (e : Expr) : MetaM (Option (Array Expr)) := do
+def pureWpKeyVars (e : Lean.Expr) : MetaM (Option (Array Lean.Expr)) := do
   let lctx ← getLCtx
   let insts := (← getLocalInstances).map (·.fvar)
   let mut ds := #[]
@@ -1344,9 +1344,9 @@ def pureWpKeyVars (e : Expr) : MetaM (Option (Array Expr)) := do
   return some ((ds.qsort (·.index < ·.index)).map (·.toExpr))
 
 /-- The `PureWp` search for `e1` (no shortcut, no cache). -/
-def synthPureWpCore (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+def synthPureWpCore (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   let φ ← mkFreshExprMVar (mkSort .zero)
-  let e2 ← mkFreshExprMVar (mkApp (mkConst ``Perennial.expr) gs[0]!)
+  let e2 ← mkFreshExprMVar (mkApp (mkConst ``Perennial.Expr) gs[0]!)
   let ty ← mkAppOptM ``PureWp (gs.map some ++ #[some φ, some e1, some e2])
   let some inst ← synthInstance? ty | return none
   let ty ← instantiateMVars ty
@@ -1361,7 +1361,7 @@ local instances), the payloads of its machine-word and struct values
 that e.g. all the steps `#x +⟨go.uint64⟩ #(W64 1)` of a function, or all the field
 references of a struct, share one search; a failed generic search is final. A
 redex without such payloads is cached up to its free variables. -/
-def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × Expr)) := do
+def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   if let some r ← directPureWp gs e1 then return some r
   if let some r ← arrayLitPureWp? gs e1 then return some r
   let e1 ← instantiateMVars e1
@@ -1369,11 +1369,11 @@ def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × E
   if e1.hasMVar.or !(exprSmall e1 400 (modPayloads := true)) then return ← synthPureWpCore gs e1
   -- (the local instances are part of the key: the results may mention them)
   let insts := (← getLocalInstances).map (·.fvar)
-  let mkKey (k : Expr) : MetaM Expr := pure (mkAppN k insts)
-  let inst3 (r : Option (Expr × Expr × Expr)) (args : Array Expr) :=
+  let mkKey (k : Lean.Expr) : MetaM Lean.Expr := pure (mkAppN k insts)
+  let inst3 (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) (args : Array Lean.Expr) :=
     r.map fun (φ, e2, inst) => (φ.beta args, e2.beta args, inst.beta args)
-  let abs3 (params : Array Expr) :
-      Option (Expr × Expr × Expr) → MetaM (Option (Option (Expr × Expr × Expr)))
+  let abs3 (params : Array Lean.Expr) :
+      Option (Lean.Expr × Lean.Expr × Lean.Expr) → MetaM (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr)))
     | none => pure (some none)
     | some (φ, e2, inst) =>
       if φ.hasMVar.or (e2.hasMVar.or inst.hasMVar) then pure none
@@ -1423,69 +1423,69 @@ def synthPureWp (gs : Array Expr) (e1 : Expr) : MetaM (Option (Expr × Expr × E
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
 immediately; otherwise iris-lean's side-condition solver is tried, and if it
 fails the condition becomes a new goal (unless `failOnUnsolved`). -/
-def solvePureSideCondition (φ : Expr) (failOnUnsolved : Bool) : ProofModeM Expr := do
+def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) : ProofModeM Lean.Expr := do
   let φ ← instantiateMVars φ
   if φ.isConstOf ``True then return mkConst ``True.intro
   iSolveSidecondition φ (failOnUnsolved := failOnUnsolved)
 
 /-- Is `e` a string literal? -/
-def strLit? (e : Expr) : MetaM (Option String) := do
+def strLit? (e : Lean.Expr) : MetaM (Option String) := do
   match (← whnfR e).consumeMData with
   | .lit (.strVal s) => return some s
   | _ => return none
 
 /-- A binder literal: `some none` for `BAnon`, `some (some x)` for `BNamed "x"`. -/
-def binderLit? (b : Expr) : MetaM (Option (Option String)) := do
+def binderLit? (b : Lean.Expr) : MetaM (Option (Option String)) := do
   let b ← whnfR b
-  if b.isAppOf ``binder.BAnon then return some none
-  if b.isAppOfArity ``binder.BNamed 1 then
+  if b.isAppOf ``Binder.BAnon then return some none
+  if b.isAppOfArity ``Binder.BNamed 1 then
     if let some x ← strLit? (b.getArg! 0) then return some (some x)
   return none
 
 /-- `subst x v e` computed at the meta level on GooseLang constructor terms
 (definitionally equal to `Perennial.subst x v e`; non-constructor subterms are
 left as `subst x v _`). -/
-partial def substMeta (ext : Expr) (x : String) (xe v : Expr) (e : Expr) : MetaM Expr := do
+partial def substMeta (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
   let e ← whnfR e
   let fallback := mkApp4 (mkConst ``Perennial.subst) ext xe v e
   let rec' := substMeta ext x xe v
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
   match e.getAppFn.constName?, e.getAppArgs with
-  | some ``Perennial.expr.Val, _ => return e
-  | some ``Perennial.expr.Var, #[_, y] =>
+  | some ``Perennial.Expr.Val, _ => return e
+  | some ``Perennial.Expr.Var, #[_, y] =>
     match ← strLit? y with
-    | some y' => return (if y' == x then mk ``Perennial.expr.Val #[v] else e)
+    | some y' => return (if y' == x then mk ``Perennial.Expr.Val #[v] else e)
     | none => return fallback
-  | some ``Perennial.expr.Rec, #[_, f, y, body] =>
+  | some ``Perennial.Expr.Rec, #[_, f, y, body] =>
     match ← binderLit? f, ← binderLit? y with
     | some fb, some yb =>
-      if fb == some x ∨ yb == some x then return mk ``Perennial.expr.Rec #[f, y, body]
-      else return mk ``Perennial.expr.Rec #[f, y, ← rec' body]
+      if fb == some x ∨ yb == some x then return mk ``Perennial.Expr.Rec #[f, y, body]
+      else return mk ``Perennial.Expr.Rec #[f, y, ← rec' body]
     | _, _ => return fallback
-  | some ``Perennial.expr.App, #[_, a, b] => return mk ``Perennial.expr.App #[← rec' a, ← rec' b]
-  | some ``Perennial.expr.If, #[_, a, b, c] =>
-    return mk ``Perennial.expr.If #[← rec' a, ← rec' b, ← rec' c]
-  | some ``Perennial.expr.Pair, #[_, a, b] => return mk ``Perennial.expr.Pair #[← rec' a, ← rec' b]
-  | some ``Perennial.expr.Fst, #[_, a] => return mk ``Perennial.expr.Fst #[← rec' a]
-  | some ``Perennial.expr.Snd, #[_, a] => return mk ``Perennial.expr.Snd #[← rec' a]
-  | some ``Perennial.expr.Fork, #[_, a] => return mk ``Perennial.expr.Fork #[← rec' a]
-  | some ``Perennial.expr.Primitive0, _ => return e
-  | some ``Perennial.expr.Primitive1, #[_, op, a] =>
-    return mk ``Perennial.expr.Primitive1 #[op, ← rec' a]
-  | some ``Perennial.expr.Primitive2, #[_, op, a, b] =>
-    return mk ``Perennial.expr.Primitive2 #[op, ← rec' a, ← rec' b]
-  | some ``Perennial.expr.ExternalOp, #[_, op, a] =>
-    return mk ``Perennial.expr.ExternalOp #[op, ← rec' a]
-  | some ``Perennial.expr.CmpXchg, #[_, a, b, c] =>
-    return mk ``Perennial.expr.CmpXchg #[← rec' a, ← rec' b, ← rec' c]
-  | some ``Perennial.expr.NewProph, _ => return e
-  | some ``Perennial.expr.ResolveProph, #[_, a, b] =>
-    return mk ``Perennial.expr.ResolveProph #[← rec' a, ← rec' b]
+  | some ``Perennial.Expr.App, #[_, a, b] => return mk ``Perennial.Expr.App #[← rec' a, ← rec' b]
+  | some ``Perennial.Expr.If, #[_, a, b, c] =>
+    return mk ``Perennial.Expr.If #[← rec' a, ← rec' b, ← rec' c]
+  | some ``Perennial.Expr.Pair, #[_, a, b] => return mk ``Perennial.Expr.Pair #[← rec' a, ← rec' b]
+  | some ``Perennial.Expr.Fst, #[_, a] => return mk ``Perennial.Expr.Fst #[← rec' a]
+  | some ``Perennial.Expr.Snd, #[_, a] => return mk ``Perennial.Expr.Snd #[← rec' a]
+  | some ``Perennial.Expr.Fork, #[_, a] => return mk ``Perennial.Expr.Fork #[← rec' a]
+  | some ``Perennial.Expr.Primitive0, _ => return e
+  | some ``Perennial.Expr.Primitive1, #[_, op, a] =>
+    return mk ``Perennial.Expr.Primitive1 #[op, ← rec' a]
+  | some ``Perennial.Expr.Primitive2, #[_, op, a, b] =>
+    return mk ``Perennial.Expr.Primitive2 #[op, ← rec' a, ← rec' b]
+  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
+    return mk ``Perennial.Expr.ExternalOp #[op, ← rec' a]
+  | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
+    return mk ``Perennial.Expr.CmpXchg #[← rec' a, ← rec' b, ← rec' c]
+  | some ``Perennial.Expr.NewProph, _ => return e
+  | some ``Perennial.Expr.ResolveProph, #[_, a, b] =>
+    return mk ``Perennial.Expr.ResolveProph #[← rec' a, ← rec' b]
   | _, _ => return fallback
 
 /-- Evaluate the `subst'`/`subst` applications at the head of `e` with
 `substMeta` (the result is definitionally equal to `e`). -/
-partial def evalSubsts (ext : Expr) (e : Expr) : MetaM Expr := do
+partial def evalSubsts (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
   let e ← instantiateMVars e
   if e.isAppOfArity ``Perennial.subst' 4 then
     let b := e.getArg! 1
@@ -1506,12 +1506,12 @@ partial def evalSubsts (ext : Expr) (e : Expr) : MetaM Expr := do
 
 /-- A proof of `ae ≠ be` for distinct string literals `a`, `b` (`ae`, `be` reduce to them),
 cheap to check for the kernel (no UTF-8 encoding). -/
-def strNeProof (a b : String) (ae be : Expr) : Expr :=
-  let rec go (cs ds : List Char) : Expr × Expr × Expr :=
+def strNeProof (a b : String) (ae be : Lean.Expr) : Lean.Expr :=
+  let rec go (cs ds : List Char) : Lean.Expr × Lean.Expr × Lean.Expr :=
     -- returns (cs expr, ds expr, proof cs ≠ ds)
     let charE (c : Char) := mkApp (mkConst ``Char.ofNat) (mkRawNatLit c.toNat)
     let nil := mkApp (mkConst ``List.nil [0]) (mkConst ``Char)
-    let cons (c t : Expr) := mkApp3 (mkConst ``List.cons [0]) (mkConst ``Char) c t
+    let cons (c t : Lean.Expr) := mkApp3 (mkConst ``List.cons [0]) (mkConst ``Char) c t
     let lit (l : List Char) := l.foldr (fun c acc => cons (charE c) acc) nil
     match cs, ds with
     | [], d :: ds' => (nil, lit (d :: ds'), mkApp2 (mkConst ``list_char_ne_nil_cons) (charE d) (lit ds'))
@@ -1534,7 +1534,7 @@ def strNeProof (a b : String) (ae be : Expr) : Expr :=
   mkAppN (mkConst ``str_ne_of_list_ne) #[ae, be, ce, de, hs, ht, p]
 
 /-- A proof of `BNamed x ≠ b` for a binder literal `b` different from `BNamed x`. -/
-def binderNeProof (ext : Expr) (x : String) (xe : Expr) (b : Option String) (be : Expr) : Expr :=
+def binderNeProof (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (b : Option String) (be : Lean.Expr) : Lean.Expr :=
   match b with
   | none => mkApp2 (mkConst ``binder_named_ne_anon) ext xe
   | some y =>
@@ -1562,21 +1562,21 @@ register_option goose.wp.fvAnnot : Bool := {
 /-- Whether `substPf` uses closedness annotations (`fvClosed`), and the caches of
 free-variable sets and closedness proofs (set up by `wp_auto`). -/
 initialize fvAnnotMode : IO.Ref Bool ← IO.mkRef false
-initialize fvCache : IO.Ref (Std.HashMap Expr (Option (List String))) ← IO.mkRef {}
-initialize closedCache : IO.Ref (Std.HashMap (Expr × Expr) (Option Expr)) ← IO.mkRef {}
+initialize fvCache : IO.Ref (Std.HashMap Lean.Expr (Option (List String))) ← IO.mkRef {}
+initialize closedCache : IO.Ref (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)) ← IO.mkRef {}
 /-- Terms that `assignHoisted` may hoist out of binders (`hoistClosed`): the closedness
 annotations `fvClosed S e` and their proofs, which are shared by the steps below
 binders. In creation order: a term comes after the ones it contains. -/
-initialize hoistCandidates : IO.Ref (Array Expr) ← IO.mkRef #[]
+initialize hoistCandidates : IO.Ref (Array Lean.Expr) ← IO.mkRef #[]
 
 /-- A literal `List String` expression. -/
-def strListExpr (l : List String) : Expr :=
+def strListExpr (l : List String) : Lean.Expr :=
   let ty := mkConst ``String
   l.foldr (fun s acc => mkApp3 (mkConst ``List.cons [0]) ty (mkStrLit s) acc)
     (mkApp (mkConst ``List.nil [0]) ty)
 
 /-- Parse a literal `List String` expression. -/
-partial def strList? (e : Expr) : MetaM (Option (List String)) := do
+partial def strList? (e : Lean.Expr) : MetaM (Option (List String)) := do
   let e ← whnfR e
   if e.isAppOfArity ``List.nil 1 then return some []
   unless e.isAppOfArity ``List.cons 3 do return none
@@ -1585,7 +1585,7 @@ partial def strList? (e : Expr) : MetaM (Option (List String)) := do
   return some (s :: t)
 
 /-- A proof of `s ∈ l` for a literal list `l` (as `le`) containing `s`. -/
-def memPf (s : String) (l : List String) (le : Expr) : MetaM (Option Expr) := do
+def memPf (s : String) (l : List String) (le : Lean.Expr) : MetaM (Option Lean.Expr) := do
   match l with
   | [] => return none
   | a :: t =>
@@ -1597,7 +1597,7 @@ def memPf (s : String) (l : List String) (le : Expr) : MetaM (Option Expr) := do
     return some (mkApp5 (mkConst ``List.Mem.tail [0]) (mkConst ``String) (mkStrLit s) (mkStrLit a) tl p)
 
 /-- A proof of `x ∉ l` for a literal list `l` not containing `x`. -/
-def notMemPf (ext : Expr) (x : String) (xe : Expr) (l : List String) : Expr :=
+def notMemPf (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (l : List String) : Lean.Expr :=
   match l with
   | [] => mkApp2 (mkConst ``not_mem_nil') ext xe
   | a :: t =>
@@ -1607,46 +1607,46 @@ def notMemPf (ext : Expr) (x : String) (xe : Expr) (l : List String) : Expr :=
 
 /-- The free variables of an `expr` built from constructors (`none` if some part
 is not), using the annotations `fvClosed S e` (whose set is `S`). -/
-partial def fvOf (e : Expr) : MetaM (Option (List String)) := do
+partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
   if let some r := (← fvCache.get)[e]? then return r
   let union (a b : List String) : List String := a ++ b.filter (!a.contains ·)
   let r ← do
     if e.isAppOfArity ``fvClosed 3 then strList? (e.getArg! 1) else
     let e ← whnfR e
     let args := e.getAppArgs
-    let all (xs : List Expr) : MetaM (Option (List String)) := do
+    let all (xs : List Lean.Expr) : MetaM (Option (List String)) := do
       let mut acc := []
       for x in xs do
         let some f ← fvOf x | return none
         acc := union acc f
       return some acc
     match e.getAppFn.constName? with
-    | some ``Perennial.expr.Val => pure (some [])
-    | some ``Perennial.expr.Var => pure ((← strLit? args[1]!).map ([·]))
-    | some ``Perennial.expr.Rec =>
+    | some ``Perennial.Expr.Val => pure (some [])
+    | some ``Perennial.Expr.Var => pure ((← strLit? args[1]!).map ([·]))
+    | some ``Perennial.Expr.Rec =>
       match ← binderLit? args[1]!, ← binderLit? args[2]!, ← fvOf args[3]! with
       | some f, some y, some b => pure (some (b.filter fun s => some s != f && some s != y))
       | _, _, _ => pure none
-    | some ``Perennial.expr.App => all [args[1]!, args[2]!]
-    | some ``Perennial.expr.If => all [args[1]!, args[2]!, args[3]!]
-    | some ``Perennial.expr.Pair => all [args[1]!, args[2]!]
-    | some ``Perennial.expr.Fst => all [args[1]!]
-    | some ``Perennial.expr.Snd => all [args[1]!]
-    | some ``Perennial.expr.Fork => all [args[1]!]
-    | some ``Perennial.expr.Primitive0 => pure (some [])
-    | some ``Perennial.expr.Primitive1 => all [args[2]!]
-    | some ``Perennial.expr.Primitive2 => all [args[2]!, args[3]!]
-    | some ``Perennial.expr.ExternalOp => all [args[2]!]
-    | some ``Perennial.expr.CmpXchg => all [args[1]!, args[2]!, args[3]!]
-    | some ``Perennial.expr.NewProph => pure (some [])
-    | some ``Perennial.expr.ResolveProph => all [args[1]!, args[2]!]
+    | some ``Perennial.Expr.App => all [args[1]!, args[2]!]
+    | some ``Perennial.Expr.If => all [args[1]!, args[2]!, args[3]!]
+    | some ``Perennial.Expr.Pair => all [args[1]!, args[2]!]
+    | some ``Perennial.Expr.Fst => all [args[1]!]
+    | some ``Perennial.Expr.Snd => all [args[1]!]
+    | some ``Perennial.Expr.Fork => all [args[1]!]
+    | some ``Perennial.Expr.Primitive0 => pure (some [])
+    | some ``Perennial.Expr.Primitive1 => all [args[2]!]
+    | some ``Perennial.Expr.Primitive2 => all [args[2]!, args[3]!]
+    | some ``Perennial.Expr.ExternalOp => all [args[2]!]
+    | some ``Perennial.Expr.CmpXchg => all [args[1]!, args[2]!, args[3]!]
+    | some ``Perennial.Expr.NewProph => pure (some [])
+    | some ``Perennial.Expr.ResolveProph => all [args[1]!, args[2]!]
     -- composite literals (possibly long, e.g. lookup tables) are not annotated
-    | some ``Perennial.expr.LiteralValue => pure none
+    | some ``Perennial.Expr.LiteralValue => pure none
     | _ => pure none
   fvCache.modify (·.insert e r)
   return r
 where
-  fvKEs (l : Expr) : MetaM (Option (List String)) := do
+  fvKEs (l : Lean.Expr) : MetaM (Option (List String)) := do
     let l ← whnfR l
     if l.isAppOfArity ``List.nil 1 then return some []
     unless l.isAppOfArity ``List.cons 3 do return none
@@ -1656,7 +1656,7 @@ where
     let some b ← fvElem (ke.getArg! 2) | return none
     let some c ← fvKEs (l.getArg! 2) | return none
     return some (a ++ b ++ c)
-  fvKey (k : Expr) : MetaM (Option (List String)) := do
+  fvKey (k : Lean.Expr) : MetaM (Option (List String)) := do
     let k ← whnfR k
     if k.isAppOfArity ``Option.none 1 then return some []
     unless k.isAppOfArity ``Option.some 2 do return none
@@ -1667,18 +1667,18 @@ where
     | some ``Perennial.key.KeyExpression => fvOf (kk.getArg! 2)
     | some ``Perennial.key.KeyLiteralValue => fvKEs (kk.getArg! 1)
     | _ => return none
-  fvElem (el : Expr) : MetaM (Option (List String)) := do
+  fvElem (el : Lean.Expr) : MetaM (Option (List String)) := do
     let el ← whnfR el
     match el.getAppFn.constName? with
-    | some ``Perennial.element.ElementExpression => fvOf (el.getArg! 2)
-    | some ``Perennial.element.ElementLiteralValue => fvKEs (el.getArg! 1)
+    | some ``Perennial.Element.ElementExpression => fvOf (el.getArg! 2)
+    | some ``Perennial.Element.ElementLiteralValue => fvKEs (el.getArg! 1)
     | _ => return none
 
 /-- A proof of `ClosedUnder S e` (`S` given as the literal `Se`), built from the
 constructors of `e`; `none` if it cannot be built. Cached on `(Se, e)`. -/
-partial def closedPf (ext : Expr) (S : List String) (Se : Expr) (e : Expr) : MetaM (Option Expr) := do
+partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   if let some r := (← closedCache.get)[(Se, e)]? then return r
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
   let r ← do
     if e.isAppOfArity ``fvClosed 3 then
       -- a nested annotation: its own proof, and the inclusion of its set
@@ -1691,16 +1691,16 @@ partial def closedPf (ext : Expr) (S : List String) (Se : Expr) (e : Expr) : Met
     else
     let e ← whnfR e
     let args := e.getAppArgs
-    let rec' (x : Expr) := closedPf ext S Se x
+    let rec' (x : Lean.Expr) := closedPf ext S Se x
     match e.getAppFn.constName? with
-    | some ``Perennial.expr.Val => pure (some (lem ``closed_val #[args[1]!]))
-    | some ``Perennial.expr.Var =>
+    | some ``Perennial.Expr.Val => pure (some (lem ``closed_val #[args[1]!]))
+    | some ``Perennial.Expr.Var =>
       match ← strLit? args[1]! with
       | some y => match ← memPf y S Se with
         | some h => pure (some (lem ``closed_var #[args[1]!, h]))
         | none => pure none
       | none => pure none
-    | some ``Perennial.expr.Rec =>
+    | some ``Perennial.Expr.Rec =>
       let f ← whnfR args[1]!; let y ← whnfR args[2]!
       match ← binderLit? f, ← binderLit? y with
       | some fb, some yb =>
@@ -1715,48 +1715,48 @@ partial def closedPf (ext : Expr) (S : List String) (Se : Expr) (e : Expr) : Met
           pure (some (lem ``closed_rec #[f, y, args[3]!, ← mkExpectedTypeHint hb ty]))
         | none => pure none
       | _, _ => pure none
-    | some ``Perennial.expr.App =>
+    | some ``Perennial.Expr.App =>
       match ← rec' args[1]!, ← rec' args[2]! with
       | some ha, some hb => pure (some (lem ``closed_app #[args[1]!, args[2]!, ha, hb]))
       | _, _ => pure none
-    | some ``Perennial.expr.If =>
+    | some ``Perennial.Expr.If =>
       match ← rec' args[1]!, ← rec' args[2]!, ← rec' args[3]! with
       | some ha, some hb, some hc =>
         pure (some (lem ``closed_if #[args[1]!, args[2]!, args[3]!, ha, hb, hc]))
       | _, _, _ => pure none
-    | some ``Perennial.expr.Pair =>
+    | some ``Perennial.Expr.Pair =>
       match ← rec' args[1]!, ← rec' args[2]! with
       | some ha, some hb => pure (some (lem ``closed_pair #[args[1]!, args[2]!, ha, hb]))
       | _, _ => pure none
-    | some ``Perennial.expr.Fst => return (← rec' args[1]!).map (lem ``closed_fst #[args[1]!, ·])
-    | some ``Perennial.expr.Snd => return (← rec' args[1]!).map (lem ``closed_snd #[args[1]!, ·])
-    | some ``Perennial.expr.Fork => return (← rec' args[1]!).map (lem ``closed_fork #[args[1]!, ·])
-    | some ``Perennial.expr.Primitive0 => pure (some (lem ``closed_prim0 #[args[1]!]))
-    | some ``Perennial.expr.Primitive1 =>
+    | some ``Perennial.Expr.Fst => return (← rec' args[1]!).map (lem ``closed_fst #[args[1]!, ·])
+    | some ``Perennial.Expr.Snd => return (← rec' args[1]!).map (lem ``closed_snd #[args[1]!, ·])
+    | some ``Perennial.Expr.Fork => return (← rec' args[1]!).map (lem ``closed_fork #[args[1]!, ·])
+    | some ``Perennial.Expr.Primitive0 => pure (some (lem ``closed_prim0 #[args[1]!]))
+    | some ``Perennial.Expr.Primitive1 =>
       return (← rec' args[2]!).map (lem ``closed_prim1 #[args[1]!, args[2]!, ·])
-    | some ``Perennial.expr.Primitive2 =>
+    | some ``Perennial.Expr.Primitive2 =>
       match ← rec' args[2]!, ← rec' args[3]! with
       | some ha, some hb => pure (some (lem ``closed_prim2 #[args[1]!, args[2]!, args[3]!, ha, hb]))
       | _, _ => pure none
-    | some ``Perennial.expr.ExternalOp =>
+    | some ``Perennial.Expr.ExternalOp =>
       return (← rec' args[2]!).map (lem ``closed_extop #[args[1]!, args[2]!, ·])
-    | some ``Perennial.expr.CmpXchg =>
+    | some ``Perennial.Expr.CmpXchg =>
       match ← rec' args[1]!, ← rec' args[2]!, ← rec' args[3]! with
       | some ha, some hb, some hc =>
         pure (some (lem ``closed_cmpxchg #[args[1]!, args[2]!, args[3]!, ha, hb, hc]))
       | _, _, _ => pure none
-    | some ``Perennial.expr.NewProph => pure (some (lem ``closed_newproph #[]))
-    | some ``Perennial.expr.ResolveProph =>
+    | some ``Perennial.Expr.NewProph => pure (some (lem ``closed_newproph #[]))
+    | some ``Perennial.Expr.ResolveProph =>
       match ← rec' args[1]!, ← rec' args[2]! with
       | some ha, some hb => pure (some (lem ``closed_resolve #[args[1]!, args[2]!, ha, hb]))
       | _, _ => pure none
-    | some ``Perennial.expr.LiteralValue =>
+    | some ``Perennial.Expr.LiteralValue =>
       return (← closedKEs args[1]!).map (lem ``closed_litval #[args[1]!, ·])
     | _ => pure none
   closedCache.modify (·.insert (Se, e) r)
   return r
 where
-  subsetPf (T : List String) (Te : Expr) : MetaM (Option Expr) := do
+  subsetPf (T : List String) (Te : Lean.Expr) : MetaM (Option Lean.Expr) := do
     match T with
     | [] => return some (mkApp2 (mkConst ``subset_nil) ext Se)
     | a :: t =>
@@ -1765,8 +1765,8 @@ where
       let some h1 ← memPf a S Se | return none
       let some h2 ← subsetPf t tl | return none
       return some (mkAppN (mkConst ``subset_cons) #[ext, Se, mkStrLit a, tl, h1, h2])
-  closedKEs (l : Expr) : MetaM (Option Expr) := do
-    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+  closedKEs (l : Lean.Expr) : MetaM (Option Lean.Expr) := do
+    let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
     let l ← whnfR l
     if l.isAppOfArity ``List.nil 1 then return some (lem ``closed_kes_nil #[])
     unless l.isAppOfArity ``List.cons 3 do return none
@@ -1778,8 +1778,8 @@ where
     let some ht ← closedKEs (l.getArg! 2) | return none
     let hke := lem ``closed_ke #[k, el, hk, he]
     return some (lem ``closed_kes_cons #[ke, l.getArg! 2, hke, ht])
-  closedKey (k : Expr) : MetaM (Option Expr) := do
-    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+  closedKey (k : Lean.Expr) : MetaM (Option Lean.Expr) := do
+    let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
     let k ← whnfR k
     if k.isAppOfArity ``Option.none 1 then return some (lem ``closed_okey_none #[])
     unless k.isAppOfArity ``Option.some 2 do return none
@@ -1792,13 +1792,13 @@ where
     | some ``Perennial.key.KeyLiteralValue =>
       return (← closedKEs (kk.getArg! 1)).map (lem ``closed_okey_lv #[kk.getArg! 1, ·])
     | _ => return none
-  closedElem (el : Expr) : MetaM (Option Expr) := do
-    let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
+  closedElem (el : Lean.Expr) : MetaM (Option Lean.Expr) := do
+    let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
     let el ← whnfR el
     match el.getAppFn.constName? with
-    | some ``Perennial.element.ElementExpression =>
+    | some ``Perennial.Element.ElementExpression =>
       return (← closedPf ext S Se (el.getArg! 2)).map (lem ``closed_el_expr #[el.getArg! 1, el.getArg! 2, ·])
-    | some ``Perennial.element.ElementLiteralValue =>
+    | some ``Perennial.Element.ElementLiteralValue =>
       return (← closedKEs (el.getArg! 1)).map (lem ``closed_el_lv #[el.getArg! 1, ·])
     | _ => return none
 
@@ -1806,8 +1806,8 @@ mutual
 
 /-- `subst x v e` with a proof `subst x v e = e'` built from per-constructor lemmas
 (non-constructor subterms are left as `subst x v _`, proved by `rfl`). -/
-partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (e : Expr) :
-    MetaM (Expr × Expr) := do
+partial def substPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (e : Lean.Expr) :
+    MetaM (Lean.Expr × Lean.Expr) := do
   -- a closedness annotation `fvClosed S b`
   if e.isAppOfArity ``fvClosed 3 then
     let Se := e.getArg! 1; let b := e.getArg! 2
@@ -1822,23 +1822,23 @@ partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool
       let S' := S.filter (· != x)
       return (mkApp3 (mkConst ``fvClosed) ext (strListExpr S') b', pb)
   let e ← whnfR e
-  let substE (e : Expr) := mkApp4 (mkConst ``Perennial.subst) ext xe v e
-  let fallback : MetaM (Expr × Expr) := do
+  let substE (e : Lean.Expr) := mkApp4 (mkConst ``Perennial.subst) ext xe v e
+  let fallback : MetaM (Lean.Expr × Lean.Expr) := do
     dirty.set true
     let s := substE e
     return (s, ← mkEqRefl s)
   let rec' := substPf ext x xe v dirty
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
   match e.getAppFn.constName?, e.getAppArgs with
-  | some ``Perennial.expr.Val, #[_, w] => return (e, lem ``subst_pf_val #[w])
-  | some ``Perennial.expr.Var, #[_, y] =>
+  | some ``Perennial.Expr.Val, #[_, w] => return (e, lem ``subst_pf_val #[w])
+  | some ``Perennial.Expr.Var, #[_, y] =>
     match ← strLit? y with
     | some y' =>
-      if y' == x then return (mk ``Perennial.expr.Val #[v], lem ``subst_pf_var_eq #[])
+      if y' == x then return (mk ``Perennial.Expr.Val #[v], lem ``subst_pf_var_eq #[])
       else return (e, lem ``subst_pf_var_ne #[y, strNeProof x y' xe y])
     | none => fallback
-  | some ``Perennial.expr.Rec, #[_, f, y, body] =>
+  | some ``Perennial.Expr.Rec, #[_, f, y, body] =>
     match ← binderLit? f, ← binderLit? y with
     | some fb, some yb =>
       if fb == some x then return (e, lem ``subst_pf_rec_f #[y, body])
@@ -1847,55 +1847,55 @@ partial def substPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool
       let f ← whnfR f; let y ← whnfR y
       let hf := binderNeProof ext x xe fb f
       let hy := binderNeProof ext x xe yb y
-      return (mk ``Perennial.expr.Rec #[f, y, body'], lem ``subst_pf_rec #[f, y, body, body', hf, hy, pb])
+      return (mk ``Perennial.Expr.Rec #[f, y, body'], lem ``subst_pf_rec #[f, y, body, body', hf, hy, pb])
     | _, _ => fallback
-  | some ``Perennial.expr.App, #[_, a, b] =>
+  | some ``Perennial.Expr.App, #[_, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
-    return (mk ``Perennial.expr.App #[a', b'], lem ``subst_pf_app #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.If, #[_, a, b, c] =>
+    return (mk ``Perennial.Expr.App #[a', b'], lem ``subst_pf_app #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.If, #[_, a, b, c] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b; let (c', pc) ← rec' c
-    return (mk ``Perennial.expr.If #[a', b', c'], lem ``subst_pf_if #[a, b, c, a', b', c', pa, pb, pc])
-  | some ``Perennial.expr.Pair, #[_, a, b] =>
+    return (mk ``Perennial.Expr.If #[a', b', c'], lem ``subst_pf_if #[a, b, c, a', b', c', pa, pb, pc])
+  | some ``Perennial.Expr.Pair, #[_, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
-    return (mk ``Perennial.expr.Pair #[a', b'], lem ``subst_pf_pair #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.Fst, #[_, a] =>
+    return (mk ``Perennial.Expr.Pair #[a', b'], lem ``subst_pf_pair #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.Fst, #[_, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.expr.Fst #[a'], lem ``subst_pf_fst #[a, a', pa])
-  | some ``Perennial.expr.Snd, #[_, a] =>
+    return (mk ``Perennial.Expr.Fst #[a'], lem ``subst_pf_fst #[a, a', pa])
+  | some ``Perennial.Expr.Snd, #[_, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.expr.Snd #[a'], lem ``subst_pf_snd #[a, a', pa])
-  | some ``Perennial.expr.Fork, #[_, a] =>
+    return (mk ``Perennial.Expr.Snd #[a'], lem ``subst_pf_snd #[a, a', pa])
+  | some ``Perennial.Expr.Fork, #[_, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.expr.Fork #[a'], lem ``subst_pf_fork #[a, a', pa])
-  | some ``Perennial.expr.Primitive0, #[_, op] => return (e, lem ``subst_pf_prim0 #[op])
-  | some ``Perennial.expr.Primitive1, #[_, op, a] =>
+    return (mk ``Perennial.Expr.Fork #[a'], lem ``subst_pf_fork #[a, a', pa])
+  | some ``Perennial.Expr.Primitive0, #[_, op] => return (e, lem ``subst_pf_prim0 #[op])
+  | some ``Perennial.Expr.Primitive1, #[_, op, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.expr.Primitive1 #[op, a'], lem ``subst_pf_prim1 #[op, a, a', pa])
-  | some ``Perennial.expr.Primitive2, #[_, op, a, b] =>
+    return (mk ``Perennial.Expr.Primitive1 #[op, a'], lem ``subst_pf_prim1 #[op, a, a', pa])
+  | some ``Perennial.Expr.Primitive2, #[_, op, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
-    return (mk ``Perennial.expr.Primitive2 #[op, a', b'], lem ``subst_pf_prim2 #[op, a, b, a', b', pa, pb])
-  | some ``Perennial.expr.ExternalOp, #[_, op, a] =>
+    return (mk ``Perennial.Expr.Primitive2 #[op, a', b'], lem ``subst_pf_prim2 #[op, a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.expr.ExternalOp #[op, a'], lem ``subst_pf_extop #[op, a, a', pa])
-  | some ``Perennial.expr.CmpXchg, #[_, a, b, c] =>
+    return (mk ``Perennial.Expr.ExternalOp #[op, a'], lem ``subst_pf_extop #[op, a, a', pa])
+  | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b; let (c', pc) ← rec' c
-    return (mk ``Perennial.expr.CmpXchg #[a', b', c'], lem ``subst_pf_cmpxchg #[a, b, c, a', b', c', pa, pb, pc])
-  | some ``Perennial.expr.NewProph, #[_] => return (e, lem ``subst_pf_newproph #[])
-  | some ``Perennial.expr.ResolveProph, #[_, a, b] =>
+    return (mk ``Perennial.Expr.CmpXchg #[a', b', c'], lem ``subst_pf_cmpxchg #[a, b, c, a', b', c', pa, pb, pc])
+  | some ``Perennial.Expr.NewProph, #[_] => return (e, lem ``subst_pf_newproph #[])
+  | some ``Perennial.Expr.ResolveProph, #[_, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
-    return (mk ``Perennial.expr.ResolveProph #[a', b'], lem ``subst_pf_resolve #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.LiteralValue, #[_, l] =>
+    return (mk ``Perennial.Expr.ResolveProph #[a', b'], lem ``subst_pf_resolve #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.LiteralValue, #[_, l] =>
     match ← substKEsPf ext x xe v dirty l with
     | some (l', pl) =>
-      return (mk ``Perennial.expr.LiteralValue #[l'], lem ``subst_pf_litval #[l, l', pl])
+      return (mk ``Perennial.Expr.LiteralValue #[l'], lem ``subst_pf_litval #[l, l', pl])
     | none => fallback
   | _, _ => fallback
 
 /-- `substKeyedElements x v l` with a proof, for a list `l` built from constructors
 (`none` otherwise). -/
-partial def substKEsPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (l : Expr) :
-    MetaM (Option (Expr × Expr)) := do
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
+partial def substKEsPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (l : Lean.Expr) :
+    MetaM (Option (Lean.Expr × Lean.Expr)) := do
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
   let l ← whnfR l
   if l.isAppOfArity ``List.nil 1 then return some (l, lem ``subst_pf_kes_nil #[])
   unless l.isAppOfArity ``List.cons 3 do return none
@@ -1906,19 +1906,19 @@ partial def substKEsPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref B
     lem ``subst_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
 /-- `substKeyedElement x v ke` with a proof (see `substKEsPf`). -/
-partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bool) (ke : Expr) :
-    MetaM (Option (Expr × Expr)) := do
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+partial def substKEPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (ke : Lean.Expr) :
+    MetaM (Option (Lean.Expr × Lean.Expr)) := do
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
   let ke ← whnfR ke
   unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
   let k ← whnfR (ke.getArg! 1)
   let el ← whnfR (ke.getArg! 2)
-  let key? : MetaM (Option (Expr × Expr)) := do
+  let key? : MetaM (Option (Lean.Expr × Lean.Expr)) := do
     if k.isAppOfArity ``Option.none 1 then return some (k, lem ``subst_pf_okey_none #[])
     unless k.isAppOfArity ``Option.some 2 do return none
     let kk ← whnfR (k.getArg! 1)
-    let some' (e : Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
+    let some' (e : Lean.Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
     match kk.getAppFn.constName?, kk.getAppArgs with
     | some ``Perennial.key.KeyField, #[_, f] => return some (k, lem ``subst_pf_okey_field #[f])
     | some ``Perennial.key.KeyInteger, #[_, i] => return some (k, lem ``subst_pf_okey_int #[i])
@@ -1931,15 +1931,15 @@ partial def substKEPf (ext : Expr) (x : String) (xe v : Expr) (dirty : IO.Ref Bo
       return some (some' (mk ``Perennial.key.KeyLiteralValue #[l']),
         lem ``subst_pf_okey_lv #[l, l', pl])
     | _, _ => return none
-  let elem? : MetaM (Option (Expr × Expr)) := do
+  let elem? : MetaM (Option (Lean.Expr × Lean.Expr)) := do
     match el.getAppFn.constName?, el.getAppArgs with
-    | some ``Perennial.element.ElementExpression, #[_, t, e] =>
+    | some ``Perennial.Element.ElementExpression, #[_, t, e] =>
       let (e', pe) ← substPf ext x xe v dirty e
-      return some (mk ``Perennial.element.ElementExpression #[t, e'],
+      return some (mk ``Perennial.Element.ElementExpression #[t, e'],
         lem ``subst_pf_el_expr #[t, e, e', pe])
-    | some ``Perennial.element.ElementLiteralValue, #[_, l] =>
+    | some ``Perennial.Element.ElementLiteralValue, #[_, l] =>
       let some (l', pl) ← substKEsPf ext x xe v dirty l | return none
-      return some (mk ``Perennial.element.ElementLiteralValue #[l'],
+      return some (mk ``Perennial.Element.ElementLiteralValue #[l'],
         lem ``subst_pf_el_lv #[l, l', pl])
     | _, _ => return none
   let some (k', p1) ← key? | return none
@@ -1958,34 +1958,34 @@ a binder), newest first; the lookup of a variable walks the stack. -/
 /-- A layer of an environment: `envInsB b v` (`ins`) or `envDel b` (`del`), with
 the name of `b` (`none` for `BAnon`) and the binder `b` itself. -/
 inductive EnvLayer where
-  | ins (x : Option String) (b v : Expr)
-  | del (x : Option String) (b : Expr)
+  | ins (x : Option String) (b v : Lean.Expr)
+  | del (x : Option String) (b : Lean.Expr)
 
 /-- An environment: its layers (newest first, each with the environment below
 it) and the environment expression. -/
 structure MEnv where
-  layers : List (EnvLayer × Expr)
-  σ : Expr
+  layers : List (EnvLayer × Lean.Expr)
+  σ : Lean.Expr
 
 /-- Push a layer. -/
-def MEnv.push (ext : Expr) (env : MEnv) (l : EnvLayer) : MEnv :=
+def MEnv.push (ext : Lean.Expr) (env : MEnv) (l : EnvLayer) : MEnv :=
   let σ' := match l with
     | .ins _ b v => mkApp4 (mkConst ``envInsB) ext b v env.σ
     | .del _ b => mkApp3 (mkConst ``envDel) ext b env.σ
   { layers := (l, env.σ) :: env.layers, σ := σ' }
 
 /-- The string literal of a binder `BNamed x`. -/
-def binderStrExpr (b : Expr) : MetaM Expr := do
+def binderStrExpr (b : Lean.Expr) : MetaM Lean.Expr := do
   return (← whnfR b).getArg! 0
 
 /-- Look up `y` in the environment: the result (`some v`, or `none`) and a proof of
 `σ y = result`. Cached on `(σ, y)`. -/
-partial def envLookupPf (ext : Expr) (cache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
-    (y : String) (ye : Expr) (layers : List (EnvLayer × Expr)) (σ : Expr) :
-    MetaM (Option Expr × Expr) := do
+partial def envLookupPf (ext : Lean.Expr) (cache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+    (y : String) (ye : Lean.Expr) (layers : List (EnvLayer × Lean.Expr)) (σ : Lean.Expr) :
+    MetaM (Option Lean.Expr × Lean.Expr) := do
   if let some r := (← cache.get)[(σ, y)]? then return r
   let valTy := mkApp (mkConst ``Perennial.val) ext
-  let optE (r : Option Expr) : Expr := match r with
+  let optE (r : Option Lean.Expr) : Lean.Expr := match r with
     | some v => mkApp2 (mkConst ``Option.some [0]) valTy v
     | none => mkApp (mkConst ``Option.none [0]) valTy
   let r ← match layers with
@@ -2018,12 +2018,12 @@ mutual
 /-- `substEnv σ e` with a proof `substEnv σ e = e'`, for `e` built from
 constructors (`none` otherwise). Closedness annotations `fvClosed S b` with no
 variable of `S` bound by `σ` are kept as they are. -/
-partial def substEnvPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
-    (env : MEnv) (e : Expr) : MetaM (Option (Expr × Expr)) := do
+partial def substEnvPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+    (env : MEnv) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let σ := env.σ
   let rec' := substEnvPf ext lcache env
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, σ] ++ args)
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, σ] ++ args)
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
   -- a closedness annotation `fvClosed S b`
   if e.isAppOfArity ``fvClosed 3 then
     let Se := e.getArg! 1; let b := e.getArg! 2
@@ -2052,74 +2052,74 @@ partial def substEnvPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × Strin
       return some (mkApp3 (mkConst ``fvClosed) ext (strListExpr S') b', pb)
   let e ← whnfR e
   match e.getAppFn.constName?, e.getAppArgs with
-  | some ``Perennial.expr.Val, #[_, w] => return some (e, lem ``substEnv_pf_val #[w])
-  | some ``Perennial.expr.Var, #[_, y] =>
+  | some ``Perennial.Expr.Val, #[_, w] => return some (e, lem ``substEnv_pf_val #[w])
+  | some ``Perennial.Expr.Var, #[_, y] =>
     let some y' ← strLit? y | return none
     let (r, p) ← envLookupPf ext lcache y' y env.layers σ
     match r with
-    | some w => return some (mk ``Perennial.expr.Val #[w], lem ``substEnv_pf_var_some #[y, w, p])
+    | some w => return some (mk ``Perennial.Expr.Val #[w], lem ``substEnv_pf_var_some #[y, w, p])
     | none => return some (e, lem ``substEnv_pf_var_none #[y, p])
-  | some ``Perennial.expr.Rec, #[_, f, y, body] =>
+  | some ``Perennial.Expr.Rec, #[_, f, y, body] =>
     let some fb ← binderLit? f | return none
     let some yb ← binderLit? y | return none
     let f ← whnfR f; let y ← whnfR y
     let env' := (env.push ext (.del yb y)).push ext (.del fb f)
     let some (body', pb) ← substEnvPf ext lcache env' body | return none
-    return some (mk ``Perennial.expr.Rec #[f, y, body'], lem ``substEnv_pf_rec #[f, y, body, body', pb])
-  | some ``Perennial.expr.App, #[_, a, b] =>
+    return some (mk ``Perennial.Expr.Rec #[f, y, body'], lem ``substEnv_pf_rec #[f, y, body, body', pb])
+  | some ``Perennial.Expr.App, #[_, a, b] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
-    return some (mk ``Perennial.expr.App #[a', b'], lem ``substEnv_pf_app #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.If, #[_, a, b, c] =>
+    return some (mk ``Perennial.Expr.App #[a', b'], lem ``substEnv_pf_app #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.If, #[_, a, b, c] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
     let some (c', pc) ← rec' c | return none
-    return some (mk ``Perennial.expr.If #[a', b', c'], lem ``substEnv_pf_if #[a, b, c, a', b', c', pa, pb, pc])
-  | some ``Perennial.expr.Pair, #[_, a, b] =>
+    return some (mk ``Perennial.Expr.If #[a', b', c'], lem ``substEnv_pf_if #[a, b, c, a', b', c', pa, pb, pc])
+  | some ``Perennial.Expr.Pair, #[_, a, b] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
-    return some (mk ``Perennial.expr.Pair #[a', b'], lem ``substEnv_pf_pair #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.Fst, #[_, a] =>
+    return some (mk ``Perennial.Expr.Pair #[a', b'], lem ``substEnv_pf_pair #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.Fst, #[_, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.expr.Fst #[a'], lem ``substEnv_pf_fst #[a, a', pa])
-  | some ``Perennial.expr.Snd, #[_, a] =>
+    return some (mk ``Perennial.Expr.Fst #[a'], lem ``substEnv_pf_fst #[a, a', pa])
+  | some ``Perennial.Expr.Snd, #[_, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.expr.Snd #[a'], lem ``substEnv_pf_snd #[a, a', pa])
-  | some ``Perennial.expr.Fork, #[_, a] =>
+    return some (mk ``Perennial.Expr.Snd #[a'], lem ``substEnv_pf_snd #[a, a', pa])
+  | some ``Perennial.Expr.Fork, #[_, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.expr.Fork #[a'], lem ``substEnv_pf_fork #[a, a', pa])
-  | some ``Perennial.expr.Primitive0, #[_, op] => return some (e, lem ``substEnv_pf_prim0 #[op])
-  | some ``Perennial.expr.Primitive1, #[_, op, a] =>
+    return some (mk ``Perennial.Expr.Fork #[a'], lem ``substEnv_pf_fork #[a, a', pa])
+  | some ``Perennial.Expr.Primitive0, #[_, op] => return some (e, lem ``substEnv_pf_prim0 #[op])
+  | some ``Perennial.Expr.Primitive1, #[_, op, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.expr.Primitive1 #[op, a'], lem ``substEnv_pf_prim1 #[op, a, a', pa])
-  | some ``Perennial.expr.Primitive2, #[_, op, a, b] =>
+    return some (mk ``Perennial.Expr.Primitive1 #[op, a'], lem ``substEnv_pf_prim1 #[op, a, a', pa])
+  | some ``Perennial.Expr.Primitive2, #[_, op, a, b] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
-    return some (mk ``Perennial.expr.Primitive2 #[op, a', b'],
+    return some (mk ``Perennial.Expr.Primitive2 #[op, a', b'],
       lem ``substEnv_pf_prim2 #[op, a, b, a', b', pa, pb])
-  | some ``Perennial.expr.ExternalOp, #[_, op, a] =>
+  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.expr.ExternalOp #[op, a'], lem ``substEnv_pf_extop #[op, a, a', pa])
-  | some ``Perennial.expr.CmpXchg, #[_, a, b, c] =>
+    return some (mk ``Perennial.Expr.ExternalOp #[op, a'], lem ``substEnv_pf_extop #[op, a, a', pa])
+  | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
     let some (c', pc) ← rec' c | return none
-    return some (mk ``Perennial.expr.CmpXchg #[a', b', c'],
+    return some (mk ``Perennial.Expr.CmpXchg #[a', b', c'],
       lem ``substEnv_pf_cmpxchg #[a, b, c, a', b', c', pa, pb, pc])
-  | some ``Perennial.expr.NewProph, #[_] => return some (e, lem ``substEnv_pf_newproph #[])
-  | some ``Perennial.expr.ResolveProph, #[_, a, b] =>
+  | some ``Perennial.Expr.NewProph, #[_] => return some (e, lem ``substEnv_pf_newproph #[])
+  | some ``Perennial.Expr.ResolveProph, #[_, a, b] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none
-    return some (mk ``Perennial.expr.ResolveProph #[a', b'], lem ``substEnv_pf_resolve #[a, b, a', b', pa, pb])
-  | some ``Perennial.expr.LiteralValue, #[_, l] =>
+    return some (mk ``Perennial.Expr.ResolveProph #[a', b'], lem ``substEnv_pf_resolve #[a, b, a', b', pa, pb])
+  | some ``Perennial.Expr.LiteralValue, #[_, l] =>
     let some (l', pl) ← substEnvKEsPf ext lcache env l | return none
-    return some (mk ``Perennial.expr.LiteralValue #[l'], lem ``substEnv_pf_litval #[l, l', pl])
+    return some (mk ``Perennial.Expr.LiteralValue #[l'], lem ``substEnv_pf_litval #[l, l', pl])
   | _, _ => return none
 
 /-- `substEnvKes σ l` with a proof (see `substEnvPf`). -/
-partial def substEnvKEsPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
-    (env : MEnv) (l : Expr) : MetaM (Option (Expr × Expr)) := do
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
+partial def substEnvKEsPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+    (env : MEnv) (l : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
   let l ← whnfR l
   if l.isAppOfArity ``List.nil 1 then return some (l, lem ``substEnv_pf_kes_nil #[])
   unless l.isAppOfArity ``List.cons 3 do return none
@@ -2130,19 +2130,19 @@ partial def substEnvKEsPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × St
     lem ``substEnv_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
 /-- `substEnvKe σ ke` with a proof (see `substEnvPf`). -/
-partial def substEnvKEPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × String) (Option Expr × Expr)))
-    (env : MEnv) (ke : Expr) : MetaM (Option (Expr × Expr)) := do
-  let lem (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
-  let mk (n : Name) (args : Array Expr) : Expr := mkAppN (mkConst n) (#[ext] ++ args)
+partial def substEnvKEPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+    (env : MEnv) (ke : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+  let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
+  let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
   let ke ← whnfR ke
   unless ke.isAppOfArity ``Perennial.keyed_element.KeyedElement 3 do return none
   let k ← whnfR (ke.getArg! 1)
   let el ← whnfR (ke.getArg! 2)
-  let key? : MetaM (Option (Expr × Expr)) := do
+  let key? : MetaM (Option (Lean.Expr × Lean.Expr)) := do
     if k.isAppOfArity ``Option.none 1 then return some (k, lem ``substEnv_pf_okey_none #[])
     unless k.isAppOfArity ``Option.some 2 do return none
     let kk ← whnfR (k.getArg! 1)
-    let some' (e : Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
+    let some' (e : Lean.Expr) := mkApp2 (mkConst ``Option.some [0]) (k.getArg! 0) e
     match kk.getAppFn.constName?, kk.getAppArgs with
     | some ``Perennial.key.KeyField, #[_, f] => return some (k, lem ``substEnv_pf_okey_field #[f])
     | some ``Perennial.key.KeyInteger, #[_, i] => return some (k, lem ``substEnv_pf_okey_int #[i])
@@ -2155,15 +2155,15 @@ partial def substEnvKEPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × Str
       return some (some' (mk ``Perennial.key.KeyLiteralValue #[l']),
         lem ``substEnv_pf_okey_lv #[l, l', pl])
     | _, _ => return none
-  let elem? : MetaM (Option (Expr × Expr)) := do
+  let elem? : MetaM (Option (Lean.Expr × Lean.Expr)) := do
     match el.getAppFn.constName?, el.getAppArgs with
-    | some ``Perennial.element.ElementExpression, #[_, t, e] =>
+    | some ``Perennial.Element.ElementExpression, #[_, t, e] =>
       let some (e', pe) ← substEnvPf ext lcache env e | return none
-      return some (mk ``Perennial.element.ElementExpression #[t, e'],
+      return some (mk ``Perennial.Element.ElementExpression #[t, e'],
         lem ``substEnv_pf_el_expr #[t, e, e', pe])
-    | some ``Perennial.element.ElementLiteralValue, #[_, l] =>
+    | some ``Perennial.Element.ElementLiteralValue, #[_, l] =>
       let some (l', pl) ← substEnvKEsPf ext lcache env l | return none
-      return some (mk ``Perennial.element.ElementLiteralValue #[l'],
+      return some (mk ``Perennial.Element.ElementLiteralValue #[l'],
         lem ``substEnv_pf_el_lv #[l, l', pl])
     | _, _ => return none
   let some (k', p1) ← key? | return none
@@ -2174,53 +2174,53 @@ partial def substEnvKEPf (ext : Expr) (lcache : IO.Ref (Std.HashMap (Expr × Str
 end
 
 /-- Annotate the continuations (bodies of `let:`/`;;` lambdas and of the
-`exception_seq` continuation) of a large expression with their free variables
+`exceptionSeq` continuation) of a large expression with their free variables
 (`fvClosed`); the result is definitionally equal to `e`. -/
-partial def annotateFv (ext : Expr) (e : Expr) : MetaM Expr := do
-  let cache ← IO.mkRef ({} : Std.HashMap Expr Expr)
+partial def annotateFv (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
+  let cache ← IO.mkRef ({} : Std.HashMap Lean.Expr Lean.Expr)
   go cache e
 where
-  wrapRec (cache : IO.Ref (Std.HashMap Expr Expr)) (r : Expr) : MetaM Expr := do
+  wrapRec (cache : IO.Ref (Std.HashMap Lean.Expr Lean.Expr)) (r : Lean.Expr) : MetaM Lean.Expr := do
     let r' ← whnfR r
-    let_expr Perennial.expr.Rec _ f y body := r' | go cache r
+    let_expr Perennial.Expr.Rec _ f y body := r' | go cache r
     let body' ← go cache body
     -- small bodies are not worth it, and very deep ones (e.g. long composite
     -- literals) would make the closedness proofs too deep
     if decide (body'.approxDepth.toNat < 6) then
-      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
+      return mkApp4 (mkConst ``Perennial.Expr.Rec) ext f y body'
     match ← fvOf body' with
     | some S =>
       let ann := mkApp3 (mkConst ``fvClosed) ext (strListExpr S) body'
       hoistCandidates.modify (·.push ann)
-      return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y ann
-    | none => return mkApp4 (mkConst ``Perennial.expr.Rec) ext f y body'
-  go (cache : IO.Ref (Std.HashMap Expr Expr)) (e : Expr) : MetaM Expr := do
+      return mkApp4 (mkConst ``Perennial.Expr.Rec) ext f y ann
+    | none => return mkApp4 (mkConst ``Perennial.Expr.Rec) ext f y body'
+  go (cache : IO.Ref (Std.HashMap Lean.Expr Lean.Expr)) (e : Lean.Expr) : MetaM Lean.Expr := do
     if let some r := (← cache.get)[e]? then return r
     let e' ← whnfR e
     let r ← match_expr e' with
-      | Perennial.expr.App _ a b => do
+      | Perennial.Expr.App _ a b => do
         let a' ← whnfR a
         let isSeq := match_expr a' with
-          | Perennial.expr.Val _ c => c.getAppFn.isConstOf `Perennial.exception_seq
+          | Perennial.Expr.Val _ c => c.getAppFn.isConstOf `Perennial.exceptionSeq
           | _ => false
-        let isRec := a'.isAppOf ``Perennial.expr.Rec
+        let isRec := a'.isAppOf ``Perennial.Expr.Rec
         let na ← if isRec then wrapRec cache a else go cache a
-        let nb ← if isSeq && (← whnfR b).isAppOf ``Perennial.expr.Rec then wrapRec cache b
+        let nb ← if isSeq && (← whnfR b).isAppOf ``Perennial.Expr.Rec then wrapRec cache b
           else go cache b
-        pure (mkApp3 (mkConst ``Perennial.expr.App) ext na nb)
-      | Perennial.expr.If _ a b c => do
-        pure (mkApp4 (mkConst ``Perennial.expr.If) ext (← go cache a) (← go cache b) (← go cache c))
-      | Perennial.expr.Pair _ a b => do
-        pure (mkApp3 (mkConst ``Perennial.expr.Pair) ext (← go cache a) (← go cache b))
+        pure (mkApp3 (mkConst ``Perennial.Expr.App) ext na nb)
+      | Perennial.Expr.If _ a b c => do
+        pure (mkApp4 (mkConst ``Perennial.Expr.If) ext (← go cache a) (← go cache b) (← go cache c))
+      | Perennial.Expr.Pair _ a b => do
+        pure (mkApp3 (mkConst ``Perennial.Expr.Pair) ext (← go cache a) (← go cache b))
       | _ => pure e
     cache.modify (·.insert e r)
     return r
 
 /-- Remove the closedness annotations (definitionally). -/
-partial def stripFvCore (e : Expr) : Expr :=
+partial def stripFvCore (e : Lean.Expr) : Lean.Expr :=
   e.replace fun s => if s.isAppOfArity ``fvClosed 3 then some (stripFvCore (s.getArg! 2)) else none
 
-def stripFv (e : Expr) : Expr :=
+def stripFv (e : Lean.Expr) : Lean.Expr :=
   if (e.find? (·.isConstOf ``fvClosed)).isNone then e else stripFvCore e
 
 theorem tac_goal_defeq {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢ Q) (heq : P = Q) : Δ ⊢ P :=
@@ -2228,8 +2228,8 @@ theorem tac_goal_defeq {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢ Q) 
 
 /-- Add the goal `hyps ⊢ goal` with the closedness annotations removed. -/
 def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (goal : Q($prop)) (k : Q($prop) → ProofModeM Expr := addBIGoal hyps) :
-    ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (goal : Q($prop)) (k : Q($prop) → ProofModeM Lean.Expr := addBIGoal hyps) :
+    ProofModeM Lean.Expr := do
   let goal' := stripFv goal
   if goal' == goal then return ← k goal
   let h ← k goal'
@@ -2240,10 +2240,10 @@ def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
 /-- Evaluate the `subst'`/`subst` applications at the head of `e`, with a proof
 (`none`: unchanged). `vals` collects the substituted values; `dirty` is set if
 some `subst` could not be evaluated. -/
-partial def evalSubstsPf (ext : Expr) (vals : IO.Ref (Array Expr)) (dirty : IO.Ref Bool)
-    (e : Expr) : MetaM (Expr × Option Expr) := do
+partial def evalSubstsPf (ext : Lean.Expr) (vals : IO.Ref (Array Lean.Expr)) (dirty : IO.Ref Bool)
+    (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
   let e ← instantiateMVars e
-  let orRefl (e : Expr) (p? : Option Expr) : MetaM Expr := match p? with
+  let orRefl (e : Lean.Expr) (p? : Option Lean.Expr) : MetaM Lean.Expr := match p? with
     | some p => pure p
     | none => mkEqRefl e
   if e.isAppOfArity ``Perennial.subst' 4 then
@@ -2293,8 +2293,8 @@ Substitutions are evaluated by `evalSubstsPf` (with a kernel-cheap proof). The
 `goose_wp_simp` simp set is then only run if it could change something: the
 expression of a WP goal is kept in `goose_wp_simp` normal form, so after a
 substitution only the substituted values need to be checked (`needsGooseSimp`). -/
-def simpReduct (ext : Expr) (K : List Expr) (e2 : Expr) (known : Array Expr := #[]) :
-    MetaM (Expr × Option Expr) := do
+def simpReduct (ext : Lean.Expr) (K : List Lean.Expr) (e2 : Lean.Expr) (known : Array Lean.Expr := #[]) :
+    MetaM (Lean.Expr × Option Lean.Expr) := do
   let vals ← IO.mkRef #[]
   let dirty ← IO.mkRef false
   let (e2s, p1?) ← evalSubstsPf ext vals dirty e2
@@ -2311,7 +2311,7 @@ def simpReduct (ext : Expr) (K : List Expr) (e2 : Expr) (known : Array Expr := #
   match p? with
   | none => return (filled, none)
   | some p =>
-    let exprTy := mkApp (mkConst ``Perennial.expr) ext
+    let exprTy := mkApp (mkConst ``Perennial.Expr) ext
     let f ← withLocalDeclD `x exprTy fun x => do mkLambdaFVars #[x] (← fillExpr K x)
     return (filled, some (← mkCongrArg f p))
 
@@ -2319,14 +2319,14 @@ def simpReduct (ext : Expr) (K : List Expr) (e2 : Expr) (known : Array Expr := #
 def laterModality {u} (prop : Q(Type u)) (bi : Q(BI $prop)) : MetaM Q(Modality $prop $prop) :=
   mkAppOptM ``modality_laterN #[some prop, some (mkNatLit 1), some bi]
 
-initialize laterCache : IO.Ref (Std.HashMap Expr Bool) ← IO.mkRef {}
+initialize laterCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
 
 /-- May `IntoLaterN` strip a later from (a part of) `ty`? A syntactic over-approximation:
 `ty` has a `▷` or `▷^[n]` that is not below a wand or an implication. (No
 `IntoLaterN` instance looks below `-∗`/`→`, so a `▷` there, as in a Löb induction hypothesis
 whose own `▷` has been stripped or in a Texan-triple specification `∀ Φ, P -∗ ▷ (Q -∗ Φ) -∗
 WP ...`, does not trigger the `IntoLaterN` search over all hypotheses on every step.) -/
-def strippableLater (ty : Expr) : Bool :=
+def strippableLater (ty : Lean.Expr) : Bool :=
   (ty.findExt? fun s =>
     if s.isAppOf ``BIBase.later || s.isAppOf ``BIBase.laterN then .found
     else if s.isAppOf ``BIBase.wand || s.isAppOf ``BIBase.imp then .done
@@ -2340,7 +2340,7 @@ partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : 
   | .emp _ => return false
   | .sep _ _ _ _ lhs rhs =>
     -- (cached per context, so that a step that adds a hypothesis costs `O(1)`)
-    let e : Expr := e
+    let e : Lean.Expr := e
     if e.hasMVar then return (← hypsHaveLater rhs) || (← hypsHaveLater lhs)
     if let some b := (← laterCache.get)[e]? then return b
     let b := (← hypsHaveLater rhs) || (← hypsHaveLater lhs)
@@ -2358,7 +2358,7 @@ from the hypotheses (Rocq `MaybeIntoLaterNEnvs`). When no hypothesis has a strip
 this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
 hypothesis on every step. -/
 def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) : ProofModeM ((e' : Q($prop)) × Hyps bi e' × Expr) := do
+    (hyps : Hyps bi ehyps) : ProofModeM ((e' : Q($prop)) × Hyps bi e' × Lean.Expr) := do
   if ← hypsHaveLater hyps then
     let ⟨e', hyps', pf⟩ ← iModAction (prop1 := prop) (bi1 := bi) hyps (← laterModality prop bi)
     return ⟨e', hyps', pf⟩
@@ -2367,22 +2367,22 @@ def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   return ⟨ehyps, hyps, pf⟩
 
 /-- Is `e` an application of a `CompositeLiteral` instruction (possibly curried)? -/
-def isCompositeLitApp (e : Expr) : MetaM Bool := do
+def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
   let mut e ← whnfR e
   for _ in [0:4] do
-    let_expr Perennial.expr.App _ f _ := e | return false
+    let_expr Perennial.Expr.App _ f _ := e | return false
     if let some fv ← isGooseVal? f then
       let fv ← whnfR fv
       let_expr Perennial.val.GoInstruction _ i := fv | return false
-      return (← whnfR i).isAppOf ``go_instruction.CompositeLiteral
+      return (← whnfR i).isAppOf ``GoInstruction.CompositeLiteral
     e ← whnfR f
   return false
 
 /-- Find the pure step that `iWpPureStep` would take (the outermost redex with a
 `PureWp` instance satisfying `pred`) and solve its side condition. -/
 def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
-    (pred : Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
-    ProofModeM (PureStep × Expr) := do
+    (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
+    ProofModeM (PureStep × Lean.Expr) := do
   let gs ← gooseGSArgs wp.ι
   let stepSliceLits := (goose.wp.unfoldSliceLiterals.get (← getOptions)).or
     (!goose.wp.extras.get (← getOptions))
@@ -2392,20 +2392,20 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
       -- instances are of this form): skip the (costly) instance search otherwise
       -- (instances may match curried applications `App (App (Val f) (Val v1)) (Val v2)`)
       if let some (_, hole) ← extractEctxItem e1 then
-        let rec valApp (fuel : Nat) (h : Expr) : MetaM Bool := do
+        let rec valApp (fuel : Nat) (h : Lean.Expr) : MetaM Bool := do
           if (← isGooseVal? h).isSome then return true
           match fuel with
           | 0 => return false
           | fuel + 1 =>
             let h ← whnfR h
-            let_expr Perennial.expr.App _ f a := h | return false
+            let_expr Perennial.Expr.App _ f a := h | return false
             return (← valApp fuel a) && (← valApp fuel f)
         -- (only an application can be a redex with an application of values in
         -- evaluation position, e.g. not `(#l, #x +⟨t⟩ #y)`; and an application
         -- whose function is not a value or a curried application of values, e.g.
         -- `(rec: ...) (f #v)`, is not one either)
         let e1' ← whnfR e1
-        if e1'.isAppOfArity ``Perennial.expr.App 3 then
+        if e1'.isAppOfArity ``Perennial.Expr.App 3 then
           unless ← valApp 8 hole do throwError "skip"
           unless ← valApp 8 (e1'.getArg! 1) do throwError "skip"
         else
@@ -2429,8 +2429,8 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
 definitions such as `Let`): these are parts of the WP expression, hence in
 `goose_wp_simp` normal form, and a step that only moves them (e.g. `Rec` to
 `RecV`, or a beta step for an anonymous binder) need not re-check them. -/
-def redexParts (e1 : Expr) : MetaM (Array Expr) := do
-  let rec go : Nat → Expr → Array Expr → MetaM (Array Expr)
+def redexParts (e1 : Lean.Expr) : MetaM (Array Lean.Expr) := do
+  let rec go : Nat → Lean.Expr → Array Lean.Expr → MetaM (Array Lean.Expr)
     | 0, _, acc => pure acc
     | d + 1, e, acc => do
       let mut acc := acc
@@ -2441,8 +2441,8 @@ def redexParts (e1 : Expr) : MetaM (Array Expr) := do
 
 /-- Take the pure step `st` found by `iWpPureStepFind`. -/
 def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (st : PureStep) (hφ : Expr) (lc : Bool) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (st : PureStep) (hφ : Lean.Expr) (lc : Bool) :
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let ⟨ehyps', hyps', hlater⟩ ← iLaterIntro hyps
   -- the subterms of the redex are in normal form (as parts of the WP expression)
   let known ← redexParts st.e1
@@ -2452,11 +2452,11 @@ def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let gs ← gooseGSArgs wp.ι
   if !lc && gs.size == 9 then
     -- built directly (`tac_wp_pure_wp'` takes the 9 section variables of `gs` first)
-    let k := fun (h : Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp')
+    let k := fun (h : Lean.Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp')
       (gs ++ #[st.φ, st.e1, st.e2, wp.wrap e', st.inst, Kq, ehyps, ehyps', wp.s, wp.E, wp.Φ,
         hφ, hlater, heq, h])
     return ⟨ehyps', hyps', e', k⟩
-  let k := fun (h : Expr) => wp.mkAppNamed (if lc then ``tac_wp_pure_wp_lc' else ``tac_wp_pure_wp')
+  let k := fun (h : Lean.Expr) => wp.mkAppNamed (if lc then ``tac_wp_pure_wp_lc' else ``tac_wp_pure_wp')
     [("Δ", ehyps), ("Δ'", ehyps'), ("e2", st.e2), ("e'", wp.wrap e'),
      ("Hwp", st.inst), ("K", Kq), ("e1", st.e1), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ),
      ("hφ", hφ), ("hlater", hlater), ("!heq", heq),
@@ -2469,8 +2469,8 @@ the new (simplified) expression, and a function turning a proof of the new goal
 the old one. `pred` restricts the redexes considered. -/
 def iWpPureStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (failOnUnsolved lc : Bool)
-    (pred : Expr → MetaM Bool := fun _ => pure true) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    (pred : Lean.Expr → MetaM Bool := fun _ => pure true) :
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let (st, hφ) ← iWpPureStepFind wp failOnUnsolved pred
   iWpPureStepTake hyps wp st hφ lc
 
@@ -2483,20 +2483,20 @@ register_option goose.wp.letRun : Nat := {
 
 /-- A `let:` (or `;;`) of a value: `App (Rec BAnon b body) (Val v)`, possibly under a
 closedness annotation; returns `(b, name of b, v, body)`. -/
-def valueLet? (e : Expr) : MetaM (Option (Expr × Option String × Expr × Expr)) := do
+def valueLet? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Option String × Lean.Expr × Lean.Expr)) := do
   let e ← whnfR e
-  let_expr Perennial.expr.App _ f a := e | return none
+  let_expr Perennial.Expr.App _ f a := e | return none
   let f ← whnfR f
-  let_expr Perennial.expr.Rec _ fb b body := f | return none
-  unless (← whnfR fb).isConstOf ``binder.BAnon do return none
+  let_expr Perennial.Expr.Rec _ fb b body := f | return none
+  unless (← whnfR fb).isConstOf ``Binder.BAnon do return none
   let some bl ← binderLit? b | return none
   let some v ← isGooseVal? a | return none
   return some (← whnfR b, bl, v, body)
 
 /-- The evaluation context `K` (innermost first) and the run of `let:`s of values
 `(b, name, v, body)` at the head of the WP expression `e`, if there is one. -/
-def findLetRun (e : Expr) :
-    MetaM (Option (List Expr × Expr × Array (Expr × Option String × Expr × Expr))) := do
+def findLetRun (e : Lean.Expr) :
+    MetaM (Option (List Lean.Expr × Lean.Expr × Array (Lean.Expr × Option String × Lean.Expr × Lean.Expr))) := do
   let mut cur := e
   let mut K := []
   for _ in [0:64] do
@@ -2522,7 +2522,7 @@ of the old one; `none` if there is no such run, or if the body after the run is 
 built from constructors. -/
 def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
-    ProofModeM (Option ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr))) := do
+    ProofModeM (Option ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   let minRun := goose.wp.letRun.get (← getOptions)
   if minRun == 0 then return none
   let some (K, c0, run) ← findLetRun wp.e | return none
@@ -2558,8 +2558,8 @@ def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let e' ← fillExpr K body'
   let Kq := wp.quoteK K
   let gs ← gooseGSArgs wp.ι
-  let exprTy := mkApp (mkConst ``Perennial.expr) ext
-  let k := fun (h : Expr) => do
+  let exprTy := mkApp (mkConst ``Perennial.Expr) ext
+  let k := fun (h : Lean.Expr) => do
     -- `Δ₂ₖ ⊢ WP (fill K (substEnv σₖ body))`
     let f ← withLocalDeclD `x exprTy fun x => do mkLambdaFVars #[x] (← fillExpr K x)
     let heq ← wp.wrapEq e' (some (← mkCongrArg f pbody))
@@ -2580,7 +2580,7 @@ def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 /-- Simplify the expression of the WP goal with `goose_wp_simp`. Returns the new
 (inner) expression and a function turning a proof of the new goal into a proof
 of the old one, or `none` if nothing changed. -/
-def iWpExprSimp (wp : GooseWpGoal) (Δ : Expr) : MetaM (Option (Expr × (Expr → MetaM Expr))) := do
+def iWpExprSimp (wp : GooseWpGoal) (Δ : Lean.Expr) : MetaM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   unless ← needsGooseSimp wp.e do return none
   let (e', p?) ← gooseExprSimp wp.e
   let some _ := p? | return none
@@ -2595,10 +2595,10 @@ argument of a subexpression in evaluation position) where `c` is an application
 of a (non-irreducible, non-projection) definition whose unfolding is a value that
 is not a function (`#x` or a `val` constructor other than `RecV`), e.g. a Go
 package constant `def a : val := #(W64 3)`. Returns `(c, unfolding)`. -/
-def findValConst (e : Expr) : MetaM (Option (Expr × Expr)) := do
+def findValConst (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let env ← getEnv
   -- a value constant `c`, or one inside `PairV`/`InjLV`/`InjRV`
-  let rec check : Nat → Expr → MetaM (Option (Expr × Expr))
+  let rec check : Nat → Lean.Expr → MetaM (Option (Lean.Expr × Lean.Expr))
   | 0, _ => return none
   | fuel + 1, c => do
     let c ← whnfR c
@@ -2620,14 +2620,14 @@ def findValConst (e : Expr) : MetaM (Option (Expr × Expr)) := do
     let e' ← whnfR (← instantiateMVars e')
     for a in e'.getAppArgs do
       let a ← whnfR a
-      let_expr Perennial.expr.Val _ c := a | continue
+      let_expr Perennial.Expr.Val _ c := a | continue
       if let some r ← check 8 c then return some r
   return none
 
 /-- Unfold one value constant in evaluation position (`findValConst`) in the WP
 goal (definitional). Used by `wp_auto` when no other step applies. -/
-def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Expr) :
-    MetaM (Option (Expr × (Expr → MetaM Expr))) := do
+def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+    MetaM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   let some (c, c') ← findValConst wp.e | return none
   let e' := wp.e.replace fun s => if s == c then some c' else none
   if e' == wp.e then return none
@@ -2639,8 +2639,8 @@ def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Expr) :
 /-- Turn the goal `hyps ⊢ WP (Val v) {{ Φ }}` into `hyps ⊢ Φ v` (Rocq
 `iApply wp_value`), continuing with `k` on the new conclusion. -/
 def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (v : Expr)
-    (k : Expr → ProofModeM Expr) : ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (v : Lean.Expr)
+    (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
   let goal := (mkApp wp.Φ v).headBeta
   let pf ← k goal
   wp.mkAppNamed ``tac_wp_value_nofupd
@@ -2663,7 +2663,7 @@ def focusMargin : Nat := 3
 
 /-- The evaluation-context path of `e` (items and holes, outermost first), if it
 is longer than `focusTrigger` (checked in `O(focusTrigger)` otherwise). -/
-def deepEctxPath? (e : Expr) : MetaM (Option (Array (Expr × Expr))) := do
+def deepEctxPath? (e : Lean.Expr) : MetaM (Option (Array (Lean.Expr × Lean.Expr))) := do
   let mut cur := e
   let mut acc := #[]
   for _ in [0:focusTrigger + 1] do
@@ -2681,8 +2681,8 @@ def deepEctxPath? (e : Expr) : MetaM (Option (Array (Expr × Expr))) := do
 /-- Focus on the redex of `wp` if it is deep in its evaluation context: the new
 goal (expression and postcondition `wpNestedPost`), and a function turning a proof
 of it into a proof of the old one. -/
-def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Expr) :
-    MetaM (Option (GooseWpGoal × (Expr → MetaM Expr))) := do
+def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+    MetaM (Option (GooseWpGoal × (Lean.Expr → MetaM Lean.Expr))) := do
   unless wp.tail.isNone do return none
   let some path ← deepEctxPath? wp.e | return none
   let cut := path.size - focusMargin
@@ -2698,7 +2698,7 @@ def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Expr) :
 
 /-- The arguments `(s, E, K, Φ)` of a postcondition `wpNestedPost s E K Φ`, and the
 partial application to the section variables. -/
-def nestedPostArgs? (Φ : Expr) : Option (Expr × Expr × Expr × Expr × Expr) :=
+def nestedPostArgs? (Φ : Lean.Expr) : Option (Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) :=
   let Φ := Φ.consumeMData
   if !Φ.getAppFn.isConstOf ``wpNestedPost then none else
   let args := Φ.getAppArgs
@@ -2711,7 +2711,7 @@ def nestedPostArgs? (Φ : Expr) : Option (Expr × Expr × Expr × Expr × Expr) 
 `WP (fillItem Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}`, or `Φ v` (popped
 again if it is of this form) if `K = []` (definitionally equal). `none` if the goal is
 not of this form. -/
-partial def popNestedPost? (wp : GooseWpGoal) (goal : Expr) : MetaM (Option Expr) := do
+partial def popNestedPost? (wp : GooseWpGoal) (goal : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let goal := goal.consumeMData
   unless goal.isApp do return none
   let some (s, E, K, Φ, head) := nestedPostArgs? goal.appFn! | return none
@@ -2722,11 +2722,11 @@ partial def popNestedPost? (wp : GooseWpGoal) (goal : Expr) : MetaM (Option Expr
     let g := (mkApp Φ v).headBeta
     return some ((← popNestedPost? wp g).getD g)
   unless K'.isAppOfArity ``List.cons 3 do return none
-  let e ← fillItemExpr (K'.getArg! 1) (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext v)
+  let e ← fillItemExpr (K'.getArg! 1) (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext v)
   return some ({ wp with s, E, tail := none }.mk' e (mkAppN head #[s, E, K'.getArg! 2, Φ]))
 
 /-- A literal list of evaluation-context items. -/
-partial def ectxListLit? (K : Expr) : MetaM (Option (List Expr)) := do
+partial def ectxListLit? (K : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
   let K ← whnfR K
   if K.isAppOfArity ``List.nil 1 then return some []
   unless K.isAppOfArity ``List.cons 3 do return none
@@ -2735,8 +2735,8 @@ partial def ectxListLit? (K : Expr) : MetaM (Option (List Expr)) := do
 
 /-- Undo `GooseWpGoal.focus?` (one level): `WP e {{ wpNestedPost K Φ }}` becomes
 `WP (fill K e) {{ Φ }}` with `fill K e` computed. -/
-def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Expr) :
-    MetaM (Option (GooseWpGoal × (Expr → MetaM Expr))) := do
+def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+    MetaM (Option (GooseWpGoal × (Lean.Expr → MetaM Lean.Expr))) := do
   unless wp.tail.isNone do return none
   let some (s, E, K, Φ, _) := nestedPostArgs? wp.Φ | return none
   let some items ← ectxListLit? K | return none
@@ -2746,7 +2746,7 @@ def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Expr) :
 
 /-- Add the goal `hyps ⊢ WP e {{ Φ }}` of `wp`, unfocused (`GooseWpGoal.unfocus?`). -/
 partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Lean.Expr := do
   if let some (wp', k) ← wp.unfocus? ehyps then return ← k (← addWpGoal hyps wp')
   addBIGoal hyps (wp.mk' wp.e wp.Φ)
 
@@ -2754,7 +2754,7 @@ partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
 be discharged automatically are not taken. When the expression becomes a value
 `v`, the WP is replaced by `Φ v`, and if that is again a WP, stepping continues. -/
 partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (simpFirst : Bool := true) : ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (simpFirst : Bool := true) : ProofModeM Lean.Expr := do
   if simpFirst then
     if let some (e', k) ← iWpExprSimp wp ehyps then
       return ← k (← iWpPures hyps { wp with e := e' } (simpFirst := false))
@@ -2788,7 +2788,7 @@ partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
 /-- Finish a goal `hyps ⊢ WP e {{ Φ }}`: if `e` is a value, replace the WP by
 `Φ v`; otherwise leave it. -/
 def iWpFinish {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Expr := do
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Lean.Expr := do
   if let some v ← wp.isVal? then
     iWpValue hyps wp v (addBIGoal hyps ·)
   else
@@ -2797,12 +2797,12 @@ def iWpFinish {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 /-- Bind the evaluation context `K` around `e'` in the goal
 `Δ ⊢ WP (fill K e') {{ Φ }}`: `k` is given the new conclusion
 `WP e' {{ v, WP (fill K (Val v)) {{ Φ }} }}` and must prove it from `Δ`. -/
-def iWpBindCore (Δ : Expr) (wp : GooseWpGoal) (K : List Expr) (e' : Expr)
-    (k : Expr → ProofModeM Expr) : ProofModeM Expr := do
+def iWpBindCore (Δ : Lean.Expr) (wp : GooseWpGoal) (K : List Lean.Expr) (e' : Lean.Expr)
+    (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
   if K.isEmpty && wp.tail.isNone then return ← k (wp.mk' e' wp.Φ)
   let valTy := mkApp (mkConst ``Perennial.val) wp.ext
   let Φ' ← withLocalDeclD `v valTy fun v => do
-    let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.expr.Val) wp.ext v)
+    let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext v)
     mkLambdaFVars #[v] (wp.mk' filled wp.Φ)
   let pf ← k ({ wp with tail := none }.mk' e' Φ')
   wp.mkAppNamed ``tac_wp_bind [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("K", wp.quoteK K),
@@ -2811,16 +2811,16 @@ def iWpBindCore (Δ : Expr) (wp : GooseWpGoal) (K : List Expr) (e' : Expr)
 /-- Rocq `wp_bind_next`: the evaluation context to bind for the "next"
 operation (a function call, possibly curried, or the innermost expression that
 is not an evaluation-context constructor). -/
-def findBindNext (e : Expr) : MetaM (Option (List Expr × Expr)) := do
-  let mut bindCtx : Option (List Expr × Expr) := none
+def findBindNext (e : Lean.Expr) : MetaM (Option (List Lean.Expr × Lean.Expr)) := do
+  let mut bindCtx : Option (List Lean.Expr × Lean.Expr) := none
   let mut isCallSoFar := true
   let mut cur := e
-  let mut K : List Expr := []
+  let mut K : List Lean.Expr := []
   repeat
     let cur' ← whnfR (← instantiateMVars cur)
-    if cur'.isAppOf ``Perennial.expr.Val then break
+    if cur'.isAppOf ``Perennial.Expr.Val then break
     let isAppVal ← match_expr cur' with
-      | Perennial.expr.App _ _ e2 => pure (← isGooseVal? e2).isSome
+      | Perennial.Expr.App _ _ e2 => pure (← isGooseVal? e2).isSome
       | _ => pure false
     if isAppVal then
       unless isCallSoFar do bindCtx := some (K, cur)
@@ -2837,7 +2837,7 @@ def findBindNext (e : Expr) : MetaM (Option (List Expr × Expr)) := do
 `isDefEq`)? Head symbols are compared first, so that most candidates are rejected
 without unification, and errors (including running out of heartbeats) count as
 no match. -/
-def gooseMatchesPattern (e p : Expr) : MetaM Bool := do
+def gooseMatchesPattern (e p : Lean.Expr) : MetaM Bool := do
   let e' ← whnfR e
   let p' ← whnfR (← instantiateMVars p)
   if let .const pn _ := p'.getAppFn then
@@ -2849,8 +2849,8 @@ def gooseMatchesPattern (e p : Expr) : MetaM Bool := do
   tryCatchRuntimeEx (withReducible (isDefEq e p)) (fun _ => return false)
 
 /-- Elaborate a GooseLang expression pattern (in goose expression mode). -/
-def elabGoosePattern (stx : Term) (ext : Expr) : TermElabM Expr := do
-  let ty := mkApp (mkConst ``Perennial.expr) ext
+def elabGoosePattern (stx : Term) (ext : Lean.Expr) : TermElabM Lean.Expr := do
+  let ty := mkApp (mkConst ``Perennial.Expr) ext
   let e ← Term.elabTermEnsuringType (← `(gl($stx))) ty
   Term.synthesizeSyntheticMVarsNoPostponing (ignoreStuckTC := true)
   instantiateMVars e
@@ -2873,18 +2873,18 @@ variables, so they cannot be hoisted: a context with `n` live points-to facts st
 gives a proof of size `O(n²)`.) -/
 
 /-- Replace the subterms of `e` in `map` (by pointer), except `e` itself. -/
-unsafe def replacePtrs (map : PtrMap Expr Expr) (e : Expr) : Expr :=
+unsafe def replacePtrs (map : PtrMap Lean.Expr Lean.Expr) (e : Lean.Expr) : Lean.Expr :=
   e.replace fun t => if ptrEq t e then none else map.find? t
 
 /-- See "Hoisting closed subterms out of binders": the occurrences in `e` of the terms
 `cands` (in creation order, by pointer) are replaced by `let`-bound variables, and the
 free variables `zs` by `Rs`. `e` is fully instantiated. -/
-unsafe def hoistClosedImpl (e : Expr) (cands : Array Expr) (zs Rs : Array Expr) :
-    MetaM Expr := do
+unsafe def hoistClosedImpl (e : Lean.Expr) (cands : Array Lean.Expr) (zs Rs : Array Lean.Expr) :
+    MetaM Lean.Expr := do
   if cands.isEmpty then return e.replaceFVars zs Rs
   -- (each candidate with the earlier ones replaced)
-  let mut map : PtrMap Expr Expr := mkPtrMap
-  let mut vals : Array (FVarId × Expr) := #[]
+  let mut map : PtrMap Lean.Expr Lean.Expr := mkPtrMap
+  let mut vals : Array (FVarId × Lean.Expr) := #[]
   for t in cands do
     if map.contains t then continue
     let v := replacePtrs map t
@@ -2913,7 +2913,7 @@ unsafe def hoistClosedImpl (e : Expr) (cands : Array Expr) (zs Rs : Array Expr) 
   withLCtx lctx insts (mkLetFVars fvars body (usedLetOnly := false))
 
 @[implemented_by hoistClosedImpl]
-opaque hoistClosed (e : Expr) (cands : Array Expr) (zs Rs : Array Expr) : MetaM Expr
+opaque hoistClosed (e : Lean.Expr) (cands : Array Lean.Expr) (zs Rs : Array Lean.Expr) : MetaM Lean.Expr
 
 /-- The number of steps that introduced a binder in the proof (allocations), for
 `assignHoisted`. -/
@@ -2932,7 +2932,7 @@ instantiation of the delayed assignments of the binders. They are temporarily
 assigned `z ys`, for a new free variable `z : ∀ ys, T` (`T` the type of `?g`);
 after instantiating and hoisting, `z` is replaced by a new metavariable `?R` of the
 outer context, assigned `fun ys => ?g` (`?g` itself if there is no `ys`). -/
-def assignHoisted (mvar : MVarId) (pf : Expr) (cands : Array Expr) (goals : Array MVarId) :
+def assignHoisted (mvar : MVarId) (pf : Lean.Expr) (cands : Array Lean.Expr) (goals : Array MVarId) :
     MetaM Unit := do
   -- (with few binders, the duplication is small: not worth the traversals)
   if cands.isEmpty || (← binderSteps.get) < hoistMinBinders then
@@ -2941,7 +2941,7 @@ def assignHoisted (mvar : MVarId) (pf : Expr) (cands : Array Expr) (goals : Arra
   let outer ← mvar.getDecl
   let saved ← getMCtx
   -- the remaining goals: `(g, ys, z, type of z)`
-  let mut pending : Array (MVarId × Array Expr × Expr × Expr) := #[]
+  let mut pending : Array (MVarId × Array Lean.Expr × Lean.Expr × Lean.Expr) := #[]
   for g in goals do
     if ← g.isAssignedOrDelayedAssigned then continue
     let gd ← g.getDecl
@@ -2979,7 +2979,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_pures` takes all pure steps at the head of the WP goal: it repeatedly
 finds the outermost subexpression in evaluation position that has a `PureWp`
 instance (beta reduction, `if` on a literal boolean, projections of pairs, Go
-instructions with a deterministic pure semantics, `exception_seq`, ...) and
+instructions with a deterministic pure semantics, `exceptionSeq`, ...) and
 steps it, simplifying substitutions. A step whose side condition cannot be
 solved automatically is not taken. When the expression becomes a value `v`,
 `WP v {{ Φ }}` is replaced by `Φ v`. Never fails (does nothing on a non-WP goal).
@@ -3015,10 +3015,10 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
       mvar.assign (← iWpValue g.hyps wp v (addBIGoal g.hyps ·))
       return
     let pred ← match pat? with
-      | none => Pure.pure (fun _ => Pure.pure true : Expr → MetaM Bool)
+      | none => Pure.pure (fun _ => Pure.pure true : Lean.Expr → MetaM Bool)
       | some pat => do
         let p ← elabGoosePattern pat wp.ext
-        Pure.pure (fun e => withNewMCtxDepth (gooseMatchesPattern e p) : Expr → MetaM Bool)
+        Pure.pure (fun e => withNewMCtxDepth (gooseMatchesPattern e p) : Lean.Expr → MetaM Bool)
     let ⟨_, hyps', e', k⟩ ← iWpPureStep g.hyps wp (failOnUnsolved := false) (lc := false) pred
     mvar.assign (← k (← iWpFinish hyps' { wp with e := e' }))
 
@@ -3079,13 +3079,13 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
       mvar.assign (← iWpBindCore g.e wp K e' (addBIGoal g.hyps ·))
 
 section call_lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 /-- Rocq `tac_wp_rec`: call a function value `fv` that unfolds to
 `rec: f x := e`. The recursive occurrences of `f` are replaced by the folded `fv`. -/
-theorem tac_wp_call' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV f x e)
+theorem tac_wp_call' {fv v2 : val} {f x : Binder} {e e' : Expr} (hfv : fv = RecV f x e)
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ WP e' @ s; E {{ Φ }}) :
@@ -3093,7 +3093,7 @@ theorem tac_wp_call' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV
   subst hfv
   exact tac_wp_pure_wp' (Hwp := wp_call (G := G) (L := L) v2 f x e) trivial hlater heq h
 
-theorem tac_wp_call_lc' {fv v2 : val} {f x : binder} {e e' : expr} (hfv : fv = RecV f x e)
+theorem tac_wp_call_lc' {fv v2 : val} {f x : Binder} {e e' : Expr} (hfv : fv = RecV f x e)
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ iprop(£ 1 -∗ WP e' @ s; E {{ Φ }})) :
@@ -3110,10 +3110,10 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 transparency) to `RecV f x e`, and take the beta step. -/
 def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Bool := false) (onlyImpl : Bool := false) :
-    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Expr × (Expr → MetaM Expr)) := do
+    ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let some ((fv, v2, f, x, body), K, _) ← findEctx wp.e (fun _ e => do
       let e ← whnfR e
-      let_expr Perennial.expr.App _ e1 e2 := e | throwError "not an application"
+      let_expr Perennial.Expr.App _ e1 e2 := e | throwError "not an application"
       let some fv ← isGooseVal? e1 | throwError "not a value"
       let some v2 ← isGooseVal? e2 | throwError "not a value"
       -- `onlyImpl`: only implementation constants `«Fooⁱᵐᵖˡ»` (as produced by
@@ -3132,7 +3132,7 @@ def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   let (e', heq?) ← simpReduct wp.ext K s2
   let heq ← wp.wrapEq e' heq?
   let hfv ← mkEqRefl fv
-  let k := fun (h : Expr) => wp.mkAppNamed (if lc then ``tac_wp_call_lc' else ``tac_wp_call')
+  let k := fun (h : Lean.Expr) => wp.mkAppNamed (if lc then ``tac_wp_call_lc' else ``tac_wp_call')
     [("Δ", ehyps), ("Δ'", ehyps'), ("e'", wp.wrap e'),
      ("hfv", hfv), ("v2", v2), ("f", f), ("x", x), ("e", body), ("K", wp.quoteK K),
      ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("hlater", hlater),

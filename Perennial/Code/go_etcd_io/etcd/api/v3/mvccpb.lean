@@ -12,134 +12,134 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.api.v3.mvccpb : go_string := go!"go.etcd.io/etcd/api/v3/mvccpb"
+def go_etcd_io.etcd.api.v3.mvccpb : GoString := go!"go.etcd.io/etcd/api/v3/mvccpb"
 end pkg_id
 
 namespace go_etcd_io.etcd.api.v3.mvccpb
 
-def Event_EventType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType" [])
+def Event_EventType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType" [])
 
 attribute [irreducible] Event_EventType
 
-def KeyValue [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/mvccpb.KeyValue" [])
+def KeyValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/mvccpb.KeyValue" [])
 
 attribute [irreducible] KeyValue
 
-def Event [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/api/v3/mvccpb.Event" [])
+def Event [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/api/v3/mvccpb.Event" [])
 
 attribute [irreducible] Event
 
-@[reducible] noncomputable def PUT [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def PUT [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 0)
 
-@[reducible] noncomputable def DELETE [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DELETE [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 1)
 
-axiom Event_PUT [ffi_syntax] [GoGlobalContext] : val
+axiom Event_PUT [FfiSyntax] [GoGlobalContext] : val
 
-axiom Event_DELETE [ffi_syntax] [GoGlobalContext] : val
+axiom Event_DELETE [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Event_EventType_name [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Event_EventType_name [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_name"
 
-axiom Event_EventType_name'init [ffi_syntax] [GoGlobalContext] : val
+axiom Event_EventType_name'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Event_EventType_value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Event_EventType_value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_value"
 
-axiom Event_EventType_value'init [ffi_syntax] [GoGlobalContext] : val
+axiom Event_EventType_value'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def xxx_messageInfo_KeyValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_KeyValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"
 
-noncomputable def xxx_messageInfo_Event [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def xxx_messageInfo_Event [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"
 
-noncomputable def fileDescriptor_2216fe83c9c12408 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fileDescriptor_2216fe83c9c12408 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.fileDescriptor_2216fe83c9c12408"
 
-axiom fileDescriptor_2216fe83c9c12408'init [ffi_syntax] [GoGlobalContext] : val
+axiom fileDescriptor_2216fe83c9c12408'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrInvalidLengthKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalidLengthKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrInvalidLengthKv"
 
-axiom ErrInvalidLengthKv'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrInvalidLengthKv'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrIntOverflowKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrIntOverflowKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrIntOverflowKv"
 
-axiom ErrIntOverflowKv'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrIntOverflowKv'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrUnexpectedEndOfGroupKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEndOfGroupKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.ErrUnexpectedEndOfGroupKv"
 
-axiom ErrUnexpectedEndOfGroupKv'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrUnexpectedEndOfGroupKv'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def encodeVarintKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encodeVarintKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"
 
-noncomputable def sovKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sovKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.sovKv"
 
-noncomputable def sozKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sozKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.sozKv"
 
-noncomputable def skipKv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def skipKv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/api/v3/mvccpb.skipKv"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.api.v3.mvccpb where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.api.v3.mvccpb)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val ErrUnexpectedEndOfGroupKv'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrIntOverflowKv'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrInvalidLengthKv'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val fileDescriptor_2216fe83c9c12408'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Event_EventType_value'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Event_EventType_name'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))))
 
 namespace Event_EventType
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end Event_EventType
 
-@[reducible] def «Event_EventTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Event_EventTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int32
 
-class Event_EventType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Event_EventType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Event_EventType_underlying : go.UnderlyingDirectedEq Event_EventType «Event_EventTypeⁱᵐᵖˡ»
 
 attribute [instance] Event_EventType_Assumptions.Event_EventType_underlying
 
 namespace KeyValue
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Key' : slice.t
   CreateRevision' : w64
@@ -151,32 +151,32 @@ structure t [ffi_syntax] where
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end KeyValue
 
-@[reducible] def KeyValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Key" (go.type.SliceType go.byte)),
+@[reducible] def KeyValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Key" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"CreateRevision" go.int64),
 (go.field_decl.FieldDecl go!"ModRevision" go.int64),
 (go.field_decl.FieldDecl go!"Version" go.int64),
-(go.field_decl.FieldDecl go!"Value" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Value" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"Lease" go.int64),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def KeyValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def KeyValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   KeyValue'fds_unsealed
 
-instance equals_unfold_KeyValue [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_KeyValue [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold KeyValue'fds KeyValue'fds_unsealed :=
   ⟨by unfold KeyValue'fds; rfl⟩
 
-@[reducible] def «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType KeyValue'fds)
+@[reducible] def «KeyValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType KeyValue'fds)
 
-class KeyValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class KeyValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   KeyValue_type_repr : go.TypeReprUnderlying «KeyValueⁱᵐᵖˡ» KeyValue.t
   KeyValue_underlying : go.UnderlyingDirectedEq KeyValue «KeyValueⁱᵐᵖˡ»
   KeyValue_get_Key : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
@@ -220,46 +220,46 @@ attribute [instance] KeyValue_Assumptions.KeyValue_type_repr
   KeyValue_Assumptions.KeyValue_set_XXX_sizecache
 
 namespace Event
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Type' : Event_EventType.t
-  Kv' : loc
-  PrevKv' : loc
+  Kv' : Loc
+  PrevKv' : Loc
   XXX_NoUnkeyedLiteral' : Unit
   XXX_unrecognized' : slice.t
   XXX_sizecache' : w32
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Event
 
-@[reducible] def Event'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Event'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Type" Event_EventType),
-(go.field_decl.FieldDecl go!"Kv" (go.type.PointerType KeyValue)),
-(go.field_decl.FieldDecl go!"PrevKv" (go.type.PointerType KeyValue)),
-(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.type.StructType [])),
-(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.type.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"Kv" (go.GoType.PointerType KeyValue)),
+(go.field_decl.FieldDecl go!"PrevKv" (go.GoType.PointerType KeyValue)),
+(go.field_decl.FieldDecl go!"XXX_NoUnkeyedLiteral" (go.GoType.StructType [])),
+(go.field_decl.FieldDecl go!"XXX_unrecognized" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"XXX_sizecache" go.int32)]
 
-@[irreducible] def Event'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Event'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Event'fds_unsealed
 
-instance equals_unfold_Event [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Event [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Event'fds Event'fds_unsealed :=
   ⟨by unfold Event'fds; rfl⟩
 
-@[reducible] def «Eventⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Event'fds)
+@[reducible] def «Eventⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Event'fds)
 
-class Event_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Event_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Event_type_repr : go.TypeReprUnderlying «Eventⁱᵐᵖˡ» Event.t
   Event_underlying : go.UnderlyingDirectedEq Event «Eventⁱᵐᵖˡ»
   Event_get_Type : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"Type") #x (Val #(x.Type'))
   Event_set_Type : ∀ (x : Event.t) (y : Event_EventType.t), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : Event.t)))
   Event_get_Kv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"Kv") #x (Val #(x.Kv'))
-  Event_set_Kv : ∀ (x : Event.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"Kv") (PairV #x #y) (Val #(({ x with Kv' := y } : Event.t)))
+  Event_set_Kv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"Kv") (PairV #x #y) (Val #(({ x with Kv' := y } : Event.t)))
   Event_get_PrevKv : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"PrevKv") #x (Val #(x.PrevKv'))
-  Event_set_PrevKv : ∀ (x : Event.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"PrevKv") (PairV #x #y) (Val #(({ x with PrevKv' := y } : Event.t)))
+  Event_set_PrevKv : ∀ (x : Event.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"PrevKv") (PairV #x #y) (Val #(({ x with PrevKv' := y } : Event.t)))
   Event_get_XXX_NoUnkeyedLiteral : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") #x (Val #(x.XXX_NoUnkeyedLiteral'))
   Event_set_XXX_NoUnkeyedLiteral : ∀ (x : Event.t) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet «Eventⁱᵐᵖˡ» go!"XXX_NoUnkeyedLiteral") (PairV #x #y) (Val #(({ x with XXX_NoUnkeyedLiteral' := y } : Event.t)))
   Event_get_XXX_unrecognized : ∀ (x : Event.t), go.IsGoStepPureDetTagged under (StructFieldGet «Eventⁱᵐᵖˡ» go!"XXX_unrecognized") #x (Val #(x.XXX_unrecognized'))
@@ -282,7 +282,7 @@ attribute [instance] Event_Assumptions.Event_type_repr
   Event_Assumptions.Event_get_XXX_sizecache
   Event_Assumptions.Event_set_XXX_sizecache
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Event_EventType_instance : Event_EventType_Assumptions
   KeyValue_instance : KeyValue_Assumptions
   Event_instance : Event_Assumptions

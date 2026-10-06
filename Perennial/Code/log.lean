@@ -13,129 +13,129 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def log : go_string := go!"log"
+def log : GoString := go!"log"
 end pkg_id
 
 namespace log
 
-def Logger [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"log.Logger" [])
+def Logger [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"log.Logger" [])
 
 attribute [irreducible] Logger
 
-axiom «Loggerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Loggerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
 /-- the date in the local time zone: 2009/01/23 -/
-@[reducible] noncomputable def Ldate [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Ldate [FfiSyntax] [GoGlobalContext] : val :=
   #(1 : Int)
 
 /-- the time in the local time zone: 01:23:23 -/
-@[reducible] noncomputable def Ltime [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Ltime [FfiSyntax] [GoGlobalContext] : val :=
   #(2 : Int)
 
-axiom Lmicroseconds [ffi_syntax] [GoGlobalContext] : val
+axiom Lmicroseconds [FfiSyntax] [GoGlobalContext] : val
 
-axiom Llongfile [ffi_syntax] [GoGlobalContext] : val
+axiom Llongfile [FfiSyntax] [GoGlobalContext] : val
 
-axiom Lshortfile [ffi_syntax] [GoGlobalContext] : val
+axiom Lshortfile [FfiSyntax] [GoGlobalContext] : val
 
-axiom LUTC [ffi_syntax] [GoGlobalContext] : val
+axiom LUTC [FfiSyntax] [GoGlobalContext] : val
 
-axiom Lmsgprefix [ffi_syntax] [GoGlobalContext] : val
+axiom Lmsgprefix [FfiSyntax] [GoGlobalContext] : val
 
 /-- initial values for the standard logger -/
-@[reducible] noncomputable def LstdFlags [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LstdFlags [FfiSyntax] [GoGlobalContext] : val :=
   #(3 : Int)
 
-noncomputable def std [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def std [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.std"
 
-axiom std'init [ffi_syntax] [GoGlobalContext] : val
+axiom std'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def bufferPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def bufferPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.bufferPool"
 
-axiom bufferPool'init [ffi_syntax] [GoGlobalContext] : val
+axiom bufferPool'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.New"
 
-noncomputable def Default [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Default [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Default"
 
-noncomputable def itoa [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def itoa [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.itoa"
 
-noncomputable def formatHeader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def formatHeader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.formatHeader"
 
-noncomputable def getBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.getBuffer"
 
-noncomputable def putBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def putBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.putBuffer"
 
-noncomputable def SetOutput [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetOutput [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.SetOutput"
 
-noncomputable def Flags [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Flags [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Flags"
 
-noncomputable def SetFlags [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetFlags [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.SetFlags"
 
-noncomputable def Prefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Prefix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Prefix"
 
-noncomputable def SetPrefix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SetPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.SetPrefix"
 
-noncomputable def Writer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Writer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Writer"
 
-noncomputable def Print [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Print [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Print"
 
-noncomputable def Printf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Printf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Printf"
 
-noncomputable def Println [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Println [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Println"
 
-noncomputable def Fatal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fatal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Fatal"
 
-noncomputable def Fatalf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fatalf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Fatalf"
 
-noncomputable def Fatalln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Fatalln [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Fatalln"
 
-noncomputable def Panic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panic [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Panic"
 
-noncomputable def Panicf [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panicf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Panicf"
 
-noncomputable def Panicln [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Panicln [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Panicln"
 
-noncomputable def Output [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Output [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Output"
 
 instance info' : PkgInfo pkg_id.log where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.log)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val bufferPool'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val std'init) (Val #()))))))))
 
 namespace Logger
@@ -144,7 +144,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Logger
 
-class Logger_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Logger_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Logger_type_repr : go.TypeReprUnderlying «Loggerⁱᵐᵖˡ» Logger.t
   Logger_underlying : go.UnderlyingDirectedEq Logger «Loggerⁱᵐᵖˡ»
   «Loggerⁱᵐᵖˡ_underlying» : go.IsUnderlying «Loggerⁱᵐᵖˡ» «Loggerⁱᵐᵖˡ»
@@ -153,7 +153,7 @@ attribute [instance] Logger_Assumptions.Logger_type_repr
   Logger_Assumptions.Logger_underlying
   Logger_Assumptions.«Loggerⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Logger_instance : Logger_Assumptions
   Printf_unfold : FuncUnfold Printf [] «Printfⁱᵐᵖˡ»
   Println_unfold : FuncUnfold Println [] «Printlnⁱᵐᵖˡ»

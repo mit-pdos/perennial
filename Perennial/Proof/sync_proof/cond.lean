@@ -31,51 +31,51 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace sync
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 /-- Lean addition: the copy checker of a live `Cond` is either still `0`
 (`null`) and fully owned by the invariant, or has been set (by the first
 `check`) to its own address, after which it never changes. -/
-abbrev copyCheckerInv (c : loc) : IProp GF :=
-  iprop(typed_pointsto c (null : copyChecker.t) (DFrac.own 1) ∨
-    typed_pointsto c (c : copyChecker.t) DFrac.discard)
+abbrev copyCheckerInv (c : Loc) : IProp GF :=
+  iprop(typedPointsto c (null : copyChecker.t) (DFrac.own 1) ∨
+    typedPointsto c (c : copyChecker.t) DFrac.discard)
 
 /-- Lean addition (see the module docstring). -/
 def copyCheckerN : Namespace := nroot.@"copyChecker"
 
 /-- Lean addition (see the module docstring). -/
-def isCopyCheckerDef (c : loc) : IProp GF := inv copyCheckerN (copyCheckerInv c)
-@[irreducible] def isCopyChecker (c : loc) : IProp GF := isCopyCheckerDef c
+def isCopyCheckerDef (c : Loc) : IProp GF := inv copyCheckerN (copyCheckerInv c)
+@[irreducible] def isCopyChecker (c : Loc) : IProp GF := isCopyCheckerDef c
 theorem isCopyChecker_unseal : @isCopyChecker = @isCopyCheckerDef := by
   funext; with_unfolding_all rfl
 
-instance isCopyChecker_persistent (c : loc) : Persistent (isCopyChecker (GF := GF) c) := by
+instance isCopyChecker_persistent (c : Loc) : Persistent (isCopyChecker (GF := GF) c) := by
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef; infer_instance
 
 /-- This means `c` is a condvar with underlying Locker `m`. -/
-def isCondDef (c : loc) (m : interface.t_ok) : IProp GF :=
+def isCondDef (c : Loc) (m : interface.t_ok) : IProp GF :=
   iprop("#Hi" ∷ isPkgInit (PROP := IProp GF) pkg_id.sync ∗
-    "#Hc" ∷ typed_pointsto (struct_field_ref Cond.t go!"L" c) (interface.ok m) DFrac.discard ∗
+    "#Hc" ∷ typedPointsto (structFieldRef Cond.t go!"L" c) (interface.ok m) DFrac.discard ∗
     -- FIXME (Rocq): not accurate to assume it never changes, there should be an
     -- unknown notifyList struct in an invariant
-    "#Hnotify" ∷ typed_pointsto (struct_field_ref Cond.t go!"notify" c)
+    "#Hnotify" ∷ typedPointsto (structFieldRef Cond.t go!"notify" c)
       (zero_val notifyList.t) DFrac.discard ∗
     -- Lean: Rocq has `c.[Cond.t, "checker"] ↦□ zero_val copyChecker.t`, which `check` breaks.
-    "#Hchecker" ∷ isCopyChecker (struct_field_ref Cond.t go!"checker" c))
-@[irreducible] def isCond (c : loc) (m : interface.t_ok) : IProp GF := isCondDef c m
+    "#Hchecker" ∷ isCopyChecker (structFieldRef Cond.t go!"checker" c))
+@[irreducible] def isCond (c : Loc) (m : interface.t_ok) : IProp GF := isCondDef c m
 theorem isCond_unseal : @isCond = @isCondDef := by funext; with_unfolding_all rfl
 
-instance isCond_persistent (c : loc) (m : interface.t_ok) : Persistent (isCond (GF := GF) c m) := by
+instance isCond_persistent (c : Loc) (m : interface.t_ok) : Persistent (isCond (GF := GF) c m) := by
   rw [isCond_unseal]; unfold isCondDef named; infer_instance
 
 theorem wp_NewCond (m : interface.t_ok) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync }}
       (App (Val (@! NewCond)) (Val #(interface.ok m)))
-    {{ (c : loc), RET #c; isCond c m }} := by
+    {{ (c : Loc), RET #c; isCond c m }} := by
   wp_start as _
   wp_auto
   wp_pures
@@ -95,9 +95,9 @@ theorem wp_NewCond (m : interface.t_ok) :
 /-- Lean deviation (Rocq, admitted:
 `{{{ isPkgInit sync ∗ c ↦{dq} c_v }}} c.check() {{{ RET #(); c ↦{dq} c_v }}}`,
 which is false for the zero checker: `check` CASes it to `c`). -/
-theorem copyChecker.wp_check (c : loc) :
+theorem copyChecker.wp_check (c : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isCopyChecker (GF := GF) c }}
-      (App (Val (c @!! go.type.PointerType copyChecker @!! go!"check")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType copyChecker @!! go!"check")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as #Hinv
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef
@@ -105,9 +105,9 @@ theorem copyChecker.wp_check (c : loc) :
   wp_bind (Primitive1 _ _)
   iinv Hinv with >Hi
   icases Hi with (Hc | #Hc)
-  · wp_apply_core wp_atomic_load _ _ c _ (null : loc) $$ Hc
+  · wp_apply_core wp_atomic_load _ _ c _ (null : Loc) $$ Hc
     iintro Hc
-    ihave %Hnn := typed_pointsto_not_null _ _ _ $$ Hc
+    ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hc
     imodintro
     isplitl [Hc]
     · inext; ileft; iexact Hc
@@ -118,7 +118,7 @@ theorem copyChecker.wp_check (c : loc) :
     wp_bind (CmpXchg _ _ _)
     iinv Hinv with >Hi
     icases Hi with (Hc | #Hc)
-    · wp_apply_core wp_cmpxchg_suc c (null : loc) null c _ _ rfl $$ Hc
+    · wp_apply_core wp_cmpxchg_suc c (null : Loc) null c _ _ rfl $$ Hc
       iintro Hc
       ipersist Hc
       imodintro
@@ -127,7 +127,7 @@ theorem copyChecker.wp_check (c : loc) :
       wp_auto
       iapply HΦ
       itrivial
-    · ihave %Hnn' := typed_pointsto_not_null _ _ _ $$ Hc
+    · ihave %Hnn' := typedPointsto_not_null _ _ _ $$ Hc
       wp_apply_core wp_cmpxchg_fail c c null c DFrac.discard _ _ Hnn $$ Hc
       iintro _
       imodintro
@@ -149,38 +149,38 @@ theorem copyChecker.wp_check (c : loc) :
     iapply HΦ
     itrivial
 
-theorem wp_runtime_notifyListAdd (l : loc) (l_v : notifyList.t) (dq : DFrac) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) l l_v dq }}
+theorem wp_runtime_notifyListAdd (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListAdd)) (Val #l))
-    {{ (x : w32), RET #x; typed_pointsto (GF := GF) l l_v dq }} := by
+    {{ (x : w32), RET #x; typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_apply wp_ArbitraryInt as %x _
   wp_end
 
-theorem wp_runtime_notifyListNotifyOne (l : loc) (l_v : notifyList.t) (dq : DFrac) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) l l_v dq }}
+theorem wp_runtime_notifyListNotifyOne (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListNotifyOne)) (Val #l))
-    {{ RET #(); typed_pointsto (GF := GF) l l_v dq }} := by
+    {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_end
 
-theorem wp_runtime_notifyListNotifyAll (l : loc) (l_v : notifyList.t) (dq : DFrac) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) l l_v dq }}
+theorem wp_runtime_notifyListNotifyAll (l : Loc) (l_v : notifyList.t) (dq : DFrac) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (Val (@! runtime_notifyListNotifyAll)) (Val #l))
-    {{ RET #(); typed_pointsto (GF := GF) l l_v dq }} := by
+    {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_end
 
-theorem wp_runtime_notifyListWait (l : loc) (l_v : notifyList.t) (t : w32) (dq : DFrac) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typed_pointsto (GF := GF) l l_v dq }}
+theorem wp_runtime_notifyListWait (l : Loc) (l_v : notifyList.t) (t : w32) (dq : DFrac) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
       (App (App (Val (@! runtime_notifyListWait)) (Val #l)) (Val #t))
-    {{ RET #(); typed_pointsto (GF := GF) l l_v dq }} := by
+    {{ RET #(); typedPointsto (GF := GF) l l_v dq }} := by
   wp_start as Hl
   wp_end
 
-theorem Cond.wp_Signal (c : loc) (lk : interface.t_ok) :
+theorem Cond.wp_Signal (c : Loc) (lk : interface.t_ok) :
     {{ isCond (GF := GF) c lk }}
-      (App (Val (c @!! go.type.PointerType Cond @!! go!"Signal")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Signal")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as H
   simp only [isCond_unseal, isCondDef]
@@ -190,9 +190,9 @@ theorem Cond.wp_Signal (c : loc) (lk : interface.t_ok) :
   wp_apply wp_runtime_notifyListNotifyOne $$ [$Hnotify] with _
   wp_end
 
-theorem Cond.wp_Broadcast (c : loc) (lk : interface.t_ok) :
+theorem Cond.wp_Broadcast (c : Loc) (lk : interface.t_ok) :
     {{ isCond (GF := GF) c lk }}
-      (App (Val (c @!! go.type.PointerType Cond @!! go!"Broadcast")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Broadcast")) (Val #()))
     {{ RET #(); True }} := by
   wp_start as H
   simp only [isCond_unseal, isCondDef]
@@ -202,9 +202,9 @@ theorem Cond.wp_Broadcast (c : loc) (lk : interface.t_ok) :
   wp_apply wp_runtime_notifyListNotifyAll $$ [$Hnotify] with _
   wp_end
 
-theorem Cond.wp_Wait (c : loc) (m : interface.t_ok) (R : IProp GF) :
+theorem Cond.wp_Wait (c : Loc) (m : interface.t_ok) (R : IProp GF) :
     {{ isCond c m ∗ isLocker m R ∗ R }}
-      (App (Val (c @!! go.type.PointerType Cond @!! go!"Wait")) (Val #()))
+      (App (Val (c @!! go.GoType.PointerType Cond @!! go!"Wait")) (Val #()))
     {{ RET #(); R }} := by
   wp_start as ⟨H, #Hlock, HR⟩
   simp only [isCond_unseal, isCondDef]

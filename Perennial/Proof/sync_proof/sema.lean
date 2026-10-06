@@ -14,21 +14,21 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace sync
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 /-- The semaphore invariant. -/
-abbrev semaInv (x : loc) (γ : GName) : IProp GF :=
+abbrev semaInv (x : Loc) (γ : GName) : IProp GF :=
   iprop(∃ v : w32, x ↦ v ∗ ghostVar γ (1 : Qp).half v)
 
-def isSemaDef (x : loc) (γ : GName) (N : Namespace) : IProp GF := inv N (semaInv x γ)
-@[irreducible] def isSema (x : loc) (γ : GName) (N : Namespace) : IProp GF := isSemaDef x γ N
+def isSemaDef (x : Loc) (γ : GName) (N : Namespace) : IProp GF := inv N (semaInv x γ)
+@[irreducible] def isSema (x : Loc) (γ : GName) (N : Namespace) : IProp GF := isSemaDef x γ N
 theorem isSema_unseal : @isSema = @isSemaDef := by funext; with_unfolding_all rfl
 
-instance isSema_persistent (x : loc) (γ : GName) (N : Namespace) :
+instance isSema_persistent (x : Loc) (γ : GName) (N : Namespace) :
     Persistent (isSema (GF := GF) x γ N) := by
   rw [isSema_unseal]; unfold isSemaDef; infer_instance
 
@@ -39,8 +39,8 @@ theorem ownSema_unseal : @ownSema = @ownSemaDef := by funext; with_unfolding_all
 instance ownSema_timeless (γ : GName) (v : w32) : Timeless (ownSema (GF := GF) γ v) := by
   rw [ownSema_unseal]; unfold ownSemaDef; infer_instance
 
-theorem init_sema {E : CoPset} (N : Namespace) (sema : loc) (v : w32) :
-    ⊢ typed_pointsto (GF := GF) sema v (DFrac.own 1) ={E}=∗
+theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32) :
+    ⊢ typedPointsto (GF := GF) sema v (DFrac.own 1) ={E}=∗
       ∃ γ, isSema sema γ N ∗ ownSema γ v := by
   iintro Hs
   imod ghostVar_alloc v with ⟨%γ, Hv⟩
@@ -53,7 +53,7 @@ theorem init_sema {E : CoPset} (N : Namespace) (sema : loc) (v : w32) :
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   iframe # ∗
 
-theorem wp_runtime_Semacquire (sema : loc) (γ : GName) (N : Namespace) :
+theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isSema sema γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ v, ownSema γ v ∗
@@ -106,40 +106,40 @@ theorem wp_runtime_Semacquire (sema : loc) (γ : GName) (N : Namespace) :
       wp_for_post
       iframe
 
-theorem wp_runtime_SemacquireWaitGroup (sema : loc) (γ : GName) (N : Namespace) :
+theorem wp_runtime_SemacquireWaitGroup (sema : Loc) (γ : GName) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isSema sema γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ v, ownSema γ v ∗
         (⌜uint.nat v > 0⌝ → ownSema γ (v - W32 1) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (App (Val (@! runtime_SemacquireWaitGroup)) (Val #sema)) (Val #false)) {{ Φ }} := by
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : go_string) = runtime_Semacquire from rfl]
+  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
   wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
   iframe #
 
-theorem wp_runtime_SemacquireRWMutexR (sema : loc) (γ : GName) (N : Namespace) (lifo : Bool) (skipframes : w64) :
+theorem wp_runtime_SemacquireRWMutexR (sema : Loc) (γ : GName) (N : Namespace) (lifo : Bool) (skipframes : w64) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isSema sema γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ v, ownSema γ v ∗
         (⌜uint.nat v > 0⌝ → ownSema γ (v - W32 1) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (App (App (Val (@! runtime_SemacquireRWMutexR)) (Val #sema)) (Val #lifo)) (Val #skipframes)) {{ Φ }} := by
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : go_string) = runtime_Semacquire from rfl]
+  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
   wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
   iframe #
 
-theorem wp_runtime_SemacquireRWMutex (sema : loc) (γ : GName) (N : Namespace) (lifo : Bool) (skipframes : w64) :
+theorem wp_runtime_SemacquireRWMutex (sema : Loc) (γ : GName) (N : Namespace) (lifo : Bool) (skipframes : w64) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isSema sema γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ v, ownSema γ v ∗
         (⌜uint.nat v > 0⌝ → ownSema γ (v - W32 1) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (App (App (Val (@! runtime_SemacquireRWMutex)) (Val #sema)) (Val #lifo)) (Val #skipframes)) {{ Φ }} := by
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : go_string) = runtime_Semacquire from rfl]
+  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
   wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
   iframe #
 
-theorem wp_runtime_Semrelease (sema : loc) (γ : GName) (N : Namespace) (_u1 : Bool) (_u2 : w64) :
+theorem wp_runtime_Semrelease (sema : Loc) (γ : GName) (N : Namespace) (_u1 : Bool) (_u2 : w64) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isSema sema γ N) -∗
       (|={⊤ \ ↑N,∅}=> ∃ v, ownSema γ v ∗
@@ -152,7 +152,7 @@ theorem wp_runtime_Semrelease (sema : loc) (γ : GName) (N : Namespace) (_u1 : B
   imod HΦ with ⟨%v1, Hv2, HΦ⟩
   icombine Hv Hv2 gives % ⟨_, Heq⟩
   subst Heq
-  simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap]
+  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
   icases Hs with ⟨Hs, %Hnn⟩
   wp_apply_core Perennial.wp_atomic_add sema #v #(W32 1) #(v + W32 1)
     (by simp [go.intoVal_unfold, atomicAddEval]) $$ Hs
@@ -163,7 +163,7 @@ theorem wp_runtime_Semrelease (sema : loc) (γ : GName) (N : Namespace) (_u1 : B
   imodintro
   isplitl [Hs Hv]
   · inext; iexists _
-    simp only [typed_pointsto_unseal, typedPointstoWrap, typed_pointsto_def_heap]
+    simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
     iframe; ipureintro; exact Hnn
   wp_auto
   iexact HΦ

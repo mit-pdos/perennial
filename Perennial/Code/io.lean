@@ -14,678 +14,678 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def io : go_string := go!"io"
+def io : GoString := go!"io"
 end pkg_id
 
 namespace io
 
-def Reader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.Reader" [])
+def Reader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.Reader" [])
 
 attribute [irreducible] Reader
 
-def Writer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.Writer" [])
+def Writer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.Writer" [])
 
 attribute [irreducible] Writer
 
-def Closer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.Closer" [])
+def Closer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.Closer" [])
 
 attribute [irreducible] Closer
 
-def Seeker [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.Seeker" [])
+def Seeker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.Seeker" [])
 
 attribute [irreducible] Seeker
 
-def ReadWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadWriter" [])
+def ReadWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadWriter" [])
 
 attribute [irreducible] ReadWriter
 
-def ReadCloser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadCloser" [])
+def ReadCloser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadCloser" [])
 
 attribute [irreducible] ReadCloser
 
-def WriteCloser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.WriteCloser" [])
+def WriteCloser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.WriteCloser" [])
 
 attribute [irreducible] WriteCloser
 
-def ReadWriteCloser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadWriteCloser" [])
+def ReadWriteCloser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadWriteCloser" [])
 
 attribute [irreducible] ReadWriteCloser
 
-def ReadSeeker [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadSeeker" [])
+def ReadSeeker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadSeeker" [])
 
 attribute [irreducible] ReadSeeker
 
-def ReadSeekCloser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadSeekCloser" [])
+def ReadSeekCloser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadSeekCloser" [])
 
 attribute [irreducible] ReadSeekCloser
 
-def WriteSeeker [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.WriteSeeker" [])
+def WriteSeeker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.WriteSeeker" [])
 
 attribute [irreducible] WriteSeeker
 
-def ReadWriteSeeker [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReadWriteSeeker" [])
+def ReadWriteSeeker [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReadWriteSeeker" [])
 
 attribute [irreducible] ReadWriteSeeker
 
-def ReaderFrom [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReaderFrom" [])
+def ReaderFrom [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReaderFrom" [])
 
 attribute [irreducible] ReaderFrom
 
-def WriterTo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.WriterTo" [])
+def WriterTo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.WriterTo" [])
 
 attribute [irreducible] WriterTo
 
-def ReaderAt [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ReaderAt" [])
+def ReaderAt [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ReaderAt" [])
 
 attribute [irreducible] ReaderAt
 
-def WriterAt [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.WriterAt" [])
+def WriterAt [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.WriterAt" [])
 
 attribute [irreducible] WriterAt
 
-def ByteReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ByteReader" [])
+def ByteReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ByteReader" [])
 
 attribute [irreducible] ByteReader
 
-def ByteScanner [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ByteScanner" [])
+def ByteScanner [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ByteScanner" [])
 
 attribute [irreducible] ByteScanner
 
-def ByteWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.ByteWriter" [])
+def ByteWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.ByteWriter" [])
 
 attribute [irreducible] ByteWriter
 
-def RuneReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.RuneReader" [])
+def RuneReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.RuneReader" [])
 
 attribute [irreducible] RuneReader
 
-def RuneScanner [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.RuneScanner" [])
+def RuneScanner [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.RuneScanner" [])
 
 attribute [irreducible] RuneScanner
 
-def StringWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.StringWriter" [])
+def StringWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.StringWriter" [])
 
 attribute [irreducible] StringWriter
 
-def LimitedReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.LimitedReader" [])
+def LimitedReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.LimitedReader" [])
 
 attribute [irreducible] LimitedReader
 
-def SectionReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.SectionReader" [])
+def SectionReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.SectionReader" [])
 
 attribute [irreducible] SectionReader
 
-def OffsetWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.OffsetWriter" [])
+def OffsetWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.OffsetWriter" [])
 
 attribute [irreducible] OffsetWriter
 
-def teeReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.teeReader" [])
+def teeReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.teeReader" [])
 
 attribute [irreducible] teeReader
 
-def discard [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.discard" [])
+def discard [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.discard" [])
 
 attribute [irreducible] discard
 
-def nopCloser [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.nopCloser" [])
+def nopCloser [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.nopCloser" [])
 
 attribute [irreducible] nopCloser
 
-def nopCloserWriterTo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.nopCloserWriterTo" [])
+def nopCloserWriterTo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.nopCloserWriterTo" [])
 
 attribute [irreducible] nopCloserWriterTo
 
-def eofReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.eofReader" [])
+def eofReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.eofReader" [])
 
 attribute [irreducible] eofReader
 
-def multiReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.multiReader" [])
+def multiReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.multiReader" [])
 
 attribute [irreducible] multiReader
 
-def multiWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.multiWriter" [])
+def multiWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.multiWriter" [])
 
 attribute [irreducible] multiWriter
 
-def onceError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.onceError" [])
+def onceError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.onceError" [])
 
 attribute [irreducible] onceError
 
-def pipe [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.pipe" [])
+def pipe [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.pipe" [])
 
 attribute [irreducible] pipe
 
-def PipeReader [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.PipeReader" [])
+def PipeReader [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.PipeReader" [])
 
 attribute [irreducible] PipeReader
 
-def PipeWriter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"io.PipeWriter" [])
+def PipeWriter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"io.PipeWriter" [])
 
 attribute [irreducible] PipeWriter
 
-axiom SeekStart [ffi_syntax] [GoGlobalContext] : val
+axiom SeekStart [FfiSyntax] [GoGlobalContext] : val
 
-axiom SeekCurrent [ffi_syntax] [GoGlobalContext] : val
+axiom SeekCurrent [FfiSyntax] [GoGlobalContext] : val
 
-axiom SeekEnd [ffi_syntax] [GoGlobalContext] : val
+axiom SeekEnd [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrShortWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrShortWrite [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ErrShortWrite"
 
-noncomputable def errInvalidWrite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errInvalidWrite [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.errInvalidWrite"
 
-noncomputable def ErrShortBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrShortBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ErrShortBuffer"
 
-noncomputable def EOF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EOF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.EOF"
 
-noncomputable def ErrUnexpectedEOF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrUnexpectedEOF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ErrUnexpectedEOF"
 
-noncomputable def ErrNoProgress [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoProgress [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ErrNoProgress"
 
-noncomputable def errWhence [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errWhence [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.errWhence"
 
-noncomputable def errOffset [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errOffset [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.errOffset"
 
-noncomputable def Discard [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Discard [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.Discard"
 
-noncomputable def blackHolePool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blackHolePool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.blackHolePool"
 
-noncomputable def ErrClosedPipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClosedPipe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ErrClosedPipe"
 
-noncomputable def WriteString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.WriteString"
 
-noncomputable def ReadAtLeast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadAtLeast [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ReadAtLeast"
 
-noncomputable def ReadFull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadFull [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ReadFull"
 
-noncomputable def CopyN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.CopyN"
 
-noncomputable def Copy [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Copy [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.Copy"
 
-noncomputable def CopyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.CopyBuffer"
 
-noncomputable def copyBuffer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.copyBuffer"
 
-noncomputable def LimitReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LimitReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.LimitReader"
 
-noncomputable def NewSectionReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSectionReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.NewSectionReader"
 
-noncomputable def NewOffsetWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewOffsetWriter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.NewOffsetWriter"
 
-noncomputable def TeeReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TeeReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.TeeReader"
 
-noncomputable def NopCloser [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NopCloser [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.NopCloser"
 
-noncomputable def ReadAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.ReadAll"
 
-noncomputable def MultiReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MultiReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.MultiReader"
 
-noncomputable def MultiWriter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MultiWriter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.MultiWriter"
 
-noncomputable def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Pipe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"io.Pipe"
 
 instance info' : PkgInfo pkg_id.io where
-  pkg_imported_pkgs := [pkg_id.errors, pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.sync]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.io)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"short write"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"invalid write result"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"short buffer"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"EOF"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"unexpected EOF"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"multiple Read calls return no data or error"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"Seek: invalid whence"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"Seek: invalid offset"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert discard Writer))) (App (Val (GoInstruction (CompositeLiteral discard))) (LiteralValue [])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert discard ReaderFrom))) (App (Val (GoInstruction (CompositeLiteral discard))) (LiteralValue [])))
   (Let "$r0" (Let "$v0" (Lam BAnon
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 8192)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.PointerType (go.type.SliceType go.byte)) go.any))) (Var "b")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
-  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Pool))) (LiteralValue [(KeyedElement (some (KeyField go!"New")) (ElementExpression (go.type.FunctionType (go.signature.Signature [] false [go.any])) (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType multiReader) WriterTo))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType multiReader)))) (Val UntypedNil)))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType multiWriter) StringWriter))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType multiWriter)))) (Val UntypedNil)))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 8192)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.PointerType (go.GoType.SliceType go.byte)) go.any))) (Var "b")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Pool))) (LiteralValue [(KeyedElement (some (KeyField go!"New")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.any])) (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType multiReader) WriterTo))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType multiReader)))) (Val UntypedNil)))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType multiWriter) StringWriter))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType multiWriter)))) (Val UntypedNil)))
   (Let "$r0" (Let "$a0" (Val #(go!"io: read/write on closed pipe"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrClosedPipe))) (Val #())) (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.sync.Pool))) (Pair (App (Val (GoInstruction (GlobalVarAddr blackHolePool))) (Val #())) (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Writer))) (Pair (App (Val (GoInstruction (GlobalVarAddr Discard))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errOffset))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errWhence))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrNoProgress))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnexpectedEOF))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrShortBuffer))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errInvalidWrite))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrShortWrite))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrShortWrite go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errInvalidWrite go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrShortBuffer go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc EOF go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnexpectedEOF go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrNoProgress go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errWhence go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc errOffset go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc Discard Writer)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc blackHolePool _root_.Perennial.sync.Pool)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrClosedPipe go.error)) (Val #()))))))))
 
 namespace Reader
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Reader
 
-@[reducible] def «Readerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Read" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error]))])
+@[reducible] def «Readerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
-class Reader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Reader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Reader_underlying : go.UnderlyingDirectedEq Reader «Readerⁱᵐᵖˡ»
 
 attribute [instance] Reader_Assumptions.Reader_underlying
 
 namespace Writer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Writer
 
-@[reducible] def «Writerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Write" (go.signature.Signature [(go.type.SliceType go.byte)] false [go.int, go.error]))])
+@[reducible] def «Writerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
-class Writer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Writer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Writer_underlying : go.UnderlyingDirectedEq Writer «Writerⁱᵐᵖˡ»
 
 attribute [instance] Writer_Assumptions.Writer_underlying
 
 namespace Closer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Closer
 
-@[reducible] def «Closerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Close" (go.signature.Signature [] false [go.error]))])
+@[reducible] def «Closerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error]))])
 
-class Closer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Closer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Closer_underlying : go.UnderlyingDirectedEq Closer «Closerⁱᵐᵖˡ»
 
 attribute [instance] Closer_Assumptions.Closer_underlying
 
 namespace Seeker
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Seeker
 
-@[reducible] def «Seekerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
+@[reducible] def «Seekerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
 
-class Seeker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Seeker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Seeker_underlying : go.UnderlyingDirectedEq Seeker «Seekerⁱᵐᵖˡ»
 
 attribute [instance] Seeker_Assumptions.Seeker_underlying
 
 namespace ReadWriter
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadWriter
 
-@[reducible] def «ReadWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Writer)])])
+@[reducible] def «ReadWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer)])])
 
-class ReadWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadWriter_underlying : go.UnderlyingDirectedEq ReadWriter «ReadWriterⁱᵐᵖˡ»
 
 attribute [instance] ReadWriter_Assumptions.ReadWriter_underlying
 
 namespace ReadCloser
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadCloser
 
-@[reducible] def «ReadCloserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Closer)])])
+@[reducible] def «ReadCloserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer)])])
 
-class ReadCloser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadCloser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadCloser_underlying : go.UnderlyingDirectedEq ReadCloser «ReadCloserⁱᵐᵖˡ»
 
 attribute [instance] ReadCloser_Assumptions.ReadCloser_underlying
 
 namespace WriteCloser
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end WriteCloser
 
-@[reducible] def «WriteCloserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Closer)])])
+@[reducible] def «WriteCloserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer)])])
 
-class WriteCloser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriteCloser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   WriteCloser_underlying : go.UnderlyingDirectedEq WriteCloser «WriteCloserⁱᵐᵖˡ»
 
 attribute [instance] WriteCloser_Assumptions.WriteCloser_underlying
 
 namespace ReadWriteCloser
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadWriteCloser
 
-@[reducible] def «ReadWriteCloserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Closer)])])
+@[reducible] def «ReadWriteCloserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer)])])
 
-class ReadWriteCloser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriteCloser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadWriteCloser_underlying : go.UnderlyingDirectedEq ReadWriteCloser «ReadWriteCloserⁱᵐᵖˡ»
 
 attribute [instance] ReadWriteCloser_Assumptions.ReadWriteCloser_underlying
 
 namespace ReadSeeker
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadSeeker
 
-@[reducible] def «ReadSeekerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Seeker)])])
+@[reducible] def «ReadSeekerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker)])])
 
-class ReadSeeker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadSeeker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadSeeker_underlying : go.UnderlyingDirectedEq ReadSeeker «ReadSeekerⁱᵐᵖˡ»
 
 attribute [instance] ReadSeeker_Assumptions.ReadSeeker_underlying
 
 namespace ReadSeekCloser
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadSeekCloser
 
-@[reducible] def «ReadSeekCloserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Seeker)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Closer)])])
+@[reducible] def «ReadSeekCloserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer)])])
 
-class ReadSeekCloser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadSeekCloser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadSeekCloser_underlying : go.UnderlyingDirectedEq ReadSeekCloser «ReadSeekCloserⁱᵐᵖˡ»
 
 attribute [instance] ReadSeekCloser_Assumptions.ReadSeekCloser_underlying
 
 namespace WriteSeeker
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end WriteSeeker
 
-@[reducible] def «WriteSeekerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Seeker)])])
+@[reducible] def «WriteSeekerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker)])])
 
-class WriteSeeker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriteSeeker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   WriteSeeker_underlying : go.UnderlyingDirectedEq WriteSeeker «WriteSeekerⁱᵐᵖˡ»
 
 attribute [instance] WriteSeeker_Assumptions.WriteSeeker_underlying
 
 namespace ReadWriteSeeker
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReadWriteSeeker
 
-@[reducible] def «ReadWriteSeekerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Seeker)])])
+@[reducible] def «ReadWriteSeekerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker)])])
 
-class ReadWriteSeeker_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriteSeeker_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReadWriteSeeker_underlying : go.UnderlyingDirectedEq ReadWriteSeeker «ReadWriteSeekerⁱᵐᵖˡ»
 
 attribute [instance] ReadWriteSeeker_Assumptions.ReadWriteSeeker_underlying
 
 namespace ReaderFrom
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReaderFrom
 
-@[reducible] def «ReaderFromⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadFrom" (go.signature.Signature [Reader] false [go.int64, go.error]))])
+@[reducible] def «ReaderFromⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadFrom" (go.signature.Signature [Reader] false [go.int64, go.error]))])
 
-class ReaderFrom_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReaderFrom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReaderFrom_underlying : go.UnderlyingDirectedEq ReaderFrom «ReaderFromⁱᵐᵖˡ»
 
 attribute [instance] ReaderFrom_Assumptions.ReaderFrom_underlying
 
 namespace WriterTo
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end WriterTo
 
-@[reducible] def «WriterToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteTo" (go.signature.Signature [Writer] false [go.int64, go.error]))])
+@[reducible] def «WriterToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteTo" (go.signature.Signature [Writer] false [go.int64, go.error]))])
 
-class WriterTo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriterTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   WriterTo_underlying : go.UnderlyingDirectedEq WriterTo «WriterToⁱᵐᵖˡ»
 
 attribute [instance] WriterTo_Assumptions.WriterTo_underlying
 
 namespace ReaderAt
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ReaderAt
 
-@[reducible] def «ReaderAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadAt" (go.signature.Signature [(go.type.SliceType go.byte), go.int64] false [go.int, go.error]))])
+@[reducible] def «ReaderAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
 
-class ReaderAt_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReaderAt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ReaderAt_underlying : go.UnderlyingDirectedEq ReaderAt «ReaderAtⁱᵐᵖˡ»
 
 attribute [instance] ReaderAt_Assumptions.ReaderAt_underlying
 
 namespace WriterAt
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end WriterAt
 
-@[reducible] def «WriterAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteAt" (go.signature.Signature [(go.type.SliceType go.byte), go.int64] false [go.int, go.error]))])
+@[reducible] def «WriterAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
 
-class WriterAt_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriterAt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   WriterAt_underlying : go.UnderlyingDirectedEq WriterAt «WriterAtⁱᵐᵖˡ»
 
 attribute [instance] WriterAt_Assumptions.WriterAt_underlying
 
 namespace ByteReader
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ByteReader
 
-@[reducible] def «ByteReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadByte" (go.signature.Signature [] false [go.byte, go.error]))])
+@[reducible] def «ByteReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadByte" (go.signature.Signature [] false [go.byte, go.error]))])
 
-class ByteReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteReader_underlying : go.UnderlyingDirectedEq ByteReader «ByteReaderⁱᵐᵖˡ»
 
 attribute [instance] ByteReader_Assumptions.ByteReader_underlying
 
 namespace ByteScanner
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ByteScanner
 
-@[reducible] def «ByteScannerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm ByteReader)])])
+@[reducible] def «ByteScannerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ByteReader)])])
 
-class ByteScanner_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteScanner_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteScanner_underlying : go.UnderlyingDirectedEq ByteScanner «ByteScannerⁱᵐᵖˡ»
 
 attribute [instance] ByteScanner_Assumptions.ByteScanner_underlying
 
 namespace ByteWriter
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end ByteWriter
 
-@[reducible] def «ByteWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error]))])
+@[reducible] def «ByteWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error]))])
 
-class ByteWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteWriter_underlying : go.UnderlyingDirectedEq ByteWriter «ByteWriterⁱᵐᵖˡ»
 
 attribute [instance] ByteWriter_Assumptions.ByteWriter_underlying
 
 namespace RuneReader
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end RuneReader
 
-@[reducible] def «RuneReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error]))])
+@[reducible] def «RuneReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error]))])
 
-class RuneReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RuneReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   RuneReader_underlying : go.UnderlyingDirectedEq RuneReader «RuneReaderⁱᵐᵖˡ»
 
 attribute [instance] RuneReader_Assumptions.RuneReader_underlying
 
 namespace RuneScanner
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end RuneScanner
 
-@[reducible] def «RuneScannerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm RuneReader)])])
+@[reducible] def «RuneScannerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm RuneReader)])])
 
-class RuneScanner_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RuneScanner_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   RuneScanner_underlying : go.UnderlyingDirectedEq RuneScanner «RuneScannerⁱᵐᵖˡ»
 
 attribute [instance] RuneScanner_Assumptions.RuneScanner_underlying
 
 namespace StringWriter
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end StringWriter
 
-@[reducible] def «StringWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"WriteString" (go.signature.Signature [go.string] false [go.int, go.error]))])
+@[reducible] def «StringWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteString" (go.signature.Signature [go.string] false [go.int, go.error]))])
 
-class StringWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StringWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StringWriter_underlying : go.UnderlyingDirectedEq StringWriter «StringWriterⁱᵐᵖˡ»
 
 attribute [instance] StringWriter_Assumptions.StringWriter_underlying
 
 namespace LimitedReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   R' : Reader.t
   N' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end LimitedReader
 
-@[reducible] def LimitedReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LimitedReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"R" Reader),
 (go.field_decl.FieldDecl go!"N" go.int64)]
 
-@[irreducible] def LimitedReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def LimitedReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LimitedReader'fds_unsealed
 
-instance equals_unfold_LimitedReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_LimitedReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LimitedReader'fds LimitedReader'fds_unsealed :=
   ⟨by unfold LimitedReader'fds; rfl⟩
 
-@[reducible] def «LimitedReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType LimitedReader'fds)
+@[reducible] def «LimitedReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LimitedReader'fds)
 
-class LimitedReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LimitedReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LimitedReader_type_repr : go.TypeReprUnderlying «LimitedReaderⁱᵐᵖˡ» LimitedReader.t
   LimitedReader_underlying : go.UnderlyingDirectedEq LimitedReader «LimitedReaderⁱᵐᵖˡ»
   LimitedReader_get_R : ∀ (x : LimitedReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «LimitedReaderⁱᵐᵖˡ» go!"R") #x (Val #(x.R'))
@@ -701,7 +701,7 @@ attribute [instance] LimitedReader_Assumptions.LimitedReader_type_repr
   LimitedReader_Assumptions.LimitedReader_set_N
 
 namespace SectionReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   r' : ReaderAt.t
   base' : w64
@@ -709,28 +709,28 @@ structure t [ffi_syntax] where
   limit' : w64
   n' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end SectionReader
 
-@[reducible] def SectionReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SectionReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" ReaderAt),
 (go.field_decl.FieldDecl go!"base" go.int64),
 (go.field_decl.FieldDecl go!"off" go.int64),
 (go.field_decl.FieldDecl go!"limit" go.int64),
 (go.field_decl.FieldDecl go!"n" go.int64)]
 
-@[irreducible] def SectionReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SectionReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SectionReader'fds_unsealed
 
-instance equals_unfold_SectionReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SectionReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SectionReader'fds SectionReader'fds_unsealed :=
   ⟨by unfold SectionReader'fds; rfl⟩
 
-@[reducible] def «SectionReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SectionReader'fds)
+@[reducible] def «SectionReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SectionReader'fds)
 
-class SectionReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SectionReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SectionReader_type_repr : go.TypeReprUnderlying «SectionReaderⁱᵐᵖˡ» SectionReader.t
   SectionReader_underlying : go.UnderlyingDirectedEq SectionReader «SectionReaderⁱᵐᵖˡ»
   SectionReader_get_r : ∀ (x : SectionReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «SectionReaderⁱᵐᵖˡ» go!"r") #x (Val #(x.r'))
@@ -758,32 +758,32 @@ attribute [instance] SectionReader_Assumptions.SectionReader_type_repr
   SectionReader_Assumptions.SectionReader_set_n
 
 namespace OffsetWriter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   w' : WriterAt.t
   base' : w64
   off' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end OffsetWriter
 
-@[reducible] def OffsetWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def OffsetWriter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" WriterAt),
 (go.field_decl.FieldDecl go!"base" go.int64),
 (go.field_decl.FieldDecl go!"off" go.int64)]
 
-@[irreducible] def OffsetWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def OffsetWriter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   OffsetWriter'fds_unsealed
 
-instance equals_unfold_OffsetWriter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_OffsetWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold OffsetWriter'fds OffsetWriter'fds_unsealed :=
   ⟨by unfold OffsetWriter'fds; rfl⟩
 
-@[reducible] def «OffsetWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType OffsetWriter'fds)
+@[reducible] def «OffsetWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType OffsetWriter'fds)
 
-class OffsetWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class OffsetWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   OffsetWriter_type_repr : go.TypeReprUnderlying «OffsetWriterⁱᵐᵖˡ» OffsetWriter.t
   OffsetWriter_underlying : go.UnderlyingDirectedEq OffsetWriter «OffsetWriterⁱᵐᵖˡ»
   OffsetWriter_get_w : ∀ (x : OffsetWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet «OffsetWriterⁱᵐᵖˡ» go!"w") #x (Val #(x.w'))
@@ -803,30 +803,30 @@ attribute [instance] OffsetWriter_Assumptions.OffsetWriter_type_repr
   OffsetWriter_Assumptions.OffsetWriter_set_off
 
 namespace teeReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   r' : Reader.t
   w' : Writer.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end teeReader
 
-@[reducible] def teeReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def teeReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" Reader),
 (go.field_decl.FieldDecl go!"w" Writer)]
 
-@[irreducible] def teeReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def teeReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   teeReader'fds_unsealed
 
-instance equals_unfold_teeReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_teeReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold teeReader'fds teeReader'fds_unsealed :=
   ⟨by unfold teeReader'fds; rfl⟩
 
-@[reducible] def «teeReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType teeReader'fds)
+@[reducible] def «teeReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType teeReader'fds)
 
-class teeReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class teeReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   teeReader_type_repr : go.TypeReprUnderlying «teeReaderⁱᵐᵖˡ» teeReader.t
   teeReader_underlying : go.UnderlyingDirectedEq teeReader «teeReaderⁱᵐᵖˡ»
   teeReader_get_r : ∀ (x : teeReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «teeReaderⁱᵐᵖˡ» go!"r") #x (Val #(x.r'))
@@ -842,27 +842,27 @@ attribute [instance] teeReader_Assumptions.teeReader_type_repr
   teeReader_Assumptions.teeReader_set_w
 
 namespace discard
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end discard
 
-@[reducible] def discard'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def discard'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def discard'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def discard'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   discard'fds_unsealed
 
-instance equals_unfold_discard [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_discard [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold discard'fds discard'fds_unsealed :=
   ⟨by unfold discard'fds; rfl⟩
 
-@[reducible] def «discardⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType discard'fds)
+@[reducible] def «discardⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType discard'fds)
 
-class discard_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class discard_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   discard_type_repr : go.TypeReprUnderlying «discardⁱᵐᵖˡ» discard.t
   discard_underlying : go.UnderlyingDirectedEq discard «discardⁱᵐᵖˡ»
 
@@ -870,28 +870,28 @@ attribute [instance] discard_Assumptions.discard_type_repr
   discard_Assumptions.discard_underlying
 
 namespace nopCloser
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Reader' : Reader.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end nopCloser
 
-@[reducible] def nopCloser'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nopCloser'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Reader" Reader)]
 
-@[irreducible] def nopCloser'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def nopCloser'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nopCloser'fds_unsealed
 
-instance equals_unfold_nopCloser [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_nopCloser [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nopCloser'fds nopCloser'fds_unsealed :=
   ⟨by unfold nopCloser'fds; rfl⟩
 
-@[reducible] def «nopCloserⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType nopCloser'fds)
+@[reducible] def «nopCloserⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nopCloser'fds)
 
-class nopCloser_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nopCloser_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nopCloser_type_repr : go.TypeReprUnderlying «nopCloserⁱᵐᵖˡ» nopCloser.t
   nopCloser_underlying : go.UnderlyingDirectedEq nopCloser «nopCloserⁱᵐᵖˡ»
   nopCloser_get_Reader : ∀ (x : nopCloser.t), go.IsGoStepPureDetTagged under (StructFieldGet «nopCloserⁱᵐᵖˡ» go!"Reader") #x (Val #(x.Reader'))
@@ -903,28 +903,28 @@ attribute [instance] nopCloser_Assumptions.nopCloser_type_repr
   nopCloser_Assumptions.nopCloser_set_Reader
 
 namespace nopCloserWriterTo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Reader' : Reader.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end nopCloserWriterTo
 
-@[reducible] def nopCloserWriterTo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def nopCloserWriterTo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Reader" Reader)]
 
-@[irreducible] def nopCloserWriterTo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def nopCloserWriterTo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nopCloserWriterTo'fds_unsealed
 
-instance equals_unfold_nopCloserWriterTo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_nopCloserWriterTo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nopCloserWriterTo'fds nopCloserWriterTo'fds_unsealed :=
   ⟨by unfold nopCloserWriterTo'fds; rfl⟩
 
-@[reducible] def «nopCloserWriterToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType nopCloserWriterTo'fds)
+@[reducible] def «nopCloserWriterToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nopCloserWriterTo'fds)
 
-class nopCloserWriterTo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nopCloserWriterTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nopCloserWriterTo_type_repr : go.TypeReprUnderlying «nopCloserWriterToⁱᵐᵖˡ» nopCloserWriterTo.t
   nopCloserWriterTo_underlying : go.UnderlyingDirectedEq nopCloserWriterTo «nopCloserWriterToⁱᵐᵖˡ»
   nopCloserWriterTo_get_Reader : ∀ (x : nopCloserWriterTo.t), go.IsGoStepPureDetTagged under (StructFieldGet «nopCloserWriterToⁱᵐᵖˡ» go!"Reader") #x (Val #(x.Reader'))
@@ -936,27 +936,27 @@ attribute [instance] nopCloserWriterTo_Assumptions.nopCloserWriterTo_type_repr
   nopCloserWriterTo_Assumptions.nopCloserWriterTo_set_Reader
 
 namespace eofReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end eofReader
 
-@[reducible] def eofReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def eofReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def eofReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def eofReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   eofReader'fds_unsealed
 
-instance equals_unfold_eofReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_eofReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold eofReader'fds eofReader'fds_unsealed :=
   ⟨by unfold eofReader'fds; rfl⟩
 
-@[reducible] def «eofReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType eofReader'fds)
+@[reducible] def «eofReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType eofReader'fds)
 
-class eofReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class eofReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   eofReader_type_repr : go.TypeReprUnderlying «eofReaderⁱᵐᵖˡ» eofReader.t
   eofReader_underlying : go.UnderlyingDirectedEq eofReader «eofReaderⁱᵐᵖˡ»
 
@@ -964,28 +964,28 @@ attribute [instance] eofReader_Assumptions.eofReader_type_repr
   eofReader_Assumptions.eofReader_underlying
 
 namespace multiReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   readers' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end multiReader
 
-@[reducible] def multiReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"readers" (go.type.SliceType Reader))]
+@[reducible] def multiReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"readers" (go.GoType.SliceType Reader))]
 
-@[irreducible] def multiReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def multiReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   multiReader'fds_unsealed
 
-instance equals_unfold_multiReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_multiReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold multiReader'fds multiReader'fds_unsealed :=
   ⟨by unfold multiReader'fds; rfl⟩
 
-@[reducible] def «multiReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType multiReader'fds)
+@[reducible] def «multiReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType multiReader'fds)
 
-class multiReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class multiReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   multiReader_type_repr : go.TypeReprUnderlying «multiReaderⁱᵐᵖˡ» multiReader.t
   multiReader_underlying : go.UnderlyingDirectedEq multiReader «multiReaderⁱᵐᵖˡ»
   multiReader_get_readers : ∀ (x : multiReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «multiReaderⁱᵐᵖˡ» go!"readers") #x (Val #(x.readers'))
@@ -997,28 +997,28 @@ attribute [instance] multiReader_Assumptions.multiReader_type_repr
   multiReader_Assumptions.multiReader_set_readers
 
 namespace multiWriter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   writers' : slice.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end multiWriter
 
-@[reducible] def multiWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"writers" (go.type.SliceType Writer))]
+@[reducible] def multiWriter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"writers" (go.GoType.SliceType Writer))]
 
-@[irreducible] def multiWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def multiWriter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   multiWriter'fds_unsealed
 
-instance equals_unfold_multiWriter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_multiWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold multiWriter'fds multiWriter'fds_unsealed :=
   ⟨by unfold multiWriter'fds; rfl⟩
 
-@[reducible] def «multiWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType multiWriter'fds)
+@[reducible] def «multiWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType multiWriter'fds)
 
-class multiWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class multiWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   multiWriter_type_repr : go.TypeReprUnderlying «multiWriterⁱᵐᵖˡ» multiWriter.t
   multiWriter_underlying : go.UnderlyingDirectedEq multiWriter «multiWriterⁱᵐᵖˡ»
   multiWriter_get_writers : ∀ (x : multiWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet «multiWriterⁱᵐᵖˡ» go!"writers") #x (Val #(x.writers'))
@@ -1030,30 +1030,30 @@ attribute [instance] multiWriter_Assumptions.multiWriter_type_repr
   multiWriter_Assumptions.multiWriter_set_writers
 
 namespace onceError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Mutex' : _root_.Perennial.sync.Mutex.t
   err' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end onceError
 
-@[reducible] def onceError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def onceError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex),
 (go.field_decl.FieldDecl go!"err" go.error)]
 
-@[irreducible] def onceError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def onceError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   onceError'fds_unsealed
 
-instance equals_unfold_onceError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_onceError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold onceError'fds onceError'fds_unsealed :=
   ⟨by unfold onceError'fds; rfl⟩
 
-@[reducible] def «onceErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType onceError'fds)
+@[reducible] def «onceErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType onceError'fds)
 
-class onceError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class onceError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   onceError_type_repr : go.TypeReprUnderlying «onceErrorⁱᵐᵖˡ» onceError.t
   onceError_underlying : go.UnderlyingDirectedEq onceError «onceErrorⁱᵐᵖˡ»
   onceError_get_Mutex : ∀ (x : onceError.t), go.IsGoStepPureDetTagged under (StructFieldGet «onceErrorⁱᵐᵖˡ» go!"Mutex") #x (Val #(x.Mutex'))
@@ -1069,7 +1069,7 @@ attribute [instance] onceError_Assumptions.onceError_type_repr
   onceError_Assumptions.onceError_set_err
 
 namespace pipe
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   wrMu' : _root_.Perennial.sync.Mutex.t
   wrCh' : chan.t
@@ -1079,30 +1079,30 @@ structure t [ffi_syntax] where
   rerr' : onceError.t
   werr' : onceError.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end pipe
 
-@[reducible] def pipe'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def pipe'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wrMu" _root_.Perennial.sync.Mutex),
-(go.field_decl.FieldDecl go!"wrCh" (go.type.ChannelType go.chan_dir.sendrecv (go.type.SliceType go.byte))),
-(go.field_decl.FieldDecl go!"rdCh" (go.type.ChannelType go.chan_dir.sendrecv go.int)),
+(go.field_decl.FieldDecl go!"wrCh" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.byte))),
+(go.field_decl.FieldDecl go!"rdCh" (go.GoType.ChannelType go.ChanDir.sendrecv go.int)),
 (go.field_decl.FieldDecl go!"once" _root_.Perennial.sync.Once),
-(go.field_decl.FieldDecl go!"done" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))),
+(go.field_decl.FieldDecl go!"done" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))),
 (go.field_decl.FieldDecl go!"rerr" onceError),
 (go.field_decl.FieldDecl go!"werr" onceError)]
 
-@[irreducible] def pipe'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def pipe'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   pipe'fds_unsealed
 
-instance equals_unfold_pipe [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_pipe [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold pipe'fds pipe'fds_unsealed :=
   ⟨by unfold pipe'fds; rfl⟩
 
-@[reducible] def «pipeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType pipe'fds)
+@[reducible] def «pipeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType pipe'fds)
 
-class pipe_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pipe_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   pipe_type_repr : go.TypeReprUnderlying «pipeⁱᵐᵖˡ» pipe.t
   pipe_underlying : go.UnderlyingDirectedEq pipe «pipeⁱᵐᵖˡ»
   pipe_get_wrMu : ∀ (x : pipe.t), go.IsGoStepPureDetTagged under (StructFieldGet «pipeⁱᵐᵖˡ» go!"wrMu") #x (Val #(x.wrMu'))
@@ -1138,28 +1138,28 @@ attribute [instance] pipe_Assumptions.pipe_type_repr
   pipe_Assumptions.pipe_set_werr
 
 namespace PipeReader
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   pipe' : pipe.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end PipeReader
 
-@[reducible] def PipeReader'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PipeReader'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"pipe" pipe)]
 
-@[irreducible] def PipeReader'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def PipeReader'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   PipeReader'fds_unsealed
 
-instance equals_unfold_PipeReader [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_PipeReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold PipeReader'fds PipeReader'fds_unsealed :=
   ⟨by unfold PipeReader'fds; rfl⟩
 
-@[reducible] def «PipeReaderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType PipeReader'fds)
+@[reducible] def «PipeReaderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PipeReader'fds)
 
-class PipeReader_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PipeReader_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PipeReader_type_repr : go.TypeReprUnderlying «PipeReaderⁱᵐᵖˡ» PipeReader.t
   PipeReader_underlying : go.UnderlyingDirectedEq PipeReader «PipeReaderⁱᵐᵖˡ»
   PipeReader_get_pipe : ∀ (x : PipeReader.t), go.IsGoStepPureDetTagged under (StructFieldGet «PipeReaderⁱᵐᵖˡ» go!"pipe") #x (Val #(x.pipe'))
@@ -1171,28 +1171,28 @@ attribute [instance] PipeReader_Assumptions.PipeReader_type_repr
   PipeReader_Assumptions.PipeReader_set_pipe
 
 namespace PipeWriter
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   r' : PipeReader.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end PipeWriter
 
-@[reducible] def PipeWriter'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PipeWriter'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" PipeReader)]
 
-@[irreducible] def PipeWriter'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def PipeWriter'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   PipeWriter'fds_unsealed
 
-instance equals_unfold_PipeWriter [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_PipeWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold PipeWriter'fds PipeWriter'fds_unsealed :=
   ⟨by unfold PipeWriter'fds; rfl⟩
 
-@[reducible] def «PipeWriterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType PipeWriter'fds)
+@[reducible] def «PipeWriterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PipeWriter'fds)
 
-class PipeWriter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PipeWriter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PipeWriter_type_repr : go.TypeReprUnderlying «PipeWriterⁱᵐᵖˡ» PipeWriter.t
   PipeWriter_underlying : go.UnderlyingDirectedEq PipeWriter «PipeWriterⁱᵐᵖˡ»
   PipeWriter_get_r : ∀ (x : PipeWriter.t), go.IsGoStepPureDetTagged under (StructFieldGet «PipeWriterⁱᵐᵖˡ» go!"r") #x (Val #(x.r'))
@@ -1203,7 +1203,7 @@ attribute [instance] PipeWriter_Assumptions.PipeWriter_type_repr
   PipeWriter_Assumptions.PipeWriter_get_r
   PipeWriter_Assumptions.PipeWriter_set_r
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Reader_instance : Reader_Assumptions
   Writer_instance : Writer_Assumptions
   Closer_instance : Closer_Assumptions

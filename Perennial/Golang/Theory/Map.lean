@@ -22,21 +22,21 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 noncomputable section defns
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 
 /-- `k` is a safe map key at `key_type`: comparing it with itself does not
 panic (see the comment in `Perennial/Golang/Defn/Map.lean`). -/
-class SafeMapKey {K : Type} (key_type : go.type) (k : K) : Prop where
+class SafeMapKey {K : Type} (key_type : go.GoType) (k : K) : Prop where
   wp_go_eq_safe_map_key : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF),
     (∀ v, Φ v) ⊢
       WP (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #k))) @ s; E {{ Φ }}
 
 export SafeMapKey (wp_go_eq_safe_map_key)
 
-instance safe_map_key_is_go_eq {K : Type} (key_type : go.type) (k : K) (b : Bool)
+instance safe_map_key_is_go_eq {K : Type} (key_type : go.GoType) (k : K) (b : Bool)
     [h : ⟦GoOp GoEquals key_type, (#k, #k)⟧ ⤳ #b] : SafeMapKey (GF := GF) key_type k where
   wp_go_eq_safe_map_key s E Φ := by
     iintro HΦ
@@ -49,7 +49,7 @@ instance safe_map_key_is_go_eq {K : Type} (key_type : go.type) (k : K) (b : Bool
 variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
 
 /-- The map points-to. -/
-def ownMapDef (mptr : loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
+def ownMapDef (mptr : Loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
   iprop(∃ (mv : val) (mp : val → Bool × val),
     "Hown" ∷ heapPointsto mptr dq mv ∗
     "%His_map" ∷ ⌜is_map_pure mv mp⌝ ∗
@@ -59,7 +59,7 @@ def ownMapDef (mptr : loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
     "%Hdom" ∷ ⌜∀ kv, (mp kv).1 = true → ∃ k : K, kv = #k⌝ ∗
     "%Hdefault" ∷ ⌜mapDefault mv = #(zero_val V)⌝)
 
-@[irreducible] def ownMap (mptr : loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
+@[irreducible] def ownMap (mptr : Loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
   ownMapDef mptr dq m
 
 theorem ownMap_unseal : @ownMap = @ownMapDef := by
@@ -75,18 +75,18 @@ scoped notation:50 mref:50 " ↦$ " m:50 => ownMap mref (DFrac.own 1) m
 scoped notation:50 mref:50 " ↦$□ " m:50 => ownMap mref DFrac.discard m
 
 section lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
 
-instance ownMap_timeless (mptr : loc) (dq : DFrac) (m : GMap K V) :
+instance ownMap_timeless (mptr : Loc) (dq : DFrac) (m : GMap K V) :
     Timeless (ownMap (GF := GF) mptr dq m) := by
   rw [ownMap_unseal]; unfold ownMapDef; simp only [named]; infer_instance
 
-theorem wp_mapInsert (key_type : go.type) (l : loc) (m : GMap K V) (k : K) (v : V)
+theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v : V)
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (l ↦$ m : IProp GF) }}
       (App (App (App (Val (map.insert key_type)) (Val #l)) (Val #k)) (Val #v)) @ s; E
@@ -117,7 +117,7 @@ theorem wp_mapInsert (key_type : go.type) (l : loc) (m : GMap K V) (k : K) (v : 
     · simp only [h, ite_false]; exact Hdom kv
   · rw [go.mapDefault_map_insert]; exact Hdefault
 
-theorem wp_mapDelete (l : loc) (m : GMap K V) (k : K) (key_type elem_type : go.type)
+theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (l ↦$ m : IProp GF) }}
       (App (App (Val #(functions go.delete [go.MapType key_type elem_type])) (Val #l)) (Val #k)) @ s; E
@@ -147,7 +147,7 @@ theorem wp_mapDelete (l : loc) (m : GMap K V) (k : K) (key_type elem_type : go.t
     · simp only [h, ite_false]; exact Hdom kv
   · rw [go.mapDefault_map_delete]; exact Hdefault
 
-theorem wp_map_lookup2 (key_type elem_type : go.type) (mref : loc) (m : GMap K V) (k : K)
+theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (k : K)
     (dq : DFrac) [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (mref ↦${dq} m : IProp GF) }}
       (App (App (Val (map.lookup2 key_type elem_type)) (Val #mref)) (Val #k)) @ s; E
@@ -175,7 +175,7 @@ theorem wp_map_lookup2 (key_type elem_type : go.type) (mref : loc) (m : GMap K V
     ipureintro
     exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
-instance pure_wp_map_nil_lookup2 (key_type elem_type : go.type) (k : K)
+instance pure_wp_map_nil_lookup2 (key_type elem_type : go.GoType) (k : K)
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type]
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
     PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
@@ -187,7 +187,7 @@ instance pure_wp_map_nil_lookup2 (key_type elem_type : go.type) (k : K)
     wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
     iapply HΦ $$ Hlc
 
-theorem wp_map_lookup1 (key_type elem_type : go.type) (mref : loc) (m : GMap K V) (k : K)
+theorem wp_map_lookup1 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (k : K)
     (dq : DFrac) [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (mref ↦${dq} m : IProp GF) }}
       (App (App (Val (map.lookup1 key_type elem_type)) (Val #mref)) (Val #k)) @ s; E
@@ -197,7 +197,7 @@ theorem wp_map_lookup1 (key_type elem_type : go.type) (mref : loc) (m : GMap K V
   wp_apply wp_map_lookup2 key_type elem_type mref m k dq $$ Hm with Hm
   iapply HΦ $$ Hm
 
-instance pure_wp_map_nil_lookup1 (key_type elem_type : go.type) (k : K)
+instance pure_wp_map_nil_lookup1 (key_type elem_type : go.GoType) (k : K)
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type]
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
     PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
@@ -209,12 +209,12 @@ instance pure_wp_map_nil_lookup1 (key_type elem_type : go.type) (k : K)
     wp_pures
     iapply HΦ $$ Hlc
 
-theorem wp_map_make2 (len : w64) (key_type elem_type : go.type)
+theorem wp_map_make2 (len : w64) (key_type elem_type : go.GoType)
     [TypeRepr key_type K] -- to automatically fill in `K`
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
     {{ (True : IProp GF) }}
       (App (Val #(functions go.make2 [go.MapType key_type elem_type])) (Val #len)) @ s; E
-    {{ (mref : loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
+    {{ (mref : Loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
   wp_start
   wp_apply wp_alloc_untyped with %l Hl
   iapply HΦ
@@ -227,16 +227,16 @@ theorem wp_map_make2 (len : w64) (key_type elem_type : go.type)
   · intro k; rfl
   · intro kv h; simp at h
 
-theorem wp_map_make1 (key_type elem_type : go.type) [TypeRepr key_type K]
+theorem wp_map_make1 (key_type elem_type : go.GoType) [TypeRepr key_type K]
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
     {{ (True : IProp GF) }}
       (App (Val #(functions go.make1 [go.MapType key_type elem_type])) (Val #())) @ s; E
-    {{ (mref : loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
+    {{ (mref : Loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
   wp_start
   wp_apply (wp_map_make2 (K := K) (V := V) (W64 0) key_type elem_type) with %mref Hm
   iapply HΦ $$ Hm
 
-theorem wp_map_clear (mref : loc) (m : GMap K V) (key_type elem_type : go.type)
+theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType)
     [TypeRepr key_type K] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
     {{ (mref ↦$ m : IProp GF) }}
       (App (Val #(functions go.clear [go.MapType key_type elem_type])) (Val #mref)) @ s; E
@@ -257,7 +257,7 @@ theorem wp_map_clear (mref : loc) (m : GMap K V) (key_type elem_type : go.type)
   ipureintro
   exact ⟨His_map', Hagree', Hdom', Hdefault'⟩
 
-theorem ownMap_not_nil (mref : loc) (m : GMap K V) (dq : DFrac) :
+theorem ownMap_not_nil (mref : Loc) (m : GMap K V) (dq : DFrac) :
     (mref ↦${dq} m : IProp GF) ⊢ ⌜mref ≠ map.nil⌝ := by
   rw [ownMap_unseal]
   iintro Hm
@@ -265,11 +265,11 @@ theorem ownMap_not_nil (mref : loc) (m : GMap K V) (dq : DFrac) :
   ihave %H := heapPointsto_non_null _ _ _ $$ Hown
   ipureintro; exact H
 
-instance ownMap_discarded_persist (mref : loc) (m : GMap K V) :
+instance ownMap_discarded_persist (mref : Loc) (m : GMap K V) :
     Persistent (ownMap (GF := GF) mref DFrac.discard m) := by
   rw [ownMap_unseal]; unfold ownMapDef; simp only [named]; infer_instance
 
-theorem ownMap_persist (mref : loc) (dq : DFrac) (m : GMap K V) :
+theorem ownMap_persist (mref : Loc) (dq : DFrac) (m : GMap K V) :
     (mref ↦${dq} m : IProp GF) ⊢ |==> mref ↦$□ m := by
   rw [ownMap_unseal]
   iintro Hm
@@ -284,7 +284,7 @@ theorem ownMap_persist (mref : loc) (dq : DFrac) (m : GMap K V) :
   ipureintro
   exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
-instance ownMap_update_into_persistently (mref : loc) (dq : DFrac) (m : GMap K V) :
+instance ownMap_update_into_persistently (mref : Loc) (dq : DFrac) (m : GMap K V) :
     UpdateIntoPersistently (ownMap (GF := GF) mref dq m) (ownMap mref DFrac.discard m) where
   update_into_persistently := by
     iintro H
@@ -314,15 +314,15 @@ theorem list_nodup_of_map {α β : Type} (f : α → β) (l : List α) (h : (l.m
     l.Nodup :=
   (List.pairwise_map.1 h).imp (fun h e => h (congrArg f e))
 
-section for_range
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+section forRange
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 
 theorem wp_InternalMapForRange (mv : val) (m : val → Bool × val) (body : val)
-    (key_type elem_type : go.type) (Φ : val → IProp GF) :
+    (key_type elem_type : go.GoType) (Φ : val → IProp GF) :
     (⌜is_map_pure mv m⌝ : IProp GF) -∗
     (∀ e', ⌜is_go_step_pure (InternalMapForRange key_type elem_type) (PairV mv body) e'⌝ -∗
       WP e' @ s; E {{ Φ }}) -∗
@@ -355,7 +355,7 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
 
 theorem wp_map_for_range (P : List K → Int → IProp GF) (body : func.t)
-    (key_type elem_type : go.type) (mref : loc) (m : GMap K V) (dq : DFrac)
+    (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (dq : DFrac)
     [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
     (mref ↦${dq} m : IProp GF) -∗
     (∀ keys : List K,
@@ -366,7 +366,7 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : func.t)
           WP (App (App (Val #body) (Val #key)) (Val #v)) @ s; E
             {{ v, forMapPostcondition (P keys (i + 1)) Φ v }}) ∗
        (P keys (GMap.size m) -∗ Φ executeVal))) -∗
-    WP (App (App (Val (map.for_range key_type elem_type)) (Val #mref)) (Val #body)) @ s; E {{ Φ }} := by
+    WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) @ s; E {{ Φ }} := by
   iintro Hm HΦ
   ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
   wp_call
@@ -445,8 +445,8 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : func.t)
 underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). `len` of a
 nil map is not covered: `go.len` on maps reads the map unconditionally
 (`λ: "m", InternalMapLength (Read "m")`, as in Rocq). -/
-theorem wp_map_len {t key_type elem_type : go.type} [t ↓u go.MapType key_type elem_type]
-    (mref : loc) (m : GMap K V) (dq : DFrac) :
+theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+    (mref : Loc) (m : GMap K V) (dq : DFrac) :
     {{ (mref ↦${dq} m : IProp GF) }}
       (App (Val #(functions go.len [t])) (Val #mref)) @ s; E
     {{ RET #(W64 (GMap.size m)); mref ↦${dq} m }} := by
@@ -476,15 +476,15 @@ theorem wp_map_len {t key_type elem_type : go.type} [t ↓u go.MapType key_type 
   exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
 
-instance wp_map_nil_for_range (body : func.t) (key_type elem_type : go.type) :
+instance wp_map_nil_for_range (body : func.t) (key_type elem_type : go.GoType) :
     PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
-      (App (App (Val (map.for_range key_type elem_type)) (Val #map.nil)) (Val #body))
+      (App (App (Val (map.forRange key_type elem_type)) (Val #map.nil)) (Val #body))
       (Val executeVal) :=
   pure_wp_val True _ executeVal fun s E Φ _ => by
     iintro HΦ
     wp_call_lc Hlc
     iapply HΦ $$ Hlc
 
-end for_range
+end forRange
 
 end Perennial

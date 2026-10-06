@@ -7,7 +7,7 @@ Differences from Rocq:
 * The `semantics` package imports `github.com/goose-lang/primitive/disk`, so (as
   in Rocq, via `disk_prelude`) the FFI is the disk FFI: the generated
   `semantics.Assumptions` is stated for `disk_op`, and the sections below do not
-  bind `ffi_syntax`/`ffi_model`.
+  bind `FfiSyntax`/`FfiModel`.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
@@ -28,7 +28,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 
 instance isPkgInit_inst :
@@ -39,7 +39,7 @@ instance get_isPkgInit_wf_inst :
   build_get_is_pkg_init_wf
 
 /-- A semantics test function `name` returns `true`. -/
-def TestFunOk (name : go_string) : Prop :=
+def TestFunOk (name : GoString) : Prop :=
   ∀ Φ : val → IProp GF, ⊢ Φ #true -∗ WP (App (Val (@! name)) (Val #())) {{ Φ }}
 
 omit go_gctx in

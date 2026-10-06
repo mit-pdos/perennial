@@ -27,14 +27,14 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace go_etcd_io.etcd.pkg.v3.wait
 
 /-- Rocq `interfaceCall i m`. -/
-abbrev interfaceCall [ffi_syntax] [GoGlobalContext] [GoSemanticsFunctions] (i : interface.t_ok)
-    (m : go_string) : val :=
+abbrev interfaceCall [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (i : interface.t_ok)
+    (m : GoString) : val :=
   #(methods i.ty m i.v)
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : wait.Assumptions]
 
@@ -50,9 +50,9 @@ structure WaitParams (GF : BundledGFunctors) where
   ownUnregisteredId : w64 → IProp GF
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : wait.Assumptions]
 
@@ -68,7 +68,7 @@ def ownWaitDef (γ : WaitParams GF) (w : interface.t_ok) (R : w64 → interface.
     "#Register" ∷
       (∀ (id' : w64), □ (∀ Φ : val → IProp GF,
         (γ.I ∗ γ.ownUnregisteredId id') -∗
-        ▷ (∀ (ch : loc) (γch : ChanNames),
+        ▷ (∀ (ch : Loc) (γch : ChanNames),
             (γ.I ∗ isChan ch γch interface.t ∗
               (∀ Φ' : interface.t → Bool → IProp GF,
                 (∀ v, R id' v -∗ Φ' v true) -∗ recvAu γch interface.t Φ')) -∗ Φ #ch) -∗
@@ -92,7 +92,7 @@ theorem Wait.wp_Register (γ : WaitParams GF) (w : interface.t_ok) (id' : w64)
     (R : w64 → interface.t → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownWait γ w R ∗ γ.ownUnregisteredId id' }}
       (App (Val (interfaceCall w go!"Register")) (Val #id'))
-    {{ (ch : loc) (γch : ChanNames), RET #ch;
+    {{ (ch : Loc) (γch : ChanNames), RET #ch;
         isChan ch γch interface.t ∗
         ownWait γ w R ∗
         (∀ Φ' : interface.t → Bool → IProp GF,

@@ -50,7 +50,7 @@ reasoning, `program_proof/`) is out of scope.
     are discharged with `word`, `omega` and `bv_omega` in place of
     coqutil's `word`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
-  * `go_string` (Rocq `byte_string`) is `List w8`.
+  * `GoString` (Rocq `byte_string`) is `List w8`.
 * **64-bit platform.** As in Rocq, the Go semantics assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` has semantics only in Lean (`go.UintptrSemantics`,
@@ -99,11 +99,11 @@ Run `etc/lean-port-status.py --rocq <master checkout>` for per-area file, line a
   `sorry` with `-- TODO(port)`. Never add `axiom`s except where Rocq has one.
 * Notation: `#x` is `into_val x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
   both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); stdpp's
-  set-valued `dom m` is `domSet m`; `go!"abc"` is a `go_string` literal; `l +ₗ i` is location
+  set-valued `dom m` is `domSet m`; `go!"abc"` is a `GoString` literal; `l +ₗ i` is location
   offset.
 * Equality on GooseLang syntax and `go.type` is decided classically
   (`noncomputable instance`), as Rocq admits these instances.
-* As in Rocq, `ffi_syntax` requires `Pos.Countable` of `ffi_opcode`/`ffi_val`, and
+* As in Rocq, `FfiSyntax` requires `Pos.Countable` of `ffi_opcode`/`ffi_val`, and
   `loc`, `slice.t`, `val`, `expr`, `func.t`, `interface.t`, `go.type`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
   `GenTree`), so ghost state can store values containing code.

@@ -191,11 +191,11 @@ structure MpmcNames where
   mpmcClosedName : GName
 
 section mpmc
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 def isClosed (γ : MpmcNames) : IProp GF :=
@@ -253,11 +253,11 @@ def mpmcInvMatch (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF)
     mpmcClosedPart γ s ∗
     mpmcInvMatch γ n_prod n_cons P R sent recv s)
 
-def isMpmc (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+def isMpmc (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) : IProp GF :=
   iprop(isChan ch γ.mpmcChanName V ∗ inv nroot (mpmcInv γ n_prod n_cons P R))
 
-instance isMpmc_persistent (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat)
+instance isMpmc_persistent (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat)
     (P : V → IProp GF) (R : MSet → IProp GF) :
     Persistent (isMpmc γ ch n_prod n_cons P R) := by
   unfold isMpmc; infer_instance
@@ -296,7 +296,7 @@ theorem mpmcInv_intro (γ : MpmcNames) (n_prod n_cons : Nat) (P : V → IProp GF
   · iexact H5
 
 omit [IntoValTyped (GF := GF) V t] in
-theorem start_mpmc (ch : loc) (P : V → IProp GF) (R : MSet → IProp GF) (γ : ChanNames)
+theorem start_mpmc (ch : Loc) (P : V → IProp GF) (R : MSet → IProp GF) (γ : ChanNames)
     (n_prod n_cons : Nat) (s : chanstate.t V)
     (Hs : match s with | .Buffered [] => True | .Idle => True | _ => False)
     (Hprod : n_prod > 0) (Hcons : n_cons > 0) :
@@ -347,7 +347,7 @@ theorem mpmc_closed_no_producer (γ : MpmcNames) (n_prod n_cons : Nat) (P : V �
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 400000 in
-theorem mpmc_send_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+theorem mpmc_send_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) (sent : MSet) (v : V) (Φ : IProp GF) :
     ⊢ isMpmc γ ch n_prod n_cons P R -∗ £ 1 ∗ £ 1 -∗ mpmcProducer γ sent ∗ P v -∗
       ▷ (mpmcProducer γ (sent • msetSingleton v) -∗ Φ) -∗ sendAu γ.mpmcChanName v Φ := by
@@ -452,7 +452,7 @@ theorem mpmc_send_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V �
     iapply mpmc_closed_no_producer γ n_prod n_cons P R sent0 recv d sent $$ [$HsentI $Hm $Hprod]
   | _ => itrivial
 
-theorem wp_mpmc_send (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+theorem wp_mpmc_send (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) (sent : MSet) (v : V) :
     {{ isMpmc γ ch n_prod n_cons P R ∗ mpmcProducer γ sent ∗ P v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
@@ -466,7 +466,7 @@ theorem wp_mpmc_send (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V �
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 800000 in
-theorem mpmc_rcv_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+theorem mpmc_rcv_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) (received : MSet) (Φ : V → Bool → IProp GF) :
     ⊢ isMpmc γ ch n_prod n_cons P R -∗ £ 1 ∗ £ 1 -∗ mpmcConsumer γ received -∗
       ▷ (∀ (v : V) (ok : Bool),
@@ -677,7 +677,7 @@ theorem mpmc_rcv_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V →
         iframe
   | _ => itrivial
 
-theorem wp_mpmc_receive (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+theorem wp_mpmc_receive (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) (received : MSet) :
     {{ isMpmc γ ch n_prod n_cons P R ∗ mpmcConsumer γ received }}
       (App (Val (chan.receive t)) (Val #ch))
@@ -697,7 +697,7 @@ theorem wp_mpmc_receive (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 800000 in
-theorem mpmc_close_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+theorem mpmc_close_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
     (R : MSet → IProp GF) (producers : List MSet) (Φ : IProp GF) (hlen : producers.length = n_prod) :
     ⊢ isMpmc γ ch n_prod n_cons P R -∗ £ 1 -∗
       ([∗list] s_i ∈ producers, mpmcProducer γ s_i) ∗ R (msetSum producers) -∗
@@ -798,8 +798,8 @@ theorem mpmc_close_au (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V �
       iexact Hp
   | _ => itrivial
 
-theorem wp_mpmc_close (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V → IProp GF)
-    (R : MSet → IProp GF) (producers : List MSet) {ct : go.type} {dir : go.chan_dir}
+theorem wp_mpmc_close (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V → IProp GF)
+    (R : MSet → IProp GF) (producers : List MSet) {ct : go.GoType} {dir : go.ChanDir}
     [ct ↓u go.ChannelType dir t] (hlen : producers.length = n_prod) :
     {{ isMpmc γ ch n_prod n_cons P R ∗ ([∗list] s_i ∈ producers, mpmcProducer γ s_i) ∗
         R (msetSum producers) }}
@@ -817,7 +817,7 @@ theorem wp_mpmc_close (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat) (P : V �
 
 omit [IntoValTyped (GF := GF) V t] in
 set_option maxHeartbeats 400000 in
-theorem mpmc_get_final_resource (γ : MpmcNames) (ch : loc) (n_prod n_cons : Nat)
+theorem mpmc_get_final_resource (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat)
     (P : V → IProp GF) (R : MSet → IProp GF) (consumers : List MSet)
     (hlen : consumers.length = n_cons) :
     ⊢ £ 1 -∗ isMpmc γ ch n_prod n_cons P R -∗ isClosed γ -∗

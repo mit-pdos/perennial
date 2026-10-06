@@ -12,77 +12,77 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def google_golang_org.genproto.googleapis.rpc.status : go_string := go!"google.golang.org/genproto/googleapis/rpc/status"
+def google_golang_org.genproto.googleapis.rpc.status : GoString := go!"google.golang.org/genproto/googleapis/rpc/status"
 end pkg_id
 
 namespace google_golang_org.genproto.googleapis.rpc.status
 
-def Status [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"google.golang.org/genproto/googleapis/rpc/status.Status" [])
+def Status [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"google.golang.org/genproto/googleapis/rpc/status.Status" [])
 
 attribute [irreducible] Status
 
-axiom «Statusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Statusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-noncomputable def File_google_rpc_status_proto [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def File_google_rpc_status_proto [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.File_google_rpc_status_proto"
 
-noncomputable def file_google_rpc_status_proto_rawDesc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDesc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDesc"
 
-axiom file_google_rpc_status_proto_rawDesc'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_google_rpc_status_proto_rawDesc'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_google_rpc_status_proto_rawDescOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescOnce"
 
-noncomputable def file_google_rpc_status_proto_rawDescData [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescData [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescData"
 
-axiom file_google_rpc_status_proto_rawDescData'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_google_rpc_status_proto_rawDescData'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_google_rpc_status_proto_msgTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_msgTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_msgTypes"
 
-axiom file_google_rpc_status_proto_msgTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_google_rpc_status_proto_msgTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_google_rpc_status_proto_goTypes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_goTypes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_goTypes"
 
-axiom file_google_rpc_status_proto_goTypes'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_google_rpc_status_proto_goTypes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_google_rpc_status_proto_depIdxs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_depIdxs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_depIdxs"
 
-axiom file_google_rpc_status_proto_depIdxs'init [ffi_syntax] [GoGlobalContext] : val
+axiom file_google_rpc_status_proto_depIdxs'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def file_google_rpc_status_proto_rawDescGZIP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_rawDescGZIP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescGZIP"
 
-noncomputable def file_google_rpc_status_proto_init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def file_google_rpc_status_proto_init [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_init"
 
 instance info' : PkgInfo pkg_id.google_golang_org.genproto.googleapis.rpc.status where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.google_golang_org.genproto.googleapis.rpc.status)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_depIdxs'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_goTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_msgTypes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_rawDescData'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val file_google_rpc_status_proto_rawDesc'init) (Val #()))))))))
 
 namespace Status
@@ -91,7 +91,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Status
 
-class Status_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Status_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Status_type_repr : go.TypeReprUnderlying «Statusⁱᵐᵖˡ» Status.t
   Status_underlying : go.UnderlyingDirectedEq Status «Statusⁱᵐᵖˡ»
   «Statusⁱᵐᵖˡ_underlying» : go.IsUnderlying «Statusⁱᵐᵖˡ» «Statusⁱᵐᵖˡ»
@@ -100,7 +100,7 @@ attribute [instance] Status_Assumptions.Status_type_repr
   Status_Assumptions.Status_underlying
   Status_Assumptions.«Statusⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Status_instance : Status_Assumptions
 
 attribute [instance] Assumptions.Status_instance

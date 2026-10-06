@@ -59,16 +59,16 @@ initial network and of the node's initial files. As for `goose_adequacy`, the
 WP is proved for an arbitrary time-receipt bound `N` (`receiptBound GF = N`)
 and the conclusion is about real executions of fewer than `N` steps. -/
 theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
-    [hPre : GooseGpreS grove_model GF] (N : Nat) (e : expr) (σ : state) (g : GlobalState)
+    [hPre : GooseGpreS grove_model GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState)
     (φ : val → Prop)
-    (Hwp : ∀ [hG : heapGS .hasLC GF],
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ ([∗map] e ↦ ms ∈ g.globalWorld.groveNet, (e c↦ ms : IProp GF)) -∗
         ([∗map] f ↦ c ∈ σ.world.groveNodeFiles, (f f↦ c : IProp GF)) -∗
         ownGoState σ.goState.packageState ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List Observation) (t2 : List expr) (σ2 : CfgState)
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=

@@ -28,36 +28,36 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 namespace sync
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
-abbrev OnceDone (o : loc) : loc := struct_field_ref Once.t go!"done" o
-abbrev OnceM (o : loc) : loc := struct_field_ref Once.t go!"m" o
+abbrev OnceDone (o : Loc) : Loc := structFieldRef Once.t go!"done" o
+abbrev OnceM (o : Loc) : Loc := structFieldRef Once.t go!"m" o
 
-abbrev OnceInv (o : loc) (Q : IProp GF) : IProp GF :=
+abbrev OnceInv (o : Loc) (Q : IProp GF) : IProp GF :=
   iprop(∃ done : Bool,
     "done1" ∷ sync.atomic.ownBool (GF := GF) (OnceDone (GF := GF) o) (DFrac.own (1 : Qp).half) done ∗
     "#HQ" ∷ □ (⌜done = true⌝ -∗ Q))
 
-abbrev OnceLockInv (o : loc) (P Q : IProp GF) : IProp GF :=
+abbrev OnceLockInv (o : Loc) (P Q : IProp GF) : IProp GF :=
   iprop(∃ done : Bool,
     "done2" ∷ sync.atomic.ownBool (GF := GF) (OnceDone (GF := GF) o) (DFrac.own (1 : Qp).half) done ∗
     "HPQ" ∷ (if done then Q else P))
 
-def isOnceDef (o : loc) (P Q : IProp GF) : IProp GF :=
+def isOnceDef (o : Loc) (P Q : IProp GF) : IProp GF :=
   iprop("#Q_persistent" ∷ □ (Q -∗ □ Q) ∗
     "#Qinv" ∷ inv nroot (OnceInv o Q) ∗
     "#Hm" ∷ isMutex (OnceM (GF := GF) o) (OnceLockInv o P Q))
-@[irreducible] def isOnce (o : loc) (P Q : IProp GF) : IProp GF := isOnceDef o P Q
+@[irreducible] def isOnce (o : Loc) (P Q : IProp GF) : IProp GF := isOnceDef o P Q
 theorem isOnce_unseal : @isOnce = @isOnceDef := by funext; with_unfolding_all rfl
 
-instance isOnce_persistent (o : loc) (P Q : IProp GF) : Persistent (isOnce o P Q) := by
+instance isOnce_persistent (o : Loc) (P Q : IProp GF) : Persistent (isOnce o P Q) := by
   rw [isOnce_unseal]; unfold isOnceDef named; infer_instance
 
-theorem ownBool_halves (u : loc) (b : Bool) :
+theorem ownBool_halves (u : Loc) (b : Bool) :
     sync.atomic.ownBool (GF := GF) u (DFrac.own 1) b ⊣⊢
       sync.atomic.ownBool u (DFrac.own (1 : Qp).half) b ∗
       sync.atomic.ownBool u (DFrac.own (1 : Qp).half) b := by
@@ -65,8 +65,8 @@ theorem ownBool_halves (u : loc) (b : Bool) :
   rw [Qp.half_add_half] at h
   exact h
 
-theorem init_Once (o : loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
-    typed_pointsto (GF := GF) o (zero_val Once.t) (DFrac.own 1) ∗ P ⊢ |={E}=> isOnce o P Q := by
+theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
+    typedPointsto (GF := GF) o (zero_val Once.t) (DFrac.own 1) ∗ P ⊢ |={E}=> isOnce o P Q := by
   iintro ⟨Ho, HP⟩
   rw [isOnce_unseal]; unfold isOnceDef
   iStructNamed Ho
@@ -89,10 +89,10 @@ theorem init_Once (o : loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
   imodintro
   iexact HQ
 
-theorem Once.wp_doSlow (o : loc) (P Q : IProp GF) (f : func.t) :
+theorem Once.wp_doSlow (o : Loc) (P Q : IProp GF) (f : func.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
-      (App (Val (o @!! go.type.PointerType Once @!! go!"doSlow")) (Val #f))
+      (App (Val (o @!! go.GoType.PointerType Once @!! go!"doSlow")) (Val #f))
     {{ RET #(); Q }} := by
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]
@@ -160,10 +160,10 @@ theorem Once.wp_doSlow (o : loc) (P Q : IProp GF) (f : func.t) :
       simp only [↓reduceIte]; iframe
     iapply HΦ $$ HQ2
 
-theorem Once.wp_Do (o : loc) (P Q : IProp GF) (f : func.t) :
+theorem Once.wp_Do (o : Loc) (P Q : IProp GF) (f : func.t) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isOnce o P Q ∗
         iprop({{ P }} (App (Val #f) (Val #())) {{ RET #(); Q }}) }}
-      (App (Val (o @!! go.type.PointerType Once @!! go!"Do")) (Val #f))
+      (App (Val (o @!! go.GoType.PointerType Once @!! go!"Do")) (Val #f))
     {{ RET #(); Q }} := by
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]

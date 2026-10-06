@@ -37,7 +37,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 structure WorkqNames where
-  docs : List go_string
+  docs : List GoString
   taskGn : GName
 
 theorem mapSeq_size {A : Type} (start : Nat) (xs : List A) :
@@ -79,20 +79,20 @@ theorem mapIdx_sum_update {A : Type} (h1 h2 : Nat → A → Nat) (l : List A) (i
       omega
 
 /-- The contribution of document `i` (Rocq inlines this function in an `imap`). -/
-def countedFn (f : go_string → Nat) (remaining_docs : GMap Nat (Option go_string))
-    (i : Nat) (doc : go_string) : Nat :=
+def countedFn (f : GoString → Nat) (remaining_docs : GMap Nat (Option GoString))
+    (i : Nat) (doc : GoString) : Nat :=
   match remaining_docs !! i with
   | some (some _) => 0
   | _ => f doc
 
 /-- The total contribution of the documents not yet counted. -/
-abbrev countedSum (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : GMap Nat (Option go_string)) : Nat :=
+abbrev countedSum (f : GoString → Nat) (docs : List GoString)
+    (remaining_docs : GMap Nat (Option GoString)) : Nat :=
   (docs.mapIdx (countedFn f remaining_docs)).sum
 
 /-- When all entries in `remaining_docs` are `Some (Some _)`, the imap sum is 0. -/
-theorem imap_sum_all_some (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : GMap Nat (Option go_string))
+theorem imap_sum_all_some (f : GoString → Nat) (docs : List GoString)
+    (remaining_docs : GMap Nat (Option GoString))
     (Hlookup : ∀ i, i < docs.length → ∃ d, remaining_docs !! i = some (some d)) :
     countedSum f docs remaining_docs = 0 := by
   unfold countedSum
@@ -102,8 +102,8 @@ theorem imap_sum_all_some (f : go_string → Nat) (docs : List go_string)
     obtain ⟨d', hd'⟩ := Hlookup i (List.getElem?_eq_some_iff.1 hd).1
     simp only [countedFn, hd']
 
-theorem imap_sum_no_some_some (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : GMap Nat (Option go_string))
+theorem imap_sum_no_some_some (f : GoString → Nat) (docs : List GoString)
+    (remaining_docs : GMap Nat (Option GoString))
     (Hno_some : ∀ i, i < docs.length → ∀ d, remaining_docs !! i ≠ some (some d)) :
     countedSum f docs remaining_docs = (docs.map f).sum := by
   unfold countedSum
@@ -120,8 +120,8 @@ theorem imap_sum_no_some_some (f : go_string → Nat) (docs : List go_string)
     · rfl
 
 /-- Inserting `None` at position `i` changes only that position's contribution. -/
-theorem imap_sum_insert_none (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : GMap Nat (Option go_string)) (i : Nat) (doc : go_string)
+theorem imap_sum_insert_none (f : GoString → Nat) (docs : List GoString)
+    (remaining_docs : GMap Nat (Option GoString)) (i : Nat) (doc : GoString)
     (Hlookup : remaining_docs !! i = some (some doc)) (Hdoc : docs[i]? = some doc) :
     countedSum f docs (<[i := none]> remaining_docs) =
       countedSum f docs remaining_docs + f doc := by
@@ -133,8 +133,8 @@ theorem imap_sum_insert_none (f : go_string → Nat) (docs : List go_string)
   omega
 
 /-- Deleting a `None` entry doesn't change the imap sum. -/
-theorem imap_sum_delete_none (f : go_string → Nat) (docs : List go_string)
-    (remaining_docs : GMap Nat (Option go_string)) (i : Nat)
+theorem imap_sum_delete_none (f : GoString → Nat) (docs : List GoString)
+    (remaining_docs : GMap Nat (Option GoString)) (i : Nat)
     (Hlookup : remaining_docs !! i = some none) :
     countedSum f docs (remaining_docs.delete i) = countedSum f docs remaining_docs := by
   unfold countedSum
@@ -166,16 +166,16 @@ theorem mods_2_bound (i : w64) (h0 : 0 ≤ sint.Z i) (h2 : sint.Z i < 2) :
 /-! ### Specifications -/
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg := define_is_pkg_init iprop(True)
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg := build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
@@ -193,27 +193,27 @@ theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
 end init
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
-def ownTask (γ : WorkqNames) (doc : go_string) : IProp GF :=
+def ownTask (γ : WorkqNames) (doc : GoString) : IProp GF :=
   iprop(∃ i : Nat, i ↪[γ.taskGn] (some doc))
 
 /-- A task being `None` means that `total` has it, but remaining hasn't been
 decremented yet. -/
-def ownTaskAuth (γ : WorkqNames) (remaining_docs : GMap Nat (Option go_string)) : IProp GF :=
+def ownTaskAuth (γ : WorkqNames) (remaining_docs : GMap Nat (Option GoString)) : IProp GF :=
   ghostMapAuth γ.taskGn 1 remaining_docs
 
-def word_count (doc : go_string) : Nat := (strings.splitFields doc).length
+def word_count (doc : GoString) : Nat := (strings.splitFields doc).length
 
 def isTasksDone (γ : WorkqNames) (sh : shared.t) : IProp GF :=
   sync.atomic.ownInt64 sh.total' DFrac.discard (W64 ((γ.docs.map word_count).sum : Int))
 
 def coordinatorInv (γ : WorkqNames) (sh : shared.t) (γdone : ChanNames) : IProp GF :=
-  iprop(∃ (remaining_docs : GMap Nat (Option go_string)) (remainingv : w64),
+  iprop(∃ (remaining_docs : GMap Nat (Option GoString)) (remainingv : w64),
     "H" ∷ (if remainingv = W64 0 then iprop(True)
            else iprop(∃ totalv : w64,
              "Htotal" ∷ sync.atomic.ownInt64 sh.total' (DFrac.own 1) totalv ∗
@@ -222,7 +222,7 @@ def coordinatorInv (γ : WorkqNames) (sh : shared.t) (γdone : ChanNames) : IPro
     "Hremaining" ∷ sync.atomic.ownInt64 sh.remaining' (DFrac.own 1) remainingv ∗
     "Hauth" ∷ ownTaskAuth γ remaining_docs ∗
     "%Hremaining_size" ∷ ⌜sint.nat remainingv = GMap.size remaining_docs⌝ ∗
-    "%Hdocs_agree" ∷ ⌜∀ (i : Nat) (v : Option go_string), remaining_docs !! i = some v →
+    "%Hdocs_agree" ∷ ⌜∀ (i : Nat) (v : Option GoString), remaining_docs !! i = some v →
         match v with | some doc => γ.docs[i]? = some doc | none => True⌝)
 
 def isCoordinator (γ : WorkqNames) (sh : shared.t) : IProp GF :=
@@ -235,11 +235,11 @@ instance isCoordinator_persistent (γ : WorkqNames) (sh : shared.t) :
     Persistent (isCoordinator (GF := GF) γ sh) := by
   unfold isCoordinator; infer_instance
 
-def stealReplyPred (γ : WorkqNames) (maybe_req : loc) : IProp GF :=
+def stealReplyPred (γ : WorkqNames) (maybe_req : Loc) : IProp GF :=
   if maybe_req = null then iprop(True)
-  else iprop(∃ req : go_string, maybe_req ↦ req ∗ ownTask γ req)
+  else iprop(∃ req : GoString, maybe_req ↦ req ∗ ownTask γ req)
 
-def isWorker (γ : WorkqNames) (w : loc) : IProp GF :=
+def isWorker (γ : WorkqNames) (w : Loc) : IProp GF :=
   iprop(∃ (wv : Worker.t) (γsteal γqueue : ChanNames),
     "#w" ∷ w ↦□ wv ∗
     "#Hqueue" ∷ isChanBag γqueue wv.queue' (ownTask (GF := GF) γ) ∗
@@ -247,7 +247,7 @@ def isWorker (γ : WorkqNames) (w : loc) : IProp GF :=
       (fun (reply : chan.t) => iprop(∃ γreply : ChanNames,
         isChanBag γreply reply (stealReplyPred (GF := GF) γ))))
 
-instance isWorker_persistent (γ : WorkqNames) (w : loc) :
+instance isWorker_persistent (γ : WorkqNames) (w : Loc) :
     Persistent (isWorker (GF := GF) γ w) := by
   unfold isWorker; infer_instance
 
@@ -259,12 +259,12 @@ instance isTasksDone_persistent (γ : WorkqNames) (sh : shared.t) :
 
 set_option goose.wp.extras true
 
-theorem Worker.wp_process (γ : WorkqNames) (w : loc) (doc : go_string) (sh : shared.t) :
+theorem Worker.wp_process (γ : WorkqNames) (w : Loc) (doc : GoString) (sh : shared.t) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#Hw" ∷ isWorker γ w ∗
         "#Hcoord" ∷ isCoordinator γ sh ∗
         "Hdoc" ∷ ownTask γ doc }}
-      (App (App (Val (w @!! go.type.PointerType Worker @!! go!"process")) (Val #doc)) (Val #sh))
+      (App (App (Val (w @!! go.GoType.PointerType Worker @!! go!"process")) (Val #doc)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hcoord, Hdoc⟩
   wp_auto
@@ -403,12 +403,12 @@ theorem Worker.wp_process (γ : WorkqNames) (w : loc) (doc : go_string) (sh : sh
     · iapply HΦ
       itrivial
 
-theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
+theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared.t) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#Hw" ∷ isWorker γ w ∗
         "#Hneighbor" ∷ isWorker γ neighbor ∗
         "#Hcoord" ∷ isCoordinator γ sh }}
-      (App (App (Val (w @!! go.type.PointerType Worker @!! go!"run")) (Val #neighbor)) (Val #sh))
+      (App (App (Val (w @!! go.GoType.PointerType Worker @!! go!"run")) (Val #neighbor)) (Val #sh))
     {{ RET #(); True }} := by
   wp_start as ⟨#Hw, #Hneighbor, #Hcoord⟩
   iNamed Hw
@@ -448,7 +448,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
     isplit
     · -- get a request
       dsimp only [chan.nonblockingClausePre]
-      iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
+      iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
       isplitr
       · ipureintro; rfl
       ihave #Hqch := is_bag_is_chan _ _ _ $$ Hqueue
@@ -481,7 +481,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
       isplit
       · iapply BigAndL.bigAndL_singleton.2
         dsimp only [chan.nonblockingClausePre]
-        iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
+        iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
         isplitr
         · ipureintro; rfl
         ihave #Hqch := is_bag_is_chan _ _ _ $$ Hqueue
@@ -512,7 +512,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
       itrivial
   · -- default case; try to steal
     wp_auto
-    wp_apply chan.wp_make2 (V := loc) (W64 1) $$ [] as %reply %γreply ⟨#Hreply_is, -, Hown⟩
+    wp_apply chan.wp_make2 (V := Loc) (W64 1) $$ [] as %reply %γreply ⟨#Hreply_is, -, Hown⟩
     · ipureintro; decide
     imod start_bag (stealReplyPred (GF := GF) γ) _ reply γreply (by simp) $$ Hreply_is Hown with #Hreply
     icases Hnpt with ∗Hnpt
@@ -565,7 +565,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
     isplit
     · -- received local work while trying to steal
       dsimp only [chan.blockingClausePre]
-      iexists go_string, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
+      iexists GoString, inferInstance, inferInstance, inferInstance, inferInstance, wv.queue', γqueue
       isplitr
       · ipureintro; rfl
       ihave #Hqch := is_bag_is_chan _ _ _ $$ Hqueue
@@ -582,7 +582,7 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : loc) (sh : shared.t) :
     · iapply BigAndL.bigAndL_nil.2
       itrivial
 
-theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List go_string) :
+theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List GoString) :
     ([∗map] k ↦ v ∈ GMap.mapSeq start (l.map some), k ↪[γ.taskGn] v) ⊢
       [∗list] d ∈ l, ownTask (GF := GF) γ d := by
   induction l generalizing start with
@@ -600,7 +600,7 @@ theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List go_string) :
     · iapply ih $$ H
 
 set_option maxHeartbeats 1000000 in
-theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
+theorem wp_wordCount (docs_sl : slice.t) (docs : List GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hdocs" ∷ docs_sl ↦* docs }}
       (App (Val (@! wordCount)) (Val #docs_sl))
     {{ RET #(W64 ((docs.map word_count).sum : Int)); True }} := by
@@ -611,15 +611,15 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   wp_if_destruct
   · have : docs = [] := List.eq_nil_of_length_eq_zero (by rw [Hdocs_len.1, Hif]; rfl)
     subst this
-    rw [show (W64 (((([] : List go_string).map word_count).sum : Nat) : Int)) = W64 0 from rfl]
+    rw [show (W64 (((([] : List GoString).map word_count).sum : Nat) : Int)) = W64 0 from rfl]
     iapply HΦ
     itrivial
-  wp_apply wp_slice_make2 (V := loc) (W64 2) $$ [] as %workers_sl ⟨workers_sl, -⟩
+  wp_apply wp_slice_make2 (V := Loc) (W64 2) $$ [] as %workers_sl ⟨workers_sl, -⟩
   · ipureintro; decide
   rename_i j_ptr
   irename : (j_ptr ↦ zero_val w64 : IProp GF) => j
   imod ghost_map_alloc (GMap.mapSeq 0 (docs.map some)) with ⟨%γtask_gn, Hauth, Htasks⟩
-  ihave HI : (∃ (i j : w64) (workers : List loc),
+  ihave HI : (∃ (i j : w64) (workers : List Loc),
       "i" ∷ i_ptr ↦ i ∗
       "j" ∷ j_ptr ↦ j ∗
       "workers_sl" ∷ workers_sl ↦* (workers ++ List.replicate (2 - sint.nat i) null) ∗
@@ -627,7 +627,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ 2 ∧ workers.length = sint.nat i⌝ : IProp GF)
     $$ [i j workers_sl]
   · iexists W64 0, _, []
-    rw [show List.replicate 2 (zero_val loc) =
+    rw [show List.replicate 2 (zero_val Loc) =
       [] ++ List.replicate (2 - sint.nat (W64 0)) null from rfl]
     iframe
     isplitr
@@ -647,12 +647,12 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
       have h2 := Hwl.1
       simp only [sint.nat, sint.Z] at h1 h2 hP ⊢
       rw [List.getElem?_append_right (by omega), List.getElem?_replicate_of_lt (by omega)]
-    wp_apply chan.wp_make2 (V := go_string) docs_sl.len $$ [] as %queue %γqueue ⟨#Hq_is, %Hqcap, Hq_own⟩
+    wp_apply chan.wp_make2 (V := GoString) docs_sl.len $$ [] as %queue %γqueue ⟨#Hq_is, %Hqcap, Hq_own⟩
     · ipureintro; exact Hdocs_len.2
     wp_apply chan.wp_make1 (V := chan.t) as %steal %γsteal ⟨#Hs_is, %Hscap, Hs_own⟩
     simp only [Hi.1, hP, and_self, ↓reduceIte]
     irename «$r0» => Hwr
-    imod (typed_pointsto_dfractional (GF := GF) «$r0_ptr»
+    imod (typedPointsto_dfractional (GF := GF) «$r0_ptr»
       ({ queue' := queue, steal' := steal } : Worker.t)).dfractional_persist _ $$ Hwr with #Hwr
     simp only [Hif, ↓reduceIte]
     imod start_bag (ownTask (GF := GF) ⟨docs, γtask_gn⟩) _ queue γqueue (by trivial)
@@ -701,11 +701,11 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
   have h2 := Hwl.1
   simp only [sint.nat, sint.Z] at h0 h2 hP
   have Hwlen : workers.length = 2 := by omega
-  rw [show List.replicate (2 - sint.nat i) null = ([] : List loc) by
+  rw [show List.replicate (2 - sint.nat i) null = ([] : List Loc) by
     simp only [sint.nat, List.replicate_eq_nil_iff]; omega, List.append_nil]
   wp_auto
   ihave Htasks := tasks_to_list ⟨docs, γtask_gn⟩ 0 docs $$ Htasks
-  ihave HI : (∃ (i : w64) (d : go_string),
+  ihave HI : (∃ (i : w64) (d : GoString),
       "doc" ∷ doc_ptr ↦ d ∗
       "i" ∷ i_ptr ↦ i ∗
       "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z docs_sl.len⌝ ∗
@@ -817,7 +817,7 @@ theorem wp_wordCount (docs_sl : slice.t) (docs : List go_string) :
     iframe #
   rename_i jj_ptr
   irename : (jj_ptr ↦ zero_val w64 : IProp GF) => j
-  ihave HI : (∃ (i j : w64) (wv : loc),
+  ihave HI : (∃ (i j : w64) (wv : Loc),
       "w" ∷ w_ptr ↦ wv ∗
       "i" ∷ i_ptr ↦ i ∗
       "j" ∷ jj_ptr ↦ j ∗

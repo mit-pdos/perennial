@@ -49,7 +49,7 @@ def Uint32HasEncoding (encoded : List w8) (x : w32) : Prop := encoded = u32Le x
 def BoolHasEncoding (encoded : List w8) (x : Bool) : Prop :=
   encoded = [if x then W8 1 else W8 0]
 
-def StringHasEncoding (encoded : List w8) (x : go_string) : Prop := encoded = x
+def StringHasEncoding (encoded : List w8) (x : GoString) : Prop := encoded = x
 
 def ByteHasEncoding (encoded : List w8) (x : List w8) : Prop := encoded = x
 
@@ -64,9 +64,9 @@ theorem drop_succ {A : Type} (l : List A) (x : A) (l' : List A) (n : Nat)
   rw [← List.drop_drop, Hd]; rfl
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
@@ -75,7 +75,7 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.github_com.tchajed.marshal
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.github_com.tchajed.marshal :=
   build_get_is_pkg_init_wf
 
-theorem wp_initialize' (get_is_pkg_init : go_string → IProp GF)
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.github_com.tchajed.marshal get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))

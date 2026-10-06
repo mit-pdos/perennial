@@ -14,33 +14,33 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals"
+def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 
-noncomputable def f [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def f [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.f"
 
 /-- go: g.go:7:6 -/
-noncomputable def «fⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «fⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$r0" (Val #(W64 11))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.GlobalX))) (Val #())) (Var "$r0"))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
-  pkg_imported_pkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]
+  pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -5,11 +5,11 @@ The `goose_wp_simp_extra` simp set: extensions of `goose_wp_simp` used by
 reductions are done by `simpl`/`vm_compute`/`bool_decide` hints.
 
 * `gooseReduceIteDecide`: `if p then a else b` whose (metavariable-free)
-  decidable condition evaluates by `whnf` (e.g. `go_string` literal equalities in
+  decidable condition evaluates by `whnf` (e.g. `GoString` literal equalities in
   keyed struct literals, `go.isInterfaceType t = true`), even when other parts of
   the term mention free variables.
 * `go.structFieldType` and `eq_self`.
-* `gooseReduceGoTypeEq`: equalities of `go.type`s (decided classically, so not
+* `gooseReduceGoTypeEq`: equalities of `go.GoType`s (decided classically, so not
   by reduction) are decided: `True` when definitionally equal (unfolding named
   types), `False` when the fingerprints `go.typeFingerprint` differ.
 * `zeroVal_interface_nil`: `zero_val interface.t = interface.nil`.
@@ -53,13 +53,13 @@ attribute [goose_wp_simp_extra] go.structFieldType eq_self
 
 namespace go
 
-/-- A computable fingerprint of a `go_string` (length-prefixed). -/
-def strFingerprint (s : go_string) : List Nat := s.length :: s.map BitVec.toNat
+/-- A computable fingerprint of a `GoString` (length-prefixed). -/
+def strFingerprint (s : GoString) : List Nat := s.length :: s.map BitVec.toNat
 
 mutual
 /-- A computable fingerprint of a Go type (a length-prefixed encoding, injective in
-practice), used to prove `go.type` disequalities. -/
-def typeFingerprint : go.type → List Nat
+practice), used to prove `go.GoType` disequalities. -/
+def typeFingerprint : go.GoType → List Nat
   | .Named n args => [0] ++ strFingerprint n ++ typesFingerprint args
   | .ArrayType n t => [1, n.natAbs, if n < 0 then 1 else 0] ++ typeFingerprint t
   | .StructType fds => [2] ++ fieldsFingerprint fds
@@ -71,7 +71,7 @@ def typeFingerprint : go.type → List Nat
   | .ChannelType d t =>
     [8, match d with | .sendrecv => 0 | .sendonly => 1 | .recvonly => 2] ++ typeFingerprint t
   | .UntypedType n => [9] ++ strFingerprint n
-def typesFingerprint : List go.type → List Nat
+def typesFingerprint : List go.GoType → List Nat
   | [] => [0]
   | t :: ts => [1] ++ typeFingerprint t ++ typesFingerprint ts
 def fieldsFingerprint : List go.field_decl → List Nat
@@ -82,7 +82,7 @@ def fieldsFingerprint : List go.field_decl → List Nat
 def sigFingerprint : go.signature → List Nat
   | .Signature args variadic results =>
     typesFingerprint args ++ [if variadic then 1 else 0] ++ typesFingerprint results
-def elemsFingerprint : List go.interface_elem → List Nat
+def elemsFingerprint : List go.InterfaceElem → List Nat
   | [] => [0]
   | .MethodElem m sig :: es => [1] ++ strFingerprint m ++ sigFingerprint sig ++ elemsFingerprint es
   | .TypeElem terms :: es => [2] ++ terms_fingerprint terms ++ elemsFingerprint es
@@ -92,17 +92,17 @@ def terms_fingerprint : List go.type_term → List Nat
   | .TypeTermUnderlying t :: ts => [2] ++ typeFingerprint t ++ terms_fingerprint ts
 end
 
-theorem type_ne_of_fingerprint {a b : go.type}
+theorem type_ne_of_fingerprint {a b : go.GoType}
     (h : decide (typeFingerprint a = typeFingerprint b) = false) : a ≠ b :=
   fun e => by subst e; simp at h
 
 end go
 
 open Lean Meta in
-/-- Decide `t1 = t2` for `go.type`s: `True` if definitionally equal (unfolding
+/-- Decide `t1 = t2` for `go.GoType`s: `True` if definitionally equal (unfolding
 everything), `False` if the fingerprints differ. Errors (including runtime ones
 such as deep recursion) leave the equation alone. -/
-simproc [goose_wp_simp_extra] gooseReduceGoTypeEq (@Eq go.type _ _) := fun e => do
+simproc [goose_wp_simp_extra] gooseReduceGoTypeEq (@Eq go.GoType _ _) := fun e => do
   let_expr Eq _ a b := e | return .continue
   if a.hasMVar || b.hasMVar then return .continue
   tryCatchRuntimeEx (do
@@ -136,7 +136,7 @@ do not apply. These are stated for any instance. -/
   by_cases hp : p <;> simp [hp]
 
 section into_val_eq
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 /-- `#a = #b` iff `a = b`, for a Go type with an injective `intoVal` (e.g.
 `decide (#false = #true)` becomes `false`). -/
@@ -152,7 +152,7 @@ open Lean Meta
 
 /-- The value of `go.arrayLiteralSize kvs` for a literal list `kvs` whose keys
 are all `none` (the elements themselves are not inspected). -/
-def arrayLiteralSize? (kvs : Expr) : MetaM (Option Int) := do
+def arrayLiteralSize? (kvs : Lean.Expr) : MetaM (Option Int) := do
   let mut n : Int := 0
   let mut l ← whnfR kvs
   repeat
@@ -194,7 +194,7 @@ simproc [goose_wp_simp_extra] gooseUintNatLit (uint.nat _) := fun e => word.eval
 attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
 attribute [goose_wp_simp_extra] Int.reduceToNat List.set_cons_zero List.set_cons_succ List.set_nil
 
-@[goose_wp_simp_extra] theorem zeroVal_interface_nil [ffi_syntax] [GoLocalContext] :
+@[goose_wp_simp_extra] theorem zeroVal_interface_nil [FfiSyntax] [GoLocalContext] :
     (zero_val interface.t) = interface.nil := rfl
 
 

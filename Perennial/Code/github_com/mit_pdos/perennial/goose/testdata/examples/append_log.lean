@@ -16,350 +16,350 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.append_log : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log"
+def github_com.mit_pdos.perennial.goose.testdata.examples.append_log : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.append_log
 
-def Log [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Log" [])
+def Log [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Log" [])
 
 attribute [irreducible] Log
 
-noncomputable def Init [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Init [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Init"
 
-noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Open"
 
-noncomputable def writeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def writeAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.writeAll"
 
 /-- go: append_log.go:22:17 -/
-noncomputable def «Log__mkHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__mkHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
   (Let "enc" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.tchajed.marshal.Enc))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.tchajed.marshal.Enc))) (Val #())))
   (Let "$r0" (Let "$a0" (Val _root_.Perennial.github_com.goose_lang.primitive.disk.BlockSize)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewEnc []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"Finish"))) (Var "enc")) (Val #())))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"Finish"))) (Var "enc")) (Val #())))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Enc))) (Pair (Var "enc") (Var "$r0")))))))))))
 
 /-- go: append_log.go:29:17 -/
-noncomputable def «Log__writeHdrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__writeHdrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"mkHdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Val #()))
+  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"mkHdr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Val #()))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Write []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: append_log.go:33:6 -/
-noncomputable def «Initⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Initⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "diskSz"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskSz"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Log)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Log)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Log))) (Let "$v0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
   (Let "$v1" (Val #(W64 0))
   (Let "$v2" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSz"))
-  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))]))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log")) (Val #true)))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Log)))) (Pair (Var "log") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSz")) (Val #(W64 1)))))
-  (App (Val do_return)
+  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log")) (Val #true)))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Log)))) (Pair (Var "log") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSz")) (Val #(W64 1)))))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoAlloc Log))) (Let "$v0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
   (Let "$v1" (Val #(W64 0))
   (Let "$v2" (Val #(W64 0))
-  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))])))))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))])))))) (Val #false)))
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- go: append_log.go:42:6 -/
-noncomputable def «Openⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "hdr" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Read []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "dec" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.tchajed.marshal.Dec))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.tchajed.marshal.Dec))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "hdr"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewDec []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec) go!"GetInt"))) (Var "dec")) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec) go!"GetInt"))) (Var "dec")) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec) go!"GetInt"))) (Var "dec")) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec) go!"GetInt"))) (Var "dec")) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc Log))) (Let "$v0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz"))
   (Let "$v2" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSz"))
-  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))])))))))))
-  (App (Val do_execute)
+  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"m")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v0"))), (KeyedElement (some (KeyField go!"sz")) (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement (some (KeyField go!"diskSz")) (ElementExpression go.uint64 (Var "$v2")))])))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "diskSz") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Dec))) (Pair (Var "dec") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "hdr") (Var "$r0")))))))))
 
 /-- go: append_log.go:50:17 -/
-noncomputable def «Log__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (Convert go.untyped_nil _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val UntypedNil)) (Val #false)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")))))
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (Convert go.untypedNil _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val UntypedNil)) (Val #false)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")))))
+  (App (Val doReturn)
   (Pair (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Read []))) (Val #())) (Var "$a0"))) (Val #true)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:58:17 -/
-noncomputable def «Log__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "i"
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"get"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"get"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "b"))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "b") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "v") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:65:6 -/
-noncomputable def «writeAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «writeAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "bks"
   (Lam "off"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "off" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "off"))
-  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
   (Let "bk" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val (slice.for_range _root_.Perennial.github_com.goose_lang.primitive.disk.Block)) (Var "$range"))
+  (App (App (Val (slice.forRange _root_.Perennial.github_com.goose_lang.primitive.disk.Block)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "off")) (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "bk"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Write []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "bk") (Var "$value")))))))))))))))))
 
 /-- go: append_log.go:71:17 -/
-noncomputable def «Log__appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
-  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
+  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log")))) (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Var "$a0"))))))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log")))) (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Var "$a0"))))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz"))))
   (App (App (App (Val (GoInstruction (FuncResolve writeAll []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Var "$a0")))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Var "$a0")))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0"))))))))))))
 
 /-- go: append_log.go:82:17 -/
-noncomputable def «Log__Appendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Appendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "bks"
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
-  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
+  (Let "bks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"append"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "bks"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"append"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "b")))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "b") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 /-- go: append_log.go:89:17 -/
-noncomputable def «Log__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Val #())))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Var "$r0")))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Var "$r0")))))))))))
 
 /-- go: append_log.go:94:17 -/
-noncomputable def «Log__Resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "log" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Log)))) (Var "log"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log)))) (Var "log"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Log)))) (Var "log"))))) (Val #())))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log)))) (Var "log"))))) (Val #())))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log where
-  pkg_imported_pkgs := [pkg_id.sync, pkg_id.github_com.tchajed.marshal, pkg_id.github_com.goose_lang.primitive.disk]
+  pkgImportedPkgs := [pkg_id.sync, pkg_id.github_com.tchajed.marshal, pkg_id.github_com.goose_lang.primitive.disk]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.tchajed.marshal.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))))
 
 namespace Log
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  m' : loc
+  m' : Loc
   sz' : w64
   diskSz' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end Log
 
-@[reducible] def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"m" (go.type.PointerType _root_.Perennial.sync.Mutex)),
+@[reducible] def Log'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"m" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
 (go.field_decl.FieldDecl go!"sz" go.uint64),
 (go.field_decl.FieldDecl go!"diskSz" go.uint64)]
 
-@[irreducible] def Log'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Log'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Log'fds_unsealed
 
-instance equals_unfold_Log [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Log'fds Log'fds_unsealed :=
   ⟨by unfold Log'fds; rfl⟩
 
-@[reducible] def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Log'fds)
+@[reducible] def «Logⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Log'fds)
 
-class Log_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Log_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Log_type_repr : go.TypeReprUnderlying «Logⁱᵐᵖˡ» Log.t
   Log_underlying : go.UnderlyingDirectedEq Log «Logⁱᵐᵖˡ»
   Log_get_m : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"m") #x (Val #(x.m'))
-  Log_set_m : ∀ (x : Log.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log.t)))
+  Log_set_m : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log.t)))
   Log_get_sz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"sz") #x (Val #(x.sz'))
   Log_set_sz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"sz") (PairV #x #y) (Val #(({ x with sz' := y } : Log.t)))
   Log_get_diskSz : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"diskSz") #x (Val #(x.diskSz'))
   Log_set_diskSz : ∀ (x : Log.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"diskSz") (PairV #x #y) (Val #(({ x with diskSz' := y } : Log.t)))
-  Log'ptr_Append_unfold : MethodUnfold (go.type.PointerType Log) go!"Append" «Log__Appendⁱᵐᵖˡ»
-  Log'ptr_Get_unfold : MethodUnfold (go.type.PointerType Log) go!"Get" «Log__Getⁱᵐᵖˡ»
-  Log'ptr_Reset_unfold : MethodUnfold (go.type.PointerType Log) go!"Reset" «Log__Resetⁱᵐᵖˡ»
-  Log'ptr_append_unfold : MethodUnfold (go.type.PointerType Log) go!"append" «Log__appendⁱᵐᵖˡ»
-  Log'ptr_get_unfold : MethodUnfold (go.type.PointerType Log) go!"get" «Log__getⁱᵐᵖˡ»
-  Log'ptr_mkHdr_unfold : MethodUnfold (go.type.PointerType Log) go!"mkHdr" «Log__mkHdrⁱᵐᵖˡ»
-  Log'ptr_reset_unfold : MethodUnfold (go.type.PointerType Log) go!"reset" «Log__resetⁱᵐᵖˡ»
-  Log'ptr_writeHdr_unfold : MethodUnfold (go.type.PointerType Log) go!"writeHdr" «Log__writeHdrⁱᵐᵖˡ»
+  Log'ptr_Append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Append" «Log__Appendⁱᵐᵖˡ»
+  Log'ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Get" «Log__Getⁱᵐᵖˡ»
+  Log'ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Reset" «Log__Resetⁱᵐᵖˡ»
+  Log'ptr_append_unfold : MethodUnfold (go.GoType.PointerType Log) go!"append" «Log__appendⁱᵐᵖˡ»
+  Log'ptr_get_unfold : MethodUnfold (go.GoType.PointerType Log) go!"get" «Log__getⁱᵐᵖˡ»
+  Log'ptr_mkHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"mkHdr" «Log__mkHdrⁱᵐᵖˡ»
+  Log'ptr_reset_unfold : MethodUnfold (go.GoType.PointerType Log) go!"reset" «Log__resetⁱᵐᵖˡ»
+  Log'ptr_writeHdr_unfold : MethodUnfold (go.GoType.PointerType Log) go!"writeHdr" «Log__writeHdrⁱᵐᵖˡ»
 
 attribute [instance] Log_Assumptions.Log_type_repr
   Log_Assumptions.Log_underlying

@@ -13,375 +13,375 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_opentelemetry_io.otel.«attribute» : go_string := go!"go.opentelemetry.io/otel/attribute"
+def go_opentelemetry_io.otel.«attribute» : GoString := go!"go.opentelemetry.io/otel/attribute"
 end pkg_id
 
 namespace go_opentelemetry_io.otel.«attribute»
 
-def Encoder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Encoder" [])
+def Encoder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Encoder" [])
 
 attribute [irreducible] Encoder
 
-def EncoderID [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.EncoderID" [])
+def EncoderID [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.EncoderID" [])
 
 attribute [irreducible] EncoderID
 
-def defaultAttrEncoder [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.defaultAttrEncoder" [])
+def defaultAttrEncoder [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.defaultAttrEncoder" [])
 
 attribute [irreducible] defaultAttrEncoder
 
-def Filter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Filter" [])
+def Filter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Filter" [])
 
 attribute [irreducible] Filter
 
-def Iterator [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Iterator" [])
+def Iterator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Iterator" [])
 
 attribute [irreducible] Iterator
 
-def MergeIterator [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.MergeIterator" [])
+def MergeIterator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.MergeIterator" [])
 
 attribute [irreducible] MergeIterator
 
-def oneIterator [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.oneIterator" [])
+def oneIterator [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.oneIterator" [])
 
 attribute [irreducible] oneIterator
 
-def Key [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Key" [])
+def Key [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Key" [])
 
 attribute [irreducible] Key
 
-def KeyValue [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.KeyValue" [])
+def KeyValue [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.KeyValue" [])
 
 attribute [irreducible] KeyValue
 
-def Set' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Set" [])
+def Set' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Set" [])
 
 attribute [irreducible] Set'
 
-def Distinct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Distinct" [])
+def Distinct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Distinct" [])
 
 attribute [irreducible] Distinct
 
-def Sortable [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Sortable" [])
+def Sortable [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Sortable" [])
 
 attribute [irreducible] Sortable
 
-def Type' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Type" [])
+def Type' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Type" [])
 
 attribute [irreducible] Type'
 
-def Value [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.Value" [])
+def Value [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.Value" [])
 
 attribute [irreducible] Value
 
-def unknownValueType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.opentelemetry.io/otel/attribute.unknownValueType" [])
+def unknownValueType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.opentelemetry.io/otel/attribute.unknownValueType" [])
 
 attribute [irreducible] unknownValueType
 
-axiom escapeChar [ffi_syntax] [GoGlobalContext] : val
+axiom escapeChar [FfiSyntax] [GoGlobalContext] : val
 
-axiom boolID [ffi_syntax] [GoGlobalContext] : val
+axiom boolID [FfiSyntax] [GoGlobalContext] : val
 
-axiom int64ID [ffi_syntax] [GoGlobalContext] : val
+axiom int64ID [FfiSyntax] [GoGlobalContext] : val
 
-axiom float64ID [ffi_syntax] [GoGlobalContext] : val
+axiom float64ID [FfiSyntax] [GoGlobalContext] : val
 
-axiom stringID [ffi_syntax] [GoGlobalContext] : val
+axiom stringID [FfiSyntax] [GoGlobalContext] : val
 
-axiom boolSliceID [ffi_syntax] [GoGlobalContext] : val
+axiom boolSliceID [FfiSyntax] [GoGlobalContext] : val
 
-axiom int64SliceID [ffi_syntax] [GoGlobalContext] : val
+axiom int64SliceID [FfiSyntax] [GoGlobalContext] : val
 
-axiom float64SliceID [ffi_syntax] [GoGlobalContext] : val
+axiom float64SliceID [FfiSyntax] [GoGlobalContext] : val
 
-axiom stringSliceID [ffi_syntax] [GoGlobalContext] : val
+axiom stringSliceID [FfiSyntax] [GoGlobalContext] : val
 
-axiom _Type_name [ffi_syntax] [GoGlobalContext] : val
+axiom _Type_name [FfiSyntax] [GoGlobalContext] : val
 
-axiom INVALID [ffi_syntax] [GoGlobalContext] : val
+axiom INVALID [FfiSyntax] [GoGlobalContext] : val
 
-axiom BOOL [ffi_syntax] [GoGlobalContext] : val
+axiom BOOL [FfiSyntax] [GoGlobalContext] : val
 
-axiom INT64 [ffi_syntax] [GoGlobalContext] : val
+axiom INT64 [FfiSyntax] [GoGlobalContext] : val
 
-axiom FLOAT64 [ffi_syntax] [GoGlobalContext] : val
+axiom FLOAT64 [FfiSyntax] [GoGlobalContext] : val
 
-axiom STRING [ffi_syntax] [GoGlobalContext] : val
+axiom STRING [FfiSyntax] [GoGlobalContext] : val
 
-axiom BOOLSLICE [ffi_syntax] [GoGlobalContext] : val
+axiom BOOLSLICE [FfiSyntax] [GoGlobalContext] : val
 
-axiom INT64SLICE [ffi_syntax] [GoGlobalContext] : val
+axiom INT64SLICE [FfiSyntax] [GoGlobalContext] : val
 
-axiom FLOAT64SLICE [ffi_syntax] [GoGlobalContext] : val
+axiom FLOAT64SLICE [FfiSyntax] [GoGlobalContext] : val
 
-axiom STRINGSLICE [ffi_syntax] [GoGlobalContext] : val
+axiom STRINGSLICE [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def encoderIDCounter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def encoderIDCounter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.encoderIDCounter"
 
-noncomputable def defaultEncoderOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderOnce"
 
-noncomputable def defaultEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderID [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderID"
 
-axiom defaultEncoderID'init [ffi_syntax] [GoGlobalContext] : val
+axiom defaultEncoderID'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def defaultEncoderInstance [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def defaultEncoderInstance [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.defaultEncoderInstance"
 
-noncomputable def keyValueType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def keyValueType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.keyValueType"
 
-axiom keyValueType'init [ffi_syntax] [GoGlobalContext] : val
+axiom keyValueType'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def emptyHash [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptyHash [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.emptyHash"
 
-axiom emptyHash'init [ffi_syntax] [GoGlobalContext] : val
+axiom emptyHash'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def userDefinedEmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def userDefinedEmptySet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.userDefinedEmptySet"
 
-axiom userDefinedEmptySet'init [ffi_syntax] [GoGlobalContext] : val
+axiom userDefinedEmptySet'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def emptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def emptySet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.emptySet"
 
-axiom emptySet'init [ffi_syntax] [GoGlobalContext] : val
+axiom emptySet'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def _Type_index [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def _Type_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute._Type_index"
 
-axiom _Type_index'init [ffi_syntax] [GoGlobalContext] : val
+axiom _Type_index'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def NewEncoderID [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewEncoderID [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewEncoderID"
 
-noncomputable def DefaultEncoder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultEncoder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.DefaultEncoder"
 
-noncomputable def copyAndEscape [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def copyAndEscape [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.copyAndEscape"
 
-noncomputable def NewAllowKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewAllowKeysFilter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewAllowKeysFilter"
 
-noncomputable def NewDenyKeysFilter [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDenyKeysFilter [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewDenyKeysFilter"
 
-noncomputable def hashKVs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashKVs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.hashKVs"
 
-noncomputable def hashKV [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hashKV [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.hashKV"
 
-noncomputable def NewMergeIterator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewMergeIterator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewMergeIterator"
 
-noncomputable def makeOne [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def makeOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.makeOne"
 
-noncomputable def Bool' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Bool' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Bool"
 
-noncomputable def BoolSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.BoolSlice"
 
-noncomputable def Int' [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Int"
 
-noncomputable def IntSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.IntSlice"
 
-noncomputable def Int64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Int64"
 
-noncomputable def Int64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Int64Slice"
 
-noncomputable def Float64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Float64"
 
-noncomputable def Float64Slice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64Slice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Float64Slice"
 
-noncomputable def String [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def String [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.String"
 
-noncomputable def StringSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.StringSlice"
 
-noncomputable def Stringer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stringer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Stringer"
 
-noncomputable def boolToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def boolToRaw [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.boolToRaw"
 
-noncomputable def rawToBool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToBool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.rawToBool"
 
-noncomputable def int64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def int64ToRaw [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.int64ToRaw"
 
-noncomputable def rawToInt64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.rawToInt64"
 
-noncomputable def float64ToRaw [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def float64ToRaw [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.float64ToRaw"
 
-noncomputable def rawToFloat64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rawToFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.rawToFloat64"
 
-noncomputable def isComparable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isComparable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.isComparable"
 
-noncomputable def EmptySet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def EmptySet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.EmptySet"
 
-noncomputable def NewSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewSet"
 
-noncomputable def NewSetWithSortable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithSortable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithSortable"
 
-noncomputable def NewSetWithFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithFiltered [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithFiltered"
 
-noncomputable def NewSetWithSortableFiltered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSetWithSortableFiltered [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.NewSetWithSortableFiltered"
 
-noncomputable def filteredToFront [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def filteredToFront [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.filteredToFront"
 
-noncomputable def newSet [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newSet [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.newSet"
 
-noncomputable def computeDataFixed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def computeDataFixed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.computeDataFixed"
 
-noncomputable def computeDataReflect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def computeDataReflect [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.computeDataReflect"
 
-noncomputable def BoolValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.BoolValue"
 
-noncomputable def BoolSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def BoolSliceValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.BoolSliceValue"
 
-noncomputable def IntValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.IntValue"
 
-noncomputable def IntSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IntSliceValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.IntSliceValue"
 
-noncomputable def Int64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Int64Value"
 
-noncomputable def Int64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Int64SliceValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Int64SliceValue"
 
-noncomputable def Float64Value [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64Value [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Float64Value"
 
-noncomputable def Float64SliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Float64SliceValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.Float64SliceValue"
 
-noncomputable def StringValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.StringValue"
 
-noncomputable def StringSliceValue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StringSliceValue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.opentelemetry.io/otel/attribute.StringSliceValue"
 
 instance info' : PkgInfo pkg_id.go_opentelemetry_io.otel.«attribute» where
-  pkg_imported_pkgs := [pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.sync]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_opentelemetry_io.otel.«attribute»)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _Type_index'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val emptySet'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val userDefinedEmptySet'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val emptyHash'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val keyValueType'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val defaultEncoderID'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
 namespace Encoder
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Encoder
 
-@[reducible] def «Encoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Encode" (go.signature.Signature [Iterator] false [go.string])), (go.interface_elem.MethodElem go!"ID" (go.signature.Signature [] false [EncoderID]))])
+@[reducible] def «Encoderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Encode" (go.signature.Signature [Iterator] false [go.string])), (go.InterfaceElem.MethodElem go!"ID" (go.signature.Signature [] false [EncoderID]))])
 
-class Encoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Encoder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Encoder_underlying : go.UnderlyingDirectedEq Encoder «Encoderⁱᵐᵖˡ»
 
 attribute [instance] Encoder_Assumptions.Encoder_underlying
 
 namespace EncoderID
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end EncoderID
 
-@[reducible] def EncoderID'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def EncoderID'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.uint64)]
 
-@[irreducible] def EncoderID'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def EncoderID'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   EncoderID'fds_unsealed
 
-instance equals_unfold_EncoderID [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_EncoderID [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold EncoderID'fds EncoderID'fds_unsealed :=
   ⟨by unfold EncoderID'fds; rfl⟩
 
-@[reducible] def «EncoderIDⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType EncoderID'fds)
+@[reducible] def «EncoderIDⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType EncoderID'fds)
 
-class EncoderID_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class EncoderID_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   EncoderID_type_repr : go.TypeReprUnderlying «EncoderIDⁱᵐᵖˡ» EncoderID.t
   EncoderID_underlying : go.UnderlyingDirectedEq EncoderID «EncoderIDⁱᵐᵖˡ»
   EncoderID_get_value : ∀ (x : EncoderID.t), go.IsGoStepPureDetTagged under (StructFieldGet «EncoderIDⁱᵐᵖˡ» go!"value") #x (Val #(x.value'))
@@ -393,28 +393,28 @@ attribute [instance] EncoderID_Assumptions.EncoderID_type_repr
   EncoderID_Assumptions.EncoderID_set_value
 
 namespace defaultAttrEncoder
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   pool' : _root_.Perennial.sync.Pool.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end defaultAttrEncoder
 
-@[reducible] def defaultAttrEncoder'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def defaultAttrEncoder'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"pool" _root_.Perennial.sync.Pool)]
 
-@[irreducible] def defaultAttrEncoder'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def defaultAttrEncoder'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   defaultAttrEncoder'fds_unsealed
 
-instance equals_unfold_defaultAttrEncoder [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_defaultAttrEncoder [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold defaultAttrEncoder'fds defaultAttrEncoder'fds_unsealed :=
   ⟨by unfold defaultAttrEncoder'fds; rfl⟩
 
-@[reducible] def «defaultAttrEncoderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType defaultAttrEncoder'fds)
+@[reducible] def «defaultAttrEncoderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType defaultAttrEncoder'fds)
 
-class defaultAttrEncoder_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class defaultAttrEncoder_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   defaultAttrEncoder_type_repr : go.TypeReprUnderlying «defaultAttrEncoderⁱᵐᵖˡ» defaultAttrEncoder.t
   defaultAttrEncoder_underlying : go.UnderlyingDirectedEq defaultAttrEncoder «defaultAttrEncoderⁱᵐᵖˡ»
   defaultAttrEncoder_get_pool : ∀ (x : defaultAttrEncoder.t), go.IsGoStepPureDetTagged under (StructFieldGet «defaultAttrEncoderⁱᵐᵖˡ» go!"pool") #x (Val #(x.pool'))
@@ -426,46 +426,46 @@ attribute [instance] defaultAttrEncoder_Assumptions.defaultAttrEncoder_type_repr
   defaultAttrEncoder_Assumptions.defaultAttrEncoder_set_pool
 
 namespace Filter
-abbrev t [ffi_syntax] : Type := func.t
+abbrev t [FfiSyntax] : Type := func.t
 end Filter
 
-@[reducible] def «Filterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [KeyValue] false [go.bool]))
+@[reducible] def «Filterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [KeyValue] false [go.bool]))
 
-class Filter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Filter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Filter_underlying : go.UnderlyingDirectedEq Filter «Filterⁱᵐᵖˡ»
 
 attribute [instance] Filter_Assumptions.Filter_underlying
 
 namespace Iterator
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  storage' : loc
+  storage' : Loc
   idx' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Iterator
 
-@[reducible] def Iterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"storage" (go.type.PointerType Set')),
+@[reducible] def Iterator'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"storage" (go.GoType.PointerType Set')),
 (go.field_decl.FieldDecl go!"idx" go.int)]
 
-@[irreducible] def Iterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Iterator'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Iterator'fds_unsealed
 
-instance equals_unfold_Iterator [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Iterator [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Iterator'fds Iterator'fds_unsealed :=
   ⟨by unfold Iterator'fds; rfl⟩
 
-@[reducible] def «Iteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Iterator'fds)
+@[reducible] def «Iteratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Iterator'fds)
 
-class Iterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Iterator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Iterator_type_repr : go.TypeReprUnderlying «Iteratorⁱᵐᵖˡ» Iterator.t
   Iterator_underlying : go.UnderlyingDirectedEq Iterator «Iteratorⁱᵐᵖˡ»
   Iterator_get_storage : ∀ (x : Iterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Iteratorⁱᵐᵖˡ» go!"storage") #x (Val #(x.storage'))
-  Iterator_set_storage : ∀ (x : Iterator.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Iteratorⁱᵐᵖˡ» go!"storage") (PairV #x #y) (Val #(({ x with storage' := y } : Iterator.t)))
+  Iterator_set_storage : ∀ (x : Iterator.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Iteratorⁱᵐᵖˡ» go!"storage") (PairV #x #y) (Val #(({ x with storage' := y } : Iterator.t)))
   Iterator_get_idx : ∀ (x : Iterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «Iteratorⁱᵐᵖˡ» go!"idx") #x (Val #(x.idx'))
   Iterator_set_idx : ∀ (x : Iterator.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Iteratorⁱᵐᵖˡ» go!"idx") (PairV #x #y) (Val #(({ x with idx' := y } : Iterator.t)))
 
@@ -477,58 +477,58 @@ attribute [instance] Iterator_Assumptions.Iterator_type_repr
   Iterator_Assumptions.Iterator_set_idx
 
 namespace Key
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end Key
 
-@[reducible] def «Keyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Keyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class Key_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Key_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Key_underlying : go.UnderlyingDirectedEq Key «Keyⁱᵐᵖˡ»
 
 attribute [instance] Key_Assumptions.Key_underlying
 
 namespace Type'
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end Type'
 
-@[reducible] def «Type'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Type'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Type_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Type_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Type_underlying : go.UnderlyingDirectedEq Type' «Type'ⁱᵐᵖˡ»
 
 attribute [instance] Type_Assumptions.Type_underlying
 
 namespace Value
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   vtype' : Type'.t
   numeric' : w64
-  stringly' : go_string
+  stringly' : GoString
   slice' : interface.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Value
 
-@[reducible] def Value'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Value'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"vtype" Type'),
 (go.field_decl.FieldDecl go!"numeric" go.uint64),
 (go.field_decl.FieldDecl go!"stringly" go.string),
 (go.field_decl.FieldDecl go!"slice" go.any)]
 
-@[irreducible] def Value'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Value'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Value'fds_unsealed
 
-instance equals_unfold_Value [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Value [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Value'fds Value'fds_unsealed :=
   ⟨by unfold Value'fds; rfl⟩
 
-@[reducible] def «Valueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Value'fds)
+@[reducible] def «Valueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Value'fds)
 
-class Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Value_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Value_type_repr : go.TypeReprUnderlying «Valueⁱᵐᵖˡ» Value.t
   Value_underlying : go.UnderlyingDirectedEq Value «Valueⁱᵐᵖˡ»
   Value_get_vtype : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"vtype") #x (Val #(x.vtype'))
@@ -536,7 +536,7 @@ class Value_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSeman
   Value_get_numeric : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"numeric") #x (Val #(x.numeric'))
   Value_set_numeric : ∀ (x : Value.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"numeric") (PairV #x #y) (Val #(({ x with numeric' := y } : Value.t)))
   Value_get_stringly : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"stringly") #x (Val #(x.stringly'))
-  Value_set_stringly : ∀ (x : Value.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"stringly") (PairV #x #y) (Val #(({ x with stringly' := y } : Value.t)))
+  Value_set_stringly : ∀ (x : Value.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"stringly") (PairV #x #y) (Val #(({ x with stringly' := y } : Value.t)))
   Value_get_slice : ∀ (x : Value.t), go.IsGoStepPureDetTagged under (StructFieldGet «Valueⁱᵐᵖˡ» go!"slice") #x (Val #(x.slice'))
   Value_set_slice : ∀ (x : Value.t) (y : interface.t), go.IsGoStepPureDetTagged under (StructFieldSet «Valueⁱᵐᵖˡ» go!"slice") (PairV #x #y) (Val #(({ x with slice' := y } : Value.t)))
 
@@ -552,30 +552,30 @@ attribute [instance] Value_Assumptions.Value_type_repr
   Value_Assumptions.Value_set_slice
 
 namespace KeyValue
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Key' : Key.t
   Value' : Value.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end KeyValue
 
-@[reducible] def KeyValue'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def KeyValue'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" Key),
 (go.field_decl.FieldDecl go!"Value" Value)]
 
-@[irreducible] def KeyValue'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def KeyValue'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   KeyValue'fds_unsealed
 
-instance equals_unfold_KeyValue [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_KeyValue [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold KeyValue'fds KeyValue'fds_unsealed :=
   ⟨by unfold KeyValue'fds; rfl⟩
 
-@[reducible] def «KeyValueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType KeyValue'fds)
+@[reducible] def «KeyValueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType KeyValue'fds)
 
-class KeyValue_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class KeyValue_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   KeyValue_type_repr : go.TypeReprUnderlying «KeyValueⁱᵐᵖˡ» KeyValue.t
   KeyValue_underlying : go.UnderlyingDirectedEq KeyValue «KeyValueⁱᵐᵖˡ»
   KeyValue_get_Key : ∀ (x : KeyValue.t), go.IsGoStepPureDetTagged under (StructFieldGet «KeyValueⁱᵐᵖˡ» go!"Key") #x (Val #(x.Key'))
@@ -591,32 +591,32 @@ attribute [instance] KeyValue_Assumptions.KeyValue_type_repr
   KeyValue_Assumptions.KeyValue_set_Value
 
 namespace oneIterator
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   iter' : Iterator.t
   done' : Bool
   attr' : KeyValue.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end oneIterator
 
-@[reducible] def oneIterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def oneIterator'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"iter" Iterator),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"attr" KeyValue)]
 
-@[irreducible] def oneIterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def oneIterator'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   oneIterator'fds_unsealed
 
-instance equals_unfold_oneIterator [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_oneIterator [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold oneIterator'fds oneIterator'fds_unsealed :=
   ⟨by unfold oneIterator'fds; rfl⟩
 
-@[reducible] def «oneIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType oneIterator'fds)
+@[reducible] def «oneIteratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType oneIterator'fds)
 
-class oneIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class oneIterator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   oneIterator_type_repr : go.TypeReprUnderlying «oneIteratorⁱᵐᵖˡ» oneIterator.t
   oneIterator_underlying : go.UnderlyingDirectedEq oneIterator «oneIteratorⁱᵐᵖˡ»
   oneIterator_get_iter : ∀ (x : oneIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «oneIteratorⁱᵐᵖˡ» go!"iter") #x (Val #(x.iter'))
@@ -636,32 +636,32 @@ attribute [instance] oneIterator_Assumptions.oneIterator_type_repr
   oneIterator_Assumptions.oneIterator_set_attr
 
 namespace MergeIterator
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   one' : oneIterator.t
   two' : oneIterator.t
   current' : KeyValue.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end MergeIterator
 
-@[reducible] def MergeIterator'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def MergeIterator'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"one" oneIterator),
 (go.field_decl.FieldDecl go!"two" oneIterator),
 (go.field_decl.FieldDecl go!"current" KeyValue)]
 
-@[irreducible] def MergeIterator'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def MergeIterator'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   MergeIterator'fds_unsealed
 
-instance equals_unfold_MergeIterator [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_MergeIterator [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold MergeIterator'fds MergeIterator'fds_unsealed :=
   ⟨by unfold MergeIterator'fds; rfl⟩
 
-@[reducible] def «MergeIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType MergeIterator'fds)
+@[reducible] def «MergeIteratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType MergeIterator'fds)
 
-class MergeIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MergeIterator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   MergeIterator_type_repr : go.TypeReprUnderlying «MergeIteratorⁱᵐᵖˡ» MergeIterator.t
   MergeIterator_underlying : go.UnderlyingDirectedEq MergeIterator «MergeIteratorⁱᵐᵖˡ»
   MergeIterator_get_one : ∀ (x : MergeIterator.t), go.IsGoStepPureDetTagged under (StructFieldGet «MergeIteratorⁱᵐᵖˡ» go!"one") #x (Val #(x.one'))
@@ -681,30 +681,30 @@ attribute [instance] MergeIterator_Assumptions.MergeIterator_type_repr
   MergeIterator_Assumptions.MergeIterator_set_current
 
 namespace Set'
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   hash' : w64
   data' : interface.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Set'
 
-@[reducible] def Set'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Set'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"hash" go.uint64),
 (go.field_decl.FieldDecl go!"data" go.any)]
 
-@[irreducible] def Set'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Set'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Set'fds_unsealed
 
-instance equals_unfold_Set [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Set [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Set'fds Set'fds_unsealed :=
   ⟨by unfold Set'fds; rfl⟩
 
-@[reducible] def «Set'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Set'fds)
+@[reducible] def «Set'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Set'fds)
 
-class Set_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Set_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Set_type_repr : go.TypeReprUnderlying «Set'ⁱᵐᵖˡ» Set'.t
   Set_underlying : go.UnderlyingDirectedEq Set' «Set'ⁱᵐᵖˡ»
   Set_get_hash : ∀ (x : Set'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Set'ⁱᵐᵖˡ» go!"hash") #x (Val #(x.hash'))
@@ -720,28 +720,28 @@ attribute [instance] Set_Assumptions.Set_type_repr
   Set_Assumptions.Set_set_data
 
 namespace Distinct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   hash' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Distinct
 
-@[reducible] def Distinct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Distinct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"hash" go.uint64)]
 
-@[irreducible] def Distinct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Distinct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Distinct'fds_unsealed
 
-instance equals_unfold_Distinct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Distinct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Distinct'fds Distinct'fds_unsealed :=
   ⟨by unfold Distinct'fds; rfl⟩
 
-@[reducible] def «Distinctⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Distinct'fds)
+@[reducible] def «Distinctⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Distinct'fds)
 
-class Distinct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Distinct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Distinct_type_repr : go.TypeReprUnderlying «Distinctⁱᵐᵖˡ» Distinct.t
   Distinct_underlying : go.UnderlyingDirectedEq Distinct «Distinctⁱᵐᵖˡ»
   Distinct_get_hash : ∀ (x : Distinct.t), go.IsGoStepPureDetTagged under (StructFieldGet «Distinctⁱᵐᵖˡ» go!"hash") #x (Val #(x.hash'))
@@ -753,46 +753,46 @@ attribute [instance] Distinct_Assumptions.Distinct_type_repr
   Distinct_Assumptions.Distinct_set_hash
 
 namespace Sortable
-abbrev t [ffi_syntax] : Type := slice.t
+abbrev t [FfiSyntax] : Type := slice.t
 end Sortable
 
-@[reducible] def «Sortableⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.SliceType KeyValue)
+@[reducible] def «Sortableⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType KeyValue)
 
-class Sortable_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Sortable_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Sortable_underlying : go.UnderlyingDirectedEq Sortable «Sortableⁱᵐᵖˡ»
 
 attribute [instance] Sortable_Assumptions.Sortable_underlying
 
 namespace unknownValueType
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end unknownValueType
 
-@[reducible] def unknownValueType'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unknownValueType'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def unknownValueType'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def unknownValueType'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   unknownValueType'fds_unsealed
 
-instance equals_unfold_unknownValueType [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_unknownValueType [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold unknownValueType'fds unknownValueType'fds_unsealed :=
   ⟨by unfold unknownValueType'fds; rfl⟩
 
-@[reducible] def «unknownValueTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType unknownValueType'fds)
+@[reducible] def «unknownValueTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType unknownValueType'fds)
 
-class unknownValueType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unknownValueType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unknownValueType_type_repr : go.TypeReprUnderlying «unknownValueTypeⁱᵐᵖˡ» unknownValueType.t
   unknownValueType_underlying : go.UnderlyingDirectedEq unknownValueType «unknownValueTypeⁱᵐᵖˡ»
 
 attribute [instance] unknownValueType_Assumptions.unknownValueType_type_repr
   unknownValueType_Assumptions.unknownValueType_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Encoder_instance : Encoder_Assumptions
   EncoderID_instance : EncoderID_Assumptions
   defaultAttrEncoder_instance : defaultAttrEncoder_Assumptions

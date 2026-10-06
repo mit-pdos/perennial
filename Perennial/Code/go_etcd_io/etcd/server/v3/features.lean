@@ -12,50 +12,50 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.server.v3.features : go_string := go!"go.etcd.io/etcd/server/v3/features"
+def go_etcd_io.etcd.server.v3.features : GoString := go!"go.etcd.io/etcd/server/v3/features"
 end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.features
 
-axiom StopGRPCServiceOnDefrag [ffi_syntax] [GoGlobalContext] : val
+axiom StopGRPCServiceOnDefrag [FfiSyntax] [GoGlobalContext] : val
 
-axiom TxnModeWriteWithSharedBuffer [ffi_syntax] [GoGlobalContext] : val
+axiom TxnModeWriteWithSharedBuffer [FfiSyntax] [GoGlobalContext] : val
 
-axiom InitialCorruptCheck [ffi_syntax] [GoGlobalContext] : val
+axiom InitialCorruptCheck [FfiSyntax] [GoGlobalContext] : val
 
-axiom CompactHashCheck [ffi_syntax] [GoGlobalContext] : val
+axiom CompactHashCheck [FfiSyntax] [GoGlobalContext] : val
 
-axiom LeaseCheckpoint [ffi_syntax] [GoGlobalContext] : val
+axiom LeaseCheckpoint [FfiSyntax] [GoGlobalContext] : val
 
-axiom LeaseCheckpointPersist [ffi_syntax] [GoGlobalContext] : val
+axiom LeaseCheckpointPersist [FfiSyntax] [GoGlobalContext] : val
 
-axiom SetMemberLocalAddr [ffi_syntax] [GoGlobalContext] : val
+axiom SetMemberLocalAddr [FfiSyntax] [GoGlobalContext] : val
 
-axiom FastLeaseKeepAlive [ffi_syntax] [GoGlobalContext] : val
+axiom FastLeaseKeepAlive [FfiSyntax] [GoGlobalContext] : val
 
-axiom PriorityRequest [ffi_syntax] [GoGlobalContext] : val
+axiom PriorityRequest [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def DefaultEtcdServerFeatureGates [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DefaultEtcdServerFeatureGates [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/features.DefaultEtcdServerFeatureGates"
 
-axiom DefaultEtcdServerFeatureGates'init [ffi_syntax] [GoGlobalContext] : val
+axiom DefaultEtcdServerFeatureGates'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def NewDefaultServerFeatureGate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewDefaultServerFeatureGate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/features.NewDefaultServerFeatureGate"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.features where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.features)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val DefaultEtcdServerFeatureGates'init) (Val #())))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
 end go_etcd_io.etcd.server.v3.features
 

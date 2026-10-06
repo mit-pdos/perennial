@@ -18,9 +18,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -32,15 +32,15 @@ abbrev selectNbOnlyInv (γ : ChanNames) : IProp GF :=
     "%Hs" ∷ ⌜match s with | .Idle => True | _ => False⌝)
 
 /-- Invariant: channel must be Idle, all other states are False -/
-def isSelectNbOnly (γ : ChanNames) (ch : loc) : IProp GF :=
+def isSelectNbOnly (γ : ChanNames) (ch : Loc) : IProp GF :=
   iprop("#Hch" ∷ isChan ch γ Unit ∗
     "#Hinv" ∷ inv nroot (selectNbOnlyInv γ))
 
-instance isSelectNbOnly_pers (γ : ChanNames) (ch : loc) :
+instance isSelectNbOnly_pers (γ : ChanNames) (ch : Loc) :
     Persistent (isSelectNbOnly (GF := GF) γ ch) := by
   unfold isSelectNbOnly; infer_instance
 
-theorem start_select_nb_only (ch : loc) (γ : ChanNames) :
+theorem start_select_nb_only (ch : Loc) (γ : ChanNames) :
     ⊢ isChan (GF := GF) ch γ Unit -∗ ownChan γ Unit .Idle ={⊤}=∗ isSelectNbOnly γ ch := by
   iintro #Hch Hoc
   imod inv_alloc nroot ⊤ (selectNbOnlyInv (GF := GF) γ) $$ [Hoc] with #Hinv
@@ -50,7 +50,7 @@ theorem start_select_nb_only (ch : loc) (γ : ChanNames) :
   iframe #
 
 /-- Nonblocking send AU - vacuous since we ban all send preconditions -/
-theorem select_nb_only_send_au (γ : ChanNames) (ch : loc) (v : Unit) (Φ Φnotready : IProp GF) :
+theorem select_nb_only_send_au (γ : ChanNames) (ch : Loc) (v : Unit) (Φ Φnotready : IProp GF) :
     ⊢ isSelectNbOnly γ ch -∗ Φnotready -∗ nonblockingSendAu γ v Φ Φnotready := by
   iintro #Hnb Hnotready
   unfold isSelectNbOnly nonblockingSendAu nonblockingSendAuInner
@@ -68,7 +68,7 @@ theorem select_nb_only_send_au (γ : ChanNames) (ch : loc) (v : Unit) (Φ Φnotr
   · iexact Hnotready
 
 /-- Nonblocking receive AU - vacuous since we ban all receive preconditions -/
-theorem select_nb_only_rcv_au (γ : ChanNames) (ch : loc) (Φ : Unit → Bool → IProp GF)
+theorem select_nb_only_rcv_au (γ : ChanNames) (ch : Loc) (Φ : Unit → Bool → IProp GF)
     (Φnotready : IProp GF) :
     ⊢ isSelectNbOnly γ ch -∗ Φnotready -∗ nonblockingRecvAu γ Unit Φ Φnotready := by
   iintro #Hnb Hnotready
@@ -178,12 +178,12 @@ theorem wp_select_nb_guaranteed_ready :
 
 
 /-- Invariant for the "full buffer" situation -/
-def isSelectNbFull1 (γ : ChanNames) (ch : loc) : IProp GF :=
+def isSelectNbFull1 (γ : ChanNames) (ch : Loc) : IProp GF :=
   iprop("#Hch" ∷ isChan ch γ w64 ∗
     "%Hcap1" ∷ ⌜γ.chanCap = W64 1⌝ ∗
     "Hinv" ∷ ownChan γ w64 (.Buffered [W64 0]))
 
-theorem start_select_nb_full1 (ch : loc) (γ : ChanNames) :
+theorem start_select_nb_full1 (ch : Loc) (γ : ChanNames) :
     ⊢ isChan (GF := GF) ch γ w64 -∗ ⌜γ.chanCap = W64 1⌝ -∗
       ownChan γ w64 (.Buffered [W64 0]) ={⊤}=∗ isSelectNbFull1 γ ch := by
   iintro #Hch %Hcap Hoc
@@ -194,7 +194,7 @@ theorem start_select_nb_full1 (ch : loc) (γ : ChanNames) :
   · iexact Hch
   ipureintro; exact Hcap
 
-theorem select_nb_full1_send_au (γ : ChanNames) (ch : loc) (Φ Φnotready : IProp GF) :
+theorem select_nb_full1_send_au (γ : ChanNames) (ch : Loc) (Φ Φnotready : IProp GF) :
     ⊢ isSelectNbFull1 γ ch -∗ Φnotready -∗ nonblockingSendAu γ (W64 0) Φ Φnotready := by
   iintro Hfull Hnotready
   unfold isSelectNbFull1 nonblockingSendAu nonblockingSendAuInner
@@ -213,7 +213,7 @@ theorem select_nb_full1_send_au (γ : ChanNames) (ch : loc) (Φ Φnotready : IPr
     simp at Hle
   · iexact Hnotready
 
-theorem SendAU_from_empty_buffer_to (_ch : loc) (γ : ChanNames) (Φ : IProp GF) :
+theorem SendAU_from_empty_buffer_to (_ch : Loc) (γ : ChanNames) (Φ : IProp GF) :
     ⊢ ownChan γ w64 (.Buffered []) -∗ (ownChan γ w64 (.Buffered [W64 0]) -∗ Φ) -∗
       sendAu γ (W64 0) Φ := by
   iintro Hoc Hk
@@ -231,7 +231,7 @@ theorem SendAU_from_empty_buffer_to (_ch : loc) (γ : ChanNames) (Φ : IProp GF)
   iapply Hk $$ Hoc
 
 /-- From a send on full buffer (which blocks indefinitely), any Φ can be derived -/
-theorem SendAU_full_cap1_vacuous (_ch : loc) (γ : ChanNames) (v0 v : w64) (Φ : IProp GF)
+theorem SendAU_full_cap1_vacuous (_ch : Loc) (γ : ChanNames) (v0 v : w64) (Φ : IProp GF)
     (Hcap : γ.chanCap = W64 1) :
     ⊢ ownChan γ w64 (.Buffered [v0]) -∗ sendAu γ v Φ := by
   iintro Hoc

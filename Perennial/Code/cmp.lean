@@ -12,26 +12,26 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def cmp : go_string := go!"cmp"
+def cmp : GoString := go!"cmp"
 end pkg_id
 
 namespace cmp
 
-def Ordered [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"cmp.Ordered" [])
+def Ordered [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"cmp.Ordered" [])
 
 attribute [irreducible] Ordered
 
-noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"cmp.Less"
 
-noncomputable def Compare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Compare [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"cmp.Compare"
 
-noncomputable def isNaN [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNaN [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"cmp.isNaN"
 
-noncomputable def Or [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Or [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"cmp.Or"
 
 /-- Less reports whether x is less than y.
@@ -39,13 +39,13 @@ noncomputable def Or [ffi_syntax] [GoGlobalContext] : go_string :=
     and -0.0 is not less than (is equal to) 0.0.
 
     go: cmp.go:28:6 -/
-noncomputable def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc T))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "y"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))) (Val #false)) (Val #true) (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))))))))
@@ -60,125 +60,125 @@ noncomputable def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.typ
     a NaN is considered equal to a NaN, and -0.0 is equal to 0.0.
 
     go: cmp.go:40:6 -/
-noncomputable def «Compareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Compareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc T))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
   (Let "xNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "yNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "y"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #(W64 0)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_int go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untyped_int))) (Val #(1 : Int)))))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untypedInt))) (Val #(1 : Int)))))
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_int go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untyped_int))) (Val #(1 : Int)))))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int)))))
+  (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "yNaN"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_int go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untyped_int))) (Val #(1 : Int)))))
-  (App (Val do_execute)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untypedInt))) (Val #(1 : Int)))))
+  (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "xNaN"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.untyped_int go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untyped_int))) (Val #(1 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int)))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "yNaN"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 0)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "yNaN") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "xNaN") (Var "$r0"))))))))))))
 
 /-- isNaN reports whether x is a NaN without requiring the math package.
     This will always return false if T is not floating-point.
 
     go: cmp.go:63:6 -/
-noncomputable def «isNaNⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «isNaNⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "x")))))))))
 
 /-- Or returns the first of its arguments that is not equal to the zero value.
     If no argument is non-zero, it returns the zero value.
 
     go: cmp.go:69:6 -/
-noncomputable def «Orⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Orⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "vals"
-  (App (Val exception_do)
-  (Let "vals" (App (Val (GoInstruction (GoAlloc (go.type.SliceType T)))) (Var "vals"))
+  (App (Val exceptionDo)
+  (Let "vals" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "vals"))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad T))) (Var "zero")))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.SliceType T)))) (Var "vals"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "vals"))
   (Let "val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (App (App (Val (slice.for_range T)) (Var "$range"))
+  (App (App (Val (slice.forRange T)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "val")) (App (Val (GoInstruction (GoLoad T))) (Var "zero"))))))
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "val")) (App (Val (GoInstruction (GoLoad T))) (Var "zero"))))))
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad T))) (Var "val")))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$key")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "val") (Var "$value")))))))))))))))
 
 instance info' : PkgInfo pkg_id.cmp where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.cmp)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
 namespace Ordered
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Ordered
 
-@[reducible] def «Orderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
+@[reducible] def «Orderedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
 
-class Ordered_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Ordered_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Ordered_underlying : go.UnderlyingDirectedEq Ordered «Orderedⁱᵐᵖˡ»
 
 attribute [instance] Ordered_Assumptions.Ordered_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Ordered_instance : Ordered_Assumptions
-  Less_unfold : ∀ (T : go.type), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
-  Compare_unfold : ∀ (T : go.type), FuncUnfold Compare [T] («Compareⁱᵐᵖˡ» T)
-  isNaN_unfold : ∀ (T : go.type), FuncUnfold isNaN [T] («isNaNⁱᵐᵖˡ» T)
-  Or_unfold : ∀ (T : go.type), FuncUnfold Or [T] («Orⁱᵐᵖˡ» T)
+  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
+  Compare_unfold : ∀ (T : go.GoType), FuncUnfold Compare [T] («Compareⁱᵐᵖˡ» T)
+  isNaN_unfold : ∀ (T : go.GoType), FuncUnfold isNaN [T] («isNaNⁱᵐᵖˡ» T)
+  Or_unfold : ∀ (T : go.GoType), FuncUnfold Or [T] («Orⁱᵐᵖˡ» T)
 
 attribute [instance] Assumptions.Ordered_instance
   Assumptions.Less_unfold

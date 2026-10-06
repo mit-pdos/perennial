@@ -34,9 +34,9 @@ open go_etcd_io.etcd.client.v3_proof
 namespace go_etcd_io.etcd.client.v3.concurrency
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : concurrency.Assumptions]
 
@@ -49,16 +49,16 @@ instance get_isPkgInit_wf_inst :
 end init
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : concurrency.Assumptions]
 
 local notation "pkg" => pkg_id.go_etcd_io.etcd.client.v3.concurrency
 
-def isSessionDef (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
-  iprop(∃ (cl : loc) (donec : chan.t) (γdonec : ChanNames),
+def isSessionDef (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
+  iprop(∃ (cl : Loc) (donec : chan.t) (γdonec : ChanNames),
     "#client" ∷ s.[Session.t, go!"client"] ↦□ cl ∗
     "#id" ∷ s.[Session.t, go!"id"] ↦□ lease ∗
     "#Hclient" ∷ isClient cl γ ∗
@@ -68,20 +68,20 @@ def isSessionDef (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp G
     -- "closed" value.
     "#Hdonec" ∷ ownBroadcastChan donec γdonec iprop(True) .Unknown)
 /-- (Rocq: `Opaque isSession`) -/
-@[irreducible] def isSession (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
+@[irreducible] def isSession (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) : IProp GF :=
   isSessionDef s γ lease
 theorem isSession_unseal : @isSession = @isSessionDef := by funext; with_unfolding_all rfl
 
-instance isSession_pers (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+instance isSession_pers (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
     Persistent (isSession (GF := GF) s γ lease) := by
   rw [isSession_unseal]; unfold isSessionDef; infer_instance
 
 set_option maxHeartbeats 400000 in
-theorem wp_NewSession (client : loc) (γetcd : Clientv3Names) :
+theorem wp_NewSession (client : Loc) (γetcd : Clientv3Names) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "#His_client" ∷ isClient client γetcd }}
       (App (App (Val (@! NewSession)) (Val #client)) (Val #slice.nil))
-    {{ (s : loc) (err : error.t), RET (PairV #s #err);
+    {{ (s : Loc) (err : error.t), RET (PairV #s #err);
         if err = interface.nil then ∃ lease, isSession s γetcd lease
         else iprop(True) }} := by
   wp_start as #His_client
@@ -160,9 +160,9 @@ theorem wp_NewSession (client : loc) (γetcd : Clientv3Names) :
   rw [isSession_unseal]; unfold isSessionDef
   iframe #
 
-theorem Session.wp_Lease (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+theorem Session.wp_Lease (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isSession s γ lease }}
-      (App (Val (s @!! go.type.PointerType Session @!! go!"Lease")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType Session @!! go!"Lease")) (Val #()))
     {{ RET #lease; True }} := by
   wp_start as Hs
   rw [isSession_unseal]
@@ -170,9 +170,9 @@ theorem Session.wp_Lease (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
   wp_auto
   wp_end
 
-theorem Session.wp_Done (s : loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
+theorem Session.wp_Done (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID.t) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isSession s γ lease }}
-      (App (Val (s @!! go.type.PointerType Session @!! go!"Done")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType Session @!! go!"Done")) (Val #()))
     {{ (ch : chan.t) (γch : ChanNames), RET #ch;
         ownBroadcastChan ch γch iprop(True) .Unknown }} := by
   wp_start as Hs

@@ -14,39 +14,39 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.std.std_core : go_string := go!"github.com/goose-lang/std/std_core"
+def github_com.goose_lang.std.std_core : GoString := go!"github.com/goose-lang/std/std_core"
 end pkg_id
 
 namespace github_com.goose_lang.std.std_core
 
-noncomputable def SumNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.SumNoOverflow"
 
-noncomputable def SumAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SumAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.SumAssumeNoOverflow"
 
-noncomputable def MulNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MulNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.MulNoOverflow"
 
-noncomputable def MulAssumeNoOverflow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MulAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.MulAssumeNoOverflow"
 
-noncomputable def Shuffle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Shuffle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.Shuffle"
 
-noncomputable def Permutation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Permutation [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std/std_core.Permutation"
 
 /-- Returns true if x + y does not overflow
 
     go: std_core.go:11:6 -/
-noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))
 
 /-- SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
@@ -54,16 +54,16 @@ noncomputable def «SumNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:18:6 -/
-noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (App (App (App (Val (GoInstruction (FuncResolve SumNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -72,19 +72,19 @@ noncomputable def «SumAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
 /-- MulNoOverflow returns true if x * y does not overflow
 
     go: std_core.go:24:6 -/
-noncomputable def «MulNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MulNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (Val #(W64 18446744073709551615)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 0))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 0))))))
+  (App (Val doReturn)
   (Val #true))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- MulAssumeNoOverflow returns x * y, `Assume`ing that this does not overflow.
@@ -92,16 +92,16 @@ noncomputable def «MulNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
     *Use with care* - if the assumption is violated this function will panic.
 
     go: std_core.go:34:6 -/
-noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (App (App (App (Val (GoInstruction (FuncResolve MulNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -110,94 +110,94 @@ noncomputable def «MulAssumeNoOverflowⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
 /-- Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
     go: std_core.go:40:6 -/
-noncomputable def «Shuffleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Shuffleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "xs"
-  (App (Val exception_do)
-  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (Var "xs"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
   (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "temp" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j"))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "temp"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j"))))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j"))))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "temp") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r0")))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "xs"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- Permutation returns a random permutation of the integers 0, ..., n-1, using a
     Fisher-Yates shuffle.
 
     go: std_core.go:54:6 -/
-noncomputable def «Permutationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Permutationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
-  (Let "order" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "order")))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "order"))
+  (Let "order" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "order")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "order"))
   (App (App (Val (GoInstruction (FuncResolve Shuffle []))) (Val #())) (Var "$a0")))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "order")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "order")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))) (Var "$r0")))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "order") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "order") (Var "$r0"))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.goose_lang.std.std_core where
-  pkg_imported_pkgs := [pkg_id.github_com.goose_lang.primitive]
+  pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.std.std_core)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #())))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] «SumNoOverflowⁱᵐᵖˡ»
   SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] «SumAssumeNoOverflowⁱᵐᵖˡ»
   MulNoOverflow_unfold : FuncUnfold MulNoOverflow [] «MulNoOverflowⁱᵐᵖˡ»

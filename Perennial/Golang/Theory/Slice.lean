@@ -20,9 +20,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode BigSepL
 /-! ## Definitions -/
 
 noncomputable section defns
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 
 /-- A nil slice has no backing array (its pointer is null), so it cannot satisfy
@@ -34,7 +34,7 @@ operations. -/
 def ownSliceDef {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     (s : slice.t) (vs : List V) (dq : DFrac) : IProp GF :=
   iprop(⌜s = slice.nil ∧ vs = []⌝ ∨
-    (typed_pointsto s.ptr (array.mk (sint.Z s.len) vs) dq ∗ ⌜sint.Z s.len ≤ sint.Z s.cap⌝))
+    (typedPointsto s.ptr (array.mk (sint.Z s.len) vs) dq ∗ ⌜sint.Z s.len ≤ sint.Z s.cap⌝))
 
 @[irreducible] def ownSlice {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     (s : slice.t) (vs : List V) (dq : DFrac) : IProp GF :=
@@ -54,7 +54,7 @@ def ownSliceCapDef (V : Type) [ZeroVal V] [TypedPointsto (GF := GF) V]
     -- the capacity (for example, when sub-slicing from a larger slice) -
     -- actually taking advantage of that seems questionable though.
      ∃ (a : array.t V (sint.Z s.cap - sint.Z s.len)),
-       typed_pointsto (sliceIndexRef V (sint.Z s.len) s) a dq))
+       typedPointsto (sliceIndexRef V (sint.Z s.len) s) a dq))
 
 @[irreducible] def ownSliceCap (V : Type) [ZeroVal V] [TypedPointsto (GF := GF) V]
     (s : slice.t) (dq : DFrac) : IProp GF :=
@@ -75,7 +75,7 @@ scoped notation:50 s:50 " ↦*□ " vs:50 => ownSlice s vs DFrac.discard
 /-! ## Pure lemmas about `slice.slice` -/
 
 section pure
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
 variable {V : Type}
 
 theorem slice_to_full_slice (s : slice.t) (low high : w64) :
@@ -105,9 +105,9 @@ end pure
 /-! ## Lemmas -/
 
 section lemmas
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -117,7 +117,7 @@ theorem ownSlice_nil (dq : DFrac) : ⊢ (slice.nil ↦*{dq} ([] : List V) : IPro
 
 theorem ownSlice_empty (dq : DFrac) (s : slice.t) (hlen : sint.Z s.len = 0)
     (hcap : 0 ≤ sint.Z s.cap) :
-    typed_pointsto (GF := GF) s.ptr (array.mk 0 ([] : List V)) dq ⊢ s ↦*{dq} ([] : List V) := by
+    typedPointsto (GF := GF) s.ptr (array.mk 0 ([] : List V)) dq ⊢ s ↦*{dq} ([] : List V) := by
   rw [ownSlice_unseal]; unfold ownSliceDef
   iintro H
   iright
@@ -153,9 +153,9 @@ theorem ownSlice_agree (s : slice.t) (dq1 dq2 : DFrac) (vs1 vs2 : List V) :
   rw [ownSlice_unseal]; unfold ownSliceDef
   iintro (%H1 | ⟨Hs1, %_⟩) (%H2 | ⟨Hs2, %_⟩)
   · ipureintro; rw [H1.2, H2.2]
-  · icases typed_pointsto_not_null _ _ _ $$ Hs2 with %Hnn
+  · icases typedPointsto_not_null _ _ _ $$ Hs2 with %Hnn
     exact absurd (by rw [H1.1]; rfl) Hnn
-  · icases typed_pointsto_not_null _ _ _ $$ Hs1 with %Hnn
+  · icases typedPointsto_not_null _ _ _ $$ Hs1 with %Hnn
     exact absurd (by rw [H2.1]; rfl) Hnn
   · icombine Hs1 Hs2 gives %Heq
     ipureintro
@@ -177,26 +177,26 @@ instance ownSlice_dfractional (s : slice.t) (vs : List V) :
     constructor
     · iintro (%H | ⟨H, %Hl⟩)
       · isplitl [] <;> (ileft; ipureintro; exact H)
-      · icases ((typed_pointsto_dfractional _ _).dfractional dq1 dq2).1 $$ H with ⟨H1, H2⟩
+      · icases ((typedPointsto_dfractional _ _).dfractional dq1 dq2).1 $$ H with ⟨H1, H2⟩
         isplitl [H1]
         · iright; iframe H1; ipureintro; exact Hl
         · iright; iframe H2; ipureintro; exact Hl
     · iintro ⟨(%H1 | ⟨H1, %Hl⟩), (%H2 | ⟨H2, %Hl2⟩)⟩
       · ileft; ipureintro; exact H1
-      · icases typed_pointsto_not_null _ _ _ $$ H2 with %Hnn
+      · icases typedPointsto_not_null _ _ _ $$ H2 with %Hnn
         exact absurd (by rw [H1.1]; rfl) Hnn
-      · icases typed_pointsto_not_null _ _ _ $$ H1 with %Hnn
+      · icases typedPointsto_not_null _ _ _ $$ H1 with %Hnn
         exact absurd (by rw [H2.1]; rfl) Hnn
       · iright
         isplitl [H1 H2]
-        · iapply ((typed_pointsto_dfractional _ _).dfractional dq1 dq2).2
+        · iapply ((typedPointsto_dfractional _ _).dfractional dq1 dq2).2
           iframe H1 H2
         · ipureintro; exact Hl
   · infer_instance
   · intro dq
     iintro (%H | ⟨H, %Hl⟩)
     · imodintro; ileft; ipureintro; exact H
-    · imod (typed_pointsto_dfractional _ _).dfractional_persist dq $$ H with H
+    · imod (typedPointsto_dfractional _ _).dfractional_persist dq $$ H with H
       imodintro; iright; iframe H; ipureintro; exact Hl
 
 instance ownSlice_as_dfractional (s : slice.t) (dq : DFrac) (vs : List V) :
@@ -241,7 +241,7 @@ instance ownSliceCap_dfractional (s : slice.t) :
     constructor
     · iintro (%H | ⟨%Hl, %a, H⟩)
       · isplitl [] <;> (ileft; ipureintro; exact H)
-      · icases ((typed_pointsto_dfractional _ _).dfractional dq1 dq2).1 $$ H with ⟨H1, H2⟩
+      · icases ((typedPointsto_dfractional _ _).dfractional dq1 dq2).1 $$ H with ⟨H1, H2⟩
         isplitl [H1]
         · iright; isplit; · ipureintro; exact Hl
           iexists a; iexact H1
@@ -249,9 +249,9 @@ instance ownSliceCap_dfractional (s : slice.t) :
           iexists a; iexact H2
     · iintro ⟨(%H1 | ⟨%Hl, %a1, H1⟩), (%H2 | ⟨%Hl2, %a2, H2⟩)⟩
       · ileft; ipureintro; exact H1
-      · icases typed_pointsto_not_null _ _ _ $$ H2 with %Hnn
+      · icases typedPointsto_not_null _ _ _ $$ H2 with %Hnn
         exact absurd H1.1 Hnn
-      · icases typed_pointsto_not_null _ _ _ $$ H1 with %Hnn
+      · icases typedPointsto_not_null _ _ _ $$ H1 with %Hnn
         exact absurd H2.1 Hnn
       · icombine H1 H2 gives %Heq
         subst Heq
@@ -259,13 +259,13 @@ instance ownSliceCap_dfractional (s : slice.t) :
         isplit
         · ipureintro; exact Hl
         iexists a1
-        iapply ((typed_pointsto_dfractional _ _).dfractional dq1 dq2).2
+        iapply ((typedPointsto_dfractional _ _).dfractional dq1 dq2).2
         iframe H1 H2
   · infer_instance
   · intro dq
     iintro (%H | ⟨%Hl, %a, H⟩)
     · imodintro; ileft; ipureintro; exact H
-    · imod (typed_pointsto_dfractional _ _).dfractional_persist dq $$ H with H
+    · imod (typedPointsto_dfractional _ _).dfractional_persist dq $$ H with H
       imodintro; iright; isplit
       · ipureintro; exact Hl
       iexists a; iexact H
@@ -342,8 +342,8 @@ theorem ownSlice_trivial_slice_2 (s : slice.t) (dq : DFrac) (vs : List V) :
 theorem ownSlice_elem_acc (i : Int) (v : V) (s : slice.t) (dq : DFrac) (vs : List V)
     (hpos : 0 ≤ i) (hlookup : vs[i.toNat]? = some v) :
     (s ↦*{dq} vs : IProp GF) ⊢
-      typed_pointsto (sliceIndexRef V i s) v dq ∗
-      (∀ v', typed_pointsto (sliceIndexRef V i s) v' dq -∗ s ↦*{dq} (vs.set i.toNat v')) := by
+      typedPointsto (sliceIndexRef V i s) v dq ∗
+      (∀ v', typedPointsto (sliceIndexRef V i s) v' dq -∗ s ↦*{dq} (vs.set i.toNat v')) := by
   rw [ownSlice_unseal]; unfold ownSliceDef
   iintro (%H | ⟨Hsl, %Hl⟩)
   · rw [H.2] at hlookup; simp at hlookup
@@ -358,8 +358,8 @@ theorem ownSlice_elem_acc (i : Int) (v : V) (s : slice.t) (dq : DFrac) (vs : Lis
     · ipureintro; exact Hl
 
 /-- FIXME: maintain that owned array length doesn't overflow 64 bits? -/
-theorem slice_array (l : loc) (n : Int) (a : array.t V n) (hlen : a.arr.length < 2 ^ 63) :
-    (typed_pointsto l a (DFrac.own 1) : IProp GF) ⊢
+theorem slice_array (l : Loc) (n : Int) (a : array.t V n) (hlen : a.arr.length < 2 ^ 63) :
+    (typedPointsto l a (DFrac.own 1) : IProp GF) ⊢
       slice.mk l (W64 n) (W64 n) ↦* a.arr := by
   obtain ⟨arr⟩ := a
   iintro H
@@ -395,14 +395,14 @@ theorem list_copy_step {A : Type} (vs vs' : List A) (n : Nat) (y : A) (h1 : n < 
 
 /-! ## Splitting and combining slices -/
 
-theorem slice_mk_eq_nil (p : loc) (l c : w64) :
+theorem slice_mk_eq_nil (p : Loc) (l c : w64) :
     slice.mk p l c = slice.nil ↔ p = null ∧ l = 0 ∧ c = 0 := by
   simp [slice.nil, slice.mk]
 
 section lemmas2
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -447,13 +447,13 @@ theorem ownSlice_split (k : w64) (s : slice.t) (dq : DFrac) (vs : List V) (low h
       refine ⟨?_, ?_⟩
       · rw [slice_mk_eq_nil]; exact ⟨Hs1.1, by word, Hs1.2.2⟩
       · rw [← List.take_append_drop (sint.nat k - sint.nat low) vs, Hv1, Hv2]; rfl
-    · icases typed_pointsto_not_null _ _ _ $$ H2 with %Hnn
+    · icases typedPointsto_not_null _ _ _ $$ H2 with %Hnn
       exfalso; apply Hnn
       obtain ⟨Hs1, _⟩ := Hnil1
       rw [slice_mk_eq_nil] at Hs1
       have hk : k = low := by word
       subst hk; exact Hs1.1
-    · icases typed_pointsto_not_null _ _ _ $$ H1 with %Hnn
+    · icases typedPointsto_not_null _ _ _ $$ H1 with %Hnn
       exfalso; apply Hnn
       obtain ⟨Hs2, _⟩ := Hnil2
       rw [slice_mk_eq_nil, ← hp] at Hs2
@@ -586,7 +586,7 @@ theorem ownSlice_slice_absorb_capacity (s : slice.t) (vs : List V) (low high : w
       iexact Hvs
   · icases Hvs with (%Hvn | ⟨Hvs, %_⟩)
     · -- `Hvs` nil contradicts the non-nil capacity
-      icases typed_pointsto_not_null _ _ _ $$ Ha with %Hnn
+      icases typedPointsto_not_null _ _ _ $$ Ha with %Hnn
       exfalso; apply Hnn
       obtain ⟨Hvn, _⟩ := Hvn
       rw [slice_mk_eq_nil] at Hvn
@@ -713,8 +713,8 @@ end lemmas2
 
 (see `go_zero_val_step'`) -/
 
-instance (priority := high) index_ref_slice' [ffi_syntax] [GoLocalContext] [GoGlobalContext]
-    [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.type) (i : w64) (s : slice.t)
+instance (priority := high) index_ref_slice' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+    [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (i : w64) (s : slice.t)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
     (if 0 ≤ sint.Z i ∧ sint.Z i < sint.Z s.len then
@@ -722,8 +722,8 @@ instance (priority := high) index_ref_slice' [ffi_syntax] [GoLocalContext] [GoGl
      else Panic "slice index out of bounds") :=
   go.index_ref_slice elem_type i s
 
-instance (priority := high) slice_slice_step_pure' [ffi_syntax] [GoLocalContext] [GoGlobalContext]
-    [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.type) (s : slice.t) (low high : w64)
+instance (priority := high) slice_slice_step_pure' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+    [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (s : slice.t) (low high : w64)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳[under]
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z s.cap then
@@ -731,8 +731,8 @@ instance (priority := high) slice_slice_step_pure' [ffi_syntax] [GoLocalContext]
      else Panic "slice bounds out of range") :=
   go.slice_slice_step_pure elem_type s low high
 
-instance (priority := high) fullSlice_slice_step_pure' [ffi_syntax] [GoLocalContext]
-    [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.type) (s : slice.t)
+instance (priority := high) fullSlice_slice_step_pure' [FfiSyntax] [GoLocalContext]
+    [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (s : slice.t)
     (low high max : w64) {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳[under]
     (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z max ∧
@@ -744,12 +744,12 @@ instance (priority := high) fullSlice_slice_step_pure' [ffi_syntax] [GoLocalCont
 /-! ## WPs -/
 
 section pure_wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-instance pure_wp_slice_len {st t : go.type} [st ↓u go.SliceType t] (sl : slice.t) :
+instance pure_wp_slice_len {st t : go.GoType} [st ↓u go.SliceType t] (sl : slice.t) :
     PureWp (G := G) (L := L) True (App (Val #(functions go.len [st])) (Val #sl)) (Val #sl.len) :=
   pure_wp_val True (App (Val #(functions go.len [st])) (Val #sl)) #sl.len fun s E Φ _ => by
     rw [func_unfold]
@@ -757,7 +757,7 @@ instance pure_wp_slice_len {st t : go.type} [st ↓u go.SliceType t] (sl : slice
     wp_auto_lc 1
     iapply HΦ $$ Hlc1
 
-instance pure_wp_slice_cap {st t : go.type} [st ↓u go.SliceType t] (sl : slice.t) :
+instance pure_wp_slice_cap {st t : go.GoType} [st ↓u go.SliceType t] (sl : slice.t) :
     PureWp (G := G) (L := L) True (App (Val #(functions go.cap [st])) (Val #sl)) (Val #sl.cap) :=
   pure_wp_val True (App (Val #(functions go.cap [st])) (Val #sl)) #sl.cap fun s E Φ _ => by
     rw [func_unfold]
@@ -765,15 +765,15 @@ instance pure_wp_slice_cap {st t : go.type} [st ↓u go.SliceType t] (sl : slice
     wp_auto_lc 1
     iapply HΦ $$ Hlc1
 
-instance pure_wp_slice_for_range (sl : slice.t) (body : val) (t : go.type) :
-    PureWp (G := G) (L := L) True (App (App (Val (slice.for_range t)) (Val #sl)) (Val body))
+instance pure_wp_slice_for_range (sl : slice.t) (body : val) (t : go.GoType) :
+    PureWp (G := G) (L := L) True (App (App (Val (slice.forRange t)) (Val #sl)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [go.SliceType t]) #() #sl) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
           (λ: <>, body (![go.int] "i")
             (![t] (IndexRef (go.SliceType t) (#sl, (![go.int] "i")))))) where
   pure_wp_wp s E Φ K _ := by
-    unfold slice.for_range
+    unfold slice.forRange
     iintro H
     wp_call_lc Hlc
     iapply H $$ Hlc
@@ -781,14 +781,14 @@ instance pure_wp_slice_for_range (sl : slice.t) (body : val) (t : go.type) :
 end pure_wps
 
 section wps
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
-theorem wp_slice_make3 {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_make3 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (len cap : w64) (hle : 0 ≤ sint.Z len ∧ sint.Z len ≤ sint.Z cap) :
     {{ (True : IProp GF) }}
       (App (App (Val #(functions go.make3 [st])) (Val #len)) (Val #cap)) @ s; E
@@ -808,8 +808,8 @@ theorem wp_slice_make3 {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (
     have hlen : len = W64 0 := by word
     subst hlen
     iapply HΦ
-    have hnn : (loc.mk 1 0 +ₗ sint.Z x) ≠ null := by
-      simp [null, loc.add]
+    have hnn : (Loc.mk 1 0 +ₗ sint.Z x) ≠ null := by
+      simp [null, Loc.add]
     isplitl []
     · have : sint.nat (W64 0) = 0 := rfl
       rw [this, List.replicate_zero]
@@ -838,7 +838,7 @@ theorem wp_slice_make3 {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (
       iexact Hcap
     · ipureintro; rfl
 
-theorem wp_slice_make2 {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_make2 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (len : w64) :
     {{ (⌜0 ≤ sint.Z len⌝ : IProp GF) }}
       (App (Val #(functions go.make2 [st])) (Val #len)) @ s; E
@@ -849,7 +849,7 @@ theorem wp_slice_make2 {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (
   iapply HΦ
   iframe
 
-theorem wp_load_slice_index {t : go.type} [IntoValTyped (GF := GF) V t] (sl : slice.t) (i : Int)
+theorem wp_load_slice_index {t : go.GoType} [IntoValTyped (GF := GF) V t] (sl : slice.t) (i : Int)
     (vs : List V) (dq : DFrac) (v : V) (hpos : 0 ≤ i) :
     {{ (sl ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ : IProp GF) }}
       (App (Val (GoInstruction (GoLoad t))) (Val #(sliceIndexRef V i sl))) @ s; E
@@ -862,7 +862,7 @@ theorem wp_load_slice_index {t : go.type} [IntoValTyped (GF := GF) V t] (sl : sl
   rw [list_set_lookup_self vs i.toNat v Hlookup]
   iexact Hs
 
-theorem wp_store_slice_index {t : go.type} [IntoValTyped (GF := GF) V t] (sl : slice.t) (i : Int)
+theorem wp_store_slice_index {t : go.GoType} [IntoValTyped (GF := GF) V t] (sl : slice.t) (i : Int)
     (vs : List V) (v' : V) :
     {{ (sl ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ : IProp GF) }}
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #(sliceIndexRef V i sl) #v'))) @ s; E
@@ -874,7 +874,7 @@ theorem wp_store_slice_index {t : go.type} [IntoValTyped (GF := GF) V t] (sl : s
   iapply HΦ
   iapply Hs $$ Hv
 
-theorem wp_slice_copy {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : slice.t) (vs : List V) (sl2 : slice.t) (vs' : List V) (dq : DFrac) :
     {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
       (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
@@ -894,7 +894,7 @@ theorem wp_slice_copy {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (G
     have h0 : sint.nat (zero_val w64 : w64) = 0 := rfl
     simp only [h0, List.take_zero, List.drop_zero, List.nil_append]
     iframe
-    ipureintro; simp only [zero_val, ZeroVal.zero_val_def]; word
+    ipureintro; simp only [zero_val, ZeroVal.zeroValDef]; word
   wp_for IH
   wp_if_destruct
   · rename_i Hif1
@@ -935,7 +935,7 @@ theorem wp_slice_copy {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (G
     iframe
     ipureintro; word
 
-theorem wp_slice_clear {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_clear {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : slice.t) (vs : List V) :
     {{ (sl ↦* vs : IProp GF) }}
       (App (Val #(functions go.clear [st])) (Val #sl)) @ s; E
@@ -970,7 +970,7 @@ theorem wp_new_cap (l : w64) :
   · iapply HΦ; ipureintro; word
   · iapply HΦ; ipureintro; word
 
-theorem wp_slice_append {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : slice.t) (vs : List V) (sl2 : slice.t) (vs' : List V) (dq : DFrac) :
     {{ (sl ↦* vs ∗ ownSliceCap V sl (DFrac.own 1) ∗ sl2 ↦*{dq} vs' : IProp GF) }}
       (App (App (Val #(functions go.append [st])) (Val #sl)) (Val #sl2)) @ s; E
@@ -1050,12 +1050,12 @@ theorem wp_slice_append {st t : go.type} [st ↓u go.SliceType t] [IntoValTyped 
 
 
 set_option goose.wp.unfoldSliceLiterals true in
-theorem wp_slice_literal {st t : go.type} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
+theorem wp_slice_literal {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
     (l : List V) (kvs : List keyed_element) (Φ : val → IProp GF) :
     WP (App (Val (GoInstruction (CompositeLiteral (go.ArrayType (go.arrayLiteralSize kvs) t))))
           (Val (LiteralValueV kvs))) @ s; E
       {{ v, ⌜v = #(array.mk (go.arrayLiteralSize kvs) l)⌝ ∗
-        (∀ sl_ptr : loc,
+        (∀ sl_ptr : Loc,
           (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs)) (W64 (go.arrayLiteralSize kvs)) ↦* l ∗
             ownSliceCap V (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs))
               (W64 (go.arrayLiteralSize kvs))) (DFrac.own 1)) -∗

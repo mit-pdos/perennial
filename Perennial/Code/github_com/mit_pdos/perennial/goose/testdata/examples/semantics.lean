@@ -17,1401 +17,1401 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.semantics : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics"
+def github_com.mit_pdos.perennial.goose.testdata.examples.semantics : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
-def unit [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.unit" [])
+def unit [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.unit" [])
 
 attribute [irreducible] unit
 
-def Editor [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Editor" [])
+def Editor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Editor" [])
 
 attribute [irreducible] Editor
 
-def Pair' [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Pair" [])
+def Pair' [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Pair" [])
 
 attribute [irreducible] Pair'
 
-def Uint32 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Uint32" [])
+def Uint32 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Uint32" [])
 
 attribute [irreducible] Uint32
 
-def geometryInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.geometryInterface" [])
+def geometryInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.geometryInterface" [])
 
 attribute [irreducible] geometryInterface
 
-def SquareStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.SquareStruct" [])
+def SquareStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.SquareStruct" [])
 
 attribute [irreducible] SquareStruct
 
-def NumStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.NumStruct" [])
+def NumStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.NumStruct" [])
 
 attribute [irreducible] NumStruct
 
-def shapeInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeInterface" [])
+def shapeInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeInterface" [])
 
 attribute [irreducible] shapeInterface
 
-def polygonInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonInterface" [])
+def polygonInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonInterface" [])
 
 attribute [irreducible] polygonInterface
 
-def shapeStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeStruct" [])
+def shapeStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeStruct" [])
 
 attribute [irreducible] shapeStruct
 
-def polygonStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonStruct" [])
+def polygonStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonStruct" [])
 
 attribute [irreducible] polygonStruct
 
-def dogInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.dogInterface" [])
+def dogInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.dogInterface" [])
 
 attribute [irreducible] dogInterface
 
-def catInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catInterface" [])
+def catInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catInterface" [])
 
 attribute [irreducible] catInterface
 
-def Puppy [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Puppy" [])
+def Puppy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Puppy" [])
 
 attribute [irreducible] Puppy
 
-def Kitten [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Kitten" [])
+def Kitten [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Kitten" [])
 
 attribute [irreducible] Kitten
 
-def printInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.printInterface" [])
+def printInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.printInterface" [])
 
 attribute [irreducible] printInterface
 
-def PaperStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.PaperStruct" [])
+def PaperStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.PaperStruct" [])
 
 attribute [irreducible] PaperStruct
 
-def Flower [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flower" [])
+def Flower [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flower" [])
 
 attribute [irreducible] Flower
 
-def Flora [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flora" [])
+def Flora [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flora" [])
 
 attribute [irreducible] Flora
 
-def Lily [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Lily" [])
+def Lily [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Lily" [])
 
 attribute [irreducible] Lily
 
-def Rose [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Rose" [])
+def Rose [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Rose" [])
 
 attribute [irreducible] Rose
 
-def Daisy [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Daisy" [])
+def Daisy [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Daisy" [])
 
 attribute [irreducible] Daisy
 
-def LoopStruct [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.LoopStruct" [])
+def LoopStruct [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.LoopStruct" [])
 
 attribute [irreducible] LoopStruct
 
-def BoolTest [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
+def BoolTest [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
 
 attribute [irreducible] BoolTest
 
-def ArrayEditor [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ArrayEditor" [])
+def ArrayEditor [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ArrayEditor" [])
 
 attribute [irreducible] ArrayEditor
 
-def Bar [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Bar" [])
+def Bar [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Bar" [])
 
 attribute [irreducible] Bar
 
-def Foo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Foo" [])
+def Foo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Foo" [])
 
 attribute [irreducible] Foo
 
-def TwoInts [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.TwoInts" [])
+def TwoInts [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.TwoInts" [])
 
 attribute [irreducible] TwoInts
 
-def S [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.S" [])
+def S [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.S" [])
 
 attribute [irreducible] S
 
-def StructWrap [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWrap" [])
+def StructWrap [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWrap" [])
 
 attribute [irreducible] StructWrap
 
-def StructWithFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWithFunc" [])
+def StructWithFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWithFunc" [])
 
 attribute [irreducible] StructWithFunc
 
-def switchConcrete [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchConcrete" [])
+def switchConcrete [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchConcrete" [])
 
 attribute [irreducible] switchConcrete
 
-def switchInterface [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchInterface" [])
+def switchInterface [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchInterface" [])
 
 attribute [irreducible] switchInterface
 
-def DefinedStr [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.DefinedStr" [])
+def DefinedStr [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.DefinedStr" [])
 
 attribute [irreducible] DefinedStr
 
-def List' [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.List" [T])
+def List' [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.List" [T])
 
 attribute [irreducible] List'
 
-def Log [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Log" [])
+def Log [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Log" [])
 
 attribute [irreducible] Log
 
-@[reducible] def AdderType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))
+@[reducible] def AdderType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))
 
-@[reducible] def MultipleArgsType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.FunctionType (go.signature.Signature [go.uint64, go.bool] false [go.uint64]))
+@[reducible] def MultipleArgsType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [go.uint64, go.bool] false [go.uint64]))
 
-@[reducible] def DefinedStr2 [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def DefinedStr2 [FfiSyntax] [GoGlobalContext] : go.GoType :=
   DefinedStr
 
 /-- 10 is completely arbitrary -/
-@[reducible] noncomputable def MaxTxnWrites [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MaxTxnWrites [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 10)
 
-@[reducible] noncomputable def logLength [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def logLength [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 21)
 
-noncomputable def findKey [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.findKey"
 
-noncomputable def allocate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def allocate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.allocate"
 
-noncomputable def freeRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def freeRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.freeRange"
 
-noncomputable def testAllocateDistinct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAllocateDistinct [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAllocateDistinct"
 
-noncomputable def testAllocateFull [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAllocateFull [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAllocateFull"
 
-noncomputable def testExplicitBlockStmt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testExplicitBlockStmt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testExplicitBlockStmt"
 
-noncomputable def testMinUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMinUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMinUint64"
 
-noncomputable def testMaxUint64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMaxUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMaxUint64"
 
-noncomputable def adder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def adder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.adder"
 
-noncomputable def testClosureBasic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testClosureBasic [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testClosureBasic"
 
-noncomputable def testCompareAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareAll"
 
-noncomputable def testCompareGT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareGT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareGT"
 
-noncomputable def testCompareGE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareGE [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareGE"
 
-noncomputable def testCompareLT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareLT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareLT"
 
-noncomputable def testCompareLE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareLE [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareLE"
 
-noncomputable def literalCast [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def literalCast [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.literalCast"
 
-noncomputable def stringToByteSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def stringToByteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.stringToByteSlice"
 
-noncomputable def byteSliceToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def byteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.byteSliceToString"
 
-noncomputable def testByteSliceToString [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testByteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testByteSliceToString"
 
-noncomputable def testCopySimple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCopySimple [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
 
-noncomputable def testCopyShorterDst [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCopyShorterDst [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopyShorterDst"
 
-noncomputable def testCopyShorterSrc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCopyShorterSrc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopyShorterSrc"
 
-noncomputable def deferSimple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deferSimple [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.deferSimple"
 
-noncomputable def testDefer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDefer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDefer"
 
-noncomputable def testDeferFuncLit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDeferFuncLit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDeferFuncLit"
 
-noncomputable def FirstClassFunction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FirstClassFunction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.FirstClassFunction"
 
-noncomputable def ApplyF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ApplyF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ApplyF"
 
-noncomputable def testFirstClassFunction [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testFirstClassFunction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFirstClassFunction"
 
-noncomputable def addFour64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def addFour64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.addFour64"
 
-noncomputable def failing_testFunctionOrdering [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def failing_testFunctionOrdering [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testFunctionOrdering"
 
-noncomputable def storeAndReturn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def storeAndReturn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.storeAndReturn"
 
-noncomputable def failing_testArgumentOrder [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def failing_testArgumentOrder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testArgumentOrder"
 
-noncomputable def testU64ToU32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testU64ToU32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU64ToU32"
 
-noncomputable def testU32ToU64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testU32ToU64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU32ToU64"
 
-noncomputable def testU32Len [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testU32Len [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU32Len"
 
-noncomputable def testU32NewtypeLen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testU32NewtypeLen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU32NewtypeLen"
 
-noncomputable def testUint32Untyped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testUint32Untyped [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUint32Untyped"
 
-noncomputable def measureArea [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def measureArea [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.measureArea"
 
-noncomputable def measureVolumePlusNM [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def measureVolumePlusNM [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.measureVolumePlusNM"
 
-noncomputable def measureVolume [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def measureVolume [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.measureVolume"
 
-noncomputable def testBasicInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBasicInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBasicInterface"
 
-noncomputable def testAssignInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAssignInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAssignInterface"
 
-noncomputable def testMultipleInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMultipleInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMultipleInterface"
 
-noncomputable def testBinaryExprInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBinaryExprInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBinaryExprInterface"
 
-noncomputable def testIfStmtInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testIfStmtInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIfStmtInterface"
 
-noncomputable def testParamsInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testParamsInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testParamsInterface"
 
-noncomputable def testEmptyInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testEmptyInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testEmptyInterface"
 
-noncomputable def testStringInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStringInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStringInterface"
 
-noncomputable def testTypeAssertionInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testTypeAssertionInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testTypeAssertionInterface"
 
-noncomputable def testDoublePointerInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDoublePointerInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDoublePointerInterface"
 
-noncomputable def testMultipleFieldsInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMultipleFieldsInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMultipleFieldsInterface"
 
-noncomputable def testSharedFunctionsInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSharedFunctionsInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSharedFunctionsInterface"
 
-noncomputable def testAcceptAddressInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAcceptAddressInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAcceptAddressInterface"
 
-noncomputable def testPolymorphismInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testPolymorphismInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPolymorphismInterface"
 
-noncomputable def testEmbeddingInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testEmbeddingInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testEmbeddingInterface"
 
-noncomputable def testDowncastInterface [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDowncastInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDowncastInterface"
 
-noncomputable def testsUseLocks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testsUseLocks [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testsUseLocks"
 
-noncomputable def standardForLoop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def standardForLoop [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.standardForLoop"
 
-noncomputable def testStandardForLoop [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStandardForLoop [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStandardForLoop"
 
-noncomputable def testForLoopWait [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testForLoopWait [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testForLoopWait"
 
-noncomputable def testBreakFromLoopWithContinue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBreakFromLoopWithContinue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakFromLoopWithContinue"
 
-noncomputable def testBreakFromLoopNoContinue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBreakFromLoopNoContinue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakFromLoopNoContinue"
 
-noncomputable def testBreakFromLoopNoContinueDouble [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBreakFromLoopNoContinueDouble [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakFromLoopNoContinueDouble"
 
-noncomputable def testBreakFromLoopForOnly [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBreakFromLoopForOnly [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakFromLoopForOnly"
 
-noncomputable def testBreakFromLoopAssignAndContinue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBreakFromLoopAssignAndContinue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakFromLoopAssignAndContinue"
 
-noncomputable def testNestedLoops [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNestedLoops [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNestedLoops"
 
-noncomputable def testNestedGoStyleLoops [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNestedGoStyleLoops [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNestedGoStyleLoops"
 
-noncomputable def testNestedGoStyleLoopsNoComparison [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNestedGoStyleLoopsNoComparison [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNestedGoStyleLoopsNoComparison"
 
-noncomputable def IterateMapKeys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IterateMapKeys [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.IterateMapKeys"
 
-noncomputable def IterateMapValues [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IterateMapValues [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.IterateMapValues"
 
-noncomputable def testIterateMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testIterateMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIterateMap"
 
-noncomputable def testMapSize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMapSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMapSize"
 
-noncomputable def multReturnTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def multReturnTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.multReturnTwo"
 
-noncomputable def testAssignTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAssignTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAssignTwo"
 
-noncomputable def multReturnThree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def multReturnThree [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.multReturnThree"
 
-noncomputable def testAssignThree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAssignThree [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAssignThree"
 
-noncomputable def testMultipleAssignToMap [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testMultipleAssignToMap [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMultipleAssignToMap"
 
-noncomputable def returnTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def returnTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.returnTwo"
 
-noncomputable def testReturnTwo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testReturnTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testReturnTwo"
 
-noncomputable def testAnonymousBinding [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAnonymousBinding [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAnonymousBinding"
 
-noncomputable def returnThree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def returnThree [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.returnThree"
 
-noncomputable def testReturnThree [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testReturnThree [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testReturnThree"
 
-noncomputable def returnFour [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def returnFour [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.returnFour"
 
-noncomputable def testReturnFour [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testReturnFour [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testReturnFour"
 
-noncomputable def testNilDefault [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNilDefault [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNilDefault"
 
-noncomputable def testNilVal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNilVal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNilVal"
 
-noncomputable def testCompareSliceToNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareSliceToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareSliceToNil"
 
-noncomputable def testComparePointerToNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testComparePointerToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testComparePointerToNil"
 
-noncomputable def testCompareNilToNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testCompareNilToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareNilToNil"
 
-noncomputable def testComparePointerWrappedToNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testComparePointerWrappedToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testComparePointerWrappedToNil"
 
-noncomputable def testComparePointerWrappedDefaultToNil [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testComparePointerWrappedDefaultToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testComparePointerWrappedDefaultToNil"
 
-noncomputable def testInterfaceNilWithType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testInterfaceNilWithType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testInterfaceNilWithType"
 
-noncomputable def reverseAssignOps64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseAssignOps64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.reverseAssignOps64"
 
-noncomputable def reverseAssignOps32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def reverseAssignOps32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.reverseAssignOps32"
 
-noncomputable def add64Equals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def add64Equals [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.add64Equals"
 
-noncomputable def sub64Equals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sub64Equals [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.sub64Equals"
 
-noncomputable def testReverseAssignOps64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testReverseAssignOps64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testReverseAssignOps64"
 
-noncomputable def failing_testReverseAssignOps32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def failing_testReverseAssignOps32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testReverseAssignOps32"
 
-noncomputable def testAdd64Equals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAdd64Equals [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAdd64Equals"
 
-noncomputable def testSub64Equals [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSub64Equals [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSub64Equals"
 
-noncomputable def testDivisionPrecedence [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDivisionPrecedence [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDivisionPrecedence"
 
-noncomputable def testModPrecedence [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testModPrecedence [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testModPrecedence"
 
-noncomputable def testBitwiseOpsPrecedence [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBitwiseOpsPrecedence [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBitwiseOpsPrecedence"
 
-noncomputable def testArithmeticShifts [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testArithmeticShifts [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testArithmeticShifts"
 
-noncomputable def testBitAddAnd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testBitAddAnd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBitAddAnd"
 
-noncomputable def testManyParentheses [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testManyParentheses [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testManyParentheses"
 
-noncomputable def testPlusTimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testPlusTimes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPlusTimes"
 
-noncomputable def shouldPanic [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def shouldPanic [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shouldPanic"
 
-noncomputable def testOrCompareSimple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testOrCompareSimple [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOrCompareSimple"
 
-noncomputable def testOrCompare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testOrCompare [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOrCompare"
 
-noncomputable def testAndCompare [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAndCompare [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAndCompare"
 
-noncomputable def testShiftMod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testShiftMod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testShiftMod"
 
-noncomputable def testLinearize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testLinearize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testLinearize"
 
-noncomputable def CheckTrue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CheckTrue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckTrue"
 
-noncomputable def CheckFalse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CheckFalse [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckFalse"
 
-noncomputable def testShortcircuitAndTF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testShortcircuitAndTF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testShortcircuitAndTF"
 
-noncomputable def testShortcircuitAndFT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testShortcircuitAndFT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testShortcircuitAndFT"
 
-noncomputable def testShortcircuitOrTF [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testShortcircuitOrTF [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testShortcircuitOrTF"
 
-noncomputable def testShortcircuitOrFT [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testShortcircuitOrFT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testShortcircuitOrFT"
 
-noncomputable def testSliceOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSliceOps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceOps"
 
-noncomputable def testSliceCapacityOps [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSliceCapacityOps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceCapacityOps"
 
-noncomputable def testOverwriteArray [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testOverwriteArray [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOverwriteArray"
 
-noncomputable def testSliceLiteral [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSliceLiteral [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceLiteral"
 
-noncomputable def testSliceAppend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSliceAppend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceAppend"
 
-noncomputable def testSliceRef [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSliceRef [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceRef"
 
-noncomputable def testFooBarMutation [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testFooBarMutation [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFooBarMutation"
 
-noncomputable def NewS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.NewS"
 
-noncomputable def testStructUpdates [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStructUpdates [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStructUpdates"
 
-noncomputable def testNestedStructUpdates [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testNestedStructUpdates [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNestedStructUpdates"
 
-noncomputable def testStructConstructions [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStructConstructions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStructConstructions"
 
-noncomputable def testIncompleteStruct [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testIncompleteStruct [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIncompleteStruct"
 
-noncomputable def testStoreInStructVar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStoreInStructVar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStoreInStructVar"
 
-noncomputable def testStoreInStructPointerVar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStoreInStructPointerVar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStoreInStructPointerVar"
 
-noncomputable def testStoreComposite [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStoreComposite [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStoreComposite"
 
-noncomputable def testStoreSlice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStoreSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStoreSlice"
 
-noncomputable def testStructFieldFunc [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testStructFieldFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStructFieldFunc"
 
-noncomputable def testSwitchVal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSwitchVal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSwitchVal"
 
-noncomputable def testSwitchMultiple [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSwitchMultiple [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSwitchMultiple"
 
-noncomputable def testSwitchDefaultTrue [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSwitchDefaultTrue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSwitchDefaultTrue"
 
-noncomputable def testSwitchConversion [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testSwitchConversion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSwitchConversion"
 
-noncomputable def TypesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TypesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.TypesEqual"
 
-noncomputable def testPrimitiveTypesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testPrimitiveTypesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPrimitiveTypesEqual"
 
-noncomputable def testDefinedStrTypesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testDefinedStrTypesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDefinedStrTypesEqual"
 
-noncomputable def testListTypesEqual [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testListTypesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testListTypesEqual"
 
-noncomputable def testPointerAssignment [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testPointerAssignment [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPointerAssignment"
 
-noncomputable def testAddressOfLocal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAddressOfLocal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAddressOfLocal"
 
-noncomputable def testAnonymousAssign [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def testAnonymousAssign [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAnonymousAssign"
 
-noncomputable def intToBlock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def intToBlock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.intToBlock"
 
-noncomputable def blockToInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def blockToInt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.blockToInt"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.New"
 
-noncomputable def getLogEntry [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getLogEntry [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.getLogEntry"
 
-noncomputable def applyLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def applyLog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.applyLog"
 
-noncomputable def clearLog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def clearLog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.clearLog"
 
-noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Open"
 
-noncomputable def disabled_testWal [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def disabled_testWal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.disabled_testWal"
 
 /-- go: allocator.go:7:6 -/
-noncomputable def «findKeyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «findKeyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 unit)))) (Var "m"))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (Var "m"))
   (Let "found" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "found")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "m"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "m"))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val (map.for_range go.uint64 unit)) (Var "$range"))
+  (App (App (Val (map.forRange go.uint64 unit)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "k"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "found") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$key")))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "found") (Var "$r0"))))))))))
 
 /-- go: allocator.go:20:6 -/
-noncomputable def «allocateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «allocateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 unit)))) (Var "m"))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (Var "m"))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "m"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "m"))
   (App (App (Val (GoInstruction (FuncResolve findKey []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "k")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "m"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "m"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "k"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.type.MapType go.uint64 unit)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.GoType.MapType go.uint64 unit)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$r0")))))))))))))))
 
 /-- go: allocator.go:26:6 -/
-noncomputable def «freeRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «freeRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "sz"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "sz"))
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 unit)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 unit)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "m")))))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 unit)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 unit)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "m")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")))))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (CompositeLiteral unit))) (LiteralValue []))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "m"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "m"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))) (Var "$r0"))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 unit)))) (Pair (Var "m") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "m") (Var "$r0"))))))))))
 
 /-- go: allocator.go:34:6 -/
-noncomputable def «testAllocateDistinctⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAllocateDistinctⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "free" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 unit)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "free" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 unit)))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 4))
   (App (App (Val (GoInstruction (FuncResolve freeRange []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "a1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "free"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "free"))
   (App (App (Val (GoInstruction (FuncResolve allocate []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "a2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "free"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "free"))
   (App (App (Val (GoInstruction (FuncResolve allocate []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a2"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r1")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a2") (Var "$r0")))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r1")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a1") (Var "$r0")))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
 
 /-- go: allocator.go:41:6 -/
-noncomputable def «testAllocateFullⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAllocateFullⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "free" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 unit)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "free" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 unit)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 unit)))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 2))
   (App (App (Val (GoInstruction (FuncResolve freeRange []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "free"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "free"))
   (App (App (Val (GoInstruction (FuncResolve allocate []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "free"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "free"))
   (App (App (Val (GoInstruction (FuncResolve allocate []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok3" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 unit)))) (Var "free"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 unit)))) (Var "free"))
   (App (App (Val (GoInstruction (FuncResolve allocate []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok1")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok2")) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok3"))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok3") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0")))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok2") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0")))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok1") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0")))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 unit)))) (Pair (Var "free") (Var "$r0")))))))))
 
 /-- go: block.go:3:6 -/
-noncomputable def «testExplicitBlockStmtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testExplicitBlockStmtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val #(W64 10)))))))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 11))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val #(W64 1)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: builtin.go:3:6 -/
-noncomputable def «testMinUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMinUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (Val #(W64 1))
   (App (App (App (Val (GoInstruction (FuncResolve go.min [go.uint64, go.uint64]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 1)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: builtin.go:8:6 -/
-noncomputable def «testMaxUint64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMaxUint64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (Let "$a1" (Val #(W64 1))
   (App (App (App (Val (GoInstruction (FuncResolve go.max [go.uint64, go.uint64]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 10)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: closures.go:6:6 -/
-noncomputable def «adderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «adderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Lam "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))))
 
 /-- go: closures.go:14:6 -/
-noncomputable def «testClosureBasicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testClosureBasicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "pos" (App (Val (GoInstruction (GoAlloc AdderType))) (App (Val (GoInstruction (GoZeroVal AdderType))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve adder []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "doub" (App (Val (GoInstruction (GoAlloc AdderType))) (App (Val (GoInstruction (GoZeroVal AdderType))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve adder []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 0))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (GoLoad AdderType))) (Var "pos")) (Var "$a0"))) (Val #(W64 45)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (GoLoad AdderType))) (Var "doub")) (Var "$a0"))) (Val #(W64 90)))) (Val #false)))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #true))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 10)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))
   (App (App (Val (GoInstruction (GoLoad AdderType))) (Var "doub")) (Var "$a0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
   (App (App (Val (GoInstruction (GoLoad AdderType))) (Var "pos")) (Var "$a0")))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore AdderType))) (Pair (Var "doub") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore AdderType))) (Pair (Var "pos") (Var "$r0")))))))))
 
 /-- go: comparisons.go:3:6 -/
-noncomputable def «testCompareAllⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareAllⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "nok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #false) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #false) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "nok"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "nok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "nok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "nok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: comparisons.go:20:6 -/
-noncomputable def «testCompareGTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareGTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 4)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:31:6 -/
-noncomputable def «testCompareGEⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareGEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 4)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:47:6 -/
-noncomputable def «testCompareLTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareLTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 6)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: comparisons.go:58:6 -/
-noncomputable def «testCompareLEⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareLEⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 6)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 5)))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: conversions.go:5:6 -/
-noncomputable def «literalCastⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «literalCastⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 2))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: conversions.go:11:6 -/
-noncomputable def «stringToByteSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «stringToByteSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "p")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))))))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))))))
 
 /-- go: conversions.go:17:6 -/
-noncomputable def «byteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «byteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (Var "p"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert (go.type.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "p")))))))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")))))))
 
 /-- tests
 
     go: conversions.go:23:6 -/
-noncomputable def «testByteSliceToStringⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testByteSliceToStringⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 3)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 3)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 65))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 66))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 67))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve byteSliceToString []))) (Val #())) (Var "$a0"))) (Val #(go!"ABC")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 2)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 1)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:3:6 -/
-noncomputable def «testCopySimpleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCopySimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 1))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:11:6 -/
-noncomputable def «testCopyShorterDstⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCopyShorterDstⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 15)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 15)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 1))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 2))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 10)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))) (Val #false)))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 10)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))) (Val #false)))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 12)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 12)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: copy.go:20:6 -/
-noncomputable def «testCopyShorterSrcⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCopyShorterSrcⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "y" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 15)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "y" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 15)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 1))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W8 2))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 10)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (Val #(W64 12))))) (Val #(W8 2)))) (Val #false)))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 10)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (Val #(W64 3))))) (Val #(W8 1)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (Val #(W64 12))))) (Val #(W8 2)))) (Val #false)))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "y")) (Val #(W64 12)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "y")) (Val #(W64 12)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: defer.go:3:6 -/
-noncomputable def «deferSimpleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «deferSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "x")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "x")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 10)))))) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$f" (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "x")) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "x"))) (Val #(W64 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "x")) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "x"))) (Val #(W64 1))))))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "x") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: defer.go:13:6 -/
-noncomputable def «testDeferⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDeferⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (App (Val (GoInstruction (FuncResolve deferSimple []))) (Val #())) (Val #()))) (Val #(W64 10)))))))
 
 /-- go: defer.go:17:6 -/
-noncomputable def «testDeferFuncLitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDeferFuncLitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.type.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
   (Let "$r0" (Lam BAnon
-  (App (Val wrap_defer)
+  (App (Val wrapDefer)
   (Lam "$defer"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$f" (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val #(W64 1))))))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val #(W64 11)))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [] false []))))) (Var "f")) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f")) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: first_class_function.go:3:6 -/
-noncomputable def «FirstClassFunctionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «FirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (Val #(W64 10))))))))
 
 /-- go: first_class_function.go:7:6 -/
-noncomputable def «ApplyFⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ApplyFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "f"
-  (App (Val exception_do)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Var "f"))
+  (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Var "f"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Var "f")) (Var "$a0")))))))))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Var "f")) (Var "$a0")))))))))
 
 /-- go: first_class_function.go:11:6 -/
-noncomputable def «testFirstClassFunctionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testFirstClassFunctionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1))
   (Let "$a1" (App (Val (GoInstruction (FuncResolve FirstClassFunction []))) (Val #()))
   (App (App (App (Val (GoInstruction (FuncResolve ApplyF []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 11)))))))
@@ -1420,183 +1420,183 @@ noncomputable def «testFirstClassFunctionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCo
     "next" in next_val
 
     go: function_ordering.go:11:18 -/
-noncomputable def «Editor__AdvanceReturnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Editor__AdvanceReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam "next"
-  (App (Val exception_do)
-  (Let "e" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Editor)))) (Var "e"))
+  (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Editor)))) (Var "e"))
   (Let "next" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "next"))
   (Let "tmp" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Editor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Editor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tmp"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "next"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e"))))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e"))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e"))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tmp")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Editor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Editor)))) (Var "e")))) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Editor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Editor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Editor)))) (Var "e")))) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "tmp") (Var "$r0"))))))))))))
 
 /-- we call this function with side-effectful function calls as arguments,
     its implementation is unimportant
 
     go: function_ordering.go:21:6 -/
-noncomputable def «addFour64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «addFour64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (Lam "c"
   (Lam "d"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "d"))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "c"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "b")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "c")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "d"))))))))))))))
 
 /-- tests
 
     go: function_ordering.go:31:6 -/
-noncomputable def «failing_testFunctionOrderingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «failing_testFunctionOrderingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 5)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 5)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "e1" (App (Val (GoInstruction (GoAlloc Editor))) (App (Val (GoInstruction (GoZeroVal Editor))) (Val #())))
-  (Let "$r0" (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))))))
+  (Let "$r0" (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))))))
   (Let "$v1" (Val #(W64 1))
-  (App (Val (GoInstruction (CompositeLiteral Editor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.type.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val (GoInstruction (CompositeLiteral Editor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.GoType.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "e2" (App (Val (GoInstruction (GoAlloc Editor))) (App (Val (GoInstruction (GoZeroVal Editor))) (Val #())))
-  (Let "$r0" (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))))))
+  (Let "$r0" (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))))))
   (Let "$v1" (Val #(W64 101))
-  (App (Val (GoInstruction (CompositeLiteral Editor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.type.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val (GoInstruction (CompositeLiteral Editor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.GoType.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "p" (App (Val (GoInstruction (GoAlloc Pair'))) (App (Val (GoInstruction (GoZeroVal Pair'))) (Val #())))
   (Let "$r0" (Let "$v0" (Let "$a0" (Val #(W64 5))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
   (Let "$v1" (Let "$a0" (Val #(W64 105))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
   (App (Val (GoInstruction (CompositeLiteral Pair'))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "q" (App (Val (GoInstruction (GoAlloc Pair'))) (App (Val (GoInstruction (GoZeroVal Pair'))) (Val #())))
   (Let "$r0" (Let "$v0" (Let "$a0" (Val #(W64 6))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
   (Let "$v1" (Let "$a0" (Val #(W64 106))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
   (App (Val (GoInstruction (CompositeLiteral Pair'))) (LiteralValue [(KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Pair' go!"x"))) (Var "p"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Pair' go!"x"))) (Var "q"))))) (Val #(W64 109)))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 4))))) (Val #(W64 105))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 4))))) (Val #(W64 105))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Pair'))) (Pair (Var "q") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 104))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 104))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Pair'))) (Pair (Var "p") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))) (Val #(W64 3))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))) (Val #(W64 3))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))) (Val #(W64 102))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))) (Val #(W64 102))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Let "$a0" (Val #(W64 3))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Let "$a0" (Val #(W64 3))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
   (Let "$a1" (Let "$a0" (Val #(W64 103))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
   (Let "$a2" (Let "$a0" (Val #(W64 104))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0")))
   (Let "$a3" (Let "$a0" (Val #(W64 4))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0")))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve addFour64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))) (Val #(W64 210))))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 101))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 101))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Let "$a0" (Val #(W64 2))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0"))) (Let "$a0" (Val #(W64 102))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0"))))) (Val #(W64 102))))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Let "$a0" (Val #(W64 2))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e1")) (Var "$a0"))) (Let "$a0" (Val #(W64 102))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Editor) go!"AdvanceReturn"))) (Var "e2")) (Var "$a0"))))) (Val #(W64 102))))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Editor))) (Pair (Var "e2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Editor))) (Pair (Var "e1") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: function_ordering.go:74:6 -/
-noncomputable def «storeAndReturnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «storeAndReturnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "v"))
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "x"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "x")) (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "x")) (Var "$r0")))))))))))
 
 /-- Goose has a right-to-left evaluation order for function arguments,
     which is incorrect.
 
     go: function_ordering.go:81:6 -/
-noncomputable def «failing_testArgumentOrderⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «failing_testArgumentOrderⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 4))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Let "$a0" (Var "x")
   (Let "$a1" (Val #(W64 1))
   (App (App (App (Val (GoInstruction (FuncResolve storeAndReturn []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -1610,1232 +1610,1232 @@ noncomputable def «failing_testArgumentOrderⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (Let "$a1" (Val #(W64 4))
   (App (App (App (Val (GoInstruction (FuncResolve storeAndReturn []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve addFour64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:3:6 -/
-noncomputable def «testU64ToU32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testU64ToU32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 1230))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$r0" (Val #(W32 1230))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:12:6 -/
-noncomputable def «testU32ToU64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testU32ToU64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$r0" (Val #(W32 1230))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 1230))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:21:6 -/
-noncomputable def «testU32Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testU32Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 100)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (Convert go.int go.uint32))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W32 100)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 100)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (Convert go.int go.uint32))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W32 100)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:28:6 -/
-noncomputable def «testU32NewtypeLenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testU32NewtypeLenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 20)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals Uint32))) (Pair (App (Val (GoInstruction (Convert go.int Uint32))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W32 20)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 20)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals Uint32))) (Pair (App (Val (GoInstruction (Convert go.int Uint32))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W32 20)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: int_conversions.go:33:6 -/
-noncomputable def «testUint32Untypedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testUint32Untypedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc Uint32))) (App (Val (GoInstruction (GoZeroVal Uint32))) (Val #())))
   (Let "$r0" (Val #(W32 1230))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals Uint32))) (Pair (App (Val (GoInstruction (GoLoad Uint32))) (Var "x")) (Val #(W32 1230)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Uint32))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: interfaces.go:12:6 -/
-noncomputable def «measureAreaⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «measureAreaⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc geometryInterface))) (Var "t"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Square"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #()))))))
 
 /-- go: interfaces.go:16:6 -/
-noncomputable def «measureVolumePlusNMⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «measureVolumePlusNMⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "n"
   (Lam "m"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "m"))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
   (Let "t" (App (Val (GoInstruction (GoAlloc geometryInterface))) (Var "t"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Volume"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "m"))))))))))))
 
 /-- go: interfaces.go:20:6 -/
-noncomputable def «measureVolumeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «measureVolumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc geometryInterface))) (Var "t"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (App (Val (GoInstruction (MethodResolve geometryInterface go!"Volume"))) (App (Val (GoInstruction (GoLoad geometryInterface))) (Var "t"))) (Val #()))))))
 
 /-- go: interfaces.go:28:23 -/
-noncomputable def «SquareStruct__Squareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SquareStruct__Squareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc SquareStruct))) (Var "t"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))))))))
 
 /-- go: interfaces.go:32:23 -/
-noncomputable def «SquareStruct__Volumeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «SquareStruct__Volumeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc SquareStruct))) (Var "t"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef SquareStruct go!"Side"))) (Var "t"))))))))))
 
 /-- go: interfaces.go:40:6 -/
-noncomputable def «testBasicInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBasicInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 2))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0"))) (Val #(W64 4)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:47:6 -/
-noncomputable def «testAssignInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAssignInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "area" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "area")) (Val #(W64 9)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "area") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:55:6 -/
-noncomputable def «testMultipleInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMultipleInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "square1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "square2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "square1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "square2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "square2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "square1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:64:6 -/
-noncomputable def «testBinaryExprInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBinaryExprInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "square1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "square2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureVolume []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "square1")) (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "square2")) (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureVolume []))) (Val #())) (Var "$a0"))))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "square2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "square1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces.go:73:6 -/
-noncomputable def «testIfStmtInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testIfStmtInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve measureArea []))) (Val #())) (Var "$a0"))) (Val #(W64 9)))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #true))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:11:6 -/
-noncomputable def «testParamsInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testParamsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc SquareStruct))) (App (Val (GoInstruction (GoZeroVal SquareStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral SquareStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"Side")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "volume" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert SquareStruct geometryInterface))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "s")))
   (Let "$a1" (Val #(W64 1))
   (Let "$a2" (Val #(W64 2))
   (App (App (App (App (Val (GoInstruction (FuncResolve measureVolumePlusNM []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "volume")) (Val #(W64 30)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "volume") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore SquareStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:19:6 -/
-noncomputable def «testEmptyInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testEmptyInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "i" (App (Val (GoInstruction (GoAlloc (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.type.InterfaceType [])))) (Val #())))
-  (Let "j" (App (Val (GoInstruction (GoAlloc (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.type.InterfaceType [])))) (Val #())))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals (go.type.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.type.InterfaceType [])))) (Var "i")) (App (Val (GoInstruction (GoLoad (go.type.InterfaceType [])))) (Var "j")))))))))
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "j" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i")) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "j")))))))))
 
 /-- go: interfaces_complex.go:25:6 -/
-noncomputable def «testStringInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStringInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "i" (App (Val (GoInstruction (GoAlloc (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.type.InterfaceType [])))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"string")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "j" (App (Val (GoInstruction (GoAlloc (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.type.InterfaceType [])))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"string")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals (go.type.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.type.InterfaceType [])))) (Var "i")) (App (Val (GoInstruction (GoLoad (go.type.InterfaceType [])))) (Var "j")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.InterfaceType [])))) (Pair (Var "j") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"string")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "j" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"string")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i")) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "j")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "j") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:35:6 -/
-noncomputable def «testTypeAssertionInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testTypeAssertionInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "i" (App (Val (GoInstruction (GoAlloc (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.type.InterfaceType [])))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert NumStruct (go.type.InterfaceType [])))) (Let "$v0" (Val #(W64 3))
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert NumStruct (go.GoType.InterfaceType [])))) (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral NumStruct))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals NumStruct))) (Pair (App (Val (GoInstruction (TypeAssert NumStruct))) (App (Val (GoInstruction (GoLoad (go.type.InterfaceType [])))) (Var "i"))) (Let "$v0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals NumStruct))) (Pair (App (Val (GoInstruction (TypeAssert NumStruct))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i"))) (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral NumStruct))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0")))]))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:52:22 -/
-noncomputable def «shapeStruct__describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «shapeStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc shapeStruct))) (Var "s"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef shapeStruct go!"Shape"))) (Var "s"))))))))
 
 /-- go: interfaces_complex.go:61:24 -/
-noncomputable def «polygonStruct__describeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «polygonStruct__describeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc polygonStruct))) (Var "p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Shape"))) (Var "p"))))))))
 
 /-- go: interfaces_complex.go:65:24 -/
-noncomputable def «polygonStruct__sidesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «polygonStruct__sidesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc polygonStruct))) (Var "p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Sides"))) (Var "p"))))))))
 
 /-- go: interfaces_complex.go:69:6 -/
-noncomputable def «testDoublePointerInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDoublePointerInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc shapeStruct))) (App (Val (GoInstruction (GoZeroVal shapeStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(go!"circle"))
   (App (Val (GoInstruction (CompositeLiteral shapeStruct))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "shapes" (App (Val (GoInstruction (GoAlloc (go.type.SliceType shapeInterface)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType shapeInterface)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "shapes" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType shapeInterface)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType shapeInterface)))) (Val #())))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad shapeStruct))) (Var "s"))
   (Let "$v1" (Var "s")
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType shapeInterface)))) (LiteralValue [(KeyedElement none (ElementExpression shapeStruct (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.PointerType shapeStruct) (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType shapeInterface)))) (LiteralValue [(KeyedElement none (ElementExpression shapeStruct (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType shapeStruct) (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(go!"square"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve shapeInterface go!"describe"))) (App (Val (GoInstruction (GoLoad shapeInterface))) (App (Val (GoInstruction (IndexRef (go.type.SliceType shapeInterface)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType shapeInterface)))) (Var "shapes")) (Val #(W64 0)))))) (Val #())) (App (App (Val (GoInstruction (MethodResolve shapeInterface go!"describe"))) (App (Val (GoInstruction (GoLoad shapeInterface))) (App (Val (GoInstruction (IndexRef (go.type.SliceType shapeInterface)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType shapeInterface)))) (Var "shapes")) (Val #(W64 1)))))) (Val #()))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve shapeInterface go!"describe"))) (App (Val (GoInstruction (GoLoad shapeInterface))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType shapeInterface)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType shapeInterface)))) (Var "shapes")) (Val #(W64 0)))))) (Val #())) (App (App (Val (GoInstruction (MethodResolve shapeInterface go!"describe"))) (App (Val (GoInstruction (GoLoad shapeInterface))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType shapeInterface)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType shapeInterface)))) (Var "shapes")) (Val #(W64 1)))))) (Val #()))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef shapeStruct go!"Shape"))) (Var "s")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType shapeInterface)))) (Pair (Var "shapes") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType shapeInterface)))) (Pair (Var "shapes") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore shapeStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:76:6 -/
-noncomputable def «testMultipleFieldsInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMultipleFieldsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc polygonStruct))) (App (Val (GoInstruction (GoZeroVal polygonStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(go!"triangle"))
   (Let "$v1" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral polygonStruct))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Shape"))) (Var "s"))) (Val #(go!"triangle")))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef polygonStruct go!"Sides"))) (Var "s"))) (Val #(W64 3)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore polygonStruct))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:93:16 -/
-noncomputable def «Puppy__Nameⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Puppy__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc Puppy))) (Var "p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(go!"Max")))))))
 
 /-- go: interfaces_complex.go:97:16 -/
-noncomputable def «Puppy__Speedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Puppy__Speedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc Puppy))) (Var "p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 1)))))))
 
 /-- go: interfaces_complex.go:103:17 -/
-noncomputable def «Kitten__Nameⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Kitten__Nameⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc Kitten))) (Var "k"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(go!"Max")))))))
 
 /-- go: interfaces_complex.go:107:17 -/
-noncomputable def «Kitten__Weightⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Kitten__Weightⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc Kitten))) (Var "k"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 10)))))))
 
 /-- go: interfaces_complex.go:111:6 -/
-noncomputable def «testSharedFunctionsInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSharedFunctionsInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "kit" (App (Val (GoInstruction (GoAlloc catInterface))) (App (Val (GoInstruction (GoZeroVal catInterface))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert Kitten catInterface))) (Val #(go!"Kitten")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "pup" (App (Val (GoInstruction (GoAlloc dogInterface))) (App (Val (GoInstruction (GoZeroVal dogInterface))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert Puppy dogInterface))) (Val #(go!"Puppy")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve dogInterface go!"Name"))) (App (Val (GoInstruction (GoLoad dogInterface))) (Var "pup"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve catInterface go!"Name"))) (App (Val (GoInstruction (GoLoad catInterface))) (Var "kit"))) (Val #())))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore dogInterface))) (Pair (Var "pup") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore catInterface))) (Pair (Var "kit") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:126:23 -/
-noncomputable def «PaperStruct__Assignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «PaperStruct__Assignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "t"
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType PaperStruct)))) (Var "p"))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType PaperStruct)))) (Var "p"))
   (Let "t" (App (Val (GoInstruction (GoAlloc go.string))) (Var "t"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "t"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType PaperStruct)))) (Var "p"))) (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType PaperStruct)))) (Var "p"))) (Var "$r0")))))))))))
 
 /-- go: interfaces_complex.go:130:23 -/
-noncomputable def «PaperStruct__GetTitleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «PaperStruct__GetTitleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType PaperStruct)))) (Var "p"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType PaperStruct)))) (Var "p")))))))))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType PaperStruct)))) (Var "p"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef PaperStruct go!"Title"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType PaperStruct)))) (Var "p")))))))))
 
 /-- go: interfaces_complex.go:134:6 -/
-noncomputable def «testAcceptAddressInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAcceptAddressInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p1" (App (Val (GoInstruction (GoAlloc PaperStruct))) (App (Val (GoInstruction (GoZeroVal PaperStruct))) (Val #())))
   (Let "p2" (App (Val (GoInstruction (GoAlloc PaperStruct))) (App (Val (GoInstruction (GoZeroVal PaperStruct))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "print1" (App (Val (GoInstruction (GoAlloc printInterface))) (App (Val (GoInstruction (GoZeroVal printInterface))) (Val #())))
   (Let "print2" (App (Val (GoInstruction (GoAlloc printInterface))) (App (Val (GoInstruction (GoZeroVal printInterface))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType PaperStruct) printInterface))) (Var "p1"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType PaperStruct) printInterface))) (Var "p2"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType PaperStruct) printInterface))) (Var "p1"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType PaperStruct) printInterface))) (Var "p2"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve printInterface go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface))) (Var "print1"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve printInterface go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface))) (Var "print2"))) (Val #())))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore printInterface))) (Pair (Var "print2") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore printInterface))) (Pair (Var "print1") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Val #(go!"Sample Title"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType PaperStruct) go!"Assign"))) (Var "p2")) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType PaperStruct) go!"Assign"))) (Var "p2")) (Var "$a0")))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(go!"Sample Title"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType PaperStruct) go!"Assign"))) (Var "p1")) (Var "$a0")))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType PaperStruct) go!"Assign"))) (Var "p1")) (Var "$a0")))))))))
 
 /-- go: interfaces_complex.go:157:15 -/
-noncomputable def «Lily__Petalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lily__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lily))) (Var "l"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 3)))))))
 
 /-- go: interfaces_complex.go:158:15 -/
-noncomputable def «Lily__Genusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lily__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lily))) (Var "l"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(go!"Lillium")))))))
 
 /-- go: interfaces_complex.go:162:15 -/
-noncomputable def «Rose__Petalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Rose__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc Rose))) (Var "r"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 12)))))))
 
 /-- go: interfaces_complex.go:163:15 -/
-noncomputable def «Rose__Genusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Rose__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "r" (App (Val (GoInstruction (GoAlloc Rose))) (Var "r"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(go!"Rosa")))))))
 
 /-- go: interfaces_complex.go:167:16 -/
-noncomputable def «Daisy__Petalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Daisy__Petalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc Daisy))) (Var "d"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(W64 5)))))))
 
 /-- go: interfaces_complex.go:168:16 -/
-noncomputable def «Daisy__Genusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Daisy__Genusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc Daisy))) (Var "d"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #(go!"Bellis")))))))
 
 /-- go: interfaces_complex.go:170:6 -/
-noncomputable def «testPolymorphismInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testPolymorphismInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Lily)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Lily)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Lily))) (App (Val (GoInstruction (GoZeroVal Lily))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Rose)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Rose)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rose)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Rose)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Rose))) (App (Val (GoInstruction (GoZeroVal Rose))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "d" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Daisy)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Daisy)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "d" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Daisy)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Daisy)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Daisy))) (App (Val (GoInstruction (GoZeroVal Daisy))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.ArrayType 3 Flower)))) (App (Val (GoInstruction (GoZeroVal (go.type.ArrayType 3 Flower)))) (Val #())))
-  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.type.PointerType Lily)))) (Var "l"))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.type.PointerType Rose)))) (Var "r"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.type.PointerType Daisy)))) (Var "d"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 3 Flower)))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.type.PointerType Daisy) (Var "$v2")))])))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flower go!"Petals"))) (App (Val (GoInstruction (GoLoad Flower))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flower)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ArrayType 3 Flower)))) (Pair (Var "f") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Daisy)))) (Pair (Var "d") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Rose)))) (Pair (Var "r") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 Flower)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 Flower)))) (Val #())))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Lily)))) (Var "l"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rose)))) (Var "r"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Daisy)))) (Var "d"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 Flower)))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Daisy) (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flower go!"Petals"))) (App (Val (GoInstruction (GoLoad Flower))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 Flower)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 Flower)))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Daisy)))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Rose)))) (Pair (Var "r") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:178:6 -/
-noncomputable def «testEmbeddingInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testEmbeddingInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Lily)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Lily)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Lily)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Lily))) (App (Val (GoInstruction (GoZeroVal Lily))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "r" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Rose)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Rose)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rose)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Rose)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Rose))) (App (Val (GoInstruction (GoZeroVal Rose))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "d" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Daisy)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType Daisy)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "d" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Daisy)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Daisy)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc Daisy))) (App (Val (GoInstruction (GoZeroVal Daisy))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.ArrayType 3 Flora)))) (App (Val (GoInstruction (GoZeroVal (go.type.ArrayType 3 Flora)))) (Val #())))
-  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.type.PointerType Lily)))) (Var "l"))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.type.PointerType Rose)))) (Var "r"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.type.PointerType Daisy)))) (Var "d"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 3 Flora)))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.type.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.type.PointerType Daisy) (Var "$v2")))])))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 3 Flora)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ArrayType 3 Flora)))) (Pair (Var "f") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Daisy)))) (Pair (Var "d") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Rose)))) (Pair (Var "r") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 Flora)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 Flora)))) (Val #())))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Lily)))) (Var "l"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rose)))) (Var "r"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Daisy)))) (Var "d"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 Flora)))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType Lily) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Rose) (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Daisy) (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 Flora)))) (Pair (Var "f") (Val #(W64 0)))))) (Val #())) (Val #(W64 3)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 Flora)))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Daisy)))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Rose)))) (Pair (Var "r") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Lily)))) (Pair (Var "l") (Var "$r0")))))))))
 
 /-- go: interfaces_complex.go:186:6 -/
-noncomputable def «testDowncastInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDowncastInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lily))) (App (Val (GoInstruction (GoZeroVal Lily))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (CompositeLiteral Lily))) (LiteralValue []))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "f" (App (Val (GoInstruction (GoAlloc Flora))) (App (Val (GoInstruction (GoZeroVal Flora))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert Lily Flora))) (App (Val (GoInstruction (GoLoad Lily))) (Var "l")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora))) (Var "f"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve Flower go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flower))) (App (Val (GoInstruction (GoLoad Flora))) (Var "f")))) (Val #())))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Flora))) (Pair (Var "f") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Lily))) (Pair (Var "l") (Var "$r0")))))))))
 
 /-- We can't interpret multithreaded code, so this just checks that
     locks are correctly interpreted
 
     go: lock.go:7:6 -/
-noncomputable def «testsUseLocksⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testsUseLocksⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0")))))))))
 
 /-- helpers
 
     go: loops.go:4:6 -/
-noncomputable def «standardForLoopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «standardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (Var "s"))
-  (Let "sumPtr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "s"))
+  (Let "sumPtr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "sumPtr")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "sumPtr")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")))))))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "sumPtr")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "sumPtr")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "s")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "s")) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "sumPtr")) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "sumPtr")) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "sumPtr") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "sumPtr") (Var "$r0"))))))))))
 
 /-- go: loops.go:28:22 -/
-noncomputable def «LoopStruct__forLoopWaitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LoopStruct__forLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ls"
   (Lam "i"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ls" (App (Val (GoInstruction (GoAlloc LoopStruct))) (Var "ls"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "nxt" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls"))) (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "nxt"))))))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (Let "nxt" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls"))) (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "nxt"))))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "nxt") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "nxt") (Var "$r0")))))))))
   (Lam BAnon
   (Val #())))))))))
 
 /-- tests
 
     go: loops.go:40:6 -/
-noncomputable def «testStandardForLoopⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStandardForLoopⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 4)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (Val exceptionDo)
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 4)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (App (App (Val (GoInstruction (FuncResolve standardForLoop []))) (Val #())) (Var "$a0"))) (Val #(W64 16)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 7))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))) (Val #(W64 5))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))) (Val #(W64 3))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 1))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 7))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))) (Val #(W64 5))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))) (Val #(W64 3))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: loops.go:49:6 -/
-noncomputable def «testForLoopWaitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testForLoopWaitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ls" (App (Val (GoInstruction (GoAlloc LoopStruct))) (App (Val (GoInstruction (GoZeroVal LoopStruct))) (Val #())))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (Val (GoInstruction (CompositeLiteral LoopStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"loopNext")) (ElementExpression (go.type.PointerType go.uint64) (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))) (Val #(W64 4)))))))
-  (App (Val do_execute)
+  (App (Val (GoInstruction (CompositeLiteral LoopStruct))) (LiteralValue [(KeyedElement (some (KeyField go!"loopNext")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef LoopStruct go!"loopNext"))) (Var "ls")))) (Val #(W64 4)))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 3))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType LoopStruct) go!"forLoopWait"))) (Var "ls")) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LoopStruct) go!"forLoopWait"))) (Var "ls")) (Var "$a0")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore LoopStruct))) (Pair (Var "ls") (Var "$r0")))))))))
 
 /-- go: loops.go:59:6 -/
-noncomputable def «testBreakFromLoopWithContinueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBreakFromLoopWithContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #true))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #true))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:71:6 -/
-noncomputable def «testBreakFromLoopNoContinueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBreakFromLoopNoContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 2))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #true))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #true))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:83:6 -/
-noncomputable def «testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 4)))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 2))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 2))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:96:6 -/
-noncomputable def «testBreakFromLoopForOnlyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBreakFromLoopForOnlyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 4)))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 2))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:104:6 -/
-noncomputable def «testBreakFromLoopAssignAndContinueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBreakFromLoopAssignAndContinueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 2))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #true))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #true))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
 
 /-- go: loops.go:117:6 -/
-noncomputable def «testNestedLoopsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNestedLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok1")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok2")) (Val #false)))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok2") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 6))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok1") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 5)))))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 5)))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r0"))))))))))
   (Lam BAnon
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok1") (Var "$r0")))))))))
 
 /-- go: loops.go:136:6 -/
-noncomputable def «testNestedGoStyleLoopsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNestedGoStyleLoopsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 10)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 9))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #true))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #true))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r0"))))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: loops.go:150:6 -/
-noncomputable def «testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 10)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 9))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #true))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #true))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "j")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r0"))))))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: maps.go:3:6 -/
-noncomputable def «IterateMapKeysⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IterateMapKeysⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val (map.for_range go.uint64 go.uint64)) (Var "$range"))
+  (App (App (Val (map.forRange go.uint64 go.uint64)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "k"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$key")))))))))))))))
 
 /-- go: maps.go:11:6 -/
-noncomputable def «IterateMapValuesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «IterateMapValuesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val (map.for_range go.uint64 go.uint64)) (Var "$range"))
+  (App (App (Val (map.forRange go.uint64 go.uint64)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$key")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "v") (Var "$value")))))))))))))))
 
 /-- go: maps.go:19:6 -/
-noncomputable def «testIterateMapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testIterateMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (App (App (Val (GoInstruction (FuncResolve IterateMapKeys []))) (Val #())) (Var "$a0"))) (Val #(W64 4)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (App (App (Val (GoInstruction (FuncResolve IterateMapValues []))) (Val #())) (Var "$a0"))) (Val #(W64 7)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 3))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 3))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: maps.go:37:6 -/
-noncomputable def «testMapSizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMapSizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 0)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 4))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 3))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 3))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 1))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r0")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:3:6 -/
-noncomputable def «multReturnTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «multReturnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Pair (Val #(W64 2)) (Val #(W64 3))))))
 
 /-- go: multiple_assign.go:7:6 -/
-noncomputable def «testAssignTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAssignTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 15))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve multReturnTwo []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 3)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:14:6 -/
-noncomputable def «multReturnThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «multReturnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))))))
 
 /-- go: multiple_assign.go:18:6 -/
-noncomputable def «testAssignThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAssignThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$r0" (Val #(W32 15))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve multReturnThree []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
@@ -2843,63 +2843,63 @@ noncomputable def «testAssignThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "y")) (Val #true))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "z")) (Val #(W32 1)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "z") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "z") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "y") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_assign.go:26:6 -/
-noncomputable def «testMultipleAssignToMapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testMultipleAssignToMapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve multReturnTwo []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Val #(W64 3)))) (Val #false)))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r1"))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Val #(W64 3)))) (Val #false)))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Var "$r1"))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: multiple_return.go:3:6 -/
-noncomputable def «returnTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «returnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Pair (Val #(W64 2)) (Val #(W64 3))))))
 
 /-- go: multiple_return.go:7:6 -/
-noncomputable def «testReturnTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testReturnTwoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve returnTwo []))) (Val #())) (Val #()))
@@ -2907,45 +2907,45 @@ noncomputable def «testReturnTwoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : 
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 3)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))
 
 /-- go: multiple_return.go:12:6 -/
-noncomputable def «testAnonymousBindingⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAnonymousBindingⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve returnTwo []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 3)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0")))))))))))
 
 /-- go: multiple_return.go:17:6 -/
-noncomputable def «returnThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «returnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))))))
 
 /-- go: multiple_return.go:21:6 -/
-noncomputable def «testReturnThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testReturnThreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -2956,29 +2956,29 @@ noncomputable def «testReturnThreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] 
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "y")) (Val #true))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "z")) (Val #(W32 1)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "z") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))))))))))
 
 /-- go: multiple_return.go:26:6 -/
-noncomputable def «returnFourⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «returnFourⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Pair (Pair (Pair (Val #(W64 2)) (Val #true)) (Val #(W32 1))) (Val #(W64 7))))))
 
 /-- go: multiple_return.go:30:6 -/
-noncomputable def «testReturnFourⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testReturnFourⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2992,1142 +2992,1142 @@ noncomputable def «testReturnFourⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
   (Let "$r3" (Var "$ret3")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "y")) (Val #true))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "z")) (Val #(W32 1)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w")) (Val #(W64 7)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "w") (Var "$r3")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "z") (Var "$r2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "y") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))))))))
 
 /-- go: new.go:3:6 -/
-noncomputable def «testNilDefaultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNilDefaultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.int)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.int)))) (Var "x")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "x")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: new.go:9:6 -/
-noncomputable def «testNilValⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNilValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.int)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.int))) (Val #(W64 3)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.int)))) (Var "x"))) (Val #(W64 3)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "x"))) (Val #(W64 3)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: nil.go:3:6 -/
-noncomputable def «testCompareSliceToNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareSliceToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:8:6 -/
-noncomputable def «testComparePointerToNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testComparePointerToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "s")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType go.uint64)))) (Val UntypedNil))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType go.uint64)))) (Val UntypedNil))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:13:6 -/
-noncomputable def «testCompareNilToNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testCompareNilToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (go.type.PointerType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (go.type.PointerType go.uint64))))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (go.type.PointerType go.uint64))))) (Var "s"))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType go.uint64)))) (Val UntypedNil)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (go.type.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Var "s"))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType go.uint64)))) (Val UntypedNil)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:18:6 -/
-noncomputable def «testComparePointerWrappedToNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testComparePointerWrappedToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 1)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 1)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
 /-- go: nil.go:24:6 -/
-noncomputable def «testComparePointerWrappedDefaultToNilⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testComparePointerWrappedDefaultToNilⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.SliceType go.byte)))) (Val UntypedNil))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
 
 /-- go: nil.go:29:6 -/
-noncomputable def «testInterfaceNilWithTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testInterfaceNilWithTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "isNil" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untyped_nil go.any))) (Val UntypedNil))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "notNil" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType go.string) go.any))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType go.string)))) (Val UntypedNil)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (If (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "isNil")) (App (Val (GoInstruction (Convert go.untyped_nil go.any))) (Val UntypedNil)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "notNil")) (App (Val (GoInstruction (Convert go.untyped_nil go.any))) (Val UntypedNil))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "isNil")) (App (Val (GoInstruction (GoLoad go.any))) (Var "notNil"))))) (Val #false)))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.string) go.any))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType go.string)))) (Val UntypedNil)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "isNil")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "notNil")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "isNil")) (App (Val (GoInstruction (GoLoad go.any))) (Var "notNil"))))) (Val #false)))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "notNil") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "isNil") (Var "$r0")))))))))
 
 /-- helpers
 
     go: operations.go:4:6 -/
-noncomputable def «reverseAssignOps64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «reverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 1))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 1))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))))
 
 /-- go: operations.go:13:6 -/
-noncomputable def «reverseAssignOps32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «reverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (Val #(W32 1))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (Val #(W32 1))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))))))))
 
 /-- go: operations.go:22:6 -/
-noncomputable def «add64Equalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «add64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "z"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "z"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z"))))))))))))
 
 /-- go: operations.go:26:6 -/
-noncomputable def «sub64Equalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «sub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "z"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "z"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z"))))))))))))
 
 /-- tests
 
     go: operations.go:31:6 -/
-noncomputable def «testReverseAssignOps64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testReverseAssignOps64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1231234))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 62206846038638762))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 9223372036854775808))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 140737488355328))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1048576))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 262144))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1024))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 1))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 18446744073709551615))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps64 []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:47:6 -/
-noncomputable def «failing_testReverseAssignOps32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «failing_testReverseAssignOps32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 0))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 1))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 1231234))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 3434807466))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 1048576))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 262144))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 1024))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 1))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (Val #(W32 4294967295))
   (App (App (Val (GoInstruction (FuncResolve reverseAssignOps32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:61:6 -/
-noncomputable def «testAdd64Equalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAdd64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (Val #(W64 2))
   (Let "$a1" (Val #(W64 3))
   (Let "$a2" (Val #(W64 5))
   (App (App (App (App (Val (GoInstruction (FuncResolve add64Equals []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (Val #(W64 18446744073709551615))
   (Let "$a1" (Val #(W64 1))
   (Let "$a2" (Val #(W64 0))
   (App (App (App (App (Val (GoInstruction (FuncResolve add64Equals []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:68:6 -/
-noncomputable def «testSub64Equalsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSub64Equalsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (Val #(W64 2))
   (Let "$a1" (Val #(W64 1))
   (Let "$a2" (Val #(W64 1))
   (App (App (App (App (Val (GoInstruction (FuncResolve sub64Equals []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (Val #(W64 18446744073709551615))
   (Let "$a1" (Val #(W64 9223372036854775808))
   (Let "$a2" (Val #(W64 9223372036854775807))
   (App (App (App (App (Val (GoInstruction (FuncResolve sub64Equals []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (Val #(W64 2))
   (Let "$a1" (Val #(W64 8))
   (Let "$a2" (Val #(W64 18446744073709551610))
   (App (App (App (App (Val (GoInstruction (FuncResolve sub64Equals []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:76:6 -/
-noncomputable def «testDivisionPrecedenceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDivisionPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "blockSize" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 4096))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "hdrmeta" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 8))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "hdraddrs" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "blockSize")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hdrmeta")))) (Val #(W64 8))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hdraddrs")) (Val #(W64 511)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "hdraddrs") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "hdrmeta") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "blockSize") (Var "$r0")))))))))
 
 /-- go: operations.go:83:6 -/
-noncomputable def «testModPrecedenceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testModPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x1" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 517))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x2" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x1")) (Val #(W64 517)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x2")) (Val #(W64 5)))) (Val #false)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x1") (Var "$r0")))))))))
 
 /-- go: operations.go:89:6 -/
-noncomputable def «testBitwiseOpsPrecedenceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBitwiseOpsPrecedenceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:102:6 -/
-noncomputable def «testArithmeticShiftsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testArithmeticShiftsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Val #true) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: operations.go:114:6 -/
-noncomputable def «testBitAddAndⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testBitAddAndⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "tid" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 17))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 16))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tid")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1))))))) (Val #(W64 32)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "tid") (Var "$r0")))))))))
 
 /-- go: operations.go:120:6 -/
-noncomputable def «testManyParenthesesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testManyParenthesesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Val #true))))
 
 /-- go: operations.go:124:6 -/
-noncomputable def «testPlusTimesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testPlusTimesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Val #true))))
 
 /-- go: panic.go:3:6 -/
-noncomputable def «shouldPanicⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «shouldPanicⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"bad")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"bad")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))
 
 /-- go: precedence.go:3:6 -/
-noncomputable def «testOrCompareSimpleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testOrCompareSimpleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (Val #false) (Val #true) (Val #true)))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (Val #true) (Val #true)))
+  (App (Val doReturn)
   (Val #true))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
 
 /-- go: precedence.go:10:6 -/
-noncomputable def «testOrCompareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testOrCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (Val #false) (Val #true) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (Val #true) (Val #false)))
   (Let "$r0" (Val #false)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (If (Val #false) (Val #true) (Val #true))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (If (Val #false) (Val #true) (Val #true))))
   (Let "$r0" (Val #false)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: precedence.go:22:6 -/
-noncomputable def «testAndCompareⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAndCompareⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (Val #true) (Val #true) (Val #true)))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #true) (Val #true) (Val #true)))
+  (App (Val doExecute)
   (Val #()))
   (Let "$r0" (Val #false)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (Val #false) (Val #true) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (Val #true) (Val #false)))
   (Let "$r0" (Val #false)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: precedence.go:34:6 -/
-noncomputable def «testShiftModⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testShiftModⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Val #true))))
 
 /-- go: prims.go:9:6 -/
-noncomputable def «testLinearizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testLinearizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.Linearize []))) (Val #())) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "m"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "m") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:11:6 -/
-noncomputable def «CheckTrueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «CheckTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"t"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))))))))))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"t"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))))))))))
 
 /-- go: shortcircuiting.go:16:6 -/
-noncomputable def «CheckFalseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «CheckFalseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"f"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))))))))))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"f"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))))))))))
 
 /-- tests
 
     go: shortcircuiting.go:22:6 -/
-noncomputable def «testShortcircuitAndTFⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testShortcircuitAndTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType BoolTest)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc BoolTest))) (Let "$v0" (Val #true)
   (Let "$v1" (Val #false)
   (Let "$v2" (Val #(W64 0))
   (Let "$v3" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral BoolTest))) (LiteralValue [(KeyedElement (some (KeyField go!"t")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"f")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"tc")) (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement (some (KeyField go!"fc")) (ElementExpression go.uint64 (Var "$v3")))])))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))))
-  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))))
+  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
   (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))) (Val #false))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:31:6 -/
-noncomputable def «testShortcircuitAndFTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testShortcircuitAndFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType BoolTest)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc BoolTest))) (Let "$v0" (Val #true)
   (Let "$v1" (Val #false)
   (Let "$v2" (Val #(W64 0))
   (Let "$v3" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral BoolTest))) (LiteralValue [(KeyedElement (some (KeyField go!"t")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"f")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"tc")) (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement (some (KeyField go!"fc")) (ElementExpression go.uint64 (Var "$v3")))])))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))))
-  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))))
+  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
   (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))) (Val #false))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:40:6 -/
-noncomputable def «testShortcircuitOrTFⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testShortcircuitOrTFⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType BoolTest)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc BoolTest))) (Let "$v0" (Val #true)
   (Let "$v1" (Val #false)
   (Let "$v2" (Val #(W64 0))
   (Let "$v3" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral BoolTest))) (LiteralValue [(KeyedElement (some (KeyField go!"t")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"f")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"tc")) (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement (some (KeyField go!"fc")) (ElementExpression go.uint64 (Var "$v3")))])))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))) (Val #true) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
+  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))) (Val #true) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
   (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))))
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 0)))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 0)))) (Val #false)))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: shortcircuiting.go:48:6 -/
-noncomputable def «testShortcircuitOrFTⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testShortcircuitOrFTⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType BoolTest)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType BoolTest)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType BoolTest)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc BoolTest))) (Let "$v0" (Val #true)
   (Let "$v1" (Val #false)
   (Let "$v2" (Val #(W64 0))
   (Let "$v3" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral BoolTest))) (LiteralValue [(KeyedElement (some (KeyField go!"t")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"f")) (ElementExpression go.bool (Var "$v1"))), (KeyedElement (some (KeyField go!"tc")) (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement (some (KeyField go!"fc")) (ElementExpression go.uint64 (Var "$v3")))])))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))) (Val #true) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b"))
+  (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve CheckFalse []))) (Val #())) (Var "$a0"))) (Val #true) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b"))
   (App (App (Val (GoInstruction (FuncResolve CheckTrue []))) (Val #())) (Var "$a0"))))
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"tc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef BoolTest go!"fc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType BoolTest)))) (Var "b")))) (Val #(W64 1)))) (Val #false)))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType BoolTest)))) (Pair (Var "b") (Var "$r0")))))))))
 
 /-- go: slices.go:9:24 -/
-noncomputable def «ArrayEditor__Advanceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ArrayEditor__Advanceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "ae"
   (Lam "arr"
   (Lam "next"
-  (App (Val exception_do)
-  (Let "ae" (App (Val (GoInstruction (GoAlloc (go.type.PointerType ArrayEditor)))) (Var "ae"))
+  (App (Val exceptionDo)
+  (Let "ae" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType ArrayEditor)))) (Var "ae"))
   (Let "next" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "next"))
-  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (Var "arr"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "arr"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "next"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae"))))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae"))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae")))) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 1))))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae")))) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 1))))))))))))))))
 
 /-- tests
 
     go: slices.go:17:6 -/
-noncomputable def «testSliceOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSliceOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 10))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 15))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 20))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 2)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "v2" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 3)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "v3" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 3)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "v4" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 2))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 2)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "v2" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 3)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "v3" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 3)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "v4" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 2))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v1")) (Val #(W64 10)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "v2")) (Val #(W64 0))))) (Val #(W64 10)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "v2"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "v3")) (Val #(W64 1))))) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "v3")) (Val #(W64 2))))) (Val #(W64 10)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "v3"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "v4"))) (Val #(W64 10)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "v2")) (Val #(W64 0))))) (Val #(W64 10)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "v2"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "v3")) (Val #(W64 1))))) (Val #(W64 5)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "v3")) (Val #(W64 2))))) (Val #(W64 10)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "v3"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "v4"))) (Val #(W64 10)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "v4") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "v3") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "v2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "v4") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "v3") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "v2") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "v1") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 4)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 2)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x")) (Val #(W64 1)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 4)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: slices.go:40:6 -/
-noncomputable def «testSliceCapacityOpsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSliceCapacityOpsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 0))) (Val #(W64 10)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "sub1" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 6)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 0))) (Val #(W64 10)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "sub1" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 6)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "sub2" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 4)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "sub2" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 4)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub1"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 6)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub1"))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 10)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 10))))) (Val #(W64 0))))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub2"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub2"))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 8)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 10))))) (Val #(W64 2))))) (Val #(W64 2)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub1"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 6)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub1"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 10)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 10))))) (Val #(W64 0))))) (Val #(W64 1)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub2"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub2"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 8)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "x"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 10))))) (Val #(W64 2))))) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub2")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "sub2") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sub1")) (Val #(W64 0)))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "sub1") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub2")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "sub2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sub1")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "sub1") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: slices.go:59:6 -/
-noncomputable def «testOverwriteArrayⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testOverwriteArrayⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 4)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ae1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType ArrayEditor)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType ArrayEditor)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc ArrayEditor))) (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))))))
+  (App (Val exceptionDo)
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 4)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ae1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType ArrayEditor)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType ArrayEditor)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc ArrayEditor))) (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))))))
   (Let "$v1" (Val #(W64 1))
-  (App (Val (GoInstruction (CompositeLiteral ArrayEditor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.type.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))])))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ae2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType ArrayEditor)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType ArrayEditor)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc ArrayEditor))) (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
-  (App (Val (GoInstruction (Slice (go.type.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))))))
+  (App (Val (GoInstruction (CompositeLiteral ArrayEditor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.GoType.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ae2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType ArrayEditor)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType ArrayEditor)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc ArrayEditor))) (Let "$v0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.uint64)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))))))
   (Let "$v1" (Val #(W64 102))
-  (App (Val (GoInstruction (CompositeLiteral ArrayEditor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.type.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))])))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 4)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 4)))) (Val #false)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))))) (Val #(W64 100)))))
-  (App (Val do_return)
+  (App (Val (GoInstruction (CompositeLiteral ArrayEditor))) (LiteralValue [(KeyedElement (some (KeyField go!"s")) (ElementExpression (go.GoType.SliceType go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"next_val")) (ElementExpression go.uint64 (Var "$v1")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))) (Val #(W64 4)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (Val #(W64 4)))) (Val #false)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 1))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 2))))))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 3))))))) (Val #(W64 100)))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 5))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 4))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 3))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 2))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae1"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 105))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 104))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "arr"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr"))
   (Let "$a1" (Val #(W64 103))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType ArrayEditor)))) (Pair (Var "ae2") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType ArrayEditor)))) (Pair (Var "ae1") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType ArrayEditor) go!"Advance"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor)))) (Var "ae2"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType ArrayEditor)))) (Pair (Var "ae2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType ArrayEditor)))) (Pair (Var "ae1") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "arr") (Var "$r0")))))))))
 
 /-- go: slices.go:80:6 -/
-noncomputable def «testSliceLiteralⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSliceLiteralⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "bytes" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "bytes" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W8 1))
   (Let "$v1" (Val #(W8 2))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "bytes")) (Val #(W64 0))))) (Val #(W8 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ints" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "bytes")) (Val #(W64 0))))) (Val #(W8 1)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ints" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
   (Let "$v2" (Val #(W64 3))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "ints")) (Val #(W64 1))))) (Val #(W64 2)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "ints")) (Val #(W64 1))))) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "ints") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "ints") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0")))))))))
 
 /-- go: slices.go:89:6 -/
-noncomputable def «testSliceAppendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSliceAppendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "bytes" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "bytes"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "bytes" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "bytes"))
   (Let "$a1" (Let "$sl0" (Val #(W8 1))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "newBytes" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "newBytes" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W8 2))
   (Let "$v1" (Val #(W8 3))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "bytes"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "newBytes"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "bytes"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "bytes")) (Val #(W64 2))))) (Val #(W8 3)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "bytes"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "newBytes"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "bytes"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "bytes")) (Val #(W64 2))))) (Val #(W8 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "newBytes") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "newBytes") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "bytes") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: slices.go:100:6 -/
-noncomputable def «testSliceRefⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSliceRefⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "sl" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 5)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ptr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sl")) (Val #(W64 0))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "sl" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 5)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ptr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sl")) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "sl")) (Val #(W64 0))))) (Val #(W64 1)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "ptr")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "ptr") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "sl") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "sl")) (Val #(W64 0))))) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "ptr")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "ptr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "sl") (Var "$r0")))))))))
 
 /-- go: struct_pointers.go:14:17 -/
-noncomputable def «Bar__mutateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Bar__mutateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "bar"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "bar" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Bar)))) (Var "bar"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "bar" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bar)))) (Var "bar"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$r0" (Val #(W64 2))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 3))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Bar go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Bar)))) (Var "bar"))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Bar go!"a"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Bar)))) (Var "bar"))) (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Bar go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bar)))) (Var "bar"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Bar go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bar)))) (Var "bar"))) (Var "$r0")))))))))))
 
 /-- go: struct_pointers.go:19:17 -/
-noncomputable def «Foo__mutateBarⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Foo__mutateBarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "foo"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "foo" (App (Val (GoInstruction (GoAlloc (go.type.PointerType Foo)))) (Var "foo"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "foo" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Foo)))) (Var "foo"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Bar) go!"mutate"))) (App (Val (GoInstruction (StructFieldRef Foo go!"bar"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType Foo)))) (Var "foo")))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Bar) go!"mutate"))) (App (Val (GoInstruction (StructFieldRef Foo go!"bar"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Foo)))) (Var "foo")))) (Val #()))))))))
 
 /-- go: struct_pointers.go:23:6 -/
-noncomputable def «testFooBarMutationⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testFooBarMutationⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc Foo))) (App (Val (GoInstruction (GoZeroVal Foo))) (Val #())))
   (Let "$r0" (Let "$v0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral Bar))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (App (Val (GoInstruction (CompositeLiteral Foo))) (LiteralValue [(KeyedElement (some (KeyField go!"bar")) (ElementExpression Bar (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Bar go!"a"))) (App (Val (GoInstruction (StructFieldRef Foo go!"bar"))) (Var "x")))) (Val #(W64 2)))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Foo) go!"mutateBar"))) (Var "x")) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Foo) go!"mutateBar"))) (Var "x")) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Foo))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: structs.go:14:6 -/
-noncomputable def «NewSⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc S))) (Let "$v0" (Val #(W64 2))
   (Let "$v1" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
@@ -4136,909 +4136,909 @@ noncomputable def «NewSⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression TwoInts (Var "$v1"))), (KeyedElement (some (KeyField go!"c")) (ElementExpression go.bool (Var "$v2")))])))))))))
 
 /-- go: structs.go:22:13 -/
-noncomputable def «S__readAⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «S__readAⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (Var "s"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef S go!"a"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "s")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef S go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
 
 /-- go: structs.go:26:13 -/
-noncomputable def «S__readBⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «S__readBⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (Var "s"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "s")))))))))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))))))
 
 /-- go: structs.go:30:12 -/
-noncomputable def «S__readBValⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «S__readBValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (Var "s"))))))))
 
 /-- go: structs.go:34:13 -/
-noncomputable def «S__updateBValXⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «S__updateBValXⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "i"
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (Var "s"))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "s")))) (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))) (Var "$r0")))))))))))
 
 /-- go: structs.go:38:13 -/
-noncomputable def «S__negateCⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «S__negateCⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (Var "s"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "s")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "s"))) (Var "$r0"))))))))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "s"))) (Var "$r0"))))))))))
 
 /-- go: structs.go:42:6 -/
-noncomputable def «testStructUpdatesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ns" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType S)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ns" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType S)))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve NewS []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"readA"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Val #())) (Val #(W64 2)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"readA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Val #())) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "b1" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"readB"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"readB"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (Var "b1"))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))) (Val #false))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))) (Val #false))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 3))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "b2" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"readB"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"readB"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (Var "b2"))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "b3" (App (Val (GoInstruction (GoAlloc (go.type.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType TwoInts)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "b3")))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (StructFieldGet TwoInts go!"x"))) (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"readBVal"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Val #()))) (Val #(W64 4)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "b3" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoInts)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "b3")))) (Val #(W64 1)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (StructFieldGet TwoInts go!"x"))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"readBVal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Val #()))) (Val #(W64 4)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 4))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"updateBValX"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"updateBValX"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Var "$a0")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "b3") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "b3") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore TwoInts))) (Pair (Var "b2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (Var "b1")) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType S) go!"negateC"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType S) go!"negateC"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore TwoInts))) (Pair (Var "b1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType S)))) (Pair (Var "ns") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType S)))) (Pair (Var "ns") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:65:6 -/
-noncomputable def «testNestedStructUpdatesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testNestedStructUpdatesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "ns" (App (Val (GoInstruction (GoAlloc (go.type.PointerType S)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType S)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "ns" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType S)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType S)))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve NewS []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))))) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))))) (Val #(W64 5)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve NewS []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType TwoInts)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoInts)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns"))))) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns"))))) (Val #(W64 5)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve NewS []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p")))) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p")))) (Val #(W64 5)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve NewS []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p")))) (Val #(W64 5)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p")))) (Val #(W64 5)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType S)))) (Pair (Var "ns") (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType S)))) (Pair (Var "ns") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType S)))) (Var "ns")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType S)))) (Pair (Var "ns") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:90:6 -/
-noncomputable def «testStructConstructionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStructConstructionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "p1" (App (Val (GoInstruction (GoAlloc (go.type.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType TwoInts)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "p1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoInts)))) (Val #())))
   (Let "p2" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
   (Let "p3" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral TwoInts))) (LiteralValue [(KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "p4" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral TwoInts))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType TwoInts)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p1")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType TwoInts)))) (Val UntypedNil)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType TwoInts)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p1")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType TwoInts)))) (Val UntypedNil)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals TwoInts))) (Pair (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p2")) (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p3")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals TwoInts))) (Pair (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p3")) (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p4")))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals TwoInts))) (Pair (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p4")) (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p1"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType TwoInts)))) (Pair (Var "p4") (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p1"))))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals TwoInts))) (Pair (App (Val (GoInstruction (GoLoad TwoInts))) (Var "p4")) (App (Val (GoInstruction (GoLoad TwoInts))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p1"))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType TwoInts)))) (Pair (Var "p4") (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p1"))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "p1") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p1") (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore TwoInts))) (Pair (Var "p4") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore TwoInts))) (Pair (Var "p3") (Var "$r0")))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:109:6 -/
-noncomputable def «testIncompleteStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testIncompleteStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "p1" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral TwoInts))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"y"))) (Var "p1"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "p2" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 2))
   (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"x"))) (App (Val (GoInstruction (StructFieldRef S go!"b"))) (Var "p2")))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef S go!"c"))) (Var "p2"))) (Val #false))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore S))) (Pair (Var "p2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore TwoInts))) (Pair (Var "p1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 /-- go: structs.go:126:6 -/
-noncomputable def «testStoreInStructVarⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStoreInStructVarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc StructWrap))) (App (Val (GoInstruction (GoZeroVal StructWrap))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (App (Val (GoInstruction (CompositeLiteral StructWrap))) (LiteralValue [(KeyedElement (some (KeyField go!"i")) (ElementExpression go.uint64 (Var "$v0")))])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (Var "p"))) (Val #(W64 5)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (Var "p")) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore StructWrap))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:132:6 -/
-noncomputable def «testStoreInStructPointerVarⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStoreInStructPointerVarⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType StructWrap)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType StructWrap)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType StructWrap)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType StructWrap)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc StructWrap))) (App (Val (GoInstruction (GoZeroVal StructWrap))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 5))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType StructWrap)))) (Var "p")))) (Val #(W64 5)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType StructWrap)))) (Var "p"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType StructWrap)))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType StructWrap)))) (Var "p")))) (Val #(W64 5)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef StructWrap go!"i"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType StructWrap)))) (Var "p"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType StructWrap)))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:138:6 -/
-noncomputable def «testStoreCompositeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStoreCompositeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType TwoInts)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoInts)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoInts)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc TwoInts))) (App (Val (GoInstruction (GoZeroVal TwoInts))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W64 3))
   (Let "$v1" (Val #(W64 4))
   (App (Val (GoInstruction (CompositeLiteral TwoInts))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"y"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p")))) (Val #(W64 4)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore TwoInts))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType TwoInts)))) (Var "p")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts go!"y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p")))) (Val #(W64 4)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore TwoInts))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoInts)))) (Var "p")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoInts)))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:144:6 -/
-noncomputable def «testStoreSliceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStoreSliceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "p" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (go.type.SliceType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (go.type.SliceType go.uint64))))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.uint64)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.uint64)]))) (Val #())) (Val #(W64 3)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (Var "s"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.uint64)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (go.type.SliceType go.uint64))))) (Var "p")))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (go.type.SliceType go.uint64))))) (Var "p")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (go.type.SliceType go.uint64))))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uint64)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uint64)]))) (Val #())) (Val #(W64 3)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")))) (Val #(W64 3)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Var "p")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.uint64))))) (Pair (Var "p") (Var "$r0")))))))))
 
 /-- go: structs.go:155:6 -/
-noncomputable def «testStructFieldFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testStructFieldFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.type.PointerType StructWithFunc)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType StructWithFunc)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType StructWithFunc)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType StructWithFunc)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc StructWithFunc))) (App (Val (GoInstruction (GoZeroVal StructWithFunc))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam "arg"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "arg" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "arg"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "arg")) (Val #(W64 2))))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 10))
-  (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (App (Val (GoInstruction (StructFieldRef StructWithFunc go!"fn"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType StructWithFunc)))) (Var "a")))) (Var "$a0"))) (Val #(W64 20)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Pair (App (Val (GoInstruction (StructFieldRef StructWithFunc go!"fn"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType StructWithFunc)))) (Var "a"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType StructWithFunc)))) (Pair (Var "a") (Var "$r0")))))))))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (App (Val (GoInstruction (StructFieldRef StructWithFunc go!"fn"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType StructWithFunc)))) (Var "a")))) (Var "$a0"))) (Val #(W64 20)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Pair (App (Val (GoInstruction (StructFieldRef StructWithFunc go!"fn"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType StructWithFunc)))) (Var "a"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType StructWithFunc)))) (Pair (Var "a") (Var "$r0")))))))))
 
 /-- go: switch.go:3:6 -/
-noncomputable def «testSwitchValⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSwitchValⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #true))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:15:6 -/
-noncomputable def «testSwitchMultipleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSwitchMultipleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 10)))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #true))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:26:6 -/
-noncomputable def «testSwitchDefaultTrueⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSwitchDefaultTrueⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 1))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (Val #true)
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Val #false)))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 2))))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #true)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: switch.go:45:26 -/
-noncomputable def «switchConcrete__markerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «switchConcrete__markerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType switchConcrete)))) (Var "c"))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType switchConcrete)))) (Var "c"))
+  (App (Val doExecute)
   (Val #()))))))
 
 /-- go: switch.go:48:6 -/
-noncomputable def «testSwitchConversionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testSwitchConversionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "v" (App (Val (GoInstruction (GoAlloc (go.type.PointerType switchConcrete)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType switchConcrete)))) (Val #())))
+  (App (Val exceptionDo)
+  (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType switchConcrete)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType switchConcrete)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc switchConcrete))) (App (Val (GoInstruction (CompositeLiteral switchConcrete))) (LiteralValue [])))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x" (App (Val (GoInstruction (GoAlloc switchInterface))) (App (Val (GoInstruction (GoZeroVal switchInterface))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (Convert (go.type.PointerType switchConcrete) switchInterface))) (App (Val (GoInstruction (GoLoad (go.type.PointerType switchConcrete)))) (Var "v")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType switchConcrete) switchInterface))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType switchConcrete)))) (Var "v")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (Let "$sw" (App (Val (GoInstruction (GoLoad (go.type.PointerType switchConcrete)))) (Var "v"))
-  (If (App (Val (GoInstruction (GoOp GoEquals switchInterface))) (Pair (App (Val (GoInstruction (Convert (go.type.PointerType switchConcrete) switchInterface))) (Var "$sw")) (App (Val (GoInstruction (GoLoad switchInterface))) (Var "x"))))
-  (App (Val do_execute)
+  (Let "$sw" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType switchConcrete)))) (Var "v"))
+  (If (App (Val (GoInstruction (GoOp GoEquals switchInterface))) (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType switchConcrete) switchInterface))) (Var "$sw")) (App (Val (GoInstruction (GoLoad switchInterface))) (Var "x"))))
+  (App (Val doExecute)
   (Val #()))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false)))))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad switchInterface))) (Var "x"))
-  (If (App (Val (GoInstruction (GoOp GoEquals switchInterface))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert (go.type.PointerType switchConcrete) switchInterface))) (App (Val (GoInstruction (GoLoad (go.type.PointerType switchConcrete)))) (Var "v")))))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (GoOp GoEquals switchInterface))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert (go.GoType.PointerType switchConcrete) switchInterface))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType switchConcrete)))) (Var "v")))))
+  (App (Val doExecute)
   (Val #()))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore switchInterface))) (Pair (Var "x") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType switchConcrete)))) (Pair (Var "v") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType switchConcrete)))) (Pair (Var "v") (Var "$r0")))))))))
 
 /-- go: type_equality.go:3:6 -/
-noncomputable def «TypesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T U : go.type) : val :=
+noncomputable def «TypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T U : go.GoType) : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType T)))) (Val #())))
-  (Let "u" (App (Val (GoInstruction (GoAlloc (go.type.PointerType U)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType U)))) (Val #())))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (Convert (go.type.PointerType T) go.any))) (App (Val (GoInstruction (GoLoad (go.type.PointerType T)))) (Var "t"))) (App (Val (GoInstruction (Convert (go.type.PointerType U) go.any))) (App (Val (GoInstruction (GoLoad (go.type.PointerType U)))) (Var "u"))))))))))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
+  (Let "u" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType U)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType U)))) (Val #())))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType T) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "t"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType U) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType U)))) (Var "u"))))))))))
 
 /-- go: type_equality.go:9:6 -/
-noncomputable def «testPrimitiveTypesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testPrimitiveTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
-  (If (If (If (If (If (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int]))) (Val #())) (Val #())) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.string]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint32]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int64]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint64]))) (Val #())) (Val #()))) (Val #false)) (App (App (Val (GoInstruction (FuncResolve TypesEqual [(go.type.FunctionType (go.signature.Signature [] false [go.bool])), (go.type.FunctionType (go.signature.Signature [] false [go.bool]))]))) (Val #())) (Val #())) (Val #false)))))
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (If (If (If (If (If (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int]))) (Val #())) (Val #())) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.string]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint32]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.int64]))) (Val #())) (Val #()))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [go.int, go.uint64]))) (Val #())) (Val #()))) (Val #false)) (App (App (Val (GoInstruction (FuncResolve TypesEqual [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool])), (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))]))) (Val #())) (Val #())) (Val #false)))))
 
 /-- go: type_equality.go:22:6 -/
-noncomputable def «testDefinedStrTypesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testDefinedStrTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [DefinedStr, go.string]))) (Val #())) (Val #()))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [DefinedStr, DefinedStr2]))) (Val #())) (Val #())) (Val #false)))))
 
 /-- go: type_equality.go:32:6 -/
-noncomputable def «testListTypesEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testListTypesEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (If (App (App (Val (GoInstruction (FuncResolve TypesEqual [(List' go.int), (List' go.int)]))) (Val #())) (Val #())) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [(List' go.int), (List' go.string)]))) (Val #())) (Val #()))) (Val #false)))))
 
 /-- go: vars.go:3:6 -/
-noncomputable def «testPointerAssignmentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testPointerAssignmentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "x")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: vars.go:9:6 -/
-noncomputable def «testAddressOfLocalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAddressOfLocalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #false)
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "xptr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.bool)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.bool)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "xptr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.bool)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.bool)))) (Val #())))
   (Let "$r0" (Var "x")
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "x")) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.bool)))) (Var "xptr"))) (Val #false)))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.bool)))) (Var "xptr")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.bool)))) (Pair (Var "xptr") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "x")) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.bool)))) (Var "xptr"))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.bool)))) (Var "xptr")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.bool)))) (Pair (Var "xptr") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0")))))))))
 
 /-- go: vars.go:16:6 -/
-noncomputable def «testAnonymousAssignⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «testAnonymousAssignⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (Val #(W64 2))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0"))))))
 
 /-- go: wal.go:24:6 -/
-noncomputable def «intToBlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «intToBlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.type.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.type.SliceType go.byte)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.SliceType go.byte)]))) (Val #())) (Val _root_.Perennial.github_com.goose_lang.primitive.disk.BlockSize))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b")))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType go.byte)))) (Var "b"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val _root_.Perennial.github_com.goose_lang.primitive.disk.BlockSize))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))))
 
 /-- go: wal.go:30:6 -/
-noncomputable def «blockToIntⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «blockToIntⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))))))
 
 /-- New initializes a fresh log
 
     go: wal.go:35:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Get []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "diskSize" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Size"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "cache" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "cache" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "header" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (FuncResolve intToBlock []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "lengthPtr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "lengthPtr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$v0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "cache"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "lengthPtr"))
-  (Let "$v3" (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
-  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"d")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.disk.Disk (Var "$v0"))), (KeyedElement (some (KeyField go!"cache")) (ElementExpression (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block) (Var "$v1"))), (KeyedElement (some (KeyField go!"length")) (ElementExpression (go.type.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"l")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v3")))])))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "lengthPtr")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "lengthPtr") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "cache"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "lengthPtr"))
+  (Let "$v3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
+  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"d")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.disk.Disk (Var "$v0"))), (KeyedElement (some (KeyField go!"cache")) (ElementExpression (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block) (Var "$v1"))), (KeyedElement (some (KeyField go!"length")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"l")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v3")))])))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "lengthPtr")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "lengthPtr") (Var "$r0")))))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "header"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "header") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Pair (Var "cache") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSize")) (Val logLength))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"disk is too small to host log")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Pair (Var "cache") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSize")) (Val logLength))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"disk is too small to host log")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "diskSize") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Pair (Var "d") (Var "$r0")))))))))
 
 /-- go: wal.go:50:14 -/
-noncomputable def «Log__lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"l"))) (Var "l")))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"l"))) (Var "l")))) (Val #()))))))))
 
 /-- go: wal.go:54:14 -/
-noncomputable def «Log__unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"l"))) (Var "l")))) (Val #()))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (StructFieldRef Log go!"l"))) (Var "l")))) (Val #()))))))))
 
 /-- BeginTxn allocates space for a new transaction in the log.
 
     Returns true if the allocation succeeded.
 
     go: wal.go:61:14 -/
-noncomputable def «Log__BeginTxnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__BeginTxnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #false))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"lock"))) (Var "l")) (Val #()))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #()))))))))
 
 /-- Read from the logical disk.
 
     Reads must go through the log to return committed but un-applied writes.
 
     go: wal.go:75:14 -/
-noncomputable def «Log__Readⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Readⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
-  (Let "__p" (App (App (Val (map.lookup2 go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (StructFieldRef Log go!"cache"))) (Var "l")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")))
+  (Let "__p" (App (App (Val (map.lookup2 go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (StructFieldRef Log go!"cache"))) (Var "l")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "dv" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val logLength) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "dv")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "dv") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v")))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "v") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
 
 /-- go: wal.go:88:14 -/
-noncomputable def «Log__Sizeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Sizeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Size"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz")) (Val logLength))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sz") (Var "$r0")))))))))))
 
 /-- Write to the disk through the log.
 
     go: wal.go:95:14 -/
-noncomputable def «Log__Writeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Writeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "a"
   (Lam "v"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "aBlock" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve intToBlock []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "nextAddr" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #())))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (StructFieldRef Log go!"cache"))) (Var "l")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))) (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (StructFieldRef Log go!"cache"))) (Var "l")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))) (Var "$r0")))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "nextAddr")) (Val #(W64 1))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "nextAddr"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "aBlock"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "nextAddr") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "aBlock") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val MaxTxnWrites))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"transaction is at capacity")))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val MaxTxnWrites))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"transaction is at capacity")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"lock"))) (Var "l")) (Val #()))))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #()))))))))))))
 
 /-- Commit the current transaction.
 
     go: wal.go:111:14 -/
-noncomputable def «Log__Commitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Commitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "header" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length"))
   (App (App (Val (GoInstruction (FuncResolve intToBlock []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "header"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))) (Var "$a0")) (Var "$a1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "header") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
 
 /-- go: wal.go:120:6 -/
-noncomputable def «getLogEntryⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «getLogEntryⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "logOffset"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "logOffset" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "logOffset"))
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
   (Let "diskAddr" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "logOffset"))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "aBlock" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskAddr"))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "aBlock"))
   (App (App (Val (GoInstruction (FuncResolve blockToInt []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskAddr")) (Val #(W64 1))))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "v") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "aBlock") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "diskAddr") (Var "$r0"))))))))))))
 
 /-- applyLog assumes we are running sequentially
 
     go: wal.go:129:6 -/
-noncomputable def «applyLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «applyLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "length"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "length"))
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_break) (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")))))
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
@@ -5048,46 +5048,46 @@ noncomputable def «applyLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val logLength) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "v"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "v") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))))
 
 /-- go: wal.go:140:6 -/
-noncomputable def «clearLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «clearLogⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "header" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (FuncResolve intToBlock []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
   (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "header"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")) (Var "$a1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "header") (Var "$r0")))))))))))
 
 /-- Apply all the committed transactions.
@@ -5095,193 +5095,193 @@ noncomputable def «clearLogⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :
     Frees all the space in the log.
 
     go: wal.go:148:14 -/
-noncomputable def «Log__Applyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Log__Applyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Log))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"unlock"))) (Var "l")) (Val #())))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"unlock"))) (Var "l")) (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "l"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))
   (App (App (Val (GoInstruction (FuncResolve clearLog []))) (Val #())) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "l")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length"))
   (App (App (App (Val (GoInstruction (FuncResolve applyLog []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"lock"))) (Var "l")) (Val #())))))))))
 
 /-- Open recovers the log following a crash or shutdown
 
     go: wal.go:161:6 -/
-noncomputable def «Openⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Openⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Get []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "header" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "length" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Var "header"))
   (App (App (Val (GoInstruction (FuncResolve blockToInt []))) (Val #())) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "cache" (App (Val (GoInstruction (GoAlloc (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (GoZeroVal (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "lengthPtr" (App (Val (GoInstruction (GoAlloc (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "cache" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)]))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "lengthPtr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "l" (App (Val (GoInstruction (GoAlloc (go.type.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$v0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "cache"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "lengthPtr"))
-  (Let "$v3" (App (Val (GoInstruction (GoLoad (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
-  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"d")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.disk.Disk (Var "$v0"))), (KeyedElement (some (KeyField go!"cache")) (ElementExpression (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block) (Var "$v1"))), (KeyedElement (some (KeyField go!"length")) (ElementExpression (go.type.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"l")) (ElementExpression (go.type.PointerType _root_.Perennial.sync.Mutex) (Var "$v3")))])))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (Var "lengthPtr")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType go.uint64)))) (Pair (Var "lengthPtr") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Pair (Var "cache") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Var "cache"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "lengthPtr"))
+  (Let "$v3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Var "l"))
+  (App (Val (GoInstruction (CompositeLiteral Log))) (LiteralValue [(KeyedElement (some (KeyField go!"d")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.disk.Disk (Var "$v0"))), (KeyedElement (some (KeyField go!"cache")) (ElementExpression (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block) (Var "$v1"))), (KeyedElement (some (KeyField go!"length")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"l")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex) (Var "$v3")))])))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "lengthPtr")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "lengthPtr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)))) (Pair (Var "cache") (Var "$r0")))))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
   (App (App (Val (GoInstruction (FuncResolve clearLog []))) (Val #())) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Var "d"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length"))
   (App (App (App (Val (GoInstruction (FuncResolve applyLog []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block))) (Pair (Var "header") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (Pair (Var "d") (Var "$r0")))))))))
 
 /-- disabled since performance is quite poor
 
     go: wal.go:176:6 -/
-noncomputable def «disabled_testWalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «disabled_testWalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "lg" (App (Val (GoInstruction (GoAlloc Log))) (App (Val (GoInstruction (GoZeroVal Log))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve New []))) (Val #())) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Let "$a0" (Val #(W64 2))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"Read"))) (Var "lg")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"Read"))) (Var "lg")) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve blockToInt []))) (Val #())) (Var "$a0"))) (Val #(W64 11)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "lg")))) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve blockToInt []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Let "$a0" (Val #(W64 0))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk))) (App (Val (GoInstruction (StructFieldRef Log go!"d"))) (Var "lg")))) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve blockToInt []))) (Val #())) (Var "$a0"))) (Val #(W64 1)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.type.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "lg")))) (Val #(W64 0)))) (Val #false))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log go!"length"))) (Var "lg")))) (Val #(W64 0)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"Apply"))) (Var "lg")) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"Apply"))) (Var "lg")) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"Commit"))) (Var "lg")) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"Commit"))) (Var "lg")) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
-  (If (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"BeginTxn"))) (Var "lg")) (Val #()))
-  (App (Val do_execute)
+  (If (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"BeginTxn"))) (Var "lg")) (Val #()))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 2))
   (Let "$a1" (Let "$a0" (Val #(W64 11))
   (App (App (Val (GoInstruction (FuncResolve intToBlock []))) (Val #())) (Var "$a0")))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType Log) go!"Write"))) (Var "lg")) (Var "$a0")) (Var "$a1")))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log) go!"Write"))) (Var "lg")) (Var "$a0")) (Var "$a1")))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Log))) (Pair (Var "lg") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics where
-  pkg_imported_pkgs := [pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk]
+  pkgImportedPkgs := [pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.encoding.binary.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))))
 
 namespace unit
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end unit
 
-@[reducible] def unit'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def unit'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def unit'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def unit'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   unit'fds_unsealed
 
-instance equals_unfold_unit [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_unit [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold unit'fds unit'fds_unsealed :=
   ⟨by unfold unit'fds; rfl⟩
 
-@[reducible] def «unitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType unit'fds)
+@[reducible] def «unitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType unit'fds)
 
-class unit_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unit_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unit_type_repr : go.TypeReprUnderlying «unitⁱᵐᵖˡ» unit.t
   unit_underlying : go.UnderlyingDirectedEq unit «unitⁱᵐᵖˡ»
 
@@ -5289,37 +5289,37 @@ attribute [instance] unit_Assumptions.unit_type_repr
   unit_Assumptions.unit_underlying
 
 namespace Editor
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   s' : slice.t
   next_val' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Editor
 
-@[reducible] def Editor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"s" (go.type.SliceType go.uint64)),
+@[reducible] def Editor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def Editor'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Editor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Editor'fds_unsealed
 
-instance equals_unfold_Editor [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Editor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Editor'fds Editor'fds_unsealed :=
   ⟨by unfold Editor'fds; rfl⟩
 
-@[reducible] def «Editorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Editor'fds)
+@[reducible] def «Editorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Editor'fds)
 
-class Editor_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Editor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Editor_type_repr : go.TypeReprUnderlying «Editorⁱᵐᵖˡ» Editor.t
   Editor_underlying : go.UnderlyingDirectedEq Editor «Editorⁱᵐᵖˡ»
   Editor_get_s : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet «Editorⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
   Editor_set_s : ∀ (x : Editor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «Editorⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor.t)))
   Editor_get_next_val : ∀ (x : Editor.t), go.IsGoStepPureDetTagged under (StructFieldGet «Editorⁱᵐᵖˡ» go!"next_val") #x (Val #(x.next_val'))
   Editor_set_next_val : ∀ (x : Editor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Editorⁱᵐᵖˡ» go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : Editor.t)))
-  Editor'ptr_AdvanceReturn_unfold : MethodUnfold (go.type.PointerType Editor) go!"AdvanceReturn" «Editor__AdvanceReturnⁱᵐᵖˡ»
+  Editor'ptr_AdvanceReturn_unfold : MethodUnfold (go.GoType.PointerType Editor) go!"AdvanceReturn" «Editor__AdvanceReturnⁱᵐᵖˡ»
 
 attribute [instance] Editor_Assumptions.Editor_type_repr
   Editor_Assumptions.Editor_underlying
@@ -5330,30 +5330,30 @@ attribute [instance] Editor_Assumptions.Editor_type_repr
   Editor_Assumptions.Editor'ptr_AdvanceReturn_unfold
 
 namespace Pair'
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Pair'
 
-@[reducible] def Pair'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Pair'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def Pair'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Pair'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Pair'fds_unsealed
 
-instance equals_unfold_Pair [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Pair [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Pair'fds Pair'fds_unsealed :=
   ⟨by unfold Pair'fds; rfl⟩
 
-@[reducible] def «Pair'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Pair'fds)
+@[reducible] def «Pair'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Pair'fds)
 
-class Pair_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Pair_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Pair_type_repr : go.TypeReprUnderlying «Pair'ⁱᵐᵖˡ» Pair'.t
   Pair_underlying : go.UnderlyingDirectedEq Pair' «Pair'ⁱᵐᵖˡ»
   Pair_get_x : ∀ (x : Pair'.t), go.IsGoStepPureDetTagged under (StructFieldGet «Pair'ⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
@@ -5369,61 +5369,61 @@ attribute [instance] Pair_Assumptions.Pair_type_repr
   Pair_Assumptions.Pair_set_y
 
 namespace Uint32
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end Uint32
 
-@[reducible] def «Uint32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Uint32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
-class Uint32_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint32_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Uint32_underlying : go.UnderlyingDirectedEq Uint32 «Uint32ⁱᵐᵖˡ»
 
 attribute [instance] Uint32_Assumptions.Uint32_underlying
 
 namespace geometryInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end geometryInterface
 
-@[reducible] def «geometryInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.interface_elem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
+@[reducible] def «geometryInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
 
-class geometryInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class geometryInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   geometryInterface_underlying : go.UnderlyingDirectedEq geometryInterface «geometryInterfaceⁱᵐᵖˡ»
 
 attribute [instance] geometryInterface_Assumptions.geometryInterface_underlying
 
 namespace SquareStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Side' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end SquareStruct
 
-@[reducible] def SquareStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SquareStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Side" go.uint64)]
 
-@[irreducible] def SquareStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SquareStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SquareStruct'fds_unsealed
 
-instance equals_unfold_SquareStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SquareStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SquareStruct'fds SquareStruct'fds_unsealed :=
   ⟨by unfold SquareStruct'fds; rfl⟩
 
-@[reducible] def «SquareStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SquareStruct'fds)
+@[reducible] def «SquareStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SquareStruct'fds)
 
-class SquareStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SquareStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SquareStruct_type_repr : go.TypeReprUnderlying «SquareStructⁱᵐᵖˡ» SquareStruct.t
   SquareStruct_underlying : go.UnderlyingDirectedEq SquareStruct «SquareStructⁱᵐᵖˡ»
   SquareStruct_get_Side : ∀ (x : SquareStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «SquareStructⁱᵐᵖˡ» go!"Side") #x (Val #(x.Side'))
   SquareStruct_set_Side : ∀ (x : SquareStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «SquareStructⁱᵐᵖˡ» go!"Side") (PairV #x #y) (Val #(({ x with Side' := y } : SquareStruct.t)))
   SquareStruct_Square_unfold : MethodUnfold SquareStruct go!"Square" «SquareStruct__Squareⁱᵐᵖˡ»
   SquareStruct_Volume_unfold : MethodUnfold SquareStruct go!"Volume" «SquareStruct__Volumeⁱᵐᵖˡ»
-  SquareStruct'ptr_Square_unfold : MethodUnfold (go.type.PointerType SquareStruct) go!"Square" (LamV "$r"
+  SquareStruct'ptr_Square_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Square" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve SquareStruct go!"Square"))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "$r"))))
-  SquareStruct'ptr_Volume_unfold : MethodUnfold (go.type.PointerType SquareStruct) go!"Volume" (LamV "$r"
+  SquareStruct'ptr_Volume_unfold : MethodUnfold (go.GoType.PointerType SquareStruct) go!"Volume" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve SquareStruct go!"Volume"))) (App (Val (GoInstruction (GoLoad SquareStruct))) (Var "$r"))))
 
 attribute [instance] SquareStruct_Assumptions.SquareStruct_type_repr
@@ -5436,28 +5436,28 @@ attribute [instance] SquareStruct_Assumptions.SquareStruct_type_repr
   SquareStruct_Assumptions.SquareStruct'ptr_Volume_unfold
 
 namespace NumStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end NumStruct
 
-@[reducible] def NumStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def NumStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int)]
 
-@[irreducible] def NumStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def NumStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NumStruct'fds_unsealed
 
-instance equals_unfold_NumStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_NumStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold NumStruct'fds NumStruct'fds_unsealed :=
   ⟨by unfold NumStruct'fds; rfl⟩
 
-@[reducible] def «NumStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType NumStruct'fds)
+@[reducible] def «NumStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType NumStruct'fds)
 
-class NumStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class NumStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumStruct_type_repr : go.TypeReprUnderlying «NumStructⁱᵐᵖˡ» NumStruct.t
   NumStruct_underlying : go.UnderlyingDirectedEq NumStruct «NumStructⁱᵐᵖˡ»
   NumStruct_get_Value : ∀ (x : NumStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «NumStructⁱᵐᵖˡ» go!"Value") #x (Val #(x.Value'))
@@ -5469,58 +5469,58 @@ attribute [instance] NumStruct_Assumptions.NumStruct_type_repr
   NumStruct_Assumptions.NumStruct_set_Value
 
 namespace shapeInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end shapeInterface
 
-@[reducible] def «shapeInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
+@[reducible] def «shapeInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
 
-class shapeInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class shapeInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   shapeInterface_underlying : go.UnderlyingDirectedEq shapeInterface «shapeInterfaceⁱᵐᵖˡ»
 
 attribute [instance] shapeInterface_Assumptions.shapeInterface_underlying
 
 namespace polygonInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end polygonInterface
 
-@[reducible] def «polygonInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
+@[reducible] def «polygonInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
 
-class polygonInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class polygonInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   polygonInterface_underlying : go.UnderlyingDirectedEq polygonInterface «polygonInterfaceⁱᵐᵖˡ»
 
 attribute [instance] polygonInterface_Assumptions.polygonInterface_underlying
 
 namespace shapeStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Shape' : go_string
+  Shape' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end shapeStruct
 
-@[reducible] def shapeStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def shapeStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string)]
 
-@[irreducible] def shapeStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def shapeStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   shapeStruct'fds_unsealed
 
-instance equals_unfold_shapeStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_shapeStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold shapeStruct'fds shapeStruct'fds_unsealed :=
   ⟨by unfold shapeStruct'fds; rfl⟩
 
-@[reducible] def «shapeStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType shapeStruct'fds)
+@[reducible] def «shapeStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType shapeStruct'fds)
 
-class shapeStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class shapeStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   shapeStruct_type_repr : go.TypeReprUnderlying «shapeStructⁱᵐᵖˡ» shapeStruct.t
   shapeStruct_underlying : go.UnderlyingDirectedEq shapeStruct «shapeStructⁱᵐᵖˡ»
   shapeStruct_get_Shape : ∀ (x : shapeStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «shapeStructⁱᵐᵖˡ» go!"Shape") #x (Val #(x.Shape'))
-  shapeStruct_set_Shape : ∀ (x : shapeStruct.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «shapeStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : shapeStruct.t)))
+  shapeStruct_set_Shape : ∀ (x : shapeStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «shapeStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : shapeStruct.t)))
   shapeStruct_describe_unfold : MethodUnfold shapeStruct go!"describe" «shapeStruct__describeⁱᵐᵖˡ»
-  shapeStruct'ptr_describe_unfold : MethodUnfold (go.type.PointerType shapeStruct) go!"describe" (LamV "$r"
+  shapeStruct'ptr_describe_unfold : MethodUnfold (go.GoType.PointerType shapeStruct) go!"describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve shapeStruct go!"describe"))) (App (Val (GoInstruction (GoLoad shapeStruct))) (Var "$r"))))
 
 attribute [instance] shapeStruct_Assumptions.shapeStruct_type_repr
@@ -5531,41 +5531,41 @@ attribute [instance] shapeStruct_Assumptions.shapeStruct_type_repr
   shapeStruct_Assumptions.shapeStruct'ptr_describe_unfold
 
 namespace polygonStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Shape' : go_string
+  Shape' : GoString
   Sides' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end polygonStruct
 
-@[reducible] def polygonStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def polygonStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string),
 (go.field_decl.FieldDecl go!"Sides" go.uint64)]
 
-@[irreducible] def polygonStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def polygonStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   polygonStruct'fds_unsealed
 
-instance equals_unfold_polygonStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_polygonStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold polygonStruct'fds polygonStruct'fds_unsealed :=
   ⟨by unfold polygonStruct'fds; rfl⟩
 
-@[reducible] def «polygonStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType polygonStruct'fds)
+@[reducible] def «polygonStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType polygonStruct'fds)
 
-class polygonStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class polygonStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   polygonStruct_type_repr : go.TypeReprUnderlying «polygonStructⁱᵐᵖˡ» polygonStruct.t
   polygonStruct_underlying : go.UnderlyingDirectedEq polygonStruct «polygonStructⁱᵐᵖˡ»
   polygonStruct_get_Shape : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «polygonStructⁱᵐᵖˡ» go!"Shape") #x (Val #(x.Shape'))
-  polygonStruct_set_Shape : ∀ (x : polygonStruct.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «polygonStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : polygonStruct.t)))
+  polygonStruct_set_Shape : ∀ (x : polygonStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «polygonStructⁱᵐᵖˡ» go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : polygonStruct.t)))
   polygonStruct_get_Sides : ∀ (x : polygonStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «polygonStructⁱᵐᵖˡ» go!"Sides") #x (Val #(x.Sides'))
   polygonStruct_set_Sides : ∀ (x : polygonStruct.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «polygonStructⁱᵐᵖˡ» go!"Sides") (PairV #x #y) (Val #(({ x with Sides' := y } : polygonStruct.t)))
   polygonStruct_describe_unfold : MethodUnfold polygonStruct go!"describe" «polygonStruct__describeⁱᵐᵖˡ»
   polygonStruct_sides_unfold : MethodUnfold polygonStruct go!"sides" «polygonStruct__sidesⁱᵐᵖˡ»
-  polygonStruct'ptr_describe_unfold : MethodUnfold (go.type.PointerType polygonStruct) go!"describe" (LamV "$r"
+  polygonStruct'ptr_describe_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve polygonStruct go!"describe"))) (App (Val (GoInstruction (GoLoad polygonStruct))) (Var "$r"))))
-  polygonStruct'ptr_sides_unfold : MethodUnfold (go.type.PointerType polygonStruct) go!"sides" (LamV "$r"
+  polygonStruct'ptr_sides_unfold : MethodUnfold (go.GoType.PointerType polygonStruct) go!"sides" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve polygonStruct go!"sides"))) (App (Val (GoInstruction (GoLoad polygonStruct))) (Var "$r"))))
 
 attribute [instance] polygonStruct_Assumptions.polygonStruct_type_repr
@@ -5580,43 +5580,43 @@ attribute [instance] polygonStruct_Assumptions.polygonStruct_type_repr
   polygonStruct_Assumptions.polygonStruct'ptr_sides_unfold
 
 namespace dogInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end dogInterface
 
-@[reducible] def «dogInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
+@[reducible] def «dogInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
 
-class dogInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dogInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   dogInterface_underlying : go.UnderlyingDirectedEq dogInterface «dogInterfaceⁱᵐᵖˡ»
 
 attribute [instance] dogInterface_Assumptions.dogInterface_underlying
 
 namespace catInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end catInterface
 
-@[reducible] def «catInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.interface_elem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
+@[reducible] def «catInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
 
-class catInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class catInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   catInterface_underlying : go.UnderlyingDirectedEq catInterface «catInterfaceⁱᵐᵖˡ»
 
 attribute [instance] catInterface_Assumptions.catInterface_underlying
 
 namespace Puppy
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end Puppy
 
-@[reducible] def «Puppyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Puppyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class Puppy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Puppy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Puppy_underlying : go.UnderlyingDirectedEq Puppy «Puppyⁱᵐᵖˡ»
   Puppy_Name_unfold : MethodUnfold Puppy go!"Name" «Puppy__Nameⁱᵐᵖˡ»
   Puppy_Speed_unfold : MethodUnfold Puppy go!"Speed" «Puppy__Speedⁱᵐᵖˡ»
-  Puppy'ptr_Name_unfold : MethodUnfold (go.type.PointerType Puppy) go!"Name" (LamV "$r"
+  Puppy'ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Puppy go!"Name"))) (App (Val (GoInstruction (GoLoad Puppy))) (Var "$r"))))
-  Puppy'ptr_Speed_unfold : MethodUnfold (go.type.PointerType Puppy) go!"Speed" (LamV "$r"
+  Puppy'ptr_Speed_unfold : MethodUnfold (go.GoType.PointerType Puppy) go!"Speed" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Puppy go!"Speed"))) (App (Val (GoInstruction (GoLoad Puppy))) (Var "$r"))))
 
 attribute [instance] Puppy_Assumptions.Puppy_underlying
@@ -5626,19 +5626,19 @@ attribute [instance] Puppy_Assumptions.Puppy_underlying
   Puppy_Assumptions.Puppy'ptr_Speed_unfold
 
 namespace Kitten
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end Kitten
 
-@[reducible] def «Kittenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «Kittenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class Kitten_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Kitten_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Kitten_underlying : go.UnderlyingDirectedEq Kitten «Kittenⁱᵐᵖˡ»
   Kitten_Name_unfold : MethodUnfold Kitten go!"Name" «Kitten__Nameⁱᵐᵖˡ»
   Kitten_Weight_unfold : MethodUnfold Kitten go!"Weight" «Kitten__Weightⁱᵐᵖˡ»
-  Kitten'ptr_Name_unfold : MethodUnfold (go.type.PointerType Kitten) go!"Name" (LamV "$r"
+  Kitten'ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Kitten go!"Name"))) (App (Val (GoInstruction (GoLoad Kitten))) (Var "$r"))))
-  Kitten'ptr_Weight_unfold : MethodUnfold (go.type.PointerType Kitten) go!"Weight" (LamV "$r"
+  Kitten'ptr_Weight_unfold : MethodUnfold (go.GoType.PointerType Kitten) go!"Weight" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Kitten go!"Weight"))) (App (Val (GoInstruction (GoLoad Kitten))) (Var "$r"))))
 
 attribute [instance] Kitten_Assumptions.Kitten_underlying
@@ -5648,46 +5648,46 @@ attribute [instance] Kitten_Assumptions.Kitten_underlying
   Kitten_Assumptions.Kitten'ptr_Weight_unfold
 
 namespace printInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end printInterface
 
-@[reducible] def «printInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.interface_elem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
+@[reducible] def «printInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
 
-class printInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class printInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   printInterface_underlying : go.UnderlyingDirectedEq printInterface «printInterfaceⁱᵐᵖˡ»
 
 attribute [instance] printInterface_Assumptions.printInterface_underlying
 
 namespace PaperStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Title' : go_string
+  Title' : GoString
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end PaperStruct
 
-@[reducible] def PaperStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def PaperStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Title" go.string)]
 
-@[irreducible] def PaperStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def PaperStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   PaperStruct'fds_unsealed
 
-instance equals_unfold_PaperStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_PaperStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold PaperStruct'fds PaperStruct'fds_unsealed :=
   ⟨by unfold PaperStruct'fds; rfl⟩
 
-@[reducible] def «PaperStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType PaperStruct'fds)
+@[reducible] def «PaperStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PaperStruct'fds)
 
-class PaperStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PaperStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PaperStruct_type_repr : go.TypeReprUnderlying «PaperStructⁱᵐᵖˡ» PaperStruct.t
   PaperStruct_underlying : go.UnderlyingDirectedEq PaperStruct «PaperStructⁱᵐᵖˡ»
   PaperStruct_get_Title : ∀ (x : PaperStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «PaperStructⁱᵐᵖˡ» go!"Title") #x (Val #(x.Title'))
-  PaperStruct_set_Title : ∀ (x : PaperStruct.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «PaperStructⁱᵐᵖˡ» go!"Title") (PairV #x #y) (Val #(({ x with Title' := y } : PaperStruct.t)))
-  PaperStruct'ptr_Assign_unfold : MethodUnfold (go.type.PointerType PaperStruct) go!"Assign" «PaperStruct__Assignⁱᵐᵖˡ»
-  PaperStruct'ptr_GetTitle_unfold : MethodUnfold (go.type.PointerType PaperStruct) go!"GetTitle" «PaperStruct__GetTitleⁱᵐᵖˡ»
+  PaperStruct_set_Title : ∀ (x : PaperStruct.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «PaperStructⁱᵐᵖˡ» go!"Title") (PairV #x #y) (Val #(({ x with Title' := y } : PaperStruct.t)))
+  PaperStruct'ptr_Assign_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"Assign" «PaperStruct__Assignⁱᵐᵖˡ»
+  PaperStruct'ptr_GetTitle_unfold : MethodUnfold (go.GoType.PointerType PaperStruct) go!"GetTitle" «PaperStruct__GetTitleⁱᵐᵖˡ»
 
 attribute [instance] PaperStruct_Assumptions.PaperStruct_type_repr
   PaperStruct_Assumptions.PaperStruct_underlying
@@ -5697,58 +5697,58 @@ attribute [instance] PaperStruct_Assumptions.PaperStruct_type_repr
   PaperStruct_Assumptions.PaperStruct'ptr_GetTitle_unfold
 
 namespace Flower
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Flower
 
-@[reducible] def «Flowerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
+@[reducible] def «Flowerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
-class Flower_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Flower_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Flower_underlying : go.UnderlyingDirectedEq Flower «Flowerⁱᵐᵖˡ»
 
 attribute [instance] Flower_Assumptions.Flower_underlying
 
 namespace Flora
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Flora
 
-@[reducible] def «Floraⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.interface_elem.TypeElem [(go.type_term.TypeTerm Flower)])])
+@[reducible] def «Floraⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower)])])
 
-class Flora_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Flora_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Flora_underlying : go.UnderlyingDirectedEq Flora «Floraⁱᵐᵖˡ»
 
 attribute [instance] Flora_Assumptions.Flora_underlying
 
 namespace Lily
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Lily
 
-@[reducible] def Lily'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Lily'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Lily'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Lily'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Lily'fds_unsealed
 
-instance equals_unfold_Lily [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Lily [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Lily'fds Lily'fds_unsealed :=
   ⟨by unfold Lily'fds; rfl⟩
 
-@[reducible] def «Lilyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Lily'fds)
+@[reducible] def «Lilyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Lily'fds)
 
-class Lily_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Lily_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Lily_type_repr : go.TypeReprUnderlying «Lilyⁱᵐᵖˡ» Lily.t
   Lily_underlying : go.UnderlyingDirectedEq Lily «Lilyⁱᵐᵖˡ»
   Lily_Genus_unfold : MethodUnfold Lily go!"Genus" «Lily__Genusⁱᵐᵖˡ»
   Lily_Petals_unfold : MethodUnfold Lily go!"Petals" «Lily__Petalsⁱᵐᵖˡ»
-  Lily'ptr_Genus_unfold : MethodUnfold (go.type.PointerType Lily) go!"Genus" (LamV "$r"
+  Lily'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lily go!"Genus"))) (App (Val (GoInstruction (GoLoad Lily))) (Var "$r"))))
-  Lily'ptr_Petals_unfold : MethodUnfold (go.type.PointerType Lily) go!"Petals" (LamV "$r"
+  Lily'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Lily) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lily go!"Petals"))) (App (Val (GoInstruction (GoLoad Lily))) (Var "$r"))))
 
 attribute [instance] Lily_Assumptions.Lily_type_repr
@@ -5759,34 +5759,34 @@ attribute [instance] Lily_Assumptions.Lily_type_repr
   Lily_Assumptions.Lily'ptr_Petals_unfold
 
 namespace Rose
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Rose
 
-@[reducible] def Rose'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Rose'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Rose'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Rose'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Rose'fds_unsealed
 
-instance equals_unfold_Rose [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Rose [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Rose'fds Rose'fds_unsealed :=
   ⟨by unfold Rose'fds; rfl⟩
 
-@[reducible] def «Roseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Rose'fds)
+@[reducible] def «Roseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Rose'fds)
 
-class Rose_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Rose_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Rose_type_repr : go.TypeReprUnderlying «Roseⁱᵐᵖˡ» Rose.t
   Rose_underlying : go.UnderlyingDirectedEq Rose «Roseⁱᵐᵖˡ»
   Rose_Genus_unfold : MethodUnfold Rose go!"Genus" «Rose__Genusⁱᵐᵖˡ»
   Rose_Petals_unfold : MethodUnfold Rose go!"Petals" «Rose__Petalsⁱᵐᵖˡ»
-  Rose'ptr_Genus_unfold : MethodUnfold (go.type.PointerType Rose) go!"Genus" (LamV "$r"
+  Rose'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Rose go!"Genus"))) (App (Val (GoInstruction (GoLoad Rose))) (Var "$r"))))
-  Rose'ptr_Petals_unfold : MethodUnfold (go.type.PointerType Rose) go!"Petals" (LamV "$r"
+  Rose'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Rose) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Rose go!"Petals"))) (App (Val (GoInstruction (GoLoad Rose))) (Var "$r"))))
 
 attribute [instance] Rose_Assumptions.Rose_type_repr
@@ -5797,34 +5797,34 @@ attribute [instance] Rose_Assumptions.Rose_type_repr
   Rose_Assumptions.Rose'ptr_Petals_unfold
 
 namespace Daisy
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end Daisy
 
-@[reducible] def Daisy'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Daisy'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Daisy'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Daisy'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Daisy'fds_unsealed
 
-instance equals_unfold_Daisy [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Daisy [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Daisy'fds Daisy'fds_unsealed :=
   ⟨by unfold Daisy'fds; rfl⟩
 
-@[reducible] def «Daisyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Daisy'fds)
+@[reducible] def «Daisyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Daisy'fds)
 
-class Daisy_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Daisy_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Daisy_type_repr : go.TypeReprUnderlying «Daisyⁱᵐᵖˡ» Daisy.t
   Daisy_underlying : go.UnderlyingDirectedEq Daisy «Daisyⁱᵐᵖˡ»
   Daisy_Genus_unfold : MethodUnfold Daisy go!"Genus" «Daisy__Genusⁱᵐᵖˡ»
   Daisy_Petals_unfold : MethodUnfold Daisy go!"Petals" «Daisy__Petalsⁱᵐᵖˡ»
-  Daisy'ptr_Genus_unfold : MethodUnfold (go.type.PointerType Daisy) go!"Genus" (LamV "$r"
+  Daisy'ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Genus" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Daisy go!"Genus"))) (App (Val (GoInstruction (GoLoad Daisy))) (Var "$r"))))
-  Daisy'ptr_Petals_unfold : MethodUnfold (go.type.PointerType Daisy) go!"Petals" (LamV "$r"
+  Daisy'ptr_Petals_unfold : MethodUnfold (go.GoType.PointerType Daisy) go!"Petals" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Daisy go!"Petals"))) (App (Val (GoInstruction (GoLoad Daisy))) (Var "$r"))))
 
 attribute [instance] Daisy_Assumptions.Daisy_type_repr
@@ -5835,34 +5835,34 @@ attribute [instance] Daisy_Assumptions.Daisy_type_repr
   Daisy_Assumptions.Daisy'ptr_Petals_unfold
 
 namespace LoopStruct
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  loopNext' : loc
+  loopNext' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end LoopStruct
 
-@[reducible] def LoopStruct'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"loopNext" (go.type.PointerType go.uint64))]
+@[reducible] def LoopStruct'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"loopNext" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def LoopStruct'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def LoopStruct'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LoopStruct'fds_unsealed
 
-instance equals_unfold_LoopStruct [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_LoopStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LoopStruct'fds LoopStruct'fds_unsealed :=
   ⟨by unfold LoopStruct'fds; rfl⟩
 
-@[reducible] def «LoopStructⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType LoopStruct'fds)
+@[reducible] def «LoopStructⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LoopStruct'fds)
 
-class LoopStruct_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LoopStruct_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LoopStruct_type_repr : go.TypeReprUnderlying «LoopStructⁱᵐᵖˡ» LoopStruct.t
   LoopStruct_underlying : go.UnderlyingDirectedEq LoopStruct «LoopStructⁱᵐᵖˡ»
   LoopStruct_get_loopNext : ∀ (x : LoopStruct.t), go.IsGoStepPureDetTagged under (StructFieldGet «LoopStructⁱᵐᵖˡ» go!"loopNext") #x (Val #(x.loopNext'))
-  LoopStruct_set_loopNext : ∀ (x : LoopStruct.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «LoopStructⁱᵐᵖˡ» go!"loopNext") (PairV #x #y) (Val #(({ x with loopNext' := y } : LoopStruct.t)))
+  LoopStruct_set_loopNext : ∀ (x : LoopStruct.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «LoopStructⁱᵐᵖˡ» go!"loopNext") (PairV #x #y) (Val #(({ x with loopNext' := y } : LoopStruct.t)))
   LoopStruct_forLoopWait_unfold : MethodUnfold LoopStruct go!"forLoopWait" «LoopStruct__forLoopWaitⁱᵐᵖˡ»
-  LoopStruct'ptr_forLoopWait_unfold : MethodUnfold (go.type.PointerType LoopStruct) go!"forLoopWait" (LamV "$r"
+  LoopStruct'ptr_forLoopWait_unfold : MethodUnfold (go.GoType.PointerType LoopStruct) go!"forLoopWait" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve LoopStruct go!"forLoopWait"))) (App (Val (GoInstruction (GoLoad LoopStruct))) (Var "$r"))))
 
 attribute [instance] LoopStruct_Assumptions.LoopStruct_type_repr
@@ -5873,34 +5873,34 @@ attribute [instance] LoopStruct_Assumptions.LoopStruct_type_repr
   LoopStruct_Assumptions.LoopStruct'ptr_forLoopWait_unfold
 
 namespace BoolTest
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   t' : Bool
   f' : Bool
   tc' : w64
   fc' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end BoolTest
 
-@[reducible] def BoolTest'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def BoolTest'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" go.bool),
 (go.field_decl.FieldDecl go!"f" go.bool),
 (go.field_decl.FieldDecl go!"tc" go.uint64),
 (go.field_decl.FieldDecl go!"fc" go.uint64)]
 
-@[irreducible] def BoolTest'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def BoolTest'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   BoolTest'fds_unsealed
 
-instance equals_unfold_BoolTest [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_BoolTest [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold BoolTest'fds BoolTest'fds_unsealed :=
   ⟨by unfold BoolTest'fds; rfl⟩
 
-@[reducible] def «BoolTestⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType BoolTest'fds)
+@[reducible] def «BoolTestⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType BoolTest'fds)
 
-class BoolTest_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class BoolTest_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   BoolTest_type_repr : go.TypeReprUnderlying «BoolTestⁱᵐᵖˡ» BoolTest.t
   BoolTest_underlying : go.UnderlyingDirectedEq BoolTest «BoolTestⁱᵐᵖˡ»
   BoolTest_get_t : ∀ (x : BoolTest.t), go.IsGoStepPureDetTagged under (StructFieldGet «BoolTestⁱᵐᵖˡ» go!"t") #x (Val #(x.t'))
@@ -5924,37 +5924,37 @@ attribute [instance] BoolTest_Assumptions.BoolTest_type_repr
   BoolTest_Assumptions.BoolTest_set_fc
 
 namespace ArrayEditor
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   s' : slice.t
   next_val' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end ArrayEditor
 
-@[reducible] def ArrayEditor'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"s" (go.type.SliceType go.uint64)),
+@[reducible] def ArrayEditor'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def ArrayEditor'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def ArrayEditor'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ArrayEditor'fds_unsealed
 
-instance equals_unfold_ArrayEditor [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_ArrayEditor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ArrayEditor'fds ArrayEditor'fds_unsealed :=
   ⟨by unfold ArrayEditor'fds; rfl⟩
 
-@[reducible] def «ArrayEditorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType ArrayEditor'fds)
+@[reducible] def «ArrayEditorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType ArrayEditor'fds)
 
-class ArrayEditor_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ArrayEditor_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ArrayEditor_type_repr : go.TypeReprUnderlying «ArrayEditorⁱᵐᵖˡ» ArrayEditor.t
   ArrayEditor_underlying : go.UnderlyingDirectedEq ArrayEditor «ArrayEditorⁱᵐᵖˡ»
   ArrayEditor_get_s : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet «ArrayEditorⁱᵐᵖˡ» go!"s") #x (Val #(x.s'))
   ArrayEditor_set_s : ∀ (x : ArrayEditor.t) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet «ArrayEditorⁱᵐᵖˡ» go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor.t)))
   ArrayEditor_get_next_val : ∀ (x : ArrayEditor.t), go.IsGoStepPureDetTagged under (StructFieldGet «ArrayEditorⁱᵐᵖˡ» go!"next_val") #x (Val #(x.next_val'))
   ArrayEditor_set_next_val : ∀ (x : ArrayEditor.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «ArrayEditorⁱᵐᵖˡ» go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : ArrayEditor.t)))
-  ArrayEditor'ptr_Advance_unfold : MethodUnfold (go.type.PointerType ArrayEditor) go!"Advance" «ArrayEditor__Advanceⁱᵐᵖˡ»
+  ArrayEditor'ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType ArrayEditor) go!"Advance" «ArrayEditor__Advanceⁱᵐᵖˡ»
 
 attribute [instance] ArrayEditor_Assumptions.ArrayEditor_type_repr
   ArrayEditor_Assumptions.ArrayEditor_underlying
@@ -5965,37 +5965,37 @@ attribute [instance] ArrayEditor_Assumptions.ArrayEditor_type_repr
   ArrayEditor_Assumptions.ArrayEditor'ptr_Advance_unfold
 
 namespace Bar
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   a' : w64
   b' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end Bar
 
-@[reducible] def Bar'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Bar'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" go.uint64)]
 
-@[irreducible] def Bar'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Bar'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Bar'fds_unsealed
 
-instance equals_unfold_Bar [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Bar [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Bar'fds Bar'fds_unsealed :=
   ⟨by unfold Bar'fds; rfl⟩
 
-@[reducible] def «Barⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Bar'fds)
+@[reducible] def «Barⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bar'fds)
 
-class Bar_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bar_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bar_type_repr : go.TypeReprUnderlying «Barⁱᵐᵖˡ» Bar.t
   Bar_underlying : go.UnderlyingDirectedEq Bar «Barⁱᵐᵖˡ»
   Bar_get_a : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet «Barⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
   Bar_set_a : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Barⁱᵐᵖˡ» go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Bar.t)))
   Bar_get_b : ∀ (x : Bar.t), go.IsGoStepPureDetTagged under (StructFieldGet «Barⁱᵐᵖˡ» go!"b") #x (Val #(x.b'))
   Bar_set_b : ∀ (x : Bar.t) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «Barⁱᵐᵖˡ» go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bar.t)))
-  Bar'ptr_mutate_unfold : MethodUnfold (go.type.PointerType Bar) go!"mutate" «Bar__mutateⁱᵐᵖˡ»
+  Bar'ptr_mutate_unfold : MethodUnfold (go.GoType.PointerType Bar) go!"mutate" «Bar__mutateⁱᵐᵖˡ»
 
 attribute [instance] Bar_Assumptions.Bar_type_repr
   Bar_Assumptions.Bar_underlying
@@ -6006,33 +6006,33 @@ attribute [instance] Bar_Assumptions.Bar_type_repr
   Bar_Assumptions.Bar'ptr_mutate_unfold
 
 namespace Foo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   bar' : Bar.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Foo
 
-@[reducible] def Foo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Foo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bar" Bar)]
 
-@[irreducible] def Foo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Foo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Foo'fds_unsealed
 
-instance equals_unfold_Foo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Foo'fds Foo'fds_unsealed :=
   ⟨by unfold Foo'fds; rfl⟩
 
-@[reducible] def «Fooⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Foo'fds)
+@[reducible] def «Fooⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Foo'fds)
 
-class Foo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Foo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_type_repr : go.TypeReprUnderlying «Fooⁱᵐᵖˡ» Foo.t
   Foo_underlying : go.UnderlyingDirectedEq Foo «Fooⁱᵐᵖˡ»
   Foo_get_bar : ∀ (x : Foo.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fooⁱᵐᵖˡ» go!"bar") #x (Val #(x.bar'))
   Foo_set_bar : ∀ (x : Foo.t) (y : Bar.t), go.IsGoStepPureDetTagged under (StructFieldSet «Fooⁱᵐᵖˡ» go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo.t)))
-  Foo'ptr_mutateBar_unfold : MethodUnfold (go.type.PointerType Foo) go!"mutateBar" «Foo__mutateBarⁱᵐᵖˡ»
+  Foo'ptr_mutateBar_unfold : MethodUnfold (go.GoType.PointerType Foo) go!"mutateBar" «Foo__mutateBarⁱᵐᵖˡ»
 
 attribute [instance] Foo_Assumptions.Foo_type_repr
   Foo_Assumptions.Foo_underlying
@@ -6041,30 +6041,30 @@ attribute [instance] Foo_Assumptions.Foo_type_repr
   Foo_Assumptions.Foo'ptr_mutateBar_unfold
 
 namespace TwoInts
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   x' : w64
   y' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end TwoInts
 
-@[reducible] def TwoInts'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def TwoInts'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def TwoInts'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def TwoInts'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   TwoInts'fds_unsealed
 
-instance equals_unfold_TwoInts [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_TwoInts [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold TwoInts'fds TwoInts'fds_unsealed :=
   ⟨by unfold TwoInts'fds; rfl⟩
 
-@[reducible] def «TwoIntsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType TwoInts'fds)
+@[reducible] def «TwoIntsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TwoInts'fds)
 
-class TwoInts_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class TwoInts_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TwoInts_type_repr : go.TypeReprUnderlying «TwoIntsⁱᵐᵖˡ» TwoInts.t
   TwoInts_underlying : go.UnderlyingDirectedEq TwoInts «TwoIntsⁱᵐᵖˡ»
   TwoInts_get_x : ∀ (x : TwoInts.t), go.IsGoStepPureDetTagged under (StructFieldGet «TwoIntsⁱᵐᵖˡ» go!"x") #x (Val #(x.x'))
@@ -6080,32 +6080,32 @@ attribute [instance] TwoInts_Assumptions.TwoInts_type_repr
   TwoInts_Assumptions.TwoInts_set_y
 
 namespace S
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   a' : w64
   b' : TwoInts.t
   c' : Bool
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end S
 
-@[reducible] def S'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def S'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" TwoInts),
 (go.field_decl.FieldDecl go!"c" go.bool)]
 
-@[irreducible] def S'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def S'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   S'fds_unsealed
 
-instance equals_unfold_S [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_S [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold S'fds S'fds_unsealed :=
   ⟨by unfold S'fds; rfl⟩
 
-@[reducible] def «Sⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType S'fds)
+@[reducible] def «Sⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType S'fds)
 
-class S_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class S_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   S_type_repr : go.TypeReprUnderlying «Sⁱᵐᵖˡ» S.t
   S_underlying : go.UnderlyingDirectedEq S «Sⁱᵐᵖˡ»
   S_get_a : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet «Sⁱᵐᵖˡ» go!"a") #x (Val #(x.a'))
@@ -6115,12 +6115,12 @@ class S_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemantics
   S_get_c : ∀ (x : S.t), go.IsGoStepPureDetTagged under (StructFieldGet «Sⁱᵐᵖˡ» go!"c") #x (Val #(x.c'))
   S_set_c : ∀ (x : S.t) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «Sⁱᵐᵖˡ» go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S.t)))
   S_readBVal_unfold : MethodUnfold S go!"readBVal" «S__readBValⁱᵐᵖˡ»
-  S'ptr_negateC_unfold : MethodUnfold (go.type.PointerType S) go!"negateC" «S__negateCⁱᵐᵖˡ»
-  S'ptr_readA_unfold : MethodUnfold (go.type.PointerType S) go!"readA" «S__readAⁱᵐᵖˡ»
-  S'ptr_readB_unfold : MethodUnfold (go.type.PointerType S) go!"readB" «S__readBⁱᵐᵖˡ»
-  S'ptr_readBVal_unfold : MethodUnfold (go.type.PointerType S) go!"readBVal" (LamV "$r"
+  S'ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S) go!"negateC" «S__negateCⁱᵐᵖˡ»
+  S'ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S) go!"readA" «S__readAⁱᵐᵖˡ»
+  S'ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S) go!"readB" «S__readBⁱᵐᵖˡ»
+  S'ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S) go!"readBVal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve S go!"readBVal"))) (App (Val (GoInstruction (GoLoad S))) (Var "$r"))))
-  S'ptr_updateBValX_unfold : MethodUnfold (go.type.PointerType S) go!"updateBValX" «S__updateBValXⁱᵐᵖˡ»
+  S'ptr_updateBValX_unfold : MethodUnfold (go.GoType.PointerType S) go!"updateBValX" «S__updateBValXⁱᵐᵖˡ»
 
 attribute [instance] S_Assumptions.S_type_repr
   S_Assumptions.S_underlying
@@ -6138,28 +6138,28 @@ attribute [instance] S_Assumptions.S_type_repr
   S_Assumptions.S'ptr_updateBValX_unfold
 
 namespace StructWrap
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   i' : w64
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end StructWrap
 
-@[reducible] def StructWrap'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def StructWrap'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"i" go.uint64)]
 
-@[irreducible] def StructWrap'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def StructWrap'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StructWrap'fds_unsealed
 
-instance equals_unfold_StructWrap [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_StructWrap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold StructWrap'fds StructWrap'fds_unsealed :=
   ⟨by unfold StructWrap'fds; rfl⟩
 
-@[reducible] def «StructWrapⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType StructWrap'fds)
+@[reducible] def «StructWrapⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StructWrap'fds)
 
-class StructWrap_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StructWrap_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StructWrap_type_repr : go.TypeReprUnderlying «StructWrapⁱᵐᵖˡ» StructWrap.t
   StructWrap_underlying : go.UnderlyingDirectedEq StructWrap «StructWrapⁱᵐᵖˡ»
   StructWrap_get_i : ∀ (x : StructWrap.t), go.IsGoStepPureDetTagged under (StructFieldGet «StructWrapⁱᵐᵖˡ» go!"i") #x (Val #(x.i'))
@@ -6171,28 +6171,28 @@ attribute [instance] StructWrap_Assumptions.StructWrap_type_repr
   StructWrap_Assumptions.StructWrap_set_i
 
 namespace StructWithFunc
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   fn' : func.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end StructWithFunc
 
-@[reducible] def StructWithFunc'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"fn" (go.type.FunctionType (go.signature.Signature [go.uint64] false [go.uint64])))]
+@[reducible] def StructWithFunc'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"fn" (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64])))]
 
-@[irreducible] def StructWithFunc'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def StructWithFunc'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StructWithFunc'fds_unsealed
 
-instance equals_unfold_StructWithFunc [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_StructWithFunc [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold StructWithFunc'fds StructWithFunc'fds_unsealed :=
   ⟨by unfold StructWithFunc'fds; rfl⟩
 
-@[reducible] def «StructWithFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType StructWithFunc'fds)
+@[reducible] def «StructWithFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType StructWithFunc'fds)
 
-class StructWithFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StructWithFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StructWithFunc_type_repr : go.TypeReprUnderlying «StructWithFuncⁱᵐᵖˡ» StructWithFunc.t
   StructWithFunc_underlying : go.UnderlyingDirectedEq StructWithFunc «StructWithFuncⁱᵐᵖˡ»
   StructWithFunc_get_fn : ∀ (x : StructWithFunc.t), go.IsGoStepPureDetTagged under (StructFieldGet «StructWithFuncⁱᵐᵖˡ» go!"fn") #x (Val #(x.fn'))
@@ -6204,90 +6204,90 @@ attribute [instance] StructWithFunc_Assumptions.StructWithFunc_type_repr
   StructWithFunc_Assumptions.StructWithFunc_set_fn
 
 namespace switchConcrete
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end switchConcrete
 
-@[reducible] def switchConcrete'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def switchConcrete'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def switchConcrete'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def switchConcrete'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   switchConcrete'fds_unsealed
 
-instance equals_unfold_switchConcrete [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_switchConcrete [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold switchConcrete'fds switchConcrete'fds_unsealed :=
   ⟨by unfold switchConcrete'fds; rfl⟩
 
-@[reducible] def «switchConcreteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType switchConcrete'fds)
+@[reducible] def «switchConcreteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType switchConcrete'fds)
 
-class switchConcrete_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class switchConcrete_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   switchConcrete_type_repr : go.TypeReprUnderlying «switchConcreteⁱᵐᵖˡ» switchConcrete.t
   switchConcrete_underlying : go.UnderlyingDirectedEq switchConcrete «switchConcreteⁱᵐᵖˡ»
-  switchConcrete'ptr_marker_unfold : MethodUnfold (go.type.PointerType switchConcrete) go!"marker" «switchConcrete__markerⁱᵐᵖˡ»
+  switchConcrete'ptr_marker_unfold : MethodUnfold (go.GoType.PointerType switchConcrete) go!"marker" «switchConcrete__markerⁱᵐᵖˡ»
 
 attribute [instance] switchConcrete_Assumptions.switchConcrete_type_repr
   switchConcrete_Assumptions.switchConcrete_underlying
   switchConcrete_Assumptions.switchConcrete'ptr_marker_unfold
 
 namespace switchInterface
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end switchInterface
 
-@[reducible] def «switchInterfaceⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"marker" (go.signature.Signature [] false []))])
+@[reducible] def «switchInterfaceⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"marker" (go.signature.Signature [] false []))])
 
-class switchInterface_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class switchInterface_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   switchInterface_underlying : go.UnderlyingDirectedEq switchInterface «switchInterfaceⁱᵐᵖˡ»
 
 attribute [instance] switchInterface_Assumptions.switchInterface_underlying
 
 namespace DefinedStr
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end DefinedStr
 
-@[reducible] def «DefinedStrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «DefinedStrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class DefinedStr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class DefinedStr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   DefinedStr_underlying : go.UnderlyingDirectedEq DefinedStr «DefinedStrⁱᵐᵖˡ»
 
 attribute [instance] DefinedStr_Assumptions.DefinedStr_underlying
 
 namespace List'
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   X' : T
-  Next' : loc
+  Next' : Loc
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end List'
 
-@[reducible] def List'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def List'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
-(go.field_decl.FieldDecl go!"Next" (go.type.PointerType (List' T)))]
+(go.field_decl.FieldDecl go!"Next" (go.GoType.PointerType (List' T)))]
 
-@[irreducible] def List'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def List'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (List'fds_unsealed T)
 
-instance equals_unfold_List [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_List [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (List'fds T) (List'fds_unsealed T) :=
   ⟨by unfold List'fds; rfl⟩
 
-@[reducible] def «List'ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (List'fds T))
+@[reducible] def «List'ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (List'fds T))
 
-class List_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  List_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («List'ⁱᵐᵖˡ» T) (List'.t T')
-  List_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (List' T) («List'ⁱᵐᵖˡ» T)
-  List_get_X : ∀ (T : go.type) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"X") #x (Val #(x.X'))
-  List_set_X : ∀ (T : go.type) (T' : Type) (x : (List'.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (List'.t T'))))
-  List_get_Next : ∀ (T : go.type) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"Next") #x (Val #(x.Next'))
-  List_set_Next : ∀ (T : go.type) (T' : Type) (x : (List'.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : (List'.t T'))))
+class List_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  List_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («List'ⁱᵐᵖˡ» T) (List'.t T')
+  List_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (List' T) («List'ⁱᵐᵖˡ» T)
+  List_get_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"X") #x (Val #(x.X'))
+  List_set_X : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (List'.t T'))))
+  List_get_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («List'ⁱᵐᵖˡ» T) go!"Next") #x (Val #(x.Next'))
+  List_set_Next : ∀ (T : go.GoType) (T' : Type) (x : (List'.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («List'ⁱᵐᵖˡ» T) go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : (List'.t T'))))
 
 attribute [instance] List_Assumptions.List_type_repr
   List_Assumptions.List_underlying
@@ -6297,44 +6297,44 @@ attribute [instance] List_Assumptions.List_type_repr
   List_Assumptions.List_set_Next
 
 namespace Log
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t
-  l' : loc
+  l' : Loc
   cache' : map.t
-  length' : loc
+  length' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Log
 
-@[reducible] def Log'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Log'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk),
-(go.field_decl.FieldDecl go!"l" (go.type.PointerType _root_.Perennial.sync.Mutex)),
-(go.field_decl.FieldDecl go!"cache" (go.type.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)),
-(go.field_decl.FieldDecl go!"length" (go.type.PointerType go.uint64))]
+(go.field_decl.FieldDecl go!"l" (go.GoType.PointerType _root_.Perennial.sync.Mutex)),
+(go.field_decl.FieldDecl go!"cache" (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block)),
+(go.field_decl.FieldDecl go!"length" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Log'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Log'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Log'fds_unsealed
 
-instance equals_unfold_Log [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Log'fds Log'fds_unsealed :=
   ⟨by unfold Log'fds; rfl⟩
 
-@[reducible] def «Logⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Log'fds)
+@[reducible] def «Logⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Log'fds)
 
-class Log_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Log_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Log_type_repr : go.TypeReprUnderlying «Logⁱᵐᵖˡ» Log.t
   Log_underlying : go.UnderlyingDirectedEq Log «Logⁱᵐᵖˡ»
   Log_get_d : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"d") #x (Val #(x.d'))
   Log_set_d : ∀ (x : Log.t) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.t), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"d") (PairV #x #y) (Val #(({ x with d' := y } : Log.t)))
   Log_get_l : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"l") #x (Val #(x.l'))
-  Log_set_l : ∀ (x : Log.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : Log.t)))
+  Log_set_l : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"l") (PairV #x #y) (Val #(({ x with l' := y } : Log.t)))
   Log_get_cache : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"cache") #x (Val #(x.cache'))
   Log_set_cache : ∀ (x : Log.t) (y : map.t), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log.t)))
   Log_get_length : ∀ (x : Log.t), go.IsGoStepPureDetTagged under (StructFieldGet «Logⁱᵐᵖˡ» go!"length") #x (Val #(x.length'))
-  Log_set_length : ∀ (x : Log.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log.t)))
+  Log_set_length : ∀ (x : Log.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Logⁱᵐᵖˡ» go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log.t)))
   Log_Apply_unfold : MethodUnfold Log go!"Apply" «Log__Applyⁱᵐᵖˡ»
   Log_BeginTxn_unfold : MethodUnfold Log go!"BeginTxn" «Log__BeginTxnⁱᵐᵖˡ»
   Log_Commit_unfold : MethodUnfold Log go!"Commit" «Log__Commitⁱᵐᵖˡ»
@@ -6343,21 +6343,21 @@ class Log_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanti
   Log_Write_unfold : MethodUnfold Log go!"Write" «Log__Writeⁱᵐᵖˡ»
   Log_lock_unfold : MethodUnfold Log go!"lock" «Log__lockⁱᵐᵖˡ»
   Log_unlock_unfold : MethodUnfold Log go!"unlock" «Log__unlockⁱᵐᵖˡ»
-  Log'ptr_Apply_unfold : MethodUnfold (go.type.PointerType Log) go!"Apply" (LamV "$r"
+  Log'ptr_Apply_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Apply" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Apply"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_BeginTxn_unfold : MethodUnfold (go.type.PointerType Log) go!"BeginTxn" (LamV "$r"
+  Log'ptr_BeginTxn_unfold : MethodUnfold (go.GoType.PointerType Log) go!"BeginTxn" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"BeginTxn"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Commit_unfold : MethodUnfold (go.type.PointerType Log) go!"Commit" (LamV "$r"
+  Log'ptr_Commit_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Commit" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Commit"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Read_unfold : MethodUnfold (go.type.PointerType Log) go!"Read" (LamV "$r"
+  Log'ptr_Read_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Read" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Read"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Size_unfold : MethodUnfold (go.type.PointerType Log) go!"Size" (LamV "$r"
+  Log'ptr_Size_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Size" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Size"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_Write_unfold : MethodUnfold (go.type.PointerType Log) go!"Write" (LamV "$r"
+  Log'ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Log) go!"Write" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"Write"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_lock_unfold : MethodUnfold (go.type.PointerType Log) go!"lock" (LamV "$r"
+  Log'ptr_lock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"lock"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
-  Log'ptr_unlock_unfold : MethodUnfold (go.type.PointerType Log) go!"unlock" (LamV "$r"
+  Log'ptr_unlock_unfold : MethodUnfold (go.GoType.PointerType Log) go!"unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Log go!"unlock"))) (App (Val (GoInstruction (GoLoad Log))) (Var "$r"))))
 
 attribute [instance] Log_Assumptions.Log_type_repr
@@ -6564,7 +6564,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testSwitchMultiple_unfold : FuncUnfold testSwitchMultiple [] «testSwitchMultipleⁱᵐᵖˡ»
   testSwitchDefaultTrue_unfold : FuncUnfold testSwitchDefaultTrue [] «testSwitchDefaultTrueⁱᵐᵖˡ»
   testSwitchConversion_unfold : FuncUnfold testSwitchConversion [] «testSwitchConversionⁱᵐᵖˡ»
-  TypesEqual_unfold : ∀ (T U : go.type), FuncUnfold TypesEqual [T, U] («TypesEqualⁱᵐᵖˡ» T U)
+  TypesEqual_unfold : ∀ (T U : go.GoType), FuncUnfold TypesEqual [T, U] («TypesEqualⁱᵐᵖˡ» T U)
   testPrimitiveTypesEqual_unfold : FuncUnfold testPrimitiveTypesEqual [] «testPrimitiveTypesEqualⁱᵐᵖˡ»
   testDefinedStrTypesEqual_unfold : FuncUnfold testDefinedStrTypesEqual [] «testDefinedStrTypesEqualⁱᵐᵖˡ»
   testListTypesEqual_unfold : FuncUnfold testListTypesEqual [] «testListTypesEqualⁱᵐᵖˡ»

@@ -21,9 +21,9 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : lock.Assumptions]
 
 instance isPkgInit_inst :
@@ -36,9 +36,9 @@ instance get_isPkgInit_wf_inst :
 end init
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : lock.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
@@ -73,7 +73,7 @@ theorem Lock.wp_Lock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
   wp_start as #Hl
   unfold isLock
   wp_auto
-  wp_apply wp_lock_channel_lock (t := go.type.StructType []) γ l.ch' () R $$ Hl as HR
+  wp_apply wp_lock_channel_lock (t := go.GoType.StructType []) γ l.ch' () R $$ Hl as HR
   iapply HΦ $$ HR
 
 theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
@@ -83,7 +83,7 @@ theorem Lock.wp_Unlock (γ : LockChannelNames) (l : Lock.t) (R : IProp GF) :
   wp_start as ⟨#Hl, HR⟩
   unfold isLock
   wp_auto
-  wp_apply wp_lock_channel_unlock (t := go.type.StructType []) γ l.ch' R $$ [$Hl $HR] as %v -
+  wp_apply wp_lock_channel_unlock (t := go.GoType.StructType []) γ l.ch' R $$ [$Hl $HR] as %v -
   iapply HΦ
   itrivial
 

@@ -13,7 +13,7 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 /-- The keyed element of an array literal element that is the value `#x` of type `t`. -/
-def arrayLitKE [ffi_syntax] [GoGlobalContext] (t : go.type) {V : Type} (x : V) : keyed_element :=
+def arrayLitKE [FfiSyntax] [GoGlobalContext] (t : go.GoType) {V : Type} (x : V) : keyed_element :=
   KeyedElement none (ElementExpression t (Val #x))
 
 /-- Set `acc` at indices `i, i+1, ...` to `xs`, as the steps of an array literal do. -/
@@ -43,31 +43,31 @@ theorem arrayLitSets_eq {V : Type} (z : V) :
     simp
 
 section array_lit
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-theorem wp_arrayLit_set {s : Stuckness} {E : CoPset} (n : Int) (t : go.type) {V : Type} (e0 : expr)
+theorem wp_arrayLit_set {s : Stuckness} {E : CoPset} (n : Int) (t : go.GoType) {V : Type} (e0 : Expr)
     (acc : List V) (i : Int) (x : V)
     (he0 : ∀ Ψ : val → IProp GF, Ψ #(array.mk n acc) ⊢ WP e0 @ s; E {{ Ψ }})
     (Φ : val → IProp GF) :
     Φ #(array.mk n (acc.set (sint.nat (W64 i)) x)) ⊢
       WP gl(ArraySet (e0, (#(W64 i), Convert t t (Val #x)))) @ s; E {{ Φ }} := by
   refine .trans ?_ (wp_bind (fill [EctxItem.PairLCtx (Pair (Val #(W64 i))
-    (App (Val (GoInstruction (go_instruction.Convert t t))) (Val #x))),
-    EctxItem.AppRCtx (Val (GoInstruction go_instruction.ArraySet))]))
+    (App (Val (GoInstruction (GoInstruction.Convert t t))) (Val #x))),
+    EctxItem.AppRCtx (Val (GoInstruction GoInstruction.ArraySet))]))
   refine .trans ?_ (he0 _)
   change _ ⊢ WP gl(ArraySet (Val #(array.mk n acc), (#(W64 i), Convert t t (Val #x)))) @ s; E {{ Φ }}
   iintro HΦ
   wp_pures
   iexact HΦ
 
-theorem wp_arrayLit_fold {s : Stuckness} {E : CoPset} (n : Int) (t : go.type) {V : Type}
-    (F : Int × expr → keyed_element → Int × expr)
-    (hF : ∀ (i : Int) (e : expr) (x : V), F (i, e) (arrayLitKE t x) =
+theorem wp_arrayLit_fold {s : Stuckness} {E : CoPset} (n : Int) (t : go.GoType) {V : Type}
+    (F : Int × Expr → keyed_element → Int × Expr)
+    (hF : ∀ (i : Int) (e : Expr) (x : V), F (i, e) (arrayLitKE t x) =
       (i + 1, gl(ArraySet (e, (#(W64 i), Convert t t (Val #x)))))) :
-    ∀ (xs : List V) (i : Int) (e0 : expr) (acc : List V),
+    ∀ (xs : List V) (i : Int) (e0 : Expr) (acc : List V),
       (∀ Ψ : val → IProp GF, Ψ #(array.mk n acc) ⊢ WP e0 @ s; E {{ Ψ }}) →
       ∀ Φ : val → IProp GF, Φ #(array.mk n (arrayLitSets acc i xs)) ⊢
         WP (List.foldl F (i, e0) (xs.map (arrayLitKE t))).2 @ s; E {{ Φ }}
@@ -79,7 +79,7 @@ theorem wp_arrayLit_fold {s : Stuckness} {E : CoPset} (n : Int) (t : go.type) {V
 
 /-- An array literal whose elements are all values (of the element type) takes a
 single step (in fact many) to the array value. -/
-theorem pure_wp_array_lit (n : Int) (t : go.type) {V : Type} {zv : ZeroVal V} [TypeRepr t V]
+theorem pure_wp_array_lit (n : Int) (t : go.GoType) {V : Type} {zv : ZeroVal V} [TypeRepr t V]
     (xs : List V) (m : Nat) (kvs : List keyed_element) (hkvs : kvs = xs.map (arrayLitKE t))
     (hlen : xs.length + m = n.toNat) (hn : n.toNat < 2 ^ 63) :
     PureWp (G := G) (L := L) True
@@ -90,7 +90,7 @@ theorem pure_wp_array_lit (n : Int) (t : go.type) {V : Type} {zv : ZeroVal V} [T
   refine .trans ?_ ((pure_wp_go_step_det (G := G) (L := L) _ _ _).pure_wp_wp s E Φ [] trivial)
   have he0 : ∀ Ψ : val → IProp GF,
       Ψ #(array.mk n (List.replicate n.toNat (zero_val V))) ⊢
-        WP (GoZeroVal (go.ArrayType n t) #() : expr) @ s; E {{ Ψ }} := by
+        WP (GoZeroVal (go.ArrayType n t) #() : Expr) @ s; E {{ Ψ }} := by
     intro Ψ
     iintro H
     wp_pures
@@ -105,7 +105,7 @@ theorem pure_wp_array_lit (n : Int) (t : go.type) {V : Type} {zv : ZeroVal V} [T
   exact wp_arrayLit_fold n t _ (fun _ _ _ => rfl) xs 0 _ _ he0 Φ
 
 /-- `pure_wp_array_lit` for a literal that gives every element. -/
-theorem pure_wp_array_lit_full (n : Int) (t : go.type) {V : Type} {zv : ZeroVal V}
+theorem pure_wp_array_lit_full (n : Int) (t : go.GoType) {V : Type} {zv : ZeroVal V}
     [TypeRepr t V] (xs : List V) (kvs : List keyed_element) (hkvs : kvs = xs.map (arrayLitKE t))
     (hlen : xs.length = n.toNat) (hn : n.toNat < 2 ^ 63) :
     PureWp (G := G) (L := L) True

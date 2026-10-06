@@ -19,13 +19,13 @@ below. The *bodies* of these constructs are elaborated in **goose mode**:
 * application `e1 e2` is GooseLang `App` when the head is a GooseLang
   expression (a string literal, a parenthesized expression, a goose
   construct, a variable). When the head is a Lean constant or local (e.g.
-  `GoAlloc t`, `FuncResolve go.len [t]`, `exception_do`, `slice.for_range t`),
+  `GoAlloc t`, `FuncResolve go.len [t]`, `exceptionDo`, `slice.forRange t`),
   the arguments are elaborated by Lean against the function's parameter
   types: arguments of type `expr` (resp. `val`) are elaborated in goose
-  expression (resp. value) mode, a string literal argument of type `go_string`
+  expression (resp. value) mode, a string literal argument of type `GoString`
   is a `go!"..."` literal (e.g. `MethodResolve t "Send"`), and other arguments
   are ordinary Lean terms. Once
-  the Lean function is fully applied, its value (`val`, `go_instruction`,
+  the Lean function is fully applied, its value (`val`, `GoInstruction`,
   `expr`) is coerced to `expr` and remaining arguments are GooseLang `App`s.
 * an identifier that is not a Lean local or constant is a GooseLang variable
   (so `λ: x, x` works); string literals are the canonical form.
@@ -38,7 +38,7 @@ own, so `gl(...)` is only needed for pairs/strings outside them.
 
 | syntax | meaning |
 |---|---|
-| `#x` | `intoVal x`; `#"abc"` is `intoVal go!"abc"` (a `go_string`) |
+| `#x` | `intoVal x`; `#"abc"` is `intoVal go!"abc"` (a `GoString`) |
 | `λ: "x" "y", e` | `Rec BAnon "x" (Rec BAnon "y" e)`; `RecV BAnon "x" ...` when a `val` is expected |
 | `rec: "f" "x" "y" := e` | `Rec "f" "x" (Rec BAnon "y" e)` (or `RecV ...` when a `val` is expected) |
 | `let: "x" := e1 in e2` | `App (Rec BAnon "x" e2) e1` |
@@ -77,15 +77,15 @@ open Lean Elab Term Meta
 /-! ## Coercions used by GooseLang code -/
 
 section coercions
-variable [ffi_syntax]
+variable [FfiSyntax]
 
-/-- Rocq `Coercion GoInstruction : go_instruction >-> val`. -/
-instance : Coe go_instruction val := ⟨GoInstruction⟩
-instance : CoeFun val (fun _ => expr → expr) := ⟨fun v => App (Val v)⟩
-instance : CoeFun go_instruction (fun _ => expr → expr) := ⟨fun i => App (Val (GoInstruction i))⟩
+/-- Rocq `Coercion GoInstruction : GoInstruction >-> val`. -/
+instance : Coe GoInstruction val := ⟨GoInstruction⟩
+instance : CoeFun val (fun _ => Expr → Expr) := ⟨fun v => App (Val v)⟩
+instance : CoeFun GoInstruction (fun _ => Expr → Expr) := ⟨fun i => App (Val (GoInstruction i))⟩
 end coercions
 
-/-- `#"abc"` is the `go_string` literal `"abc"` (Rocq puts `#`'s argument in
+/-- `#"abc"` is the `GoString` literal `"abc"` (Rocq puts `#`'s argument in
 `%go` scope). -/
 scoped macro_rules
   | `(#$s:str) => `(intoVal go!$s)
@@ -131,10 +131,10 @@ scoped syntax:max (name := glVal) "glv(" term ")" : term
 goose mode iff its expected type is `expr` or `val`. -/
 syntax:max (name := glArg) "gl_arg% " term:max : term
 
-private def isExprTy (ty : Expr) : MetaM Bool := do
-  return (← whnfR (← instantiateMVars ty)).isAppOf ``Perennial.expr
+private def isExprTy (ty : Lean.Expr) : MetaM Bool := do
+  return (← whnfR (← instantiateMVars ty)).isAppOf ``Perennial.Expr
 
-private def isValTy (ty : Expr) : MetaM Bool := do
+private def isValTy (ty : Lean.Expr) : MetaM Bool := do
   return (← whnfR (← instantiateMVars ty)).isAppOf ``Perennial.val
 
 /-- Does `id` refer to a Lean local or global? -/
@@ -200,7 +200,7 @@ partial def glValStx (stx : Term) : TermElabM Term := do
 
 @[term_elab glExpr] def elabGlExpr : TermElab := fun stx _ => do
   let e : Term := ⟨stx[1]⟩
-  let ty ← elabType (← `(expr))
+  let ty ← elabType (← `(Expr))
   elabTermEnsuringType (← glExprStx e) ty
 
 @[term_elab glVal] def elabGlVal : TermElab := fun stx _ => do
@@ -219,14 +219,14 @@ partial def glValStx (stx : Term) : TermElabM Term := do
     else if ← isValTy ety then elabTerm (← `(glv($a))) ety
     else match a with
       | `($s:str) =>
-        -- a string literal where a `go_string` is expected (Rocq's `%go` scope)
-        let goStr ← elabType (← `(go_string))
+        -- a string literal where a `GoString` is expected (Rocq's `%go` scope)
+        let goStr ← elabType (← `(GoString))
         if ← withNewMCtxDepth (isDefEq ety goStr) then elabTerm (← `(go!$s)) ety
         else elabTerm a ety
       | _ => elabTerm a ety
 
 /-- Is a `val` expected? Postpones if the expected type is not known yet. -/
-private def valExpected (ety? : Option Expr) : TermElabM Bool := do
+private def valExpected (ety? : Option Lean.Expr) : TermElabM Bool := do
   match ety? with
   | none => return false
   | some ety =>

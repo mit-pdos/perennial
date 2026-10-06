@@ -13,423 +13,423 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math.bits : go_string := go!"math/bits"
+def math.bits : GoString := go!"math/bits"
 end pkg_id
 
 namespace math.bits
 
 /-- 32 or 64 -/
-@[reducible] noncomputable def uintSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def uintSize [FfiSyntax] [GoGlobalContext] : val :=
   #(64 : Int)
 
-@[reducible] noncomputable def UintSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def UintSize [FfiSyntax] [GoGlobalContext] : val :=
   #(64 : Int)
 
-@[reducible] noncomputable def deBruijn32 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def deBruijn32 [FfiSyntax] [GoGlobalContext] : val :=
   #(125613361 : Int)
 
-@[reducible] noncomputable def deBruijn64 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def deBruijn64 [FfiSyntax] [GoGlobalContext] : val :=
   #(285870213051353865 : Int)
 
 /-- 01010101 ... -/
-@[reducible] noncomputable def m0 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m0 [FfiSyntax] [GoGlobalContext] : val :=
   #(6148914691236517205 : Int)
 
 /-- 00110011 ... -/
-@[reducible] noncomputable def m1 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m1 [FfiSyntax] [GoGlobalContext] : val :=
   #(3689348814741910323 : Int)
 
 /-- 00001111 ... -/
-@[reducible] noncomputable def m2 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m2 [FfiSyntax] [GoGlobalContext] : val :=
   #(1085102592571150095 : Int)
 
 /-- etc. -/
-@[reducible] noncomputable def m3 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m3 [FfiSyntax] [GoGlobalContext] : val :=
   #(71777214294589695 : Int)
 
-@[reducible] noncomputable def m4 [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m4 [FfiSyntax] [GoGlobalContext] : val :=
   #(281470681808895 : Int)
 
-@[reducible] noncomputable def ntz8tab [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ntz8tab [FfiSyntax] [GoGlobalContext] : val :=
   #(go!"\x08\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x06\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x07\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x06\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00")
 
-@[reducible] noncomputable def pop8tab [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def pop8tab [FfiSyntax] [GoGlobalContext] : val :=
   #(go!"\x00\x01\x01\x02\x01\x02\x02\x03\x01\x02\x02\x03\x02\x03\x03\x04\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x04\x05\x05\x06\x05\x06\x06\x07\x05\x06\x06\x07\x06\x07\x07\x08")
 
-@[reducible] noncomputable def rev8tab [ffi_syntax] [GoGlobalContext] : val :=
-  #([W8 0, W8 128, W8 64, W8 192, W8 32, W8 160, W8 96, W8 224, W8 16, W8 144, W8 80, W8 208, W8 48, W8 176, W8 112, W8 240, W8 8, W8 136, W8 72, W8 200, W8 40, W8 168, W8 104, W8 232, W8 24, W8 152, W8 88, W8 216, W8 56, W8 184, W8 120, W8 248, W8 4, W8 132, W8 68, W8 196, W8 36, W8 164, W8 100, W8 228, W8 20, W8 148, W8 84, W8 212, W8 52, W8 180, W8 116, W8 244, W8 12, W8 140, W8 76, W8 204, W8 44, W8 172, W8 108, W8 236, W8 28, W8 156, W8 92, W8 220, W8 60, W8 188, W8 124, W8 252, W8 2, W8 130, W8 66, W8 194, W8 34, W8 162, W8 98, W8 226, W8 18, W8 146, W8 82, W8 210, W8 50, W8 178, W8 114, W8 242, W8 10, W8 138, W8 74, W8 202, W8 42, W8 170, W8 106, W8 234, W8 26, W8 154, W8 90, W8 218, W8 58, W8 186, W8 122, W8 250, W8 6, W8 134, W8 70, W8 198, W8 38, W8 166, W8 102, W8 230, W8 22, W8 150, W8 86, W8 214, W8 54, W8 182, W8 118, W8 246, W8 14, W8 142, W8 78, W8 206, W8 46, W8 174, W8 110, W8 238, W8 30, W8 158, W8 94, W8 222, W8 62, W8 190, W8 126, W8 254, W8 1, W8 129, W8 65, W8 193, W8 33, W8 161, W8 97, W8 225, W8 17, W8 145, W8 81, W8 209, W8 49, W8 177, W8 113, W8 241, W8 9, W8 137, W8 73, W8 201, W8 41, W8 169, W8 105, W8 233, W8 25, W8 153, W8 89, W8 217, W8 57, W8 185, W8 121, W8 249, W8 5, W8 133, W8 69, W8 197, W8 37, W8 165, W8 101, W8 229, W8 21, W8 149, W8 85, W8 213, W8 53, W8 181, W8 117, W8 245, W8 13, W8 141, W8 77, W8 205, W8 45, W8 173, W8 109, W8 237, W8 29, W8 157, W8 93, W8 221, W8 61, W8 189, W8 125, W8 253, W8 3, W8 131, W8 67, W8 195, W8 35, W8 163, W8 99, W8 227, W8 19, W8 147, W8 83, W8 211, W8 51, W8 179, W8 115, W8 243, W8 11, W8 139, W8 75, W8 203, W8 43, W8 171, W8 107, W8 235, W8 27, W8 155, W8 91, W8 219, W8 59, W8 187, W8 123, W8 251, W8 7, W8 135, W8 71, W8 199, W8 39, W8 167, W8 103, W8 231, W8 23, W8 151, W8 87, W8 215, W8 55, W8 183, W8 119, W8 247, W8 15, W8 143, W8 79, W8 207, W8 47, W8 175, W8 111, W8 239, W8 31, W8 159, W8 95, W8 223, W8 63, W8 191, W8 127, W8 255] : go_string)
+@[reducible] noncomputable def rev8tab [FfiSyntax] [GoGlobalContext] : val :=
+  #([W8 0, W8 128, W8 64, W8 192, W8 32, W8 160, W8 96, W8 224, W8 16, W8 144, W8 80, W8 208, W8 48, W8 176, W8 112, W8 240, W8 8, W8 136, W8 72, W8 200, W8 40, W8 168, W8 104, W8 232, W8 24, W8 152, W8 88, W8 216, W8 56, W8 184, W8 120, W8 248, W8 4, W8 132, W8 68, W8 196, W8 36, W8 164, W8 100, W8 228, W8 20, W8 148, W8 84, W8 212, W8 52, W8 180, W8 116, W8 244, W8 12, W8 140, W8 76, W8 204, W8 44, W8 172, W8 108, W8 236, W8 28, W8 156, W8 92, W8 220, W8 60, W8 188, W8 124, W8 252, W8 2, W8 130, W8 66, W8 194, W8 34, W8 162, W8 98, W8 226, W8 18, W8 146, W8 82, W8 210, W8 50, W8 178, W8 114, W8 242, W8 10, W8 138, W8 74, W8 202, W8 42, W8 170, W8 106, W8 234, W8 26, W8 154, W8 90, W8 218, W8 58, W8 186, W8 122, W8 250, W8 6, W8 134, W8 70, W8 198, W8 38, W8 166, W8 102, W8 230, W8 22, W8 150, W8 86, W8 214, W8 54, W8 182, W8 118, W8 246, W8 14, W8 142, W8 78, W8 206, W8 46, W8 174, W8 110, W8 238, W8 30, W8 158, W8 94, W8 222, W8 62, W8 190, W8 126, W8 254, W8 1, W8 129, W8 65, W8 193, W8 33, W8 161, W8 97, W8 225, W8 17, W8 145, W8 81, W8 209, W8 49, W8 177, W8 113, W8 241, W8 9, W8 137, W8 73, W8 201, W8 41, W8 169, W8 105, W8 233, W8 25, W8 153, W8 89, W8 217, W8 57, W8 185, W8 121, W8 249, W8 5, W8 133, W8 69, W8 197, W8 37, W8 165, W8 101, W8 229, W8 21, W8 149, W8 85, W8 213, W8 53, W8 181, W8 117, W8 245, W8 13, W8 141, W8 77, W8 205, W8 45, W8 173, W8 109, W8 237, W8 29, W8 157, W8 93, W8 221, W8 61, W8 189, W8 125, W8 253, W8 3, W8 131, W8 67, W8 195, W8 35, W8 163, W8 99, W8 227, W8 19, W8 147, W8 83, W8 211, W8 51, W8 179, W8 115, W8 243, W8 11, W8 139, W8 75, W8 203, W8 43, W8 171, W8 107, W8 235, W8 27, W8 155, W8 91, W8 219, W8 59, W8 187, W8 123, W8 251, W8 7, W8 135, W8 71, W8 199, W8 39, W8 167, W8 103, W8 231, W8 23, W8 151, W8 87, W8 215, W8 55, W8 183, W8 119, W8 247, W8 15, W8 143, W8 79, W8 207, W8 47, W8 175, W8 111, W8 239, W8 31, W8 159, W8 95, W8 223, W8 63, W8 191, W8 127, W8 255] : GoString)
 
-@[reducible] noncomputable def len8tab [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def len8tab [FfiSyntax] [GoGlobalContext] : val :=
   #(go!"\x00\x01\x02\x02\x03\x03\x03\x03\x04\x04\x04\x04\x04\x04\x04\x04\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08")
 
-noncomputable def deBruijn32tab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deBruijn32tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.deBruijn32tab"
 
-noncomputable def deBruijn64tab [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def deBruijn64tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.deBruijn64tab"
 
-noncomputable def overflowError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def overflowError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.overflowError"
 
-noncomputable def divideError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def divideError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.divideError"
 
-noncomputable def LeadingZeros [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeadingZeros [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros"
 
-noncomputable def LeadingZeros8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeadingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros8"
 
-noncomputable def LeadingZeros16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeadingZeros16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros16"
 
-noncomputable def LeadingZeros32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeadingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros32"
 
-noncomputable def LeadingZeros64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LeadingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros64"
 
-noncomputable def TrailingZeros [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrailingZeros [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros"
 
-noncomputable def TrailingZeros8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrailingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros8"
 
-noncomputable def TrailingZeros16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrailingZeros16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros16"
 
-noncomputable def TrailingZeros32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrailingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros32"
 
-noncomputable def TrailingZeros64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TrailingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros64"
 
-noncomputable def OnesCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnesCount [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount"
 
-noncomputable def OnesCount8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnesCount8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount8"
 
-noncomputable def OnesCount16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnesCount16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount16"
 
-noncomputable def OnesCount32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnesCount32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount32"
 
-noncomputable def OnesCount64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OnesCount64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount64"
 
-noncomputable def RotateLeft [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RotateLeft [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft"
 
-noncomputable def RotateLeft8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RotateLeft8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft8"
 
-noncomputable def RotateLeft16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RotateLeft16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft16"
 
-noncomputable def RotateLeft32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RotateLeft32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft32"
 
-noncomputable def RotateLeft64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RotateLeft64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft64"
 
-noncomputable def Reverse [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse"
 
-noncomputable def Reverse8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse8"
 
-noncomputable def Reverse16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse16"
 
-noncomputable def Reverse32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse32"
 
-noncomputable def Reverse64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Reverse64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse64"
 
-noncomputable def ReverseBytes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReverseBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes"
 
-noncomputable def ReverseBytes16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReverseBytes16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes16"
 
-noncomputable def ReverseBytes32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReverseBytes32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes32"
 
-noncomputable def ReverseBytes64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReverseBytes64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes64"
 
-noncomputable def Len [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Len"
 
-noncomputable def Len8 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Len8"
 
-noncomputable def Len16 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len16 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Len16"
 
-noncomputable def Len32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Len32"
 
-noncomputable def Len64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Len64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Len64"
 
-noncomputable def Add [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Add [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Add"
 
-noncomputable def Add32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Add32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Add32"
 
-noncomputable def Add64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Add64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Add64"
 
-noncomputable def Sub [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sub [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub"
 
-noncomputable def Sub32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sub32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub32"
 
-noncomputable def Sub64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Sub64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub64"
 
-noncomputable def Mul [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Mul [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul"
 
-noncomputable def Mul32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Mul32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul32"
 
-noncomputable def Mul64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Mul64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul64"
 
-noncomputable def Div [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Div [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Div"
 
-noncomputable def Div32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Div32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Div32"
 
-noncomputable def Div64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Div64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Div64"
 
-noncomputable def Rem [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Rem [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem"
 
-noncomputable def Rem32 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Rem32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem32"
 
-noncomputable def Rem64 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Rem64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem64"
 
 /-- LeadingZeros returns the number of leading zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:25:6 -/
-noncomputable def «LeadingZerosⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeadingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val UintSize)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val UintSize)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve Len []))) (Val #())) (Var "$a0")))))))))
 
 /-- LeadingZeros8 returns the number of leading zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:28:6 -/
-noncomputable def «LeadingZeros8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeadingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 8)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve Len8 []))) (Val #())) (Var "$a0")))))))))
 
 /-- LeadingZeros16 returns the number of leading zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:31:6 -/
-noncomputable def «LeadingZeros16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeadingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 16)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve Len16 []))) (Val #())) (Var "$a0")))))))))
 
 /-- LeadingZeros32 returns the number of leading zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:34:6 -/
-noncomputable def «LeadingZeros32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeadingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 32)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve Len32 []))) (Val #())) (Var "$a0")))))))))
 
 /-- LeadingZeros64 returns the number of leading zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:37:6 -/
-noncomputable def «LeadingZeros64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «LeadingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 64)) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve Len64 []))) (Val #())) (Var "$a0")))))))))
 
 /-- TrailingZeros returns the number of trailing zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:59:6 -/
-noncomputable def «TrailingZerosⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TrailingZerosⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve TrailingZeros64 []))) (Val #())) (Var "$a0"))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve TrailingZeros32 []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- TrailingZeros8 returns the number of trailing zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:67:6 -/
-noncomputable def «TrailingZeros8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TrailingZeros8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val ntz8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val ntz8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
 
 /-- TrailingZeros16 returns the number of trailing zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:72:6 -/
-noncomputable def «TrailingZeros16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TrailingZeros16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.uint32))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint16))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val deBruijn32)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(27 : Int)))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 0)))))
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.uint32))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint16))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val deBruijn32)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(27 : Int)))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 0)))))
+  (App (Val doReturn)
   (Val #(W64 16)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- TrailingZeros32 returns the number of trailing zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:81:6 -/
-noncomputable def «TrailingZeros32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TrailingZeros32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint32))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val deBruijn32)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(27 : Int)))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 0)))))
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint32))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val deBruijn32)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(27 : Int)))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 0)))))
+  (App (Val doReturn)
   (Val #(W64 32)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- TrailingZeros64 returns the number of trailing zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:90:6 -/
-noncomputable def «TrailingZeros64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «TrailingZeros64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.type.ArrayType 64 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn64tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val deBruijn64)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(58 : Int)))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))))
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 64 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn64tab))) (Val #())) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val deBruijn64)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(58 : Int)))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Val #(W64 64)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- OnesCount returns the number of one bits ("population count") in x.
 
     go: bits.go:117:6 -/
-noncomputable def «OnesCountⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OnesCountⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve OnesCount64 []))) (Val #())) (Var "$a0"))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve OnesCount32 []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- OnesCount8 returns the number of one bits ("population count") in x.
 
     go: bits.go:125:6 -/
-noncomputable def «OnesCount8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OnesCount8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
 
 /-- OnesCount16 returns the number of one bits ("population count") in x.
 
     go: bits.go:130:6 -/
-noncomputable def «OnesCount16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OnesCount16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int)))))))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 255))))))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int)))))))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 255))))))))))))))
 
 /-- OnesCount32 returns the number of one bits ("population count") in x.
 
     go: bits.go:135:6 -/
-noncomputable def «OnesCount32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OnesCount32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(24 : Int)))))))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))) (Val #(W32 255))))))))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int))))) (Val #(W32 255))))))))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 255))))))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.byte))) (Pair (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(24 : Int)))))))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))) (Val #(W32 255))))))))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int))))) (Val #(W32 255))))))))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val pop8tab) (App (Val (GoInstruction (Convert go.uint32 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 255))))))))))))))
 
 /-- OnesCount64 returns the number of one bits ("population count") in x.
 
     go: bits.go:140:6 -/
-noncomputable def «OnesCount64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «OnesCount64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (let m := #(18446744073709551615 : Int);
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(1 : Int))))) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 6148914691236517205))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(2 : Int))))) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 3689348814741910323))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(4 : Int))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))) (Val #(W64 1085102592571150095))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 6148914691236517205))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(2 : Int))))) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 3689348814741910323))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))) (Val #(W64 1085102592571150095))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoAnd go.int))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))) (Val #(W64 127)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int)))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int)))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int)))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- RotateLeft returns the value of x rotated left by (k mod [UintSize]) bits.
@@ -438,23 +438,23 @@ noncomputable def «OnesCount64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
     This function's execution time does not depend on the inputs.
 
     go: bits.go:176:6 -/
-noncomputable def «RotateLeftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RotateLeftⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (Var "k"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint64 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (App (App (App (Val (GoInstruction (FuncResolve RotateLeft64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint32 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (App (App (App (Val (GoInstruction (FuncResolve RotateLeft32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- RotateLeft8 returns the value of x rotated left by (k mod 8) bits.
@@ -463,19 +463,19 @@ noncomputable def «RotateLeftⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val
     This function's execution time does not depend on the inputs.
 
     go: bits.go:187:6 -/
-noncomputable def «RotateLeft8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RotateLeft8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (Var "k"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
   (let n := #(8 : Int);
   (Let "s" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))) (Val #(W64 7))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint8))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint8))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint8))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint8))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint8))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint8))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "s") (Var "$r0")))))))))))))
 
 /-- RotateLeft16 returns the value of x rotated left by (k mod 16) bits.
@@ -484,19 +484,19 @@ noncomputable def «RotateLeft8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : va
     This function's execution time does not depend on the inputs.
 
     go: bits.go:197:6 -/
-noncomputable def «RotateLeft16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RotateLeft16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (Var "k"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
   (let n := #(16 : Int);
   (Let "s" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))) (Val #(W64 15))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint16))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint16))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint16))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint16))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "s") (Var "$r0")))))))))))))
 
 /-- RotateLeft32 returns the value of x rotated left by (k mod 32) bits.
@@ -505,19 +505,19 @@ noncomputable def «RotateLeft16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     This function's execution time does not depend on the inputs.
 
     go: bits.go:207:6 -/
-noncomputable def «RotateLeft32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RotateLeft32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (Var "k"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (let n := #(32 : Int);
   (Let "s" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))) (Val #(W64 31))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "s") (Var "$r0")))))))))))))
 
 /-- RotateLeft64 returns the value of x rotated left by (k mod 64) bits.
@@ -526,105 +526,105 @@ noncomputable def «RotateLeft32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     This function's execution time does not depend on the inputs.
 
     go: bits.go:217:6 -/
-noncomputable def «RotateLeft64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «RotateLeft64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (Var "k"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (let n := #(64 : Int);
   (Let "s" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))) (Val #(W64 63))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val n)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "s") (Var "$r0")))))))))))))
 
 /-- Reverse returns the value of x with its bits in reversed order.
 
     go: bits.go:226:6 -/
-noncomputable def «Reverseⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Reverseⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint64 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve Reverse64 []))) (Val #())) (Var "$a0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint32 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve Reverse32 []))) (Val #())) (Var "$a0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- Reverse8 returns the value of x with its bits in reversed order.
 
     go: bits.go:234:6 -/
-noncomputable def «Reverse8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Reverse8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")))))))))
 
 /-- Reverse16 returns the value of x with its bits in reversed order.
 
     go: bits.go:239:6 -/
-noncomputable def «Reverse16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Reverse16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int))))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 255)))))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int)))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int))))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint16))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val rev8tab) (App (Val (GoInstruction (Convert go.uint16 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 255)))))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int)))))))))))
 
 /-- Reverse32 returns the value of x with its bits in reversed order.
 
     go: bits.go:244:6 -/
-noncomputable def «Reverse32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Reverse32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (let m := #(4294967295 : Int);
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(1 : Int))))) (Val #(W32 1431655765)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 1431655765)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(1 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(2 : Int))))) (Val #(W32 858993459)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 858993459)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(2 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(4 : Int))))) (Val #(W32 252645135)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 252645135)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(4 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(1 : Int))))) (Val #(W32 1431655765)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 1431655765)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(1 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(2 : Int))))) (Val #(W32 858993459)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 858993459)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(2 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(4 : Int))))) (Val #(W32 252645135)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 252645135)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(4 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve ReverseBytes32 []))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- Reverse64 returns the value of x with its bits in reversed order.
 
     go: bits.go:253:6 -/
-noncomputable def «Reverse64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Reverse64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (let m := #(18446744073709551615 : Int);
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(1 : Int))))) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(1 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(2 : Int))))) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(2 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(4 : Int))))) (Val #(W64 1085102592571150095)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 1085102592571150095)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(4 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 6148914691236517205)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(2 : Int))))) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 3689348814741910323)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(2 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int))))) (Val #(W64 1085102592571150095)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 1085102592571150095)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve ReverseBytes64 []))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- ReverseBytes returns the value of x with its bytes in reversed order.
@@ -632,19 +632,19 @@ noncomputable def «Reverse64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val 
     This function's execution time does not depend on the inputs.
 
     go: bits.go:266:6 -/
-noncomputable def «ReverseBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReverseBytesⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint64 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve ReverseBytes64 []))) (Val #())) (Var "$a0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint32 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve ReverseBytes32 []))) (Val #())) (Var "$a0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- ReverseBytes16 returns the value of x with its bytes in reversed order.
@@ -652,28 +652,28 @@ noncomputable def «ReverseBytesⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : v
     This function's execution time does not depend on the inputs.
 
     go: bits.go:276:6 -/
-noncomputable def «ReverseBytes16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReverseBytes16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int)))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint16))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int)))))))))))
 
 /-- ReverseBytes32 returns the value of x with its bytes in reversed order.
 
     This function's execution time does not depend on the inputs.
 
     go: bits.go:283:6 -/
-noncomputable def «ReverseBytes32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReverseBytes32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (let m := #(4294967295 : Int);
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int))))) (Val #(W32 16711935)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 16711935)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int))))))))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int))))) (Val #(W32 16711935)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 16711935)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- ReverseBytes64 returns the value of x with its bytes in reversed order.
@@ -681,138 +681,138 @@ noncomputable def «ReverseBytes32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] :
     This function's execution time does not depend on the inputs.
 
     go: bits.go:292:6 -/
-noncomputable def «ReverseBytes64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «ReverseBytes64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (let m := #(18446744073709551615 : Int);
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int))))) (Val #(W64 71777214294589695)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 71777214294589695)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int))))) (Val #(W64 281470681808895)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 281470681808895)))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))))))
-  (App (Val do_execute)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))) (Val #(W64 71777214294589695)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 71777214294589695)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))) (Val #(W64 281470681808895)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 281470681808895)))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- Len returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:302:6 -/
-noncomputable def «Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve Len64 []))) (Val #())) (Var "$a0"))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve Len32 []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
 
 /-- Len8 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:310:6 -/
-noncomputable def «Len8ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Len8ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))))))))))
 
 /-- Len16 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:315:6 -/
-noncomputable def «Len16ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Len16ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint16 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x"))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 256)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint16 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 256)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 8))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint16))) (Val #(8 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint16))) (Val #(8 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- Len32 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:324:6 -/
-noncomputable def «Len32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Len32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint32 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 256)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint32 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 256)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 8)))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(8 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(8 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 65536)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (Val #(W32 65536)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 16))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(16 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(16 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- Len64 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:337:6 -/
-noncomputable def «Len64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Len64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untyped_string))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint64 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 256)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.untypedString))) (Pair (Val len8tab) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (Convert go.uint64 go.uint8))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 256)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 8)))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(8 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 65536)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 65536)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 16)))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(16 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 4294967296)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 4294967296)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 32))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))))))
+  (App (Val doExecute)
   (Val #()))))))))
 
 /-- Add returns the sum with carry of x, y and carry: sum = x + y + carry.
@@ -822,17 +822,17 @@ noncomputable def «Len64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:360:6 -/
-noncomputable def «Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Addⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "carryOut" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "carry" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "carry"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "c64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "s64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -843,15 +843,15 @@ noncomputable def «Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s64"))) (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "c64")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "c64") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "s64") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (Let "c32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "s32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -862,15 +862,15 @@ noncomputable def «Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "s32"))) (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "c32")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "c32") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "s32") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- Add32 returns the sum with carry of x, y and carry: sum = x + y + carry.
@@ -880,11 +880,11 @@ noncomputable def «Addⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:374:6 -/
-noncomputable def «Add32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Add32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "carryOut" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "carry" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "carry"))
@@ -892,18 +892,18 @@ noncomputable def «Add32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (Let "sum64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "carry")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum64")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum64")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum64")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "carryOut"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "carryOut") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "sum") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum64") (Var "$r0"))))))))))))))))
 
 /-- Add64 returns the sum with carry of x, y and carry: sum = x + y + carry.
@@ -913,25 +913,25 @@ noncomputable def «Add32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:386:6 -/
-noncomputable def «Add64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Add64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "carryOut" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "carry" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "carry"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "carry"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoOp GoBitClear go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(63 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoOp GoBitClear go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(63 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "carryOut"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "carryOut") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (Var "$r0")))))))))))))))
 
 /-- Sub returns the difference of x, y and borrow: diff = x - y - borrow.
@@ -941,17 +941,17 @@ noncomputable def «Add64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:402:6 -/
-noncomputable def «Subⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Subⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "borrowOut" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "diff" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "borrow" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "borrow"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "b64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "d64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -962,15 +962,15 @@ noncomputable def «Subⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "d64"))) (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "b64")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "b64") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "d64") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (Let "b32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "d32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -981,15 +981,15 @@ noncomputable def «Subⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "d32"))) (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "b32")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "b32") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "d32") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- Sub32 returns the difference of x, y and borrow, diff = x - y - borrow.
@@ -999,25 +999,25 @@ noncomputable def «Subⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:416:6 -/
-noncomputable def «Sub32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Sub32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "borrowOut" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "diff" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "borrow" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "borrow"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "borrow"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoXor go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "diff")))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint32))) (Val #(31 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))) (App (Val (GoInstruction (GoOp GoAnd go.uint32))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoXor go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "diff")))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val #(31 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "diff")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "borrowOut"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "borrowOut") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "diff") (Var "$r0")))))))))))))))
 
 /-- Sub64 returns the difference of x, y and borrow: diff = x - y - borrow.
@@ -1027,25 +1027,25 @@ noncomputable def «Sub32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:431:6 -/
-noncomputable def «Sub64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Sub64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "borrowOut" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "diff" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "borrow" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "borrow"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "borrow"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoXor go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diff")))))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(63 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoXor go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diff")))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(63 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diff")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "borrowOut"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "borrowOut") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "diff") (Var "$r0")))))))))))))))
 
 /-- Mul returns the full-width product of x and y: (hi, lo) = x * y
@@ -1055,15 +1055,15 @@ noncomputable def «Sub64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:445:6 -/
-noncomputable def «Mulⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mulⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "l" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -1073,15 +1073,15 @@ noncomputable def «Mulⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "h"))) (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "l") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "h") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "x")))
@@ -1091,15 +1091,15 @@ noncomputable def «Mulⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h"))) (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "l")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "l") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- Mul32 returns the 64-bit product of x and y: (hi, lo) = x * y
@@ -1109,28 +1109,28 @@ noncomputable def «Mulⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:459:6 -/
-noncomputable def «Mul32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mul32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (Let "tmp" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tmp")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tmp")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
   (Let "$r1" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tmp")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "lo"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "lo") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "hi") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "tmp") (Var "$r0"))))))))))))))
 
 /-- Mul64 returns the 128-bit product of x and y: (hi, lo) = x * y
@@ -1140,67 +1140,67 @@ noncomputable def «Mul32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:470:6 -/
-noncomputable def «Mul64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Mul64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (let mask32 := #(4294967295 : Int);
   (Let "x0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val mask32))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val mask32))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "x1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val mask32))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val mask32))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "y1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "w0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y0"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "t" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y0")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w0")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y0")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w0")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "w1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val mask32))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val mask32))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "w2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y1")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w2")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w1")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "t")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y1")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w2")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w1")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "lo"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "lo") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "hi") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "w1") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "w1")) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y1"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "w2") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "w1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "t") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "w0") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y0") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x0") (Var "$r0")))))))))))))))
 
 /-- Div returns the quotient and remainder of (hi, lo) divided by y:
@@ -1209,17 +1209,17 @@ noncomputable def «Mul64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Div panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:492:6 -/
-noncomputable def «Divⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Divⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "rem" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "quo" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "hi"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "q" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "hi")))
@@ -1230,15 +1230,15 @@ noncomputable def «Divⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q"))) (App (Val (GoInstruction (Convert go.uint64 go.uint))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "r") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "q") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "q" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "hi")))
@@ -1249,15 +1249,15 @@ noncomputable def «Divⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "q"))) (App (Val (GoInstruction (Convert go.uint32 go.uint))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "r")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "r") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "q") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- Div32 returns the quotient and remainder of (hi, lo) divided by y:
@@ -1266,37 +1266,37 @@ noncomputable def «Divⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Div32 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:505:6 -/
-noncomputable def «Div32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Div32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "rem" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "quo" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "hi"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "z" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi"))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "lo")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "lo")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z")) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))))
   (Let "$r1" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "z")) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "quo")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "rem"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "rem") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "quo") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "z") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (Val #(W32 0))))) (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi")))) (Val #false)))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr overflowError))) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (Val #(W32 0))))) (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi")))) (Val #false)))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr overflowError))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- Div64 returns the quotient and remainder of (hi, lo) divided by y:
@@ -1305,132 +1305,132 @@ noncomputable def «Div32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     Div64 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:518:6 -/
-noncomputable def «Div64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Div64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "rem" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "quo" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "hi"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "s" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))
   (App (App (Val (GoInstruction (FuncResolve LeadingZeros64 []))) (Val #())) (Var "$a0"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (let two32 := #(4294967296 : Int);
   (let mask32 := #(4294967295 : Int);
   (Let "yn1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "yn0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val mask32))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val mask32))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "un32" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s"))))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "lo")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint))) (Pair (Val #(W64 64)) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s")))))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "un10" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "lo")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "un1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un10")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int)))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un10")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "un0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un10")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val mask32))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un10")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val mask32))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "q1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un32")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "rhat" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un32")) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "un21" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un32")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un1")))) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un32")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un1")))) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "q0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un21")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un21")) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un21")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un0")))) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s")))))))))
-  (App (App (App (Val do_for) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))) (Val #true) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn0")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un0"))))))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un21")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un0")))) (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))))) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s")))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))) (Val #true) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn0")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un0"))))))))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "rhat") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "q0") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q0")) (Val #(W64 1))))))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "rhat") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "q0") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "un21") (Var "$r0")))))))))
-  (App (App (App (Val do_for) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))) (Val #true) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn0")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un1"))))))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val two32)))))
-  (App (Val do_break) (Val #()))
-  (App (Val do_execute)
+  (App (App (App (Val doFor) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))) (Val #true) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn0")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "un1"))))))))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val two32)))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "rhat") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rhat")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "yn1"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "q1") (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "q1")) (Val #(W64 1))))))))))
   (Lam BAnon
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "rhat") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "q1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "un0") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "un1") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "un10") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "un32") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "yn0") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "yn1") (Var "$r0")))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "s")))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "s") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")) (Val #(W64 0)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoOp GoDiv go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "lo")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "lo")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr overflowError))) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "hi")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr overflowError))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 0)))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.type.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr divideError))) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.error (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr divideError))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- Rem returns the remainder of (hi, lo) divided by y. Rem panics for
@@ -1438,27 +1438,27 @@ noncomputable def «Div64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     quotient overflow.
 
     go: bits.go:573:6 -/
-noncomputable def «Remⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Remⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "hi"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint64 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "hi")))
   (Let "$a1" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "lo")))
   (Let "$a2" (App (Val (GoInstruction (Convert go.uint go.uint64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "y")))
   (App (App (App (App (Val (GoInstruction (FuncResolve Rem64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (Val #false))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.uint32 go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "hi")))
   (Let "$a1" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "lo")))
   (Let "$a2" (App (Val (GoInstruction (Convert go.uint go.uint32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "y")))
   (App (App (App (App (Val (GoInstruction (FuncResolve Rem32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- Rem32 returns the remainder of (hi, lo) divided by y. Rem32 panics
@@ -1466,27 +1466,27 @@ noncomputable def «Remⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
     on a quotient overflow.
 
     go: bits.go:583:6 -/
-noncomputable def «Rem32ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Rem32ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "hi"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi"))) (App (Val (GoInstruction (Convert go.untyped_int go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "lo"))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))))))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hi"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "lo"))))) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "y"))))))))))))))
 
 /-- Rem64 returns the remainder of (hi, lo) divided by y. Rem64 panics
     for y == 0 (division by zero) but, unlike [Div64], it doesn't panic
     on a quotient overflow.
 
     go: bits.go:590:6 -/
-noncomputable def «Rem64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Rem64ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "lo"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "hi"))
@@ -1499,27 +1499,27 @@ noncomputable def «Rem64ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "rem")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "rem") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0"))))))))))))))))
 
 instance info' : PkgInfo pkg_id.math.bits where
-  pkg_imported_pkgs := [pkg_id.«unsafe»]
+  pkgImportedPkgs := [pkg_id.«unsafe»]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.bits)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W8 0))
   (Let "$v1" (Val #(W8 1))
   (Let "$v2" (Val #(W8 28))
@@ -1552,8 +1552,8 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$v29" (Val #(W8 5))
   (Let "$v30" (Val #(W8 10))
   (Let "$v31" (Val #(W8 9))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 32 go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3"))), (KeyedElement none (ElementExpression go.byte (Var "$v4"))), (KeyedElement none (ElementExpression go.byte (Var "$v5"))), (KeyedElement none (ElementExpression go.byte (Var "$v6"))), (KeyedElement none (ElementExpression go.byte (Var "$v7"))), (KeyedElement none (ElementExpression go.byte (Var "$v8"))), (KeyedElement none (ElementExpression go.byte (Var "$v9"))), (KeyedElement none (ElementExpression go.byte (Var "$v10"))), (KeyedElement none (ElementExpression go.byte (Var "$v11"))), (KeyedElement none (ElementExpression go.byte (Var "$v12"))), (KeyedElement none (ElementExpression go.byte (Var "$v13"))), (KeyedElement none (ElementExpression go.byte (Var "$v14"))), (KeyedElement none (ElementExpression go.byte (Var "$v15"))), (KeyedElement none (ElementExpression go.byte (Var "$v16"))), (KeyedElement none (ElementExpression go.byte (Var "$v17"))), (KeyedElement none (ElementExpression go.byte (Var "$v18"))), (KeyedElement none (ElementExpression go.byte (Var "$v19"))), (KeyedElement none (ElementExpression go.byte (Var "$v20"))), (KeyedElement none (ElementExpression go.byte (Var "$v21"))), (KeyedElement none (ElementExpression go.byte (Var "$v22"))), (KeyedElement none (ElementExpression go.byte (Var "$v23"))), (KeyedElement none (ElementExpression go.byte (Var "$v24"))), (KeyedElement none (ElementExpression go.byte (Var "$v25"))), (KeyedElement none (ElementExpression go.byte (Var "$v26"))), (KeyedElement none (ElementExpression go.byte (Var "$v27"))), (KeyedElement none (ElementExpression go.byte (Var "$v28"))), (KeyedElement none (ElementExpression go.byte (Var "$v29"))), (KeyedElement none (ElementExpression go.byte (Var "$v30"))), (KeyedElement none (ElementExpression go.byte (Var "$v31")))]))))))))))))))))))))))))))))))))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 32 go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3"))), (KeyedElement none (ElementExpression go.byte (Var "$v4"))), (KeyedElement none (ElementExpression go.byte (Var "$v5"))), (KeyedElement none (ElementExpression go.byte (Var "$v6"))), (KeyedElement none (ElementExpression go.byte (Var "$v7"))), (KeyedElement none (ElementExpression go.byte (Var "$v8"))), (KeyedElement none (ElementExpression go.byte (Var "$v9"))), (KeyedElement none (ElementExpression go.byte (Var "$v10"))), (KeyedElement none (ElementExpression go.byte (Var "$v11"))), (KeyedElement none (ElementExpression go.byte (Var "$v12"))), (KeyedElement none (ElementExpression go.byte (Var "$v13"))), (KeyedElement none (ElementExpression go.byte (Var "$v14"))), (KeyedElement none (ElementExpression go.byte (Var "$v15"))), (KeyedElement none (ElementExpression go.byte (Var "$v16"))), (KeyedElement none (ElementExpression go.byte (Var "$v17"))), (KeyedElement none (ElementExpression go.byte (Var "$v18"))), (KeyedElement none (ElementExpression go.byte (Var "$v19"))), (KeyedElement none (ElementExpression go.byte (Var "$v20"))), (KeyedElement none (ElementExpression go.byte (Var "$v21"))), (KeyedElement none (ElementExpression go.byte (Var "$v22"))), (KeyedElement none (ElementExpression go.byte (Var "$v23"))), (KeyedElement none (ElementExpression go.byte (Var "$v24"))), (KeyedElement none (ElementExpression go.byte (Var "$v25"))), (KeyedElement none (ElementExpression go.byte (Var "$v26"))), (KeyedElement none (ElementExpression go.byte (Var "$v27"))), (KeyedElement none (ElementExpression go.byte (Var "$v28"))), (KeyedElement none (ElementExpression go.byte (Var "$v29"))), (KeyedElement none (ElementExpression go.byte (Var "$v30"))), (KeyedElement none (ElementExpression go.byte (Var "$v31")))]))))))))))))))))))))))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W8 0))
   (Let "$v1" (Val #(W8 1))
   (Let "$v2" (Val #(W8 56))
@@ -1618,23 +1618,23 @@ noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
   (Let "$v61" (Val #(W8 8))
   (Let "$v62" (Val #(W8 7))
   (Let "$v63" (Val #(W8 6))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.ArrayType 64 go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3"))), (KeyedElement none (ElementExpression go.byte (Var "$v4"))), (KeyedElement none (ElementExpression go.byte (Var "$v5"))), (KeyedElement none (ElementExpression go.byte (Var "$v6"))), (KeyedElement none (ElementExpression go.byte (Var "$v7"))), (KeyedElement none (ElementExpression go.byte (Var "$v8"))), (KeyedElement none (ElementExpression go.byte (Var "$v9"))), (KeyedElement none (ElementExpression go.byte (Var "$v10"))), (KeyedElement none (ElementExpression go.byte (Var "$v11"))), (KeyedElement none (ElementExpression go.byte (Var "$v12"))), (KeyedElement none (ElementExpression go.byte (Var "$v13"))), (KeyedElement none (ElementExpression go.byte (Var "$v14"))), (KeyedElement none (ElementExpression go.byte (Var "$v15"))), (KeyedElement none (ElementExpression go.byte (Var "$v16"))), (KeyedElement none (ElementExpression go.byte (Var "$v17"))), (KeyedElement none (ElementExpression go.byte (Var "$v18"))), (KeyedElement none (ElementExpression go.byte (Var "$v19"))), (KeyedElement none (ElementExpression go.byte (Var "$v20"))), (KeyedElement none (ElementExpression go.byte (Var "$v21"))), (KeyedElement none (ElementExpression go.byte (Var "$v22"))), (KeyedElement none (ElementExpression go.byte (Var "$v23"))), (KeyedElement none (ElementExpression go.byte (Var "$v24"))), (KeyedElement none (ElementExpression go.byte (Var "$v25"))), (KeyedElement none (ElementExpression go.byte (Var "$v26"))), (KeyedElement none (ElementExpression go.byte (Var "$v27"))), (KeyedElement none (ElementExpression go.byte (Var "$v28"))), (KeyedElement none (ElementExpression go.byte (Var "$v29"))), (KeyedElement none (ElementExpression go.byte (Var "$v30"))), (KeyedElement none (ElementExpression go.byte (Var "$v31"))), (KeyedElement none (ElementExpression go.byte (Var "$v32"))), (KeyedElement none (ElementExpression go.byte (Var "$v33"))), (KeyedElement none (ElementExpression go.byte (Var "$v34"))), (KeyedElement none (ElementExpression go.byte (Var "$v35"))), (KeyedElement none (ElementExpression go.byte (Var "$v36"))), (KeyedElement none (ElementExpression go.byte (Var "$v37"))), (KeyedElement none (ElementExpression go.byte (Var "$v38"))), (KeyedElement none (ElementExpression go.byte (Var "$v39"))), (KeyedElement none (ElementExpression go.byte (Var "$v40"))), (KeyedElement none (ElementExpression go.byte (Var "$v41"))), (KeyedElement none (ElementExpression go.byte (Var "$v42"))), (KeyedElement none (ElementExpression go.byte (Var "$v43"))), (KeyedElement none (ElementExpression go.byte (Var "$v44"))), (KeyedElement none (ElementExpression go.byte (Var "$v45"))), (KeyedElement none (ElementExpression go.byte (Var "$v46"))), (KeyedElement none (ElementExpression go.byte (Var "$v47"))), (KeyedElement none (ElementExpression go.byte (Var "$v48"))), (KeyedElement none (ElementExpression go.byte (Var "$v49"))), (KeyedElement none (ElementExpression go.byte (Var "$v50"))), (KeyedElement none (ElementExpression go.byte (Var "$v51"))), (KeyedElement none (ElementExpression go.byte (Var "$v52"))), (KeyedElement none (ElementExpression go.byte (Var "$v53"))), (KeyedElement none (ElementExpression go.byte (Var "$v54"))), (KeyedElement none (ElementExpression go.byte (Var "$v55"))), (KeyedElement none (ElementExpression go.byte (Var "$v56"))), (KeyedElement none (ElementExpression go.byte (Var "$v57"))), (KeyedElement none (ElementExpression go.byte (Var "$v58"))), (KeyedElement none (ElementExpression go.byte (Var "$v59"))), (KeyedElement none (ElementExpression go.byte (Var "$v60"))), (KeyedElement none (ElementExpression go.byte (Var "$v61"))), (KeyedElement none (ElementExpression go.byte (Var "$v62"))), (KeyedElement none (ElementExpression go.byte (Var "$v63")))]))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ArrayType 64 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn64tab))) (Val #())) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 64 go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3"))), (KeyedElement none (ElementExpression go.byte (Var "$v4"))), (KeyedElement none (ElementExpression go.byte (Var "$v5"))), (KeyedElement none (ElementExpression go.byte (Var "$v6"))), (KeyedElement none (ElementExpression go.byte (Var "$v7"))), (KeyedElement none (ElementExpression go.byte (Var "$v8"))), (KeyedElement none (ElementExpression go.byte (Var "$v9"))), (KeyedElement none (ElementExpression go.byte (Var "$v10"))), (KeyedElement none (ElementExpression go.byte (Var "$v11"))), (KeyedElement none (ElementExpression go.byte (Var "$v12"))), (KeyedElement none (ElementExpression go.byte (Var "$v13"))), (KeyedElement none (ElementExpression go.byte (Var "$v14"))), (KeyedElement none (ElementExpression go.byte (Var "$v15"))), (KeyedElement none (ElementExpression go.byte (Var "$v16"))), (KeyedElement none (ElementExpression go.byte (Var "$v17"))), (KeyedElement none (ElementExpression go.byte (Var "$v18"))), (KeyedElement none (ElementExpression go.byte (Var "$v19"))), (KeyedElement none (ElementExpression go.byte (Var "$v20"))), (KeyedElement none (ElementExpression go.byte (Var "$v21"))), (KeyedElement none (ElementExpression go.byte (Var "$v22"))), (KeyedElement none (ElementExpression go.byte (Var "$v23"))), (KeyedElement none (ElementExpression go.byte (Var "$v24"))), (KeyedElement none (ElementExpression go.byte (Var "$v25"))), (KeyedElement none (ElementExpression go.byte (Var "$v26"))), (KeyedElement none (ElementExpression go.byte (Var "$v27"))), (KeyedElement none (ElementExpression go.byte (Var "$v28"))), (KeyedElement none (ElementExpression go.byte (Var "$v29"))), (KeyedElement none (ElementExpression go.byte (Var "$v30"))), (KeyedElement none (ElementExpression go.byte (Var "$v31"))), (KeyedElement none (ElementExpression go.byte (Var "$v32"))), (KeyedElement none (ElementExpression go.byte (Var "$v33"))), (KeyedElement none (ElementExpression go.byte (Var "$v34"))), (KeyedElement none (ElementExpression go.byte (Var "$v35"))), (KeyedElement none (ElementExpression go.byte (Var "$v36"))), (KeyedElement none (ElementExpression go.byte (Var "$v37"))), (KeyedElement none (ElementExpression go.byte (Var "$v38"))), (KeyedElement none (ElementExpression go.byte (Var "$v39"))), (KeyedElement none (ElementExpression go.byte (Var "$v40"))), (KeyedElement none (ElementExpression go.byte (Var "$v41"))), (KeyedElement none (ElementExpression go.byte (Var "$v42"))), (KeyedElement none (ElementExpression go.byte (Var "$v43"))), (KeyedElement none (ElementExpression go.byte (Var "$v44"))), (KeyedElement none (ElementExpression go.byte (Var "$v45"))), (KeyedElement none (ElementExpression go.byte (Var "$v46"))), (KeyedElement none (ElementExpression go.byte (Var "$v47"))), (KeyedElement none (ElementExpression go.byte (Var "$v48"))), (KeyedElement none (ElementExpression go.byte (Var "$v49"))), (KeyedElement none (ElementExpression go.byte (Var "$v50"))), (KeyedElement none (ElementExpression go.byte (Var "$v51"))), (KeyedElement none (ElementExpression go.byte (Var "$v52"))), (KeyedElement none (ElementExpression go.byte (Var "$v53"))), (KeyedElement none (ElementExpression go.byte (Var "$v54"))), (KeyedElement none (ElementExpression go.byte (Var "$v55"))), (KeyedElement none (ElementExpression go.byte (Var "$v56"))), (KeyedElement none (ElementExpression go.byte (Var "$v57"))), (KeyedElement none (ElementExpression go.byte (Var "$v58"))), (KeyedElement none (ElementExpression go.byte (Var "$v59"))), (KeyedElement none (ElementExpression go.byte (Var "$v60"))), (KeyedElement none (ElementExpression go.byte (Var "$v61"))), (KeyedElement none (ElementExpression go.byte (Var "$v62"))), (KeyedElement none (ElementExpression go.byte (Var "$v63")))]))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 64 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn64tab))) (Val #())) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 32 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr deBruijn32tab))) (Val #())) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (go.GlobalAlloc deBruijn32tab (go.type.ArrayType 32 go.byte))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (go.GlobalAlloc deBruijn64tab (go.type.ArrayType 64 go.byte))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc deBruijn32tab (go.GoType.ArrayType 32 go.byte))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc deBruijn64tab (go.GoType.ArrayType 64 go.byte))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc overflowError go.error)) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc divideError go.error)) (Val #()))))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LeadingZeros_unfold : FuncUnfold LeadingZeros [] «LeadingZerosⁱᵐᵖˡ»
   LeadingZeros8_unfold : FuncUnfold LeadingZeros8 [] «LeadingZeros8ⁱᵐᵖˡ»
   LeadingZeros16_unfold : FuncUnfold LeadingZeros16 [] «LeadingZeros16ⁱᵐᵖˡ»

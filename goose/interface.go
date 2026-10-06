@@ -163,7 +163,7 @@ func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConf
 	h.WriteString("\nnamespace Perennial\n")
 	h.WriteString("noncomputable section\n\n")
 	h.WriteString("namespace pkg_id\n")
-	fmt.Fprintf(&h, "def %s : go_string := %s\n", glang.LeanNamespace(pkg.PkgPath), glang.LeanStringLit(pkg.PkgPath))
+	fmt.Fprintf(&h, "def %s : GoString := %s\n", glang.LeanNamespace(pkg.PkgPath), glang.LeanStringLit(pkg.PkgPath))
 	h.WriteString("end pkg_id\n\n")
 	ns := glang.LeanNamespace(pkg.PkgPath)
 	fmt.Fprintf(&h, "namespace %s", ns)

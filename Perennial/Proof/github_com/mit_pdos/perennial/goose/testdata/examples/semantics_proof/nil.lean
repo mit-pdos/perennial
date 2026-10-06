@@ -15,7 +15,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
 theorem wp_testCompareNilToNil : TestFunOk (GF := GF) testCompareNilToNil := by
@@ -29,8 +29,8 @@ theorem wp_testInterfaceNilWithType : TestFunOk (GF := GF) testInterfaceNilWithT
 
 theorem wp_testComparePointerToNil : TestFunOk (GF := GF) testComparePointerToNil := by
   semantics_auto
-  -- Rocq: Abort ("need a lemma showing points-tos are non-null"); `typed_pointsto_not_null`
-  ihave %Hnn := typed_pointsto_not_null _ _ _ $$ «$r0»
+  -- Rocq: Abort ("need a lemma showing points-tos are non-null"); `typedPointsto_not_null`
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ «$r0»
   simp only [Hnn, decide_false, Bool.not_false]
   iexact HΦ
 
@@ -49,7 +49,7 @@ theorem wp_testCompareSliceToNil : TestFunOk (GF := GF) testCompareSliceToNil :=
   wp_apply wp_ArbitraryInt with %x _
   steps
   have h : ¬ slice.mk ({ locCar := 1, locOff := 0 } +ₗ sint.Z x) (W64 0) (W64 0) = slice.nil := by
-    intro h; injection h with h1; simp [loc.add, null] at h1
+    intro h; injection h with h1; simp [Loc.add, null] at h1
   simp only [h, decide_false, Bool.not_false]
   iexact HΦ
 

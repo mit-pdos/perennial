@@ -14,11 +14,11 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 open github_com.mit_pdos.perennial.goose.model
 
 section new_spec
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
-variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.type}
+variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
 
 set_option goose.wp.extras true in
@@ -26,7 +26,7 @@ set_option maxHeartbeats 400000 in
 theorem wp_NewChannel (cap : w64) :
     {{ (⌜0 ≤ sint.Z cap⌝ : IProp GF) }}
       (App (Val #(functions channel.NewChannel [t])) (Val #cap))
-    {{ (ch : loc) (γ : ChanNames), RET #ch;
+    {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = cap⌝ ∗
         ownChan γ V (if cap = W64 0 then chanstate.t.Idle else chanstate.t.Buffered ([] : List V)) }} := by
@@ -40,7 +40,7 @@ theorem wp_NewChannel (cap : w64) :
     iapply wp_fupd
     wp_alloc ch as Hch
     wp_auto
-    ihave %Hnot_null := typed_pointsto_not_null _ _ _ $$ Hch
+    ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
     imod ghostVar_alloc (chanstate.t.Buffered ([] : List V)) with ⟨%state_gname, Hstate⟩
     icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩
@@ -94,7 +94,7 @@ theorem wp_NewChannel (cap : w64) :
     iapply wp_fupd
     wp_alloc ch as Hch
     wp_auto
-    ihave %Hnot_null := typed_pointsto_not_null _ _ _ $$ Hch
+    ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
     imod ghostVar_alloc (chanstate.t.Idle (V := V)) with ⟨%state_gname, Hstate⟩
     icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩

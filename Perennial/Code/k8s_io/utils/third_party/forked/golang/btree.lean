@@ -15,238 +15,238 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def k8s_io.utils.third_party.forked.golang.btree : go_string := go!"k8s.io/utils/third_party/forked/golang/btree"
+def k8s_io.utils.third_party.forked.golang.btree : GoString := go!"k8s.io/utils/third_party/forked/golang/btree"
 end pkg_id
 
 namespace k8s_io.utils.third_party.forked.golang.btree
 
-def FreeList [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.FreeList" [T])
+def FreeList [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.FreeList" [T])
 
 attribute [irreducible] FreeList
 
-def ItemIterator [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.ItemIterator" [T])
+def ItemIterator [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.ItemIterator" [T])
 
 attribute [irreducible] ItemIterator
 
-def items [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.items" [T])
+def items [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.items" [T])
 
 attribute [irreducible] items
 
-def node [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.node" [T])
+def node [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.node" [T])
 
 attribute [irreducible] node
 
-def toRemove [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.toRemove" [])
+def toRemove [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.toRemove" [])
 
 attribute [irreducible] toRemove
 
-def direction [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.direction" [])
+def direction [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.direction" [])
 
 attribute [irreducible] direction
 
-def optionalItem [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.optionalItem" [T])
+def optionalItem [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.optionalItem" [T])
 
 attribute [irreducible] optionalItem
 
-def BTree [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.BTree" [T])
+def BTree [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.BTree" [T])
 
 attribute [irreducible] BTree
 
-def LessFunc [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.LessFunc" [T])
+def LessFunc [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.LessFunc" [T])
 
 attribute [irreducible] LessFunc
 
-def copyOnWriteContext [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.copyOnWriteContext" [T])
+def copyOnWriteContext [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.copyOnWriteContext" [T])
 
 attribute [irreducible] copyOnWriteContext
 
-def freeType [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"k8s.io/utils/third_party/forked/golang/btree.freeType" [])
+def freeType [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"k8s.io/utils/third_party/forked/golang/btree.freeType" [])
 
 attribute [irreducible] freeType
 
-@[reducible] noncomputable def DefaultFreeListSize [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def DefaultFreeListSize [FfiSyntax] [GoGlobalContext] : val :=
   #(32 : Int)
 
 /-- removes the given item -/
-@[reducible] noncomputable def removeItem [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeItem [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- removes smallest item in the subtree -/
-@[reducible] noncomputable def removeMin [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeMin [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- removes largest item in the subtree -/
-@[reducible] noncomputable def removeMax [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def removeMax [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] noncomputable def descend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def descend [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 (-1))
 
-@[reducible] noncomputable def ascend [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ascend [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was freed (available for GC, not stored in freelist) -/
-@[reducible] noncomputable def ftFreelistFull [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftFreelistFull [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- node was stored in the freelist for later use -/
-@[reducible] noncomputable def ftStored [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftStored [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
 /-- node was ignored by COW, since it's owned by another one -/
-@[reducible] noncomputable def ftNotOwned [ffi_syntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ftNotOwned [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 2)
 
-noncomputable def NewFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFreeList [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewFreeList"
 
-noncomputable def Less [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Less [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.Less"
 
-noncomputable def NewOrdered [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewOrdered [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewOrdered"
 
-noncomputable def New [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.New"
 
-noncomputable def NewWithFreeList [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewWithFreeList [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.NewWithFreeList"
 
-noncomputable def min [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def min [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.min"
 
-noncomputable def max [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def max [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.max"
 
-noncomputable def optional [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def optional [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.optional"
 
-noncomputable def empty [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def empty [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"k8s.io/utils/third_party/forked/golang/btree.empty"
 
 /-- NewFreeList creates a new free list.
     size is the maximum size of the returned free list.
 
     go: btree.go:77:6 -/
-noncomputable def «NewFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "size"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (Var "size"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoAlloc (FreeList T)))) (Let "$v0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.type.SliceType (go.type.PointerType (node T)))]))) (Val #())) (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "size")))
-  (App (Val (GoInstruction (CompositeLiteral (FreeList T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.type.SliceType (go.type.PointerType (node T))) (Var "$v0")))]))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoAlloc (FreeList T)))) (Let "$v0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.GoType.SliceType (go.GoType.PointerType (node T)))]))) (Val #())) (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "size")))
+  (App (Val (GoInstruction (CompositeLiteral (FreeList T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.GoType.SliceType (go.GoType.PointerType (node T))) (Var "$v0")))]))))))))
 
 /-- go: btree.go:81:23 -/
-noncomputable def «FreeList__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «FreeList__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "f"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (FreeList T))))) (Var "f"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (FreeList T))))) (Var "f"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (go.type.SliceType (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))))
-  (App (Val (GoInstruction (Slice (go.type.SliceType (go.type.PointerType (node T)))))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (IndexRef (go.type.SliceType (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "n") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "n") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc (node T)))) (App (Val (GoInstruction (GoZeroVal (node T)))) (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #()))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #())))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #())))))))))
 
 /-- go: btree.go:95:23 -/
-noncomputable def «FreeList__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «FreeList__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "f"
   (Lam "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "out" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (FreeList T))))) (Var "f"))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (FreeList T))))) (Var "f"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "out")))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.type.SliceType (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.type.SliceType (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.SliceType (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))))
-  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType (go.type.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType (node T)) (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.type.SliceType (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.SliceType (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType (node T)) (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "out") (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.SliceType (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef (FreeList T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f")))) (Val #()))))))))))
 
 /-- Less returns a default LessFunc that uses the '<' operator for types that support it.
 
     go: btree.go:111:6 -/
-noncomputable def «Lessⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Lessⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (Lam "a"
   (Lam "b"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc T))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc T))) (Var "a"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "a")) (App (Val (GoInstruction (GoLoad T))) (Var "b")))))))))))))
 
 /-- NewOrdered creates a new B-Tree for ordered types.
 
     go: btree.go:116:6 -/
-noncomputable def «NewOrderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewOrderedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "degree" (App (Val (GoInstruction (GoAlloc go.int))) (Var "degree"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "degree"))
   (Let "$a1" (App (App (Val (GoInstruction (FuncResolve Less [T]))) (Val #())) (Val #()))
   (App (App (App (Val (GoInstruction (FuncResolve New [T]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
@@ -259,410 +259,410 @@ noncomputable def «NewOrderedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : 
     The passed-in LessFunc determines how objects of type T are ordered.
 
     go: btree.go:126:6 -/
-noncomputable def «Newⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «Newⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
   (Lam "less"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "less" (App (Val (GoInstruction (GoAlloc (LessFunc T)))) (Var "less"))
   (Let "degree" (App (Val (GoInstruction (GoAlloc go.int))) (Var "degree"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "degree"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (Var "less"))
-  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (Convert go.untyped_int go.int))) (Val DefaultFreeListSize))
+  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val DefaultFreeListSize))
   (App (App (Val (GoInstruction (FuncResolve NewFreeList [T]))) (Val #())) (Var "$a0")))
   (App (App (App (App (Val (GoInstruction (FuncResolve NewWithFreeList [T]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))
 
 /-- NewWithFreeList creates a new B-Tree that uses the given node free list.
 
     go: btree.go:131:6 -/
-noncomputable def «NewWithFreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «NewWithFreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "degree"
   (Lam "less"
   (Lam "f"
-  (App (Val exception_do)
-  (Let "f" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (FreeList T))))) (Var "f"))
+  (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (FreeList T))))) (Var "f"))
   (Let "less" (App (Val (GoInstruction (GoAlloc (LessFunc T)))) (Var "less"))
   (Let "degree" (App (Val (GoInstruction (GoAlloc go.int))) (Var "degree"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoAlloc (BTree T)))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.int))) (Var "degree"))
-  (Let "$v1" (App (Val (GoInstruction (GoAlloc (copyOnWriteContext T)))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (Var "f"))
+  (Let "$v1" (App (Val (GoInstruction (GoAlloc (copyOnWriteContext T)))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (Var "f"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (Var "less"))
-  (App (Val (GoInstruction (CompositeLiteral (copyOnWriteContext T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.type.PointerType (FreeList T)) (Var "$v0"))), (KeyedElement (some (KeyField go!"less")) (ElementExpression (LessFunc T) (Var "$v1")))])))))
-  (App (Val (GoInstruction (CompositeLiteral (BTree T)))) (LiteralValue [(KeyedElement (some (KeyField go!"degree")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"cow")) (ElementExpression (go.type.PointerType (copyOnWriteContext T)) (Var "$v1")))]))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "degree")) (Val #(W64 1)))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"bad degree")))
+  (App (Val (GoInstruction (CompositeLiteral (copyOnWriteContext T)))) (LiteralValue [(KeyedElement (some (KeyField go!"freelist")) (ElementExpression (go.GoType.PointerType (FreeList T)) (Var "$v0"))), (KeyedElement (some (KeyField go!"less")) (ElementExpression (LessFunc T) (Var "$v1")))])))))
+  (App (Val (GoInstruction (CompositeLiteral (BTree T)))) (LiteralValue [(KeyedElement (some (KeyField go!"degree")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"cow")) (ElementExpression (go.GoType.PointerType (copyOnWriteContext T)) (Var "$v1")))]))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "degree")) (Val #(W64 1)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"bad degree")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- insertAt inserts a value into the given index, pushing all subsequent values
     forward.
 
     go: btree.go:146:20 -/
-noncomputable def «items__insertAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__insertAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
   (Lam "item"
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (items T))))) (Var "s"))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (items T))))) (Var "s"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (Var "index"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))))))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))))))
+  (App (Val doExecute)
+  (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))))))
   (App (App (App (Val (GoInstruction (FuncResolve go.copy [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")) (Var "$r0")))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")) (Var "$r0")))))))))))))))
 
 /-- removeAt removes a value at a given index, pulling all subsequent values
     back.
 
     go: btree.go:157:20 -/
-noncomputable def «items__removeAtⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__removeAtⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (items T))))) (Var "s"))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (items T))))) (Var "s"))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (Var "index"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad T))) (Var "item")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))) (Var "$r0")))))))))
-  (App (Val do_execute)
-  (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))))))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))))))
+  (App (Val doExecute)
+  (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))))))
   (App (App (App (Val (GoInstruction (FuncResolve go.copy [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "item") (Var "$r0"))))))))))))
 
 /-- pop removes and returns the last element in the list.
 
     go: btree.go:167:20 -/
-noncomputable def «items__popⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__popⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (items T))))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (items T))))) (Var "s"))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad T))) (Var "out")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))) (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0"))))))))))))
 
 /-- truncate truncates this instance at index so that it contains only the
     first index items. index must be less than or equal to length.
 
     go: btree.go:178:20 -/
-noncomputable def «items__truncateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__truncateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "index"
-  (App (Val exception_do)
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (items T))))) (Var "s"))
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (items T))))) (Var "s"))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (Var "index"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
   (Let "toClear" (App (Val (GoInstruction (GoAlloc (items T)))) (App (Val (GoInstruction (GoZeroVal (items T)))) (Val #())))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
   (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "index")))))
-  (Let "$r1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (Var "toClear"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (Var "toClear")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (items T)))) (Pair (Var "toClear") (Var "$r1")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (items T))))) (Var "s")) (Var "$r0"))))))))))))))
 
 /-- find returns the index where the given item should be inserted into this
     list.  'found' is true if the item already exists in the list at the given
     index.
 
     go: btree.go:190:19 -/
-noncomputable def «items__findⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «items__findⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
   (Lam "item"
   (Lam "less"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "s" (App (Val (GoInstruction (GoAlloc (items T)))) (Var "s"))
-  (Let "less" (App (Val (GoInstruction (GoAlloc (go.type.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less"))
+  (Let "less" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0")))
   (Let "$a1" (Lam "i"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less")) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less")) (Var "$a0")) (Var "$a1"))))))))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sort.Search []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #false)))))
   (If (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (Var "s")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (App (Val (GoInstruction (GoLoad (go.type.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less")) (Var "$a0")) (Var "$a1"))))) (Val #false))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))))) (Var "less")) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Val #true)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))))))
 
 /-- go: btree.go:211:19 -/
-noncomputable def «node__mutableForⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__mutableForⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "cow"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (Let "cow" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (copyOnWriteContext T))))) (Var "cow"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "out" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "cow"))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out")))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (App (Val (GoInstruction (Slice (items (go.type.PointerType (node T)))))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))) (Var "$r0")))))
-  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(items (go.type.PointerType (node T)))]))) (Val #())) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))) (Var "$r0")))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (Let "cow" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (copyOnWriteContext T))))) (Var "cow"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "out" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "cow"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (App (Val (GoInstruction (Slice (items (go.GoType.PointerType (node T)))))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))) (Var "$r0")))))
+  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))) (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (App (Val (GoInstruction (FuncResolve go.copy [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [(items T)]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(items T)]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))) (Var "$r0")))))
-  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(items T)]))) (Val #())) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0")))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))) (Var "$r0")))))
+  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(items T)]))) (Val #())) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0")))) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.cap [(items T)]))) (Val #())) (Var "$a0"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "out"))) (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "out") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "cow")))))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "out"))) (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "out") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "cow")))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- go: btree.go:232:19 -/
-noncomputable def «node__mutableChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__mutableChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "c")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "c") (Var "$r0"))))))))))))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "c")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "c") (Var "$r0"))))))))))))
 
 /-- split splits the given node at the given index.  The current node shrinks,
     and this function returns the item that existed at that index and a new node
     containing all items/children after it.
 
     go: btree.go:241:19 -/
-noncomputable def «node__splitⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__splitⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "next" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "next"))))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "next" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "next"))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (Val (GoInstruction (Slice (items T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "item")) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "next"))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "next"))))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (Val (GoInstruction (Slice (items (go.type.PointerType (node T)))))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "item")) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "next"))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "next"))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (Val (GoInstruction (Slice (items (go.GoType.PointerType (node T)))))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))) (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "next"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "next"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "next"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "next") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "next"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "next") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "item") (Var "$r0"))))))))))))
 
 /-- maybeSplitChild checks if a child should be split, and if so splits it.
     Returns whether or not a split occurred.
 
     go: btree.go:255:19 -/
-noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "maxItems"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "maxItems" (App (Val (GoInstruction (GoAlloc go.int))) (Var "maxItems"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "first" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "first" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "second" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "second" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "maxItems")) (Val #(W64 2))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"split"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "first"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"split"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "first"))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #true))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "second"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "second"))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "second") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "second") (Var "$r1")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "item") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "first") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "first") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "maxItems")))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- insert inserts an item into the subtree rooted at this node, making sure
@@ -670,339 +670,339 @@ noncomputable def «node__maybeSplitChildⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
     be found/replaced by insert, it will be returned.
 
     go: btree.go:269:19 -/
-noncomputable def «node__insertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__insertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "maxItems"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "maxItems" (App (Val (GoInstruction (GoAlloc go.int))) (Var "maxItems"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "maxItems"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"insert"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"insert"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "maxItems"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"maybeSplitChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"maybeSplitChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1"))))
   (Let "inTree" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (Val #true)
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "inTree"))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))))
+  (App (Val doExecute)
   (Val #()))
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "inTree"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "out")) (Val #true)))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "inTree") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))
-  (App (Val do_execute)
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))))
+  (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "out")) (Val #true)))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "found") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))))))
 
 /-- get finds the given key in the subtree and returns it.
 
     go: btree.go:297:19 -/
-noncomputable def «node__getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "key"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "key" (App (Val (GoInstruction (GoAlloc T))) (Var "key"))
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "key"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Val #true)))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Val #true)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "key"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"get"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"get"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "found") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))))
 
 /-- min returns the first item in the subtree.
 
     go: btree.go:308:6 -/
-noncomputable def «minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Val #(W64 0))))) (Val #true)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Val #(W64 0))))) (Val #true)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Val #(W64 0)))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))
   (Lam BAnon
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- max returns the last item in the subtree.
 
     go: btree.go:322:6 -/
-noncomputable def «maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Pair (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))))) (Val #true)))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))
   (Lam BAnon
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- remove removes an item from the subtree rooted at this node.
 
     go: btree.go:345:19 -/
-noncomputable def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__removeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "item"
   (Lam "minItems"
   (Lam "typ"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "typ" (App (Val (GoInstruction (GoAlloc toRemove))) (Var "typ"))
   (Let "minItems" (App (Val (GoInstruction (GoAlloc go.int))) (Var "minItems"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "child" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "child" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad toRemove))) (Var "typ"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems"))
   (Let "$a2" (Val removeMax)
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "out")) (Val #true)))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r1")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems")))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad toRemove))) (Var "typ"))
-  (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"growChildAndRemove"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"growChildAndRemove"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad toRemove))) (Var "typ"))
   (If (App (Val (GoInstruction (GoOp GoEquals toRemove))) (Pair (Var "$sw") (Val removeMax)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0")))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
-  (Pair (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Val #())) (Val #true)))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
+  (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Val #())) (Val #true)))
+  (App (Val doExecute)
   (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals toRemove))) (Pair (Var "$sw") (Val removeMin)))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 0))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
   (Pair (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0"))) (Val #true)))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0"))) (Val #true)))
+  (App (Val doExecute)
   (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals toRemove))) (Pair (Var "$sw") (Val removeItem)))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "found"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0"))) (Val #true)))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0"))) (Val #true)))
+  (App (Val doExecute)
   (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "found") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.type.InterfaceType [])))) (Val #(go!"invalid type")))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"invalid type")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))))))))))))))
 
 /-- growChildAndRemove grows child 'i' to make sure it's possible to remove an
@@ -1031,169 +1031,169 @@ noncomputable def «node__removeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T 
     that we hit case A.
 
     go: btree.go:418:19 -/
-noncomputable def «node__growChildAndRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__growChildAndRemoveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "i"
   (Lam "item"
   (Lam "minItems"
   (Lam "typ"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "typ" (App (Val (GoInstruction (GoAlloc toRemove))) (Var "typ"))
   (Let "minItems" (App (Val (GoInstruction (GoAlloc go.int))) (Var "minItems"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad toRemove))) (Var "typ"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems")))) (Val #false)))
-  (Let "child" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (Let "child" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "stealFrom" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "stealFrom" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "stolenItem" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom")))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom")))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "stolenItem"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom")))) (Val #()))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child")))) (Var "$a0")) (Var "$a1")))))
-  (App (Val do_execute)
+  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"pop"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom")))) (Val #()))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child")))) (Var "$a0")) (Var "$a1")))))
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child")))) (Var "$a0")) (Var "$a1"))))))))
-  (App (Val do_execute)
+  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"insertAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child")))) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "stolenItem") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "stealFrom") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "stealFrom") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "minItems")))) (Val #false)))
-  (Let "child" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (Let "child" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "stealFrom" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "stealFrom" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "stolenItem" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom")))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))))
-  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom")))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "stolenItem"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))))
   (Let "$a1" (Let "$sl0" (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "stealFrom")))) (Var "$a0")))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType (go.type.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType (node T)) (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$r0")))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "stealFrom")))) (Var "$a0")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType (node T)) (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$r0")))))
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "stolenItem") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "stealFrom") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "child" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "stealFrom") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "child" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableChild"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "mergeItem" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "mergeChild" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "mergeChild" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"removeAt"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (Var "mergeItem"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "mergeChild"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "mergeChild"))))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "mergeChild"))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "mergeChild"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "mergeChild") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "mergeChild"))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "mergeChild"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "mergeChild") (Var "$r0")))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "mergeItem") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "child") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))))))))
 
 /-- go: btree.go:467:6 -/
-noncomputable def «optionalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «optionalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "item"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$v1" (Val #true)
   (App (Val (GoInstruction (CompositeLiteral (optionalItem T)))) (LiteralValue [(KeyedElement (some (KeyField go!"item")) (ElementExpression T (Var "$v0"))), (KeyedElement (some (KeyField go!"valid")) (ElementExpression go.bool (Var "$v1")))]))))))))
 
 /-- go: btree.go:470:6 -/
-noncomputable def «emptyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «emptyⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (App (Val doReturn)
   (App (Val (GoInstruction (CompositeLiteral (optionalItem T)))) (LiteralValue [])))))
 
 /-- iterate provides a simple method for iterating over elements in the tree.
@@ -1205,7 +1205,7 @@ noncomputable def «emptyⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.ty
     "greaterThan" or "lessThan" queries.
 
     go: btree.go:481:19 -/
-noncomputable def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__iterateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "dir"
   (Lam "start"
@@ -1213,8 +1213,8 @@ noncomputable def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
   (Lam "includeStart"
   (Lam "hit"
   (Lam "iter"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
   (Let "iter" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iter"))
   (Let "hit" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "hit"))
   (Let "includeStart" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "includeStart"))
@@ -1224,243 +1224,243 @@ noncomputable def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
   (Let "found" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "index" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #true)))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad direction))) (Var "dir"))
   (If (App (Val (GoInstruction (GoOp GoEquals direction))) (Pair (Var "$sw") (Val ascend)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad direction))) (Var "dir"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "stop"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))
   (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter")) (Var "$a0"))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "stop"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "stop"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "stop")))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
-  (App (Val do_return)
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))
   (If (If (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))) (Val #false)) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "start"))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "start")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_continue) (Val #()))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad direction))) (Var "dir"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "stop"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))
   (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "start")))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "start")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Var "$r1"))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals direction))) (Pair (Var "$sw") (Val descend)))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad direction))) (Var "dir"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "stop"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))
   (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Val #(W64 0)))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Val #(W64 0)))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "index"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (App (Val do_for) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter")) (Var "$a0"))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))
   (If (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "stop"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "stop")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
-  (App (Val do_return)
+  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad direction))) (Var "dir"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad (optionalItem T)))) (Var "stop"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))
   (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iter"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit")) (Val #false)))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "hit") (Var "$r0"))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "start"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "start"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "start")))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1"))))) (Val #false))
   (If (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "includeStart"))) (Val #true) (App (Val (GoInstruction (GoLoad go.bool))) (Var "hit"))) (Val #true) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "start")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1")))))
-  (App (Val do_continue) (Val #()))
-  (App (Val do_execute)
+  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (items T)))) (Pair (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))) (Var "$a0")) (Var "$a1")))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
   (Val #())))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"valid"))) (Var "start")))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (optionalItem T) go!"item"))) (Var "start")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (LessFunc T)))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"less"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"find"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "found")))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "index")) (Val #(W64 1))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "found") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0"))))))))))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "index") (Var "$r0")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))))))))))))))
 
 /-- Clone clones the btree, lazily.  Clone should not be called concurrently,
@@ -1476,116 +1476,116 @@ noncomputable def «node__iterateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T
     the original performance characteristics of the original tree.
 
     go: btree.go:597:20 -/
-noncomputable def «BTree__Cloneⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Cloneⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t2" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (BTree T))))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (BTree T))))) (Val #())))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "cow2" (App (Val (GoInstruction (GoAlloc (copyOnWriteContext T)))) (App (Val (GoInstruction (GoZeroVal (copyOnWriteContext T)))) (Val #())))
   (Let "cow1" (App (Val (GoInstruction (GoAlloc (copyOnWriteContext T)))) (App (Val (GoInstruction (GoZeroVal (copyOnWriteContext T)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (copyOnWriteContext T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad (copyOnWriteContext T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (copyOnWriteContext T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad (copyOnWriteContext T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "out" (App (Val (GoInstruction (GoAlloc (BTree T)))) (App (Val (GoInstruction (GoZeroVal (BTree T)))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (BTree T)))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (BTree T)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Var "cow1")
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Var "cow2")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Var "out"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (Var "out")) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (Var "out")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (BTree T)))) (Pair (Var "out") (Var "$r0")))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (copyOnWriteContext T)))) (Pair (Var "cow2") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (copyOnWriteContext T)))) (Pair (Var "cow1") (Var "$r0"))))))))))))))
 
 /-- maxItems returns the max number of items to allow per node.
 
     go: btree.go:611:20 -/
-noncomputable def «BTree__maxItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__maxItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 2)))) (Val #(W64 1)))))))))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 2)))) (Val #(W64 1)))))))))
 
 /-- minItems returns the min number of items to allow per node (ignored for the
     root node).
 
     go: btree.go:617:20 -/
-noncomputable def «BTree__minItemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__minItemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"degree"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))))
 
 /-- go: btree.go:621:33 -/
-noncomputable def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «copyOnWriteContext__newNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (FreeList T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))))))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (FreeList T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "n") (Var "$r0")))))))))))
 
 /-- freeNode frees a node within a given COW context, if it's owned by that
     context.  It returns what happened to the node (see freeType const
     documentation).
 
     go: btree.go:638:33 -/
-noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "n"
-  (App (Val exception_do)
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val ftNotOwned))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c")))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (copyOnWriteContext T))))) (Val UntypedNil))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (copyOnWriteContext T))))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val ftFreelistFull))))
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (FreeList T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (FreeList T))))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))))) (Var "$a0")))
-  (App (Val do_return)
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (FreeList T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (FreeList T))))) (App (Val (GoInstruction (StructFieldRef (copyOnWriteContext T) go!"freelist"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))))) (Var "$a0")))
+  (App (Val doReturn)
   (Val ftStored))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))) (Var "$r0"))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (copyOnWriteContext T))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))) (Var "$r0"))))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items (go.type.PointerType (node T)))) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")))))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items (go.GoType.PointerType (node T)))) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")))))))
+  (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (items T)) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n")))) (Var "$a0")))))
-  (App (Val do_execute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (items T)) go!"truncate"))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n")))) (Var "$a0")))))
+  (App (Val doExecute)
   (Val #())))))))))
 
 /-- ReplaceOrInsert adds the given item to the tree.  If an item in the tree
@@ -1595,244 +1595,244 @@ noncomputable def «copyOnWriteContext__freeNodeⁱᵐᵖˡ» [ffi_syntax] [GoGl
     nil cannot be added to the tree (will panic).
 
     go: btree.go:657:20 -/
-noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__ReplaceOrInsertⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "outb" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Val #()))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"insert"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1"))))
+  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Val #()))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"insert"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "out")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "outb"))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "outb")))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "outb") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Val #())))))
-  (Let "second" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Val #())))))
+  (Let "second" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
   (Let "item2" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Val #())) (Val #(W64 2))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"split"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"maxItems"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Val #())) (Val #(W64 2))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"split"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "oldroot" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "oldroot" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (Var "item2"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
-  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "oldroot"))
-  (Let "$sl1" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "second"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType (go.type.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.type.PointerType (node T)) (Var "$sl0"))), (KeyedElement none (ElementExpression (go.type.PointerType (node T)) (Var "$sl1")))]))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$r0")))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "oldroot") (Var "$r0")))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "second") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "oldroot"))
+  (Let "$sl1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "second"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.PointerType (node T)))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType (node T)) (Var "$sl0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType (node T)) (Var "$sl1")))]))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "oldroot") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "second") (Var "$r1")))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "item2") (Var "$r0"))))))))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Val #()))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (App (Val (GoInstruction (CompositeLiteral (go.type.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType T)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$sl0")))])))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(items T)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (items T)))) (Pair (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- Delete removes an item equal to the passed in item from the tree, returning
     it.  If no such item exists, returns (zeroValue, false).
 
     go: btree.go:681:20 -/
-noncomputable def «BTree__Deleteⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Deleteⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
   (Let "$a1" (Val removeItem)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1")))))))))))
 
 /-- DeleteMin removes the smallest item in the tree and returns it.
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:687:20 -/
-noncomputable def «BTree__DeleteMinⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DeleteMinⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
   (Let "$a1" (Val removeMin)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1")))))))))))
 
 /-- DeleteMax removes the largest item in the tree and returns it.
     If no such item exists, returns (zeroValue, false).
 
     go: btree.go:694:20 -/
-noncomputable def «BTree__DeleteMaxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DeleteMaxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
   (Let "$a1" (Val removeMax)
-  (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"deleteItem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1")))))))))))
 
 /-- go: btree.go:699:20 -/
-noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__deleteItemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "item"
   (Lam "typ"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "typ" (App (Val (GoInstruction (GoAlloc toRemove))) (Var "typ"))
   (Let "item" (App (Val (GoInstruction (GoAlloc T))) (Var "item"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"mutableFor"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "outb" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "out" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "item"))
-  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"minItems"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Val #()))
+  (Let "$a1" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"minItems"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Val #()))
   (Let "$a2" (App (Val (GoInstruction (GoLoad toRemove))) (Var "typ"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"remove"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoLoad T))) (Var "out")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "outb"))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "outb"))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (Val #(W64 1)))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.type.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false)))
-  (Let "oldroot" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.type.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))))) (Val #(W64 0)))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "oldroot"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "oldroot") (Var "$r0")))))))
-  (App (Val do_execute)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(items (go.GoType.PointerType (node T)))]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false)))
+  (Let "oldroot" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (IndexRef (items (go.GoType.PointerType (node T)))))) (Pair (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "oldroot"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "oldroot") (Var "$r0")))))))
+  (App (Val doExecute)
   (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "outb") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "out") (Var "$r0"))))))))))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (items T)))) (App (Val (GoInstruction (StructFieldRef (node T) go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(items T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))))
 
 /-- AscendRange calls the iterator for every value in the tree within the range
     [greaterOrEqual, lessThan), until iterator returns false.
 
     go: btree.go:718:20 -/
-noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "greaterOrEqual"
   (Lam "lessThan"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "lessThan" (App (Val (GoInstruction (GoAlloc T))) (Var "lessThan"))
   (Let "greaterOrEqual" (App (Val (GoInstruction (GoAlloc T))) (Var "greaterOrEqual"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val ascend)
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "greaterOrEqual"))
   (App (App (Val (GoInstruction (FuncResolve optional [T]))) (Val #())) (Var "$a0")))
@@ -1841,30 +1841,30 @@ noncomputable def «BTree__AscendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContex
   (Let "$a3" (Val #true)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))))
 
 /-- AscendLessThan calls the iterator for every value in the tree within the range
     [first, pivot), until iterator returns false.
 
     go: btree.go:727:20 -/
-noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc T))) (Var "pivot"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val ascend)
   (Let "$a1" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "pivot"))
@@ -1872,30 +1872,30 @@ noncomputable def «BTree__AscendLessThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalCon
   (Let "$a3" (Val #false)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))
 
 /-- AscendGreaterOrEqual calls the iterator for every value in the tree within
     the range [pivot, last], until iterator returns false.
 
     go: btree.go:736:20 -/
-noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc T))) (Var "pivot"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val ascend)
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "pivot"))
   (App (App (Val (GoInstruction (FuncResolve optional [T]))) (Val #())) (Var "$a0")))
@@ -1903,60 +1903,60 @@ noncomputable def «BTree__AscendGreaterOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlo
   (Let "$a3" (Val #true)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))
 
 /-- Ascend calls the iterator for every value in the tree within the range
     [first, last], until iterator returns false.
 
     go: btree.go:745:20 -/
-noncomputable def «BTree__Ascendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Ascendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val ascend)
   (Let "$a1" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a2" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a3" (Val #false)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))
 
 /-- DescendRange calls the iterator for every value in the tree within the range
     [lessOrEqual, greaterThan), until iterator returns false.
 
     go: btree.go:754:20 -/
-noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "lessOrEqual"
   (Lam "greaterThan"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "greaterThan" (App (Val (GoInstruction (GoAlloc T))) (Var "greaterThan"))
   (Let "lessOrEqual" (App (Val (GoInstruction (GoAlloc T))) (Var "lessOrEqual"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val descend)
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "lessOrEqual"))
   (App (App (Val (GoInstruction (FuncResolve optional [T]))) (Val #())) (Var "$a0")))
@@ -1965,30 +1965,30 @@ noncomputable def «BTree__DescendRangeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalConte
   (Let "$a3" (Val #true)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))))
 
 /-- DescendLessOrEqual calls the iterator for every value in the tree within the range
     [pivot, first], until iterator returns false.
 
     go: btree.go:763:20 -/
-noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc T))) (Var "pivot"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val descend)
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "pivot"))
   (App (App (Val (GoInstruction (FuncResolve optional [T]))) (Val #())) (Var "$a0")))
@@ -1996,30 +1996,30 @@ noncomputable def «BTree__DescendLessOrEqualⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (Let "$a3" (Val #true)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))
 
 /-- DescendGreaterThan calls the iterator for every value in the tree within
     the range [last, pivot), until iterator returns false.
 
     go: btree.go:772:20 -/
-noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "pivot"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc T))) (Var "pivot"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val descend)
   (Let "$a1" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "pivot"))
@@ -2027,135 +2027,135 @@ noncomputable def «BTree__DescendGreaterThanⁱᵐᵖˡ» [ffi_syntax] [GoGloba
   (Let "$a3" (Val #false)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))))
 
 /-- Descend calls the iterator for every value in the tree within the range
     [last, first], until iterator returns false.
 
     go: btree.go:781:20 -/
-noncomputable def «BTree__Descendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Descendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "iterator"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "iterator" (App (Val (GoInstruction (GoAlloc (ItemIterator T)))) (Var "iterator"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (Let "$a0" (Val descend)
   (Let "$a1" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a2" (App (App (Val (GoInstruction (FuncResolve empty [T]))) (Val #())) (Val #()))
   (Let "$a3" (Val #false)
   (Let "$a4" (Val #false)
   (Let "$a5" (App (Val (GoInstruction (GoLoad (ItemIterator T)))) (Var "iterator"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (App (App (App (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"iterate"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Val #()))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #()))))))))))
 
 /-- Get looks for the key item in the tree, returning it.  It returns
     (zeroValue, false) if unable to find that item.
 
     go: btree.go:790:20 -/
-noncomputable def «BTree__Getⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Getⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "key"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "key" (App (Val (GoInstruction (GoAlloc T))) (Var "key"))
-  (App (App (Val exception_seq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "key"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"get"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"get"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untyped_bool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil)))))
-  (App (Val do_return)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
   (Pair (App (Val (GoInstruction (GoZeroVal T))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))))))))
 
 /-- Min returns the smallest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:798:20 -/
-noncomputable def «BTree__Minⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Minⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
   (App (App (Val (GoInstruction (FuncResolve min [T]))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))))))
 
 /-- Max returns the largest item in the tree, or (zeroValue, false) if the tree is empty.
 
     go: btree.go:803:20 -/
-noncomputable def «BTree__Maxⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Maxⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let BAnon (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
   (App (App (Val (GoInstruction (FuncResolve max [T]))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
-  (App (Val do_return)
+  (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))))))
 
 /-- Has returns true if the given key is in the tree.
 
     go: btree.go:808:20 -/
-noncomputable def «BTree__Hasⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Hasⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "key"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "key" (App (Val (GoInstruction (GoAlloc T))) (Var "key"))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "key"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (BTree T)) go!"Get"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (BTree T)) go!"Get"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$r0"))))))))))))))
 
 /-- Len returns the number of items currently in the tree.
 
     go: btree.go:814:20 -/
-noncomputable def «BTree__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Lenⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))))))))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))))))))
 
 /-- Clear removes all items from the btree.  If addNodesToFreelist is true,
     t's nodes are added to its freelist as part of this call, until the freelist
@@ -2180,28 +2180,28 @@ noncomputable def «BTree__Lenⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : 
     	    ownership, none are.
 
     go: btree.go:839:20 -/
-noncomputable def «BTree__Clearⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «BTree__Clearⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "t"
   (Lam "addNodesToFreelist"
-  (App (Val exception_do)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (BTree T))))) (Var "t"))
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (BTree T))))) (Var "t"))
   (Let "addNodesToFreelist" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "addNodesToFreelist"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (App (Val exception_seq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil))
   (Let "$r1" (Val #(W64 0))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r1"))))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))) (Var "$r0")))))))))
-  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.type.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untyped_nil (go.type.PointerType (node T))))) (Val UntypedNil))))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "addNodesToFreelist")) (Val #false))
-  (App (Val do_execute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (BTree T))))) (Var "t"))))) (Var "$a0"))))
-  (App (Val do_execute)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"length"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r1"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))) (Var "$r0")))))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (node T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (node T))))) (Val UntypedNil))))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "addNodesToFreelist")) (Val #false))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"cow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (StructFieldRef (BTree T) go!"root"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (BTree T))))) (Var "t"))))) (Var "$a0"))))
+  (App (Val doExecute)
   (Val #()))))))))))
 
 /-- reset returns a subtree to the freelist.  It breaks out immediately if the
@@ -2209,83 +2209,83 @@ noncomputable def «BTree__Clearⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T 
     freelist up.  Returns true if parent reset call should continue.
 
     go: btree.go:849:19 -/
-noncomputable def «node__resetⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «node__resetⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "n"
   (Lam "c"
-  (App (Val exception_do)
-  (Let "n" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (Var "n"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals freeType))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))) (Var "$a0"))) (Val ftFreelistFull)))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (items (go.type.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "n"))))
-  (Let "child" (App (Val (GoInstruction (GoAlloc (go.type.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.type.PointerType (node T))))) (Val #())))
-  (App (App (Val (slice.for_range (go.type.PointerType (node T)))) (Var "$range"))
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (Var "n"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals freeType))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))) (Var "$a0"))) (Val ftFreelistFull)))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (items (go.GoType.PointerType (node T)))))) (App (Val (GoInstruction (StructFieldRef (node T) go!"children"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "n"))))
+  (Let "child" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (node T))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (node T))))) (Val #())))
+  (App (App (Val (slice.forRange (go.GoType.PointerType (node T)))) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.type.PointerType (copyOnWriteContext T))))) (Var "c"))
-  (App (App (Val (GoInstruction (MethodResolve (go.type.PointerType (node T)) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.type.PointerType (node T))))) (Var "child"))) (Var "$a0"))))
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (copyOnWriteContext T))))) (Var "c"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (node T)) go!"reset"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (node T))))) (Var "child"))) (Var "$a0"))))
+  (App (Val doReturn)
   (Val #false))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (Var "$key")))))
-  (App (Val do_execute)
-  (App (Val (GoInstruction (GoStore (go.type.PointerType (node T))))) (Pair (Var "child") (Var "$value"))))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (node T))))) (Pair (Var "child") (Var "$value"))))))))))))))))
 
 instance info' : PkgInfo pkg_id.k8s_io.utils.third_party.forked.golang.btree where
-  pkg_imported_pkgs := [pkg_id.cmp, pkg_id.sort, pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.cmp, pkg_id.sort, pkg_id.sync]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.k8s_io.utils.third_party.forked.golang.btree)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val _root_.Perennial.cmp.initialize') (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sort.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
 namespace FreeList
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   mu' : _root_.Perennial.sync.Mutex.t
   freelist' : slice.t
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end FreeList
 
-@[reducible] def FreeList'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def FreeList'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex),
-(go.field_decl.FieldDecl go!"freelist" (go.type.SliceType (go.type.PointerType (node T))))]
+(go.field_decl.FieldDecl go!"freelist" (go.GoType.SliceType (go.GoType.PointerType (node T))))]
 
-@[irreducible] def FreeList'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def FreeList'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (FreeList'fds_unsealed T)
 
-instance equals_unfold_FreeList [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_FreeList [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (FreeList'fds T) (FreeList'fds_unsealed T) :=
   ⟨by unfold FreeList'fds; rfl⟩
 
-@[reducible] def «FreeListⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (FreeList'fds T))
+@[reducible] def «FreeListⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (FreeList'fds T))
 
-class FreeList_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  FreeList_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («FreeListⁱᵐᵖˡ» T) (FreeList.t T')
-  FreeList_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (FreeList T) («FreeListⁱᵐᵖˡ» T)
-  FreeList_get_mu : ∀ (T : go.type) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
-  FreeList_set_mu : ∀ (T : go.type) (T' : Type) (x : (FreeList.t T')) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (FreeList.t T'))))
-  FreeList_get_freelist : ∀ (T : go.type) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
-  FreeList_set_freelist : ∀ (T : go.type) (T' : Type) (x : (FreeList.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList.t T'))))
-  FreeList'ptr_freeNode_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (FreeList T)) go!"freeNode" («FreeList__freeNodeⁱᵐᵖˡ» T)
-  FreeList'ptr_newNode_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (FreeList T)) go!"newNode" («FreeList__newNodeⁱᵐᵖˡ» T)
+class FreeList_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  FreeList_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («FreeListⁱᵐᵖˡ» T) (FreeList.t T')
+  FreeList_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (FreeList T) («FreeListⁱᵐᵖˡ» T)
+  FreeList_get_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"mu") #x (Val #(x.mu'))
+  FreeList_set_mu : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : _root_.Perennial.sync.Mutex.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (FreeList.t T'))))
+  FreeList_get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («FreeListⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
+  FreeList_set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (FreeList.t T')) (y : slice.t), go.IsGoStepPureDetTagged under (StructFieldSet («FreeListⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (FreeList.t T'))))
+  FreeList'ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"freeNode" («FreeList__freeNodeⁱᵐᵖˡ» T)
+  FreeList'ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (FreeList T)) go!"newNode" («FreeList__newNodeⁱᵐᵖˡ» T)
 
 attribute [instance] FreeList_Assumptions.FreeList_type_repr
   FreeList_Assumptions.FreeList_underlying
@@ -2297,33 +2297,33 @@ attribute [instance] FreeList_Assumptions.FreeList_type_repr
   FreeList_Assumptions.FreeList'ptr_newNode_unfold
 
 namespace ItemIterator
-abbrev t [ffi_syntax] (T : Type) : Type := func.t
+abbrev t [FfiSyntax] (T : Type) : Type := func.t
 end ItemIterator
 
-@[reducible] def «ItemIteratorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.FunctionType (go.signature.Signature [T] false [go.bool]))
+@[reducible] def «ItemIteratorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))
 
-class ItemIterator_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ItemIterator_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (ItemIterator T) («ItemIteratorⁱᵐᵖˡ» T)
+class ItemIterator_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ItemIterator_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (ItemIterator T) («ItemIteratorⁱᵐᵖˡ» T)
 
 attribute [instance] ItemIterator_Assumptions.ItemIterator_underlying
 
 namespace items
-abbrev t [ffi_syntax] (T : Type) : Type := slice.t
+abbrev t [FfiSyntax] (T : Type) : Type := slice.t
 end items
 
-@[reducible] def «itemsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.SliceType T)
+@[reducible] def «itemsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.SliceType T)
 
-class items_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  items_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (items T) («itemsⁱᵐᵖˡ» T)
-  items_find_unfold : ∀ (T : go.type), MethodUnfold (items T) go!"find" («items__findⁱᵐᵖˡ» T)
-  items'ptr_find_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (items T)) go!"find" (LamV "$r"
+class items_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  items_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (items T) («itemsⁱᵐᵖˡ» T)
+  items_find_unfold : ∀ (T : go.GoType), MethodUnfold (items T) go!"find" («items__findⁱᵐᵖˡ» T)
+  items'ptr_find_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"find" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (items T) go!"find"))) (App (Val (GoInstruction (GoLoad (items T)))) (Var "$r"))))
-  items'ptr_insertAt_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (items T)) go!"insertAt" («items__insertAtⁱᵐᵖˡ» T)
-  items'ptr_pop_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (items T)) go!"pop" («items__popⁱᵐᵖˡ» T)
-  items'ptr_removeAt_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (items T)) go!"removeAt" («items__removeAtⁱᵐᵖˡ» T)
-  items'ptr_truncate_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (items T)) go!"truncate" («items__truncateⁱᵐᵖˡ» T)
+  items'ptr_insertAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"insertAt" («items__insertAtⁱᵐᵖˡ» T)
+  items'ptr_pop_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"pop" («items__popⁱᵐᵖˡ» T)
+  items'ptr_removeAt_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"removeAt" («items__removeAtⁱᵐᵖˡ» T)
+  items'ptr_truncate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (items T)) go!"truncate" («items__truncateⁱᵐᵖˡ» T)
 
 attribute [instance] items_Assumptions.items_underlying
   items_Assumptions.items_find_unfold
@@ -2334,50 +2334,50 @@ attribute [instance] items_Assumptions.items_underlying
   items_Assumptions.items'ptr_truncate_unfold
 
 namespace node
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   items' : (items.t T)
-  children' : (items.t loc)
-  cow' : loc
+  children' : (items.t Loc)
+  cow' : Loc
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef⟩
 end node
 
-@[reducible] def node'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def node'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"items" (items T)),
-(go.field_decl.FieldDecl go!"children" (items (go.type.PointerType (node T)))),
-(go.field_decl.FieldDecl go!"cow" (go.type.PointerType (copyOnWriteContext T)))]
+(go.field_decl.FieldDecl go!"children" (items (go.GoType.PointerType (node T)))),
+(go.field_decl.FieldDecl go!"cow" (go.GoType.PointerType (copyOnWriteContext T)))]
 
-@[irreducible] def node'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def node'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (node'fds_unsealed T)
 
-instance equals_unfold_node [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_node [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (node'fds T) (node'fds_unsealed T) :=
   ⟨by unfold node'fds; rfl⟩
 
-@[reducible] def «nodeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (node'fds T))
+@[reducible] def «nodeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (node'fds T))
 
-class node_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  node_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («nodeⁱᵐᵖˡ» T) (node.t T')
-  node_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (node T) («nodeⁱᵐᵖˡ» T)
-  node_get_items : ∀ (T : go.type) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"items") #x (Val #(x.items'))
-  node_set_items : ∀ (T : go.type) (T' : Type) (x : (node.t T')) (y : (items.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"items") (PairV #x #y) (Val #(({ x with items' := y } : (node.t T'))))
-  node_get_children : ∀ (T : go.type) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"children") #x (Val #(x.children'))
-  node_set_children : ∀ (T : go.type) (T' : Type) (x : (node.t T')) (y : (items.t loc)), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"children") (PairV #x #y) (Val #(({ x with children' := y } : (node.t T'))))
-  node_get_cow : ∀ (T : go.type) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
-  node_set_cow : ∀ (T : go.type) (T' : Type) (x : (node.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (node.t T'))))
-  node'ptr_get_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"get" («node__getⁱᵐᵖˡ» T)
-  node'ptr_growChildAndRemove_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"growChildAndRemove" («node__growChildAndRemoveⁱᵐᵖˡ» T)
-  node'ptr_insert_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"insert" («node__insertⁱᵐᵖˡ» T)
-  node'ptr_iterate_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"iterate" («node__iterateⁱᵐᵖˡ» T)
-  node'ptr_maybeSplitChild_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"maybeSplitChild" («node__maybeSplitChildⁱᵐᵖˡ» T)
-  node'ptr_mutableChild_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"mutableChild" («node__mutableChildⁱᵐᵖˡ» T)
-  node'ptr_mutableFor_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"mutableFor" («node__mutableForⁱᵐᵖˡ» T)
-  node'ptr_remove_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"remove" («node__removeⁱᵐᵖˡ» T)
-  node'ptr_reset_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"reset" («node__resetⁱᵐᵖˡ» T)
-  node'ptr_split_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (node T)) go!"split" («node__splitⁱᵐᵖˡ» T)
+class node_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  node_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («nodeⁱᵐᵖˡ» T) (node.t T')
+  node_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (node T) («nodeⁱᵐᵖˡ» T)
+  node_get_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"items") #x (Val #(x.items'))
+  node_set_items : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"items") (PairV #x #y) (Val #(({ x with items' := y } : (node.t T'))))
+  node_get_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"children") #x (Val #(x.children'))
+  node_set_children : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : (items.t Loc)), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"children") (PairV #x #y) (Val #(({ x with children' := y } : (node.t T'))))
+  node_get_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («nodeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
+  node_set_cow : ∀ (T : go.GoType) (T' : Type) (x : (node.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («nodeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (node.t T'))))
+  node'ptr_get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"get" («node__getⁱᵐᵖˡ» T)
+  node'ptr_growChildAndRemove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"growChildAndRemove" («node__growChildAndRemoveⁱᵐᵖˡ» T)
+  node'ptr_insert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"insert" («node__insertⁱᵐᵖˡ» T)
+  node'ptr_iterate_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"iterate" («node__iterateⁱᵐᵖˡ» T)
+  node'ptr_maybeSplitChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"maybeSplitChild" («node__maybeSplitChildⁱᵐᵖˡ» T)
+  node'ptr_mutableChild_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableChild" («node__mutableChildⁱᵐᵖˡ» T)
+  node'ptr_mutableFor_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"mutableFor" («node__mutableForⁱᵐᵖˡ» T)
+  node'ptr_remove_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"remove" («node__removeⁱᵐᵖˡ» T)
+  node'ptr_reset_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"reset" («node__resetⁱᵐᵖˡ» T)
+  node'ptr_split_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (node T)) go!"split" («node__splitⁱᵐᵖˡ» T)
 
 attribute [instance] node_Assumptions.node_type_repr
   node_Assumptions.node_underlying
@@ -2399,60 +2399,60 @@ attribute [instance] node_Assumptions.node_type_repr
   node_Assumptions.node'ptr_split_unfold
 
 namespace toRemove
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end toRemove
 
-@[reducible] def «toRemoveⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «toRemoveⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class toRemove_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class toRemove_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   toRemove_underlying : go.UnderlyingDirectedEq toRemove «toRemoveⁱᵐᵖˡ»
 
 attribute [instance] toRemove_Assumptions.toRemove_underlying
 
 namespace direction
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end direction
 
-@[reducible] def «directionⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «directionⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class direction_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class direction_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   direction_underlying : go.UnderlyingDirectedEq direction «directionⁱᵐᵖˡ»
 
 attribute [instance] direction_Assumptions.direction_underlying
 
 namespace optionalItem
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   item' : T
   valid' : Bool
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end optionalItem
 
-@[reducible] def optionalItem'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def optionalItem'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"item" T),
 (go.field_decl.FieldDecl go!"valid" go.bool)]
 
-@[irreducible] def optionalItem'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def optionalItem'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (optionalItem'fds_unsealed T)
 
-instance equals_unfold_optionalItem [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_optionalItem [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (optionalItem'fds T) (optionalItem'fds_unsealed T) :=
   ⟨by unfold optionalItem'fds; rfl⟩
 
-@[reducible] def «optionalItemⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (optionalItem'fds T))
+@[reducible] def «optionalItemⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (optionalItem'fds T))
 
-class optionalItem_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  optionalItem_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («optionalItemⁱᵐᵖˡ» T) (optionalItem.t T')
-  optionalItem_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (optionalItem T) («optionalItemⁱᵐᵖˡ» T)
-  optionalItem_get_item : ∀ (T : go.type) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"item") #x (Val #(x.item'))
-  optionalItem_set_item : ∀ (T : go.type) (T' : Type) (x : (optionalItem.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"item") (PairV #x #y) (Val #(({ x with item' := y } : (optionalItem.t T'))))
-  optionalItem_get_valid : ∀ (T : go.type) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"valid") #x (Val #(x.valid'))
-  optionalItem_set_valid : ∀ (T : go.type) (T' : Type) (x : (optionalItem.t T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : (optionalItem.t T'))))
+class optionalItem_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  optionalItem_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («optionalItemⁱᵐᵖˡ» T) (optionalItem.t T')
+  optionalItem_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (optionalItem T) («optionalItemⁱᵐᵖˡ» T)
+  optionalItem_get_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"item") #x (Val #(x.item'))
+  optionalItem_set_item : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"item") (PairV #x #y) (Val #(({ x with item' := y } : (optionalItem.t T'))))
+  optionalItem_get_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («optionalItemⁱᵐᵖˡ» T) go!"valid") #x (Val #(x.valid'))
+  optionalItem_set_valid : ∀ (T : go.GoType) (T' : Type) (x : (optionalItem.t T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («optionalItemⁱᵐᵖˡ» T) go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : (optionalItem.t T'))))
 
 attribute [instance] optionalItem_Assumptions.optionalItem_type_repr
   optionalItem_Assumptions.optionalItem_underlying
@@ -2462,66 +2462,66 @@ attribute [instance] optionalItem_Assumptions.optionalItem_type_repr
   optionalItem_Assumptions.optionalItem_set_valid
 
 namespace BTree
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
   degree' : w64
   length' : w64
-  root' : loc
-  cow' : loc
+  root' : Loc
+  cow' : Loc
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end BTree
 
-@[reducible] def BTree'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[reducible] def BTree'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"degree" go.int),
 (go.field_decl.FieldDecl go!"length" go.int),
-(go.field_decl.FieldDecl go!"root" (go.type.PointerType (node T))),
-(go.field_decl.FieldDecl go!"cow" (go.type.PointerType (copyOnWriteContext T)))]
+(go.field_decl.FieldDecl go!"root" (go.GoType.PointerType (node T))),
+(go.field_decl.FieldDecl go!"cow" (go.GoType.PointerType (copyOnWriteContext T)))]
 
-@[irreducible] def BTree'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def BTree'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (BTree'fds_unsealed T)
 
-instance equals_unfold_BTree [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_BTree [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (BTree'fds T) (BTree'fds_unsealed T) :=
   ⟨by unfold BTree'fds; rfl⟩
 
-@[reducible] def «BTreeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (BTree'fds T))
+@[reducible] def «BTreeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (BTree'fds T))
 
-class BTree_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  BTree_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («BTreeⁱᵐᵖˡ» T) (BTree.t T')
-  BTree_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (BTree T) («BTreeⁱᵐᵖˡ» T)
-  BTree_get_degree : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"degree") #x (Val #(x.degree'))
-  BTree_set_degree : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"degree") (PairV #x #y) (Val #(({ x with degree' := y } : (BTree.t T'))))
-  BTree_get_length : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"length") #x (Val #(x.length'))
-  BTree_set_length : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"length") (PairV #x #y) (Val #(({ x with length' := y } : (BTree.t T'))))
-  BTree_get_root : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"root") #x (Val #(x.root'))
-  BTree_set_root : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"root") (PairV #x #y) (Val #(({ x with root' := y } : (BTree.t T'))))
-  BTree_get_cow : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
-  BTree_set_cow : ∀ (T : go.type) (T' : Type) (x : (BTree.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (BTree.t T'))))
-  BTree'ptr_Ascend_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Ascend" («BTree__Ascendⁱᵐᵖˡ» T)
-  BTree'ptr_AscendGreaterOrEqual_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"AscendGreaterOrEqual" («BTree__AscendGreaterOrEqualⁱᵐᵖˡ» T)
-  BTree'ptr_AscendLessThan_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"AscendLessThan" («BTree__AscendLessThanⁱᵐᵖˡ» T)
-  BTree'ptr_AscendRange_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"AscendRange" («BTree__AscendRangeⁱᵐᵖˡ» T)
-  BTree'ptr_Clear_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Clear" («BTree__Clearⁱᵐᵖˡ» T)
-  BTree'ptr_Clone_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Clone" («BTree__Cloneⁱᵐᵖˡ» T)
-  BTree'ptr_Delete_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Delete" («BTree__Deleteⁱᵐᵖˡ» T)
-  BTree'ptr_DeleteMax_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"DeleteMax" («BTree__DeleteMaxⁱᵐᵖˡ» T)
-  BTree'ptr_DeleteMin_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"DeleteMin" («BTree__DeleteMinⁱᵐᵖˡ» T)
-  BTree'ptr_Descend_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Descend" («BTree__Descendⁱᵐᵖˡ» T)
-  BTree'ptr_DescendGreaterThan_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"DescendGreaterThan" («BTree__DescendGreaterThanⁱᵐᵖˡ» T)
-  BTree'ptr_DescendLessOrEqual_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"DescendLessOrEqual" («BTree__DescendLessOrEqualⁱᵐᵖˡ» T)
-  BTree'ptr_DescendRange_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"DescendRange" («BTree__DescendRangeⁱᵐᵖˡ» T)
-  BTree'ptr_Get_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Get" («BTree__Getⁱᵐᵖˡ» T)
-  BTree'ptr_Has_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Has" («BTree__Hasⁱᵐᵖˡ» T)
-  BTree'ptr_Len_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Len" («BTree__Lenⁱᵐᵖˡ» T)
-  BTree'ptr_Max_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Max" («BTree__Maxⁱᵐᵖˡ» T)
-  BTree'ptr_Min_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"Min" («BTree__Minⁱᵐᵖˡ» T)
-  BTree'ptr_ReplaceOrInsert_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"ReplaceOrInsert" («BTree__ReplaceOrInsertⁱᵐᵖˡ» T)
-  BTree'ptr_deleteItem_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"deleteItem" («BTree__deleteItemⁱᵐᵖˡ» T)
-  BTree'ptr_maxItems_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"maxItems" («BTree__maxItemsⁱᵐᵖˡ» T)
-  BTree'ptr_minItems_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (BTree T)) go!"minItems" («BTree__minItemsⁱᵐᵖˡ» T)
+class BTree_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  BTree_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («BTreeⁱᵐᵖˡ» T) (BTree.t T')
+  BTree_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (BTree T) («BTreeⁱᵐᵖˡ» T)
+  BTree_get_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"degree") #x (Val #(x.degree'))
+  BTree_set_degree : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"degree") (PairV #x #y) (Val #(({ x with degree' := y } : (BTree.t T'))))
+  BTree_get_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"length") #x (Val #(x.length'))
+  BTree_set_length : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"length") (PairV #x #y) (Val #(({ x with length' := y } : (BTree.t T'))))
+  BTree_get_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"root") #x (Val #(x.root'))
+  BTree_set_root : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"root") (PairV #x #y) (Val #(({ x with root' := y } : (BTree.t T'))))
+  BTree_get_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («BTreeⁱᵐᵖˡ» T) go!"cow") #x (Val #(x.cow'))
+  BTree_set_cow : ∀ (T : go.GoType) (T' : Type) (x : (BTree.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («BTreeⁱᵐᵖˡ» T) go!"cow") (PairV #x #y) (Val #(({ x with cow' := y } : (BTree.t T'))))
+  BTree'ptr_Ascend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Ascend" («BTree__Ascendⁱᵐᵖˡ» T)
+  BTree'ptr_AscendGreaterOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendGreaterOrEqual" («BTree__AscendGreaterOrEqualⁱᵐᵖˡ» T)
+  BTree'ptr_AscendLessThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendLessThan" («BTree__AscendLessThanⁱᵐᵖˡ» T)
+  BTree'ptr_AscendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"AscendRange" («BTree__AscendRangeⁱᵐᵖˡ» T)
+  BTree'ptr_Clear_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clear" («BTree__Clearⁱᵐᵖˡ» T)
+  BTree'ptr_Clone_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Clone" («BTree__Cloneⁱᵐᵖˡ» T)
+  BTree'ptr_Delete_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Delete" («BTree__Deleteⁱᵐᵖˡ» T)
+  BTree'ptr_DeleteMax_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMax" («BTree__DeleteMaxⁱᵐᵖˡ» T)
+  BTree'ptr_DeleteMin_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DeleteMin" («BTree__DeleteMinⁱᵐᵖˡ» T)
+  BTree'ptr_Descend_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Descend" («BTree__Descendⁱᵐᵖˡ» T)
+  BTree'ptr_DescendGreaterThan_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendGreaterThan" («BTree__DescendGreaterThanⁱᵐᵖˡ» T)
+  BTree'ptr_DescendLessOrEqual_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendLessOrEqual" («BTree__DescendLessOrEqualⁱᵐᵖˡ» T)
+  BTree'ptr_DescendRange_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"DescendRange" («BTree__DescendRangeⁱᵐᵖˡ» T)
+  BTree'ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Get" («BTree__Getⁱᵐᵖˡ» T)
+  BTree'ptr_Has_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Has" («BTree__Hasⁱᵐᵖˡ» T)
+  BTree'ptr_Len_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Len" («BTree__Lenⁱᵐᵖˡ» T)
+  BTree'ptr_Max_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Max" («BTree__Maxⁱᵐᵖˡ» T)
+  BTree'ptr_Min_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"Min" («BTree__Minⁱᵐᵖˡ» T)
+  BTree'ptr_ReplaceOrInsert_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"ReplaceOrInsert" («BTree__ReplaceOrInsertⁱᵐᵖˡ» T)
+  BTree'ptr_deleteItem_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"deleteItem" («BTree__deleteItemⁱᵐᵖˡ» T)
+  BTree'ptr_maxItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"maxItems" («BTree__maxItemsⁱᵐᵖˡ» T)
+  BTree'ptr_minItems_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (BTree T)) go!"minItems" («BTree__minItemsⁱᵐᵖˡ» T)
 
 attribute [instance] BTree_Assumptions.BTree_type_repr
   BTree_Assumptions.BTree_underlying
@@ -2557,50 +2557,50 @@ attribute [instance] BTree_Assumptions.BTree_type_repr
   BTree_Assumptions.BTree'ptr_minItems_unfold
 
 namespace LessFunc
-abbrev t [ffi_syntax] (T : Type) : Type := func.t
+abbrev t [FfiSyntax] (T : Type) : Type := func.t
 end LessFunc
 
-@[reducible] def «LessFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.FunctionType (go.signature.Signature [T, T] false [go.bool]))
+@[reducible] def «LessFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [T, T] false [go.bool]))
 
-class LessFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LessFunc_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (LessFunc T) («LessFuncⁱᵐᵖˡ» T)
+class LessFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  LessFunc_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (LessFunc T) («LessFuncⁱᵐᵖˡ» T)
 
 attribute [instance] LessFunc_Assumptions.LessFunc_underlying
 
 namespace copyOnWriteContext
-structure t [ffi_syntax] (T : Type) where
+structure t [FfiSyntax] (T : Type) where
   mk ::
-  freelist' : loc
+  freelist' : Loc
   less' : (LessFunc.t T)
 
-instance zero_val [ffi_syntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (t T) :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end copyOnWriteContext
 
-@[reducible] def copyOnWriteContext'fds_unsealed [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"freelist" (go.type.PointerType (FreeList T))),
+@[reducible] def copyOnWriteContext'fds_unsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"freelist" (go.GoType.PointerType (FreeList T))),
 (go.field_decl.FieldDecl go!"less" (LessFunc T))]
 
-@[irreducible] def copyOnWriteContext'fds [ffi_syntax] [GoGlobalContext] (T : go.type) : List go.field_decl :=
+@[irreducible] def copyOnWriteContext'fds [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (copyOnWriteContext'fds_unsealed T)
 
-instance equals_unfold_copyOnWriteContext [ffi_syntax] [GoGlobalContext] (T : go.type) :
+instance equals_unfold_copyOnWriteContext [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (copyOnWriteContext'fds T) (copyOnWriteContext'fds_unsealed T) :=
   ⟨by unfold copyOnWriteContext'fds; rfl⟩
 
-@[reducible] def «copyOnWriteContextⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : go.type :=
-  (go.type.StructType (copyOnWriteContext'fds T))
+@[reducible] def «copyOnWriteContextⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (copyOnWriteContext'fds T))
 
-class copyOnWriteContext_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  copyOnWriteContext_type_repr : ∀ (T : go.type) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («copyOnWriteContextⁱᵐᵖˡ» T) (copyOnWriteContext.t T')
-  copyOnWriteContext_underlying : ∀ (T : go.type), go.UnderlyingDirectedEq (copyOnWriteContext T) («copyOnWriteContextⁱᵐᵖˡ» T)
-  copyOnWriteContext_get_freelist : ∀ (T : go.type) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
-  copyOnWriteContext_set_freelist : ∀ (T : go.type) (T' : Type) (x : (copyOnWriteContext.t T')) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (copyOnWriteContext.t T'))))
-  copyOnWriteContext_get_less : ∀ (T : go.type) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") #x (Val #(x.less'))
-  copyOnWriteContext_set_less : ∀ (T : go.type) (T' : Type) (x : (copyOnWriteContext.t T')) (y : (LessFunc.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") (PairV #x #y) (Val #(({ x with less' := y } : (copyOnWriteContext.t T'))))
-  copyOnWriteContext'ptr_freeNode_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (copyOnWriteContext T)) go!"freeNode" («copyOnWriteContext__freeNodeⁱᵐᵖˡ» T)
-  copyOnWriteContext'ptr_newNode_unfold : ∀ (T : go.type), MethodUnfold (go.type.PointerType (copyOnWriteContext T)) go!"newNode" («copyOnWriteContext__newNodeⁱᵐᵖˡ» T)
+class copyOnWriteContext_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  copyOnWriteContext_type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («copyOnWriteContextⁱᵐᵖˡ» T) (copyOnWriteContext.t T')
+  copyOnWriteContext_underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (copyOnWriteContext T) («copyOnWriteContextⁱᵐᵖˡ» T)
+  copyOnWriteContext_get_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") #x (Val #(x.freelist'))
+  copyOnWriteContext_set_freelist : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : (copyOnWriteContext.t T'))))
+  copyOnWriteContext_get_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')), go.IsGoStepPureDetTagged under (StructFieldGet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") #x (Val #(x.less'))
+  copyOnWriteContext_set_less : ∀ (T : go.GoType) (T' : Type) (x : (copyOnWriteContext.t T')) (y : (LessFunc.t T')), go.IsGoStepPureDetTagged under (StructFieldSet («copyOnWriteContextⁱᵐᵖˡ» T) go!"less") (PairV #x #y) (Val #(({ x with less' := y } : (copyOnWriteContext.t T'))))
+  copyOnWriteContext'ptr_freeNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"freeNode" («copyOnWriteContext__freeNodeⁱᵐᵖˡ» T)
+  copyOnWriteContext'ptr_newNode_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (copyOnWriteContext T)) go!"newNode" («copyOnWriteContext__newNodeⁱᵐᵖˡ» T)
 
 attribute [instance] copyOnWriteContext_Assumptions.copyOnWriteContext_type_repr
   copyOnWriteContext_Assumptions.copyOnWriteContext_underlying
@@ -2612,18 +2612,18 @@ attribute [instance] copyOnWriteContext_Assumptions.copyOnWriteContext_type_repr
   copyOnWriteContext_Assumptions.copyOnWriteContext'ptr_newNode_unfold
 
 namespace freeType
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end freeType
 
-@[reducible] def «freeTypeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «freeTypeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class freeType_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class freeType_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   freeType_underlying : go.UnderlyingDirectedEq freeType «freeTypeⁱᵐᵖˡ»
 
 attribute [instance] freeType_Assumptions.freeType_underlying
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   FreeList_instance : FreeList_Assumptions
   ItemIterator_instance : ItemIterator_Assumptions
   items_instance : items_Assumptions
@@ -2635,15 +2635,15 @@ class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFu
   LessFunc_instance : LessFunc_Assumptions
   copyOnWriteContext_instance : copyOnWriteContext_Assumptions
   freeType_instance : freeType_Assumptions
-  NewFreeList_unfold : ∀ (T : go.type), FuncUnfold NewFreeList [T] («NewFreeListⁱᵐᵖˡ» T)
-  Less_unfold : ∀ (T : go.type), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
-  NewOrdered_unfold : ∀ (T : go.type), FuncUnfold NewOrdered [T] («NewOrderedⁱᵐᵖˡ» T)
-  New_unfold : ∀ (T : go.type), FuncUnfold New [T] («Newⁱᵐᵖˡ» T)
-  NewWithFreeList_unfold : ∀ (T : go.type), FuncUnfold NewWithFreeList [T] («NewWithFreeListⁱᵐᵖˡ» T)
-  min_unfold : ∀ (T : go.type), FuncUnfold min [T] («minⁱᵐᵖˡ» T)
-  max_unfold : ∀ (T : go.type), FuncUnfold max [T] («maxⁱᵐᵖˡ» T)
-  optional_unfold : ∀ (T : go.type), FuncUnfold optional [T] («optionalⁱᵐᵖˡ» T)
-  empty_unfold : ∀ (T : go.type), FuncUnfold empty [T] («emptyⁱᵐᵖˡ» T)
+  NewFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewFreeList [T] («NewFreeListⁱᵐᵖˡ» T)
+  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] («Lessⁱᵐᵖˡ» T)
+  NewOrdered_unfold : ∀ (T : go.GoType), FuncUnfold NewOrdered [T] («NewOrderedⁱᵐᵖˡ» T)
+  New_unfold : ∀ (T : go.GoType), FuncUnfold New [T] («Newⁱᵐᵖˡ» T)
+  NewWithFreeList_unfold : ∀ (T : go.GoType), FuncUnfold NewWithFreeList [T] («NewWithFreeListⁱᵐᵖˡ» T)
+  min_unfold : ∀ (T : go.GoType), FuncUnfold min [T] («minⁱᵐᵖˡ» T)
+  max_unfold : ∀ (T : go.GoType), FuncUnfold max [T] («maxⁱᵐᵖˡ» T)
+  optional_unfold : ∀ (T : go.GoType), FuncUnfold optional [T] («optionalⁱᵐᵖˡ» T)
+  empty_unfold : ∀ (T : go.GoType), FuncUnfold empty [T] («emptyⁱᵐᵖˡ» T)
   import_cmp_Assumption : _root_.Perennial.cmp.Assumptions
   import_sort_Assumption : _root_.Perennial.sort.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions

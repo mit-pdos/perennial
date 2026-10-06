@@ -24,13 +24,13 @@ instance : Pos.Countable DiskOp where
     | some 0 => some .ReadOp | some 1 => some .WriteOp | some 2 => some .SizeOp | _ => none
   decode_encode o := by cases o <;> simp [Pos.Countable.decode_encode]
 
-@[reducible] def disk_op : ffi_syntax where
+@[reducible] def disk_op : FfiSyntax where
   ffi_opcode := DiskOp
   ffi_val := Unit
 
 def blockBytes : Nat := 4096
 
-def BlockSize [ffi_syntax] [GoGlobalContext] : val := #(W64 4096)
+def BlockSize [FfiSyntax] [GoGlobalContext] : val := #(W64 4096)
 
 abbrev Block := Vector w8 blockBytes
 
@@ -42,7 +42,7 @@ instance Block0 : Inhabited Block := ⟨block0⟩
 
 abbrev DiskState := GMap Int Block
 
-@[reducible] def disk_model : ffi_model where
+@[reducible] def disk_model : FfiModel where
   ffi_state := DiskState
   ffi_global_state := Unit
 
@@ -50,15 +50,15 @@ def initDisk (d : DiskState) : Nat → DiskState
   | 0 => d
   | n + 1 => <[(n : Int) := block0]> (initDisk d n)
 
-def BlockToVals [ffi_syntax] [GoGlobalContext] (bl : Block) : List val :=
+def BlockToVals [FfiSyntax] [GoGlobalContext] (bl : Block) : List val :=
   bl.toList.map (fun b => #b)
 
-theorem length_Block_to_vals [ffi_syntax] [GoGlobalContext] (b : Block) :
+theorem length_Block_to_vals [FfiSyntax] [GoGlobalContext] (b : Block) :
     (BlockToVals b).length = blockBytes := by
   simp [BlockToVals]
 
 /-- Rocq `heap_array`: the heap containing `vs` at `l, l +ₗ 1, ...`. -/
-def heapArray {V : Type} (l : loc) : List V → GMap loc V
+def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
   | [] => ∅
   | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
 
@@ -71,7 +71,7 @@ noncomputable def highestAddr (addrs : GSet Int) : Int :=
 noncomputable def diskSize (d : GMap Int Block) : Int :=
   1 + highestAddr (domSet d)
 
-def stateInsertList (l : loc) (vs : List val) (σ : state) : state :=
+def stateInsertList (l : Loc) (vs : List val) (σ : state) : state :=
   { σ with heap := heapArray l (vs.map Free) ∪ σ.heap }
 
 /-- The disk of a state, at type `DiskState`. -/
@@ -80,13 +80,13 @@ abbrev diskWorld (σ : state) : DiskState := σ.world
 variable [GoGlobalContext]
 
 /-- Rocq `ffi_step` for the disk, as a relation. -/
-inductive DiskFfiStep : DiskOp → val → CfgState → expr → CfgState → Prop
-  | ReadS (a : w64) (b : Block) (l : loc) (σg : CfgState) :
+inductive DiskFfiStep : DiskOp → val → CfgState → Expr → CfgState → Prop
+  | ReadS (a : w64) (b : Block) (l : Loc) (σg : CfgState) :
       diskWorld σg.1 !! uint.Z a = some b →
       IsFresh σg l →
       DiskFfiStep .ReadOp (#a) σg (Val (#l))
         (stateInsertList l (BlockToVals b) σg.1, σg.2)
-  | WriteS (a : w64) (l : loc) (b0 b : Block) (σg : CfgState) :
+  | WriteS (a : w64) (l : Loc) (b0 b : Block) (σg : CfgState) :
       diskWorld σg.1 !! uint.Z a = some b0 →
       (∀ i : Int, 0 ≤ i → i < 4096 →
         match σg.1.heap !! (l +ₗ i) with
@@ -97,7 +97,7 @@ inductive DiskFfiStep : DiskOp → val → CfgState → expr → CfgState → Pr
   | SizeS (σg : CfgState) :
       DiskFfiStep .SizeOp (#()) σg (Val (#(W64 (diskSize (diskWorld σg.1))))) σg
 
-@[reducible] def disk_semantics : ffi_semantics disk_op disk_model where
+@[reducible] def disk_semantics : FfiSemantics disk_op disk_model where
   ffi_step := DiskFfiStep
 
 end disk

@@ -7,38 +7,38 @@ namespace Perennial
 
 namespace go
 section defs
-variable [ffi_syntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
-def isInterfaceType (t : go.type) : Bool :=
+def isInterfaceType (t : go.GoType) : Bool :=
   match t with | go.InterfaceType _ => true | _ => false
 
-def isUntypedNil (t : go.type) : Bool :=
+def isUntypedNil (t : go.GoType) : Bool :=
   match t with | go.Named n [] => decide (n = go!"untyped nil") | _ => false
 
 /-- Based on: https://go.dev/ref/spec#General_interfaces -/
-noncomputable def typeSetTermContains (t : go.type) (e : go.type_term) : Bool :=
+noncomputable def typeSetTermContains (t : go.GoType) (e : go.type_term) : Bool :=
   match e with
   | go.TypeTerm t' => decide (t = t')
   | go.TypeTermUnderlying t' => decide (underlying t = t')
 
-noncomputable def typeSetElemContains (t : go.type) (e : go.interface_elem) : Bool :=
+noncomputable def typeSetElemContains (t : go.GoType) (e : go.InterfaceElem) : Bool :=
   match e with
   | go.MethodElem m signature => decide (methodSet t !! m = some signature)
   | go.TypeElem terms => terms.any (typeSetTermContains t)
 
-noncomputable def typeSetElemsContains (t : go.type) (elems : List go.interface_elem) : Bool :=
+noncomputable def typeSetElemsContains (t : go.GoType) (elems : List go.InterfaceElem) : Bool :=
   elems.all (typeSetElemContains t)
 
 /-- Equals `true` iff t is in the type set of t'. -/
-noncomputable def typeSetContains (t t' : go.type) : Bool :=
+noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
   match (underlying t') with
   | go.InterfaceType elems => typeSetElemsContains t elems
   | _ => decide (t = t')
 
 class InterfaceSemantics : Prop where
-  is_comparable_interface (elems : List go.interface_elem) :
+  is_comparable_interface (elems : List go.InterfaceElem) :
     ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #()
-  go_eq_interface (elems : List go.interface_elem) (i1 i2 : interface.t) :
+  go_eq_interface (elems : List go.InterfaceElem) (i1 i2 : interface.t) :
     ⟦GoOp GoEquals (go.InterfaceType elems), (#i1, #i2)⟧ ⤳[under]
       (match i1, i2 with
        | interface.nil, interface.nil => #true
@@ -49,14 +49,14 @@ class InterfaceSemantics : Prop where
            else #false
        | _, _ => #false)
 
-  convert_to_interface (v : val) {from_ funder to : go.type} {elems : List go.interface_elem}
+  convert_to_interface (v : val) {from_ funder to : go.GoType} {elems : List go.InterfaceElem}
     [from_ ↓u funder] [to ≤u go.InterfaceType elems] :
     ⟦Convert from_ to, v⟧ ⤳
     (Val (if isInterfaceType funder then v else
             if isUntypedNil funder then #interface.nil
             else #(interface.mkOk from_ v)))
 
-  type_assert_step {t t_under : go.type} [t ↓u t_under] (i : interface.t) :
+  type_assert_step {t t_under : go.GoType} [t ↓u t_under] (i : interface.t) :
     ⟦TypeAssert t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
@@ -66,7 +66,7 @@ class InterfaceSemantics : Prop where
          else
            if ii.ty = t then ii.v else Panic "type assert failed")
 
-  type_assert2_interface_step {t t_under : go.type} [t ↓u t_under] (i : interface.t) {v : val}
+  type_assert2_interface_step {t t_under : go.GoType} [t ↓u t_under] (i : interface.t) {v : val}
     [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
     ⟦TypeAssert2 t, #i⟧ ⤳
     glv(((match i with
@@ -83,7 +83,7 @@ class InterfaceSemantics : Prop where
              else decide (ii.ty = t))
      ))
 
-  method_interface_ok (m : go_string) {t : go.type} {elems : List go.interface_elem}
+  method_interface_ok (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
     [t ≤u go.InterfaceType elems] (i : interface.t) :
     ⟦MethodResolve t m, #i⟧ ⤳
     (match i with

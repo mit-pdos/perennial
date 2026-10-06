@@ -29,7 +29,7 @@ and false for Rocq's definition; worth reporting upstream):
   here (not in Rocq): `ownLeaseKey_persistent`, `ownMap_split`,
   `ownMap_split_frac`, `ownMap_combine`, `ownMap_combine_eq` (map
   points-to fractional split/agreement; candidates for `Golang/Theory/Map`),
-  `typed_pointsto_frac`, `own_leaseCache_entries_frac`,
+  `typedPointsto_frac`, `own_leaseCache_entries_frac`,
   `own_leaseCache_entry_frac`, `ownLeaseCacheLocked_frac`.
 -/
 import Perennial.Code.go_etcd_io.etcd.client.v3.leasing
@@ -58,9 +58,9 @@ open go_etcd_io.etcd.client.v3_proof go_etcd_io.etcd.client.v3.concurrency
 namespace go_etcd_io.etcd.client.v3.leasing
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : leasing.Assumptions]
 
@@ -112,19 +112,19 @@ theorem seq_replicate_fmap {A : Type} (y n : Nat) (a : A) :
   | succ n ih => simp [List.range'_succ, ih, List.replicate_succ]
 
 section proof
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : leasing.Assumptions]
 
 /-- (Rocq TODO: move this somewhere else) -/
-theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : loc) (γ : sync.WaitGroupNames)
+theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : Loc) (γ : sync.WaitGroupNames)
     (N : Namespace) (ctr : w32) (HN : (↑N' : CoPset) ## ↑N) :
     sync.isWaitGroup wg_ptr γ N ∗ sync.ownWaitGroup γ ctr ={⊤}=∗
     [∗list] P ∈ (List.replicate (sint.Z ctr).toNat
         iprop(∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync -∗ Φ #() -∗
-          WP (App (Val (wg_ptr @!! go.type.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
+          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
             {{ Φ }})), P := by
   iintro ⟨#His, Hctr⟩
   by_cases hpos : ¬ sint.Z ctr > 0
@@ -147,7 +147,7 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : loc) (γ : sync.
   have one : ⊢ sync.isWaitGroup wg_ptr γ N -∗ inv N' iprop(∃ c : w32, sync.ownWaitGroup γ c ∗ ownTokAuth γt (sint.Z c).toNat) -∗
       ownToks γt 1 -∗
       (∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync -∗ Φ #() -∗
-          WP (App (Val (wg_ptr @!! go.type.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
+          WP (App (Val (wg_ptr @!! go.GoType.PointerType sync.WaitGroup @!! go!"Done")) (Val #()))
             {{ Φ }}) := by
     iintro #His #Hinv Htok %Φ #Hinit HΦ
     wp_apply_core sync.WaitGroup.wp_Done wg_ptr γ N $$ [] [-]
@@ -182,16 +182,16 @@ theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : loc) (γ : sync.
     · iapply one $$ His Hinv Htok
     · iapply IH $$ Htoks
 
-def ownLeaseKey (lk : leaseKey.t) (_γ : LeasingKVNames) (_key : go_string) : IProp GF :=
+def ownLeaseKey (lk : leaseKey.t) (_γ : LeasingKVNames) (_key : GoString) : IProp GF :=
   iprop(
   "Hwaitc" ∷ (⌜lk.waitc' = chan.nil⌝ ∨
               ∃ γlk, ownBroadcastChan lk.waitc' γlk iprop(True) .Unknown) ∗
   "_" ∷ True)
   -- (Rocq TODO: repr predicate for RangeResponse)
 
-def ownLeaseCacheLocked (lc : loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
-  iprop(∃ (entries_ptr : loc) (entries : GMap go_string loc) (revokes_ptr : loc)
-      (revokes : GMap go_string time.Time.t) (entries_ready : Bool),
+def ownLeaseCacheLocked (lc : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
+  iprop(∃ (entries_ptr : Loc) (entries : GMap GoString Loc) (revokes_ptr : Loc)
+      (revokes : GMap GoString time.Time.t) (entries_ready : Bool),
     "entries_ptr" ∷ lc.[leaseCache.t, go!"entries"] ↦{DFrac.own q} entries_ptr ∗
     "entries" ∷ (if entries_ready then entries_ptr ↦${DFrac.own q} entries
                  else iprop(⌜entries_ptr = null ∧ entries = ∅⌝)) ∗
@@ -207,8 +207,8 @@ def isEntriesReady (γ : LeasingKVNames) : IProp GF :=
   dghostVar γ.entriesReadyGn DFrac.discard true
 
 /-- Proposition guarded by `lkv.leases.mu`. -/
-def ownLeasingKVLocked (lkv : loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
-  iprop(∃ (sessionc : chan.t) (session : loc) (γsession : ChanNames),
+def ownLeasingKVLocked (lkv : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
+  iprop(∃ (sessionc : chan.t) (session : Loc) (γsession : ChanNames),
     "sessionc" ∷ lkv.[leasingKV.t, go!"sessionc"] ↦{DFrac.own q.half} sessionc ∗
     "#Hsessionc" ∷ ownBroadcastChan sessionc γsession (isEntriesReady γ) .Unknown ∗
     "session" ∷ lkv.[leasingKV.t, go!"session"] ↦{DFrac.own q.half} session ∗
@@ -217,8 +217,8 @@ def ownLeasingKVLocked (lkv : loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
     "Hleases" ∷ ownLeaseCacheLocked (lkv.[leasingKV.t, go!"leases"]) γ q)
 
 /-- This is owned by the background thread running `monitorSession`. -/
-def ownLeasingKVMonitorSession (lkv : loc) (γ : LeasingKVNames) : IProp GF :=
-  iprop(∃ (session : loc) (sessionc : chan.t) («open» : Bool) (γsessionc : ChanNames),
+def ownLeasingKVMonitorSession (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
+  iprop(∃ (session : Loc) (sessionc : chan.t) («open» : Bool) (γsessionc : ChanNames),
     "session" ∷ lkv.[leasingKV.t, go!"session"] ↦{DFrac.own (1 : Qp).half} session ∗
     "#Hsession" ∷ (if session = null then iprop(True)
                    else ∃ lease, isSession session γ.etcdGn lease) ∗
@@ -227,8 +227,8 @@ def ownLeasingKVMonitorSession (lkv : loc) (γ : LeasingKVNames) : IProp GF :=
       (if «open» then .Pending else .Done))
 
 /-- Almost persistent. -/
-def ownLeasingKVDef (lkv : loc) (γ : LeasingKVNames) : IProp GF :=
-  iprop(∃ (cl : loc) (ctx : interface.t_ok) (ctx_st : context.Context_desc.t (IProp GF)),
+def ownLeasingKVDef (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
+  iprop(∃ (cl : Loc) (ctx : interface.t_ok) (ctx_st : context.Context_desc.t (IProp GF)),
     "#cl" ∷ lkv.[leasingKV.t, go!"cl"] ↦□ cl ∗
     "#Hcl" ∷ isClient cl γ.etcdGn ∗
     "#ctx" ∷ lkv.[leasingKV.t, go!"ctx"] ↦□ (interface.ok ctx) ∗
@@ -237,19 +237,19 @@ def ownLeasingKVDef (lkv : loc) (γ : LeasingKVNames) : IProp GF :=
     "Hmu" ∷ sync.ownRWMutex (lkv.[leasingKV.t, go!"leases"].[leaseCache.t, go!"mu"])
       (ownLeasingKVLocked lkv γ))
 /-- (Rocq: `Opaque ownLeasingKV`) -/
-@[irreducible] def ownLeasingKV (lkv : loc) (γ : LeasingKVNames) : IProp GF :=
+@[irreducible] def ownLeasingKV (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
   ownLeasingKVDef lkv γ
 theorem ownLeasingKV_unseal : @ownLeasingKV = @ownLeasingKVDef := by
   funext; with_unfolding_all rfl
 
-instance ownLeaseKey_persistent (lk : leaseKey.t) (γ : LeasingKVNames) (key : go_string) :
+instance ownLeaseKey_persistent (lk : leaseKey.t) (γ : LeasingKVNames) (key : GoString) :
     Persistent (ownLeaseKey (GF := GF) lk γ key) := by
   unfold ownLeaseKey; simp only [named]; infer_instance
 
 section own_map_frac
 variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
 
-theorem ownMap_split (l : loc) (dq1 dq2 : DFrac) (m : GMap K V) :
+theorem ownMap_split (l : Loc) (dq1 dq2 : DFrac) (m : GMap K V) :
     (l ↦${dq1 • dq2} m : IProp GF) ⊢ l ↦${dq1} m ∗ l ↦${dq2} m := by
   rw [ownMap_unseal]
   iintro Hm
@@ -262,11 +262,11 @@ theorem ownMap_split (l : loc) (dq1 dq2 : DFrac) (m : GMap K V) :
   · iexists mv, mp; iframe H1; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
   · iexists mv, mp; iframe H2; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
 
-theorem ownMap_split_frac (l : loc) (p q : Qp) (m : GMap K V) :
+theorem ownMap_split_frac (l : Loc) (p q : Qp) (m : GMap K V) :
     (l ↦${DFrac.own (p + q)} m : IProp GF) ⊢ l ↦${DFrac.own p} m ∗ l ↦${DFrac.own q} m :=
   ownMap_split l (DFrac.own p) (DFrac.own q) m
 
-theorem ownMap_combine (l : loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
+theorem ownMap_combine (l : Loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
     (l ↦${dq1} m1 : IProp GF) ∗ l ↦${dq2} m2 ⊢
       l ↦${dq1 • dq2} m1 ∗
       ⌜∀ k : K, (match m1 !! k with | none => (false, #(zero_val V)) | some v => (true, #v)) =
@@ -290,7 +290,7 @@ theorem ownMap_combine (l : loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
     exact (Hagree1 k).symm.trans ((go.mapLookup_pure _ _ _ His1).symm.trans
       ((go.mapLookup_pure _ _ _ His2).trans (Hagree2 k)))
 
-theorem ownMap_combine_eq [go.IntoValInj V] (l : loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
+theorem ownMap_combine_eq [go.IntoValInj V] (l : Loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
     (l ↦${dq1} m1 : IProp GF) ∗ l ↦${dq2} m2 ⊢ l ↦${dq1 • dq2} m1 ∗ ⌜m1 = m2⌝ := by
   iintro H
   icases ownMap_combine l dq1 dq2 m1 m2 $$ H with ⟨H, %H'⟩
@@ -308,12 +308,12 @@ theorem ownMap_combine_eq [go.IntoValInj V] (l : loc) (dq1 dq2 : DFrac) (m1 m2 :
 
 end own_map_frac
 
-instance own_leaseCache_entry_frac (lk_ptr : loc) (γ : LeasingKVNames) (key : go_string) :
+instance own_leaseCache_entry_frac (lk_ptr : Loc) (γ : LeasingKVNames) (key : GoString) :
     Fractional (fun q => iprop(∃ lk, lk_ptr ↦{DFrac.own q} lk ∗ ownLeaseKey (GF := GF) lk γ key)) where
   fractional p q := by
     constructor
     · iintro ⟨%lk, Hlk, #Hk⟩
-      icases ((fractional_of_dfractional (fun dq => typed_pointsto (GF := GF) lk_ptr lk dq)).fractional
+      icases ((fractional_of_dfractional (fun dq => typedPointsto (GF := GF) lk_ptr lk dq)).fractional
         p q).1 $$ Hlk with ⟨H1, H2⟩
       isplitl [H1]
       · iexists lk; iframe H1 Hk
@@ -323,30 +323,30 @@ instance own_leaseCache_entry_frac (lk_ptr : loc) (γ : LeasingKVNames) (key : g
       subst Heq
       iexists lk1
       iframe Hk
-      iapply ((fractional_of_dfractional (fun dq => typed_pointsto (GF := GF) lk_ptr lk1 dq)).fractional
+      iapply ((fractional_of_dfractional (fun dq => typedPointsto (GF := GF) lk_ptr lk1 dq)).fractional
         p q).2
       iframe
 
-theorem own_leaseCache_entries_frac (γ : LeasingKVNames) (entries : GMap go_string loc) :
+theorem own_leaseCache_entries_frac (γ : LeasingKVNames) (entries : GMap GoString Loc) :
     Fractional (fun q => iprop([∗map] key ↦ lk_ptr ∈ entries,
       ∃ lk, lk_ptr ↦{DFrac.own q} lk ∗ ownLeaseKey (GF := GF) lk γ key)) :=
   fractional_bigSepM (Ψ := fun key lk_ptr q =>
     iprop(∃ lk, lk_ptr ↦{DFrac.own q} lk ∗ ownLeaseKey (GF := GF) lk γ key))
 
-theorem typed_pointsto_frac {V : Type} [TypedPointsto (GF := GF) V] (l : loc) (v : V) (p q : Qp) :
-    typed_pointsto (GF := GF) l v (DFrac.own (p + q)) ⊣⊢
-      typed_pointsto l v (DFrac.own p) ∗ typed_pointsto l v (DFrac.own q) :=
-  (fractional_of_dfractional (fun dq => typed_pointsto (GF := GF) l v dq)).fractional p q
+theorem typedPointsto_frac {V : Type} [TypedPointsto (GF := GF) V] (l : Loc) (v : V) (p q : Qp) :
+    typedPointsto (GF := GF) l v (DFrac.own (p + q)) ⊣⊢
+      typedPointsto l v (DFrac.own p) ∗ typedPointsto l v (DFrac.own q) :=
+  (fractional_of_dfractional (fun dq => typedPointsto (GF := GF) l v dq)).fractional p q
 
-instance ownLeaseCacheLocked_frac (lc : loc) (γ : LeasingKVNames) :
+instance ownLeaseCacheLocked_frac (lc : Loc) (γ : LeasingKVNames) :
     Fractional (ownLeaseCacheLocked (GF := GF) lc γ) where
   fractional p q := by
     unfold ownLeaseCacheLocked
     simp only [named]
     constructor
     · iintro ⟨%ep, %en, %rp, %rv, %rd, Hep, Hen, Hents, Hrp, Hrv, Hrd⟩
-      icases (typed_pointsto_frac _ ep p q).1 $$ Hep with ⟨Hep1, Hep2⟩
-      icases (typed_pointsto_frac _ rp p q).1 $$ Hrp with ⟨Hrp1, Hrp2⟩
+      icases (typedPointsto_frac _ ep p q).1 $$ Hep with ⟨Hep1, Hep2⟩
+      icases (typedPointsto_frac _ rp p q).1 $$ Hrp with ⟨Hrp1, Hrp2⟩
       icases ownMap_split_frac rp p q rv $$ Hrv with ⟨Hrv1, Hrv2⟩
       icases ((own_leaseCache_entries_frac γ en).fractional p q).1 $$ Hents with ⟨Hents1, Hents2⟩
       cases rd
@@ -383,8 +383,8 @@ instance ownLeaseCacheLocked_frac (lc : loc) (γ : LeasingKVNames) :
       ihave %Hrd_eq := dghostVar_agree γ.entriesReadyGn rd _ rd' _ $$ Hrd Hrd'
       subst Hrd_eq
       icases ownMap_combine rp (DFrac.own p) (DFrac.own q) rv rv' $$ [$Hrv $Hrv'] with ⟨Hrv, -⟩
-      icases (typed_pointsto_frac _ ep p q).2 $$ [$Hep $Hep'] with Hep
-      icases (typed_pointsto_frac _ rp p q).2 $$ [$Hrp $Hrp'] with Hrp
+      icases (typedPointsto_frac _ ep p q).2 $$ [$Hep $Hep'] with Hep
+      icases (typedPointsto_frac _ rp p q).2 $$ [$Hrp $Hrp'] with Hrp
       cases rd
       · simp only [Bool.false_eq_true, ↓reduceIte]
         icases Hen with %Hen
@@ -405,20 +405,20 @@ instance ownLeaseCacheLocked_frac (lc : loc) (γ : LeasingKVNames) :
         simp only [↓reduceIte]
         iframe
 
-instance ownLeasingKVLocked_frac (lkv : loc) (γ : LeasingKVNames) :
+instance ownLeasingKVLocked_frac (lkv : Loc) (γ : LeasingKVNames) :
     Fractional (ownLeasingKVLocked (GF := GF) lkv γ) where
   fractional p q := by
     have hhalf : (p + q).half = p.half + q.half := Subtype.ext (by simp; grind)
     unfold ownLeasingKVLocked
     simp only [named]
     rw [hhalf]
-    have _hpers : ∀ se : loc, Persistent (if se = null then iprop(True)
+    have _hpers : ∀ se : Loc, Persistent (if se = null then iprop(True)
         else iprop(∃ lease, isSession se γ.etcdGn lease) : IProp GF) := fun se => by
       split <;> infer_instance
     constructor
     · iintro ⟨%sc, %se, %γs, Hsc, #Hsc_ch, Hse, #Hse_is, Hl⟩
-      icases (typed_pointsto_frac _ sc p.half q.half).1 $$ Hsc with ⟨Hsc1, Hsc2⟩
-      icases (typed_pointsto_frac _ se p.half q.half).1 $$ Hse with ⟨Hse1, Hse2⟩
+      icases (typedPointsto_frac _ sc p.half q.half).1 $$ Hsc with ⟨Hsc1, Hsc2⟩
+      icases (typedPointsto_frac _ se p.half q.half).1 $$ Hse with ⟨Hse1, Hse2⟩
       icases ((ownLeaseCacheLocked_frac _ γ).fractional p q).1 $$ Hl with ⟨Hl1, Hl2⟩
       isplitl [Hsc1 Hse1 Hl1]
       · iexists sc, se, γs; iframe; iframe #
@@ -429,8 +429,8 @@ instance ownLeasingKVLocked_frac (lkv : loc) (γ : LeasingKVNames) :
       icombine Hse Hse' gives %H2
       subst H1 H2
       iexists sc, se, γs
-      icases (typed_pointsto_frac _ sc p.half q.half).2 $$ [$Hsc $Hsc'] with Hsc
-      icases (typed_pointsto_frac _ se p.half q.half).2 $$ [$Hse $Hse'] with Hse
+      icases (typedPointsto_frac _ sc p.half q.half).2 $$ [$Hsc $Hsc'] with Hsc
+      icases (typedPointsto_frac _ se p.half q.half).2 $$ [$Hse $Hse'] with Hse
       icases ((ownLeaseCacheLocked_frac _ γ).fractional p q).2 $$ [$Hl $Hl'] with Hl
       iframe; iframe #
 

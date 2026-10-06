@@ -14,148 +14,148 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def go_etcd_io.etcd.server.v3.etcdserver.apply : go_string := go!"go.etcd.io/etcd/server/v3/etcdserver/apply"
+def go_etcd_io.etcd.server.v3.etcdserver.apply : GoString := go!"go.etcd.io/etcd/server/v3/etcdserver/apply"
 end pkg_id
 
 namespace go_etcd_io.etcd.server.v3.etcdserver.apply
 
-def authApplierV3 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.authApplierV3" [])
+def authApplierV3 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.authApplierV3" [])
 
 attribute [irreducible] authApplierV3
 
-def applierV3backend [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3backend" [])
+def applierV3backend [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3backend" [])
 
 attribute [irreducible] applierV3backend
 
-def applierV3Capped [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Capped" [])
+def applierV3Capped [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Capped" [])
 
 attribute [irreducible] applierV3Capped
 
-def applierV3Corrupt [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Corrupt" [])
+def applierV3Corrupt [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Corrupt" [])
 
 attribute [irreducible] applierV3Corrupt
 
-def applierV3 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3" [])
+def applierV3 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3" [])
 
 attribute [irreducible] applierV3
 
-def ApplierOptions [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.ApplierOptions" [])
+def ApplierOptions [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.ApplierOptions" [])
 
 attribute [irreducible] ApplierOptions
 
-def SnapshotServer [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.SnapshotServer" [])
+def SnapshotServer [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.SnapshotServer" [])
 
 attribute [irreducible] SnapshotServer
 
-def RaftStatusGetter [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.RaftStatusGetter" [])
+def RaftStatusGetter [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.RaftStatusGetter" [])
 
 attribute [irreducible] RaftStatusGetter
 
-def Result [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.Result" [])
+def Result [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.Result" [])
 
 attribute [irreducible] Result
 
-def applyFunc [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applyFunc" [])
+def applyFunc [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.applyFunc" [])
 
 attribute [irreducible] applyFunc
 
-def quotaApplierV3 [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.quotaApplierV3" [])
+def quotaApplierV3 [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.quotaApplierV3" [])
 
 attribute [irreducible] quotaApplierV3
 
-def UberApplier [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.UberApplier" [])
+def UberApplier [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.UberApplier" [])
 
 attribute [irreducible] UberApplier
 
-def uberApplier [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.uberApplier" [])
+def uberApplier [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"go.etcd.io/etcd/server/v3/etcdserver/apply.uberApplier" [])
 
 attribute [irreducible] uberApplier
 
-axiom «authApplierV3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «authApplierV3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «applierV3Cappedⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «applierV3Cappedⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «applierV3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «applierV3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «ApplierOptionsⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «ApplierOptionsⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «RaftStatusGetterⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «RaftStatusGetterⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «applyFuncⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «applyFuncⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «quotaApplierV3ⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «quotaApplierV3ⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «UberApplierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «UberApplierⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «uberApplierⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «uberApplierⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-noncomputable def alarms [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def alarms [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.alarms"
 
-axiom alarms'init [ffi_syntax] [GoGlobalContext] : val
+axiom alarms'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Apply [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Apply [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.Apply"
 
-noncomputable def noSideEffect [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def noSideEffect [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.noSideEffect"
 
-noncomputable def removeNeedlessRangeReqs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeNeedlessRangeReqs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.removeNeedlessRangeReqs"
 
-noncomputable def newAuthApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newAuthApplierV3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newAuthApplierV3"
 
-noncomputable def needAdminPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def needAdminPermission [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.needAdminPermission"
 
-noncomputable def newApplierV3Backend [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Backend [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Backend"
 
-noncomputable def newApplierV3Capped [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Capped [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Capped"
 
-noncomputable def newApplierV3Corrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3Corrupt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3Corrupt"
 
-noncomputable def newQuotaApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newQuotaApplierV3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newQuotaApplierV3"
 
-noncomputable def NewUberApplier [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewUberApplier [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.NewUberApplier"
 
-noncomputable def newApplierV3 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newApplierV3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"go.etcd.io/etcd/server/v3/etcdserver/apply.newApplierV3"
 
 instance info' : PkgInfo pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply where
-  pkg_imported_pkgs := [pkg_id.go_etcd_io.etcd.pkg.v3.traceutil, pkg_id.github_com.gogo.protobuf.proto]
+  pkgImportedPkgs := [pkg_id.go_etcd_io.etcd.pkg.v3.traceutil, pkg_id.github_com.gogo.protobuf.proto]
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.go_etcd_io.etcd.server.v3.etcdserver.apply)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val alarms'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.initialize') (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.gogo.protobuf.proto.initialize') (Val #()))))))))
 
 namespace authApplierV3
@@ -164,7 +164,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end authApplierV3
 
-class authApplierV3_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class authApplierV3_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   authApplierV3_type_repr : go.TypeReprUnderlying «authApplierV3ⁱᵐᵖˡ» authApplierV3.t
   authApplierV3_underlying : go.UnderlyingDirectedEq authApplierV3 «authApplierV3ⁱᵐᵖˡ»
   «authApplierV3ⁱᵐᵖˡ_underlying» : go.IsUnderlying «authApplierV3ⁱᵐᵖˡ» «authApplierV3ⁱᵐᵖˡ»
@@ -179,7 +179,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ApplierOptions
 
-class ApplierOptions_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ApplierOptions_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ApplierOptions_type_repr : go.TypeReprUnderlying «ApplierOptionsⁱᵐᵖˡ» ApplierOptions.t
   ApplierOptions_underlying : go.UnderlyingDirectedEq ApplierOptions «ApplierOptionsⁱᵐᵖˡ»
   «ApplierOptionsⁱᵐᵖˡ_underlying» : go.IsUnderlying «ApplierOptionsⁱᵐᵖˡ» «ApplierOptionsⁱᵐᵖˡ»
@@ -189,28 +189,28 @@ attribute [instance] ApplierOptions_Assumptions.ApplierOptions_type_repr
   ApplierOptions_Assumptions.«ApplierOptionsⁱᵐᵖˡ_underlying»
 
 namespace applierV3backend
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   options' : ApplierOptions.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end applierV3backend
 
-@[reducible] def applierV3backend'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def applierV3backend'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"options" ApplierOptions)]
 
-@[irreducible] def applierV3backend'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def applierV3backend'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   applierV3backend'fds_unsealed
 
-instance equals_unfold_applierV3backend [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_applierV3backend [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold applierV3backend'fds applierV3backend'fds_unsealed :=
   ⟨by unfold applierV3backend'fds; rfl⟩
 
-@[reducible] def «applierV3backendⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType applierV3backend'fds)
+@[reducible] def «applierV3backendⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType applierV3backend'fds)
 
-class applierV3backend_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class applierV3backend_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   applierV3backend_type_repr : go.TypeReprUnderlying «applierV3backendⁱᵐᵖˡ» applierV3backend.t
   applierV3backend_underlying : go.UnderlyingDirectedEq applierV3backend «applierV3backendⁱᵐᵖˡ»
   applierV3backend_get_options : ∀ (x : applierV3backend.t), go.IsGoStepPureDetTagged under (StructFieldGet «applierV3backendⁱᵐᵖˡ» go!"options") #x (Val #(x.options'))
@@ -227,7 +227,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end applierV3Capped
 
-class applierV3Capped_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class applierV3Capped_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   applierV3Capped_type_repr : go.TypeReprUnderlying «applierV3Cappedⁱᵐᵖˡ» applierV3Capped.t
   applierV3Capped_underlying : go.UnderlyingDirectedEq applierV3Capped «applierV3Cappedⁱᵐᵖˡ»
   «applierV3Cappedⁱᵐᵖˡ_underlying» : go.IsUnderlying «applierV3Cappedⁱᵐᵖˡ» «applierV3Cappedⁱᵐᵖˡ»
@@ -242,7 +242,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end applierV3
 
-class applierV3_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class applierV3_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   applierV3_type_repr : go.TypeReprUnderlying «applierV3ⁱᵐᵖˡ» applierV3.t
   applierV3_underlying : go.UnderlyingDirectedEq applierV3 «applierV3ⁱᵐᵖˡ»
   «applierV3ⁱᵐᵖˡ_underlying» : go.IsUnderlying «applierV3ⁱᵐᵖˡ» «applierV3ⁱᵐᵖˡ»
@@ -252,28 +252,28 @@ attribute [instance] applierV3_Assumptions.applierV3_type_repr
   applierV3_Assumptions.«applierV3ⁱᵐᵖˡ_underlying»
 
 namespace applierV3Corrupt
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   applierV3' : applierV3.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end applierV3Corrupt
 
-@[reducible] def applierV3Corrupt'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def applierV3Corrupt'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"applierV3" applierV3)]
 
-@[irreducible] def applierV3Corrupt'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def applierV3Corrupt'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   applierV3Corrupt'fds_unsealed
 
-instance equals_unfold_applierV3Corrupt [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_applierV3Corrupt [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold applierV3Corrupt'fds applierV3Corrupt'fds_unsealed :=
   ⟨by unfold applierV3Corrupt'fds; rfl⟩
 
-@[reducible] def «applierV3Corruptⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType applierV3Corrupt'fds)
+@[reducible] def «applierV3Corruptⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType applierV3Corrupt'fds)
 
-class applierV3Corrupt_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class applierV3Corrupt_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   applierV3Corrupt_type_repr : go.TypeReprUnderlying «applierV3Corruptⁱᵐᵖˡ» applierV3Corrupt.t
   applierV3Corrupt_underlying : go.UnderlyingDirectedEq applierV3Corrupt «applierV3Corruptⁱᵐᵖˡ»
   applierV3Corrupt_get_applierV3 : ∀ (x : applierV3Corrupt.t), go.IsGoStepPureDetTagged under (StructFieldGet «applierV3Corruptⁱᵐᵖˡ» go!"applierV3") #x (Val #(x.applierV3'))
@@ -285,13 +285,13 @@ attribute [instance] applierV3Corrupt_Assumptions.applierV3Corrupt_type_repr
   applierV3Corrupt_Assumptions.applierV3Corrupt_set_applierV3
 
 namespace SnapshotServer
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end SnapshotServer
 
-@[reducible] def «SnapshotServerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"ForceSnapshot" (go.signature.Signature [] false []))])
+@[reducible] def «SnapshotServerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ForceSnapshot" (go.signature.Signature [] false []))])
 
-class SnapshotServer_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SnapshotServer_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SnapshotServer_underlying : go.UnderlyingDirectedEq SnapshotServer «SnapshotServerⁱᵐᵖˡ»
 
 attribute [instance] SnapshotServer_Assumptions.SnapshotServer_underlying
@@ -302,7 +302,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end RaftStatusGetter
 
-class RaftStatusGetter_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RaftStatusGetter_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   RaftStatusGetter_type_repr : go.TypeReprUnderlying «RaftStatusGetterⁱᵐᵖˡ» RaftStatusGetter.t
   RaftStatusGetter_underlying : go.UnderlyingDirectedEq RaftStatusGetter «RaftStatusGetterⁱᵐᵖˡ»
   «RaftStatusGetterⁱᵐᵖˡ_underlying» : go.IsUnderlying «RaftStatusGetterⁱᵐᵖˡ» «RaftStatusGetterⁱᵐᵖˡ»
@@ -312,34 +312,34 @@ attribute [instance] RaftStatusGetter_Assumptions.RaftStatusGetter_type_repr
   RaftStatusGetter_Assumptions.«RaftStatusGetterⁱᵐᵖˡ_underlying»
 
 namespace Result
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   Resp' : _root_.Perennial.github_com.gogo.protobuf.proto.Message.t
   Err' : error.t
   Physc' : chan.t
-  Trace' : loc
+  Trace' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end Result
 
-@[reducible] def Result'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def Result'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Resp" _root_.Perennial.github_com.gogo.protobuf.proto.Message),
 (go.field_decl.FieldDecl go!"Err" go.error),
-(go.field_decl.FieldDecl go!"Physc" (go.type.ChannelType go.chan_dir.recvonly (go.type.StructType []))),
-(go.field_decl.FieldDecl go!"Trace" (go.type.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.Trace))]
+(go.field_decl.FieldDecl go!"Physc" (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))),
+(go.field_decl.FieldDecl go!"Trace" (go.GoType.PointerType _root_.Perennial.go_etcd_io.etcd.pkg.v3.traceutil.Trace))]
 
-@[irreducible] def Result'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Result'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Result'fds_unsealed
 
-instance equals_unfold_Result [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Result'fds Result'fds_unsealed :=
   ⟨by unfold Result'fds; rfl⟩
 
-@[reducible] def «Resultⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Result'fds)
+@[reducible] def «Resultⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Result'fds)
 
-class Result_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Result_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Result_type_repr : go.TypeReprUnderlying «Resultⁱᵐᵖˡ» Result.t
   Result_underlying : go.UnderlyingDirectedEq Result «Resultⁱᵐᵖˡ»
   Result_get_Resp : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet «Resultⁱᵐᵖˡ» go!"Resp") #x (Val #(x.Resp'))
@@ -349,7 +349,7 @@ class Result_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSema
   Result_get_Physc : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet «Resultⁱᵐᵖˡ» go!"Physc") #x (Val #(x.Physc'))
   Result_set_Physc : ∀ (x : Result.t) (y : chan.t), go.IsGoStepPureDetTagged under (StructFieldSet «Resultⁱᵐᵖˡ» go!"Physc") (PairV #x #y) (Val #(({ x with Physc' := y } : Result.t)))
   Result_get_Trace : ∀ (x : Result.t), go.IsGoStepPureDetTagged under (StructFieldGet «Resultⁱᵐᵖˡ» go!"Trace") #x (Val #(x.Trace'))
-  Result_set_Trace : ∀ (x : Result.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Resultⁱᵐᵖˡ» go!"Trace") (PairV #x #y) (Val #(({ x with Trace' := y } : Result.t)))
+  Result_set_Trace : ∀ (x : Result.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Resultⁱᵐᵖˡ» go!"Trace") (PairV #x #y) (Val #(({ x with Trace' := y } : Result.t)))
 
 attribute [instance] Result_Assumptions.Result_type_repr
   Result_Assumptions.Result_underlying
@@ -368,7 +368,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end applyFunc
 
-class applyFunc_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class applyFunc_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   applyFunc_type_repr : go.TypeReprUnderlying «applyFuncⁱᵐᵖˡ» applyFunc.t
   applyFunc_underlying : go.UnderlyingDirectedEq applyFunc «applyFuncⁱᵐᵖˡ»
   «applyFuncⁱᵐᵖˡ_underlying» : go.IsUnderlying «applyFuncⁱᵐᵖˡ» «applyFuncⁱᵐᵖˡ»
@@ -383,7 +383,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end quotaApplierV3
 
-class quotaApplierV3_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class quotaApplierV3_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   quotaApplierV3_type_repr : go.TypeReprUnderlying «quotaApplierV3ⁱᵐᵖˡ» quotaApplierV3.t
   quotaApplierV3_underlying : go.UnderlyingDirectedEq quotaApplierV3 «quotaApplierV3ⁱᵐᵖˡ»
   «quotaApplierV3ⁱᵐᵖˡ_underlying» : go.IsUnderlying «quotaApplierV3ⁱᵐᵖˡ» «quotaApplierV3ⁱᵐᵖˡ»
@@ -398,7 +398,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end UberApplier
 
-class UberApplier_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class UberApplier_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   UberApplier_type_repr : go.TypeReprUnderlying «UberApplierⁱᵐᵖˡ» UberApplier.t
   UberApplier_underlying : go.UnderlyingDirectedEq UberApplier «UberApplierⁱᵐᵖˡ»
   «UberApplierⁱᵐᵖˡ_underlying» : go.IsUnderlying «UberApplierⁱᵐᵖˡ» «UberApplierⁱᵐᵖˡ»
@@ -413,7 +413,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end uberApplier
 
-class uberApplier_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class uberApplier_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   uberApplier_type_repr : go.TypeReprUnderlying «uberApplierⁱᵐᵖˡ» uberApplier.t
   uberApplier_underlying : go.UnderlyingDirectedEq uberApplier «uberApplierⁱᵐᵖˡ»
   «uberApplierⁱᵐᵖˡ_underlying» : go.IsUnderlying «uberApplierⁱᵐᵖˡ» «uberApplierⁱᵐᵖˡ»
@@ -422,7 +422,7 @@ attribute [instance] uberApplier_Assumptions.uberApplier_type_repr
   uberApplier_Assumptions.uberApplier_underlying
   uberApplier_Assumptions.«uberApplierⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   authApplierV3_instance : authApplierV3_Assumptions
   applierV3backend_instance : applierV3backend_Assumptions
   applierV3Capped_instance : applierV3Capped_Assumptions

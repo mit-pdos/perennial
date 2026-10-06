@@ -41,7 +41,7 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 
 | Lean | Meaning |
 |:--|:--|
-| `@! F` | `#(functions F [])`, the function `F` (a `go_string` like `go!"sort.Search"`) |
+| `@! F` | `#(functions F [])`, the function `F` (a `GoString` like `go!"sort.Search"`) |
 | `r @!! T @!! go!"m"` | `#(methods T go!"m" #r)`, method `m` of `r : T` (Rocq `r @! T @! "m"`) |
 | `(App (App (Val f) (Val #x)) (Val #y))` | the call `f x y` |
 | `#x` | `into_val x`: Lean value to GooseLang `val` |
@@ -53,7 +53,7 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 
 | Notation | Meaning | File |
 |:--|:--|:--|
-| `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typed_pointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
+| `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typedPointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
 | `l.[S.t, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
 | `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`ownSlice`) | `Golang/Theory/Slice.lean` |
 | `ownSliceCap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
@@ -66,7 +66,7 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 `w64 = BitVec 64` etc.; `W64 3` is a literal; `uint.Z x = (x.toNat : Int)`,
 `sint.Z x = x.toInt`, `uint.nat`, `sint.nat`. Maps are `Perennial.gmap K V`
 (`m !! k`, `<[k := v]> m`, `{[k := v]}`, `gmap.delete k m`); on lists, `l !! i`
-is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `go_string` (a
+is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `GoString` (a
 `List w8`). See `PORTING.md`.
 
 ### Sealing
@@ -125,10 +125,10 @@ after it:
   ∗Hs : s ↦ v
   ⊢
   WP
-    (exception_do
+    (exceptionDo
       (let: "s" := (GoAlloc S.PointerType) #s in
         let: "two" := (GoAlloc TwoInts) #two in
-          (exception_seq (Lam BAnon (return: #())))
+          (exceptionSeq (Lam BAnon (return: #())))
             (Let (BNamed "$r0") (![TwoInts] "two")
               (do: (StructFieldRef S [98#8]) ![S.PointerType] "s" <-[TwoInts] "$r0"))))
     {{ Φ }}
@@ -143,7 +143,7 @@ and after `wp_auto`:
   ⊢ Φ #()
 ```
 
-(`go_string` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
+(`GoString` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
 
 ### `wp_func_call`, `wp_method_call`
 
@@ -175,7 +175,7 @@ local variables (`x_ptr`), not of other locations.
 
 `Perennial/Golang/Theory/ProofMode.lean`. `wp_pures` takes all pure steps
 (`PureWp` instances: beta, `if:` on literals, pair projections, deterministic
-Go instructions, `exception_seq`, ...) and simplifies substitutions; never
+Go instructions, `exceptionSeq`, ...) and simplifies substitutions; never
 fails. An array literal `[n]T{v₀, v₁, ...}` whose elements are all values of the
 element type `T` becomes `#(array.mk n [v₀, v₁, ...])` (padded with zero values
 up to `n`) in one step (`pure_wp_array_lit`, `Golang/Theory/ArrayLit.lean`). `wp_pure` takes one step, leaving unsolved side conditions as goals;
@@ -321,7 +321,7 @@ literal port of Rocq's tactic (general `asn : val → IProp`).
 
 ### `wp_for`, `wp_for HI`, `wp_for_post`
 
-`Auto.lean`, `Perennial/Golang/Theory/Loop.lean`. `wp_for` binds the `do_for`
+`Auto.lean`, `Perennial/Golang/Theory/Loop.lean`. `wp_for` binds the `doFor`
 loop at the head and applies `wp_for` with the **whole spatial context** as the
 invariant (`iNamedAccu`), then `wp_auto` and `cleanup_bool_decide`. The goal is
 then
@@ -357,7 +357,7 @@ Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z s.len
     WP (... loop body ...)
       {{ forPostcondition Stuckness.NotStuck ⊤ (λ: <>, do: #i_ptr <-[go.int] ...)
             iprop("HΦ" ∷ ... ∗ "Hs" ∷ s ↦* vs ∗ "xs" ∷ xs_ptr ↦ s ∗ "HI" ∷ ∃ i, ...)
-            fun v => WP (exception_do (v ;;; return: ![go.uint64] #sum_ptr)) {{ Φ }} }}
+            fun v => WP (exceptionDo (v ;;; return: ![go.uint64] #sum_ptr)) {{ Φ }} }}
   else ...
 ```
 
@@ -460,7 +460,7 @@ Names follow Rocq. Specs take `isPkgInit` of their package where Rocq does;
 |:--|:--|
 | `wp_alloc`, `wp_store`, `IntoValTyped.wp_load` | typed allocation/store/load (used by the tactics; `wp_load` is not exported, write `IntoValTyped.wp_load`) |
 | `wp_cmpxchg_suc`, `wp_cmpxchg_fail`, `wp_atomic_load`, `wp_atomic_swap` | atomic operations on typed points-to (`AtomicWps`) |
-| `typed_pointsto_split` | struct points-to to fields (used by `iStructNamed`) |
+| `typedPointsto_split` | struct points-to to fields (used by `iStructNamed`) |
 | `wp_AngelicExit` | unreachable code |
 | `wp_GoPrealloc`, `wp_GlobalAlloc` | low level allocation |
 
@@ -857,7 +857,7 @@ example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
 -- packages in order, and conclude `isPkgInit`.
-example (get_is_pkg_init : go_string → IProp GF)
+example (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))

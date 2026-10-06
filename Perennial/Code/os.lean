@@ -12,1036 +12,1036 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def os : go_string := go!"os"
+def os : GoString := go!"os"
 end pkg_id
 
 namespace os
 
-def readdirMode [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.readdirMode" [])
+def readdirMode [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.readdirMode" [])
 
 attribute [irreducible] readdirMode
 
-def dirInfo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.dirInfo" [])
+def dirInfo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.dirInfo" [])
 
 attribute [irreducible] dirInfo
 
-def timeout [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.timeout" [])
+def timeout [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.timeout" [])
 
 attribute [irreducible] timeout
 
-def SyscallError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.SyscallError" [])
+def SyscallError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.SyscallError" [])
 
 attribute [irreducible] SyscallError
 
-def processStatus [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.processStatus" [])
+def processStatus [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.processStatus" [])
 
 attribute [irreducible] processStatus
 
-def Process [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.Process" [])
+def Process [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.Process" [])
 
 attribute [irreducible] Process
 
-def processHandle [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.processHandle" [])
+def processHandle [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.processHandle" [])
 
 attribute [irreducible] processHandle
 
-def ProcAttr [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.ProcAttr" [])
+def ProcAttr [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.ProcAttr" [])
 
 attribute [irreducible] ProcAttr
 
-def Signal [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.Signal" [])
+def Signal [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.Signal" [])
 
 attribute [irreducible] Signal
 
-def ProcessState [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.ProcessState" [])
+def ProcessState [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.ProcessState" [])
 
 attribute [irreducible] ProcessState
 
-def LinkError [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.LinkError" [])
+def LinkError [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.LinkError" [])
 
 attribute [irreducible] LinkError
 
-def noReadFrom [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.noReadFrom" [])
+def noReadFrom [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.noReadFrom" [])
 
 attribute [irreducible] noReadFrom
 
-def fileWithoutReadFrom [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.fileWithoutReadFrom" [])
+def fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.fileWithoutReadFrom" [])
 
 attribute [irreducible] fileWithoutReadFrom
 
-def noWriteTo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.noWriteTo" [])
+def noWriteTo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.noWriteTo" [])
 
 attribute [irreducible] noWriteTo
 
-def fileWithoutWriteTo [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.fileWithoutWriteTo" [])
+def fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.fileWithoutWriteTo" [])
 
 attribute [irreducible] fileWithoutWriteTo
 
-def dirFS [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.dirFS" [])
+def dirFS [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.dirFS" [])
 
 attribute [irreducible] dirFS
 
-def file [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.file" [])
+def file [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.file" [])
 
 attribute [irreducible] file
 
-def newFileKind [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.newFileKind" [])
+def newFileKind [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.newFileKind" [])
 
 attribute [irreducible] newFileKind
 
-def unixDirent [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.unixDirent" [])
+def unixDirent [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.unixDirent" [])
 
 attribute [irreducible] unixDirent
 
-def rawConn [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.rawConn" [])
+def rawConn [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.rawConn" [])
 
 attribute [irreducible] rawConn
 
-def Root [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.Root" [])
+def Root [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.Root" [])
 
 attribute [irreducible] Root
 
-def rootFS [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.rootFS" [])
+def rootFS [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.rootFS" [])
 
 attribute [irreducible] rootFS
 
-def root [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.root" [])
+def root [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.root" [])
 
 attribute [irreducible] root
 
-def errSymlink [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.errSymlink" [])
+def errSymlink [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.errSymlink" [])
 
 attribute [irreducible] errSymlink
 
-def File [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.File" [])
+def File [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.File" [])
 
 attribute [irreducible] File
 
-def fileStat [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"os.fileStat" [])
+def fileStat [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.fileStat" [])
 
 attribute [irreducible] fileStat
 
-axiom DirEntry [ffi_syntax] [GoGlobalContext] : go.type
+axiom DirEntry [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «dirInfoⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «dirInfoⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom PathError [ffi_syntax] [GoGlobalContext] : go.type
+axiom PathError [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom syscallErrorType [ffi_syntax] [GoGlobalContext] : go.type
+axiom syscallErrorType [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «Processⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «Processⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «processHandleⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «processHandleⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «ProcAttrⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «ProcAttrⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «ProcessStateⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «ProcessStateⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «fileⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «fileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «unixDirentⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «unixDirentⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «rootⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «rootⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-@[reducible] def sysfdType [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def sysfdType [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-axiom FileInfo [ffi_syntax] [GoGlobalContext] : go.type
+axiom FileInfo [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom FileMode [ffi_syntax] [GoGlobalContext] : go.type
+axiom FileMode [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom «fileStatⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type
+axiom «fileStatⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom readdirName [ffi_syntax] [GoGlobalContext] : val
+axiom readdirName [FfiSyntax] [GoGlobalContext] : val
 
-axiom readdirDirEntry [ffi_syntax] [GoGlobalContext] : val
+axiom readdirDirEntry [FfiSyntax] [GoGlobalContext] : val
 
-axiom readdirFileInfo [ffi_syntax] [GoGlobalContext] : val
+axiom readdirFileInfo [FfiSyntax] [GoGlobalContext] : val
 
-axiom blockSize [ffi_syntax] [GoGlobalContext] : val
+axiom blockSize [FfiSyntax] [GoGlobalContext] : val
 
-axiom errENOSYS [ffi_syntax] [GoGlobalContext] : val
+axiom errENOSYS [FfiSyntax] [GoGlobalContext] : val
 
-axiom errERANGE [ffi_syntax] [GoGlobalContext] : val
+axiom errERANGE [FfiSyntax] [GoGlobalContext] : val
 
-axiom errENOMEM [ffi_syntax] [GoGlobalContext] : val
+axiom errENOMEM [FfiSyntax] [GoGlobalContext] : val
 
-axiom statusOK [ffi_syntax] [GoGlobalContext] : val
+axiom statusOK [FfiSyntax] [GoGlobalContext] : val
 
-axiom statusDone [ffi_syntax] [GoGlobalContext] : val
+axiom statusDone [FfiSyntax] [GoGlobalContext] : val
 
-axiom statusReleased [ffi_syntax] [GoGlobalContext] : val
+axiom statusReleased [FfiSyntax] [GoGlobalContext] : val
 
-axiom pidUnset [ffi_syntax] [GoGlobalContext] : val
+axiom pidUnset [FfiSyntax] [GoGlobalContext] : val
 
-axiom pidReleased [ffi_syntax] [GoGlobalContext] : val
+axiom pidReleased [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_RDONLY [ffi_syntax] [GoGlobalContext] : val
+axiom O_RDONLY [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_WRONLY [ffi_syntax] [GoGlobalContext] : val
+axiom O_WRONLY [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_RDWR [ffi_syntax] [GoGlobalContext] : val
+axiom O_RDWR [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_APPEND [ffi_syntax] [GoGlobalContext] : val
+axiom O_APPEND [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_CREATE [ffi_syntax] [GoGlobalContext] : val
+axiom O_CREATE [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_EXCL [ffi_syntax] [GoGlobalContext] : val
+axiom O_EXCL [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_SYNC [ffi_syntax] [GoGlobalContext] : val
+axiom O_SYNC [FfiSyntax] [GoGlobalContext] : val
 
-axiom O_TRUNC [ffi_syntax] [GoGlobalContext] : val
+axiom O_TRUNC [FfiSyntax] [GoGlobalContext] : val
 
-axiom SEEK_SET [ffi_syntax] [GoGlobalContext] : val
+axiom SEEK_SET [FfiSyntax] [GoGlobalContext] : val
 
-axiom SEEK_CUR [ffi_syntax] [GoGlobalContext] : val
+axiom SEEK_CUR [FfiSyntax] [GoGlobalContext] : val
 
-axiom SEEK_END [ffi_syntax] [GoGlobalContext] : val
+axiom SEEK_END [FfiSyntax] [GoGlobalContext] : val
 
-axiom _UTIME_OMIT [ffi_syntax] [GoGlobalContext] : val
+axiom _UTIME_OMIT [FfiSyntax] [GoGlobalContext] : val
 
-axiom kindNewFile [ffi_syntax] [GoGlobalContext] : val
+axiom kindNewFile [FfiSyntax] [GoGlobalContext] : val
 
-axiom kindOpenFile [ffi_syntax] [GoGlobalContext] : val
+axiom kindOpenFile [FfiSyntax] [GoGlobalContext] : val
 
-axiom kindPipe [ffi_syntax] [GoGlobalContext] : val
+axiom kindPipe [FfiSyntax] [GoGlobalContext] : val
 
-axiom kindSock [ffi_syntax] [GoGlobalContext] : val
+axiom kindSock [FfiSyntax] [GoGlobalContext] : val
 
-axiom kindNoPoll [ffi_syntax] [GoGlobalContext] : val
+axiom kindNoPoll [FfiSyntax] [GoGlobalContext] : val
 
-axiom DevNull [ffi_syntax] [GoGlobalContext] : val
+axiom DevNull [FfiSyntax] [GoGlobalContext] : val
 
-axiom PathSeparator [ffi_syntax] [GoGlobalContext] : val
+axiom PathSeparator [FfiSyntax] [GoGlobalContext] : val
 
-axiom PathListSeparator [ffi_syntax] [GoGlobalContext] : val
+axiom PathListSeparator [FfiSyntax] [GoGlobalContext] : val
 
-axiom rootMaxSymlinks [ffi_syntax] [GoGlobalContext] : val
+axiom rootMaxSymlinks [FfiSyntax] [GoGlobalContext] : val
 
-axiom supportsCreateWithStickyBit [ffi_syntax] [GoGlobalContext] : val
+axiom supportsCreateWithStickyBit [FfiSyntax] [GoGlobalContext] : val
 
-axiom supportsCloseOnExec [ffi_syntax] [GoGlobalContext] : val
+axiom supportsCloseOnExec [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeDir [ffi_syntax] [GoGlobalContext] : val
+axiom ModeDir [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeAppend [ffi_syntax] [GoGlobalContext] : val
+axiom ModeAppend [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeExclusive [ffi_syntax] [GoGlobalContext] : val
+axiom ModeExclusive [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeTemporary [ffi_syntax] [GoGlobalContext] : val
+axiom ModeTemporary [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeSymlink [ffi_syntax] [GoGlobalContext] : val
+axiom ModeSymlink [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeDevice [ffi_syntax] [GoGlobalContext] : val
+axiom ModeDevice [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeNamedPipe [ffi_syntax] [GoGlobalContext] : val
+axiom ModeNamedPipe [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeSocket [ffi_syntax] [GoGlobalContext] : val
+axiom ModeSocket [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeSetuid [ffi_syntax] [GoGlobalContext] : val
+axiom ModeSetuid [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeSetgid [ffi_syntax] [GoGlobalContext] : val
+axiom ModeSetgid [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeCharDevice [ffi_syntax] [GoGlobalContext] : val
+axiom ModeCharDevice [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeSticky [ffi_syntax] [GoGlobalContext] : val
+axiom ModeSticky [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeIrregular [ffi_syntax] [GoGlobalContext] : val
+axiom ModeIrregular [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModeType [ffi_syntax] [GoGlobalContext] : val
+axiom ModeType [FfiSyntax] [GoGlobalContext] : val
 
-axiom ModePerm [ffi_syntax] [GoGlobalContext] : val
+axiom ModePerm [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def dirBufPool [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def dirBufPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.dirBufPool"
 
-axiom dirBufPool'init [ffi_syntax] [GoGlobalContext] : val
+axiom dirBufPool'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrInvalid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrInvalid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrInvalid"
 
-axiom ErrInvalid'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrInvalid'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrPermission [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrPermission"
 
-axiom ErrPermission'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrPermission'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrExist"
 
-axiom ErrExist'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrExist'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNotExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNotExist"
 
-axiom ErrNotExist'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrNotExist'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrClosed [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrClosed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrClosed"
 
-axiom ErrClosed'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrClosed'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoDeadline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNoDeadline"
 
-axiom ErrNoDeadline'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrNoDeadline'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrDeadlineExceeded [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrDeadlineExceeded"
 
-axiom ErrDeadlineExceeded'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrDeadlineExceeded'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrProcessDone [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrProcessDone [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrProcessDone"
 
-axiom ErrProcessDone'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrProcessDone'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errProcessReleased [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errProcessReleased [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errProcessReleased"
 
-axiom errProcessReleased'init [ffi_syntax] [GoGlobalContext] : val
+axiom errProcessReleased'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ErrNoHandle [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ErrNoHandle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ErrNoHandle"
 
-axiom ErrNoHandle'init [ffi_syntax] [GoGlobalContext] : val
+axiom ErrNoHandle'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Interrupt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Interrupt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Interrupt"
 
-axiom Interrupt'init [ffi_syntax] [GoGlobalContext] : val
+axiom Interrupt'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Kill [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Kill [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Kill"
 
-axiom Kill'init [ffi_syntax] [GoGlobalContext] : val
+axiom Kill'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Stdin [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stdin [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stdin"
 
-axiom Stdin'init [ffi_syntax] [GoGlobalContext] : val
+axiom Stdin'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Stdout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stdout [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stdout"
 
-axiom Stdout'init [ffi_syntax] [GoGlobalContext] : val
+axiom Stdout'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Stderr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stderr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stderr"
 
-axiom Stderr'init [ffi_syntax] [GoGlobalContext] : val
+axiom Stderr'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errWriteAtInAppendMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errWriteAtInAppendMode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errWriteAtInAppendMode"
 
-axiom errWriteAtInAppendMode'init [ffi_syntax] [GoGlobalContext] : val
+axiom errWriteAtInAppendMode'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def errPathEscapes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errPathEscapes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errPathEscapes"
 
-axiom errPathEscapes'init [ffi_syntax] [GoGlobalContext] : val
+axiom errPathEscapes'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def lstat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lstat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.lstat"
 
-axiom lstat'init [ffi_syntax] [GoGlobalContext] : val
+axiom lstat'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def checkWrapErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkWrapErr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkWrapErr"
 
-axiom checkWrapErr'init [ffi_syntax] [GoGlobalContext] : val
+axiom checkWrapErr'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def getwdCache [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getwdCache [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.getwdCache"
 
-noncomputable def checkPidfdOnce [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkPidfdOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkPidfdOnce"
 
-axiom checkPidfdOnce'init [ffi_syntax] [GoGlobalContext] : val
+axiom checkPidfdOnce'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def Args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Args [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Args"
 
-noncomputable def errPatternHasSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errPatternHasSeparator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errPatternHasSeparator"
 
-axiom errPatternHasSeparator'init [ffi_syntax] [GoGlobalContext] : val
+axiom errPatternHasSeparator'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def pollCopyFileRange [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollCopyFileRange [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pollCopyFileRange"
 
-axiom pollCopyFileRange'init [ffi_syntax] [GoGlobalContext] : val
+axiom pollCopyFileRange'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def pollSplice [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pollSplice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pollSplice"
 
-axiom pollSplice'init [ffi_syntax] [GoGlobalContext] : val
+axiom pollSplice'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def ReadDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ReadDir"
 
-noncomputable def CopyFS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CopyFS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.CopyFS"
 
-noncomputable def readInt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readInt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readInt"
 
-noncomputable def readIntBE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readIntBE [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readIntBE"
 
-noncomputable def readIntLE [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readIntLE [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readIntLE"
 
-noncomputable def direntIno [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntIno [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.direntIno"
 
-noncomputable def direntReclen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntReclen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.direntReclen"
 
-noncomputable def direntNamlen [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntNamlen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.direntNamlen"
 
-noncomputable def direntType [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def direntType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.direntType"
 
-noncomputable def isNoFollowErr [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isNoFollowErr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isNoFollowErr"
 
-noncomputable def Expand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Expand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Expand"
 
-noncomputable def ExpandEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ExpandEnv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ExpandEnv"
 
-noncomputable def isShellSpecialVar [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isShellSpecialVar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isShellSpecialVar"
 
-noncomputable def isAlphaNum [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isAlphaNum [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isAlphaNum"
 
-noncomputable def getShellName [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getShellName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.getShellName"
 
-noncomputable def Getenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getenv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getenv"
 
-noncomputable def LookupEnv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def LookupEnv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.LookupEnv"
 
-noncomputable def Setenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Setenv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Setenv"
 
-noncomputable def Unsetenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Unsetenv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Unsetenv"
 
-noncomputable def Clearenv [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Clearenv [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Clearenv"
 
-noncomputable def Environ [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Environ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Environ"
 
-noncomputable def errNoDeadline [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errNoDeadline [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errNoDeadline"
 
-noncomputable def errDeadlineExceeded [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def errDeadlineExceeded [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.errDeadlineExceeded"
 
-noncomputable def NewSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewSyscallError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.NewSyscallError"
 
-noncomputable def IsExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.IsExist"
 
-noncomputable def IsNotExist [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsNotExist [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.IsNotExist"
 
-noncomputable def IsPermission [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsPermission [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.IsPermission"
 
-noncomputable def IsTimeout [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.IsTimeout"
 
-noncomputable def underlyingErrorIs [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def underlyingErrorIs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.underlyingErrorIs"
 
-noncomputable def underlyingError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def underlyingError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.underlyingError"
 
-noncomputable def newPIDProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newPIDProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newPIDProcess"
 
-noncomputable def newHandleProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newHandleProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newHandleProcess"
 
-noncomputable def newDoneProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDoneProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newDoneProcess"
 
-noncomputable def Getpid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getpid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getpid"
 
-noncomputable def Getppid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getppid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getppid"
 
-noncomputable def FindProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def FindProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.FindProcess"
 
-noncomputable def StartProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def StartProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.StartProcess"
 
-noncomputable def startProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def startProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.startProcess"
 
-noncomputable def convertESRCH [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def convertESRCH [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.convertESRCH"
 
-noncomputable def findProcess [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def findProcess [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.findProcess"
 
-noncomputable def Executable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Executable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Executable"
 
-noncomputable def executable [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def executable [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.executable"
 
-noncomputable def NewFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.NewFile"
 
-noncomputable def genericReadFrom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genericReadFrom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.genericReadFrom"
 
-noncomputable def genericWriteTo [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def genericWriteTo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.genericWriteTo"
 
-noncomputable def Mkdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Mkdir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Mkdir"
 
-noncomputable def setStickyBit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def setStickyBit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.setStickyBit"
 
-noncomputable def Chdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chdir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Chdir"
 
-noncomputable def Open [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Open [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Open"
 
-noncomputable def Create [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Create [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Create"
 
-noncomputable def OpenFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.OpenFile"
 
-noncomputable def openDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openDir"
 
-noncomputable def Rename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Rename [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Rename"
 
-noncomputable def Readlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Readlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Readlink"
 
-noncomputable def fixCount [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixCount [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.fixCount"
 
-noncomputable def TempDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def TempDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.TempDir"
 
-noncomputable def UserCacheDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserCacheDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.UserCacheDir"
 
-noncomputable def UserConfigDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserConfigDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.UserConfigDir"
 
-noncomputable def UserHomeDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def UserHomeDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.UserHomeDir"
 
-noncomputable def Chmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chmod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Chmod"
 
-noncomputable def DirFS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def DirFS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.DirFS"
 
-noncomputable def ReadFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ReadFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ReadFile"
 
-noncomputable def statOrZero [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def statOrZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.statOrZero"
 
-noncomputable def readFileContents [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readFileContents [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readFileContents"
 
-noncomputable def WriteFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def WriteFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.WriteFile"
 
-noncomputable def «open» [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def «open» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.open"
 
-noncomputable def syscallMode [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def syscallMode [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.syscallMode"
 
-noncomputable def chmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chmod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.chmod"
 
-noncomputable def Chown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Chown"
 
-noncomputable def Lchown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lchown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Lchown"
 
-noncomputable def Chtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Chtimes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Chtimes"
 
-noncomputable def chtimesUtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chtimesUtimes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.chtimesUtimes"
 
-noncomputable def ignoringEINTR [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoringEINTR [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ignoringEINTR"
 
-noncomputable def ignoringEINTR2 [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoringEINTR2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ignoringEINTR2"
 
-noncomputable def fixLongPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fixLongPath [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.fixLongPath"
 
-noncomputable def rename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rename [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rename"
 
-noncomputable def newFileFromNewFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFileFromNewFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newFileFromNewFile"
 
-noncomputable def net_newUnixFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def net_newUnixFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.net_newUnixFile"
 
-noncomputable def newFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newFile"
 
-noncomputable def sigpipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sigpipe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.sigpipe"
 
-noncomputable def epipecheck [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def epipecheck [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.epipecheck"
 
-noncomputable def openFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openFileNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openFileNolog"
 
-noncomputable def openDirNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDirNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openDirNolog"
 
-noncomputable def Truncate [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Truncate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Truncate"
 
-noncomputable def Remove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Remove [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Remove"
 
-noncomputable def tempDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tempDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.tempDir"
 
-noncomputable def Link [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Link [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Link"
 
-noncomputable def Symlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Symlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Symlink"
 
-noncomputable def readlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readlink"
 
-noncomputable def newUnixDirent [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newUnixDirent [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newUnixDirent"
 
-noncomputable def Getwd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getwd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getwd"
 
-noncomputable def MkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MkdirAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.MkdirAll"
 
-noncomputable def RemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def RemoveAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.RemoveAll"
 
-noncomputable def endsWithDot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def endsWithDot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.endsWithDot"
 
-noncomputable def IsPathSeparator [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def IsPathSeparator [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.IsPathSeparator"
 
-noncomputable def splitPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitPath [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.splitPath"
 
-noncomputable def ensurePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ensurePidfd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ensurePidfd"
 
-noncomputable def getPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPidfd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.getPidfd"
 
-noncomputable def pidfdFind [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidfdFind [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pidfdFind"
 
-noncomputable def pidfdWorks [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def pidfdWorks [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.pidfdWorks"
 
-noncomputable def checkPidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkPidfd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkPidfd"
 
-noncomputable def checkClonePidfd [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkClonePidfd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkClonePidfd"
 
-noncomputable def ignoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def ignoreSIGSYS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.ignoreSIGSYS"
 
-noncomputable def restoreSIGSYS [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def restoreSIGSYS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.restoreSIGSYS"
 
-noncomputable def Pipe [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Pipe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Pipe"
 
-noncomputable def runtime_args [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_args [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.runtime_args"
 
-noncomputable def Getuid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getuid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getuid"
 
-noncomputable def Geteuid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Geteuid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Geteuid"
 
-noncomputable def Getgid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getgid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getgid"
 
-noncomputable def Getegid [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getegid [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getegid"
 
-noncomputable def Getgroups [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getgroups [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getgroups"
 
-noncomputable def Exit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Exit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Exit"
 
-noncomputable def runtime_beforeExit [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_beforeExit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.runtime_beforeExit"
 
-noncomputable def newRawConn [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRawConn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newRawConn"
 
-noncomputable def removeAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.removeAll"
 
-noncomputable def removeAllFrom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeAllFrom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.removeAllFrom"
 
-noncomputable def openDirAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openDirAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openDirAt"
 
-noncomputable def isErrNoFollow [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isErrNoFollow [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isErrNoFollow"
 
-noncomputable def newDirFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newDirFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newDirFile"
 
-noncomputable def OpenInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenInRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.OpenInRoot"
 
-noncomputable def OpenRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def OpenRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.OpenRoot"
 
-noncomputable def splitPathInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def splitPathInRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.splitPathInRoot"
 
-noncomputable def isValidRootFSPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isValidRootFSPath [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isValidRootFSPath"
 
-noncomputable def rootCleanPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootCleanPath [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootCleanPath"
 
-noncomputable def rootChmod [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChmod [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootChmod"
 
-noncomputable def rootChown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootChown"
 
-noncomputable def rootLchown [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootLchown [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootLchown"
 
-noncomputable def rootChtimes [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootChtimes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootChtimes"
 
-noncomputable def rootMkdir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootMkdir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootMkdir"
 
-noncomputable def rootMkdirAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootMkdirAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootMkdirAll"
 
-noncomputable def rootReadlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootReadlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootReadlink"
 
-noncomputable def rootRemove [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRemove [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootRemove"
 
-noncomputable def rootRemoveAll [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRemoveAll [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootRemoveAll"
 
-noncomputable def rootRename [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootRename [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootRename"
 
-noncomputable def rootLink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootLink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootLink"
 
-noncomputable def doInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def doInRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.doInRoot"
 
-noncomputable def openRootNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openRootNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openRootNolog"
 
-noncomputable def newRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def newRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.newRoot"
 
-noncomputable def openRootInRoot [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def openRootInRoot [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.openRootInRoot"
 
-noncomputable def rootOpenFileNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootOpenFileNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootOpenFileNolog"
 
-noncomputable def rootOpenDir [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootOpenDir [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootOpenDir"
 
-noncomputable def rootStat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootStat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootStat"
 
-noncomputable def rootSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def rootSymlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.rootSymlink"
 
-noncomputable def afterResolvingSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def afterResolvingSymlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.afterResolvingSymlink"
 
-noncomputable def chmodat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chmodat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.chmodat"
 
-noncomputable def chownat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chownat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.chownat"
 
-noncomputable def lchownat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lchownat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.lchownat"
 
-noncomputable def chtimesat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def chtimesat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.chtimesat"
 
-noncomputable def mkdirat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def mkdirat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.mkdirat"
 
-noncomputable def removeat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removeat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.removeat"
 
-noncomputable def removefileat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removefileat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.removefileat"
 
-noncomputable def removedirat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def removedirat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.removedirat"
 
-noncomputable def renameat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def renameat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.renameat"
 
-noncomputable def linkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def linkat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.linkat"
 
-noncomputable def symlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def symlinkat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.symlinkat"
 
-noncomputable def modeAt [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def modeAt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.modeAt"
 
-noncomputable def checkSymlink [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def checkSymlink [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.checkSymlink"
 
-noncomputable def readlinkat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def readlinkat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.readlinkat"
 
-noncomputable def Stat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Stat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Stat"
 
-noncomputable def Lstat [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Lstat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Lstat"
 
-noncomputable def fillFileStatFromSys [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def fillFileStatFromSys [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.fillFileStatFromSys"
 
-noncomputable def atime [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def atime [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.atime"
 
-noncomputable def statNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def statNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.statNolog"
 
-noncomputable def lstatNolog [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def lstatNolog [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.lstatNolog"
 
-noncomputable def Hostname [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Hostname [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Hostname"
 
-noncomputable def hostname [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def hostname [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.hostname"
 
-noncomputable def runtime_rand [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def runtime_rand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.runtime_rand"
 
-noncomputable def nextRandom [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def nextRandom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.nextRandom"
 
-noncomputable def CreateTemp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def CreateTemp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.CreateTemp"
 
-noncomputable def prefixAndSuffix [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def prefixAndSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.prefixAndSuffix"
 
-noncomputable def MkdirTemp [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def MkdirTemp [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.MkdirTemp"
 
-noncomputable def joinPath [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def joinPath [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.joinPath"
 
-noncomputable def Getpagesize [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def Getpagesize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Getpagesize"
 
-noncomputable def SameFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def SameFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.SameFile"
 
-noncomputable def sameFile [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def sameFile [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.sameFile"
 
-noncomputable def getPollFDAndNetwork [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def getPollFDAndNetwork [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.getPollFDAndNetwork"
 
-noncomputable def isUnixOrTCP [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def isUnixOrTCP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.isUnixOrTCP"
 
-noncomputable def wrapSyscallError [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def wrapSyscallError [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.wrapSyscallError"
 
-noncomputable def tryLimitedReader [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def tryLimitedReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.tryLimitedReader"
 
 instance info' : PkgInfo pkg_id.os where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-axiom _'init [ffi_syntax] [GoGlobalContext] : val
+axiom _'init [FfiSyntax] [GoGlobalContext] : val
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.os)) (Lam BAnon
-  (App (Val exception_do)
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
   (App (Val pollSplice'init) (Val #())))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val pollCopyFileRange'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errPatternHasSeparator'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val checkPidfdOnce'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val _'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val checkWrapErr'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val lstat'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errPathEscapes'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errWriteAtInAppendMode'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Stderr'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Stdout'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Stdin'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Kill'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val Interrupt'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrNoHandle'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val errProcessReleased'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrProcessDone'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrDeadlineExceeded'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrNoDeadline'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrClosed'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrNotExist'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrExist'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrPermission'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val ErrInvalid'init) (Val #()))))))
-  (App (Val do_execute)
+  (App (Val doExecute)
   (App (Val dirBufPool'init) (Val #()))))))))
 
 namespace readdirMode
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end readdirMode
 
-@[reducible] def «readdirModeⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «readdirModeⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class readdirMode_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class readdirMode_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   readdirMode_underlying : go.UnderlyingDirectedEq readdirMode «readdirModeⁱᵐᵖˡ»
 
 attribute [instance] readdirMode_Assumptions.readdirMode_underlying
@@ -1052,7 +1052,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end dirInfo
 
-class dirInfo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dirInfo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   dirInfo_type_repr : go.TypeReprUnderlying «dirInfoⁱᵐᵖˡ» dirInfo.t
   dirInfo_underlying : go.UnderlyingDirectedEq dirInfo «dirInfoⁱᵐᵖˡ»
   «dirInfoⁱᵐᵖˡ_underlying» : go.IsUnderlying «dirInfoⁱᵐᵖˡ» «dirInfoⁱᵐᵖˡ»
@@ -1062,46 +1062,46 @@ attribute [instance] dirInfo_Assumptions.dirInfo_type_repr
   dirInfo_Assumptions.«dirInfoⁱᵐᵖˡ_underlying»
 
 namespace timeout
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end timeout
 
-@[reducible] def «timeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Timeout" (go.signature.Signature [] false [go.bool]))])
+@[reducible] def «timeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Timeout" (go.signature.Signature [] false [go.bool]))])
 
-class timeout_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class timeout_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   timeout_underlying : go.UnderlyingDirectedEq timeout «timeoutⁱᵐᵖˡ»
 
 attribute [instance] timeout_Assumptions.timeout_underlying
 
 namespace SyscallError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Syscall' : go_string
+  Syscall' : GoString
   Err' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end SyscallError
 
-@[reducible] def SyscallError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def SyscallError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Syscall" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def SyscallError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def SyscallError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SyscallError'fds_unsealed
 
-instance equals_unfold_SyscallError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_SyscallError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SyscallError'fds SyscallError'fds_unsealed :=
   ⟨by unfold SyscallError'fds; rfl⟩
 
-@[reducible] def «SyscallErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType SyscallError'fds)
+@[reducible] def «SyscallErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType SyscallError'fds)
 
-class SyscallError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SyscallError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   SyscallError_type_repr : go.TypeReprUnderlying «SyscallErrorⁱᵐᵖˡ» SyscallError.t
   SyscallError_underlying : go.UnderlyingDirectedEq SyscallError «SyscallErrorⁱᵐᵖˡ»
   SyscallError_get_Syscall : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet «SyscallErrorⁱᵐᵖˡ» go!"Syscall") #x (Val #(x.Syscall'))
-  SyscallError_set_Syscall : ∀ (x : SyscallError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «SyscallErrorⁱᵐᵖˡ» go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError.t)))
+  SyscallError_set_Syscall : ∀ (x : SyscallError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «SyscallErrorⁱᵐᵖˡ» go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError.t)))
   SyscallError_get_Err : ∀ (x : SyscallError.t), go.IsGoStepPureDetTagged under (StructFieldGet «SyscallErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
   SyscallError_set_Err : ∀ (x : SyscallError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «SyscallErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError.t)))
 
@@ -1113,13 +1113,13 @@ attribute [instance] SyscallError_Assumptions.SyscallError_type_repr
   SyscallError_Assumptions.SyscallError_set_Err
 
 namespace processStatus
-abbrev t [ffi_syntax] : Type := w32
+abbrev t [FfiSyntax] : Type := w32
 end processStatus
 
-@[reducible] def «processStatusⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «processStatusⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
-class processStatus_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class processStatus_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   processStatus_underlying : go.UnderlyingDirectedEq processStatus «processStatusⁱᵐᵖˡ»
 
 attribute [instance] processStatus_Assumptions.processStatus_underlying
@@ -1130,7 +1130,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end Process
 
-class Process_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Process_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Process_type_repr : go.TypeReprUnderlying «Processⁱᵐᵖˡ» Process.t
   Process_underlying : go.UnderlyingDirectedEq Process «Processⁱᵐᵖˡ»
   «Processⁱᵐᵖˡ_underlying» : go.IsUnderlying «Processⁱᵐᵖˡ» «Processⁱᵐᵖˡ»
@@ -1145,7 +1145,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end processHandle
 
-class processHandle_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class processHandle_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   processHandle_type_repr : go.TypeReprUnderlying «processHandleⁱᵐᵖˡ» processHandle.t
   processHandle_underlying : go.UnderlyingDirectedEq processHandle «processHandleⁱᵐᵖˡ»
   «processHandleⁱᵐᵖˡ_underlying» : go.IsUnderlying «processHandleⁱᵐᵖˡ» «processHandleⁱᵐᵖˡ»
@@ -1160,7 +1160,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ProcAttr
 
-class ProcAttr_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ProcAttr_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ProcAttr_type_repr : go.TypeReprUnderlying «ProcAttrⁱᵐᵖˡ» ProcAttr.t
   ProcAttr_underlying : go.UnderlyingDirectedEq ProcAttr «ProcAttrⁱᵐᵖˡ»
   «ProcAttrⁱᵐᵖˡ_underlying» : go.IsUnderlying «ProcAttrⁱᵐᵖˡ» «ProcAttrⁱᵐᵖˡ»
@@ -1170,13 +1170,13 @@ attribute [instance] ProcAttr_Assumptions.ProcAttr_type_repr
   ProcAttr_Assumptions.«ProcAttrⁱᵐᵖˡ_underlying»
 
 namespace Signal
-abbrev t [ffi_syntax] : Type := interface.t
+abbrev t [FfiSyntax] : Type := interface.t
 end Signal
 
-@[reducible] def «Signalⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.InterfaceType [(go.interface_elem.MethodElem go!"Signal" (go.signature.Signature [] false [])), (go.interface_elem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
+@[reducible] def «Signalⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Signal" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class Signal_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Signal_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Signal_underlying : go.UnderlyingDirectedEq Signal «Signalⁱᵐᵖˡ»
 
 attribute [instance] Signal_Assumptions.Signal_underlying
@@ -1187,7 +1187,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end ProcessState
 
-class ProcessState_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ProcessState_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ProcessState_type_repr : go.TypeReprUnderlying «ProcessStateⁱᵐᵖˡ» ProcessState.t
   ProcessState_underlying : go.UnderlyingDirectedEq ProcessState «ProcessStateⁱᵐᵖˡ»
   «ProcessStateⁱᵐᵖˡ_underlying» : go.IsUnderlying «ProcessStateⁱᵐᵖˡ» «ProcessStateⁱᵐᵖˡ»
@@ -1197,42 +1197,42 @@ attribute [instance] ProcessState_Assumptions.ProcessState_type_repr
   ProcessState_Assumptions.«ProcessStateⁱᵐᵖˡ_underlying»
 
 namespace LinkError
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  Op' : go_string
-  Old' : go_string
-  New' : go_string
+  Op' : GoString
+  Old' : GoString
+  New' : GoString
   Err' : error.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 end LinkError
 
-@[reducible] def LinkError'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def LinkError'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
 (go.field_decl.FieldDecl go!"Old" go.string),
 (go.field_decl.FieldDecl go!"New" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def LinkError'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def LinkError'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LinkError'fds_unsealed
 
-instance equals_unfold_LinkError [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_LinkError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LinkError'fds LinkError'fds_unsealed :=
   ⟨by unfold LinkError'fds; rfl⟩
 
-@[reducible] def «LinkErrorⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType LinkError'fds)
+@[reducible] def «LinkErrorⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType LinkError'fds)
 
-class LinkError_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LinkError_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LinkError_type_repr : go.TypeReprUnderlying «LinkErrorⁱᵐᵖˡ» LinkError.t
   LinkError_underlying : go.UnderlyingDirectedEq LinkError «LinkErrorⁱᵐᵖˡ»
   LinkError_get_Op : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Op") #x (Val #(x.Op'))
-  LinkError_set_Op : ∀ (x : LinkError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : LinkError.t)))
+  LinkError_set_Op : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : LinkError.t)))
   LinkError_get_Old : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Old") #x (Val #(x.Old'))
-  LinkError_set_Old : ∀ (x : LinkError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Old") (PairV #x #y) (Val #(({ x with Old' := y } : LinkError.t)))
+  LinkError_set_Old : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Old") (PairV #x #y) (Val #(({ x with Old' := y } : LinkError.t)))
   LinkError_get_New : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"New") #x (Val #(x.New'))
-  LinkError_set_New : ∀ (x : LinkError.t) (y : go_string), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError.t)))
+  LinkError_set_New : ∀ (x : LinkError.t) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError.t)))
   LinkError_get_Err : ∀ (x : LinkError.t), go.IsGoStepPureDetTagged under (StructFieldGet «LinkErrorⁱᵐᵖˡ» go!"Err") #x (Val #(x.Err'))
   LinkError_set_Err : ∀ (x : LinkError.t) (y : error.t), go.IsGoStepPureDetTagged under (StructFieldSet «LinkErrorⁱᵐᵖˡ» go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError.t)))
 
@@ -1248,27 +1248,27 @@ attribute [instance] LinkError_Assumptions.LinkError_type_repr
   LinkError_Assumptions.LinkError_set_Err
 
 namespace noReadFrom
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noReadFrom
 
-@[reducible] def noReadFrom'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noReadFrom'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noReadFrom'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def noReadFrom'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noReadFrom'fds_unsealed
 
-instance equals_unfold_noReadFrom [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_noReadFrom [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold noReadFrom'fds noReadFrom'fds_unsealed :=
   ⟨by unfold noReadFrom'fds; rfl⟩
 
-@[reducible] def «noReadFromⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType noReadFrom'fds)
+@[reducible] def «noReadFromⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noReadFrom'fds)
 
-class noReadFrom_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class noReadFrom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   noReadFrom_type_repr : go.TypeReprUnderlying «noReadFromⁱᵐᵖˡ» noReadFrom.t
   noReadFrom_underlying : go.UnderlyingDirectedEq noReadFrom «noReadFromⁱᵐᵖˡ»
 
@@ -1276,36 +1276,36 @@ attribute [instance] noReadFrom_Assumptions.noReadFrom_type_repr
   noReadFrom_Assumptions.noReadFrom_underlying
 
 namespace fileWithoutReadFrom
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noReadFrom' : noReadFrom.t
-  File' : loc
+  File' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end fileWithoutReadFrom
 
-@[reducible] def fileWithoutReadFrom'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def fileWithoutReadFrom'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noReadFrom" noReadFrom),
-(go.field_decl.EmbeddedField go!"File" (go.type.PointerType File))]
+(go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File))]
 
-@[irreducible] def fileWithoutReadFrom'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def fileWithoutReadFrom'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   fileWithoutReadFrom'fds_unsealed
 
-instance equals_unfold_fileWithoutReadFrom [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold fileWithoutReadFrom'fds fileWithoutReadFrom'fds_unsealed :=
   ⟨by unfold fileWithoutReadFrom'fds; rfl⟩
 
-@[reducible] def «fileWithoutReadFromⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType fileWithoutReadFrom'fds)
+@[reducible] def «fileWithoutReadFromⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType fileWithoutReadFrom'fds)
 
-class fileWithoutReadFrom_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fileWithoutReadFrom_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   fileWithoutReadFrom_type_repr : go.TypeReprUnderlying «fileWithoutReadFromⁱᵐᵖˡ» fileWithoutReadFrom.t
   fileWithoutReadFrom_underlying : go.UnderlyingDirectedEq fileWithoutReadFrom «fileWithoutReadFromⁱᵐᵖˡ»
   fileWithoutReadFrom_get_noReadFrom : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutReadFromⁱᵐᵖˡ» go!"noReadFrom") #x (Val #(x.noReadFrom'))
   fileWithoutReadFrom_set_noReadFrom : ∀ (x : fileWithoutReadFrom.t) (y : noReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutReadFromⁱᵐᵖˡ» go!"noReadFrom") (PairV #x #y) (Val #(({ x with noReadFrom' := y } : fileWithoutReadFrom.t)))
   fileWithoutReadFrom_get_File : ∀ (x : fileWithoutReadFrom.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutReadFromⁱᵐᵖˡ» go!"File") #x (Val #(x.File'))
-  fileWithoutReadFrom_set_File : ∀ (x : fileWithoutReadFrom.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutReadFromⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutReadFrom.t)))
+  fileWithoutReadFrom_set_File : ∀ (x : fileWithoutReadFrom.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutReadFromⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutReadFrom.t)))
 
 attribute [instance] fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_type_repr
   fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_underlying
@@ -1315,27 +1315,27 @@ attribute [instance] fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_type_re
   fileWithoutReadFrom_Assumptions.fileWithoutReadFrom_set_File
 
 namespace noWriteTo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
+instance zero_val [FfiSyntax] : ZeroVal t :=
   ⟨t.mk⟩
 end noWriteTo
 
-@[reducible] def noWriteTo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def noWriteTo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noWriteTo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def noWriteTo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noWriteTo'fds_unsealed
 
-instance equals_unfold_noWriteTo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_noWriteTo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold noWriteTo'fds noWriteTo'fds_unsealed :=
   ⟨by unfold noWriteTo'fds; rfl⟩
 
-@[reducible] def «noWriteToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType noWriteTo'fds)
+@[reducible] def «noWriteToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType noWriteTo'fds)
 
-class noWriteTo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class noWriteTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   noWriteTo_type_repr : go.TypeReprUnderlying «noWriteToⁱᵐᵖˡ» noWriteTo.t
   noWriteTo_underlying : go.UnderlyingDirectedEq noWriteTo «noWriteToⁱᵐᵖˡ»
 
@@ -1343,36 +1343,36 @@ attribute [instance] noWriteTo_Assumptions.noWriteTo_type_repr
   noWriteTo_Assumptions.noWriteTo_underlying
 
 namespace fileWithoutWriteTo
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   noWriteTo' : noWriteTo.t
-  File' : loc
+  File' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef zeroValDef⟩
 end fileWithoutWriteTo
 
-@[reducible] def fileWithoutWriteTo'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def fileWithoutWriteTo'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noWriteTo" noWriteTo),
-(go.field_decl.EmbeddedField go!"File" (go.type.PointerType File))]
+(go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File))]
 
-@[irreducible] def fileWithoutWriteTo'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def fileWithoutWriteTo'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   fileWithoutWriteTo'fds_unsealed
 
-instance equals_unfold_fileWithoutWriteTo [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold fileWithoutWriteTo'fds fileWithoutWriteTo'fds_unsealed :=
   ⟨by unfold fileWithoutWriteTo'fds; rfl⟩
 
-@[reducible] def «fileWithoutWriteToⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType fileWithoutWriteTo'fds)
+@[reducible] def «fileWithoutWriteToⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType fileWithoutWriteTo'fds)
 
-class fileWithoutWriteTo_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fileWithoutWriteTo_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   fileWithoutWriteTo_type_repr : go.TypeReprUnderlying «fileWithoutWriteToⁱᵐᵖˡ» fileWithoutWriteTo.t
   fileWithoutWriteTo_underlying : go.UnderlyingDirectedEq fileWithoutWriteTo «fileWithoutWriteToⁱᵐᵖˡ»
   fileWithoutWriteTo_get_noWriteTo : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutWriteToⁱᵐᵖˡ» go!"noWriteTo") #x (Val #(x.noWriteTo'))
   fileWithoutWriteTo_set_noWriteTo : ∀ (x : fileWithoutWriteTo.t) (y : noWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutWriteToⁱᵐᵖˡ» go!"noWriteTo") (PairV #x #y) (Val #(({ x with noWriteTo' := y } : fileWithoutWriteTo.t)))
   fileWithoutWriteTo_get_File : ∀ (x : fileWithoutWriteTo.t), go.IsGoStepPureDetTagged under (StructFieldGet «fileWithoutWriteToⁱᵐᵖˡ» go!"File") #x (Val #(x.File'))
-  fileWithoutWriteTo_set_File : ∀ (x : fileWithoutWriteTo.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutWriteToⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutWriteTo.t)))
+  fileWithoutWriteTo_set_File : ∀ (x : fileWithoutWriteTo.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «fileWithoutWriteToⁱᵐᵖˡ» go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutWriteTo.t)))
 
 attribute [instance] fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_type_repr
   fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_underlying
@@ -1382,13 +1382,13 @@ attribute [instance] fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_type_repr
   fileWithoutWriteTo_Assumptions.fileWithoutWriteTo_set_File
 
 namespace dirFS
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end dirFS
 
-@[reducible] def «dirFSⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «dirFSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class dirFS_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dirFS_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   dirFS_underlying : go.UnderlyingDirectedEq dirFS «dirFSⁱᵐᵖˡ»
 
 attribute [instance] dirFS_Assumptions.dirFS_underlying
@@ -1399,7 +1399,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end file
 
-class file_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class file_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   file_type_repr : go.TypeReprUnderlying «fileⁱᵐᵖˡ» file.t
   file_underlying : go.UnderlyingDirectedEq file «fileⁱᵐᵖˡ»
   «fileⁱᵐᵖˡ_underlying» : go.IsUnderlying «fileⁱᵐᵖˡ» «fileⁱᵐᵖˡ»
@@ -1409,13 +1409,13 @@ attribute [instance] file_Assumptions.file_type_repr
   file_Assumptions.«fileⁱᵐᵖˡ_underlying»
 
 namespace newFileKind
-abbrev t [ffi_syntax] : Type := w64
+abbrev t [FfiSyntax] : Type := w64
 end newFileKind
 
-@[reducible] def «newFileKindⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «newFileKindⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-class newFileKind_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class newFileKind_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   newFileKind_underlying : go.UnderlyingDirectedEq newFileKind «newFileKindⁱᵐᵖˡ»
 
 attribute [instance] newFileKind_Assumptions.newFileKind_underlying
@@ -1426,7 +1426,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end unixDirent
 
-class unixDirent_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class unixDirent_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unixDirent_type_repr : go.TypeReprUnderlying «unixDirentⁱᵐᵖˡ» unixDirent.t
   unixDirent_underlying : go.UnderlyingDirectedEq unixDirent «unixDirentⁱᵐᵖˡ»
   «unixDirentⁱᵐᵖˡ_underlying» : go.IsUnderlying «unixDirentⁱᵐᵖˡ» «unixDirentⁱᵐᵖˡ»
@@ -1436,32 +1436,32 @@ attribute [instance] unixDirent_Assumptions.unixDirent_type_repr
   unixDirent_Assumptions.«unixDirentⁱᵐᵖˡ_underlying»
 
 namespace rawConn
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  file' : loc
+  file' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end rawConn
 
-@[reducible] def rawConn'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"file" (go.type.PointerType File))]
+@[reducible] def rawConn'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"file" (go.GoType.PointerType File))]
 
-@[irreducible] def rawConn'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def rawConn'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   rawConn'fds_unsealed
 
-instance equals_unfold_rawConn [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_rawConn [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold rawConn'fds rawConn'fds_unsealed :=
   ⟨by unfold rawConn'fds; rfl⟩
 
-@[reducible] def «rawConnⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType rawConn'fds)
+@[reducible] def «rawConnⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType rawConn'fds)
 
-class rawConn_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rawConn_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   rawConn_type_repr : go.TypeReprUnderlying «rawConnⁱᵐᵖˡ» rawConn.t
   rawConn_underlying : go.UnderlyingDirectedEq rawConn «rawConnⁱᵐᵖˡ»
   rawConn_get_file : ∀ (x : rawConn.t), go.IsGoStepPureDetTagged under (StructFieldGet «rawConnⁱᵐᵖˡ» go!"file") #x (Val #(x.file'))
-  rawConn_set_file : ∀ (x : rawConn.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «rawConnⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn.t)))
+  rawConn_set_file : ∀ (x : rawConn.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «rawConnⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn.t)))
 
 attribute [instance] rawConn_Assumptions.rawConn_type_repr
   rawConn_Assumptions.rawConn_underlying
@@ -1469,32 +1469,32 @@ attribute [instance] rawConn_Assumptions.rawConn_type_repr
   rawConn_Assumptions.rawConn_set_file
 
 namespace Root
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  root' : loc
+  root' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Root
 
-@[reducible] def Root'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"root" (go.type.PointerType root))]
+@[reducible] def Root'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"root" (go.GoType.PointerType root))]
 
-@[irreducible] def Root'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Root'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Root'fds_unsealed
 
-instance equals_unfold_Root [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Root [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Root'fds Root'fds_unsealed :=
   ⟨by unfold Root'fds; rfl⟩
 
-@[reducible] def «Rootⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Root'fds)
+@[reducible] def «Rootⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Root'fds)
 
-class Root_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Root_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Root_type_repr : go.TypeReprUnderlying «Rootⁱᵐᵖˡ» Root.t
   Root_underlying : go.UnderlyingDirectedEq Root «Rootⁱᵐᵖˡ»
   Root_get_root : ∀ (x : Root.t), go.IsGoStepPureDetTagged under (StructFieldGet «Rootⁱᵐᵖˡ» go!"root") #x (Val #(x.root'))
-  Root_set_root : ∀ (x : Root.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Rootⁱᵐᵖˡ» go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root.t)))
+  Root_set_root : ∀ (x : Root.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Rootⁱᵐᵖˡ» go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root.t)))
 
 attribute [instance] Root_Assumptions.Root_type_repr
   Root_Assumptions.Root_underlying
@@ -1502,13 +1502,13 @@ attribute [instance] Root_Assumptions.Root_type_repr
   Root_Assumptions.Root_set_root
 
 namespace rootFS
-abbrev t [ffi_syntax] : Type := Root.t
+abbrev t [FfiSyntax] : Type := Root.t
 end rootFS
 
-@[reducible] def «rootFSⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «rootFSⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   Root
 
-class rootFS_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rootFS_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   rootFS_underlying : go.UnderlyingDirectedEq rootFS «rootFSⁱᵐᵖˡ»
 
 attribute [instance] rootFS_Assumptions.rootFS_underlying
@@ -1519,7 +1519,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end root
 
-class root_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class root_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   root_type_repr : go.TypeReprUnderlying «rootⁱᵐᵖˡ» root.t
   root_underlying : go.UnderlyingDirectedEq root «rootⁱᵐᵖˡ»
   «rootⁱᵐᵖˡ_underlying» : go.IsUnderlying «rootⁱᵐᵖˡ» «rootⁱᵐᵖˡ»
@@ -1529,44 +1529,44 @@ attribute [instance] root_Assumptions.root_type_repr
   root_Assumptions.«rootⁱᵐᵖˡ_underlying»
 
 namespace errSymlink
-abbrev t [ffi_syntax] : Type := go_string
+abbrev t [FfiSyntax] : Type := GoString
 end errSymlink
 
-@[reducible] def «errSymlinkⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
+@[reducible] def «errSymlinkⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
-class errSymlink_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class errSymlink_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errSymlink_underlying : go.UnderlyingDirectedEq errSymlink «errSymlinkⁱᵐᵖˡ»
 
 attribute [instance] errSymlink_Assumptions.errSymlink_underlying
 
 namespace File
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
-  file' : loc
+  file' : Loc
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end File
 
-@[reducible] def File'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"file" (go.type.PointerType file))]
+@[reducible] def File'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"file" (go.GoType.PointerType file))]
 
-@[irreducible] def File'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def File'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   File'fds_unsealed
 
-instance equals_unfold_File [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_File [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold File'fds File'fds_unsealed :=
   ⟨by unfold File'fds; rfl⟩
 
-@[reducible] def «Fileⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType File'fds)
+@[reducible] def «Fileⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType File'fds)
 
-class File_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class File_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   File_type_repr : go.TypeReprUnderlying «Fileⁱᵐᵖˡ» File.t
   File_underlying : go.UnderlyingDirectedEq File «Fileⁱᵐᵖˡ»
   File_get_file : ∀ (x : File.t), go.IsGoStepPureDetTagged under (StructFieldGet «Fileⁱᵐᵖˡ» go!"file") #x (Val #(x.file'))
-  File_set_file : ∀ (x : File.t) (y : loc), go.IsGoStepPureDetTagged under (StructFieldSet «Fileⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File.t)))
+  File_set_file : ∀ (x : File.t) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «Fileⁱᵐᵖˡ» go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File.t)))
 
 attribute [instance] File_Assumptions.File_type_repr
   File_Assumptions.File_underlying
@@ -1579,7 +1579,7 @@ axiom zero_val : ZeroVal t
 attribute [instance] zero_val
 end fileStat
 
-class fileStat_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fileStat_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   fileStat_type_repr : go.TypeReprUnderlying «fileStatⁱᵐᵖˡ» fileStat.t
   fileStat_underlying : go.UnderlyingDirectedEq fileStat «fileStatⁱᵐᵖˡ»
   «fileStatⁱᵐᵖˡ_underlying» : go.IsUnderlying «fileStatⁱᵐᵖˡ» «fileStatⁱᵐᵖˡ»
@@ -1588,7 +1588,7 @@ attribute [instance] fileStat_Assumptions.fileStat_type_repr
   fileStat_Assumptions.fileStat_underlying
   fileStat_Assumptions.«fileStatⁱᵐᵖˡ_underlying»
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   readdirMode_instance : readdirMode_Assumptions
   dirInfo_instance : dirInfo_Assumptions
   timeout_instance : timeout_Assumptions

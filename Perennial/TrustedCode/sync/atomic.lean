@@ -10,7 +10,7 @@ namespace Perennial
 
 namespace sync.atomic
 section code
-variable [ffi_syntax] [GoGlobalContext]
+variable [FfiSyntax] [GoGlobalContext]
 
 def «LoadUint64ⁱᵐᵖˡ» : val :=
   λ: "addr", Load "addr"

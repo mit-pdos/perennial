@@ -13,126 +13,126 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock"
+def github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
-def Lock [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.Lock" [])
+def Lock [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.Lock" [])
 
 attribute [irreducible] Lock
 
-noncomputable def NewLock [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def NewLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.NewLock"
 
 /-- NewLock returns a new Lock backed by a buffered channel of size 1.
 
     go: lock.go:15:6 -/
-noncomputable def «NewLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «NewLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exception_do)
-  (App (Val do_return)
-  (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))]))) (Val #())) (Val #(W64 1)))
-  (App (Val (GoInstruction (CompositeLiteral Lock))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])) (Var "$v0")))]))))))
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (Let "$v0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #(W64 1)))
+  (App (Val (GoInstruction (CompositeLiteral Lock))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v0")))]))))))
 
 /-- go: lock.go:21:15 -/
-noncomputable def «Lock__Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
-  (Let "$v" (App (Val (GoInstruction (CompositeLiteral (go.type.StructType [])))) (LiteralValue []))
-  (App (App (Val (chan.send (go.type.StructType []))) (Var "$chan")) (Var "$v"))))))))))
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
+  (Let "$v" (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [])))) (LiteralValue []))
+  (App (App (Val (chan.send (go.GoType.StructType []))) (Var "$chan")) (Var "$v"))))))))))
 
 /-- Unlock releases the lock by receiving from the channel.
     This will block if the lock is not currently held.
 
     go: lock.go:27:15 -/
-noncomputable def «Lock__Unlockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__Unlockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock))) (Var "l"))
-  (App (App (Val exception_seq) (Lam BAnon
-  (App (Val do_return)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
   (Val #()))))
-  (App (Val do_execute)
-  (Fst (App (Val (chan.receive (go.type.StructType []))) (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))))))))))
+  (App (Val doExecute)
+  (Fst (App (Val (chan.receive (go.GoType.StructType []))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))))))))))
 
 /-- TryLock attempts to acquire the lock without blocking.
     Returns true on success, false if already held.
 
     go: lock.go:33:15 -/
-noncomputable def «Lock__TryLockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__TryLockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock))) (Var "l"))
-  (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.type.StructType [])))) (LiteralValue []))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
-  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val do_return)
-  (Val #false))) [(CommClause (SendCase (go.type.StructType []) (Var "$ch0") (Var "$v0")) (App (Val do_return)
+  (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [])))) (LiteralValue []))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doReturn)
+  (Val #false))) [(CommClause (SendCase (go.GoType.StructType []) (Var "$ch0") (Var "$v0")) (App (Val doReturn)
   (Val #true)))]))))))))
 
 /-- LockWithTimeout attempts to acquire the lock, timing out after d.
     Returns true if acquired, false if timed out.
 
     go: lock.go:44:15 -/
-noncomputable def «Lock__LockWithTimeoutⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def «Lock__LockWithTimeoutⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "d"
-  (App (Val exception_do)
+  (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock))) (Var "l"))
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Duration))) (Var "d"))
-  (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.type.StructType [])))) (LiteralValue []))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
+  (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [])))) (LiteralValue []))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock go!"ch"))) (Var "l")))
   (Let "$ch1" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration))) (Var "d"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
-  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase (go.type.StructType []) (Var "$ch0") (Var "$v0")) (App (Val do_return)
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase (go.GoType.StructType []) (Var "$ch0") (Var "$v0")) (App (Val doReturn)
   (Val #true))),
   (CommClause (RecvCase _root_.Perennial.time.Time (Var "$ch1")) (Lam "$recvVal"
-  (App (Val do_return)
+  (App (Val doReturn)
   (Val #false))))]))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock where
-  pkg_imported_pkgs := [pkg_id.time]
+  pkgImportedPkgs := [pkg_id.time]
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #())))))))
 
 namespace Lock
-structure t [ffi_syntax] where
+structure t [FfiSyntax] where
   mk ::
   ch' : chan.t
 
-instance zero_val [ffi_syntax] : ZeroVal t :=
-  ⟨t.mk zero_val_def⟩
+instance zero_val [FfiSyntax] : ZeroVal t :=
+  ⟨t.mk zeroValDef⟩
 end Lock
 
-@[reducible] def Lock'fds_unsealed [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"ch" (go.type.ChannelType go.chan_dir.sendrecv (go.type.StructType [])))]
+@[reducible] def Lock'fds_unsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] def Lock'fds [ffi_syntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] def Lock'fds [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Lock'fds_unsealed
 
-instance equals_unfold_Lock [ffi_syntax] [GoGlobalContext] :
+instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Lock'fds Lock'fds_unsealed :=
   ⟨by unfold Lock'fds; rfl⟩
 
-@[reducible] def «Lockⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] : go.type :=
-  (go.type.StructType Lock'fds)
+@[reducible] def «Lockⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Lock'fds)
 
-class Lock_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Lock_Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Lock_type_repr : go.TypeReprUnderlying «Lockⁱᵐᵖˡ» Lock.t
   Lock_underlying : go.UnderlyingDirectedEq Lock «Lockⁱᵐᵖˡ»
   Lock_get_ch : ∀ (x : Lock.t), go.IsGoStepPureDetTagged under (StructFieldGet «Lockⁱᵐᵖˡ» go!"ch") #x (Val #(x.ch'))
@@ -141,13 +141,13 @@ class Lock_Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   Lock_LockWithTimeout_unfold : MethodUnfold Lock go!"LockWithTimeout" «Lock__LockWithTimeoutⁱᵐᵖˡ»
   Lock_TryLock_unfold : MethodUnfold Lock go!"TryLock" «Lock__TryLockⁱᵐᵖˡ»
   Lock_Unlock_unfold : MethodUnfold Lock go!"Unlock" «Lock__Unlockⁱᵐᵖˡ»
-  Lock'ptr_Lock_unfold : MethodUnfold (go.type.PointerType Lock) go!"Lock" (LamV "$r"
+  Lock'ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"Lock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_LockWithTimeout_unfold : MethodUnfold (go.type.PointerType Lock) go!"LockWithTimeout" (LamV "$r"
+  Lock'ptr_LockWithTimeout_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"LockWithTimeout" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"LockWithTimeout"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_TryLock_unfold : MethodUnfold (go.type.PointerType Lock) go!"TryLock" (LamV "$r"
+  Lock'ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"TryLock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"TryLock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
-  Lock'ptr_Unlock_unfold : MethodUnfold (go.type.PointerType Lock) go!"Unlock" (LamV "$r"
+  Lock'ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Lock) go!"Unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock go!"Unlock"))) (App (Val (GoInstruction (GoLoad Lock))) (Var "$r"))))
 
 attribute [instance] Lock_Assumptions.Lock_type_repr
@@ -163,7 +163,7 @@ attribute [instance] Lock_Assumptions.Lock_type_repr
   Lock_Assumptions.Lock'ptr_TryLock_unfold
   Lock_Assumptions.Lock'ptr_Unlock_unfold
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Lock_instance : Lock_Assumptions
   NewLock_unfold : FuncUnfold NewLock [] «NewLockⁱᵐᵖˡ»
   import_time_Assumption : _root_.Perennial.time.Assumptions

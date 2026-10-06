@@ -56,9 +56,9 @@ open go_etcd_io.etcd.client.v3_proof k8s_io.utils.third_party.forked.golang.btre
 namespace go_etcd_io.etcd.cache.v3_proof
 
 section init
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : heapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : cache.v3.Assumptions]
 
@@ -116,19 +116,19 @@ end init
 
 /-- If `buf` reaches capacity, the first entry may be removed during Append() to
 make space. -/
-axiom ownRingBuffer {GF : BundledGFunctors} (r : loc) {T' : Type} [ZeroVal T']
+axiom ownRingBuffer {GF : BundledGFunctors} (r : Loc) {T' : Type} [ZeroVal T']
   [TypedPointsto (GF := GF) T'] {V : Type}
   (is_item : T' → V → IProp GF) (rev_item : V → w64) (buf : List V) : IProp GF
 
-axiom ringBuffer.wp_PeekOldest [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [hG : heapGS hlc GF] [sem : go.Semantics] [package_sem : cache.v3.Assumptions]
-    {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type} {T : go.type}
+axiom ringBuffer.wp_PeekOldest [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
+    [hG : HeapGS hlc GF] [sem : go.Semantics] [package_sem : cache.v3.Assumptions]
+    {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type} {T : go.GoType}
     [IntoValTyped (GF := GF) T' T] {is_item : T' → V → IProp GF} {rev_item : V → w64}
-    (r : loc) (buf : List V) :
+    (r : Loc) (buf : List V) :
   {{ isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.cache.v3 ∗
       ownRingBuffer r is_item rev_item buf }}
-    (App (Val (r @!! go.type.PointerType (cache.v3.ringBuffer T) @!! go!"PeekOldest")) (Val #()))
+    (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer T) @!! go!"PeekOldest")) (Val #()))
   {{ RET #((buf.map rev_item).headD (W64 0)); ownRingBuffer r is_item rev_item buf }}
 
 /-- Rocq's `let iterItemvs := ...` in `ringBuffer.wp_DescendLessOrEqual`: the
@@ -138,12 +138,12 @@ def iterItemvs {V : Type} (rev_item : V → w64) (pivot : w64) (buf : List V) : 
 
 /-- `P i` is the invariant that holds after `iter` has been called `i` times on
 the appropriate items. -/
-axiom ringBuffer.wp_DescendLessOrEqual [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [hG : heapGS hlc GF] [sem : go.Semantics] [package_sem : cache.v3.Assumptions]
-    {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type} {T : go.type}
+axiom ringBuffer.wp_DescendLessOrEqual [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
+    [hG : HeapGS hlc GF] [sem : go.Semantics] [package_sem : cache.v3.Assumptions]
+    {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] {V : Type} {T : go.GoType}
     [IntoValTyped (GF := GF) T' T] {is_item : T' → V → IProp GF} {rev_item : V → w64}
-    (P : Nat → IProp GF) (pivot : w64) (iter : func.t) (r : loc) (buf : List V)
+    (P : Nat → IProp GF) (pivot : w64) (iter : func.t) (r : Loc) (buf : List V)
     (Φ : val → IProp GF) :
   ⊢ (isPkgInit (PROP := IProp GF) pkg_id.go_etcd_io.etcd.cache.v3 ∗
      ownRingBuffer r is_item rev_item buf ∗
@@ -156,34 +156,34 @@ axiom ringBuffer.wp_DescendLessOrEqual [ext : ffi_syntax] [ffi : ffi_model] [ffi
             Ψ #«continue») -∗
         WP (App (App (Val #iter) (Val #(rev_item itemv))) (Val #item)) {{ Ψ }})) -∗
     (ownRingBuffer r is_item rev_item buf -∗ P (iterItemvs rev_item pivot buf).length -∗ Φ #()) -∗
-    (WP (App (App (Val (r @!! go.type.PointerType (cache.v3.ringBuffer T) @!! go!"DescendLessOrEqual"))
+    (WP (App (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer T) @!! go!"DescendLessOrEqual"))
       (Val #pivot)) (Val #iter)) {{ Φ }})
 
 /-! ### Store -/
 
 /-- For BTree. -/
-def KvItem : Type := go_string ⊕ KeyValue.t
-axiom isKvItem {GF : BundledGFunctors} : loc → KvItem → IProp GF
+def KvItem : Type := GoString ⊕ KeyValue.t
+axiom isKvItem {GF : BundledGFunctors} : Loc → KvItem → IProp GF
 axiom LessKvItem : KvItem → KvItem → Prop
 
 /-- For ringbuffer. -/
 abbrev Snap : Type := w64 × List KeyValue.t
 
-instance ownBTree_discard_persistent [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi]
-    [ffi_semantics ext ffi] [GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [heapGS hlc GF] [go.Semantics] (t : loc) {T' : Type} [ZeroVal T']
+instance ownBTree_discard_persistent [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
+    [HeapGS hlc GF] [go.Semantics] (t : Loc) {T' : Type} [ZeroVal T']
     [TypedPointsto (GF := GF) T'] {V : Type} (is_item : T' → V → IProp GF) (less : V → V → Prop)
     (items : List V) : Persistent (ownBTree t is_item less items DFrac.discard) :=
   (ownBTree_dfractional t is_item less items).dfractional_persistent
 
-axiom isEtcdKvs {GF : BundledGFunctors} (revision : w64) («prefix» : go_string)
-  (key_values : GMap go_string KeyValue.t) : IProp GF
-axiom is_etcd_kvmap_pers {GF : BundledGFunctors} (revision : w64) («prefix» : go_string)
-  (key_values : GMap go_string KeyValue.t) :
+axiom isEtcdKvs {GF : BundledGFunctors} (revision : w64) («prefix» : GoString)
+  (key_values : GMap GoString KeyValue.t) : IProp GF
+axiom is_etcd_kvmap_pers {GF : BundledGFunctors} (revision : w64) («prefix» : GoString)
+  (key_values : GMap GoString KeyValue.t) :
   Persistent (isEtcdKvs (GF := GF) revision «prefix» key_values)
 attribute [instance] is_etcd_kvmap_pers
 
-def orderedKvsToMap (kvs : List KeyValue.t) : GMap go_string KeyValue.t :=
+def orderedKvsToMap (kvs : List KeyValue.t) : GMap GoString KeyValue.t :=
   GMap.ofList (kvs.map (fun kv => (kv.key, kv)))
 
 def revSnapshotItem : Snap → w64 := Prod.fst
@@ -234,24 +234,24 @@ structure StoreNames where
   latestRevGn : GName
 
 section store
-variable [ext : ffi_syntax] [ffi : ffi_model] [ffi_interp ffi] [ffi_semantics ext ffi]
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : heapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : cache.v3.Assumptions]
 
 local notation "pkg" => pkg_id.go_etcd_io.etcd.cache.v3
 
-def isSnapshotItem (l : loc) (s : Snap) : IProp GF :=
-  iprop(∃ (tree : loc),
+def isSnapshotItem (l : Loc) (s : Snap) : IProp GF :=
+  iprop(∃ (tree : Loc),
     "#snapshot" ∷ l ↦□ (cache.v3.snapshot.t.mk s.1 tree) ∗
     "#tree" ∷ ownBTree tree isKvItem LessKvItem (s.2.map Sum.inr) DFrac.discard)
 
-instance isSnapshotItem_pers (l : loc) (s : Snap) : Persistent (isSnapshotItem (GF := GF) l s) := by
+instance isSnapshotItem_pers (l : Loc) (s : Snap) : Persistent (isSnapshotItem (GF := GF) l s) := by
   unfold isSnapshotItem; infer_instance
 
 /-- Cannot be persistent because of RWMutex. -/
-def ownStore (s : loc) (γstore : StoreNames) («prefix» : go_string) : IProp GF :=
+def ownStore (s : Loc) (γstore : StoreNames) («prefix» : GoString) : IProp GF :=
   iprop(
   "Hmu" ∷ sync.ownRWMutex (s.[cache.v3.store.t, go!"mu"])
     (fun q => iprop(∃ (snapshot : cache.v3.snapshot.t) (kvs_ordered : List KeyValue.t)
@@ -273,7 +273,7 @@ def ownStore (s : loc) (γstore : StoreNames) («prefix» : go_string) : IProp G
 
 -- (`ownCache` and the `structure` below come before the proofs: the kernel check
 -- of a `structure` waits for the proofs elaborated asynchronously before it)
-def ownCache (c_ptr : loc) : IProp GF :=
+def ownCache (c_ptr : Loc) : IProp GF :=
   iprop(∃ (c : cache.v3.Cache.t) (γstore : StoreNames),
     "c" ∷ c_ptr ↦ c ∗
     "store" ∷ ownStore c.store' γstore c.prefix')
@@ -287,41 +287,41 @@ them as a hypothesis instead of axioms. Each spec only asks for the cache's (or
 store's) representation predicate and gives it back, with an arbitrary result; the
 `Cache` methods are stated over `ownCache`. -/
 structure CacheGetCalleeSpecs : Prop where
-  wp_Cache_WaitReady : ∀ (c : loc) (ctx : interface.t),
+  wp_Cache_WaitReady : ∀ (c : Loc) (ctx : interface.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
+      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"WaitReady")) (Val #ctx))
     {{ (err : error.t), RET #err; ownCache c }}
-  wp_Cache_validateGet : ∀ (c : loc) (key : go_string) (op : client.v3.Op.t)
+  wp_Cache_validateGet : ∀ (c : Loc) (key : GoString) (op : client.v3.Op.t)
       (req : RangeRequest.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c ∗ isOp op (.Get req) }}
-      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
+      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"validateGet")) (Val #key))
         (Val #op))
     {{ (pred : func.t) (err : error.t), RET (PairV #pred #err); ownCache c }}
-  wp_Cache_serverRevision : ∀ (c : loc) (ctx : interface.t),
+  wp_Cache_serverRevision : ∀ (c : Loc) (ctx : interface.t),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
+      (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"serverRevision")) (Val #ctx))
     {{ (rev : w64) (err : error.t), RET (PairV #rev #err); ownCache c }}
-  wp_Cache_waitTillRevision : ∀ (c : loc) (ctx : interface.t) (rev : w64),
+  wp_Cache_waitTillRevision : ∀ (c : Loc) (ctx : interface.t) (rev : w64),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownCache c }}
-      (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
+      (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"waitTillRevision"))
         (Val #ctx)) (Val #rev))
     {{ (err : error.t), RET #err; ownCache c }}
-  wp_store_Get : ∀ (s : loc) (γstore : StoreNames) («prefix» : go_string)
+  wp_store_Get : ∀ (s : Loc) (γstore : StoreNames) («prefix» : GoString)
       (start_sl end_sl : slice.t) (start_key end_key : List w8) (rev : w64),
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownStore s γstore «prefix» ∗
         start_sl ↦*□ start_key ∗ end_sl ↦*□ end_key }}
-      (App (App (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
+      (App (App (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"Get")) (Val #start_sl))
         (Val #end_sl)) (Val #rev))
     {{ (kvs : slice.t) (latest_rev : w64) (err : error.t),
         RET (PairV (PairV #kvs #latest_rev) #err); ownStore s γstore «prefix» }}
 
 set_option maxHeartbeats 1600000 in
-theorem store.wp_getSnapshot (rev_lb : Nat) (s : loc) (γstore : StoreNames) (rev : w64)
-    («prefix» : go_string) :
+theorem store.wp_getSnapshot (rev_lb : Nat) (s : Loc) (γstore : StoreNames) (rev : w64)
+    («prefix» : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hs" ∷ ownStore s γstore «prefix» ∗
         "#Hlb" ∷ monoNatLbOwn γstore.latestRevGn rev_lb }}
-      (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"getSnapshot")) (Val #rev))
-    {{ (snap_ptr : loc) (latest_rev : w64) (err : error.t),
+      (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"getSnapshot")) (Val #rev))
+    {{ (snap_ptr : Loc) (latest_rev : w64) (err : error.t),
         RET (PairV (PairV #snap_ptr #latest_rev) #err);
         ownStore s γstore «prefix» ∗
         match err with
@@ -383,17 +383,17 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : loc) (γstore : StoreNames) (re
     wp_apply sync.RWMutex.wp_RUnlock $$ [$Hrlocked latest latest_tree history Hrev] as Hmu
     · inext; iexists snapshot, kvs_ordered, history; iframe # ∗
     wp_end
-  rw [show ∀ (x : binder) (e : expr), (RecV BAnon x e : val) = #(func.mk BAnon x e) from
+  rw [show ∀ (x : Binder) (e : Expr), (RecV BAnon x e : val) = #(func.mk BAnon x e) from
     fun _ _ => by rw [go.intoVal_unfold func.t]]
   wp_bind (App (App (Val #(methods _ _ _)) (Val _)) (Val _))
   iapply (wp_wand (Φ := fun v => iprop(⌜v = #()⌝ ∗
       ownRingBuffer (s.[cache.v3.store.t, go!"history"]) isSnapshotItem revSnapshotItem history ∗
-      (targetSnapshot_ptr ↦ (zero_val loc) ∨
-       ∃ (item : loc) (itemv : Snap), targetSnapshot_ptr ↦ item ∗ isSnapshotItem item itemv ∗
+      (targetSnapshot_ptr ↦ (zero_val Loc) ∨
+       ∃ (item : Loc) (itemv : Snap), targetSnapshot_ptr ↦ item ∗ isSnapshotItem item itemv ∗
          ⌜(iterItemvs revSnapshotItem r history)[0]? = some itemv⌝)))) $$ [history targetSnapshot]
-  · iapply ringBuffer.wp_DescendLessOrEqual (T' := loc) (V := Snap)
+  · iapply ringBuffer.wp_DescendLessOrEqual (T' := Loc) (V := Snap)
       (is_item := isSnapshotItem) (rev_item := revSnapshotItem) (buf := history)
-      (P := fun i => iprop(⌜i = 0⌝ ∗ targetSnapshot_ptr ↦ (zero_val loc)))
+      (P := fun i => iprop(⌜i = 0⌝ ∗ targetSnapshot_ptr ↦ (zero_val Loc)))
       $$ [history targetSnapshot] [] []
     · isplitr
       · iPkgInit
@@ -428,7 +428,7 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : loc) (γstore : StoreNames) (re
   · ihave %Hnn : ⌜item ≠ null⌝ $$ []
     · unfold isSnapshotItem
       icases Hitem with ⟨%tree, #Hsnap, -⟩
-      iapply typed_pointsto_not_null $$ Hsnap
+      iapply typedPointsto_not_null $$ Hsnap
     wp_auto
     rw [decide_eq_false Hnn]
     wp_auto
@@ -465,9 +465,9 @@ theorem store.wp_getSnapshot (rev_lb : Nat) (s : loc) (γstore : StoreNames) (re
       have := of_decide_eq_false this
       omega
 
-theorem store.wp_LatestRev (s : loc) (γstore : StoreNames) («prefix» : go_string) :
+theorem store.wp_LatestRev (s : Loc) (γstore : StoreNames) («prefix» : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ownStore s γstore «prefix» }}
-      (App (Val (s @!! go.type.PointerType cache.v3.store @!! go!"LatestRev")) (Val #()))
+      (App (Val (s @!! go.GoType.PointerType cache.v3.store @!! go!"LatestRev")) (Val #()))
     {{ (r : w64), RET #r; ownStore s γstore «prefix» }} := by
   wp_start as Hs
   wp_apply wp_with_defer as %defer defer
@@ -486,15 +486,15 @@ satisfies the client-supplied `isOpOptions opts pfx fk` (not both `WithPrefix` a
 `WithFromKey`: else `OpGet` panics), and the theorem takes the specs of the
 untranslated callees (`CacheGetCalleeSpecs`) as a hypothesis. -/
 theorem Cache.wp_Get (Hspecs : CacheGetCalleeSpecs (GF := GF))
-    (c : loc) (ctx : interface.t) (key : go_string) (opts_sl : slice.t)
+    (c : Loc) (ctx : interface.t) (key : GoString) (opts_sl : slice.t)
     (opts : List client.v3.OpOption.t) (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗
         "opts_sl" ∷ opts_sl ↦* opts ∗
         "#Hopts" ∷ isOpOptions opts pfx fk ∗
         "cache" ∷ ownCache c }}
-      (App (App (App (Val (c @!! go.type.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
+      (App (App (App (Val (c @!! go.GoType.PointerType cache.v3.Cache @!! go!"Get")) (Val #ctx))
         (Val #key)) (Val #opts_sl))
-    {{ (resp : loc) (err : error.t), RET (PairV #resp #err); True }} := by
+    {{ (resp : Loc) (err : error.t), RET (PairV #resp #err); True }} := by
   wp_start as ⟨opts_sl, #Hopts, cache⟩
   unfold ownCache
   icases cache with ⟨%cv, %γ, Hc, Hstore⟩
@@ -504,7 +504,7 @@ theorem Cache.wp_Get (Hspecs : CacheGetCalleeSpecs (GF := GF))
   · unfold ownCache; iexists cv, γ; iframe
   -- `if c.store.LatestRev() == 0 { if err := c.WaitReady(ctx); err != nil { return nil, err } }`
   wp_join (Q := fun v => iprop((⌜v = executeVal⌝ ∗ ownCache c ∗ c_ptr ↦ c ∗ ctx_ptr ↦ ctx) ∨
-      ∃ (resp : loc) (err : error.t), ⌜v = returnVal (PairV #resp #err)⌝)) with [cache c ctx]
+      ∃ (resp : Loc) (err : error.t), ⌜v = returnVal (PairV #resp #err)⌝)) with [cache c ctx]
   · wp_apply (Hspecs.wp_Cache_WaitReady c ctx) $$ [$cache] as %err cache
     cases err
     · wp_auto
@@ -534,7 +534,7 @@ theorem Cache.wp_Get (Hspecs : CacheGetCalleeSpecs (GF := GF))
     -- `if !op.IsSerializable() { ... }`
     wp_join (Q := fun v => iprop((⌜v = executeVal⌝ ∗ ownCache c ∗ c_ptr ↦ c ∗
           requestedRev_ptr ↦ op.rev') ∨
-        ∃ (resp : loc) (err : error.t), ⌜v = returnVal (PairV #resp #err)⌝)) at next
+        ∃ (resp : Loc) (err : error.t), ⌜v = returnVal (PairV #resp #err)⌝)) at next
         with [cache c ctx requestedRev]
     · cases op.serializable'
       case' true =>

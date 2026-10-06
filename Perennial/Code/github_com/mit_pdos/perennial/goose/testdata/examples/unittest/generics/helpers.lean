@@ -12,34 +12,34 @@ namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers : go_string := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers"
+def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
 
-noncomputable def AnyPointer [ffi_syntax] [GoGlobalContext] : go_string :=
+noncomputable def AnyPointer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers.AnyPointer"
 
 /-- go: helpers.go:3:6 -/
-noncomputable def «AnyPointerⁱᵐᵖˡ» [ffi_syntax] [GoGlobalContext] (T : go.type) : val :=
+noncomputable def «AnyPointerⁱᵐᵖˡ» [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
-  (App (Val exception_do)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.type.PointerType T)))) (Var "x"))
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "x"))
+  (App (Val doExecute)
   (Val #())))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers where
-  pkg_imported_pkgs := []
+  pkgImportedPkgs := []
 
-noncomputable def initialize' [ffi_syntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers)) (Lam BAnon
-  (App (Val exception_do)
-  (App (Val do_execute)
+  (App (Val exceptionDo)
+  (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [ffi_syntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AnyPointer_unfold : ∀ (T : go.type), FuncUnfold AnyPointer [T] («AnyPointerⁱᵐᵖˡ» T)
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  AnyPointer_unfold : ∀ (T : go.GoType), FuncUnfold AnyPointer [T] («AnyPointerⁱᵐᵖˡ» T)
 
 attribute [instance] Assumptions.AnyPointer_unfold
 
