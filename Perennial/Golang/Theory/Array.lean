@@ -409,4 +409,48 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
 
 end intoVal
 
+/-! ## `len` and `cap` of an array -/
+
+section lenCap
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- `len` of an array is its length, which lives in the type rather than next
+to the elements, so it needs no ownership of the array. The side condition
+excludes array types that no Go program can have (see `go.len_array`); for the
+literal lengths Goose emits it is discharged by `wp_pures`'s side-condition
+solver.
+
+Goose folds a constant `len`/`cap` itself, so these fire only when the operand
+is not constant, e.g. `len(f())`. The operand is evaluated and discarded, which
+is what Go does in that case. -/
+instance pure_wp_array_len {st : go.GoType} {n : Int} {elem : go.GoType}
+    [st ↓u go.ArrayType n elem] (v : val) :
+    PureWp (G := G) (L := L) (0 ≤ n ∧ n < 2^63)
+      (App (Val #(functions go.len [st])) (Val v)) (Val #(W64 n)) :=
+  pure_wp_val _ (App (Val #(functions go.len [st])) (Val v)) #(W64 n) fun s E Φ hn => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_auto_lc 1
+    rw [ite_eq_left_of_eq_true _ _ (eq_true hn)]
+    wp_pures
+    iapply HΦ $$ Hlc1
+
+/-- `cap` of an array; see `pure_wp_array_len`. -/
+instance pure_wp_array_cap {st : go.GoType} {n : Int} {elem : go.GoType}
+    [st ↓u go.ArrayType n elem] (v : val) :
+    PureWp (G := G) (L := L) (0 ≤ n ∧ n < 2^63)
+      (App (Val #(functions go.cap [st])) (Val v)) (Val #(W64 n)) :=
+  pure_wp_val _ (App (Val #(functions go.cap [st])) (Val v)) #(W64 n) fun s E Φ hn => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_auto_lc 1
+    rw [ite_eq_left_of_eq_true _ _ (eq_true hn)]
+    wp_pures
+    iapply HΦ $$ Hlc1
+
+end lenCap
+
 end Perennial

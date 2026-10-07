@@ -27,8 +27,8 @@ Lean notes:
     `{{{ True }}} .. {{{ RET #false; True }}}` is false; replaced by the true
     spec (see the lemma), now proved. This needed `len` to unfold at the named
     map type `quorum.MajorityConfig`: `go.len_map` takes `[t ↓u go.MapType ..]`
-    (Rocq: literal `go.MapType` only), and `wp_map_len` (new, not in Rocq) is
-    in `Perennial/Golang/Theory/Map.lean`.
+    (Rocq: literal `go.MapType` only), and so does `wp_map_len`
+    (`Perennial/Golang/Theory/Map.lean`).
   - New helper: `array_acc_same`.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol

@@ -8,8 +8,9 @@ Differences from Rocq:
   `Perennial.gmap K V`, which only needs `DecidableEq K`.
 * In `wp_map_for_range`, Rocq's `listToSet keys = dom m` is stated as
   `∀ k, k ∈ keys ↔ (m !! k).isSome`.
-* New: `wp_map_len` (Rocq has no spec for `len` of a map), at any type whose
-  underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`).
+* `wp_map_len` and `pure_wp_map_nil_len` are stated at any type whose
+  underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`);
+  Rocq states them at the literal `go.MapType key_type elem_type`.
 -/
 import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
@@ -364,8 +365,8 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
        □ (∀ (i : Int) (key : K) (v : V), ⌜keys[i.toNat]? = some key ∧ m !! key = some v⌝ -∗
           P keys i -∗
           WP (App (App (Val #body) (Val #key)) (Val #v)) @ s; E
-            {{ v, forMapPostcondition (P keys (i + 1)) Φ v }}) ∗
-       (P keys (GMap.size m) -∗ Φ executeVal))) -∗
+            {{ v, forMapPostcondition (P keys (i + 1)) (fun v => iprop(mref ↦${dq} m -∗ Φ v)) v }}) ∗
+       (P keys (GMap.size m) -∗ mref ↦${dq} m -∗ Φ executeVal))) -∗
     WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) @ s; E {{ Φ }} := by
   iintro Hm HΦ
   ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
@@ -374,6 +375,15 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
   wp_pures
   rw [ownMap_unseal]
   iNamed Hm
+  -- the map, re-sealed, once `FinishRead` has given the points-to back
+  have hseal : (heapPointsto mref dq mv : IProp GF) ⊢ ownMapDef mref dq m := by
+    iintro Hown
+    unfold ownMapDef
+    simp only [named]
+    iexists mv, mp
+    iframe Hown
+    ipureintro
+    exact ⟨His_map, Hagree, Hdom, Hdefault⟩
   wp_apply wp_start_read $$ Hown with ⟨Hown, Hclose⟩
   wp_bind (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) _)
   iapply wp_InternalMapForRange mv mp #body key_type elem_type _ $$ %His_map
@@ -422,29 +432,31 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
     · subst hbv
       rw [breakVal_unseal]; simp only [breakValDef]
       wp_auto
-      wp_apply wp_finish_read $$ [Hown Hclose] with _
+      wp_apply wp_finish_read $$ [Hown Hclose] with Hown
       · iframe Hown Hclose
-      iexact HΦ'
+      iapply HΦ'
+      iapply hseal $$ Hown
     · subst hbv
       rw [returnVal_unseal]; simp only [returnValDef]
       wp_auto
-      wp_apply wp_finish_read $$ [Hown Hclose] with _
+      wp_apply wp_finish_read $$ [Hown Hclose] with Hown
       · iframe Hown Hclose
-      iexact HΦ'
+      iapply HΦ'
+      iapply hseal $$ Hown
   · rw [List.drop_of_length_le (by omega)]
     simp only [List.map_nil, List.foldr_nil]
     wp_auto
-    wp_apply wp_finish_read $$ [Hown Hclose] with _
+    wp_apply wp_finish_read $$ [Hown Hclose] with Hown
     · iframe Hown Hclose
     have hsz : (i : Int) = (GMap.size m : Int) := by omega
     rw [hsz]
     iapply HΦ $$ HP
+    iapply hseal $$ Hown
 
 
-/-- `len(m)` of a map (Lean addition, not in Rocq). `t` is any type whose
-underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). `go.len`
-tests for the nil map before reading it; an owned map is not nil, so that test
-is stepped past here. -/
+/-- `len(m)` of a map the caller owns. `t` is any type whose underlying type is
+a map (`len_map` takes `[t ↓u go.MapType ..]`; Rocq states this at the literal
+`go.MapType key_type elem_type`). The nil map is `pure_wp_map_nil_len`. -/
 theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
     (mref : Loc) (m : GMap K V) (dq : DFrac) :
     {{ (mref ↦${dq} m : IProp GF) }}
@@ -487,6 +499,18 @@ instance wp_map_nil_for_range (body : GoFunc) (key_type elem_type : go.GoType) :
     iintro HΦ
     wp_call_lc Hlc
     iapply HΦ $$ Hlc
+
+/-- `len` of a nil map is `0`; see `go.len_map`. The non-nil case needs the
+map's ownership (for the `Read`) and is not a `PureWp`; it is `wp_map_len`. -/
+instance pure_wp_map_nil_len {t key_type elem_type : go.GoType}
+    [t ↓u go.MapType key_type elem_type] :
+    PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
+      (App (Val #(functions go.len [t])) (Val #map.nil)) (Val #(W64 0)) :=
+  pure_wp_val True _ #(W64 0) fun s E Φ _ => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_auto_lc 1
+    iapply HΦ $$ Hlc1
 
 end forRange
 

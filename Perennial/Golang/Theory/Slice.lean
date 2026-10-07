@@ -970,13 +970,20 @@ theorem wp_new_cap (l : w64) :
   · iapply HΦ; ipureintro; word
   · iapply HΦ; ipureintro; word
 
-theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
-    (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
-    {{ (sl ↦* vs ∗ ownSliceCap V sl (DFrac.own 1) ∗ sl2 ↦*{dq} vs' : IProp GF) }}
+/-- `append` onto a destination whose elements are held at any fraction `dq_s`.
+Go's `append` writes only the capacity slack past `len(s)` when it appends in
+place, and only reads the old elements when it reallocates, so only the slack
+has to be owned. `✓ dq_s` is needed because `s ↦*{dq_s} []` holds no resource
+(the slice may be nil), so it says nothing about `dq_s`; the appended elements
+are then handed back at `dq_s`. -/
+theorem wp_slice_append_dfrac {st t : go.GoType} [st ↓u go.SliceType t]
+    [IntoValTyped (GF := GF) V t]
+    (sl : GoSlice) (vs : List V) (dq_s : DFrac) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
+    {{ (sl ↦*{dq_s} vs ∗ ownSliceCap V sl (DFrac.own 1) ∗ sl2 ↦*{dq} vs' ∗ ⌜✓ dq_s⌝ : IProp GF) }}
       (App (App (Val #(functions go.append [st])) (Val #sl)) (Val #sl2)) @ s; E
     {{ (s' : GoSlice), RET #s';
-        s' ↦* (vs ++ vs') ∗ ownSliceCap V s' (DFrac.own 1) ∗ sl2 ↦*{dq} vs' }} := by
-  wp_start as ⟨Hs, Hcap, Hs2⟩
+        s' ↦*{dq_s} (vs ++ vs') ∗ ownSliceCap V s' (DFrac.own 1) ∗ sl2 ↦*{dq} vs' }} := by
+  wp_start as ⟨Hs, Hcap, Hs2, %Hdq⟩
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   ihave %Hlen2 := ownSlice_len _ _ _ $$ Hs2
   ihave %Hwf1 := ownSlice_wf _ _ _ $$ Hs
@@ -990,23 +997,25 @@ theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValType
     rw [slice_slice sl (W64 0) (sl.len + sl2.len) sl.len (sl.len + sl2.len) (by word)]
     have h0 : ∀ x : w64, W64 0 + x = x := fun x => by word
     simp only [h0]
-    icases ownSlice_slice_into_capacity sl.len (sl.len + sl2.len) sl vs $$ [Hs Hcap]
-      with ⟨%vs'', Hs, Hs_new, Hcap⟩
-    · iframe Hs Hcap; ipureintro; word
+    -- the slack up to `sl.len + sl2.len`, at full ownership; the old elements
+    -- stay where they are, at `dq_s`
+    icases ownSliceCap_split (V := V) (sl.len + sl2.len) sl $$ [Hcap] with ⟨%vs'', Hs_new, Hcap⟩
+    · iframe Hcap; ipureintro; constructor <;> word
     ihave %Hlen3 := ownSlice_len _ _ _ $$ Hs_new
-    wp_apply wp_slice_copy _ _ sl2 vs' dq $$ [Hs_new Hs2] with %n ⟨%Hn, Hs_new, Hs2⟩
+    wp_apply +noauto wp_slice_copy _ _ sl2 vs' dq $$ [Hs_new Hs2] with %n ⟨%Hn, Hs_new, Hs2⟩
     · iframe Hs_new Hs2
-    have hd : (List.drop (sint.nat sl.len) (vs ++ vs'')).length = vs'.length := by
+    have hd : vs''.length = vs'.length := by
       rw [Hlen3.1]; simp only [slice.slice]; word
-    have ht : (vs ++ vs'').take (sint.nat sl.len) = vs := by
-      rw [show sint.nat sl.len = vs.length from Hlen.1.symm, List.take_left]
-    rw [hd, List.take_length, List.drop_of_length_le (l := List.drop (sint.nat sl.len) (vs ++ vs''))
-      (i := vs'.length) (by omega), List.append_nil, ht]
+    rw [hd, List.take_length, List.drop_of_length_le (l := vs'') (i := vs'.length) (by omega),
+      List.append_nil]
+    imod ownSlice_update_to_dfrac (GF := GF) dq_s _ _ Hdq $$ Hs_new with Hs_new
+    wp_auto
     iapply HΦ
     iframe Hs2
     isplitl [Hs Hs_new]
     · iapply ownSlice_combine sl.len sl _ vs vs' (W64 0) (sl.len + sl2.len)
-        ⟨by word, by word, by word, by word⟩ $$ Hs Hs_new
+        ⟨by word, by word, by word, by word⟩ $$ [Hs] Hs_new
+      iapply (ownSlice_trivial_slice sl _ vs).1 $$ Hs
     · iapply ownSliceCap_slice_change_first sl sl.len (W64 0) (sl.len + sl2.len) _
         ⟨Hif, by word, by word, by word, by word⟩ $$ Hcap
   · wp_apply wp_new_cap with %cap %Hcap_ge
@@ -1015,16 +1024,14 @@ theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValType
     ihave %Hsl_wf := ownSlice_wf _ _ _ $$ Hnew
     ihave %Hsl_len := ownSlice_len _ _ _ $$ Hnew
     simp only [List.length_replicate] at Hsl_len
-    wp_apply wp_slice_copy nsl _ sl vs (DFrac.own 1) $$ [Hnew Hs] with %n' ⟨%Hn', Hnew, Hs⟩
+    wp_apply wp_slice_copy nsl _ sl vs dq_s $$ [Hnew Hs] with %n' ⟨%Hn', Hnew, _⟩
     · iframe Hnew Hs
     rw [ite_eq_left ⟨by word, by word, by rw [Hcap]; exact Hcap_ge⟩]
     wp_auto
     icases (ownSlice_slice sl.len (sl.len + sl2.len) nsl _ _ ⟨by word, by word, by word⟩).1 $$ Hnew
       with ⟨Hnew1, Hnew2, _⟩
-    wp_apply wp_slice_copy _ _ sl2 vs' dq $$ [Hnew2 Hs2] with %n'' ⟨%Hn'', Hnew2, Hs2⟩
+    wp_apply +noauto wp_slice_copy _ _ sl2 vs' dq $$ [Hnew2 Hs2] with %n'' ⟨%Hn'', Hnew2, Hs2⟩
     · iframe Hnew2 Hs2
-    iapply HΦ
-    iframe Hs2 Hnew_cap
     have hN : sint.nat (sl.len + sl2.len) = vs.length + vs'.length := by word
     have ha : (vs.take (List.replicate (sint.nat (sl.len + sl2.len)) (zero_val V)).length ++
         (List.replicate (sint.nat (sl.len + sl2.len)) (zero_val V)).drop vs.length).take
@@ -1046,7 +1053,33 @@ theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValType
     ihave H := ownSlice_combine sl.len nsl _ vs vs' (W64 0) (sl.len + sl2.len)
       ⟨by word, by word, by word, by word⟩ $$ Hnew1 Hnew2
     rw [hs]
-    iexact H
+    imod ownSlice_update_to_dfrac (GF := GF) dq_s _ _ Hdq $$ H with H
+    wp_auto
+    iapply HΦ
+    iframe Hs2 Hnew_cap H
+
+theorem wp_slice_append {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+    (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
+    {{ (sl ↦* vs ∗ ownSliceCap V sl (DFrac.own 1) ∗ sl2 ↦*{dq} vs' : IProp GF) }}
+      (App (App (Val #(functions go.append [st])) (Val #sl)) (Val #sl2)) @ s; E
+    {{ (s' : GoSlice), RET #s';
+        s' ↦* (vs ++ vs') ∗ ownSliceCap V s' (DFrac.own 1) ∗ sl2 ↦*{dq} vs' }} := by
+  iintro %Φ ⟨Hs, Hcap, Hs2⟩ HΦ
+  iapply wp_slice_append_dfrac sl vs (DFrac.own 1) sl2 vs' dq $$ [Hs Hcap Hs2] HΦ
+  iframe Hs Hcap Hs2
+  ipureintro; exact DFrac.valid_own_one
+
+theorem wp_slice_append_persistent {st t : go.GoType} [st ↓u go.SliceType t]
+    [IntoValTyped (GF := GF) V t]
+    (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
+    {{ (sl ↦*□ vs ∗ ownSliceCap V sl (DFrac.own 1) ∗ sl2 ↦*{dq} vs' : IProp GF) }}
+      (App (App (Val #(functions go.append [st])) (Val #sl)) (Val #sl2)) @ s; E
+    {{ (s' : GoSlice), RET #s';
+        s' ↦*□ (vs ++ vs') ∗ ownSliceCap V s' (DFrac.own 1) ∗ sl2 ↦*{dq} vs' }} := by
+  iintro %Φ ⟨Hs, Hcap, Hs2⟩ HΦ
+  iapply wp_slice_append_dfrac sl vs DFrac.discard sl2 vs' dq $$ [Hs Hcap Hs2] HΦ
+  iframe Hs Hcap Hs2
+  ipureintro; exact DFrac.valid_discard
 
 
 set_option goose.wp.unfoldSliceLiterals true in
