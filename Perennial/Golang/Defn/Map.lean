@@ -148,10 +148,16 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   literal `go.MapType key_type elem_type`, so `len(m)` is stuck when `m` has a
   named map type (e.g. raft's `quorum.MajorityConfig`). Go's `len` works on any
   type whose underlying type is a map, so (like `len_slice`/`len_chan`) this
-  takes `[t ↓u go.MapType key_type elem_type]`. -/
+  takes `[t ↓u go.MapType key_type elem_type]`.
+
+  `len` of a nil map is `0` in Go (a nil map reads as empty), so the nil case
+  is handled before the `Read`, exactly as `lookup2` and `for_range` do;
+  without it `len` of a nil map was stuck on a read of the null location. -/
   len_map {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type] :
     FuncUnfold go.len [t]
-    (λ: "m", InternalMapLength (Read "m") : val)
+    (λ: "m",
+       if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then #(W64 0)
+       else InternalMapLength (Read "m") : val)
 
   composite_literal_map (key_type elem_type : go.GoType) (l : List keyed_element) :
     ⟦CompositeLiteral (go.MapType key_type elem_type), (LiteralValueV l)⟧ ⤳[under]

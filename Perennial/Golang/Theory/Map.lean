@@ -442,15 +442,18 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
 
 
 /-- `len(m)` of a map (Lean addition, not in Rocq). `t` is any type whose
-underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). `len` of a
-nil map is not covered: `go.len` on maps reads the map unconditionally
-(`λ: "m", InternalMapLength (Read "m")`, as in Rocq). -/
+underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). `go.len`
+tests for the nil map before reading it; an owned map is not nil, so that test
+is stepped past here. -/
 theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
     (mref : Loc) (m : GMap K V) (dq : DFrac) :
     {{ (mref ↦${dq} m : IProp GF) }}
       (App (Val #(functions go.len [t])) (Val #mref)) @ s; E
     {{ RET #(W64 (GMap.size m)); mref ↦${dq} m }} := by
   wp_start as Hm
+  ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
+  rw [decide_eq_false Hnn]
+  wp_pures
   rw [ownMap_unseal]
   iNamed Hm
   wp_apply _internal_wp_untyped_read $$ Hown with Hown

@@ -70,6 +70,22 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
        | some v => #v
        | none => Panic "index out of range")
 
+  /-- `len` and `cap` of an array are both its length, which is part of its
+  type rather than something stored alongside the elements. Go makes such a
+  call a constant expression whenever the operand has no channel receives or
+  non-constant calls, so Goose emits the length directly in that case and
+  these rules cover only the remainder (e.g. `len(f())`); the operand is
+  still evaluated, for its effects, and discarded. The guard matches
+  `array_length_step`: an array whose length is not representable as a Go
+  `int` cannot arise from a Go program. -/
+  len_array {st : go.GoType} {n : Int} {elem_type : go.GoType} [st ↓u go.ArrayType n elem_type] :
+    FuncUnfold go.len [st]
+    (λ: <>, (if 0 ≤ n ∧ n < 2^63 then #(W64 n) else AngelicExit #()) : val)
+
+  cap_array {st : go.GoType} {n : Int} {elem_type : go.GoType} [st ↓u go.ArrayType n elem_type] :
+    FuncUnfold go.cap [st]
+    (λ: <>, (if 0 ≤ n ∧ n < 2^63 then #(W64 n) else AngelicExit #()) : val)
+
   composite_literal_array (n : Int) (elem_type : go.GoType) (kvs : List keyed_element) :
     ⟦CompositeLiteral (go.ArrayType n elem_type), (LiteralValueV kvs)⟧ ⤳[under]
     (List.foldl (fun (cur_index, expr_so_far) ke =>
@@ -127,11 +143,13 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] ArraySemantics.array_set_step ArraySemantics.array_length_step
   ArraySemantics.equals_array ArraySemantics.type_repr_array ArraySemantics.alloc_array
   ArraySemantics.load_array ArraySemantics.store_array ArraySemantics.index_ref_array
-  ArraySemantics.index_array ArraySemantics.composite_literal_array
+  ArraySemantics.index_array ArraySemantics.len_array ArraySemantics.cap_array
+  ArraySemantics.composite_literal_array
   ArraySemantics.slice_array_step ArraySemantics.fullSlice_array_step_pure
   ArraySemantics.intoVal_inj_array
 export ArraySemantics (array_set_step array_length_step equals_array type_repr_array alloc_array
-  load_array store_array index_ref_array index_array composite_literal_array slice_array_step
+  load_array store_array index_ref_array index_array len_array cap_array composite_literal_array
+  slice_array_step
   fullSlice_array_step_pure arrayIndexRef_null_inv arrayIndexRef_add
   arrayIndexRef_add_loc_add intoVal_inj_array)
 
