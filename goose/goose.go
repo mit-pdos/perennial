@@ -362,13 +362,18 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 		}
 		return glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty, e), true
 	case "len", "cap":
+		// go/types gives the builtin a signature type exactly when the call is
+		// not constant-folded; then the ordinary call path applies the operand.
 		if _, ok := ctx.typeOf(s.Fun).(*types.Signature); ok {
 			return nil, false
 		}
-		name := s.Fun.(*ast.Ident).Name
-		return glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
-			glang.VerbatimExpr("go."+name), glang.ListExpr{ctx.glangType(s, ctx.typeOf(s.Args[0]))},
-			glang.Tt), true
+		// Otherwise it is a constant expression (len/cap of an array, len of a
+		// constant string) and go/types has the value. Emit it: there is no
+		// operand to apply go.len to, and Go does not evaluate one here.
+		if ctx.info.Types[s].Value == nil {
+			ctx.nope(s, "%s builtin is neither constant nor of signature type", f.Name)
+		}
+		return ctx.constantLiteral(s), true
 	}
 
 	return nil, false
@@ -710,12 +715,25 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
-	ty := ctx.glangType(e, ctx.typeOf(e.X))
+	xT := ctx.typeOf(e.X)
+	ty := ctx.glangType(e, xT)
+	arrayTy, isArray := underlyingType(xT).(*types.Array)
+
 	var lowExpr glang.Expr = glang.Int64Val{Value: glang.IntToZ(0)}
-	var highExpr glang.Expr = glang.NewCallExpr(
-		glang.VerbatimExpr("FuncResolve"),
-		glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, ctx.expr(e.X))
-	x := ctx.expr(e.X)
+	var highExpr glang.Expr
+	var x glang.Expr
+	// Go requires an array slice operand to be addressable, so exprAddr is
+	// defined here. The result aliases the array, so a loaded copy would be
+	// wrong. len of an array is its constant length.
+	if isArray {
+		x = ctx.exprAddr(e.X)
+		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
+	} else {
+		x = ctx.expr(e.X)
+		highExpr = glang.NewCallExpr(
+			glang.VerbatimExpr("FuncResolve"),
+			glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, ctx.expr(e.X))
+	}
 
 	if e.Low != nil {
 		lowExpr = ctx.expr(e.Low)

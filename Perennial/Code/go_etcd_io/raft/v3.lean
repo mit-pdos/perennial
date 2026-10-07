@@ -9792,8 +9792,8 @@ noncomputable def IsLocalMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType.ty))) (Var "msgt"))
   (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType.ty))) (Var "msgt"))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 23 go.bool)))) (App (Val (GoInstruction (GlobalVarAddr isLocalMsg))) (Val #())))
-  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 23 go.bool)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.ArrayType 23 go.bool)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 23 go.bool)))) (App (Val (GoInstruction (GlobalVarAddr isLocalMsg))) (Val #())))))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GlobalVarAddr isLocalMsg))) (Val #()))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 23 go.bool)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 23)))))
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:61:6 -/
@@ -9803,8 +9803,8 @@ noncomputable def IsResponseMsg.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "msgt" (App (Val (GoInstruction (GoAlloc _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType.ty))) (Var "msgt"))
   (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.go_etcd_io.raft.v3.raftpb.MessageType.ty))) (Var "msgt"))
-  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 23 go.bool)))) (App (Val (GoInstruction (GlobalVarAddr isResponseMsg))) (Val #())))
-  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 23 go.bool)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.ArrayType 23 go.bool)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 23 go.bool)))) (App (Val (GoInstruction (GlobalVarAddr isResponseMsg))) (Val #())))))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GlobalVarAddr isResponseMsg))) (Val #()))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 23 go.bool)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 23)))))
   (App (App (App (Val (GoInstruction (FuncResolve isMsgInArray []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- go: util.go:65:6 -/

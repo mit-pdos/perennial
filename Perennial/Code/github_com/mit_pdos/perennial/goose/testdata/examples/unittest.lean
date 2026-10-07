@@ -1027,12 +1027,12 @@ noncomputable def sum.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.ArrayType 100 go.uint64)]))) (Val #())))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (Convert go.int go.uint64))) (Val #(W64 100)))))))))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.ArrayType 100 go.uint64)]))) (Val #()))))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (App (Val (GoInstruction (Convert go.int go.uint64))) (Val #(W64 100))))))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 100 go.uint64)))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))))))
   (Lam BAnon
@@ -1053,8 +1053,8 @@ noncomputable def arrayToSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 2 go.string)))) (Var "x"))
-  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 2 go.string)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.ArrayType 2 go.string)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 2 go.string)))) (Var "x")))))))))
+  (Let "$s" (Var "x")
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 2 go.string)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 2))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 go.string)))) (Pair (Var "x") (Var "$r0")))))))))
 

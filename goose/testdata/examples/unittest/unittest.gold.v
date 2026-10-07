@@ -715,9 +715,9 @@ Definition sumⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (FuncResolve go.len [go.ArrayType 100 go.uint64] #()))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 #(W64 100))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) ("x", Convert go.uint64 go.int (![go.uint64] "i"))))))));;;
-    do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (Convert go.int go.uint64 (FuncResolve go.cap [go.ArrayType 100 go.uint64] #()))));;;
+    do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (Convert go.int go.uint64 #(W64 100))));;;
     return: (![go.uint64] "sum")).
 
 (* go: array.go:31:6 *)
@@ -728,8 +728,8 @@ Definition arrayToSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$v1" := #"b"%go in
     CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1")])) in
     do:  ("x" <-[go.ArrayType 2 go.string] "$r0");;;
-    return: (let: "$s" := (![go.ArrayType 2 go.string] "x") in
-     Slice (go.ArrayType 2 go.string) ("$s", #(W64 0), FuncResolve go.len [go.ArrayType 2 go.string] #() (![go.ArrayType 2 go.string] "x")))).
+    return: (let: "$s" := "x" in
+     Slice (go.ArrayType 2 go.string) ("$s", #(W64 0), #(W64 2)))).
 
 (* go: array.go:44:6 *)
 Definition arrayLiteralKeyedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
