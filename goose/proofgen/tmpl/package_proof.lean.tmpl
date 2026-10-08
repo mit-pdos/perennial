@@ -4,17 +4,17 @@ module
 
 public import Perennial.Proof.{{if .Ffi}}{{ .FfiPrelude }}{{else}}ProofPrelude{{end}}
 {{ if .HasTrusted -}}
-public import {{ .Root }}.ManualProof.{{ .ImportPath }}
+public import {{ .Root }}ManualProof.{{ .ImportPath }}
 {{ end -}}
 {{ range .Imports -}}
-public import {{ .Root }}.GeneratedProof.{{ .Path }}
+public import {{ .Root }}GeneratedProof.{{ .Path }}
 {{ end -}}
 {{ if .Bootstrap -}}
 public import Perennial.Golang.Theory.Pre
 {{  else -}}
 public import Perennial.Golang.Theory
 {{ end -}}
-public import {{ .Root }}.Code.{{ .ImportPath }}
+public import {{ .Root }}Code.{{ .ImportPath }}
 {{- range .ExtraImports }}
 public import {{ . }}
 {{- end }}

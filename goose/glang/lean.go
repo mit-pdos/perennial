@@ -64,6 +64,15 @@ func LeanRootOf(pkgPath string) string {
 	return root
 }
 
+// LeanRootPrefix is the prefix of the Lean modules of a package: its root and a dot
+// ("Perennial."), or nothing when the root is empty (modules Code.<pkg>, ...).
+func LeanRootPrefix(pkgPath string) string {
+	if root := LeanRootOf(pkgPath); root != "" {
+		return root + "."
+	}
+	return ""
+}
+
 // LeanRootFlag is the flag.Value of -lean-root PKG=ROOT (repeatable).
 type LeanRootFlag struct{}
 
@@ -71,8 +80,8 @@ func (LeanRootFlag) String() string { return "" }
 
 func (LeanRootFlag) Set(s string) error {
 	prefix, root, ok := strings.Cut(s, "=")
-	if !ok || prefix == "" || root == "" {
-		return fmt.Errorf("expected PKG=ROOT, got %q", s)
+	if !ok || prefix == "" {
+		return fmt.Errorf("expected PKG=ROOT or PKG=, got %q", s)
 	}
 	LeanRoots[prefix] = root
 	return nil
@@ -80,7 +89,8 @@ func (LeanRootFlag) Set(s string) error {
 
 // LeanRootUsage is the help text of -lean-root.
 const LeanRootUsage = "PKG=ROOT: Lean modules of the packages under Go path PKG are ROOT.Code.*, " +
-	"ROOT.GeneratedProof.*, ... instead of Perennial.* (repeatable)"
+	"ROOT.GeneratedProof.*, ... instead of Perennial.*; with PKG= (an empty ROOT) they are " +
+	"Code.*, GeneratedProof.*, ... (repeatable)"
 
 type LeanMode int
 
@@ -1229,7 +1239,7 @@ func (d AxiomDecl) LeanDecl() string {
 }
 
 func (decl ImportDecl) LeanDecl() string {
-	return "public import " + LeanModule(LeanRootOf(decl.Path)+".Code", decl.Path)
+	return "public import " + LeanModule(LeanRootPrefix(decl.Path)+"Code", decl.Path)
 }
 
 func (d TypeDecl) LeanDecl() string {

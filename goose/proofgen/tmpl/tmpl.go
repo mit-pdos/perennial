@@ -20,7 +20,7 @@ type PackageProof struct {
 	Ffi           string
 	Bootstrap     bool
 	ImportPath    string // import path (corresponding to Go PkgPath)
-	Root          string // Lean module root of the package (glang.LeanRootOf)
+	Root          string // prefix of the package's Lean modules (glang.LeanRootPrefix)
 	HasTrusted    bool
 	TrustProofGen bool
 	Imports       []Import
@@ -59,7 +59,7 @@ type LeanField struct {
 type Import struct {
 	Name string
 	Path string
-	Root string // Lean module root of the imported package (glang.LeanRootOf)
+	Root string // prefix of the imported package's Lean modules (glang.LeanRootPrefix)
 }
 
 type Variable struct {

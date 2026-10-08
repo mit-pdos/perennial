@@ -27,7 +27,7 @@ func Package(w io.Writer, pkg *packages.Package, ffi string, bootstrap bool, fil
 		HasTrusted:    filter.HasTrusted(),
 		TrustProofGen: filter.TrustProofGen(),
 		ImportPath:    coqPath,
-		Root:          glang.LeanRootOf(pkg.PkgPath),
+		Root:          glang.LeanRootPrefix(pkg.PkgPath),
 	}
 
 	var imports []string
@@ -45,7 +45,7 @@ func Package(w io.Writer, pkg *packages.Package, ffi string, bootstrap bool, fil
 		}
 		pf.Imports = append(pf.Imports, tmpl.Import{
 			Path: coqPath,
-			Root: glang.LeanRootOf(path),
+			Root: glang.LeanRootPrefix(path),
 		})
 	}
 
@@ -61,7 +61,7 @@ func Package(w io.Writer, pkg *packages.Package, ffi string, bootstrap bool, fil
 			}
 			sort.Strings(names)
 			for _, name := range names {
-				pf.ExtraImports = append(pf.ExtraImports, pf.Root+".GeneratedProof."+pf.ImportPath+"."+name)
+				pf.ExtraImports = append(pf.ExtraImports, pf.Root+"GeneratedProof."+pf.ImportPath+"."+name)
 			}
 			types = nil
 		}
@@ -151,7 +151,7 @@ func leanChunks(pf tmpl.PackageProof, types []translatedType) map[string]string 
 		sort.Ints(cs)
 		for _, c := range cs {
 			cpf.ExtraImports = append(cpf.ExtraImports,
-				fmt.Sprintf("%s.GeneratedProof.%s.chunk%d", pf.Root, pf.ImportPath, c+1))
+				fmt.Sprintf("%sGeneratedProof.%s.chunk%d", pf.Root, pf.ImportPath, c+1))
 		}
 		w := new(strings.Builder)
 		if err := cpf.Write(w); err != nil {
