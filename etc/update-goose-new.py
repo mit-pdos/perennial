@@ -266,6 +266,7 @@ def main():
             "runtime",
             "sort",
             "slices",
+            "reflect",
             "strconv",
             "strings",
             "sync",
