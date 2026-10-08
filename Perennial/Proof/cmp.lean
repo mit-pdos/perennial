@@ -39,6 +39,27 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
+/-- `isNaN` on `uint64` is `false`: `x != x` never holds for an integer. -/
+theorem wp_isNaN_uint64 (x : w64) :
+    {{ (True : IProp GF) }}
+      (App (Val #(functions isNaN [go.uint64])) (Val #x))
+    {{ RET #false; True }} := by
+  wp_start
+  wp_auto
+  wp_end
+
+/-- `Less` on `uint64` is `<` on the unsigned values. -/
+theorem wp_Less_uint64 (x y : w64) :
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions Less [go.uint64])) (Val #x)) (Val #y))
+    {{ (b : Bool), RET #b; ⌜b = true ↔ uint.Z x < uint.Z y⌝ }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_isNaN_uint64
+  iapply HΦ
+  ipureintro
+  simp
+
 end wps
 
 end cmp

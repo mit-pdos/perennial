@@ -6,6 +6,7 @@ import Perennial.Proof.ProofPrelude
 import Perennial.Code.slices
 import Perennial.GeneratedProof.slices
 import Perennial.Proof.math.bits
+import Perennial.Proof.cmp
 
 noncomputable section
 
@@ -38,7 +39,8 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply math.bits.wp_initialize' _ Hinit.2.1 $$ Hown with ⟨Hown, #Hbits⟩
+  wp_apply math.bits.wp_initialize' _ Hinit.2.2.1 $$ Hown with ⟨Hown, #Hbits⟩
+  wp_apply cmp.wp_initialize' _ Hinit.2.1 $$ Hown with ⟨Hown, #Hcmp⟩
   iframe Hown
   is_pkg_init_finish
 
