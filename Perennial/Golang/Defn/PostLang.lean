@@ -562,6 +562,13 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 
   is_convert_underlying_same (t : go.GoType) (v : val) : ⟦Convert t t, v⟧ ⤳[under] v
   convert_same (t : go.GoType) (v : val) : ⟦Convert t t, v⟧ ⤳ v
+  /-- A conversion between (unnamed) pointer types whose base types have the same
+  underlying type keeps the pointer (the Go spec's conversion rule "x's type and T are
+  pointer types that are not named types, and their pointer base types are not type
+  parameters but have identical underlying types"), e.g. `(*BTreeG[Item])(t)` for
+  `t : *BTree` with `type BTree BTreeG[Item]`. -/
+  convert_pointer_same_underlying {t1 t2 u : go.GoType} [t1 ↓u u] [t2 ↓u u] (l : Loc) :
+    ⟦Convert (go.PointerType t1) (go.PointerType t2), #l⟧ ⤳[under] #l
 
 attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_not_named
   CoreSemantics.convert_underlying CoreSemantics.go_un_op_underlying
@@ -586,6 +593,7 @@ attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_n
   CoreSemantics.alloc_primitive CoreSemantics.alloc_struct CoreSemantics.load_primitive
   CoreSemantics.load_struct CoreSemantics.store_primitive CoreSemantics.store_struct
   CoreSemantics.is_convert_underlying_same CoreSemantics.convert_same
+  CoreSemantics.convert_pointer_same_underlying
 
 export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   go_un_op_underlying go_op_underlying composite_literal_underlying slice_underlying
@@ -599,7 +607,7 @@ export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   go_zero_val_interface go_zero_val_channel go_zero_val_map core_comparison_sem
   composite_literal_pointer composite_literal_struct alloc_underlying load_underlying
   store_underlying alloc_primitive alloc_struct load_primitive load_struct store_primitive
-  store_struct is_convert_underlying_same convert_same)
+  store_struct is_convert_underlying_same convert_same convert_pointer_same_underlying)
 
 end defs
 end go
