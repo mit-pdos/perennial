@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/string.v`: specs for the conversions between strings
+Specs for the conversions between strings
 and byte slices, which are implemented by the Go model
 `github.com/mit-pdos/perennial/goose/model/strings` (proved in
 `Perennial/Proof/github_com/mit_pdos/perennial/goose/model/strings.lean`).

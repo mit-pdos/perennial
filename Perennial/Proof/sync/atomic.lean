@@ -1,9 +1,9 @@
 /-
-Port of `new/proof/sync/atomic.v`: specs for `sync/atomic`, as logically
+Specs for `sync/atomic`, as logically
 atomic updates (`|={⊤,∅}=> ▷ ∃ v, ... ∗ (... ={∅,⊤}=∗ Φ _)`).
 
-The integer sections (Uint64, Int64, Uint32, Int32) are generated from one
-template, as in Rocq (`int_template.py`).
+The integer sections (Uint64, Int64, Uint32, Int32) follow one template and
+differ only in the integer type.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.sync.atomic
@@ -97,7 +97,7 @@ theorem wp_AddUint64 (addr : Loc) (v : w64) :
   iframe
   ipureintro; exact Hnn
 
-/-- (Lean addition, time receipts) `wp_AddUint64` for the call
+/-- (Time receipts) `wp_AddUint64` for the call
 `atomic.AddUint64(addr, v)` before the function is resolved, i.e. in the form
 in which goose emits it. Resolving `AddUint64` is a Go instruction, which yields
 a time receipt `⧗ 1`; the atomic update receives it (so it can, e.g., be stored
@@ -1086,7 +1086,8 @@ end pointer
 
 /-! ### Bool -/
 
-/-- Rocq `b32` (renamed: `sync.atomic.b32` is the Go function's name). -/
+/-- The `w32` encoding of a Boolean (not named `b32`: `sync.atomic.b32` is the Go
+function's name). -/
 def b32w (b : Bool) : w32 := if b then W32 1 else W32 0
 
 theorem b32w_inj {b1 b2 : Bool} (h : b32w b1 = b32w b2) : b1 = b2 := by

@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn.v`: the complete Go semantics.
+The complete Go semantics.
 -/
 import Perennial.Golang.Defn.Pre
 import Perennial.Golang.Defn.Chan

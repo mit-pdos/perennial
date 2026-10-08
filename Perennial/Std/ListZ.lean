@@ -1,8 +1,6 @@
 /-
-Port of `src/Helpers/ListZ.v`: lists indexed by integers (`listZ.length`,
+Lists indexed by integers (`listZ.length`,
 `listZ.lookup`, `listZ.take`, ...). Out-of-bounds lookups return `default`.
-(Not used by new goose; the Rocq tactics `list_simpl`/`handle_index` are not
-ported.)
 -/
 import Perennial.Std.ListBasics
 
@@ -14,7 +12,7 @@ variable {A : Type u} [Inhabited A]
 
 def length (l : List A) : Int := l.length
 
-/-- Rocq `l !!! i` for `i : Z`. -/
+/-- Total lookup `l !!! i` for `i : Z`. -/
 def lookup (l : List A) (n : Int) : A := if 0 ≤ n then l.getD n.toNat default else default
 
 def drop (n : Int) (l : List A) : List A := l.drop n.toNat

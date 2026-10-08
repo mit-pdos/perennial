@@ -1,6 +1,6 @@
 /-
 Lifting lemmas for evaluation-context languages. A copy of iris-lean's
-`Iris/ProgramLogic/EctxLifting.lean` (Rocq `ectx_lifting.v`): that file does not
+`Iris/ProgramLogic/EctxLifting.lean`: that file does not
 open a `public section`, so its declarations are private to its module and cannot
 be used from here.
 -/

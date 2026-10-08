@@ -1,5 +1,5 @@
 /-
-Persisting hypotheses. Port of `src/goose_lang/ipersist.v`.
+Persisting hypotheses.
 
 `UpdateIntoPersistently P Q` says `P ⊢ |==> □ Q`. The `ipersist H` tactic
 replaces a hypothesis `H : P` by a persistent `H : Q` (for instance a
@@ -47,7 +47,7 @@ theorem update_into_persistently_tac {P Q : PROP} (h : UpdateIntoPersistently P 
 end ipersist
 
 /-- `ipersist H` turns the hypothesis `H : P` into a persistent hypothesis `H : Q`
-using `UpdateIntoPersistently P Q` (Rocq `iPersist "H"`). The goal must allow
+using `UpdateIntoPersistently P Q`. The goal must allow
 eliminating a basic update. -/
 macro "ipersist " H:ident : tactic =>
   `(tactic| imod (update_into_persistently_tac (by exact inferInstance)) $$ $H:ident with #$H:ident)

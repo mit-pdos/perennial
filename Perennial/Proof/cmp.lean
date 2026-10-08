@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/cmp.v`: package initialization for `cmp`.
+Package initialization for `cmp`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.cmp

@@ -1,24 +1,22 @@
 /-
-Port of `new/atomic_fupd.v` (and the identical-up-to-masks
-`src/program_logic/atomic_fupd.v`): sugar for TaDA-style logically atomic
+Sugar for TaDA-style logically atomic
 specs whose linearization point is witnessed by a plain fancy update, without
 iris's `atomic_update` (`AU`) fixpoint.
 
   `{{ P }} <<{ ∀∀ x, α }>> e @@ Eo <<{ ∃∃ y, β }>> {{ z, RET v; Q }}`
 
-unfolds (exactly as the Rocq notation) to
+unfolds to
 
   `□ ∀ Φ, P -∗ (▷ |={⊤∖Eo,∅}=> ∃ x, α ∗ ∀ y, β -∗ |={∅,⊤∖Eo}=> ∀ z, Q -∗ Φ v) -∗
      WP e @ ⊤ {{ Φ }}`
 
 The `{{ P }}` precondition, the `∃∃ y,` binders and the `z,` return binders may
-each be omitted, giving the eight variants of the Rocq file. As for Texan
+each be omitted, giving eight variants. As for Texan
 triples, at term level the notation means `⊢ ∀ Φ, ...` (the `□` is dropped).
 
-Deviations from Rocq:
-* `new/atomic_fupd.v` uses the non-crash fancy update `|NC={E1,E2}=>`; this port
-  has no crash logic (see README.md), so the plain `|={E1,E2}=>` is used (that
-  is `src/program_logic/atomic_fupd.v`).
+Notes:
+* The fancy update is the plain `|={E1,E2}=>`, since there is no crash logic
+  (see README.md).
 * The brackets are `<<{ … }>>` (as in iris-lean's `atomic_wp` notation) rather
   than `<<< … >>>`, because `>>>` is Lean's right-shift operator.
 -/
@@ -31,7 +29,7 @@ namespace Perennial
 open Lean Iris Iris.BI
 
 /-- `{{ P }} <<{ ∀∀ x, α }>> e @@ Eo <<{ ∃∃ y, β }>> {{ z, RET v; Q }}`: a
-logically atomic spec in the style of Rocq `atomic_fupd.v`. -/
+logically atomic spec whose linearization point is a fancy update. -/
 syntax (name := atomicFupdTriple)
   ppGroup((texanPrecond ppSpace)? "<<{ " (auAllBinders)? term " }>>" ppSpace term:max
     " @@ " term:max ppSpace "<<{ " (auExBinders)? term " }>>" ppSpace texanPostcond) : term

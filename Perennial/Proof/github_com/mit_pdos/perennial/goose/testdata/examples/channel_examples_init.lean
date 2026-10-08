@@ -1,11 +1,6 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_examples_init.v`:
-package initialization instances for the `channel` examples package (Rocq
-`channel_examples`).
-
-Lean notes:
-* The Rocq file also declares the `IsPkgInit` instance of `channel/lock` (a
-  duplicate of the one in `lock.v`); here it comes from the import of `lock.lean`.
+Package initialization instances for the `channel` examples package.
+The `IsPkgInit` instance of `channel/lock` comes from the import of `lock.lean`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.strings

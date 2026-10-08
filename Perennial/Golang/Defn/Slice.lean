@@ -1,6 +1,3 @@
-/-
-Port of `new/golang/defn/slice.v`.
--/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Assume
 import Perennial.Golang.Defn.Predeclared

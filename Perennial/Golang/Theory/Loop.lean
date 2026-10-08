@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/loop.v`: `PureWp` instances for `break:` and
+`PureWp` instances for `break:` and
 `continue:`, the loop rule `wp_for` with its sealed postcondition
 `forPostcondition`, and the tactics `wp_for_core` and `wp_for_post_core`
 (the user-facing `wp_for` and `wp_for_post` are in `Auto.lean`).
@@ -218,7 +218,7 @@ theorem wp_for_post_return (s : Stuckness) (E : CoPset) (post : val) (P : IProp 
 end wp_for2
 
 set_option hygiene false in
-/-- Rocq `wp_for_core`: apply `wp_for` to the loop at the head of the goal,
+/-- `wp_for_core`: apply `wp_for` to the loop at the head of the goal,
 generalizing the whole spatial context into the invariant with `iNamedAccu`,
 and introduce the loop-body goal with the invariant destructed by `iNamed`. -/
 macro "wp_for_core" : tactic => `(tactic| (
@@ -228,7 +228,7 @@ macro "wp_for_core" : tactic => `(tactic| (
   iintro !> __CTX
   iNamed __CTX))
 
-/-- Rocq `wp_for_post_core`: prove a `forPostcondition` goal with the
+/-- `wp_for_post_core`: prove a `forPostcondition` goal with the
 appropriate `wp_for_post_*` lemma. -/
 macro "wp_for_post_core" : tactic => `(tactic|
   first

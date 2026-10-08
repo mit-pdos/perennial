@@ -1,14 +1,12 @@
 /-
-The disk FFI. Port of `src/goose_lang/ffi/disk_ffi/impl.v` [Trusted definitions!].
+The disk FFI [Trusted definitions!].
 
-Differences from the Rocq version:
 * No crash semantics (`ffi_crash_step`).
-* `ffi_step` is an inductive relation (`DiskFfiStep`) instead of a
-  `transition`. Arguments are matched with `#a` (`intoVal`) instead of
-  `LitV (LitInt a)` (in Lean `intoVal` is abstract, see `GoGlobalContext`).
-* `Block` is `Vector w8 blockBytes` (Rocq `vec byte blockBytes`).
-* `heap_array` is defined here (Rocq has it in `lang.v`), as a recursive
-  function on the list of values.
+* `ffi_step` is an inductive relation (`DiskFfiStep`). Arguments are matched
+  with `#a` (`intoVal`) rather than `LitV (LitInt a)`, since `intoVal` is
+  abstract (see `GoGlobalContext`).
+* `Block` is `Vector w8 blockBytes`.
+* `heapArray` is defined here, as a recursive function on the list of values.
 -/
 import Perennial.GooseLang.Lang
 
@@ -57,7 +55,7 @@ theorem length_Block_to_vals [FfiSyntax] [GoGlobalContext] (b : Block) :
     (BlockToVals b).length = blockBytes := by
   simp [BlockToVals]
 
-/-- Rocq `heap_array`: the heap containing `vs` at `l, l +ₗ 1, ...`. -/
+/-- The heap containing `vs` at `l, l +ₗ 1, ...`. -/
 def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
   | [] => ∅
   | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
@@ -79,7 +77,7 @@ abbrev diskWorld (σ : state) : DiskState := σ.world
 
 variable [GoGlobalContext]
 
-/-- Rocq `ffi_step` for the disk, as a relation. -/
+/-- The FFI step relation of the disk. -/
 inductive DiskFfiStep : DiskOp → val → CfgState → Expr → CfgState → Prop
   | ReadS (a : w64) (b : Block) (l : Loc) (σg : CfgState) :
       diskWorld σg.1 !! uint.Z a = some b →

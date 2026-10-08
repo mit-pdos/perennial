@@ -1,9 +1,6 @@
 /-
-Port of `src/algebra/big_op/big_sepS.v`.
-
-The Rocq file has no lemmas: it only re-exports `iris.algebra.big_op` and imports `ncfupd`
-(crash logic, dropped) and `big_sepL`. This module re-exports the corresponding Lean
-modules so that imports of `big_sepS` have a counterpart.
+Big separating conjunctions over sets: this module has no lemmas of its own; it
+re-exports iris-lean's `Iris.BI.BigOp` and `Perennial.Algebra.BigOp.BigSepL`.
 -/
 import Iris.BI.BigOp
 import Perennial.Algebra.BigOp.BigSepL

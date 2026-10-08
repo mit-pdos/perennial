@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/pkg.v`: package initialization.
+Package initialization.
 
 * `ownInitializing get_is_pkg_init`: permission to run `package.init`
   (exclusive, since Go packages are initialized sequentially).
@@ -40,7 +40,6 @@ def ownInitializingDef (get_is_pkg_init : GoString → IProp GF) : IProp GF :=
     "#Hinit" ∷ □ ([∗map] pkg_name ↦ inited ∈ package_inited,
       if inited then get_is_pkg_init pkg_name else iprop(True)))
 
-/-- Rocq `Opaque ownInitializing`. -/
 @[irreducible] def ownInitializing (get_is_pkg_init : GoString → IProp GF) : IProp GF :=
   ownInitializingDef get_is_pkg_init
 
@@ -68,7 +67,7 @@ def isPkgInitWrap (pkg_name : GoString) [IsPkgInit PROP pkg_name] : PROP :=
     "#Hinit" ∷ □ isPkgInitDef (PROP := PROP) pkg_name)
 
 /-- `isPkgInit pkg_name` asserts the predicate of the `IsPkgInit` instance
-(Rocq `Opaque isPkgInit`). -/
+(sealed). -/
 @[irreducible] def isPkgInit (pkg_name : GoString) [IsPkgInit PROP pkg_name] : PROP :=
   isPkgInitWrap pkg_name
 
@@ -100,7 +99,7 @@ have all of the init predicates for `pkg_name` and its transitive dependencies. 
 class GetIsPkgInitWf (PROP : Type _) [BI PROP] (pkg_name : GoString) where
   get_is_pkg_init_prop_def : (GoString → PROP) → Prop
 
-/-- Rocq `GetIsPkgInitProp pkg_name get_is_pkg_init`. -/
+/-- `get_is_pkg_init` satisfies the well-formedness condition of `pkg_name`. -/
 abbrev GetIsPkgInitProp (pkg_name : GoString) [GetIsPkgInitWf PROP pkg_name]
     (get_is_pkg_init : GoString → PROP) : Prop :=
   GetIsPkgInitWf.get_is_pkg_init_prop_def pkg_name get_is_pkg_init
@@ -226,7 +225,7 @@ partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM (Opt
       return some (← mkAppM ``pkg_init_intuitionistically #[c])
   return none
 
-/-- Rocq `solve_pkg_init`: solve a goal `isPkgInit pkg` from an intuitionistic
+/-- Solve a goal `isPkgInit pkg` from an intuitionistic
 hypothesis, unfolding `isPkgInit` hypotheses into their dependencies. -/
 elab "solve_pkg_init" : tactic => do
   ProofModeM.runTactic `solve_pkg_init fun mvar { hyps, goal, .. } => do
@@ -244,7 +243,7 @@ elab "solve_pkg_init" : tactic => do
 
 end tactics
 
-/-- Rocq `iPkgInit`: solve an `isPkgInit` goal, or the `isPkgInit` conjuncts
+/-- Solve an `isPkgInit` goal, or the `isPkgInit` conjuncts
 at the front of a `∗` goal. Fails if no progress is made. -/
 macro "iPkgInit" : tactic => `(tactic| first
   | solve_pkg_init

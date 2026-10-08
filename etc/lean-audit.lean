@@ -1,10 +1,10 @@
 /-
-Axiom/sorry audit of the Lean port.  Not part of the lakefile; run with
+Axiom/sorry audit of the Lean development.  Not part of the lakefile; run with
 
     lake env lean --run etc/lean-audit.lean [MODULE... | @FILE]  > audit.json
 
 (normally via `etc/lean-audit.py`, which picks the modules that built, runs
-this, cross-checks against the Rocq sources and writes the report).
+this and writes the report).
 
 With no arguments every `Perennial/**/*.lean` that has an `.olean` is imported.
 Module names are dotted and unquoted (`Perennial.Proof.unsafe`); `@FILE` reads

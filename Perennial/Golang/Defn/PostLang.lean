@@ -1,44 +1,37 @@
 /-
-Port of `new/golang/defn/postlang.v`: the core of Goose's Go semantics, stated
-as typeclasses over an abstract `GoSemanticsFunctions`.
+The core of Goose's Go semantics, stated as typeclasses over an abstract
+`GoSemanticsFunctions`.
 
 ## Conventions used in `Perennial/Golang/Defn` and `Perennial/TrustedCode`
 
-* **Sealing.** Rocq's
-  ```
-  Definition foo_def := ... .
-  Program Definition foo := sealed @foo_def.
-  Definition foo_unseal : foo = _ := seal_eq _.
-  ```
-  becomes
+* **Sealing.** A sealed definition is written
   ```
   def foo_def := ...
   @[irreducible] def foo := foo_def
   theorem foo_unseal : foo = foo_def := by with_unfolding_all rfl
   ```
-  (`irreducible_def` is Mathlib-only). Rocq `Global Opaque foo` becomes
+  (`irreducible_def` is Mathlib-only). Opaque definitions get
   `attribute [irreducible] foo`.
-* **Typeclasses.** A Rocq `Class C : Prop := { #[global] f :: D; g : P }`
-  becomes a Lean `class C : Prop` with fields `[f : D]` and `g : P`, followed by
-  `attribute [instance] C.f`. Fields whose Rocq type is `A → B` with `A` a class
-  (instance premise) take `A` as an instance-implicit binder. `Hint Mode`
-  output positions become `outParam`s. The fields are re-`export`ed so that the
-  Rocq names (`go.convert_underlying`, `go.alloc_struct`, ...) resolve.
+* **Typeclasses.** A semantics class is a `class C : Prop` whose fields are
+  either instances `[f : D]` (followed by `attribute [instance] C.f`) or
+  properties `g : P`. Fields with an instance premise `A` take `A` as an
+  instance-implicit binder. Output positions of a class are `outParam`s. The
+  fields are re-`export`ed so that names such as `go.convert_underlying` and
+  `go.alloc_struct` resolve.
 * **Notation.** GooseLang code uses the notation of
   `Perennial/GooseLang/Notation.lean`; this file adds `⟦instr, args⟧ ⤳ e`,
   `⟦instr, args⟧ ⤳[tag] e` (whose `args` is in goose value mode and `e` in goose
-  expression mode), `![t] e`, `e1 <-[t] e2`, `@! f`, `rcvr @!! t @!! m` (Rocq
-  `rcvr @! t @! m`),
+  expression mode), `![t] e`, `e1 <-[t] e2`, `@! f`, `rcvr @!! t @!! m`,
   `s ≤u t`, `s <u t`, `t ↓u u` and `a =→ a'`.
-* `bool_decide P` is `decide P`; coqutil `word.*` operations are the
-  corresponding `BitVec` operations; stdpp list lookups `l !! i` are `l[i]?`
-  and list updates `<[i:=v]> l` are `l.set i v`.
+* Decidable propositions are turned into booleans with `decide P`; machine-word
+  operations are `BitVec` operations; list lookups are `l[i]?` and list updates
+  are `l.set i v`.
 -/
 import Perennial.GooseLang.Notation
 
 namespace Perennial
 
-/-- Rocq `EqualsUnfold a a'`, written `a =→ a'`: a sealed definition `a`
+/-- `EqualsUnfold a a'`, written `a =→ a'`: a sealed definition `a`
 unfolds to `a'`. -/
 class EqualsUnfold {A : Type} (a : A) (a' : outParam A) : Prop where
   equals_unfold : a = a'
@@ -48,7 +41,7 @@ export EqualsUnfold (equals_unfold)
 scoped infix:50 " =→ " => EqualsUnfold
 
 set_option checkBinderAnnotations false in
-/-- stdpp `TCForall`. -/
+/-- Every element of the list satisfies the class `P` (found by typeclass search). -/
 class inductive TCForall {A : Type} (P : A → Prop) : List A → Prop
   | nil : TCForall P []
   | cons {x : A} {xs : List A} [P x] [TCForall P xs] : TCForall P (x :: xs)
@@ -112,13 +105,12 @@ attribute [instance] GoSemanticsFunctions.float_ops
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
   arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
-/-- Rocq `Existing Class TypeRepr` (with `Hint Mode TypeRepr - - + - -`): the
-class form of `GoSemanticsFunctions.TypeRepr`. -/
+/-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :
     Prop where
   type_repr : GoSemanticsFunctions.TypeRepr t V
 
-/-- Rocq `ptr .[ t , field ]`. -/
+/-- `ptr .[ t , field ]`: the address of field `field` of the struct of type `t` at `ptr`. -/
 scoped notation:max ptr ".[" t ", " field "]" => structFieldRef t field ptr
 
 section unfolding_defs
@@ -157,7 +149,7 @@ theorem GlobalAlloc_unseal : GlobalAlloc = GlobalAllocDef := by with_unfolding_a
 
 /-- This semantics considers several Go types to be `primitive` in the sense
 that they are modeled as taking a single heap location. Predeclared types are
-in their own file. A `class` (Rocq: plain inductive) so that the premise
+in their own file. A `class` so that the premise
 `[IsPrimitive u]` of `alloc_primitive` etc. is found by typeclass search. -/
 class inductive IsPrimitive : go.GoType → Prop
   | isPrimitive_pointer t : IsPrimitive (go.PointerType t)
@@ -370,7 +362,7 @@ def structFieldType (f : GoString) : List go.field_decl → go.GoType
 class IntoValUnfold (V : Type) (f : outParam (V → val)) : Prop where
   intoVal_unfold : @intoVal _ _ V = f
 
-/-- Rocq `intoVal_unfold` (with `V` explicit). -/
+/-- Unfold `intoVal` at type `V` (explicit). -/
 theorem intoVal_unfold (V : Type) {f : V → val} [IntoValUnfold V f] : @intoVal _ _ V = f :=
   IntoValUnfold.intoVal_unfold
 
@@ -612,15 +604,15 @@ export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
 end defs
 end go
 
-/-- Rocq `@! func`: `#(functions func [])`. -/
+/-- `@! func`: `#(functions func [])`. -/
 scoped syntax:max "@! " term:max : term
-/-- Rocq `rcvr @! type @! method`: `#(methods type method #rcvr)`. Written
-`rcvr @!! type @!! method` in Lean, since `rcvr @! ...` parses as an application
+/-- `rcvr @!! type @!! method`: `#(methods type method #rcvr)`. The operator is
+`@!!` rather than `@!`, since `rcvr @! ...` parses as an application
 of `rcvr` to `@! ...`. -/
 scoped syntax:80 term:81 " @!! " term:81 " @!! " term:81 : term
-/-- Rocq `![t] e`: typed load. -/
+/-- `![t] e`: typed load. -/
 scoped syntax:max "![" term "] " term:max : term
-/-- Rocq `e1 <-[t] e2`: typed store. -/
+/-- `e1 <-[t] e2`: typed store. -/
 scoped syntax:40 term:41 " <-[" term "] " term:40 : term
 
 macro_rules

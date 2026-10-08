@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/unittest/generics.v`:
-specs for the goose generics unit tests.
+Specs for the goose generics unit tests.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers

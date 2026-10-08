@@ -23,11 +23,11 @@ variable [package_sem' : crypto.ed25519.Assumptions]
 
 instance Options_typed_pointsto :
     TypedPointsto (GF := GF) crypto.ed25519.Options :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Options_into_val_typed :
     IntoValTypedUnderlying (GF := GF) crypto.ed25519.Options crypto.ed25519.Options.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Options

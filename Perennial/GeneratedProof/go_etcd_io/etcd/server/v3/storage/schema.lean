@@ -156,11 +156,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance alarmBackend_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance alarmBackend_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.alarmBackend go_etcd_io.etcd.server.v3.storage.schema.alarmBackend.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end alarmBackend
@@ -175,11 +175,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authBackend_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authBackend_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBackend go_etcd_io.etcd.server.v3.storage.schema.authBackend.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authBackend
@@ -194,11 +194,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authReadTx_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authReadTx_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authReadTx go_etcd_io.etcd.server.v3.storage.schema.authReadTx.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authReadTx
@@ -213,11 +213,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance authBatchTx_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authBatchTx_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.authBatchTx go_etcd_io.etcd.server.v3.storage.schema.authBatchTx.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authBatchTx
@@ -363,11 +363,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance membershipBackend_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance membershipBackend_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.membershipBackend go_etcd_io.etcd.server.v3.storage.schema.membershipBackend.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end membershipBackend
@@ -382,11 +382,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.schema.Assumptions]
 
 instance migrationStep_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance migrationStep_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.schema.migrationStep go_etcd_io.etcd.server.v3.storage.schema.migrationStep.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end migrationStep

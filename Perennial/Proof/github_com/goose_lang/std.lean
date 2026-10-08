@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/github_com/goose_lang/std.v`: specs for
+Specs for
 `github.com/goose-lang/std`.
 -/
 import Perennial.Proof.ProofPrelude

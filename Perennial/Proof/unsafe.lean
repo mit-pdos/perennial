@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/unsafe.v`: package initialization of `unsafe`.
+Package initialization of `unsafe`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.«unsafe»

@@ -1,15 +1,10 @@
 /-
-Adequacy for the Grove FFI. Port of the adequacy parts of
-`src/goose_lang/ffi/grove_ffi/grove_ffi.v` (`grove_interp_adequacy`) and of
-`src/goose_lang/ffi/grove_ffi/adequacy.v`.
+Adequacy for the Grove FFI.
 
-Differences from the Rocq version:
-* No crash obligation in `grove_interp_adequacy`.
-* Only the single-node theorem (`grove_ffi_single_node_adequacy`, Rocq
-  `grove_ffi_single_node_adequacy_failstop`) is ported. The distributed
-  theorems (`grove_ffi_dist_adequacy`, `grove_ffi_dist_adequacy_failstop`)
-  need the distributed-language machinery of `program_logic/dist_lang.v` and
-  `goose_lang/dist_adequacy.v`, which is not ported.
+* There is no crash obligation in `grove_interp_adequacy`.
+* Only the (fail-stop) single-node theorem `grove_ffi_single_node_adequacy` is
+  proved. Distributed adequacy theorems would need a distributed-language
+  semantics, which is not available.
 -/
 import Perennial.GooseLang.Adequacy
 import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
@@ -22,7 +17,6 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std ProofMode
 
 attribute [local instance] grove_op grove_model grove_semantics grove_interp
 
-/-- Rocq `grove_interp_adequacy`. -/
 instance grove_interp_adequacy : FfiInterpAdequacy grove_model where
   ffiGpreS := GroveGpreS
   ffi_initgP _ := True
@@ -53,8 +47,7 @@ instance grove_interp_adequacy : FfiInterpAdequacy grove_model where
     · unfold filePointsto; iexact H2
 
 open grove_ffi in
-/-- Adequacy for a single Grove node (Rocq
-`grove_ffi_single_node_adequacy_failstop`). The proof gets ownership of the
+/-- Adequacy for a single Grove node (fail-stop). The proof gets ownership of the
 initial network and of the node's initial files. As for `goose_adequacy`, the
 WP is proved for an arbitrary time-receipt bound `N` (`receiptBound GF = N`)
 and the conclusion is about real executions of fewer than `N` steps. -/

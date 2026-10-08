@@ -7,8 +7,7 @@ git = "https://github.com/leanprover-community/iris-lean"
 rev = "6d6544a4394c1f89ce43b26a35f09de9b2158bc9"
 subDir = "Iris"
 
-# Port of Perennial's new-goose framework (Rocq `new/` plus the parts of `src/`
-# it depends on) to Lean, on top of iris-lean.
+# Perennial's new-goose framework and program proofs, on top of iris-lean.
 [[lean_lib]]
 name = "Perennial"
 

@@ -154,11 +154,11 @@ variable [package_sem' : strings.Assumptions]
 
 instance Replacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.Replacer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Replacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.Replacer strings.Replacer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Replacer
@@ -173,11 +173,11 @@ variable [package_sem' : strings.Assumptions]
 
 instance replacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.replacer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance replacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.replacer strings.replacer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end replacer
@@ -374,11 +374,11 @@ variable [package_sem' : strings.Assumptions]
 
 instance stringWriter_typed_pointsto :
     TypedPointsto (GF := GF) strings.stringWriter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance stringWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.stringWriter strings.stringWriter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end stringWriter

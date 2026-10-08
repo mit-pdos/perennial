@@ -167,11 +167,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance discardInfo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.discardInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance discardInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.discardInfo github_com.gogo.protobuf.proto.discardInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end discardInfo
@@ -659,11 +659,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance extPropKey_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.extPropKey :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance extPropKey_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.extPropKey github_com.gogo.protobuf.proto.extPropKey.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end extPropKey
@@ -1026,11 +1026,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance scalarField_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.scalarField :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance scalarField_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.scalarField github_com.gogo.protobuf.proto.scalarField.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end scalarField
@@ -1045,11 +1045,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance mapKeySorter_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.mapKeySorter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance mapKeySorter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mapKeySorter github_com.gogo.protobuf.proto.mapKeySorter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end mapKeySorter
@@ -1491,11 +1491,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance OneofProperties_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.OneofProperties :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance OneofProperties_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.OneofProperties github_com.gogo.protobuf.proto.OneofProperties.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end OneofProperties
@@ -1510,11 +1510,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance Properties_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.Properties :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Properties_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.Properties github_com.gogo.protobuf.proto.Properties.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Properties
@@ -1529,11 +1529,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance marshalInfo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.marshalInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance marshalInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalInfo github_com.gogo.protobuf.proto.marshalInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end marshalInfo
@@ -1548,11 +1548,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance marshalFieldInfo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.marshalFieldInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance marshalFieldInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.marshalFieldInfo github_com.gogo.protobuf.proto.marshalFieldInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end marshalFieldInfo
@@ -1675,11 +1675,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance mergeInfo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.mergeInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance mergeInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.mergeInfo github_com.gogo.protobuf.proto.mergeInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end mergeInfo
@@ -1785,11 +1785,11 @@ variable [package_sem' : github_com.gogo.protobuf.proto.Assumptions]
 
 instance unmarshalInfo_typed_pointsto :
     TypedPointsto (GF := GF) github_com.gogo.protobuf.proto.unmarshalInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance unmarshalInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.gogo.protobuf.proto.unmarshalInfo github_com.gogo.protobuf.proto.unmarshalInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end unmarshalInfo

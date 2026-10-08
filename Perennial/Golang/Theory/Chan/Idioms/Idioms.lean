@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/idioms.v`: all channel idioms.
+All channel idioms.
 -/
 import Perennial.Golang.Theory.Chan.Idioms.Base
 import Perennial.Golang.Theory.Chan.Idioms.Bag

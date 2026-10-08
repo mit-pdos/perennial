@@ -1,9 +1,9 @@
 /-
-Port of `new/trusted_code/github_com/goose_lang/primitive.v`.
+Trusted definitions of `github.com/goose-lang/primitive`.
 
 The definitions live in the namespace of the generated package
 (`github_com.goose_lang.primitive`), where the generated code refers to them.
-Rocq's trusted `primitive.Mutex` (the named type) is not defined here: the
+The named type `primitive.Mutex` is not defined here: the
 generated code defines `github_com.goose_lang.primitive.Mutex`.
 -/
 import Perennial.Golang.Defn.Pre

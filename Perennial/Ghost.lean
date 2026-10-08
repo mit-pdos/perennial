@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost.v`: all of new goose's ghost-state libraries.
+All of new goose's ghost-state libraries.
 See `Perennial/Ghost/All.lean` for the `allG` design.
 -/
 import Perennial.Ghost.All

@@ -127,11 +127,11 @@ variable [package_sem' : go_etcd_io.etcd.pkg.v3.traceutil.Assumptions]
 
 instance Trace_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Trace :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Trace_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.pkg.v3.traceutil.Trace go_etcd_io.etcd.pkg.v3.traceutil.Trace.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Trace

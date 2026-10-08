@@ -1,16 +1,16 @@
 import Perennial.Ghost.Own
 
 /-!
-Port of `new/golang/theory/chan/idioms/contrib.v` (from Actris): the "authoritative
-contribution" ghost theory for tracking the contributions `x : A` of clients to a shared
-effort.
+The "authoritative
+contribution" ghost theory (from Actris) for tracking the contributions `x : A` of clients
+to a shared effort.
 
 * `server γ n x`: there are `n` active clients, holding `x : A` in total;
 * `client γ x`: a single client holding `x : A`.
 
 The camera is `auth (option (csum (positive * A) (excl unit)))`. With the universal `allG`
-camera (see `Perennial/Ghost/All.lean`), Rocq's `contributionG Σ A` becomes the requirement
-that the discrete unital camera `A` has a code: `[IsCmra (IProp GF) A a]`. Positive numbers
+camera (see `Perennial/Ghost/All.lean`), the only requirement is that the discrete unital
+camera `A` has a code: `[IsCmra (IProp GF) A a]`. Positive numbers
 are `Perennial.positive` (code `positiveR`, added to `Ghost/All.lean` for this file).
 -/
 

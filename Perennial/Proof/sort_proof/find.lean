@@ -1,12 +1,12 @@
 /-
-Port of `new/proof/sort_proof/find.v`: proof of `sort.Find`.
+Proof of `sort.Find`.
 
 The specification for `sort.Find` is fairly complicated: it takes a comparison
 function (`cmp : Int → Int`) and a number `n`, and it searches for an
 `i ∈ [0, n)` such that `cmp i = 0` and `cmp (i-1) > 0`, assuming `cmp` goes from
 positive to zero to negative.
 
-See the Rocq file for a discussion of the key ideas: `0 ≤ n` is a precondition,
+The key ideas: `0 ≤ n` is a precondition,
 only the *sign* of `cmp` matters, `cmp` is only called on `[0, n)`, and the
 user-provided `cmp` is "adapted" (`adaptCmp`) so that `cmp (-1) = 1` and
 `cmp n ≤ 0`.

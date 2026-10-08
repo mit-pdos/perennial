@@ -1,18 +1,17 @@
 /-
-Port of `new/golang/theory/chan/au_spec/chan_au_base.v`: the logical state of a
+The logical state of a
 channel (`chanstate.t`), the atomic-update style specifications for channel
 operations (`sendAu`, `recvAu`, ...), and the channel invariant (`isChan`).
 
-Lean notes / deviations:
-* Ghost state. Rocq stores `chanstate.t V` and `option (OfferLock V)` in
-  `ghost_var`s and `V * bool → iProp` in a `saved_pred`, for arbitrary `V`. With
+Notes:
+* Ghost state. `chanstate.t V` and `option (OfferLock V)` are stored in
+  `ghost_var`s and `V * bool → iProp` in a `saved_pred`. With
   the `allG` codes (see `Perennial/Ghost/All.lean`) the stored data must be
   `Pos.Countable`, so everything that mentions the ghost state assumes
   `[Pos.Countable V]` (the instances for `chanstate.t V` and `OfferLock V` are
   derived here).
 * `1/2` is `(1 : Qp).half`.
-* `isChan` and `ownChan` are sealed (`@[irreducible]` + `_unseal`), as Rocq
-  makes them `Opaque`.
+* `isChan` and `ownChan` are sealed (`@[irreducible]` + `_unseal`).
 -/
 import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
 import Perennial.Golang.Theory.Lock
@@ -181,7 +180,7 @@ def recvAu (Φ : V → Bool → IProp GF) : IProp GF :=
       | .Buffered (v :: rest) => iprop(ownChan γ V (.Buffered rest) ={∅,⊤}=∗ Φ v true)
       | _ => iprop(True)))
 
-/-- The atomic update of `nonblockingRecvAu` (Rocq inlines it). -/
+/-- The atomic update of `nonblockingRecvAu`. -/
 def nonblockingRecvAuInner (Φ : V → Bool → IProp GF) : IProp GF :=
   iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
@@ -240,7 +239,7 @@ def sendAu (v : V) (Φ : IProp GF) : IProp GF :=
       | .Buffered buff => iprop(ownChan γ V (.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
       | _ => iprop(True)))
 
-/-- The atomic update of `nonblockingSendAu` (Rocq inlines it). -/
+/-- The atomic update of `nonblockingSendAu`. -/
 def nonblockingSendAuInner (v : V) (Φ : IProp GF) : IProp GF :=
   iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
@@ -499,8 +498,7 @@ theorem blocking_send_implies_nonblocking (Φ : IProp GF) (v : V) :
     rcases s with _ | _ | _ | _ | _ | _ | _ <;> first | iexact Hcont | itrivial
   · itrivial
 
-/-! Monotonicity of the atomic updates in their postconditions (not in Rocq, where the
-corresponding reasoning is done inline in each proof). -/
+/-! Monotonicity of the atomic updates in their postconditions. -/
 
 theorem sendNestedAu_wand (Φ1 Φ2 : IProp GF) :
     ⊢ sendNestedAu (V := V) γ Φ1 -∗ (Φ1 -∗ Φ2) -∗ sendNestedAu (V := V) γ Φ2 := by
@@ -717,8 +715,7 @@ theorem saved_pred_combine_halves {A : Type} [Pos.Countable A] (γ : GName) (Φ 
   rw [DFrac.op_own, Qp.half_add_half] at h
   exact h
 
-/-- `saved_pred_agree` without consuming the saved predicates (Rocq's `iDestruct` keeps
-the hypotheses when the conclusion is persistent). -/
+/-- `saved_pred_agree` without consuming the saved predicates. -/
 theorem saved_pred_agree_keep {A : Type} [Pos.Countable A] (γ : GName) (dq1 dq2 : DFrac)
     (Φ Ψ : A → IProp GF) (x : A) :
     savedPredOwn γ dq1 Φ ∗ savedPredOwn γ dq2 Ψ ⊢
@@ -835,7 +832,7 @@ theorem chanstate_halves_update (s1 s2 s' : ChanState V) :
   unfold chanstate
   exact ghostVar_update_halves _ _ _ _
 
--- FIXME (Rocq): iCombine instances.
+-- FIXME: iCombine instances.
 theorem ownChan_agree (s s' : ChanState V) :
     ⊢ ownChan (GF := GF) γ V s -∗ ownChan γ V s' -∗ ⌜s = s'⌝ := by
   rw [ownChan_unseal]; unfold ownChanDef
@@ -860,7 +857,7 @@ theorem ownChan_cap_valid (s : ChanState V) :
   ipureintro
   exact Hcapvalid
 
-/-- Build `ownChan` from the ghost-state half (Rocq: `iFrame; iPureIntro`). -/
+/-- Build `ownChan` from the ghost-state half. -/
 theorem ownChan_intro (s : ChanState V) (Hvalid : ChanCapValid s (sint.Z γ.chanCap)) :
     ⊢ chanstate (GF := GF) γ V (1 : Qp).half s -∗ ownChan γ V s := by
   rw [ownChan_unseal]; unfold ownChanDef

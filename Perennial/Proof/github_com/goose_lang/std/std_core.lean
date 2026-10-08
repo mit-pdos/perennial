@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/github_com/goose_lang/std/std_core.v`: specs for
+Specs for
 `github.com/goose-lang/std/std_core` (overflow checks, `Shuffle`,
 `Permutation`).
 -/

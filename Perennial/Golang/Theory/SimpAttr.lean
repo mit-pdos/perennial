@@ -6,5 +6,5 @@ unfold evaluation contexts. It must be declared in a separate module from its us
 import Lean
 
 /-- Simp set used by `wp_pure`/`wp_call`/... to simplify the expression of a WP
-goal after a step (Rocq: `simpl subst'; simpl fill`). -/
+goal after a step (substitution and context filling). -/
 register_simp_attr goose_wp_simp

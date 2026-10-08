@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/exception.v`: `PureWp` instances for the exception
+`PureWp` instances for the exception
 monad (`do:`, `return:`, `;;;`, `exceptionDo`), so that `wp_pures` steps
 through function bodies.
 -/
@@ -15,7 +15,7 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-/-- `exceptionSeq v executeVal` (Rocq `exceptionSeq v (executeVal)`) runs the
+/-- `exceptionSeq v executeVal` runs the
 continuation `v`. -/
 instance pure_execute_val (v : val) :
     PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v)) (Val executeVal))

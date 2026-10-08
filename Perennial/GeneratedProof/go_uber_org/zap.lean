@@ -687,11 +687,11 @@ variable [package_sem' : go_uber_org.zap.Assumptions]
 
 instance sinkRegistry_typed_pointsto :
     TypedPointsto (GF := GF) go_uber_org.zap.sinkRegistry :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance sinkRegistry_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_uber_org.zap.sinkRegistry go_uber_org.zap.sinkRegistry.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end sinkRegistry

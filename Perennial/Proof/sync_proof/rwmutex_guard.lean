@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/rwmutex_guard.v`: a specification for `RWMutex`
+A specification for `RWMutex`
 which guards a fractional resource `P q`. `RLock` returns `P rfrac` while
 `Lock` returns `P 1`.
 -/
@@ -19,7 +19,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 
 namespace sync
 
-/-- Rocq `pos_to_Qp (Z.to_pos z)`: `z` as a positive rational (`1` if `z ≤ 0`). -/
+/-- `z` as a positive rational (`1` if `z ≤ 0`). -/
 def posToQpZ (z : Int) : Qp := ⟨if 0 < z then (z : Rat) else 1, by
   split
   · exact Rat.intCast_pos.mpr ‹_›
@@ -70,7 +70,7 @@ theorem mask_ndot_ne (N : Namespace) (x y : String) (h : x ≠ y) :
   rw [LawfulSet.mem_diff]
   exact ⟨CoPset.mem_full, fun h' => ndot_ne_disjoint N h p ⟨hp, h'⟩⟩
 
-/-- Rocq: `Instance : Inhabited rwmutex` (for destructing `▷ ∃ st, ...`). -/
+/-- Needed for destructing `▷ ∃ st, ...`. -/
 instance : Inhabited rwmutex := ⟨.Locked⟩
 
 section wps
@@ -88,7 +88,7 @@ def invSt (P : Qp → IProp GF) (γrlocked γmax γlocked : GName) : rwmutex →
   | .RLocked n => iprop(ownTokAuth γrlocked n ∗ ownToks γmax n ∗
       ghostVar γlocked 1 () ∗ P (invFrac n))
 
-/-- Rocq `isInv` (local). -/
+/-- The lock invariant. -/
 abbrev isInv (P : Qp → IProp GF) (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName) :
     IProp GF :=
   inv (nroot.@"inv")

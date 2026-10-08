@@ -1,7 +1,7 @@
 /-
 stdpp list lemmas under their stdpp names (`list_basics`, `list_relations`,
-`list_monad`, `list_numbers`), plus a few Rocq stdlib names, as thin wrappers
-around Lean core.
+`list_monad`, `list_numbers`), plus a few other classic list lemma names
+(`app_nil_r`, ...), as thin wrappers around Lean core.
 
 Correspondence with stdpp:
 * `l !! i` is `l[i]?` (the `!!` notation elaborates to it), `<[i := x]> l` is
@@ -65,7 +65,6 @@ theorem lookup_ge_None_1 {l : List A} {i : Nat} (h : l !! i = none) : l.length �
 theorem lookup_ge_None_2 {l : List A} {i : Nat} (h : l.length ≤ i) : l !! i = none :=
   List.getElem?_eq_none h
 
-/-- Rocq `list_lookup_lt` (`Helpers/List.v`). -/
 theorem list_lookup_lt (l : List A) (i : Nat) (h : i < l.length) : ∃ x, l !! i = some x :=
   lookup_lt_is_Some_2 h
 
@@ -164,7 +163,6 @@ theorem insert_app_r : <[l₁.length + i := x]> (l₁ ++ l₂) = l₁ ++ <[i := 
 theorem insert_app_r_alt {l₁ : List A} (l₂ : List A) {i : Nat} (x : A) (h : l₁.length ≤ i) :
     <[i := x]> (l₁ ++ l₂) = l₁ ++ <[i - l₁.length := x]> l₂ := List.set_append_right _ _ h
 
-/-- Rocq `list_insert_middle` (`Helpers/List.v`). -/
 theorem list_insert_middle (l₁ l₂ : List A) (i : Nat) (x₁ x₂ : A) (h : i = l₁.length) :
     <[i := x₂]> (l₁ ++ [x₁] ++ l₂) = l₁ ++ [x₂] ++ l₂ := by
   subst h; simp
@@ -302,14 +300,11 @@ theorem fmap_take (f : A → B) : (l.take n).map f = (l.map f).take n := List.ma
 
 theorem fmap_drop (f : A → B) : (l.drop n).map f = (l.map f).drop n := List.map_drop ..
 
-/-- Rocq `take_more` (`Helpers/List.v`). -/
 theorem take_more (n m : Nat) (l : List A) (_h : n ≤ l.length) :
     l.take (n + m) = l.take n ++ (l.drop n).take m := (take_take_drop l n m).symm
 
-/-- Rocq `drop_eq_0` (`Helpers/List.v`). -/
 theorem drop_eq_0 (n : Nat) (l : List A) (h : n = 0) : l.drop n = l := by subst h; rfl
 
-/-- Rocq `take_0'` (`Helpers/List.v`). -/
 theorem take_0' (n : Nat) (l : List A) (h : n = 0) : l.take n = [] := by subst h; rfl
 
 /-! ### length -/
@@ -351,7 +346,6 @@ theorem replicate_S_end : List.replicate (n + 1) x = List.replicate n x ++ [x] :
 theorem replicate_add : List.replicate (n + m) x = List.replicate n x ++ List.replicate m x :=
   List.replicate_append_replicate.symm
 
-/-- Rocq `replicate_0` (`Helpers/List.v`). -/
 theorem replicate_0 : List.replicate 0 x = [] := rfl
 
 theorem lookup_replicate : (List.replicate n x) !! i = some y ↔ y = x ∧ i < n := by
@@ -382,7 +376,7 @@ theorem last_snoc : (l ++ [x]).getLast? = some x := List.getLast?_concat ..
 
 theorem last_lookup : l.getLast? = l !! (l.length - 1) := List.getLast?_eq_getElem?
 
-/-! ### Rocq stdlib names -/
+/-! ### Classic list lemma names -/
 
 theorem app_nil_r : l ++ [] = l := List.append_nil l
 
@@ -432,7 +426,7 @@ theorem list_elem_of_fmap_2 (f : A → B) {x : A} (h : x ∈ l) : f x ∈ l.map 
 
 theorem list_fmap_id : l.map id = l := List.map_id l
 
-/-- Rocq `list_fmap_map` (`Helpers/List.v`): `fmap` is `map`. -/
+/-- `fmap` is `map`. -/
 theorem list_fmap_map {B : Type u} (f : A → B) : f <$> l = l.map f := rfl
 
 theorem list_fmap_compose {C} (f : A → B) (g : B → C) : l.map (g ∘ f) = (l.map f).map g :=
@@ -484,7 +478,6 @@ theorem prefix_cons_inv_1 {x y : A} {l₁ l₂ : List A} (h : x :: l₁ <+: y ::
 theorem prefix_cons_inv_2 {x y : A} {l₁ l₂ : List A} (h : x :: l₁ <+: y :: l₂) : l₁ <+: l₂ :=
   (List.cons_prefix_cons.mp h).2
 
-/-- Rocq `prefix_to_take` (`Helpers/List.v`). -/
 theorem prefix_to_take {l₀ l₁ : List A} (h : l₀ <+: l₁) : l₀ = l₁.take l₀.length :=
   List.prefix_iff_eq_take.mp h
 
@@ -571,7 +564,7 @@ theorem fmap_None (f : A → B) (o : Option A) : o.map f = none ↔ o = none := 
 
 end list
 
-/-! ## `len` simp set (Rocq `Hint Rewrite ... : len`) -/
+/-! ## `len` simp set (length rewriting lemmas) -/
 
 attribute [len] List.length_nil List.length_cons List.length_append List.length_drop
   List.length_take List.length_map List.length_replicate List.length_set List.length_reverse

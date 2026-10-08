@@ -1,6 +1,5 @@
 /-
-Heap locations. Port of `src/goose_lang/locations.v` (and the part of
-`src/algebra/blocks.v` it uses).
+Heap locations.
 
 A location is a block id `car` plus an offset `off`; `l +ₗ i` moves within a block.
 -/
@@ -19,12 +18,12 @@ def null : Loc := ⟨0, 0⟩
 
 instance : Inhabited Loc := ⟨null⟩
 
-/-- Rocq `l +ₗ off`. -/
+/-- `l +ₗ off`. -/
 def add (l : Loc) (off : Int) : Loc := ⟨l.locCar, l.locOff + off⟩
 
-/-- Rocq `addrBase`: the start of `l`'s block. -/
+/-- The start of `l`'s block. -/
 def addrBase (l : Loc) : Loc := ⟨l.locCar, 0⟩
-/-- Rocq `addrOffset`. -/
+/-- The offset of `l` within its block. -/
 def addrOffset (l : Loc) : Int := l.locOff
 
 end Loc

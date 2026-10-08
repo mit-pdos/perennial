@@ -1,13 +1,11 @@
 /-
-GooseLang. Port of `src/goose_lang/lang.v`.
+GooseLang.
 
 GooseLang is an adaptation of HeapLang with extensions to model Go, including
 a customizable FFI (foreign-function interface) for new primitive operations.
 
-Differences from the Rocq version:
 * There is no crash semantics (`ffi_crash_step`, `goose_crash`).
-* The base step is an inductive relation (`base_step`) instead of being written
-  with the `Transitions` monad, and FFI steps (`FfiSemantics.ffi_step`) are a
+* The base step is an inductive relation (`base_step`), and FFI steps (`FfiSemantics.ffi_step`) are a
   plain relation.
 * The real semantics is `gooseRealEctxiLang`, an iris-lean
   `EctxItemLanguage` whose state is the pair `state × GlobalState`
@@ -16,8 +14,7 @@ Differences from the Rocq version:
   `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
   step fuel on top of `base_step` for time receipts. The adequacy theorems
   are transferred back to `gooseRealEctxiLang` (`goose_adequacy`).
-* Equality on the syntax is decided classically. Rocq proves it with an
-  encoding into trees; nothing downstream computes with it.
+* Equality on the syntax is decided classically; nothing downstream computes with it.
 -/
 import Iris.ProgramLogic.EctxiLanguage
 import Iris.ProgramLogic.Language
@@ -34,7 +31,7 @@ open Iris.ProgramLogic
 
 abbrev proph_id := Nat
 
-/-- Rocq stdpp `binder`. -/
+/-- A binder: anonymous or named. -/
 inductive Binder where
   | BAnon
   | BNamed (s : String)
@@ -73,7 +70,6 @@ structure _root_.Perennial.GoSlice where
 deriving DecidableEq, Inhabited
 
 def nil : GoSlice := ⟨null, 0, 0⟩
-/-- Rocq `slice.mk`. -/
 abbrev mk (ptr : Loc) (len cap : w64) : GoSlice := ⟨ptr, len, cap⟩
 end slice
 
@@ -329,7 +325,6 @@ structure _root_.Perennial.GoFunc [FfiSyntax] where
 def nil [FfiSyntax] : GoFunc := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 
 instance [FfiSyntax] : Inhabited GoFunc := ⟨nil⟩
-/-- Rocq `func.mk`. -/
 abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
 end func
 
@@ -374,7 +369,6 @@ inductive _root_.Perennial.GoInterface [FfiSyntax] where
 export GoInterface (ok nil)
 
 abbrev mkOk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterface := .ok ⟨ty, v⟩
-/-- Rocq `interface.mk`. -/
 abbrev mk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterfaceOk := ⟨ty, v⟩
 
 end interface
@@ -383,7 +377,6 @@ namespace array
 structure _root_.Perennial.GoArray (V : Type) (n : Int) where
   mk ::
   arr : List V
-/-- Rocq `array.mk n arr`. -/
 abbrev mk {V : Type} (n : Int) (arr : List V) : GoArray V n := ⟨arr⟩
 end array
 
@@ -447,7 +440,7 @@ structure GlobalState where
 instance : Inhabited state := ⟨⟨∅, default, default⟩⟩
 instance : Inhabited GlobalState := ⟨⟨default, ∅⟩⟩
 
-/-- The state of the iris-lean language: Rocq's `state * GlobalState`. -/
+/-- The state of the iris-lean language: the local and the global state. -/
 abbrev CfgState := state × GlobalState
 
 /-- An observation associates a prophecy variable to the value it is resolved to. -/
@@ -607,7 +600,7 @@ def setHeap (f : GMap Loc (NonAtomic val) → GMap Loc (NonAtomic val)) (σg : C
   ({ σg.1 with heap := f σg.1.heap }, σg.2)
 
 open Classical in
-/-- Rocq `base_trans`/`base_step`, as an inductive relation:
+/-- The base step relation:
 `base_step e σg κs e' σg' efs`. -/
 inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgState → List Expr → Prop
   | RecS f x e σg : BaseStep (Rec f x e) σg [] (Val (RecV f x e)) σg []

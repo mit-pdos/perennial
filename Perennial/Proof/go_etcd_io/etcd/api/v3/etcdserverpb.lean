@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/api/v3/etcdserverpb.v`: an axiomatized (as
-in Rocq) specification of marshalling `InternalRaftRequest`.
+An axiomatized specification of marshalling `InternalRaftRequest`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.go_etcd_io.etcd.api.v3.mvccpb
@@ -31,8 +30,8 @@ instance get_isPkgInit_wf_inst :
     GetIsPkgInitWf (IProp GF) pkg_id.go_etcd_io.etcd.api.v3.etcdserverpb :=
   build_get_is_pkg_init_wf
 
-/- FIXME (from Rocq): annoying to even state axioms about marshalling this
-stuff. Want to turn the protobuf data into Gallina. -/
+/- FIXME: annoying to even state axioms about marshalling this
+stuff. Want to turn the protobuf data into a Lean model. -/
 axiom InternalRaftRequestC : Type
 axiom ownInternalRaftRequest
     (req : etcdserverpb.InternalRaftRequest) (req_abs : InternalRaftRequestC) : IProp GF

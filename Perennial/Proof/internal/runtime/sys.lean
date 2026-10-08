@@ -1,6 +1,6 @@
 /-
 Package initialization of `internal/runtime/sys` (only its types are
-translated, for `runtime`, which imports it). Not in Rocq.
+translated, for `runtime`, which imports it).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.internal.runtime.sys

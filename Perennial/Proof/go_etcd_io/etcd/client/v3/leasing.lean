@@ -1,32 +1,26 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3/leasing.v`.
-
-Lean notes:
+Notes:
 * The `bytes` and `strings` package-init instances come from
-  `Perennial/Proof/{bytes,strings}.lean` (Rocq re-declares them here).
-* The `rpctypes` init instance here is `True` (as in Rocq's `leasing.v`);
-  Rocq's `cache/v3.v` declares a different one, so (as in Rocq) the two files
-  should not be imported together.
+  `Perennial/Proof/{bytes,strings}.lean`.
+* The `rpctypes` init instance here is `True`; `Perennial/Proof/go_etcd_io/etcd/cache/v3.lean`
+  declares a different one, so the two files should not be imported together.
 * `trivial_WaitGroup_start_done` is proved with a token counter (`ownToks`,
-  `Perennial/Proof/TokSet.lean`) instead of Rocq's `ghost_map` over
-  `seq 0 n`.
-* Rocq's `q/2` fractions are `q.half`.
-* `wp_leasingKV__monitorSession` ends in `Abort` in Rocq and is not ported.
+  `Perennial/Proof/TokSet.lean`).
+* `wp_leasingKV__monitorSession` is not proved.
 
-Definition changes vs Rocq (Rocq's `ownLeasingKVLocked_frac` is `Admitted`
-and false for Rocq's definition; worth reporting upstream):
-* `ownLeaseCacheLocked lc γ q` now scales *all* of its ownership by `q`,
+Fractional ownership:
+* `ownLeaseCacheLocked lc γ q` scales *all* of its ownership by `q`,
   so that `ownLeasingKVLocked` (the `RWMutex` predicate, which
-  `init_RWMutex` requires to be `Fractional`) really is fractional. Rocq held
+  `init_RWMutex` requires to be `Fractional`) really is fractional. Holding
   `entries_ptr ↦$ entries`, `revokes_ptr ↦$ revokes`, each `lk_ptr ↦ lk`
   in `Hentries`, and (when not ready) `dghostVar γ.entriesReadyGn
-  (DfracOwn 1) false` at full ownership regardless of `q`, so the predicate
-  could not be split for readers. Now these are `↦${DFrac.own q}`,
-  `↦{DFrac.own q}` and `DFrac.own q` respectively (unchanged: `DFrac.discard`
-  when ready). Readers holding `P q` can still read the maps; a writer holding
-  `P 1` has full ownership as before.
-* `ownLeasingKVLocked_frac` is proved from that. Supporting lemmas added
-  here (not in Rocq): `ownLeaseKey_persistent`, `ownMap_split`,
+  (DfracOwn 1) false` at full ownership regardless of `q` would make the
+  predicate impossible to split for readers (and the fractional lemma false).
+  Instead these are `↦${DFrac.own q}`, `↦{DFrac.own q}` and `DFrac.own q`
+  respectively (`DFrac.discard` when ready). Readers holding `P q` can still
+  read the maps; a writer holding `P 1` has full ownership.
+* `ownLeasingKVLocked_frac` is proved from that. Supporting lemmas:
+  `ownLeaseKey_persistent`, `ownMap_split`,
   `ownMap_split_frac`, `ownMap_combine`, `ownMap_combine_eq` (map
   points-to fractional split/agreement; candidates for `Golang/Theory/Map`),
   `typedPointsto_frac`, `own_leaseCache_entries_frac`,
@@ -64,7 +58,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : leasing.Assumptions]
 
--- (Rocq FIXME: move these)
+-- FIXME: move these
 instance rpc_status_is_pkg_init_inst :
     IsPkgInit (IProp GF) pkg_id.google_golang_org.genproto.googleapis.rpc.status :=
   define_is_pkg_init iprop(True)
@@ -118,7 +112,7 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : leasing.Assumptions]
 
-/-- (Rocq TODO: move this somewhere else) -/
+/-- TODO: move this somewhere else -/
 theorem trivial_WaitGroup_start_done (N' : Namespace) (wg_ptr : Loc) (γ : sync.WaitGroupNames)
     (N : Namespace) (ctr : w32) (HN : (↑N' : CoPset) ## ↑N) :
     sync.isWaitGroup wg_ptr γ N ∗ sync.ownWaitGroup γ ctr ={⊤}=∗
@@ -187,7 +181,7 @@ def ownLeaseKey (lk : leaseKey) (_γ : LeasingKVNames) (_key : GoString) : IProp
   "Hwaitc" ∷ (⌜lk.waitc' = chan.nil⌝ ∨
               ∃ γlk, ownBroadcastChan lk.waitc' γlk iprop(True) .Unknown) ∗
   "_" ∷ True)
-  -- (Rocq TODO: repr predicate for RangeResponse)
+  -- TODO: repr predicate for RangeResponse
 
 def ownLeaseCacheLocked (lc : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
   iprop(∃ (entries_ptr : Loc) (entries : GMap GoString Loc) (revokes_ptr : Loc)
@@ -201,7 +195,7 @@ def ownLeaseCacheLocked (lc : Loc) (γ : LeasingKVNames) (q : Qp) : IProp GF :=
     "revokes" ∷ revokes_ptr ↦${DFrac.own q} revokes ∗
     "Hentries_ready" ∷ dghostVar γ.entriesReadyGn
       (if entries_ready then DFrac.discard else DFrac.own q) entries_ready)
-  -- (Rocq TODO: header?)
+  -- TODO: header?
 
 def isEntriesReady (γ : LeasingKVNames) : IProp GF :=
   dghostVar γ.entriesReadyGn DFrac.discard true
@@ -236,7 +230,6 @@ def ownLeasingKVDef (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
     "#session_opts" ∷ lkv.[leasingKV, go!"sessionOpts"] ↦□ slice.nil ∗
     "Hmu" ∷ sync.ownRWMutex (lkv.[leasingKV, go!"leases"].[leaseCache, go!"mu"])
       (ownLeasingKVLocked lkv γ))
-/-- (Rocq: `Opaque ownLeasingKV`) -/
 @[irreducible] def ownLeasingKV (lkv : Loc) (γ : LeasingKVNames) : IProp GF :=
   ownLeasingKVDef lkv γ
 theorem ownLeasingKV_unseal : @ownLeasingKV = @ownLeasingKVDef := by

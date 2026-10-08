@@ -159,11 +159,11 @@ variable [package_sem' : testing.Assumptions]
 
 instance B_typed_pointsto :
     TypedPointsto (GF := GF) testing.B :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance B_into_val_typed :
     IntoValTypedUnderlying (GF := GF) testing.B testing.B.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end B
@@ -952,11 +952,11 @@ variable [package_sem' : testing.Assumptions]
 
 instance testDeps_typed_pointsto :
     TypedPointsto (GF := GF) testing.testDeps :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance testDeps_into_val_typed :
     IntoValTypedUnderlying (GF := GF) testing.testDeps testing.testDeps.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end testDeps

@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/lock.v`.
+A spin lock on a boolean location: `trylock`, `lock` and `unlock`.
 -/
 import Perennial.Golang.Defn.Pre
 

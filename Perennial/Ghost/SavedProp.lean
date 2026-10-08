@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/saved_prop.v`: saved propositions and saved predicates on top of
+Saved propositions and saved predicates on top of
 the universal `own` (see `Perennial/Ghost/All.lean`).
 
 `saved_prop_own γ dq P` owns `(dq, toAgree (Next P))` in `DFrac × Agree (Later (IProp GF))`
@@ -303,8 +303,8 @@ instance (priority := default - 50) saved_pred_combine_as (γ : GName) (dq1 dq2 
     rw [DFracAgree.mk_op]
     exact (own_op γ _ _).2
 
-/-- Rocq states the gives-part as an equality of the stored functions
-`Next ∘ Φ ≡ Next ∘ Ψ`; here the stored function is `savedPredFn`. -/
+/-- The gives-part is an equality of the stored functions `savedPredFn Φ` and
+`savedPredFn Ψ` (rather than of `Next ∘ Φ` and `Next ∘ Ψ`). -/
 instance saved_pred_combine_gives (γ : GName) (dq1 dq2 : DFrac) (Φ Ψ : A → IProp GF) :
     CombineSepGives (savedPredOwn γ dq1 Φ) (savedPredOwn γ dq2 Ψ)
       iprop(⌜✓ (dq1 • dq2)⌝ ∗ internalEq (savedPredFn Φ) (savedPredFn Ψ)) where

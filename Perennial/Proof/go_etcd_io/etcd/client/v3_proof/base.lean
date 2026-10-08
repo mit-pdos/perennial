@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/base.v`.
+Common imports for the proofs about `go.etcd.io/etcd/client/v3`.
 -/
 import Perennial.Code.go_etcd_io.etcd.client.v3
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.model

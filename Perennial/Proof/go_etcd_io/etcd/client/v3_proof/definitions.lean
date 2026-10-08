@@ -1,13 +1,11 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/definitions.v`.
+Basic definitions for the etcd `clientv3` proofs: the package-init instance
+and the (axiomatized) etcd key-value points-to.
 
-Lean notes:
-* The `mvccpb` and `etcdserverpb` package-init instances (which Rocq declares
-  again here) come from `Perennial/Proof/go_etcd_io/etcd/api/v3/*`.
-* The `clientv3` package-init instance is declared only here (Rocq also
-  re-declares it in `op.v` and `client.v`).
-* Rocq's `ownEtcdPointsto` quantifies over `` `{!allG Σ} ``; here it binds
-  `{GF} [allG GF]`.
+* The `mvccpb` and `etcdserverpb` package-init instances come from
+  `Perennial/Proof/go_etcd_io/etcd/api/v3/*`.
+* The `clientv3` package-init instance is declared only here.
+* `ownEtcdPointsto` binds `{GF} [allG GF]`.
 -/
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
 import Perennial.Proof.go_etcd_io.etcd.api.v3.membershippb
@@ -52,14 +50,14 @@ instance clientv3_get_is_pkg_init_wf_inst :
 
 end init
 
-/-- Rocq `Axiom Clientv3Names : Set`. -/
+/-- Ghost names of the etcd client state (axiomatized). -/
 axiom Clientv3Names : Type
 
-/-- Rocq `Axiom ownEtcdPointsto`. -/
+/-- Ownership of key `k` in etcd, with value `kv` (axiomatized). -/
 axiom ownEtcdPointsto {GF : BundledGFunctors} [AllG GF] (γ : Clientv3Names) (dq : DFrac)
   (k : GoString) (kv : Option KeyValue) : IProp GF
 
-/-- Rocq `k etcd[ γ ]↦ dq kv`. -/
+/-- `k etcd[γ]↦{dq} kv` is `ownEtcdPointsto γ dq k kv`. -/
 notation:50 k:51 " etcd[" γ "]↦{" dq "} " kv:50 => ownEtcdPointsto γ dq k kv
 notation:50 k:51 " etcd[" γ "]↦ " kv:50 => ownEtcdPointsto γ (DFrac.own 1) k kv
 

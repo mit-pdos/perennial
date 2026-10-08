@@ -1,10 +1,9 @@
 /-
-Port of `new/golang/theory/array.v`: the typed points-to for arrays
-(`l ↦{dq} (a : GoArray V n)` is the points-to of every element at
-`arrayIndexRef V i l`), and lemmas to access and split it.
+The typed points-to for arrays (`l ↦{dq} (a : GoArray V n)` is the points-to
+of every element at `arrayIndexRef V i l`), and lemmas to access and split it.
 
-`intoVal_typed_array` is `Admitted` in Rocq. It is proved here, against the
-corrected `go.store_array` of `Perennial/Golang/Defn/Array.lean` (see there).
+`intoVal_typed_array` relies on the guarded, element-wise `go.store_array` of
+`Perennial/Golang/Defn/Array.lean` (see there).
 -/
 import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto

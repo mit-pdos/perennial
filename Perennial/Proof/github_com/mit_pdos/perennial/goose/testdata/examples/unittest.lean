@@ -1,11 +1,9 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/unittest.v`:
-specs for some of the goose unit tests.
+Specs for some of the goose unit tests.
 
-Differences from Rocq:
-* `unittest` imports `github.com/goose-lang/primitive/disk`, so the FFI is the
-  disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
-  section does not bind `FfiSyntax`/`FfiModel`.
+`unittest` imports `github.com/goose-lang/primitive/disk`, so the FFI is the
+disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
+section does not bind `FfiSyntax`/`FfiModel`.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -454,7 +452,7 @@ theorem wp_ifJoinDemo (arg1 arg2 : Bool) :
     · wp_auto; wp_end
     · wp_auto; wp_append_lit; wp_end
 
-/-- The Rocq proof of `wp_ifJoinDemo`, which joins the branches of the first
+/-- An alternative proof of `wp_ifJoinDemo`, which joins the branches of the first
 `if` with `wp_if_join` instead of case-splitting the rest of the function. -/
 theorem wp_ifJoinDemo_join (arg1 arg2 : Bool) :
     {{ isPkgInit (PROP := IProp GF) pkg }}

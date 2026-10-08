@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/log.v`: package initialization of `log` and `log.Printf`.
+Package initialization of `log` and `log.Printf`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.log
@@ -32,7 +32,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     {{ RET #(); ownInitializing get_is_pkg_init ∗
         isPkgInit (PROP := IProp GF) pkg_id.log }} := by
   -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
-  sorry -- Rocq: Admitted
+  sorry
 
 theorem wp_Printf (msg : GoString) (arg : GoSlice) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.log }}

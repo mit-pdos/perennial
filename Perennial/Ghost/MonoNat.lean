@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/mono_nat.v`: ghost state for a monotonically increasing nat,
+Ghost state for a monotonically increasing nat,
 wrapping iris-lean's `MonoNat = Auth MaxNat` camera.
 -/
 import Perennial.Ghost.Own

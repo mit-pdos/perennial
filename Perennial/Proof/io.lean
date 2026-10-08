@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/io.v`: package initialization of `io`.
+Package initialization of `io`.
 -/
 import Perennial.Proof.sync_proof.base
 import Perennial.Proof.errors

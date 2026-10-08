@@ -1,6 +1,6 @@
 /-
-Port of `new/trusted_code/runtime.v`. Rocq defines `Goschedⁱᵐᵖˡ` at top level;
-here it is in namespace `runtime`, as the generated package.
+Trusted code for `runtime`. `Goschedⁱᵐᵖˡ` is in namespace `runtime`, as the
+generated package.
 -/
 import Perennial.Golang.Defn.Pre
 

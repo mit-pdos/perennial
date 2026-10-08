@@ -1,13 +1,11 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/semantics_init.v`:
-common setup for the goose semantics tests (`TestFunOk` and the
+Common setup for the goose semantics tests (`TestFunOk` and the
 `semantics_auto` tactic).
 
-Differences from Rocq:
-* The `semantics` package imports `github.com/goose-lang/primitive/disk`, so (as
-  in Rocq, via `disk_prelude`) the FFI is the disk FFI: the generated
+The `semantics` package imports `github.com/goose-lang/primitive/disk`, so the
+FFI is the disk FFI (via `DiskPrelude`): the generated
   `semantics.Assumptions` is stated for `disk_op`, and the sections below do not
-  bind `FfiSyntax`/`FfiModel`.
+bind `FfiSyntax`/`FfiModel`.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
@@ -43,23 +41,23 @@ def TestFunOk (name : GoString) : Prop :=
   ∀ Φ : val → IProp GF, ⊢ Φ #true -∗ WP (App (Val (@! name)) (Val #())) {{ Φ }}
 
 omit go_gctx in
-/-- Rocq `iExactEq`: `Φ v ⊢ Φ w` when `v = w`. -/
+/-- `Φ v ⊢ Φ w` when `v = w`. -/
 theorem exact_eq {Φ : val → IProp GF} {v w : val} (h : v = w) : Φ v ⊢ Φ w := h ▸ .rfl
 
 end wps
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
-/-- Rocq `wp_call_auto`. -/
+/-- Step through a function or method call. -/
 macro "wp_call_auto" : tactic =>
   `(tactic| first | (wp_func_call; wp_call) | (wp_method_call; wp_call) | wp_call)
 
-/-- Rocq `steps` (`wp_alloc_anon` is Rocq's `wp_alloc x as "?"`). -/
+/-- Repeatedly step calls, pure steps and anonymous allocations (`wp_alloc_anon`). -/
 macro "steps" : tactic =>
   `(tactic| repeat (first | wp_call_auto | wp_auto | wp_alloc_anon))
 
 set_option hygiene false in
-/-- Rocq `semantics_auto`: start a `TestFunOk` proof, step through the
+/-- Start a `TestFunOk` proof, step through the
 function and try to close the goal `Φ #b` with `HΦ : Φ #true`. -/
 macro "semantics_auto" : tactic => `(tactic| (
   intro Φ

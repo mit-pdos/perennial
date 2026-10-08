@@ -28,11 +28,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance tokenJWT_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenJWT :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance tokenJWT_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenJWT go_etcd_io.etcd.server.v3.auth.tokenJWT.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end tokenJWT
@@ -70,11 +70,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance jwtOptions_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.jwtOptions :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance jwtOptions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.jwtOptions go_etcd_io.etcd.server.v3.auth.jwtOptions.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end jwtOptions
@@ -89,11 +89,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance unifiedRangePermissions_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance unifiedRangePermissions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions go_etcd_io.etcd.server.v3.auth.unifiedRangePermissions.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end unifiedRangePermissions
@@ -233,11 +233,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance tokenSimple_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenSimple :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance tokenSimple_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.tokenSimple go_etcd_io.etcd.server.v3.auth.tokenSimple.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end tokenSimple
@@ -355,11 +355,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.auth.Assumptions]
 
 instance authStore_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.auth.authStore :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authStore_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.auth.authStore go_etcd_io.etcd.server.v3.auth.authStore.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authStore

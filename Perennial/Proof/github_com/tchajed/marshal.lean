@@ -1,10 +1,9 @@
 /-
-Port of `new/proof/github_com/tchajed/marshal.v`: specs for the stateless
+Specs for the stateless
 `github.com/tchajed/marshal` encoding helpers.
 
-Statement changes vs Rocq (Rocq's `wp_reserve` is `Admitted` and false as
-stated; these are worth reporting upstream):
-* `wp_reserve`: new hypothesis `Hbound : length vs + uint.Z extra ≤ 2^62`.
+Notes on the statements:
+* `wp_reserve`: hypothesis `Hbound : length vs + uint.Z extra ≤ 2^62`.
   Without it the spec is false: `reserve` grows to
   `new_cap = max(2 * cap b, len b + extra)` and `make3` panics when
   `new_cap ≥ 2^63` (e.g. `cap b = 2^62`, `len b + extra = 2^62 + 1`).
@@ -12,11 +11,11 @@ stated; these are worth reporting upstream):
   `(2^62, 2^64)` there is a capacity (`len b + extra - 1` or `len b`) that
   makes `make3` panic. (If `len b + extra` overflows,
   `SumAssumeNoOverflow` diverges, which is safe.)
-* `wp_WriteInt` / `wp_WriteInt32` / `wp_WriteLenPrefixedBytes`: new
+* `wp_WriteInt` / `wp_WriteInt32` / `wp_WriteLenPrefixedBytes`:
   hypothesis `length vs + 8 ≤ 2^62` (`+ 4` for `WriteInt32`), inherited from
   `wp_reserve` (tight for the same reason). `wp_WriteBytes` and
-  `wp_WriteBool` use `append` and are unchanged.
-* `wp_compute_new_cap`: postcondition strengthened with
+  `wp_WriteBool` use `append` and need no bound.
+* `wp_compute_new_cap`: the postcondition includes
   `⌜new_cap = min_cap ∨ new_cap = old_cap * W64 2⌝` (needed to bound the
   capacity passed to `make3`).
 -/

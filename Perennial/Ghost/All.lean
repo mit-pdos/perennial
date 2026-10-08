@@ -2,22 +2,22 @@ import Iris
 import Perennial.Std.GMap
 
 /-!
-Port of `new/ghost/all.v`: a universal camera and an `own` that needs no
+A universal camera and an `own` that needs no
 per-algebra `inG` assumption.
 
 # Design (read this before writing ghost-state proofs)
 
-Rocq: a single `allG Σ` provides `inG Σ (allUR (iPropO Σ))` where
-`allUR = discrete_funUR (optionUR ∘ int_cmra)` is a product over a *syntax* of
-camera codes (`syntax.cmra`). `own γ (a : A)` requires `IsCmra (iProp Σ) A e`
-(evidence `A = int_cmra e`) and owns the singleton `{[e := Some a]}`.
+Idea: a single `allG GF` provides one ghost-state slot for the universal camera
+`∏ e, option (int e)`, a product over a *syntax* of camera codes. `own γ (a : A)`
+requires `IsCmra (IProp GF) A e` (evidence `A = int e`) and owns the singleton
+`{[e := some a]}`.
 
-Lean (this file), built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
+Built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
 
 * `Syntax.Ty`, `Syntax.Ofe`, `Syntax.Cmra`, `Syntax.Ucmra` are codes. They live
   in `Type` (universe 0) and therefore cannot mention arbitrary types:
   iris-lean's invariants, later credits and gen_heap force `IProp GF : Type`,
-  so a coproduct indexed by `Type` (as in Rocq, which uses universe
+  so a coproduct indexed by `Type` (which would need universe
   polymorphism) is impossible. Leibniz data is coded by the small universe
   `Syntax.Ty` (`Unit`, `Bool`, `Nat`, `Int`, `Pos`, `×`, `⊕`, `Option`, `List`).
   The ghost libraries (`ghost_var`, `ghost_map`, `mono_list`, `saved_pred`, ...)
@@ -49,8 +49,7 @@ Lean (this file), built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
   substituting the evidence (tactic `own_start`) and reusing iris-lean's
   `iOwn` lemmas; derived rules are in `Perennial/Ghost/Own.lean`.
 * Building a model: `«allΣ»` puts `allURF` at slot 0, with `«allG_allΣ»`;
-  `allGOfSlot` builds `allG GF` for any `GF` that has `allURF` at some slot
-  (Rocq `subG_allΣ`).
+  `allGOfSlot` builds `allG GF` for any `GF` that has `allURF` at some slot.
 
 How a proof obtains ghost state: assume `{GF} [allG GF]` (or a GS class that
 extends `allG GF`), then use `own`/the libraries directly, e.g.
@@ -92,7 +91,7 @@ inductive Cmra where
   | maxNatR
   | fracR
   | dfracR
-  /-- Rocq `positiveR`: positive naturals under addition (`Perennial.positive`). -/
+  /-- Positive naturals under addition (`Perennial.positive`). -/
   | positiveR
 inductive Ucmra where
   | unitUR
@@ -127,9 +126,9 @@ abbrev OFunctorB := Σ F : OFunctorPre.{0,0,0}, OFunctorContractive F
 abbrev RFunctorB := Σ F : OFunctorPre.{0,0,0}, RFunctorContractive F
 abbrev URFunctorB := Σ F : OFunctorPre.{0,0,0}, URFunctorContractive F
 
-/-! ## Positive naturals under addition (Rocq `positiveR`) -/
+/-! ## Positive naturals under addition -/
 
-/-- Rocq `positive` as a CMRA: `⟨k⟩` stands for `k + 1`, the operation is addition, and there
+/-- Positive naturals as a CMRA: `⟨k⟩` stands for `k + 1`, the operation is addition, and there
 is no core. (Iris' `Pos` is binary and lacks the arithmetic lemmas needed here.) -/
 @[ext] structure positive where
   ofPred ::
@@ -139,7 +138,7 @@ is no core. (Iris' `Pos` is binary and lacks the arithmetic lemmas needed here.)
 namespace positive
 instance : Add positive := ⟨fun x y => ⟨x.pred + y.pred + 1⟩⟩
 @[simp] theorem add_pred (x y : positive) : (x + y).pred = x.pred + y.pred + 1 := rfl
-/-- Rocq `Pos.ofNat` (with `ofNat 0 = 1`). -/
+/-- Conversion from `Nat`, with `ofNat 0 = 1`. -/
 def ofNat (n : Nat) : positive := ⟨n - 1⟩
 /-- `1%positive`. -/
 def one : positive := ⟨0⟩
@@ -199,8 +198,7 @@ instance : DecidableEq Syntax.Cmra := fun _ _ => Classical.propDecidable _
 instance (e : Syntax.Cmra) : RFunctorContractive (intF e).1 := (intF e).2
 instance (e : Syntax.Ucmra) : URFunctorContractive (intUF e).1 := (intUF e).2
 
-/-- The universal functor: `∏ e, option (intF e)`, i.e. Rocq's
-`discrete_funURF (λ A, optionURF (intF_cmra A))`. -/
+/-- The universal functor: `∏ e, option (intF e)`. -/
 abbrev AllURF : OFunctorPre := DiscreteFunOF (fun e : Syntax.Cmra => OptionOF (intF e).1)
 
 /-- One `ElemG` for the universal functor gives ghost state of every algebra
@@ -210,10 +208,10 @@ class AllG (GF : outParam BundledGFunctors) where
 
 attribute [reducible, instance] AllG.any_inG
 
-/-- A `BundledGFunctors` with the universal functor at slot 0 (Rocq `allΣ`). -/
+/-- A `BundledGFunctors` with the universal functor at slot 0. -/
 def «allΣ» : BundledGFunctors := BundledGFunctors.default.set 0 ⟨AllURF, inferInstance⟩
 
-/-- Rocq `subG_allΣ`: any `GF` that contains `allURF` at some slot. -/
+/-- `allG GF` for any `GF` that contains `allURF` at some slot. -/
 @[instance_reducible] def allGOfSlot {GF : BundledGFunctors} (τ : GType) (h : GF τ = ⟨AllURF, inferInstance⟩) :
     AllG GF := ⟨⟨τ, h⟩⟩
 
@@ -245,15 +243,15 @@ instance [h1 : IsTy A a] : IsTy (List A) (.list a) := by
 section denote
 variable (PROP : Type) [COFE PROP]
 
-/-- Rocq `IsOfe`: `A` (with its OFE structure) is the denotation of `e` at `PROP`. -/
+/-- `A` (with its OFE structure) is the denotation of `e` at `PROP`. -/
 class IsOfe (A : Type) [OFE A] (e : outParam Syntax.Ofe) : Prop where
   eq_ofe : (⟨A, inferInstance⟩ : Σ T : Type, OFE T) = ⟨(intO e).1 PROP PROP, inferInstance⟩
 
-/-- Rocq `IsCmra`: `A` (with its CMRA structure) is the denotation of `e` at `PROP`. -/
+/-- `A` (with its CMRA structure) is the denotation of `e` at `PROP`. -/
 class IsCmra (A : Type) [CMRA A] (e : outParam Syntax.Cmra) : Prop where
   eq_cmra : (⟨A, inferInstance⟩ : Σ T : Type, CMRA T) = ⟨(intF e).1 PROP PROP, inferInstance⟩
 
-/-- Rocq `IsUcmra`. -/
+/-- `A` (with its unital CMRA structure) is the denotation of `e` at `PROP`. -/
 class IsUcmra (A : Type) [UCMRA A] (e : outParam Syntax.Ucmra) : Prop where
   eq_ucmra : (⟨A, inferInstance⟩ : Σ T : Type, UCMRA T) = ⟨(intUF e).1 PROP PROP, inferInstance⟩
 
@@ -337,7 +335,7 @@ def IsCmra.to {PROP : Type} [COFE PROP] {A : Type} [CMRA A] {e : Syntax.Cmra}
     (H : IsCmra PROP A e) (a : A) : (intF e).1 PROP PROP :=
   cast (congrArg Sigma.fst H.eq_cmra) a
 
-/-- Rocq `own`: ownership of `a : A` at ghost name `γ`, for any `A` with a code. -/
+/-- Ownership of `a : A` at ghost name `γ`, for any `A` with a code. -/
 def own {A : Type} [CMRA A] {e : outParam Syntax.Cmra} [H : IsCmra (IProp GF) A e]
     (γ : GName) (a : A) : IProp GF :=
   iOwn (F := AllURF) γ (discreteFunSingleton e (some (H.to a)))

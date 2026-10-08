@@ -10,7 +10,7 @@ open Iris Iris.BI Iris.Std ProofMode
 section
 variable {GF : BundledGFunctors} {L V : Type _} {H : Type _ → Type _} [Std.LawfulFiniteMap H L]
 
-/-- `gen_heap_valid` in its Rocq form: a wand to a pure fact, without an update
+/-- `gen_heap_valid` as a wand to a pure fact, without an update
 modality (so the proof mode keeps both hypotheses). -/
 theorem genHeap_lookup [G : genHeapGS L V GF H] {σ : H V} {l : L} {dq : DFrac} {v : V} :
     ⊢@{IProp GF} genHeapInterp (G := G) σ -∗ pointsTo (G := G) l dq v -∗

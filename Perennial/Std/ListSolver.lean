@@ -1,7 +1,5 @@
 /-
-Port of `src/Helpers/ListSolver.v`, plus stdpp's `list_simplifier`.
-
-Tactics:
+List tactics:
 * `list_simplifier`: simplify list expressions everywhere with the
   `@[list_simp]` and `@[len]` simp sets: lookups in `++`/`take`/`drop`/`set`/
   `replicate`/`map`, lengths, and `take`/`drop` of appends; index side
@@ -65,12 +63,12 @@ attribute [list_simp] List.getElem?_append_left List.getElem?_append_right
 /-- Discharger for `list_simplifier`: arithmetic on (simplified) lengths. -/
 macro "list_disch" : tactic => `(tactic| first | omega | (word_filter iris; simp only [len] at *; omega))
 
-/-- stdpp `list_simplifier` (see the module docstring). -/
+/-- Simplify list expressions (see the module docstring). -/
 macro "list_simplifier" : tactic => `(tactic|
   simp_pure simp (disch := list_disch) only [list_simp, len])
 
 open Lean Elab Tactic Term Meta in
-/-- Rocq `find_list_hyps`: for each hypothesis `l₁ = l₂` (lists) or `l₁ <+: l₂`,
+/-- For each hypothesis `l₁ = l₂` (lists) or `l₁ <+: l₂`,
 add its length and pointwise-lookup consequences. -/
 elab "find_list_hyps" : tactic => withMainContext do
   for h in ← getLCtx do

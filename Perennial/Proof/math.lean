@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/math.v`: package initialization of `math`.
+Package initialization of `math`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.math
@@ -34,7 +34,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     {{ RET #(); ownInitializing get_is_pkg_init ∗
         isPkgInit (PROP := IProp GF) pkg_id.math }} := by
   -- Unprovable: `useFMA'init`, `_sin'init`, ... are opaque (axioms in Perennial/Code/math.lean).
-  sorry -- Rocq: Admitted
+  sorry
 
 end wps
 

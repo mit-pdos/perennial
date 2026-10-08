@@ -1,6 +1,6 @@
 /-
-Port of `src/Helpers/ListSubset.v`. List inclusion `l₁ ⊆ l₂` is Lean's
-`List.Subset` (`∀ x ∈ l₁, x ∈ l₂`), as in stdpp.
+List inclusion `l₁ ⊆ l₂` is Lean's
+`List.Subset` (`∀ x ∈ l₁, x ∈ l₂`).
 -/
 import Perennial.Std.ListBasics
 

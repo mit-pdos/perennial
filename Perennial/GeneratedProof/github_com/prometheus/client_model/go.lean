@@ -23,11 +23,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance LabelPair_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.LabelPair :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance LabelPair_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.LabelPair github_com.prometheus.client_model.go.LabelPair.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end LabelPair
@@ -42,11 +42,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Gauge_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Gauge :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Gauge_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Gauge github_com.prometheus.client_model.go.Gauge.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Gauge
@@ -61,11 +61,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Counter_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Counter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Counter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Counter github_com.prometheus.client_model.go.Counter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Counter
@@ -80,11 +80,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Quantile_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Quantile :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Quantile_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Quantile github_com.prometheus.client_model.go.Quantile.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Quantile
@@ -99,11 +99,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Summary_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Summary :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Summary_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Summary github_com.prometheus.client_model.go.Summary.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Summary
@@ -118,11 +118,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Untyped_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Untyped :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Untyped_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Untyped github_com.prometheus.client_model.go.Untyped.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Untyped
@@ -137,11 +137,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Histogram_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Histogram :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Histogram_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Histogram github_com.prometheus.client_model.go.Histogram.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Histogram
@@ -156,11 +156,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Bucket_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Bucket :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Bucket_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Bucket github_com.prometheus.client_model.go.Bucket.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Bucket
@@ -175,11 +175,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance BucketSpan_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.BucketSpan :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance BucketSpan_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.BucketSpan github_com.prometheus.client_model.go.BucketSpan.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end BucketSpan
@@ -194,11 +194,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Exemplar_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Exemplar :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Exemplar_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Exemplar github_com.prometheus.client_model.go.Exemplar.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Exemplar
@@ -213,11 +213,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance Metric_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.Metric :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Metric_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.Metric github_com.prometheus.client_model.go.Metric.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Metric
@@ -232,11 +232,11 @@ variable [package_sem' : github_com.prometheus.client_model.go.Assumptions]
 
 instance MetricFamily_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_model.go.MetricFamily :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance MetricFamily_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_model.go.MetricFamily github_com.prometheus.client_model.go.MetricFamily.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end MetricFamily

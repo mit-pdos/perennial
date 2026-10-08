@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/dghostVar.v`: a ghost variable of arbitrary (countable) type
+A ghost variable of arbitrary (countable) type
 with `DFrac` ownership; can be mutated when fully owned.
 -/
 import Perennial.Ghost.Own

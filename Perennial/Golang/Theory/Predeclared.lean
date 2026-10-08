@@ -1,6 +1,6 @@
 /-
-Port of `new/golang/theory/predeclared.v`: `IntoValTypedUnderlying` instances
-for the predeclared Go types (integers, including the Lean-only `uintptr`, `bool`,
+`IntoValTypedUnderlying` instances
+for the predeclared Go types (integers, including `uintptr`, `bool`,
 `string`, `unsafe.Pointer`, floats, `proph_id`).
 -/
 import Perennial.Golang.Theory.PostLifting
@@ -27,7 +27,7 @@ instance intoVal_typed_uint8 : IntoValTypedUnderlying (GF := GF) w8 go.uint8 := 
   solve_into_val_typed
 instance intoVal_typed_uint : IntoValTypedUnderlying (GF := GF) w64 go.uint := by
   solve_into_val_typed
-/-- Lean addition (Rocq has no `uintptr` semantics): see `go.UintptrSemantics`. -/
+/-- See `go.UintptrSemantics`. -/
 instance intoVal_typed_uintptr : IntoValTypedUnderlying (GF := GF) w64 go.uintptr := by
   solve_into_val_typed
 instance intoVal_typed_int64 : IntoValTypedUnderlying (GF := GF) w64 go.int64 := by

@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/au_spec/chan_au_recv.v`: specifications of the
+Specifications of the
 channel model's `TryReceive` and `Receive`.
 -/
 import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend

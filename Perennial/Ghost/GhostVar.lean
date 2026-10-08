@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/ghost_var.v`: a ghost variable of arbitrary (countable) type
+A ghost variable of arbitrary (countable) type
 with fractional ownership; can be mutated when fully owned.
 -/
 import Perennial.Ghost.Own

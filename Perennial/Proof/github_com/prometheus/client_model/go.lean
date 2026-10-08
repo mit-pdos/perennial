@@ -1,6 +1,5 @@
 /-
 Package initialization instances of `github.com/prometheus/client_model/go` (only its types are translated).
-Not in Rocq.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.github_com.prometheus.client_model.go

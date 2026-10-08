@@ -1,5 +1,5 @@
 /-
-Port of `src/Helpers/ModArith.v`.
+Overflow facts about `w64` addition.
 -/
 import Perennial.Std.Word.Automation
 

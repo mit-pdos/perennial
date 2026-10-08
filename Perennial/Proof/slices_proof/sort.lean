@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/sort.v`: the spec of `slices.SortFunc`.
+The spec of `slices.SortFunc`.
 
 We assume a binary relation `R` on elements, which is a "strict weak order".
 The comparison function `cmp_code` implements `R`:

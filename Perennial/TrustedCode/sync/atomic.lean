@@ -1,5 +1,5 @@
 /-
-Port of `new/trusted_code/sync/atomic.v` (namespace `sync.atomic`, as the
+Trusted code for the Go `sync/atomic` package (namespace `sync.atomic`, as the
 generated package).
 -/
 import Perennial.Golang.Defn.Pre

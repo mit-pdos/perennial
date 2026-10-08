@@ -249,11 +249,11 @@ variable [package_sem' : sync.Assumptions]
 
 instance Map_typed_pointsto :
     TypedPointsto (GF := GF) sync.Map :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Map_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Map sync.Map.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Map
@@ -467,11 +467,11 @@ variable [package_sem' : sync.Assumptions]
 
 instance poolChainElt_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolChainElt :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance poolChainElt_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolChainElt sync.poolChainElt.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end poolChainElt

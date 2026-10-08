@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/slices_init.v`: package initialization of
+Package initialization of
 `slices`.
 -/
 import Perennial.Proof.ProofPrelude

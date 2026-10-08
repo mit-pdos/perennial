@@ -1,14 +1,13 @@
 /-
-Port of `new/proof/github_com/goose_lang/primitive/disk.v`: specs for the disk
+Specs for the disk
 FFI wrappers `disk.Read`, `disk.Write` and `disk.Barrier`.
 
 The logically atomic specs `wp_Write_atomic`/`wp_Read_atomic` use the
-`atomic_fupd` notation (`Perennial.ProgramLogic.AtomicFupd`). Rocq's non-crash
-fancy updates `|NC={..}=>` (in those specs and in `wp_Write_triple`/
-`wp_Read_triple`) are plain fancy updates here, since the port has no crash
-logic. The ordinary triples `wp_Write`/`wp_Read` are proved directly from the
-disk FFI lifting lemmas `wp_ReadOp`/`wp_WriteOp` rather than derived from the
-atomic specs as in Rocq.
+`atomic_fupd` notation (`Perennial.ProgramLogic.AtomicFupd`). The updates in
+those specs and in `wp_Write_triple`/`wp_Read_triple` are plain fancy updates,
+since there is no crash logic. The ordinary triples `wp_Write`/`wp_Read` are
+proved directly from the disk FFI lifting lemmas `wp_ReadOp`/`wp_WriteOp`
+rather than derived from the atomic specs.
 -/
 import Perennial.Proof.DiskPrelude
 import Perennial.ProgramLogic.AtomicFupd
@@ -28,7 +27,6 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode disk_ffi
 
 namespace github_com.goose_lang.primitive.disk
 
-/-- Rocq `listToBlock`. -/
 def listToBlock (l : List w8) : _root_.Perennial.Block :=
   if h : l.length = blockBytes then ⟨l.toArray, by simpa using h⟩ else Vector.replicate _ 0
 
@@ -147,8 +145,7 @@ theorem slice_to_block (s : GoSlice) (dq : DFrac) (bs : List w8) (Hsz : s.len = 
   rw [block_to_list_to_block]
   iapply slice_to_block_array $$ Hs
 
-/-! Atomicity of the disk FFI operations (Rocq proves these inline with
-`solve_atomic`). -/
+/-! Atomicity of the disk FFI operations. -/
 
 open EctxLanguage in
 instance ReadOp_atomic (at' : Language.Atomicity) (v : val) :

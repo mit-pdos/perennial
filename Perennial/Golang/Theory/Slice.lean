@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/slice.v`: the slice points-to `s ↦*{dq} vs`
+The slice points-to `s ↦*{dq} vs`
 (`ownSlice`), the capacity predicate `ownSliceCap V s dq`, lemmas for
 splitting/combining slices, and specs for the slice built-ins (`len`, `cap`,
 `make`, `copy`, `clear`, `append`, indexing, slice literals, `for range`).

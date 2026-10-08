@@ -83,11 +83,11 @@ variable [package_sem' : github_com.goose_lang.primitive.disk.Assumptions]
 
 instance MemDisk_typed_pointsto :
     TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.MemDisk :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance MemDisk_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.MemDisk github_com.goose_lang.primitive.disk.MemDisk.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end MemDisk

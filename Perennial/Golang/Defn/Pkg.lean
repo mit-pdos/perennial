@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/pkg.v`: package initialization.
+Package initialization.
 -/
 import Perennial.Golang.Defn.PostLang
 
@@ -9,7 +9,7 @@ namespace Perennial
 class PkgInfo (pkg_name : GoString) where
   pkgImportedPkgs : List GoString
 
--- `pkgImportedPkgs pkg_name` takes `pkg_name` explicitly, as in Rocq.
+-- `pkgImportedPkgs pkg_name` takes `pkg_name` explicitly.
 export PkgInfo (pkgImportedPkgs)
 
 namespace package

@@ -1,9 +1,8 @@
 /-
-Port of `new/proof/sync.v`: the `sync` proofs.
-
-Rocq exports `base cond once mutex rwmutex_guard waitgroup waitgroup_join`.
-`rwmutex_guard` imports the low-level `rwmutex` proofs (`sync.rwmutex.*`, used
-qualified in Rocq) and `sema`, so they are available too.
+The `sync` proofs: `base cond once mutex rwmutex_guard waitgroup
+waitgroup_join`. `rwmutex_guard` imports the low-level `rwmutex` proofs
+(`sync.rwmutex.*`, meant to be used qualified) and `sema`, so they are
+available too.
 -/
 import Perennial.Proof.sync_proof.base
 import Perennial.Proof.sync_proof.cond

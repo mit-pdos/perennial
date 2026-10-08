@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/pre.v`: the Go theory without channels and strings
+The Go theory without channels and strings
 (which are built on top of it).
 -/
 import Perennial.GooseLang.Lang

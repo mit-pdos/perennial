@@ -1,9 +1,6 @@
 /-
-Machine words. Port of `src/Helpers/Word/Integers.v`.
-
-Rocq Perennial uses coqutil's `word` interface; here words are `BitVec n`.
-`uint.Z w` is the unsigned value (an `Int`, matching Rocq's `Z`), `sint.Z w` the
-signed value.
+Machine words. Words are `BitVec n`. `uint.Z w` is the unsigned value (an
+`Int`), `sint.Z w` the signed value.
 -/
 import Std.Tactic.BVDecide
 
@@ -26,14 +23,14 @@ abbrev W16 (z : Int) : w16 := BitVec.ofInt 16 z
 abbrev W8 (z : Int) : w8 := BitVec.ofInt 8 z
 
 namespace uint
-/-- Unsigned interpretation (Rocq `uint.Z`). -/
+/-- Unsigned interpretation. -/
 abbrev Z {n : Nat} (w : BitVec n) : Int := (w.toNat : Int)
-/-- Unsigned interpretation as a `Nat` (Rocq `uint.nat`). -/
+/-- Unsigned interpretation as a `Nat`. -/
 abbrev nat {n : Nat} (w : BitVec n) : Nat := w.toNat
 end uint
 
 namespace sint
-/-- Signed (two's complement) interpretation (Rocq `sint.Z`). -/
+/-- Signed (two's complement) interpretation. -/
 abbrev Z {n : Nat} (w : BitVec n) : Int := w.toInt
 abbrev nat {n : Nat} (w : BitVec n) : Nat := w.toInt.toNat
 end sint

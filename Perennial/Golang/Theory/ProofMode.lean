@@ -1,26 +1,24 @@
 /-
-Port of `new/golang/theory/proofmode.v`: the `PureWp` class and the core WP
+The `PureWp` class and the core WP
 tactics for GooseLang (`wp_pure`, `wp_pures`, `wp_pure_lc`, `wp_call`,
 `wp_bind`, `wp_apply_core`, `wp_value`, `wp_finish`, `wp_expr_simp`).
 
 The tactics are Lean elaborators over the iris-lean proof mode, modeled after
 iris-lean's `Iris/HeapLang/ProofMode.lean`.
 
-## Differences from Rocq
+## Design notes
 
 * `PureWp φ e e'` has `φ` and `e'` as `outParam`s, so ordinary typeclass
-  search finds the next step of `e` (Rocq: `Hint Mode PureWp ... ! -`).
-* The Rocq `Hint Extern` for `wp_call` (only fire on a syntactic `RecV`) is an
+  search finds the next step of `e`.
+* `wp_call` (which should only fire on a syntactic `RecV`) is an
   ordinary instance: Lean's discrimination trees never unfold the head
   `Val (RecV ...)`, so a sealed definition hidden behind a constant is not
-  called accidentally. `wp_call` additionally unfolds a constant head (as
-  Rocq's `unify` does).
+  called accidentally. The `wp_call` tactic additionally unfolds a constant head.
 * After each step, the expression is simplified with the `goose_wp_simp` simp
   set: substitution (`subst`, `subst'`) is computed, `fill` is unfolded.
-  This is the analogue of Rocq's `simpl subst'; simpl fill`.
 * WP goals are any iris-lean `Wp.wp` over GooseLang's `expr` (the `IrisGS_gen`
   instance is `goose_irisGS`, built from `gooseGlobalGS`/`gooseLocalGS`, or from
-  `heapGS`). Stuckness `s` plays the role of Rocq's `stk`.
+  `heapGS`), with stuckness `s`.
 -/
 import Perennial.GooseLang.Lifting
 import Perennial.GooseLang.Countable
@@ -125,7 +123,7 @@ instance wp_if_false (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #fa
 instance wp_if_true (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #true) e1 e2) e1 :=
   pure_exec_pure_wp (pure_if_true e1 e2)
 
-/-- Rocq `wp_call` (a `Hint Extern` there; see the module docstring). -/
+/-- Calling a function value (see the module docstring). -/
 instance wp_call (v2 : val) (f x : Binder) (e : Expr) :
     PureWp (G := G) (L := L) True (App (Val (RecV f x e)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e) e)) :=
@@ -551,7 +549,7 @@ register_option goose.wp.unfoldSliceLiterals : Bool := {
   defValue := false
   descr := "let `wp_pures`/`wp_auto` step slice composite literals \
     (`go.SliceSemantics.composite_literal_slice`) instead of stopping at them \
-    (use `wp_slice_literal`, as in Rocq)"
+    (use `wp_slice_literal`)"
 }
 
 /-! ## Meta-level helpers -/
@@ -857,7 +855,7 @@ def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Lean.Expr) (p? : Option Lean.Expr
   | some p, some (fillKl, _) => mkCongrArg fillKl p
 
 /-- Find the *outermost* evaluation context `K` and sub-expression `e'` with
-`fill K e' = e` such that `pred K e'` succeeds (Rocq `walk_expr`). Values are
+`fill K e' = e` such that `pred K e'` succeeds. Values are
 never visited. -/
 partial def findEctx {α} (e : Lean.Expr) (pred : List Lean.Expr → Lean.Expr → ProofModeM α) :
     ProofModeM (Option (α × List Lean.Expr × Lean.Expr)) :=
@@ -2354,7 +2352,7 @@ partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : 
     return b
 
 /-- Introduce a `▷` in front of the hypotheses: `hyps ⊢ ▷ hyps'`, stripping laters
-from the hypotheses (Rocq `MaybeIntoLaterNEnvs`). When no hypothesis has a strippable `▷`,
+from the hypotheses. When no hypothesis has a strippable `▷`,
 this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
 hypothesis on every step. -/
 def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
@@ -2411,8 +2409,8 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
         else
           unless (← isGooseVal? hole).isSome do throwError "skip"
       let some (φ, e2, inst) ← synthPureWp gs e1 | throwError "no PureWp instance"
-      -- `wp_pures`/`wp_auto` stop at slice composite literals (as in Rocq, where
-      -- `go.composite_literal_slice` is not an instance): use `wp_slice_literal`
+      -- `wp_pures`/`wp_auto` stop at slice composite literals
+      -- (`go.composite_literal_slice` is not an instance): use `wp_slice_literal`
       if multi && !stepSliceLits then
         -- (only composite literals: the instance of e.g. a beta step contains the
         -- whole function body, which is not worth traversing)
@@ -2636,8 +2634,8 @@ def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap e'),
      ("!h", h), ("!heq", heq)])
 
-/-- Turn the goal `hyps ⊢ WP (Val v) {{ Φ }}` into `hyps ⊢ Φ v` (Rocq
-`iApply wp_value`), continuing with `k` on the new conclusion. -/
+/-- Turn the goal `hyps ⊢ WP (Val v) {{ Φ }}` into `hyps ⊢ Φ v` (by
+`wp_value`), continuing with `k` on the new conclusion. -/
 def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (v : Lean.Expr)
     (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
@@ -2808,7 +2806,7 @@ def iWpBindCore (Δ : Lean.Expr) (wp : GooseWpGoal) (K : List Lean.Expr) (e' : L
   wp.mkAppNamed ``tac_wp_bind [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("K", wp.quoteK K),
     ("e'", e'), ("Φ", wp.Φ), ("!H", pf)]
 
-/-- Rocq `wp_bind_next`: the evaluation context to bind for the "next"
+/-- The evaluation context to bind for the "next"
 operation (a function call, possibly curried, or the innermost expression that
 is not an evaluation-context constructor). -/
 def findBindNext (e : Lean.Expr) : MetaM (Option (List Lean.Expr × Lean.Expr)) := do
@@ -3048,7 +3046,7 @@ subexpression `e'` in evaluation position matching the GooseLang pattern `e`
 (goose expression mode, `_` for holes), producing
 `WP e' {{ v, WP K[v] {{ Φ }} }}`.
 
-`wp_bind` (no argument) is Rocq's `wp_bind_next`: it focuses on the next
+`wp_bind` (no argument) focuses on the next
 "interesting" operation, i.e. the outermost (possibly curried) call
 `f v1 ... vn` with value arguments, or else the innermost expression that is not
 an evaluation-context constructor. It does nothing if that is the whole
@@ -3083,7 +3081,7 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ff
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
-/-- Rocq `tac_wp_rec`: call a function value `fv` that unfolds to
+/-- Call a function value `fv` that unfolds to
 `rec: f x := e`. The recursive occurrences of `f` are replaced by the folded `fv`. -/
 theorem tac_wp_call' {fv v2 : val} {f x : Binder} {e e' : Expr} (hfv : fv = RecV f x e)
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
@@ -3180,7 +3178,7 @@ elab "wp_apply_raw " colGt pmt:pmTerm : tactic => do
     let some wp ← parseGooseWp? goal | throwIPMError "the goal {goal} is not a GooseLang WP"
     let ⟨ehypsP, hypsP, p, A, posePf⟩ ← iHave hyps goal pmt true
     let Δ : Q($prop) := q(iprop($ehypsP ∗ □?$p $A))
-    -- try the `wp_bind_next` position first (as Rocq does), then every position,
+    -- try the `findBindNext` position first, then every position,
     -- outermost first
     let next := (← findBindNext wp.e).toList
     for (K, e') in next ++ (← allEctx wp.e) do
@@ -3198,8 +3196,7 @@ elab "wp_apply_raw " colGt pmt:pmTerm : tactic => do
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Internal: post-processing of the goals produced by `wp_apply_raw`: strip a
-leading `▷`, and solve trivial `True`/`⌜True⌝`/`emp` goals (Rocq
-`try iNext; try solve_bi_true`). -/
+leading `▷`, and solve trivial `True`/`⌜True⌝`/`emp` goals. -/
 elab "wp_apply_post" : tactic => do
   let gs ← getGoals
   let mut out := []
@@ -3222,7 +3219,7 @@ elab "wp_apply_post" : tactic => do
             solved := true
           else if let some _ ← observing? (evalTactic (← `(tactic| iempintro))) then
             solved := true
-        -- `True -∗ P`: drop the premise (Rocq `tac_wp_true_elim`)
+        -- `True -∗ P`: drop the premise
         if goal.isAppOfArity ``BIBase.wand 4 then
           let lhs ← whnfR (goal.getArg! 2)
           if lhs.isAppOfArity ``BIBase.pure 3 && (lhs.getArg! 2).isConstOf ``True then
@@ -3239,7 +3236,7 @@ elab "wp_untag_cont" : tactic => do
   for g in ← getUnsolvedGoals do
     if (← g.getTag) == `wp_apply_cont then g.setTag .anonymous
 
-/-- `wp_apply_core lem` (Rocq `wp_apply_core`) applies the specification `lem`
+/-- `wp_apply_core lem` applies the specification `lem`
 (a Lean lemma or an Iris hypothesis, optionally specialized with
 `lem $$ spat1 spat2 ...`) to the WP goal. The conclusion of `lem` must be a WP
 (typically `lem` is a Texan triple `{{ P }} e {{ x, RET v; Q }}`); `lem` is

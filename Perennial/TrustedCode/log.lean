@@ -1,6 +1,5 @@
 /-
-Port of `new/trusted_code/log.v`. Rocq defines these at top level; here they
-are in namespace `log`, as the generated package.
+Trusted definitions of `log`, in namespace `log` like the generated package.
 -/
 import Perennial.Golang.Defn.Pre
 

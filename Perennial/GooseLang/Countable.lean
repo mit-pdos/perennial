@@ -1,9 +1,7 @@
 /-
-`Pos.Countable` instances for Go types and GooseLang syntax. Port of the
-`Countable` instances of `src/goose_lang/lang.v` (`enc_val`/`dec_val`) and
-`new/golang/defn`.
+`Pos.Countable` instances for Go types and GooseLang syntax.
 
-As in Rocq, each syntax type is injected into generic trees (`GenTree`, stdpp
+Each syntax type is injected into generic trees (`GenTree`, stdpp
 `gen_tree`); injectivity is proved directly instead of through a decoder.
 These instances let ghost state (channels, `ghost_var`, ...) store values that
 contain code: `val`, `expr`, `GoFunc`, `GoInterface`, `GoSlice`, `loc`, ...

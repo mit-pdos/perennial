@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/pdqSort/heapSort.v`: specs of
+Specs of
 `siftDownCmpFunc` and `heapSortCmpFunc`.
 -/
 import Perennial.Proof.ProofPrelude

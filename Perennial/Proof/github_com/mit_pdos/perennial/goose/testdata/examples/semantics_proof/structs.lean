@@ -1,6 +1,3 @@
-/-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/structs.v`.
--/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 
 set_option linter.iris.style.nameCheck false
@@ -39,7 +36,8 @@ theorem wp_testNestedStructUpdates : TestFunOk (GF := GF) testNestedStructUpdate
 theorem wp_testStructConstructions : TestFunOk (GF := GF) testStructConstructions := by
   semantics_auto
   by_cases h : p4_ptr = «$r0_ptr»
-  · -- Rocq: Admitted ("how to combine typedPointsto to get sum of fractions?")
+  · -- Both full points-tos are for the same location: contradiction, via the
+    -- first fields' `w64` points-tos.
     subst h
     iexfalso
     rw [typedPointsto_unseal_eq p4_ptr (_ : TwoInts), typedPointsto_unseal_eq p4_ptr (_ : TwoInts)]

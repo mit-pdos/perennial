@@ -1,10 +1,8 @@
 /-
-Port of `new/trusted_code/sync.v` (namespace `sync`, as the generated
-package).
+Trusted definitions of `sync` (namespace `sync`, as the generated package).
 
-Lean addition (not in Rocq): `copyChecker` and its `check` method are trusted
-here (Rocq axiomatizes them: `copyChecker.t` is an axiom type and `check` has no
-body, so `copyChecker.wp_check` was admitted, with a false statement). See
+`copyChecker` and its `check` method are given trusted definitions here (rather
+than axiomatized, which would leave `copyChecker.wp_check` unprovable). See
 `«copyCheckerⁱᵐᵖˡ»` below.
 -/
 import Perennial.Golang.Defn.Pre
@@ -86,14 +84,14 @@ def runtime_SemacquireRWMutexR.impl : val :=
 def runtime_SemacquireRWMutex.impl : val :=
   λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr"
 
-/-- Lean addition. `copyChecker` is a `uintptr` (sync/cond.go:
+/-- `copyChecker` is a `uintptr` (sync/cond.go:
 `type copyChecker uintptr`) that is only ever `0` or its own address
 `uintptr(unsafe.Pointer(c))`. goose supports neither `uintptr` nor
 pointer-to-integer conversions, so it is modeled as an `unsafe.Pointer` (a
 `loc`): `0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself. -/
 @[reducible] def copyChecker.underlying : go.GoType := «unsafe».Pointer
 
-/-- Lean addition. Model of (sync/cond.go)
+/-- Model of (sync/cond.go)
 ```
 func (c *copyChecker) check() {
 	if uintptr(*c) != uintptr(unsafe.Pointer(c)) &&
@@ -115,7 +113,7 @@ def copyChecker.check.impl : val :=
 
 end code
 
-/-- Lean addition: see `copyChecker.underlying`. -/
+/-- See `copyChecker.underlying`. -/
 abbrev copyChecker := Loc
 
 abbrev Mutex := Bool

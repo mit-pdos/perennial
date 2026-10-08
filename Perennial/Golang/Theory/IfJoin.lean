@@ -1,5 +1,5 @@
 /-
-Port of `wp_if_join` from `new/golang/theory/auto.v`: join the two branches of
+`wp_if_join`: join the two branches of
 an `if:` into a common assertion `asn`, which is then available for the rest of
 the proof.
 
@@ -18,22 +18,19 @@ produces three goals:
    `b` (split with `cases`) first `false` then `true`,
 3. the continuation `∀ v, asn v -∗ WP K[v] {{ Φ }}`.
 
-As in Rocq, goals 1 and 2 have already been simplified by `wp_if_destruct`
+Goals 1 and 2 have already been simplified by `wp_if_destruct`
 (`wp_pures`, `wp_auto`), so they usually end with the postcondition `asn v`.
 For new proofs prefer `wp_join R` (`Perennial/Golang/Theory/Join.lean`): an
 assertion instead of a value predicate, frame mode, binding at a pattern or at
 the next statements, and automatic closing of trivial cases.
-A ported Rocq use-site is `wp_ifJoinDemo_join` in
+An example use is `wp_ifJoinDemo_join` in
 `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/unittest.lean`.
 
-Differences from Rocq:
-* The lemma `wp_if_join` (a specialization of `wp_wand` to `if:`) is new;
-  Rocq's tactic `iApply`s `wp_wand` directly.
+Notes:
+* The tactic applies the lemma `wp_if_join`, a specialization of `wp_wand` to `if:`.
 * The spec pattern is an iris-lean `specPat` (`[x n]`, not `"[x n]"`).
-* The case hypothesis of `wp_if_destruct` is named `Hif`; for a Boolean
-  variable the `false` branch comes first (Rocq's `destruct` gives `true` first).
 * `wp_bind (if: _ then _ else _)` binds the outermost `if:` in evaluation
-  position; Rocq's pattern additionally requires a value condition (`Val _`).
+  position, whether or not its condition is already a value.
 -/
 import Perennial.Golang.Theory
 
@@ -55,7 +52,7 @@ theorem wp_if_join (asn : val → IProp GF) {c : val} {e1 e2 : Expr} {Φ : val �
 end lemma
 
 open Lean Elab Tactic Meta in
-/-- Rocq `wp_if_join asn with pat`: bind the outermost `if:` in evaluation
+/-- `wp_if_join asn with pat`: bind the outermost `if:` in evaluation
 position, apply `wp_if_join asn $$ pat` and run `wp_if_destruct` on
 the `if:` goal. Leaves the true branch, the false branch and the continuation
 `∀ v, asn v -∗ WP K[v] {{ Φ }}`, in this order (see the module docstring). -/

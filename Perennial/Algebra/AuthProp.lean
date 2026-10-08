@@ -1,10 +1,10 @@
 /-
-Port of `src/algebra/auth_prop.v`: an authoritative proposition `P` split into
+An authoritative proposition `P` split into
 fragments, built from a `ghost_map` of saved-proposition names.
 
 Representation: the set of saved-prop names is a `gmap GName Unit` (= `gmap GName Unit`),
-used directly as the ghost map (Rocq `gsetToGmap () gns`), and Rocq's `[∗ set]`
-over it is `[∗map] γp ↦ _ ∈ gns, _`.
+used directly as the ghost map; big separating conjunctions over the set are
+`[∗map] γp ↦ _ ∈ gns, _`.
 -/
 import Perennial.Ghost.GhostMap
 import Perennial.Ghost.SavedProp
@@ -35,7 +35,7 @@ def ownApropFrag (γ : GName) (P : IProp GF) (n : Nat) : IProp GF :=
     □ (apropHolds gns ∗-∗ ▷ P) ∗
     ⌜GMap.size gns = n⌝)
 
-/-- Rocq notation `ownAprop γ P`. -/
+/-- A full (multiplicity `1`) fragment of the authoritative proposition. -/
 abbrev ownAprop (γ : GName) (P : IProp GF) : IProp GF := ownApropFrag γ P 1
 
 theorem ownApropAuth_alloc : ⊢ |==> ∃ γ, ownApropAuth (GF := GF) γ iprop(True) 0 := by

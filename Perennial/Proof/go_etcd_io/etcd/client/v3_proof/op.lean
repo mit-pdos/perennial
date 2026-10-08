@@ -1,20 +1,18 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/op.v`.
+Specs for etcd `clientv3` operations (`Op`, `OpGet`, `OpPut`, ...).
 
-Lean notes:
-* Rocq's `clientv3G Σ` is an unbound (implicitly generalized) class; it is
-  `[allG GF]` here.
-* Rocq names the persistent points-to of `op.sort` `"%Hsort"`; it is not pure,
-  so here it is `"#Hsort"`.
-* Deviation: in `isOpRangeRequest`, Rocq's `op.sort' ↦□ SortOption.mk ..`
-  becomes `⌜op.sort' = null ∧ req.sort_target = 0 ∧ req.sort_order = 0⌝ ∨
+Notes:
+* The client ghost state assumption is `[allG GF]`.
+* The persistent points-to of `op.sort` is `"#Hsort"` (it is not pure).
+* In `isOpRangeRequest`, the sort field is
+  `⌜op.sort' = null ∧ req.sort_target = 0 ∧ req.sort_order = 0⌝ ∨
   op.sort' ↦□ SortOption.mk ..`, matching `Op.toRangeRequest` (a nil `sort`
-  leaves the request's sort fields 0). Rocq's version excludes a nil `sort`,
-  which made its admitted `wp_OpGet` false (`OpGet` with no options returns
-  an `Op` with nil `sort`). `wp_OpGet` is now proved.
-* New helper specs (not in Rocq): `wp_NewOp`, `wp_IsOptsWithPrefix_nil`,
-  `wp_IsOptsWithFromKey_nil`. `Op.wp_applyOpts` is moved before `wp_OpGet`.
-* New (not in Rocq), for `OpGet` with options (used by `cache.wp_Cache__Get`):
+  leaves the request's sort fields 0). Requiring `op.sort' ↦□ SortOption.mk ..`
+  alone would exclude a nil `sort` and make `wp_OpGet` false (`OpGet` with no
+  options returns an `Op` with nil `sort`).
+* Helper specs `wp_NewOp`, `wp_IsOptsWithPrefix_nil`, `wp_IsOptsWithFromKey_nil`
+  (used by `wp_OpGet`); `Op.wp_applyOpts` comes before `wp_OpGet`.
+* For `OpGet` with options (used by `cache.wp_Cache__Get`):
   `isOpOption f pfx fk` (a client-supplied spec of an `OpOption` closure: it
   sets `isOptsWithPrefix`/`isOptsWithFromKey` only if `pfx`/`fk`, and maps a
   `Get` op to a `Get` op), `isOpOptions`, and the specs `wp_IsOptsWithPrefix`,
@@ -59,9 +57,8 @@ def isOpRangeRequest (op : v3.Op) (req : RangeRequest) : IProp GF :=
   "#key" ∷ op.key' ↦*□ req.key ∗
   "#end" ∷ op.end' ↦*□ req.range_end ∗
   "%Hlimit" ∷ ⌜op.limit' = req.limit⌝ ∗
-  -- Lean deviation (Rocq: just `op.sort' ↦□ SortOption.mk ..`, which excludes a nil
-  -- `sort`, so the admitted `wp_OpGet` was false): as in `Op.toRangeRequest`, a nil
-  -- `sort` means sort target and order 0.
+  -- As in `Op.toRangeRequest`, a nil `sort` means sort target and order 0 (see the
+  -- file header).
   "#Hsort" ∷
     (⌜op.sort' = null ∧ req.sort_target = W32 0 ∧ req.sort_order = W32 0⌝ ∨
      op.sort' ↦□
@@ -89,7 +86,6 @@ def isOpDef (op : v3.Op) (o : Op) : IProp GF :=
   | .Get req => isOpRangeRequest op req
   | .Put req => isOpPutRequest op req
   | _ => iprop(False)
-/-- (Rocq: `Opaque isOp`) -/
 @[irreducible] def isOp (op : v3.Op) (o : Op) : IProp GF :=
   isOpDef op o
 theorem isOp_unseal : @isOp = @isOpDef := by funext; with_unfolding_all rfl
@@ -108,7 +104,7 @@ theorem Op.wp_applyOpts (op : Loc) :
   wp_for
   wp_end
 
-/-- Lean addition (used by `wp_OpGet`). -/
+/-- Used by `wp_OpGet`. -/
 theorem wp_NewOp :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! v3.NewOp)) (Val #()))
@@ -124,7 +120,7 @@ theorem wp_NewOp :
   ipureintro
   exact ⟨rfl, rfl⟩
 
-/-- Lean addition (used by `wp_OpGet`). -/
+/-- Used by `wp_OpGet`. -/
 theorem wp_IsOptsWithPrefix_nil :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! v3.IsOptsWithPrefix)) (Val #slice.nil))
@@ -140,7 +136,7 @@ theorem wp_IsOptsWithPrefix_nil :
   iapply HΦ
   itrivial
 
-/-- Lean addition (used by `wp_OpGet`). -/
+/-- Used by `wp_OpGet`. -/
 theorem wp_IsOptsWithFromKey_nil :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! v3.IsOptsWithFromKey)) (Val #slice.nil))
@@ -156,7 +152,7 @@ theorem wp_IsOptsWithFromKey_nil :
   iapply HΦ
   itrivial
 
-/-- NOTE (Rocq): for simplicity, this only supports empty opts list. -/
+/-- NOTE: for simplicity, this only supports empty opts list (see `wp_OpGet_opts`). -/
 theorem wp_OpGet (key : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (App (Val (@! v3.OpGet)) (Val #key)) (Val #slice.nil))
@@ -180,7 +176,7 @@ theorem wp_OpGet (key : GoString) :
   ipureintro
   simp
 
-/-- Lean addition: a client-supplied spec of an `OpOption` closure `f` (`OpGet`,
+/-- A client-supplied spec of an `OpOption` closure `f` (`OpGet`,
 `IsOptsWithPrefix` and `IsOptsWithFromKey` call the options on arbitrary `*Op`s).
 Calling `f` on `l ↦ op` returns with `l ↦ op'`, where
 * `op'` has `isOptsWithPrefix` (resp. `isOptsWithFromKey`) set only if `op` had,
@@ -203,7 +199,7 @@ instance isOpOption_persistent (f : GoFunc) (pfx fk : Bool) :
     Persistent (isOpOption (GF := GF) f pfx fk) := by
   unfold isOpOption; infer_instance
 
-/-- Lean addition: every option in `opts` satisfies `isOpOption _ pfx fk`. -/
+/-- Every option in `opts` satisfies `isOpOption _ pfx fk`. -/
 abbrev isOpOptions (opts : List GoFunc) (pfx fk : Bool) : IProp GF :=
   iprop(□ (∀ f : GoFunc, ⌜f ∈ opts⌝ -∗ isOpOption f pfx fk))
 
@@ -217,7 +213,7 @@ theorem isOpOptions_nil (pfx fk : Bool) : ⊢ isOpOptions (GF := GF) [] pfx fk :
   iintro %f %Hf
   simp at Hf
 
-/-- Lean addition (generalizes `wp_IsOptsWithPrefix_nil`). -/
+/-- Generalizes `wp_IsOptsWithPrefix_nil`. -/
 theorem wp_IsOptsWithPrefix (opts_sl : GoSlice) (opts : List GoFunc) (dq : DFrac) (pfx fk : Bool) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ isOpOptions opts pfx fk }}
       (App (Val (@! v3.IsOptsWithPrefix)) (Val #opts_sl))
@@ -262,7 +258,7 @@ theorem wp_IsOptsWithPrefix (opts_sl : GoSlice) (opts : List GoFunc) (dq : DFrac
     iframe
     ipureintro; exact Hpfx
 
-/-- Lean addition (generalizes `wp_IsOptsWithFromKey_nil`). -/
+/-- Generalizes `wp_IsOptsWithFromKey_nil`. -/
 theorem wp_IsOptsWithFromKey (opts_sl : GoSlice) (opts : List GoFunc) (dq : DFrac) (pfx fk : Bool) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ opts_sl ↦*{dq} opts ∗ isOpOptions opts pfx fk }}
       (App (Val (@! v3.IsOptsWithFromKey)) (Val #opts_sl))
@@ -307,7 +303,7 @@ theorem wp_IsOptsWithFromKey (opts_sl : GoSlice) (opts : List GoFunc) (dq : DFra
     iframe
     ipureintro; exact Hfk
 
-/-- Lean addition (generalizes `Op.wp_applyOpts`): applying options to a `Get` op
+/-- Generalizes `Op.wp_applyOpts`: applying options to a `Get` op
 gives a `Get` op. -/
 theorem Op.wp_applyOpts_Get (l : Loc) (op : v3.Op) (req : RangeRequest) (opts_sl : GoSlice)
     (opts : List GoFunc) (dq : DFrac) (pfx fk : Bool) :
@@ -347,7 +343,7 @@ theorem Op.wp_applyOpts_Get (l : Loc) (op : v3.Op) (req : RangeRequest) (opts_sl
     iapply HΦ
     iframe # ∗
 
-/-- Lean addition: `OpGet` with options (generalizes `wp_OpGet`). The options may not
+/-- `OpGet` with options (generalizes `wp_OpGet`). The options may not
 be both a `WithPrefix` and a `WithFromKey` (else `OpGet` panics). -/
 theorem wp_OpGet_opts (key : GoString) (opts_sl : GoSlice) (opts : List GoFunc) (dq : DFrac)
     (pfx fk : Bool) (Hpfx_fk : ¬ (pfx = true ∧ fk = true)) :

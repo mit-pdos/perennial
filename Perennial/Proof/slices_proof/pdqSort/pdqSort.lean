@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/pdqSort/pdqSort.v`: the spec of
+The spec of
 `pdqsortCmpFunc` (and `reverseRangeCmpFunc`).
 -/
 import Perennial.Proof.ProofPrelude

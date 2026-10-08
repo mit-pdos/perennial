@@ -1,5 +1,5 @@
 /-
-Port of `src/Helpers/bytes.v`: bytes as lists of bits (least significant first).
+Bytes as lists of bits (least significant first).
 -/
 import Perennial.Std.ByteExplode
 import Perennial.Std.List
@@ -57,7 +57,6 @@ theorem lookup_byte_to_bits (byt : Byte) (i : Nat) (h : i < 8) :
     intro off b; revert b; apply byte_explode; revert off; decide +kernel
   exact this ⟨i, h⟩ byt
 
-/-- Rocq `bytesToBits`. -/
 def bytesToBits (l : List Byte) : List Bool := (l.map byteToBits).flatten
 
 @[len] theorem length_bytes_to_bits (b : List Byte) : (bytesToBits b).length = 8 * b.length := by

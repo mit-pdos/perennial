@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_examples.v`:
-imports all channel example proofs.
+Imports all channel example proofs.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_fibonacci

@@ -1,18 +1,15 @@
-/-
-Port of `src/Helpers/Word/Properties.v`.
--/
 import Perennial.Std.Word.Automation
 import Perennial.Std.ListBasics
 
 namespace Perennial
 
-/-- Rocq `u8ToAscii`: the character with this byte as its code. -/
+/-- The character with this byte as its code. -/
 def u8ToAscii (x : Byte) : Char := Char.ofNat x.toNat
 
-/-- Rocq `u8ToString`. -/
+/-- The one-character string of this byte. -/
 def u8ToString (x : Byte) : String := String.singleton (u8ToAscii x)
 
-/-- Rocq `u64RoundUp x div`: `(x + div) / div * div`. -/
+/-- `u64RoundUp x div`: `(x + div) / div * div`. -/
 def u64RoundUp (x div : U64) : U64 := (x + div) / div * div
 
 theorem seq_U64_NoDup (m len : Int) (hlb : 0 ≤ m) (hub : m + len < 2 ^ 64) :

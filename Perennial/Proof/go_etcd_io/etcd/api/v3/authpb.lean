@@ -1,6 +1,5 @@
 /-
 Package initialization instances of `go.etcd.io/etcd/api/v3/authpb` (only its types are translated).
-Not in Rocq.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.api.v3.authpb

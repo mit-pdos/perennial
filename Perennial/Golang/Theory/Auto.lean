@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/auto.v`: the user-facing automation.
+The user-facing automation.
 
 * `wp_start` / `wp_start as pat` / `wp_start_folded as pat`: begin the proof of
   a Texan triple for a function or method.
@@ -13,17 +13,15 @@ Port of `new/golang/theory/auto.v`: the user-facing automation.
   `n` later credits).
 * `wp_if_destruct`, `wp_for`, `wp_for hyp`, `wp_for_post`, `wp_end`.
 
-Differences from Rocq:
-* `wp_apply ... as "%x Hx"` is written `wp_apply ... as %x Hx` (iris-lean intro
-  patterns; `with` is accepted as a synonym of `as`). Lean-level binders are
-  introduced with `%x` (Rocq `as (x) "..."`). The spec patterns of `wp_apply` are
+Details:
+* `wp_apply ... as %x Hx` uses iris-lean intro patterns (`with` is accepted as
+  a synonym of `as`). Lean-level binders are introduced with `%x`. The spec patterns of `wp_apply` are
   iris-lean's minus `[H] as name`, so `wp_apply lem $$ [H] as pats` works.
-* Rocq's global `wp_apply_auto_default` switch is not ported; use
-  `wp_apply +noauto`. Rocq's `--no-auto`/`--lc n` would be Lean comments and are
-  rejected with an error.
+* To skip `wp_auto` after `wp_apply`, use `wp_apply +noauto`. The options
+  `--no-auto`/`--lc n` would be Lean comments and are rejected with an error.
 * `wp_start` names the `isPkgInit` facts it moves to the intuitionistic
-  context `Hpkg`, `Hpkg2`, ... (Rocq: anonymous).
-* `wp_if_destruct` names the case hypothesis `Hif` (Rocq leaves it anonymous)
+  context `Hpkg`, `Hpkg2`, ....
+* `wp_if_destruct` names the case hypothesis `Hif`
   and substitutes it when it is an equation between a variable and a
   non-variable term (`x = W64 0`); equations between two variables are kept. It
   splits on the condition of the `if:` at the head of the expression.
@@ -33,7 +31,7 @@ Differences from Rocq:
   for proofs that do these steps by hand): `wp_auto` rewrites
   stored function literals to `#(func.mk ..)` and unfolds package constants
   (`def a : val := #..`) that block a step; `wp_pures`/`wp_auto` stop at slice
-  composite literals (use `wp_slice_literal`, as in Rocq), reduce `match`es on
+  composite literals (use `wp_slice_literal`), reduce `match`es on
   definitions of constructors, and use the `goose_wp_simp_extra` simp set
   (`Perennial/Golang/Theory/TacticsSimp.lean`).
 * `wp_func_call` only rewrites the WP expression (not the hypotheses), and (with
@@ -141,7 +139,7 @@ def wpFuncCallCore : TacticM Bool :=
     return true
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-/-- Rocq `wp_func_call`: unfold the function value `#(functions f ts)` of the next
+/-- `wp_func_call`: unfold the function value `#(functions f ts)` of the next
 call in the WP expression (see `findFuncCall`) with its `FuncUnfold` instance
 (with `goose.wp.extras`, also for type arguments `[t, ..., t]` matching an
 instance for `List.replicate n t`), then try to solve `isPkgInit` goals. Only the WP
@@ -155,7 +153,7 @@ elab "wp_func_call" : tactic => do
     evalTactic (← `(tactic| rw [func_unfold]))
   evalTactic (← `(tactic| try iPkgInit))
 
-/-- Rocq `wp_method_call`: rewrite `#(methods t m v)` with its `MethodUnfold`
+/-- `wp_method_call`: rewrite `#(methods t m v)` with its `MethodUnfold`
 instance and try to solve `isPkgInit` goals. -/
 macro "wp_method_call" : tactic => `(tactic| (rw [method_unfold]; (try iPkgInit)))
 
@@ -167,7 +165,7 @@ def isPkgInitProp (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
   return e.isAppOfArity ``isPkgInit 4
 
-/-- Rocq `destruct_pkg_init H`: move the `isPkgInit` conjuncts at the front of
+/-- Move the `isPkgInit` conjuncts at the front of
 `H` to the intuitionistic context. Returns `false` if `H` was entirely an
 `isPkgInit` (and is now gone). -/
 partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
@@ -204,8 +202,7 @@ partial def pkgInitInstFields (inst : Lean.Expr) (fuel : Nat := 20) : MetaM (Opt
   | some i => pkgInitInstFields i (fuel - 1)
   | none => return none
 
-/-- Rocq `iEval (rewrite isPkgInit_unfold /=)`: in the conclusion of the
-Iris goal, unfold `isPkgInit pkg` into
+/-- In the conclusion of the Iris goal, unfold `isPkgInit pkg` into
 `□ deps ∗ □ P`, where `deps`/`P` are the fields of the
 `IsPkgInit` instance (so the dependencies appear as `isPkgInit dep ∗ ... ∗ True`).
 The change is definitional (checked by the kernel). -/
@@ -232,7 +229,7 @@ elab "isPkgInit_unfold" : tactic => do
 
 end tactics
 
-/-- Rocq `wp_start_folded as pat`: introduce `Φ`, the precondition `Hpre` and
+/-- `wp_start_folded as pat`: introduce `Φ`, the precondition `Hpre` and
 the continuation `HΦ` of a Texan triple; move `isPkgInit` facts of the
 precondition to the intuitionistic context; destruct the rest with `pat`.
 Does not unfold the function being called. -/
@@ -243,7 +240,7 @@ set_option hygiene false in
 elab_rules : tactic
   | `(tactic| wp_start_folded $[as $pat?]?) => do
     evalTactic (← `(tactic| try imodintro))
-    -- (Rocq) an old `Φ` (e.g. of an enclosing proof) is cleared rather than
+    -- an old `Φ` (e.g. of an enclosing proof) is cleared rather than
     -- shadowed, if it is not used
     evalTactic (← `(tactic| try clear Φ))
     evalTactic (← `(tactic| iintro %Φ Hpre HΦ))
@@ -252,7 +249,7 @@ elab_rules : tactic
       if let some pat := pat? then
         evalTactic (← `(tactic| icases Hpre with $pat))
 
-/-- Rocq `wp_start as pat`: `wp_start_folded as pat`, then unfold the function
+/-- `wp_start as pat`: `wp_start_folded as pat`, then unfold the function
 (`wp_func_call`) or method (`wp_method_call`) being called and take the call
 steps (`wp_call`). `wp_start` keeps the precondition as `Hpre`. -/
 syntax "wp_start" (" as " icasesPat)? : tactic
@@ -263,8 +260,7 @@ macro_rules
   | `(tactic| wp_start) =>
     `(tactic| (wp_start_folded; (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)))
 
-/-- Finish the proof of a package's `wp_initialize'` (Rocq
-`iEval (rewrite isPkgInit_unfold /=). iFrame "∗#".`): unfold `isPkgInit`
+/-- Finish the proof of a package's `wp_initialize'`: unfold `isPkgInit`
 in the goal (`isPkgInit_unfold`) and frame the dependencies' `isPkgInit`
 facts from the intuitionistic context. -/
 macro "is_pkg_init_finish" : tactic => `(tactic| (
@@ -343,8 +339,7 @@ section auto
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Hypotheses `l ↦{dq} v` whose location `l` is the cell `x_ptr` of a Go local
-variable that occurs nowhere else (Rocq `wp_clear_unused_pointsto`, which clears
-any such `l`). -/
+variable that occurs nowhere else. -/
 def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Lean.Expr) : MetaM (List (IVarId × FVarId)) := do
   let goal ← instantiateMVars goal
@@ -406,7 +401,7 @@ where addGoalCleaningCore {ehyps : Q($prop)} (hyps : Hyps bi ehyps) (goal : Lean
          ("!h'", pf)]
   go hyps unused.reverse
 
-/-- Rocq `wp_auto_lc`: repeatedly take pure steps (the first `lc` of them
+/-- `wp_auto_lc`: repeatedly take pure steps (the first `lc` of them
 keeping their later credit, introduced as `Hlc1`, `Hlc2`, ...), loads, stores
 and `let:`-allocations; when the expression becomes a value, continue in the
 postcondition if it is again a WP. At the end, points-to facts of dead locals
@@ -578,7 +573,7 @@ elab "wp_auto_lc " n:num : tactic =>
     hoistCandidates.set #[]
     assignHoisted mvar pf cands (← getThe ProofModeM.State).goals
 
-/-- `wp_auto` (Rocq `wp_auto`) repeatedly takes pure steps, loads (`wp_load`),
+/-- `wp_auto` repeatedly takes pure steps, loads (`wp_load`),
 stores (`wp_store`) and allocations of local variables (`wp_alloc_auto`, which
 names the location of `let: "x" := GoAlloc t #v` `x_ptr` and its points-to
 `x`), stepping into the postcondition when the expression becomes a value.
@@ -733,12 +728,12 @@ elab "wp_intro_simp " tac:tactic : tactic => do
 
 end focus
 
-/-- `wp_apply lem $$ spats as pats` (Rocq `wp_apply (lem with "spats") as "pats"`):
+/-- `wp_apply lem $$ spats as pats`:
 `wp_apply_core lem $$ spats`, then solve `isPkgInit` premises (`iPkgInit`),
 introduce `pats` in the continuation, and run `wp_auto` on it. `with` is
 accepted for `as`.
 
-Options (written right after `wp_apply`; Rocq's `--no-auto`/`--lc n` cannot be
+Options (written right after `wp_apply`; `--no-auto`/`--lc n` cannot be
 used since `--` starts a Lean comment, and are rejected with an error):
 * `wp_apply +noauto lem ... as pats`: introduce `pats` but do not run
   `wp_auto`, so the goal is `WP K[v] {{ Φ }}` right after the call (e.g. to
@@ -765,7 +760,7 @@ syntax wpAs := (" as " <|> " with ") (colGt ppSpace introPat)+
 syntax (name := wpApply) "wp_apply" (ppSpace wpApplyOpt)* ppSpace wpPmTerm (wpAs)? : tactic
 
 open Lean Elab Tactic in
-/-- Reject the Rocq-style options `--no-auto`/`--lc n` after a `wp_apply`: they
+/-- Reject the options `--no-auto`/`--lc n` after a `wp_apply`: they
 are Lean comments, so they would be silently ignored. -/
 def checkNoDashDashOpts (stx : Syntax) : TacticM Unit := do
   let some tail := stx.getTailPos? | return
@@ -887,7 +882,7 @@ theorem if_decide_false_eq_true {A : Type _} (x y : A) :
 
 end bool_lemmas
 
-/-- Rocq `cleanup_bool_decide`. -/
+/-- Simplify `if`s on `decide` conditions and `decide` of `True`/`False`. -/
 macro "cleanup_bool_decide" : tactic => `(tactic|
   try simp only [if_decide_bool_eq_true, if_decide_bool_eq_false, if_decide_eq,
     if_decide_true_eq_false, if_decide_false_eq_true, decide_true, decide_false,
@@ -955,7 +950,7 @@ elab "wp_if_subst_closed " h:ident : tactic => withMainContext do
 
 set_option hygiene false in
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-/-- Rocq `wp_if_destruct`: case split on the condition of the `if:` at the head
+/-- `wp_if_destruct`: case split on the condition of the `if:` at the head
 of the WP expression — the first `decide P` (or Boolean variable `#b`) in it
 (if there is no such `if:`, the first one in the expression, then in the whole
 goal) — then `wp_pures`, `cleanup_bool_decide` and `wp_auto`. The case
@@ -1737,7 +1732,7 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     ipureintro; (try simp only [and_self]); exact Hnn
   · infer_instance))
 
-/-- Rocq `solve_into_val_typed_struct`: prove `IntoValTypedUnderlying V T` for
+/-- `solve_into_val_typed_struct`: prove `IntoValTypedUnderlying V T` for
 a struct type `T` whose typed points-to is the conjunction of its (named)
 field points-tos: with the generic lemma `struct_into_val_typed`
 (`solve_into_val_typed_struct_gen`), or else by symbolic execution. -/
@@ -1761,7 +1756,7 @@ end intoVal_typed_unit
 
 /-! ## Loops -/
 
-/-- Rocq `wp_for`: apply `wp_for` to the loop at the head of the goal with the
+/-- `wp_for`: apply `wp_for` to the loop at the head of the goal with the
 current context as invariant (see `wp_for_core`), then clean up. `wp_for H`
 additionally destructs `H` with `iNamed`. -/
 syntax "wp_for" (ppSpace colGt ident)? : tactic
@@ -1771,7 +1766,7 @@ macro_rules
   | `(tactic| wp_for $h:ident) =>
     `(tactic| (wp_for_core; iNamed $h:ident; (try wp_auto); cleanup_bool_decide; (try wp_auto)))
 
-/-- Rocq `wp_for_post`: prove a `forPostcondition` goal (see
+/-- `wp_for_post`: prove a `forPostcondition` goal (see
 `wp_for_post_core`), then `wp_auto`. -/
 macro "wp_for_post" : tactic => `(tactic| (wp_for_post_core; (try wp_auto)))
 
@@ -1799,7 +1794,7 @@ elab "wp_end_apply" : tactic => do
   evalTactic (← `(tactic| iapply HPost))
 
 set_option hygiene false in
-/-- Rocq `wp_end`: finish a function proof by applying the continuation `HΦ`
+/-- `wp_end`: finish a function proof by applying the continuation `HΦ`
 (or `HPost`) and trying to discharge the remaining goal. If applying the
 continuation fails, the error of `iapply` is reported. -/
 macro "wp_end" : tactic => `(tactic| (

@@ -1,14 +1,10 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/pkg/v3/idutil.v`.
-
-The specs are Rocq's (`isGenerator g R`, `Generator.wp_Next` without
-precondition, `wp_NewGenerator`), except that `Next`'s postcondition gives the
-token `R i` under a premise on the time-receipt bound:
-`⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i` (Rocq: `R i`). Calling `Next` and
+Specs: `isGenerator g R`, `Generator.wp_Next` without precondition, and
+`wp_NewGenerator`. `Next`'s postcondition gives the token `R i` under a premise
+on the time-receipt bound: `⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i`. Calling `Next` and
 `NewGenerator` is always safe (the specs hold for every bound); only the token
-is conditional. Deviation from Rocq: `Generator.wp_Next`, admitted in Rocq
-(after `2^48` calls the IDs wrap around and the invariant has no `R` tokens
-left), is proved using *time receipts* (`Perennial/GooseLang/Receipts.lean`):
+is conditional. Since after `2^48` calls the IDs wrap around and the invariant
+has no `R` tokens left, `Generator.wp_Next` is proved using *time receipts* (`Perennial/GooseLang/Receipts.lean`):
 every call of `Next` collects one exclusive receipt `⧗ 1` (from its first Go
 instruction) into the invariant of `isGenerator`, so the invariant owns
 `⧗ num_used`, and `⧗ (num_used + 1)` bounds `num_used + 1 < receiptBound GF`.
@@ -95,24 +91,23 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg :=
   build_get_is_pkg_init_wf
 
-/-! ### Time receipts for `Next` (Lean addition)
+/-! ### Time receipts for `Next`
 
-Rocq's `isGenerator g R` lets any number of callers run `Next`, but its
-invariant owns only `2^48` of the `R` tokens. Here the invariant also owns one
+`isGenerator g R` lets any number of callers run `Next`, but its
+invariant owns only `2^48` of the `R` tokens. The invariant also owns one
 time receipt per call made so far; since `receiptBound GF` receipts are
 contradictory, under the premise `receiptBound GF ≤ 2^48` fewer than
 `2^48 - 1` calls have completed when a new one starts, so a token is left
 (`take_token`). Without the premise `Next` still runs; the invariant then
 just keeps an empty token list. -/
 
-/-- (Rocq FIXME:) id.go says that the overflowing of cnt into timestamp is
+/-- FIXME: id.go says that the overflowing of cnt into timestamp is
 intentional "to extend the event window to 2^56". However, there are only 48
 bits in the suffix, and the documentation is a typo from an older version of
 the code.
 
-Lean deviation: the invariant additionally owns the time receipts of the
-`num_used` calls made so far (`"Hused"`, with `"%Hnum_used" : 0 ≤ num_used`).
-Rocq: invariant `suffix ∗ HR` only. -/
+Besides `suffix` and the tokens `HR`, the invariant owns the time receipts of the
+`num_used` calls made so far (`"Hused"`, with `"%Hnum_used" : 0 ≤ num_used`). -/
 def isGeneratorDef (g : Loc) (R : w64 → IProp GF) : IProp GF :=
   iprop(∃ («prefix» : Int),
     "#prefix" ∷ g.[Generator, go!"prefix"] ↦□ (W64 («prefix» * 2^48)) ∗
@@ -124,7 +119,6 @@ def isGeneratorDef (g : Loc) (R : w64 → IProp GF) : IProp GF :=
           "HR" ∷ ([∗list] i ∈ seqZ (init + num_used + 1) (2^48 - num_used),
                     R (W64 («prefix» * 2^48 + i % 2^48)))) ∗
     "_" ∷ True)
-/-- (Rocq: `Opaque isGenerator`) -/
 @[irreducible] def isGenerator (g : Loc) (R : w64 → IProp GF) : IProp GF :=
   isGeneratorDef g R
 theorem isGenerator_unseal : @isGenerator = @isGeneratorDef := by
@@ -164,7 +158,7 @@ theorem lowbit_eq (x n : w64) (H : 0 < uint.Z n ∧ uint.Z n < 64) :
   rw [show ((x.toNat : Int) % 2 ^ n.toNat) = ((x.toNat % 2 ^ n.toNat : Nat) : Int) by push_cast; rfl]
   rw [BitVec.ofInt_natCast, BitVec.toNat_ofNat, Nat.mod_eq_of_lt hlt]
 
-/-- Specialized to 48 low bits. (NOTE (Rocq): need `0 < uint.Z n` because
+/-- Specialized to 48 low bits. (NOTE: need `0 < uint.Z n` because
 there's no guarantees about `word.sru` when the shift amount is the width.) -/
 theorem wp_lowbit (x n : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ ⌜0 < uint.Z n ∧ uint.Z n < 64⌝ }}
@@ -215,9 +209,8 @@ theorem take_token (Φ : Int → IProp GF) (a n : Int) (M : Nat) (hlt : n.toNat 
     · iapply BigSepL.bigSepL_nil.2
       iempintro
 
-/-- Lean deviation: proved (Rocq: admitted) using time receipts, for every
-time-receipt bound; the postcondition gives `R i` under the premise
-`receiptBound GF ≤ 2^48` (Rocq: `R i`), see the module docstring. -/
+/-- Proved using time receipts, for every time-receipt bound; the postcondition
+gives `R i` under the premise `receiptBound GF ≤ 2^48`, see the module docstring. -/
 theorem Generator.wp_Next (g : Loc) (R : w64 → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isGenerator g R }}
       (App (Val (g @!! go.GoType.PointerType Generator.ty @!! go!"Next")) (Val #()))
@@ -328,7 +321,7 @@ theorem wp_NewGenerator' (R : w64 → IProp GF)
     $$ prefix' suffix HR with Hgen
   iapply HΦ $$ Hgen
 
-/-- (Rocq TODO:) this is overly conservative. Really should only demand `R` for
+/-- TODO: this is overly conservative. Really should only demand `R` for
 the range of IDs with future timestamps, since the old ones might've been used
 before a crash+restart. -/
 theorem wp_NewGenerator (R : w64 → IProp GF)

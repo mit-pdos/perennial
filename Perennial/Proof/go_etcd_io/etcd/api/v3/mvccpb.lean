@@ -1,6 +1,3 @@
-/-
-Port of `new/proof/go_etcd_io/etcd/api/v3/mvccpb.v`.
--/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.api.v3.mvccpb
 import Perennial.GeneratedProof.go_etcd_io.etcd.api.v3.mvccpb

@@ -26,11 +26,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance counter_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.counter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance counter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.counter github_com.prometheus.client_golang.prometheus.counter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end counter
@@ -415,11 +415,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance memStatsMetrics_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.memStatsMetrics :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance memStatsMetrics_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.memStatsMetrics github_com.prometheus.client_golang.prometheus.memStatsMetrics.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end memStatsMetrics
@@ -434,11 +434,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance goCollector_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.goCollector :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance goCollector_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.goCollector github_com.prometheus.client_golang.prometheus.goCollector.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end goCollector
@@ -453,11 +453,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance rmMetricDesc_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.rmMetricDesc :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance rmMetricDesc_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.rmMetricDesc github_com.prometheus.client_golang.prometheus.rmMetricDesc.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end rmMetricDesc
@@ -648,11 +648,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance histogram_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.histogram :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance histogram_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.histogram github_com.prometheus.client_golang.prometheus.histogram.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end histogram
@@ -707,11 +707,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance constHistogram_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.constHistogram :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance constHistogram_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constHistogram github_com.prometheus.client_golang.prometheus.constHistogram.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end constHistogram

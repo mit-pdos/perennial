@@ -1,6 +1,3 @@
-/-
-Port of `new/golang/defn/pre.v`.
--/
 import Perennial.Golang.Defn.Exception
 import Perennial.Golang.Defn.Pkg
 import Perennial.Golang.Defn.Loop

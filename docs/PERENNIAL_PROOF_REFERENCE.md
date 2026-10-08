@@ -42,7 +42,7 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 | Lean | Meaning |
 |:--|:--|
 | `@! F` | `#(functions F [])`, the function `F` (a `GoString` like `go!"sort.Search"`) |
-| `r @!! T @!! go!"m"` | `#(methods T go!"m" #r)`, method `m` of `r : T` (Rocq `r @! T @! "m"`) |
+| `r @!! T @!! go!"m"` | `#(methods T go!"m" #r)`, method `m` of `r : T` |
 | `(App (App (Val f) (Val #x)) (Val #y))` | the call `f x y` |
 | `#x` | `intoVal x`: Lean value to GooseLang `val` |
 | `PairV #a #b` | multiple return values `(a, b)` |
@@ -71,7 +71,7 @@ is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `GoString` (a
 
 ### Sealing
 
-Rocq `Opaque` definitions are written
+Sealed (opaque) definitions are written
 
 ```
 def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
@@ -193,8 +193,7 @@ unfolds to a `rec:`/`λ:` (e.g. a `F.impl` constant), then `wp_pures`.
 `ProofMode.lean`. `wp_bind e` focuses `WP K[e'] {{ Φ }}` on the outermost
 subexpression `e'` in evaluation position matching the pattern `e` (holes `_`),
 giving `WP e' {{ v, WP K[v] {{ Φ }} }}`; e.g. `wp_bind (CmpXchg _ _ _)` before
-opening an invariant. Without argument: the next "interesting" operation (Rocq
-`wp_bind_next`). `wp_apply` binds automatically.
+opening an invariant. Without argument: the next "interesting" operation. `wp_apply` binds automatically.
 
 ### `wp_apply lem $$ spats as pats`
 
@@ -203,12 +202,11 @@ opening an invariant. Without argument: the next "interesting" operation (Rocq
 after the call, e.g. to `imod` an update the spec returns; to eliminate an update
 in the spec's own postcondition first `iapply wp_fupd`), `wp_apply (lc := n) lem
 ...` (the final `wp_auto` produces `n` credits `Hlc1 ... Hlcn`, and fails if there
-are fewer pure steps). Rocq's `--no-auto`/`--lc n` cannot be used (`--` starts a
-Lean comment) and are rejected with an error. `with` is a synonym of `as`.
+are fewer pure steps). `with` is a synonym of `as`.
 
 1. Apply `lem` (a Lean lemma, possibly with explicit arguments, or an Iris
    hypothesis) to the first subexpression in evaluation position where it fits,
-   binding the context (Rocq `wp_bind` + `iApply`). If it does not fit, run
+   binding the context. If it does not fit, run
    `wp_pures` and try again.
 2. Strip a leading `▷` from the premise goals and close trivial ones; solve
    `isPkgInit` premises (`iPkgInit`); close pure side conditions without
@@ -316,8 +314,8 @@ Where to join: after a case split whose cases fall through to the same code
 do not return). It does not help when every case runs its own code to the end
 of the function (e.g. a `switch` whose cases all `return`, as in the channel
 model's `TryReceive`): there is no common tail.
-`wp_if_join asn with pat` (`Perennial/Golang/Theory/IfJoin.lean`) is the
-literal port of Rocq's tactic (general `asn : val → IProp`).
+`wp_if_join asn with [pat]` (`Perennial/Golang/Theory/IfJoin.lean`) takes a
+general `asn : val → IProp`; prefer `wp_join R` when it applies.
 
 ### `wp_for`, `wp_for HI`, `wp_for_post`
 
@@ -368,15 +366,6 @@ Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z s.len
 error is reported; otherwise remaining goals are left to you (often
 `ipureintro; word`).
 
-### Not ported / different
-
-* Rocq `wp_if_join asn with "pat"` is `wp_if_join asn with [pat]`
-  (`IfJoin.lean`); prefer `wp_join R` (above).
-* Rocq `wp_apply ... as "%x Hx"` is `wp_apply ... as %x Hx`; `as (x) "H"` is
-  `as %x H`.
-* Rocq's global `wp_apply_auto_default` switch: use `wp_apply +noauto`.
-* Rocq `wp_alloc l as "?"`: `wp_alloc_anon` (or `wp_alloc_auto`).
-
 ### Options
 
 | Option | Default | Effect |
@@ -412,7 +401,7 @@ the old behaviour).
 | `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
 | `iinv H with pat Hclose` | iris-lean's `iinv`, re-implemented: mask side conditions by `solve_ndisj`, no `simp [*]` (no deep recursion with word facts), an error (suggesting `wp_bind`) on a non-atomic WP | same |
 | `wp_func_lits` | rewrite function literal values `RecV f x e` in the WP expression to `#(func.mk f x e)` (`wp_apply` tries it when a spec does not apply, e.g. `wp_mapInsert` of a closure) | `Golang/Theory/Auto.lean` |
-| `wp_alloc_anon` | an allocation not bound by `let:` (e.g. `&S{..}`), inaccessible names (Rocq `wp_alloc l as "?"`) | `Golang/Theory/Mem.lean` |
+| `wp_alloc_anon` | an allocation not bound by `let:` (e.g. `&S{..}`), inaccessible names | `Golang/Theory/Mem.lean` |
 | `wp_if_angelic` | for the head `if: #(decide P) then e else AngelicExit #()`: continue with `e` under a hypothesis `P` (introduce it with `iintro %H`) | `Golang/Theory/Auto.lean` |
 | `no_sorry tac` | run `tac` without error recovery and fail if the proof would contain `sorry` (used by `word`, `list_solver`) | `Std/Word/Automation.lean` |
 | `word_lit_simp` | evaluate `sint.Z`/`uint.Z`/`sint.nat`/`uint.nat` of word literals everywhere (`sint.Z (W64 7)` to `7`), keeping `W64 n` (a bare `simp` turns `W64 n` into `n#64`, which then no longer matches `W64 n` for `iframe`) | `Golang/Theory/TacticsSimp.lean` |
@@ -802,7 +791,7 @@ fails); only the token in `Next`'s postcondition is conditional. Either
 `num_used < 2^48` and the head of the token list is returned (the premise is
 unused), or the list is empty, stays empty, and the premise
 `receiptBound GF ≤ 2^48` contradicts `num_used + 1 < receiptBound GF`
-(`idutil.take_token`). The specs are Rocq's, with no ticket, except for that
+(`idutil.take_token`). The specs mention no ticket, apart from that
 premise:
 
 ```

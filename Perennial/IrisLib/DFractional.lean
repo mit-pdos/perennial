@@ -1,6 +1,4 @@
 /-
-Port of `src/iris_lib/dfractional.v`.
-
 This library is a (partial) copy of the Iris fractional library, adapted to
 dfrac. We do extend the interface to include dfrac-specific laws.
 -/
@@ -37,7 +35,7 @@ theorem fractional_of_dfractional (Φ : DFrac → PROP) [h : DFractional Φ] :
     Fractional (fun q => Φ (.own q)) where
   fractional p q := h.dfractional (.own p) (.own q)
 
-/- TODO: not sure if this is a good instance to have (Rocq comment). -/
+/- TODO: not sure if this is a good instance to have. -/
 set_option synthInstance.checkSynthOrder false in
 instance (priority := low) as_fractional_of_as_dfractional {q : Qp}
     [h : AsDFractional P Φ (.own q)] :
@@ -51,7 +49,7 @@ instance (priority := low) dfractional_as_dfractional [h : DFractional Φ] (dq :
   as_dfractional := .rfl
   as_dfractional_dfractional := h
 
-/-- Rocq has this as an instance; here it is a theorem, since `Φ` cannot be
+/-- A theorem rather than an instance, since `Φ` cannot be
 determined from `Persistent P`. -/
 theorem as_dfractional_persistent [h : AsDFractional P Φ .discard] : Persistent P where
   persistent :=

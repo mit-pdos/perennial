@@ -26,11 +26,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance finalizer_typed_pointsto :
     TypedPointsto (GF := GF) runtime.finalizer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance finalizer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.finalizer runtime.finalizer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end finalizer
@@ -295,11 +295,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance workType_typed_pointsto :
     TypedPointsto (GF := GF) runtime.workType :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance workType_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.workType runtime.workType.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end workType
@@ -314,11 +314,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance gcCPULimiterState_typed_pointsto :
     TypedPointsto (GF := GF) runtime.gcCPULimiterState :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance gcCPULimiterState_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.gcCPULimiterState runtime.gcCPULimiterState.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end gcCPULimiterState
@@ -373,11 +373,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance spanQueue_typed_pointsto :
     TypedPointsto (GF := GF) runtime.spanQueue :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance spanQueue_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.spanQueue runtime.spanQueue.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end spanQueue
@@ -500,11 +500,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance gcControllerState_typed_pointsto :
     TypedPointsto (GF := GF) runtime.gcControllerState :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance gcControllerState_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.gcControllerState runtime.gcControllerState.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end gcControllerState
@@ -1117,11 +1117,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance mheap_typed_pointsto :
     TypedPointsto (GF := GF) runtime.mheap :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance mheap_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.mheap runtime.mheap.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end mheap
@@ -1426,11 +1426,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance mspan_typed_pointsto :
     TypedPointsto (GF := GF) runtime.mspan :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance mspan_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.mspan runtime.mspan.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end mspan
@@ -1610,11 +1610,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance specialfinalizer_typed_pointsto :
     TypedPointsto (GF := GF) runtime.specialfinalizer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance specialfinalizer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.specialfinalizer runtime.specialfinalizer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end specialfinalizer
@@ -1629,11 +1629,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance specialCheckFinalizer_typed_pointsto :
     TypedPointsto (GF := GF) runtime.specialCheckFinalizer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance specialCheckFinalizer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.specialCheckFinalizer runtime.specialCheckFinalizer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end specialCheckFinalizer
@@ -1933,11 +1933,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance pageAlloc_typed_pointsto :
     TypedPointsto (GF := GF) runtime.pageAlloc :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance pageAlloc_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.pageAlloc runtime.pageAlloc.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end pageAlloc

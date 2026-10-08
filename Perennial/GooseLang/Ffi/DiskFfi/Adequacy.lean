@@ -1,10 +1,7 @@
 /-
-Adequacy for the disk FFI. Port of the non-crash parts of
-`src/goose_lang/ffi/disk_ffi/adequacy.v` (`disk_interp_adequacy`), plus a
-disk-specific instance of `goose_adequacy`.
-
-Differences from the Rocq version: no crash obligation, no `IntoCrash`
-instances.
+Adequacy for the disk FFI (`disk_interp_adequacy`), plus a disk-specific
+instance of `goose_adequacy`. Crashes are not modeled: there is no crash
+obligation and there are no `IntoCrash` instances.
 -/
 import Perennial.GooseLang.Adequacy
 import Perennial.GooseLang.Ffi.DiskFfi.Specs
@@ -17,7 +14,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std ProofMode
 
 attribute [local instance] disk_op disk_model disk_semantics disk_interp
 
-/-- Rocq `disk_interp_adequacy`. -/
+/-- Adequacy of the disk FFI's ghost state interpretation. -/
 instance disk_interp_adequacy : FfiInterpAdequacy disk_model where
   ffiGpreS := DiskPreG
   ffi_initgP _ := True

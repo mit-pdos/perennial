@@ -1,13 +1,12 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel/workq.v`:
-a work queue with work stealing (bag and broadcast channel idioms).
+A work queue with work stealing (bag and broadcast channel idioms).
 
-Lean notes:
-* stdpp `imap f l` is `List.mapIdx f l` and `sum_list` is `List.sum`; the imap-sum
-  lemmas are proved via two general lemmas `mapIdx_sum_congr`/`mapIdx_sum_update`.
+Notes:
+* Sums over indexed maps are `List.sum (List.mapIdx f l)`; the needed facts are
+  proved via two general lemmas `mapIdx_sum_congr`/`mapIdx_sum_update`.
 * `Pos.Countable loc` (needed for channels of channels / pointers) comes from
   `Perennial/Proof/time.lean` (`loc_countable`), hence the import.
-* The coordinator invariant is a separate definition `coordinatorInv` (Rocq inlines it).
+* The coordinator invariant is a separate definition `coordinatorInv`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.sync.atomic
@@ -78,7 +77,7 @@ theorem mapIdx_sum_update {A : Type} (h1 h2 : Nat → A → Nat) (l : List A) (i
       rw [H 0 a (by omega) rfl]
       omega
 
-/-- The contribution of document `i` (Rocq inlines this function in an `imap`). -/
+/-- The contribution of document `i`. -/
 def countedFn (f : GoString → Nat) (remaining_docs : GMap Nat (Option GoString))
     (i : Nat) (doc : GoString) : Nat :=
   match remaining_docs !! i with

@@ -425,11 +425,11 @@ variable [package_sem' : fmt.Assumptions]
 
 instance pp_typed_pointsto :
     TypedPointsto (GF := GF) fmt.pp :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance pp_into_val_typed :
     IntoValTypedUnderlying (GF := GF) fmt.pp fmt.pp.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end pp
@@ -717,11 +717,11 @@ variable [package_sem' : fmt.Assumptions]
 
 instance readRune_typed_pointsto :
     TypedPointsto (GF := GF) fmt.readRune :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance readRune_into_val_typed :
     IntoValTypedUnderlying (GF := GF) fmt.readRune fmt.readRune.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end readRune

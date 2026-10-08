@@ -1,9 +1,6 @@
 /-
-The `word` tactic. Port of `src/Helpers/Word/Automation.v`.
-
-Rocq's `word` turns word arithmetic into `Z` arithmetic (`uint.Z (word.add x y)`
-becomes `wrap (uint.Z x + uint.Z y)`) and calls `lia`. Here words are
-`BitVec n`, `uint.Z x = (x.toNat : Int)` and `sint.Z x = x.toInt`.
+The `word` tactic: it turns word arithmetic into integer arithmetic and calls
+`omega`. Words are `BitVec n`, `uint.Z x = (x.toNat : Int)` and `sint.Z x = x.toInt`.
 
 `word` (see `word_fast`) does:
 
@@ -11,8 +8,8 @@ becomes `wrap (uint.Z x + uint.Z y)`) and calls `lia`. Here words are
    hypotheses `omega` cannot use or that are not connected to the goal through
    shared variables (`word_filter pre`), so that the rewriting steps below only
    see the relevant hypotheses;
-2. unfold `uint.Z`, `sint.Z`, `W64`, ... and everything tagged `@[word_unfold]`
-   (Rocq: `Hint Unfold foo : word`), rewrite sign extensions
+2. unfold `uint.Z`, `sint.Z`, `W64`, ... and everything tagged `@[word_unfold]`,
+   rewrite sign extensions
    `W64 (sint.Z (x : w32))`, and evaluate word literals (`W64 3` becomes `3#64`,
    `(W64 3).toInt` becomes `3`) (`word_unfold_lit`);
 3. drop the hypotheses `omega` cannot use, and the arithmetic hypotheses not
@@ -48,10 +45,10 @@ a heartbeat limit, then `omega`, then `bv_normalize` (the kernel-checked
 rewriting front end of `bv_decide`; it closes some bitwise goals on concrete
 widths, where `omega` is helpless), also bounded. `word` never calls
 `bv_decide` itself: its SAT step is trusted via `Lean.ofReduceBool` (native
-code), which this port avoids. `word` therefore fails in bounded time instead
+code), which `word` avoids. `word` therefore fails in bounded time instead
 of hanging.
 
-Like Rocq's `word`, it is good at linear arithmetic (`x + y`, `4 * x`, `x / 8`,
+It is good at linear arithmetic (`x + y`, `4 * x`, `x / 8`,
 `x % 8`), treats non-linear products as atoms, and does not understand
 bitwise operations unless `bv_normalize` can do the whole goal.
 
@@ -985,7 +982,7 @@ elab "word_cached" : tactic => do
   let pf ← instantiateMVars (mkMVar g)
   g.withContext (word.cacheStore goal pf)
 
-/-- Solve word-arithmetic goals (Rocq `word`). See the module docstring. Closes
+/-- Solve word-arithmetic goals. See the module docstring. Closes
 the goal or fails (never admits it). -/
 syntax "word" : tactic
 macro_rules
@@ -993,7 +990,7 @@ macro_rules
 
 /-! ## Rewriting lemmas for `uint.Z` / `sint.Z` of operations
 
-Names follow coqutil (`word.unsigned_add`, ...). The `_nowrap` versions have a
+Names follow the `word.unsigned_add`, ... convention. The `_nowrap` versions have a
 no-overflow hypothesis and are tagged `@[word_nowrap]`... (see `word_simp`). -/
 
 namespace word
@@ -1052,11 +1049,10 @@ theorem signed_range (x : BitVec n) :
   simp only [sint.Z]
   exact ⟨BitVec.le_toInt x, BitVec.toInt_lt⟩
 
-/-- coqutil `word.word_eq_iff_Z_eq` -/
+/-- Two words are equal iff their unsigned values are. -/
 theorem word_eq_iff_Z_eq {x y : BitVec n} : x = y ↔ uint.Z x = uint.Z y := uint_Z_inj.symm
 
-/-- Rocq `Automation.word.word_signed_divs_nowrap_pos` (signed division of
-non-negative by positive). -/
+/-- Signed division of a non-negative by a positive word does not wrap. -/
 theorem word_signed_divs_nowrap_pos (x y : BitVec n) (h : 0 < sint.Z y ∧ 0 ≤ sint.Z x) :
     sint.Z (x.sdiv y) = sint.Z x / sint.Z y := by
   simp only [sint.Z] at *
@@ -1084,7 +1080,7 @@ macro "word_simp" : tactic => `(tactic|
     word.unsigned_mul_nowrap, word.unsigned_of_Z_nowrap, word.unsigned_divu,
     word.unsigned_modu])
 
-/-- Rocq `nat_cleanup`. -/
+/-- Clean up `Nat`/`Int` conversions of `uint.Z`/`uint.nat`. -/
 macro "nat_cleanup" : tactic => `(tactic|
   (try simp only [Int.toNat_natCast, Int.toNat_of_nonneg, uint.Z, uint.nat]))
 

@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/handshake.v`: a simple handshake on an unbuffered
+A simple handshake on an unbuffered
 channel.
 -/
 import Perennial.Golang.Theory.Chan.Idioms.Base

@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/nil.v`.
+Proofs of the goose semantics tests for comparisons with `nil`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 
@@ -29,21 +29,21 @@ theorem wp_testInterfaceNilWithType : TestFunOk (GF := GF) testInterfaceNilWithT
 
 theorem wp_testComparePointerToNil : TestFunOk (GF := GF) testComparePointerToNil := by
   semantics_auto
-  -- Rocq: Abort ("need a lemma showing points-tos are non-null"); `typedPointsto_not_null`
+  -- points-tos are non-null: `typedPointsto_not_null`
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ «$r0»
   simp only [Hnn, decide_false, Bool.not_false]
   iexact HΦ
 
 theorem wp_testComparePointerWrappedToNil : TestFunOk (GF := GF) testComparePointerWrappedToNil := by
   semantics_auto
-  -- Rocq: Abort ("array points-to is non null"); the slice has length 1
+  -- the slice has length 1, so it is not nil
   have h : ¬ slice.mk p_ptr (W64 1) (W64 1) = slice.nil := by
     intro h; injection h with _ h2; exact absurd h2 (by decide)
   simp only [h, decide_false, Bool.not_false]
   iexact HΦ
 
 theorem wp_testCompareSliceToNil : TestFunOk (GF := GF) testCompareSliceToNil := by
-  -- Rocq: Abort ("need a lemma showing allocations are non-nil"). `steps` unfolds
+  -- allocations are non-nil: `steps` unfolds
   -- `make([]byte, 0)`, which allocates at an arbitrary offset of block 1.
   semantics_auto
   wp_apply wp_ArbitraryInt with %x _

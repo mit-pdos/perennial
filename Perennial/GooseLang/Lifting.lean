@@ -1,18 +1,17 @@
 /-
-Program-logic base for GooseLang. Port of `src/goose_lang/lifting.v`, without
-the crash machinery.
+Program-logic base for GooseLang, without crash machinery.
 
-Differences from the Rocq version:
+Notes:
 * No crash logic: no `wpc`, `crash_borrow`, crash generations, `cred_*` credit
   tokens or `pinv_tok`. iris-lean's `wp` (with its own later credits) is used.
 * iris-lean has a single `IrisGS_gen` class; it is instantiated
   (`goose_irisGS`) from `gooseGlobalGS` and `gooseLocalGS`. `heapGS` bundles the
   two. `heapGS` does *not* contain the `GoGlobalContext` (the language instance
   itself depends on it, so it must be a separate instance argument), nor the
-  `New.ghost` `allG` ghost state.
-* `numLatersPerStep` is `0` (Rocq: `3^(n+1)`). Every step still yields one
+  `allG` ghost state.
+* `numLatersPerStep` is `0`. Every step still yields one
   later credit (`£ 1`).
-* (Lean addition) The language instance is the step-bounded layer of
+* The language instance is the step-bounded layer of
   `BoundedLang.lean`, whose state is `BcfgState = CfgState × Nat` (the `Nat`
   is the fuel `f`); the state interpretation (`gooseBstateInterp`) adds the
   authoritative counter of time receipts for that fuel (`receiptFuel f`, i.e.
@@ -22,7 +21,7 @@ Differences from the Rocq version:
   and `gooseStateInterp` (as `gooseCfgInterp`); Go instructions, the only
   counted steps, have their own lemma `wp_GoInstruction_receipt`, which handles
   the stutter by Löb induction and hands out a time receipt.
-* The state interpretation is that of Rocq's `goose_generationGS` (`naHeapCtx`,
+* The state interpretation consists of a per-generation part (`naHeapCtx`,
   `ffiLocalCtx`, `ownGoStateCtx`, `goLctx` equality) plus the global part
   (`ffiGlobalCtx`, iris-lean's prophecy map `prophMapInterp`).
 * `Alloc` allocates a single cell, so `wp_allocN_seq` gives `pointstoVals l
@@ -102,14 +101,13 @@ attribute [local instance] GSet.lawfulSet
 section definitions
 variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- Rocq `heapPointsto`: a non-null location with a non-atomic points-to. -/
+/-- A non-null location with a non-atomic points-to. -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
   iprop(⌜l ≠ null⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
 
-/- `l ↦{dq} v`, `l ↦ v` and `l ↦□ v` for `heapPointsto`. Rocq makes these
-notations local to `lifting.v`; here they are scoped to `goose_heap`. -/
+/- `l ↦{dq} v`, `l ↦ v` and `l ↦□ v` for `heapPointsto`, scoped to `goose_heap`. -/
 namespace goose_heap
 scoped notation:50 l:50 " ↦{" dq "} " v:50 => heapPointsto l dq v
 scoped notation:50 l:50 " ↦ " v:50 => heapPointsto l (DFrac.own 1) v
@@ -287,8 +285,8 @@ end go_state_definitions
 
 /-- An FFI layer's ghost state: `ffiLocalGS`/`ffiGlobalGS` bundle the CMRAs and
 ghost names it uses, and `ffiLocalCtx`/`ffiGlobalCtx` interpret its states.
-(Rocq's `ffiGlobalStart`, `ffiLocalStart`, `ffi_restart` and
-`ffi_crash_rel` are crash/adequacy machinery and are omitted.) -/
+(The start resources `ffiGlobalStart`/`ffiLocalStart` are in
+`FfiInterpAdequacy`; there is no crash machinery.) -/
 class FfiInterp (ffi : FfiModel) where
   ffiLocalGS : BundledGFunctors → Type
   ffiGlobalGS : BundledGFunctors → Type
@@ -306,7 +304,7 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   gooseInvGS : InvGS_gen hlc GF
   goose_prophGS : prophMapGS proph_id val GF (GMap proph_id)
   gooseFfiGlobalGS : @ffiGlobalGS ffi _ GF
-  /-- (Lean addition) time receipts, tied to the step fuel of the bounded semantics;
+  /-- Time receipts, tied to the step fuel of the bounded semantics;
   carries the time-receipt bound `receiptBound GF` -/
   goose_receiptGS : ReceiptGS GF
 
@@ -321,7 +319,7 @@ attribute [reducible, instance] GooseGlobalGS.goose_prophGS GooseGlobalGS.goose_
   GooseLocalGS.goose_go_local_context
   GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS
 
-/-- Bundles the global and local ghost state (Rocq `heapGS`, minus `allG` and
+/-- Bundles the global and local ghost state (not including `allG` or
 `GoGlobalContext`). -/
 class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   goose_globalGS : GooseGlobalGS hlc GF
@@ -342,8 +340,8 @@ def tls : NaMode → LockState
 
 variable {hlc : HasLC} {GF : BundledGFunctors}
 
-/-- The GooseLang state interpretation (Rocq `goose_generationGS.state_interp`
-together with the non-crash parts of `goose_irisGS.global_state_interp`). -/
+/-- The GooseLang state interpretation: the per-generation part together with
+the global part (FFI global state and prophecy map). -/
 def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : CfgState) (κs : List Observation) : IProp GF :=
   iprop(naHeapCtx tls σ.1.heap ∗
@@ -354,8 +352,7 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     prophMapInterp κs σ.2.usedProphId)
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
-the real configuration and the authoritative receipt counter for the fuel
-(Lean addition). -/
+the real configuration and the authoritative receipt counter for the fuel. -/
 def gooseBstateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : BcfgState) (κs : List Observation) : IProp GF :=
   iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2)
@@ -890,7 +887,7 @@ theorem isWriting_Some {A : Type} (mna : Option (NonAtomic A)) (a : A)
     (h : mna = some (Writing, a)) : IsWriting mna :=
   ⟨a, h⟩
 
-/-- Rocq's read-lock function for `naMode`. -/
+/-- The read-lock function for `naMode`. -/
 def naModeRl : NaMode → NaMode
   | Reading n => Reading (n + 1)
   | m => m
@@ -1122,7 +1119,6 @@ theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
   | some _ =>
     exact absurd ((GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)) (freshLocs_fresh _ i)
 
-/-- Rocq `pointstoVals`. -/
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
@@ -1200,7 +1196,7 @@ theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
 
 /-! ### Go instructions -/
 
-/-- WP for go instructions, with time receipts (Lean addition). Go instructions
+/-- WP for go instructions, with time receipts. Go instructions
 are the counted steps of the bounded semantics: below the bound the step yields
 an exclusive receipt `⧗ 1` and increments a persistent receipt `⧖ m` (the
 paper's `{⧖ m} tick v {⧗ 1 ∗ ⧖ (m + 1)}`); at the bound the step stutters,

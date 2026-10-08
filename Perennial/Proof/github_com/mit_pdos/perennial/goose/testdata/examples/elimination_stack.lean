@@ -1,10 +1,9 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/elimination_stack.v`:
-a lock-based stack (`LockedStack`) and an elimination stack built on top of it,
+A lock-based stack (`LockedStack`) and an elimination stack built on top of it,
 where a `Push` and a `Pop` can exchange a value through an unbuffered channel.
 
 Lean notes:
-* Rocq's ghost names `Hs●`/`Hs◯` are `Hsa`/`Hsf` (auth/frag halves), similarly
+* The ghost hypotheses `Hsa`/`Hsf` are the auth/frag halves, similarly
   `Hra`/`Hrf`.
 * There is no `solve_ndisj`; the mask side conditions are proved with the
   lemmas `mask_diff_ndot` and `mask_ndot_ne'` (`Perennial/Std/Namespaces.lean`).
@@ -220,7 +219,7 @@ variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 def ownEliminationStack (γ : EliminationStackNames) (σ : List GoString) : IProp GF :=
   ghostVar γ.specGn (1 : Qp).half σ
 
-/-- (Rocq `ownExchangerInv`) Supports atomic updates for Pop and Push that are
+/-- Supports atomic updates for Pop and Push that are
 allowed to access `⊤ ∖ N`. -/
 abbrev ownExchangerInv (γ : EliminationStackNames) (N : Namespace)
     (exstate : ChanState GoString) : IProp GF :=

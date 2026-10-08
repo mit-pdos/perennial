@@ -24,11 +24,11 @@ variable [package_sem' : log.Assumptions]
 
 instance Logger_typed_pointsto :
     TypedPointsto (GF := GF) log.Logger :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Logger_into_val_typed :
     IntoValTypedUnderlying (GF := GF) log.Logger log.Logger.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Logger

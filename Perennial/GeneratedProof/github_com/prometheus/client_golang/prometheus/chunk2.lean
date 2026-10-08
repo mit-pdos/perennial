@@ -66,11 +66,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance summary_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.summary :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance summary_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.summary github_com.prometheus.client_golang.prometheus.summary.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end summary
@@ -142,11 +142,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance noObjectivesSummary_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.noObjectivesSummary :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance noObjectivesSummary_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.noObjectivesSummary github_com.prometheus.client_golang.prometheus.noObjectivesSummary.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end noObjectivesSummary
@@ -201,11 +201,11 @@ variable [package_sem' : github_com.prometheus.client_golang.prometheus.Assumpti
 
 instance constSummary_typed_pointsto :
     TypedPointsto (GF := GF) github_com.prometheus.client_golang.prometheus.constSummary :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance constSummary_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.prometheus.client_golang.prometheus.constSummary github_com.prometheus.client_golang.prometheus.constSummary.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end constSummary

@@ -1,9 +1,8 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3/concurrency.v`.
+Specs for `go.etcd.io/etcd/client/v3/concurrency`.
 
-Lean notes:
-* Rocq's `concurrencyG Σ` (an unbound, implicitly generalized class) is
-  `[allG GF]`; the broadcast idiom fixes `hlc := HasLC.hasLC`.
+Notes:
+* The ghost-state assumption is `[allG GF]`; the broadcast idiom fixes `hlc := HasLC.hasLC`.
 * The `zapcore`/`zap` package-init instances are the ones of
   `client/v3_proof/definitions.lean`.
 -/
@@ -67,7 +66,6 @@ def isSessionDef (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) : IProp GF 
     -- One can keep calling receive, and the only thing they might get back is a
     -- "closed" value.
     "#Hdonec" ∷ ownBroadcastChan donec γdonec iprop(True) .Unknown)
-/-- (Rocq: `Opaque isSession`) -/
 @[irreducible] def isSession (s : Loc) (γ : Clientv3Names) (lease : v3.LeaseID) : IProp GF :=
   isSessionDef s γ lease
 theorem isSession_unseal : @isSession = @isSessionDef := by funext; with_unfolding_all rfl
@@ -120,7 +118,7 @@ theorem wp_NewSession (client : Loc) (γetcd : Clientv3Names) :
   icases Hkch with ⟨%γkch, #Hkch, #Hkrecv⟩
   wp_auto
   wp_if_destruct
-  · -- NOTE (Rocq): if `clientv3.lessor.KeepAlive` returns `nil` for its error, it is
+  · -- NOTE: if `clientv3.lessor.KeepAlive` returns `nil` for its error, it is
     -- guaranteed to return a non-nil chan, so this case is impossible.
     ihave %hbad := isChan_not_null $$ Hkch
     exact absurd rfl hbad

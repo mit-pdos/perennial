@@ -1,6 +1,5 @@
 /-
 Package initialization instances of `go.opentelemetry.io/otel/trace/embedded` (only its types are translated).
-Not in Rocq.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_opentelemetry_io.otel.trace.embedded

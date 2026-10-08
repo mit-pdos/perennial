@@ -1,21 +1,16 @@
 /-
-Port of `src/algebra/big_op/bigSepML.v`.
-
 `bigSepML Φ m l` (notation `[∗maplist] k ↦ x;v ∈ m;l, P`) relates a map `m`
 and a list `l` whose elements are in bijection with the keys of `m`: there is
 a map `lm` with the same keys as `m` whose values are a permutation of `l`, and
 `Φ k (m !! k) (lm !! k)` holds for each key.
 
-Differences from Rocq:
+Notes:
 * Maps are any iris-lean `LawfulFiniteMap M K` (with `DecidableEq K`); in
   particular `Perennial.gmap`. List `delete i l` is `l.eraseIdx i`, list
   `<[i := x]> l` is `l.set i x`, and `l !! i` is `l[i]?`.
 * `bigSepML` is a plain definition (no seal); `bigSepML_eq` unfolds it.
 * `bigSepML_nodup` needs no `BiPureForall` (iris-lean proves `pure_forall`
   for every BI).
-* The `big_sepMs` part (`bsm_maps`, `bsm_pred`, `bsm_keys_match`,
-  `bsm_key_pred`, `big_sepMs` and its notation) is not ported: it is unused and
-  its only lemma (`big_sepM_sepMs`) is `Abort`ed in Rocq.
 -/
 import Iris.BI
 import Iris.BI.BigOp
@@ -56,7 +51,6 @@ variable {PROP : Type _} [BI PROP]
 variable {K : Type _} {M : Type u → Type _} [LawfulFiniteMap M K]
 variable {V LV : Type u}
 
-/-- Rocq `bigSepML`. -/
 def bigSepML (Φ : K → V → LV → PROP) (m : M V) (l : List LV) : PROP :=
   iprop(∃ lm : M LV, ⌜l.Perm ((FiniteMap.toList lm).map Prod.snd)⌝ ∗
     [∗map] k ↦ v;lvm ∈ m;lm, Φ k v lvm)
@@ -67,7 +61,7 @@ theorem bigSepML_eq (Φ : K → V → LV → PROP) (m : M V) (l : List LV) :
 
 end def_
 
-/-- Rocq notation `[∗ maplist] k ↦ x ; v ∈ m ; l , P`. -/
+/-- Notation `[∗maplist] k ↦ x;v ∈ m;l, P` for `bigSepML`. -/
 syntax "[∗maplist] " ident " ↦ " ident ";" ident " ∈ " term ";" term ", " term : term
 
 macro_rules

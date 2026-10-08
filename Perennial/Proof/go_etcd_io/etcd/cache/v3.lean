@@ -1,24 +1,23 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/cache/v3.v`.
+Proofs for etcd's `cache` package.
 
-Lean notes:
-* The proofs live in namespace `go_etcd_io.etcd.cache.v3_proof` (Rocq: top
-  level), since Rocq's `kvItem` would clash with the generated Go type
+Notes:
+* The proofs live in namespace `go_etcd_io.etcd.cache.v3_proof`, since the
+  model `kvItem` would otherwise clash with the generated Go type
   `go_etcd_io.etcd.cache.v3.kvItem`.
 * The axioms bind their package assumptions (`[package_sem : cache.Assumptions]`)
   explicitly.
-* The `rpctypes` init instance here carries `isRpctypesInit` (as in Rocq's
-  `cache/v3.v`); Rocq's `leasing.v` declares a `True` one, so (as in Rocq) the
-  two files should not be imported together.
-* `Cache.wp_Get` (Rocq: `Admitted`, after the `LatestRev` call) is proved, with
-  two statement changes:
-  - Old (Rocq): precondition `isPkgInit cache ∗ opts_sl ↦* opts ∗ ownCache c`.
-    New: also `isOpOptions opts pfx fk` (`client/v3_proof/op.lean`) for some
+* The `rpctypes` init instance here carries `isRpctypesInit`;
+  `client/v3/leasing.lean` declares a `True` one, so the two files should not
+  be imported together.
+* `Cache.wp_Get` is proved. Its statement has two notable ingredients:
+  - Besides `isPkgInit cache ∗ opts_sl ↦* opts ∗ ownCache c`, the precondition
+    has `isOpOptions opts pfx fk` (`client/v3_proof/op.lean`) for some
     `pfx fk` with `¬ (pfx ∧ fk)`. Why: `Get` calls `clientv3.OpGet(key, opts...)`,
     which runs every option closure three times (`IsOptsWithPrefix`,
     `IsOptsWithFromKey`, `applyOpts`), so the closures need a spec; and `OpGet`
     panics if both a `WithPrefix` and a `WithFromKey` option are given.
-  - New hypothesis `Hspecs : CacheGetCalleeSpecs`: specs of `Cache.WaitReady`,
+  - The hypothesis `Hspecs : CacheGetCalleeSpecs`: specs of `Cache.WaitReady`,
     `Cache.validateGet`, `Cache.serverRevision`, `Cache.waitTillRevision` and
     `store.Get`. Why: goose does not translate these methods (`cache/v3.toml`
     does not list them), so `cache.v3.Assumptions` has no `MethodUnfold` for them
@@ -27,7 +26,7 @@ Lean notes:
     returns `ownCache c` (resp. `ownStore`) and returns arbitrary results;
     `validateGet` also gets `isOp op (.Get req)`, and `store.Get` the persistent
     slices `startKey ↦*□ _ ∗ endKey ↦*□ _`.
-  The postcondition (`True`) is unchanged. `Cache.wp_Get` depends (through
+  The postcondition is `True`. `Cache.wp_Get` depends (through
   `ownCache`'s `c ↦ cv`, i.e. `TypedPointsto cache.v3.Cache.t`) on the
   generated `sorry` instances `Config_typed_pointsto`/`Config_into_val_typed`
   and `progressRequestor_typed_pointsto`/`progressRequestor_into_val_typed` of
@@ -131,8 +130,7 @@ axiom ringBuffer.wp_PeekOldest [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi
     (App (Val (r @!! go.GoType.PointerType (cache.v3.ringBuffer.ty T) @!! go!"PeekOldest")) (Val #()))
   {{ RET #((buf.map rev_item).headD (W64 0)); ownRingBuffer r is_item rev_item buf }}
 
-/-- Rocq's `let iterItemvs := ...` in `ringBuffer.wp_DescendLessOrEqual`: the
-items visited by `DescendLessOrEqual pivot`, in visiting order. -/
+/-- The items visited by `DescendLessOrEqual pivot`, in visiting order. -/
 def iterItemvs {V : Type} (rev_item : V → w64) (pivot : w64) (buf : List V) : List V :=
   (buf.filter (fun item => decide (sint.Z (rev_item item) ≤ sint.Z pivot))).reverse
 
@@ -278,7 +276,7 @@ def ownCache (c_ptr : Loc) : IProp GF :=
     "c" ∷ c_ptr ↦ c ∗
     "store" ∷ ownStore c.store' γstore c.prefix')
 
-/-- Lean addition: specs of the methods that `Cache.Get` calls but that goose does
+/-- Specs of the methods that `Cache.Get` calls but that goose does
 not translate (`Perennial/Code/go_etcd_io/etcd/cache/v3.toml` does not list
 `Cache.WaitReady`, `Cache.validateGet`, `Cache.serverRevision`,
 `Cache.waitTillRevision` and `store.Get`, so `cache.v3.Assumptions` has no
@@ -481,7 +479,7 @@ theorem store.wp_LatestRev (s : Loc) (γstore : StoreNames) («prefix» : GoStri
   · inext; iexists snapshot, kvs_ordered, history; iframe # ∗
   wp_end
 
-/-- Lean deviations from Rocq: the precondition also asks that every option in `opts`
+/-- The precondition also asks that every option in `opts`
 satisfies the client-supplied `isOpOptions opts pfx fk` (not both `WithPrefix` and
 `WithFromKey`: else `OpGet` panics), and the theorem takes the specs of the
 untranslated callees (`CacheGetCalleeSpecs`) as a hypothesis. -/

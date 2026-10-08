@@ -1,35 +1,29 @@
 /-
-Port of `new/proof/go_etcd_io/raft/v3_proof/readonly.v`: the ReadIndex
-(linearizable read) protocol of raft, its ghost state, and specs for the
-`readOnly` methods.
+The ReadIndex (linearizable read) protocol of raft, its ghost state, and specs
+for the `readOnly` methods.
 
-See the Rocq file for the discussion of the protocol (and of the bug in the raft
-library: https://github.com/etcd-io/etcd/issues/20418#issuecomment-3974901065,
-https://github.com/etcd-io/raft/issues/392).
+On the bug in the raft library, see
+https://github.com/etcd-io/etcd/issues/20418#issuecomment-3974901065 and
+https://github.com/etcd-io/raft/issues/392.
 
-Lean notes:
-* Everything lives in `namespace go_etcd_io.raft.v3_proof.readonly`: Rocq's
-  `readonly.v` defines its own `RaftNames` record, shadowing the axiomatized
-  `RaftNames` of `protocol.v`.
-* Rocq's `Context (cfg : gset w64)` is an explicit section variable `cfg`.
-* `ownTerm`/`isTermLb`: Rocq owns `{[node_id := ●MN n]}` in a
-  `gmap w64 mono_natR` camera. `allG` has no `gmap` CMRA code (only `gmapUR`
-  as a unital camera, and `gmap_viewR`), so here the per-node ghost name is
+Notes:
+* Everything lives in `namespace go_etcd_io.raft.v3_proof.readonly`, which
+  defines its own `RaftNames` record, distinct from the axiomatized `RaftNames`
+  of `protocol.lean`.
+* `cfg : GSet w64` (the configuration) is an explicit section variable.
+* `ownTerm`/`isTermLb`: `allG` has no `gmap` CMRA code (only `gmapUR` as a
+  unital camera, and `gmap_viewR`), so the per-node `mono_nat` ghost name is
   found through a persistent ghost map: `node_id ↪[termGn]□ γn ∗
   mono_nat_auth_own γn 1 n` (resp. `mono_nat_lb_own γn n`). Neither is used
   in any lemma of this file except as an opaque persistent witness.
-* Deviations from Rocq (statements/definitions):
-  - `ownReadOnly` takes the number `n` of read requests added so far, with
-    `"%Hcount"`; `wp_readOnly_recvAck` and `wp_readOnly_maybeAdvance` keep `n`,
-    `wp_readOnly_addRequest` requires `n < 2^64 - 1` and returns `n + 1`. This
-    makes the overflow side condition admitted in Rocq provable.
-  - `ProgressTracker.wp_IsSingleton`: Rocq's (trusted) statement
-    `{{{ True }}} .. {{{ RET #false; True }}}` is false; replaced by the true
-    spec (see the lemma), now proved. This needed `len` to unfold at the named
-    map type `quorum.MajorityConfig`: `go.len_map` takes `[t ↓u go.MapType ..]`
-    (Rocq: literal `go.MapType` only), and so does `wp_map_len`
-    (`Perennial/Golang/Theory/Map.lean`).
-  - New helper: `array_acc_same`.
+* `ownReadOnly` takes the number `n` of read requests added so far, with
+  `"%Hcount"`; `wp_readOnly_recvAck` and `wp_readOnly_maybeAdvance` keep `n`,
+  `wp_readOnly_addRequest` requires `n < 2^64 - 1` and returns `n + 1`. This
+  makes the overflow side condition of `addRequest` provable.
+* `ProgressTracker.wp_IsSingleton` is proved. This needs `len` to unfold at the
+  named map type `quorum.MajorityConfig`: `go.len_map` takes
+  `[t ↓u go.MapType ..]`, and so does `wp_map_len`
+  (`Perennial/Golang/Theory/Map.lean`).
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
 import Perennial.Ghost.MonoList
@@ -55,7 +49,6 @@ namespace go_etcd_io.raft.v3_proof.readonly
 -- proofs waits for them)
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
-/-- Rocq `RaftNames`. -/
 structure RaftNames where
   mk ::
   commitedGn : GName
@@ -71,7 +64,6 @@ variable (cfg : GSet w64)
 section global_proof
 variable {GF : BundledGFunctors} [InvGS GF] [AllG GF]
 
-/-- Rocq `N`. -/
 def N : Namespace := nroot
 
 /-! ### Ghost state for the raft protocol -/
@@ -87,10 +79,10 @@ instance isCommit_pers (γ : RaftNames) (log : List (List w8)) :
     Persistent (isCommit (GF := GF) γ log) := by
   unfold isCommit; infer_instance
 
-/-- Rocq `ownTerm` (see the file header for the encoding). -/
+/-- See the file header for the encoding. -/
 def ownTerm (γ : RaftNames) (node_id term : w64) : IProp GF :=
   iprop(∃ γn : GName, node_id ↪[γ.termGn]□ γn ∗ monoNatAuthOwn γn 1 (sint.nat term))
-/-- Rocq `isTermLb` (see the file header for the encoding). -/
+/-- See the file header for the encoding. -/
 def isTermLb (γ : RaftNames) (node_id term : w64) : IProp GF :=
   iprop(∃ γn : GName, node_id ↪[γ.termGn]□ γn ∗ monoNatLbOwn γn (sint.nat term))
 
@@ -134,18 +126,15 @@ theorem isHeartbeatCtx_agree (γ : RaftNames) (term : w64) (ctx : GoString)
 
 This proof assumes there's only one configuration (for now). -/
 
-/-- Rocq `Axiom ownCommittedInTerm`. -/
 axiom ownCommittedInTerm {GF : BundledGFunctors} (γ : RaftNames) (term : w64)
   (log : List (List w8)) : IProp GF
-/-- Rocq `Axiom isCommittedInTerm`. -/
 axiom isCommittedInTerm {GF : BundledGFunctors} (γ : RaftNames) (term : w64)
   (log : List (List w8)) : IProp GF
-/-- Rocq `Axiom isCommittedInTerm_pers`. -/
 axiom isCommittedInTerm_pers {GF : BundledGFunctors} (γ : RaftNames) (term : w64)
   (log : List (List w8)) : Persistent (isCommittedInTerm (GF := GF) γ term log)
 attribute [instance] isCommittedInTerm_pers
 
-/-- Rocq `IsQuorum`. -/
+/-- `quorum` contains a majority of `cfg`. -/
 def IsQuorum (quorum : GSet w64) : Prop :=
   GMap.size cfg < 2 * GMap.size (quorum ∩ cfg)
 
@@ -179,7 +168,7 @@ theorem quorums_subseteq (q1 q2 : GSet w64) :
   have := GMap.subseteq_size Hs
   omega
 
-/-- Rocq `isStaleTerm`. -/
+/-- A quorum of servers has moved past `term`. -/
 def isStaleTerm (γ : RaftNames) (term : w64) : IProp GF :=
   iprop(∃ quorum : GSet w64,
     "%Hquorum" ∷ ⌜IsQuorum cfg quorum⌝ ∗
@@ -190,14 +179,13 @@ instance isStaleTerm_pers (γ : RaftNames) (term : w64) :
     Persistent (isStaleTerm (GF := GF) cfg γ term) := by
   unfold isStaleTerm; infer_instance
 
-/-- Rocq `Axiom committed_in_term_agree`. -/
 axiom committed_in_term_agree {GF : BundledGFunctors} (γ : RaftNames) (term : w64)
     (log1 log2 : List (List w8)) :
   ⊢ ownCommittedInTerm (GF := GF) γ term log1 -∗
     isCommittedInTerm γ term log2 -∗
     ⌜log2 <+: log1⌝
 
-/-- Rocq `Axiom committed_in_term_stale`: when own and is have different terms,
+/-- When own and is have different terms,
 the own term is stale. -/
 axiom committed_in_term_stale (cfg : GSet w64) {GF : BundledGFunctors} [AllG GF]
     (γ : RaftNames) (term1 term2 : w64) (log1 log2 : List (List w8)) :
@@ -206,12 +194,12 @@ axiom committed_in_term_stale (cfg : GSet w64) {GF : BundledGFunctors} [AllG GF]
     isCommittedInTerm γ term2 log2 -∗
     isStaleTerm cfg γ term1
 
-/-! TODO (Rocq): set this up to confirm backwards compatibility (i.e. if some raft
+/-! TODO: set this up to confirm backwards compatibility (i.e. if some raft
 servers run the new code and some run the old code, system is still safe; only
 the leader needs to run the new code in order for the system to tolerate
 duplicate ReadIndex requests). -/
 
-/-- Rocq `ownReads`: ownership of the reads queue, an authoritative monotone
+/-- Ownership of the reads queue, an authoritative monotone
 list of `(start_index, saved_pred_gname)` pairs. The gnames are hidden
 internally; the caller sees only `readsΦ`. -/
 def ownReads (γ : RaftNames) (readsΦ : List (w64 × (List (List w8) → IProp GF))) : IProp GF :=
@@ -223,7 +211,7 @@ def ownReads (γ : RaftNames) (readsΦ : List (w64 × (List (List w8) → IProp 
       ⌜l[i]? = some (si, gn)⌝ →
       savedPredOwn gn DFrac.discard Φ)
 
-/-- Rocq `isInReads`: persistent witness that `(start_index, Φ)` is tracked in
+/-- Persistent witness that `(start_index, Φ)` is tracked in
 the reads queue. -/
 def isInReads (γ : RaftNames) (si : w64) (Φ : List (List w8) → IProp GF) : IProp GF :=
   iprop(∃ (i : Nat) (gn : GName),
@@ -300,10 +288,9 @@ theorem reads_agree (γ : RaftNames) (readsΦ : List (w64 × (List (List w8) →
   · ipureintro; exact HreadsΦ
   iapply saved_pred_agree gn _ _ Φ Φ' x $$ Hgn HΨ
 
-/-- Rocq `Ncommit`. -/
 def Ncommit : Namespace := N.@"commit"
 
-/-- Rocq `isRaftCommitInv`. `Hread_aus`: permission to linearize reads on all
+/-- The commit invariant. `Hread_aus`: permission to linearize reads on all
 future logs (for any `Φ` stored in the reads queue, firing its AU against the
 current committed log produces `Φ` applied to that log). `Hread_wits`:
 witnesses that reads were linearized on every index starting at their
@@ -326,7 +313,7 @@ instance isRaftCommitInv_pers (γ : RaftNames) :
     Persistent (isRaftCommitInv (GF := GF) γ) := by
   unfold isRaftCommitInv; infer_instance
 
-/-- Rocq `isReadIndex`: a read index witness. Given any committed log at least
+/-- A read index witness. Given any committed log at least
 as long as `index`, opening the invariant at mask `⊤` lets us fire the stored
 AU to get `Φ log`. Needs `£ 2`: one credit to open the invariant (strip `▷`),
 one to strip the `▷` from `saved_pred_agree`. -/
@@ -470,7 +457,7 @@ theorem try_read (γ : RaftNames) (term : w64) (log : List (List w8))
     ipureintro
     exact Hquorum
 
-/-- Rocq `isHeartbeatCtxStale`. -/
+/-- `isHeartbeatCtx`, with every server in `stale_ids` past `term`. -/
 def isHeartbeatCtxStale (γ : RaftNames) (term : w64) (ctx : GoString)
     (stale_ids : GSet w64) : IProp GF :=
   iprop(isHeartbeatCtx γ term ctx stale_ids ∗
@@ -481,16 +468,15 @@ instance isHeartbeatCtxStale_pers (γ : RaftNames) (term : w64) (ctx : GoString)
     (stale_ids : GSet w64) : Persistent (isHeartbeatCtxStale (GF := GF) γ term ctx stale_ids) := by
   unfold isHeartbeatCtxStale; infer_instance
 
-/-- Rocq `isHeartbeatRequest`. -/
 def isHeartbeatRequest (γ : RaftNames) (term : w64) (ctx : List w8) : IProp GF :=
   iprop(∃ stale_ids, isHeartbeatCtxStale γ term ctx stale_ids)
 
-/-- Rocq `isHeartbeatResp`: confirms that `from` was not stale back when `ctx`
+/-- Confirms that `from` was not stale back when `ctx`
 was first used in `term`. -/
 def isHeartbeatResp (γ : RaftNames) («from» : w64) (term : w64) (ctx : List w8) : IProp GF :=
   iprop(∃ srvs, isHeartbeatCtx γ term ctx srvs ∗ ⌜«from» ∉ srvs⌝)
 
-/-- Rocq `isHeartbeatAck`: witnesses that `from` acknowledged heartbeat
+/-- Witnesses that `from` acknowledged heartbeat
 context `ctx` in `term`, confirming `from` was not stale at that point. Similar
 to `isHeartbeatResp` but used as a precondition for `recvAck`. -/
 def isHeartbeatAck (γ : RaftNames) («from» : w64) (term : w64) (ctx : GoString) : IProp GF :=
@@ -530,13 +516,11 @@ theorem start_heartbeat (stale_ids : GSet w64) (γ : RaftNames) (term : w64) (ct
     iframe # ∗
   · iexact Hstale
 
-/-- Rocq `ownReadReqCtx`. -/
 def ownReadReqCtx (γ : RaftNames) (read_req_ctx : GoString) : IProp GF :=
   iprop(∃ γreq : GName,
     "#Hγreq" ∷ read_req_ctx ↪[γ.readReqGn]□ γreq ∗
     "Hreq" ∷ savedPredOwn γreq (DFrac.own 1) (fun (_ : List (List w8)) => iprop(True)))
 
-/-- Rocq `isReadReqCtx`. -/
 def isReadReqCtx (γ : RaftNames) (read_req_ctx : GoString)
     (Φ : List (List w8) → IProp GF) : IProp GF :=
   iprop(∃ γreq : GName,
@@ -563,11 +547,9 @@ theorem start_req_ctx (Φ : List (List w8) → IProp GF) (req_ctx : GoString) (i
   iexists γreq
   iframe # ∗
 
-/-- Rocq `isMsgReadIndex`. -/
 def isMsgReadIndex (γ : RaftNames) (read_req_ctx : GoString) : IProp GF :=
   iprop(∃ Φ, isReadReqCtx γ read_req_ctx Φ)
 
-/-- Rocq `isMsgReadIndexResp`. -/
 def isMsgReadIndexResp (γ : RaftNames) (read_req_ctx : GoString) (index : w64) : IProp GF :=
   iprop(∃ Φ, isReadReqCtx γ read_req_ctx Φ ∗ isReadIndex γ index Φ)
 
@@ -590,7 +572,6 @@ theorem heartbeat_ack_quorum_not_stale (γ : RaftNames) (term : w64) (ctx : GoSt
 
 end global_proof
 
-/-- Rocq `Axiom ownRaft`. -/
 axiom ownRaft [FfiSyntax] {GF : BundledGFunctors} (γ : RaftNames) (rf : v3.raft) : IProp GF
 
 section wps
@@ -601,7 +582,7 @@ variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 
-/-- Lean addition: `array_acc`, putting back the same element. -/
+/-- `array_acc`, putting back the same element. -/
 theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : Loc) (i : Int)
     (dq : DFrac) (n : Int) (a : GoArray V n) (v : V)
     (hpos : 0 ≤ i) (hlookup : a.arr[i.toNat]? = some v) :
@@ -619,10 +600,8 @@ theorem array_acc_same {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] (p : 
   rw [hset]
   iexact Ha
 
-/-- Lean deviation (Rocq: `{{{ True }}} p.IsSingleton() {{{ RET #false; True }}}`,
-admitted as trusted, which is false: `IsSingleton` returns `true` for a
-single-voter configuration). The true spec: given the `ProgressTracker` and
-its two voter maps (`Voters[0]`, `Voters[1]`, both non-nil), the result is
+/-- `IsSingleton` returns `true` exactly for a single-voter configuration:
+given the `ProgressTracker` and its two voter maps (`Voters[0]`, `Voters[1]`, both non-nil), the result is
 `len(Voters[0]) == 1 && len(Voters[1]) == 0`, where `len` is the (wrapping)
 `int` size of the map. -/
 theorem ProgressTracker.wp_IsSingleton (p : Loc) (dq : DFrac) (pt : v3.tracker.ProgressTracker)
@@ -678,16 +657,15 @@ theorem raft.wp_committedEntryInCurrentTerm (r : Loc) (rf : v3.raft) (γ : RaftN
         (Val #()))
     {{ (c : Bool), RET #c; r ↦ rf ∗ ownRaft γ rf ∗
         if c then ∃ l, isCommittedInTerm γ rf.Term' l else True }} := by
-  -- Unprovable: `ownRaft` is an opaque axiom (as in Rocq). It gives neither ownership of
+  -- Unprovable: `ownRaft` is an opaque axiom. It gives neither ownership of
   -- `rf.raftLog` (needed to run `raftLog.term`, which calls the `Storage` interface methods
   -- `Term`/`FirstIndex`/`LastIndex` and `Logger.Panicf`) nor any link between the terms in the
   -- log and `isCommittedInTerm` (also an axiom). Replacing `ownRaft` by a definition would
   -- need representation predicates for `raftLog`/`unstable`, specs for user-supplied `Storage`
   -- and `Logger` implementations, and a ghost protocol relating storage terms to
-  -- `isCommittedInTerm`; none of these exist (in Rocq or here).
-  sorry -- Rocq: Admitted (trusted)
+  -- `isCommittedInTerm`; none of these exist yet.
+  sorry -- trusted
 
-/-- Rocq `isReadIndexRequest`. -/
 def isReadIndexRequest (γ : RaftNames) (r : Loc) (read_req_ctx : GoString) (index : w64) :
     IProp GF :=
   iprop(∃ read_req : v3.readIndexRequest,
@@ -700,22 +678,21 @@ instance isReadIndexRequest_pers (γ : RaftNames) (r : Loc) (read_req_ctx : GoSt
     (index : w64) : Persistent (isReadIndexRequest (GF := GF) γ r read_req_ctx index) := by
   unfold isReadIndexRequest; infer_instance
 
-/-- Rocq `ownHeartbeatAuth`. -/
 def ownHeartbeatAuth (γ : RaftNames) (term : w64) (highest_index : w64) : IProp GF :=
   iprop(∃ (per_term_gn : GName) (used : GMap GoString GName),
     term ↪[γ.heartbeatGn]□ per_term_gn ∗
     ghostMapAuth per_term_gn 1 used ∗
     ⌜∀ k, k ∈ used → k = [] ∨ k.length = 8 ∧ uint.Z (leToU64 k) ≤ uint.Z highest_index⌝)
 
-/-- Rocq `ownReadOnly`. The entries of `read_reqs` are
+/-- Ownership of the `readOnly` state. The entries of `read_reqs` are
 `((read_req_ctx, index), stale_ids)`.
 
-Lean deviation: an extra parameter `n`, the number of read requests added
+`n` is the number of read requests added
 so far (`confirmedReads + len(unconfirmedReads)` without wrap-around), with
 `"%Hcount" : uint.nat confirmedReads + len unconfirmedReads = n ∧ n < 2^64`.
 The heartbeat context of a new request is `u64Le (n + 1)`, which must not
 wrap around to an already used context, so `wp_readOnly_addRequest` requires
-`n < 2^64 - 1` (Rocq: no `n`, and the overflow side condition is admitted). -/
+`n < 2^64 - 1`. -/
 def ownReadOnly (γ : RaftNames) (r : Loc) (term : w64) (n : Nat) : IProp GF :=
   iprop(∃ (ro : v3.readOnly) (acks : GMap w64 w64) (unconfirmedReads : List Loc)
       (read_reqs : List ((GoString × w64) × GSet w64)),
@@ -879,7 +856,7 @@ theorem wp_readOnly_recvAck (γ : RaftNames) (r : Loc) (term : w64) («from» : 
       iframe # ∗
       ipureintro; exact ⟨Hoption, Hcount⟩
 
-/-- Rocq `ownAckedIndexer`. The Rocq Texan triple (an `iProp`) is written out. -/
+/-- `I` together with a (persistent) Texan triple for `AckedIndex`, written out as an `iProp`. -/
 def ownAckedIndexer (i : GoInterfaceOk) (acks : GMap w64 w64) (I : IProp GF) : IProp GF :=
   iprop("HI" ∷ I ∗
     "#HAckedIndex" ∷ (∀ voterID : w64, □ ∀ Φ : val → IProp GF, I -∗
@@ -888,8 +865,7 @@ def ownAckedIndexer (i : GoInterfaceOk) (acks : GMap w64 w64) (I : IProp GF) : I
 
 end wps
 
-/-- Rocq `Axiom JointConfig.wp_CommittedIndex`. (Rocq's statement does not bind
-the `quorum` package assumptions; here they are bound explicitly.) -/
+/-- The `quorum` package assumptions are bound explicitly. -/
 axiom JointConfig.wp_CommittedIndex (cfg : GSet w64)
     [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
@@ -933,7 +909,6 @@ variable [sem : go.Semantics]
 variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 
-/-- Rocq `MsgReadIndex`. -/
 def MsgReadIndex : w32 := W32 15
 
 theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raft)
@@ -944,13 +919,13 @@ theorem raft.wp_sendMsgReadIndexresponse (γ : RaftNames) (r : Loc) (rf : v3.raf
         "#Hcom_in_term" ∷ True }}
       (App (App (Val (@! v3.sendMsgReadIndexResponse)) (Val #r)) (Val #m))
     {{ RET #(); True }} := by
-  -- Unprovable as stated: `"#Hcom_in_term" ∷ True` is a placeholder (as in Rocq) for what
+  -- Unprovable as stated: `"#Hcom_in_term" ∷ True` is a placeholder for what
   -- `readOnly.addRequest` needs (`isRaftCommitInv`, `ownCommittedInTerm`,
   -- `isReadReqCtx`, and now the request-count bound `n < 2^64 - 1`), and `ownRaft`
   -- (an opaque axiom, see `raft.wp_committedEntryInCurrentTerm`) provides neither
   -- `ownReadOnly` for `rf.readOnly'` nor the state used by `bcastHeartbeat`
   -- (`trk.Visit` with a closure, `sendHeartbeat`, `send`, which calls `Logger` methods).
-  sorry -- Rocq: Admitted
+  sorry -- not proved yet
 
 theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft)
     (m : v3.raftpb.Message) :
@@ -964,7 +939,7 @@ theorem raft.wp_stepLeader_MsgReadIndex (γ : RaftNames) (r : Loc) (rf : v3.raft
   -- `committedEntryInCurrentTerm` (above). It also calls `r.trk.IsSingleton()`, whose (now proved)
   -- spec `ProgressTracker.wp_IsSingleton` needs the voter-map points-tos, which `ownRaft`
   -- does not provide.
-  sorry -- Rocq: Admitted
+  sorry -- not proved yet
 
 set_option goose.wp.extras true in
 set_option maxHeartbeats 1000000 in
@@ -1201,7 +1176,7 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w6
         "Hown" ∷ ownReadOnly cfg γ r term n ∗
         "Hcom" ∷ ownCommittedInTerm γ term log ∗
         "%HcommitIndex" ∷ ⌜uint.nat commitIndex = log.length⌝ ∗
-        -- Lean deviation (Rocq: no such precondition; see `ownReadOnly`)
+        -- see `ownReadOnly`
         "%Hn" ∷ ⌜n < 2 ^ 64 - 1⌝ ∗
         "Hctx" ∷ req.Context' ↦*{dq} read_req_ctx ∗
         "#Hread_ctx" ∷ isReadReqCtx γ read_req_ctx Ψ }}
@@ -1238,7 +1213,7 @@ theorem wp_readOnly_addRequest (γ : RaftNames) (r : Loc) (term commitIndex : w6
   ihave %Hrr_len := BigSepL2.bigSepL2_length $$ HunconfirmedReads
   imod ownHeartbeatAuth_new
       (unionList (read_reqs.map Prod.snd ++ [stale_ids'])) γ term _
-      -- (Rocq: admitted overflow side condition; here from `Hcount` and `Hn`)
+      -- the overflow side condition, from `Hcount` and `Hn`
       (by have := Hcount.1; word)
       $$ Hhb_auth with ⟨Hhb_auth, #Hhb⟩
   ipersist Hreq

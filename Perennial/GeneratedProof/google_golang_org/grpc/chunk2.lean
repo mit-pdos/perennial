@@ -29,11 +29,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance streamReader_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.streamReader :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance streamReader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.streamReader google_golang_org.grpc.streamReader.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end streamReader
@@ -71,11 +71,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance parser_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.parser :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance parser_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.parser google_golang_org.grpc.parser.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end parser
@@ -90,11 +90,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance payloadInfo_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.payloadInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance payloadInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.payloadInfo google_golang_org.grpc.payloadInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end payloadInfo
@@ -109,11 +109,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance compressorInfo_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.compressorInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance compressorInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.compressorInfo google_golang_org.grpc.compressorInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end compressorInfo
@@ -350,11 +350,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance Server_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.Server :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Server_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.Server google_golang_org.grpc.Server.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Server
@@ -369,11 +369,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance serverOptions_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.serverOptions :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance serverOptions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverOptions google_golang_org.grpc.serverOptions.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end serverOptions
@@ -662,11 +662,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance listenSocket_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.listenSocket :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance listenSocket_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.listenSocket google_golang_org.grpc.listenSocket.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end listenSocket
@@ -704,11 +704,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ServerTransportStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ServerTransportStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerTransportStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerTransportStream google_golang_org.grpc.ServerTransportStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerTransportStream
@@ -803,11 +803,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ServiceConfig_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ServiceConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServiceConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServiceConfig google_golang_org.grpc.ServiceConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServiceConfig
@@ -862,11 +862,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance jsonRetryPolicy_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.jsonRetryPolicy :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance jsonRetryPolicy_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonRetryPolicy google_golang_org.grpc.jsonRetryPolicy.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end jsonRetryPolicy
@@ -995,11 +995,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance jsonMC_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.jsonMC :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance jsonMC_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonMC google_golang_org.grpc.jsonMC.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end jsonMC
@@ -1014,11 +1014,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance jsonSC_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.jsonSC :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance jsonSC_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.jsonSC google_golang_org.grpc.jsonSC.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end jsonSC
@@ -1033,11 +1033,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ClientStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ClientStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ClientStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientStream google_golang_org.grpc.ClientStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ClientStream
@@ -1052,11 +1052,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance clientStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.clientStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance clientStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.clientStream google_golang_org.grpc.clientStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end clientStream
@@ -1128,11 +1128,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance csAttempt_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.csAttempt :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance csAttempt_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.csAttempt google_golang_org.grpc.csAttempt.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end csAttempt
@@ -1147,11 +1147,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance addrConnStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.addrConnStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance addrConnStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.addrConnStream google_golang_org.grpc.addrConnStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end addrConnStream
@@ -1166,11 +1166,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ServerStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ServerStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ServerStream google_golang_org.grpc.ServerStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerStream
@@ -1185,11 +1185,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance serverStream_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.serverStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance serverStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.serverStream google_golang_org.grpc.serverStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end serverStream
@@ -1204,11 +1204,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance firstLine_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.firstLine :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance firstLine_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.firstLine google_golang_org.grpc.firstLine.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end firstLine

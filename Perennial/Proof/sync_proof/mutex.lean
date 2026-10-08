@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/mutex.v`: `sync.Mutex` (a `lock`) and the
+Specs for `sync.Mutex` (a `lock`) and the
 `Locker` interface.
 -/
 import Perennial.Proof.sync_proof.base
@@ -23,13 +23,13 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
-/-- This means `m` is a valid mutex with invariant `R` (Rocq `Opaque isMutex`). -/
+/-- This means `m` is a valid mutex with invariant `R` (sealed). -/
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
 def ownMutexDef (m : Loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
-locked (Rocq `Opaque ownMutex`). -/
+locked (sealed). -/
 @[irreducible] def ownMutex (m : Loc) : IProp GF := ownMutexDef m
 theorem ownMutex_unseal : @ownMutex = @ownMutexDef := by funext; with_unfolding_all rfl
 

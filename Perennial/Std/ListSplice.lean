@@ -1,6 +1,3 @@
-/-
-Port of `src/Helpers/ListSplice.v`.
--/
 import Perennial.Std.ListLen
 
 namespace Perennial

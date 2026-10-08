@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/runtime.v`: package initialization of `runtime` and
+Package initialization of `runtime` and
 `runtime.Gosched`.
 -/
 import Perennial.Proof.ProofPrelude

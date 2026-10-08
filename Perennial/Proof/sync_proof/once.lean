@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/once.v`: `sync.Once`.
+Specs for `sync.Once`.
 
 A `sync.Once` will perform exactly one action. The specification realizes this
 by requiring a specification for that action (a pre- and post-condition), a

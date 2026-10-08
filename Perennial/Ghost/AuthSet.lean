@@ -1,7 +1,7 @@
 /-
-Port of `new/ghost/auth_set.v` (auth set from the sys-verif course).
+Authoritative set ghost state (from the sys-verif course).
 
-Rocq uses `authUR (gset_disjUR A)` directly; here the same API is built on
+Rather than using `Auth (GSetDisj A)` directly, the API is built on
 `ghost_map` with unit values (`gset A = gmap A Unit`): the authoritative set is
 `ghost_map_auth γ 1 s` and a fragment is `a ↪[γ] ()`.
 -/

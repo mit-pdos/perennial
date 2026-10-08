@@ -1,6 +1,4 @@
 /-
-Port of `new/golang/defn/exception.v`.
-
 "Exception monad" for modeling function returns.
 
 This is not really a monad (there is no bind), but it implements

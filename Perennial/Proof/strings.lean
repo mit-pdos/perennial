@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/strings.v`: specs for the Go `strings` package.
+Specs for the Go `strings` package.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.strings
@@ -85,9 +85,9 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
-/-- FIXME (from Rocq): this is wrong (unsound) for strings with non-ASCII
+/-- FIXME: this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be
-all ASCII. (`ownSliceCap w8` is also as in Rocq.) -/
+all ASCII. -/
 axiom wp_Fields [package_sem : strings.Assumptions] (s : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (Val (@! Fields)) (Val #s))

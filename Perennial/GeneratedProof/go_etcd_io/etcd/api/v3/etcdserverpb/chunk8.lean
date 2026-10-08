@@ -787,11 +787,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthRoleGetResponse_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance AuthRoleGetResponse_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGetResponse.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end AuthRoleGetResponse
@@ -1295,11 +1295,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance KVClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance KVClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVClient go_etcd_io.etcd.api.v3.etcdserverpb.KVClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end KVClient
@@ -1314,11 +1314,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance kVClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.kVClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance kVClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.kVClient go_etcd_io.etcd.api.v3.etcdserverpb.kVClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end kVClient
@@ -1333,11 +1333,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance KVServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance KVServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.KVServer go_etcd_io.etcd.api.v3.etcdserverpb.KVServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end KVServer
@@ -1375,11 +1375,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance WatchClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance WatchClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient go_etcd_io.etcd.api.v3.etcdserverpb.WatchClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end WatchClient

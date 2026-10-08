@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/waitgroup_join.v`: the "join" idiom for
+The "join" idiom for
 `WaitGroup`: `Add` hands out permission to call `Done` with a chosen
 proposition, and `Wait` collects all of them.
 -/
@@ -26,7 +26,6 @@ structure WaitGroupJoinNames where
   wgApropGn : GName
   wgNotDoneGn : GName
 
-/-- Rocq `wgjN` (local). -/
 abbrev wgjN : Namespace := nroot.@"wgjoin"
 
 section waitgroup_join_idiom
@@ -48,7 +47,6 @@ abbrev wgjInv (γ : WaitGroupJoinNames) : IProp GF :=
     "%Hctr_pos" ∷ ⌜0 ≤ sint.Z ctr⌝ ∗
     "%Hctr" ∷ ⌜sint.Z ctr = (added : Int) - (done : Int)⌝)
 
-/-- Rocq `isWgjInv` (local). -/
 abbrev isWgjInv (wg : Loc) (γ : WaitGroupJoinNames) : IProp GF :=
   iprop("#His" ∷ isWaitGroup wg γ.wgGn (wgjN.@"wg") ∗
     "#Hinv" ∷ inv (wgjN.@"inv") (wgjInv γ))

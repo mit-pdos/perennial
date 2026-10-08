@@ -1,6 +1,6 @@
 /-
 Exact specs of `math/bits.Len64` and `math/bits.Len` (`Perennial/Proof/math/bits.lean`
-only proves that they return some value, as in Rocq). Used for
+only proves that they return some value). Used for
 `slices.nextPowerOfTwo` (`wp_breakPatternsCmpFunc`).
 -/
 import Perennial.Proof.math.bits

@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/waitgroup.v`: `sync.WaitGroup`, with logically
+`sync.WaitGroup`, with logically
 atomic specifications for `Add`, `Done` and `Wait`.
 -/
 import Perennial.Proof.sync_proof.base
@@ -27,12 +27,11 @@ structure WaitGroupNames where
   waiterGn : GName
   zerostateGn : GName
 
-/-- Rocq `waitGroupBubbleFlag` (local). -/
 abbrev waitGroupBubbleFlagZ : Int := 2147483648
 
 /-! ### Encoding of the state word -/
 
-/-- Rocq `enc wait counter`: the counter in the high 32 bits, the number of
+/-- `enc wait counter`: the counter in the high 32 bits, the number of
 waiters in the low 32 bits. -/
 def enc (wait counter : w32) : w64 :=
   (counter.setWidth 64 <<< (32 : Nat)) + wait.setWidth 64
@@ -177,7 +176,7 @@ theorem wgPtsto2_false (wg : Loc) (wait counter : w32) (h : ¬ (counter = W32 0 
       sync.atomic.ownUint64 (wgState (GF := GF) wg) (DFrac.own (1 : Qp).half) (enc wait counter) := by
   unfold wgPtsto2; simp only [h, ↓reduceIte]
 
-/-- The body of Rocq `isWaitGroupInv`. -/
+/-- The body of `isWaitGroupInv`. -/
 abbrev wgInv (wg : Loc) (γ : WaitGroupNames) : IProp GF :=
   iprop(∃ (counter wait sema : w32) (unfinished_waiters possible_waiters : Nat),
     "Hsema" ∷ ownSema γ.semaGn sema ∗
@@ -202,7 +201,6 @@ set_option synthInstance.maxHeartbeats 200000 in
 instance wgInv_timeless (wg : Loc) (γ : WaitGroupNames) : Timeless (wgInv (GF := GF) wg γ) := by
   unfold wgInv named; infer_instance
 
-/-- Rocq `isWaitGroupInv` (local). -/
 abbrev isWaitGroupInv (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   inv (N.@"wg") (wgInv wg γ)
 

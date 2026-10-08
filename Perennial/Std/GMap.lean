@@ -946,11 +946,9 @@ theorem map_size_ne_0_lookup (m : GMap K V) : size m ≠ 0 ↔ ∃ k v, m !! k =
 theorem map_size_ne_0_lookup_2 (m : GMap K V) {k v} (h : m !! k = some v) : size m ≠ 0 :=
   (map_size_ne_0_lookup m).mpr ⟨k, v, h⟩
 
-/-- Rocq `map_size_nonzero_lookup` (`Helpers/Map.v`). -/
 theorem map_size_nonzero_lookup (m : GMap K V) (k : K) (v : V) (h : m !! k = some v) :
     0 < size m := Nat.pos_of_ne_zero (map_size_ne_0_lookup_2 m h)
 
-/-- Rocq `map_size_nonzero` (`Helpers/Map.v`). -/
 theorem map_size_nonzero (m : GMap K V) (k : K) (h : (m !! k).isSome) : 0 < size m := by
   obtain ⟨v, hv⟩ := Option.isSome_iff_exists.mp h
   exact map_size_nonzero_lookup m k v hv
@@ -1046,7 +1044,6 @@ theorem mapToList_empty : mapToList (∅ : GMap K V) = [] := toList_empty
 
 theorem length_map_to_list (m : GMap K V) : (mapToList m).length = size m := rfl
 
-/-- Rocq `length_gmap_to_list` (`Helpers/Map.v`). -/
 theorem length_gmap_to_list (m : GMap K V) : (mapToList m).length = size m := rfl
 
 theorem mapToList_insert (m : GMap K V) (k : K) (v : V) (h : m !! k = none) :
@@ -1123,7 +1120,6 @@ theorem mapLookup_filter_None (P : K → V → Bool) (m : GMap K V) (k : K) :
 theorem map_filter_subseteq (P : K → V → Bool) (m : GMap K V) : filter P m ⊆ m := by
   intro k v h; exact ((mapLookup_filter_Some P m k v).mp h).1
 
-/-- Rocq `map_size_filter` (`Helpers/Map.v`). -/
 theorem map_size_filter (P : K → V → Bool) (m : GMap K V) : size (filter P m) ≤ size m :=
   map_subseteq_size (map_filter_subseteq P m)
 
@@ -1571,7 +1567,6 @@ theorem subseteq_dom {m₁ m₂ : GMap K V} (h : m₁ ⊆ m₂) : domSet m₁ �
 
 theorem size_dom (m : GMap K V) : size (domSet m) = size m := map_size_fmap _ m
 
-/-- Rocq `map_size_dom` (`Helpers/Map.v`). -/
 theorem map_size_dom (m : GMap K V) : size m = size (domSet m) := (size_dom m).symm
 
 theorem map_disjoint_dom (m₁ m₂ : GMap K V) : m₁ ##ₘ m₂ ↔ domSet m₁ ## domSet m₂ := by
@@ -1610,9 +1605,9 @@ theorem gsetToGmap_union_singleton (x : V) (k : K) (X : GSet K) :
 
 end GMap
 
-/-! ## Rocq-style unqualified names
+/-! ## Unqualified names
 
-stdpp lemmas are not namespaced; these aliases let ported proofs say
+These aliases let proofs say
 `lookup_insert_ne` etc. inside `namespace Perennial` (or after `open Perennial`). -/
 
 export GMap (lookup_empty lookup_insert lookup_insert_ne lookup_insert_eq lookup_delete

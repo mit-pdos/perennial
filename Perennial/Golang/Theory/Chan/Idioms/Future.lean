@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/future.v`: the future channel idiom.
+The future channel idiom.
 
 Multiple workers fulfill promises independently and a single consumer awaits all
 results (e.g. the replicated search pattern from Rob Pike's "Go Concurrency Patterns").
@@ -234,8 +234,8 @@ theorem wp_future_fulfill (γ : FutureNames) (ch : Loc) (v : V) :
   iapply HΦ
   itrivial
 
-/-- Matching a received `Fulfilled` against the pending contracts (Rocq: the `Hmatch`
-assertion inside `future_await_au`). -/
+/-- Matching a received `Fulfilled` against the pending contracts (the core of
+`future_await_au`). -/
 theorem future_match (γ : FutureNames) (pending : List (V → IProp GF)) (v_rcv : V) :
     ⊢ £ 1 -∗ Fulfilled γ v_rcv -∗ Await γ pending ={⊤}=∗
       ∃ (P : V → IProp GF) (pre post : List (V → IProp GF)),

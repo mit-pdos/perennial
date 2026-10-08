@@ -25,11 +25,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance authApplierV3_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3 :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authApplierV3_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3 go_etcd_io.etcd.server.v3.etcdserver.apply.authApplierV3.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authApplierV3
@@ -44,11 +44,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance ApplierOptions_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ApplierOptions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions go_etcd_io.etcd.server.v3.etcdserver.apply.ApplierOptions.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ApplierOptions
@@ -103,11 +103,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance applierV3Capped_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance applierV3Capped_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3Capped.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end applierV3Capped
@@ -122,11 +122,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance applierV3_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3 :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance applierV3_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3 go_etcd_io.etcd.server.v3.etcdserver.apply.applierV3.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end applierV3
@@ -181,11 +181,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance RaftStatusGetter_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance RaftStatusGetter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter go_etcd_io.etcd.server.v3.etcdserver.apply.RaftStatusGetter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end RaftStatusGetter
@@ -291,11 +291,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance applyFunc_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance applyFunc_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc go_etcd_io.etcd.server.v3.etcdserver.apply.applyFunc.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end applyFunc
@@ -310,11 +310,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance quotaApplierV3_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3 :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance quotaApplierV3_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3 go_etcd_io.etcd.server.v3.etcdserver.apply.quotaApplierV3.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end quotaApplierV3
@@ -329,11 +329,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance UberApplier_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance UberApplier_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier go_etcd_io.etcd.server.v3.etcdserver.apply.UberApplier.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end UberApplier
@@ -348,11 +348,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.apply.Assumptions]
 
 instance uberApplier_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance uberApplier_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier go_etcd_io.etcd.server.v3.etcdserver.apply.uberApplier.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end uberApplier

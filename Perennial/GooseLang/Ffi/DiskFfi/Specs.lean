@@ -1,16 +1,13 @@
 /-
-Iris reasoning principles for the disk FFI. Port of the non-crash parts of
-`src/goose_lang/ffi/disk_ffi/specs.v`.
+Iris reasoning principles for the disk FFI (non-crash parts only).
 
-Differences from the Rocq version:
 * No crash reasoning (`ffi_crash_rel`, `ffi_restart`, `disk_array_acc_disc`,
   which uses Perennial's `<bdisc>` modality, is omitted).
 * The ghost state uses iris-lean's `genHeapGS` with `gmap Int` as the map type.
 * `pointstoBlock l q b` is a big separating conjunction over the list
   `BlockToVals b` (`[∗list] i ↦ v ∈ BlockToVals b, (l +ₗ i) ↦{q} v`)
-  instead of a big separating conjunction over the map `heap_array l ...`.
-  Consequently `bindex_of_Z`/`block_byte_index` are not needed and omitted.
-* Argument values are `#a` (`intoVal`) instead of `LitV (LitInt a)`.
+  rather than over the map `heapArray l ...`, so no block-index helpers are needed.
+* Argument values are `#a` (`intoVal`) rather than `LitV (LitInt a)`.
 * `ffiLocalStart` and the adequacy instance are in
   `Perennial/GooseLang/Ffi/DiskFfi/Adequacy.lean`.
 -/
@@ -39,7 +36,7 @@ class DiskPreG (GF : BundledGFunctors) where
   ffiLocalCtx hL d := genHeapInterp (G := hL.diskGGenHeapG) (d : DiskState)
   ffiGlobalCtx _ _ := iprop(True)
 
-/-- Rocq `l d↦{dq} b`. -/
+/-- Disk points-to `a d↦{dq} b`: block `a` of the disk holds `b`. -/
 def diskPointsto {GF : BundledGFunctors} (hL : DiskGS GF) (a : Int) (dq : DFrac) (b : Block) :
     IProp GF :=
   pointsTo (G := hL.diskGGenHeapG) a dq b
@@ -115,7 +112,7 @@ variable {s : Stuckness} {E : CoPset}
 
 abbrev gooseDiskGS : DiskGS GF := L.gooseFfiLocalGS
 
-/- Rocq notations `l d↦{dq} v` and `l d↦ v`. -/
+/- Notations `l d↦{dq} v` and `l d↦ v`. -/
 namespace disk_ffi
 scoped notation:50 l:51 " d↦{" dq "} " v:50 => diskPointsto gooseDiskGS l dq v
 scoped notation:50 l:51 " d↦ " v:50 => diskPointsto gooseDiskGS l (DFrac.own 1) v
@@ -126,7 +123,7 @@ theorem disk_local_ctx_eq (d : DiskState) :
     ffiLocalCtx L.gooseFfiLocalGS d ⊣⊢
       genHeapInterp (G := (gooseDiskGS (L := L)).diskGGenHeapG) d := .rfl
 
-/-- Rocq `pointstoBlock` (see the file header for the representation). -/
+/-- Ownership of a block's bytes in the heap at `l` (see the file header for the representation). -/
 def pointstoBlock (l : Loc) (q : DFrac) (b : Block) : IProp GF :=
   iprop([∗list] i ↦ v ∈ BlockToVals b, heapPointsto (l +ₗ (i : Int)) q v)
 

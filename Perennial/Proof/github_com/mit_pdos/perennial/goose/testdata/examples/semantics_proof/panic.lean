@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/panic.v`.
+Proofs of the goose semantics tests for `panic`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 

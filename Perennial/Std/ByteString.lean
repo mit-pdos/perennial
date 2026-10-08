@@ -1,5 +1,5 @@
 /-
-Byte strings. Port of `src/Helpers/ByteString.v`.
+Byte strings.
 
 Go strings are arbitrary byte sequences, so `GoString` is `List w8`. A literal
 `go!"abc"` elaborates to the explicit list of its UTF-8 bytes, so that equality

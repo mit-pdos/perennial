@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/internal/synctest.v`: specs for `internal/synctest`.
+Specs for `internal/synctest`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.GeneratedProof.internal.synctest

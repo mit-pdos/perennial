@@ -1,19 +1,15 @@
 /-
-Port of `new/proof/go_etcd_io/raft/v3_proof/protocol.v`: the (axiomatized)
-abstract raft log and specifications of `node.Ready`, `node.Advance` and
+The (axiomatized) abstract raft log and specifications of `node.Ready`, `node.Advance` and
 `node.Propose`.
 
-Lean notes:
-* Everything lives in `namespace go_etcd_io.raft.v3_proof` (Rocq: top level);
-  Rocq's `Module node`/`Module message` (axiomatized types) would clash with
-  the generated `go_etcd_io.raft.v3.node`, so they are `v3_proof.node.t` and
-  `v3_proof.message.t`. Generated raft names are written `v3.node`, ...
+Notes:
+* Everything lives in `namespace go_etcd_io.raft.v3_proof`, so the axiomatized
+  types `Node`/`Message` do not clash with the generated
+  `go_etcd_io.raft.v3.node`. Generated raft names are written `v3.node`, ...
 * The broadcast and bag idioms fix `hlc := HasLC.hasLC` and need `[allG GF]`.
-* Deviations from Rocq (so that `node.wp_Advance` and `node.wp_Propose`,
-  admitted in Rocq, are provable; their statements are unchanged): the
-  invariants in `isNodeInner` (`"#Hpropc"`, `"#Hadvancec"`) and
-  `ownProposeMessage` are changed, see their docstrings. New:
-  `msgWithResult_countable`, `isInitialized_access`.
+* The invariants in `isNodeInner` (`"#Hpropc"`, `"#Hadvancec"`) and
+  `ownProposeMessage` are chosen so that `node.wp_Advance` and
+  `node.wp_Propose` are provable; see their docstrings.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.base
 import Perennial.Golang.Theory.Chan.Idioms.Broadcast
@@ -32,32 +28,31 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace go_etcd_io.raft.v3_proof
 
-/-- Rocq `Module node. Axiom t : Type. End node.` -/
+/-- Abstract type of raft nodes. -/
 axiom Node : Type
 
-/-- Rocq `Module message. Axiom t : Type. End message.` -/
+/-- Abstract type of raft messages. -/
 axiom Message : Type
 
-/-- Rocq `entry.t`. -/
+/-- A log entry. -/
 abbrev Entry : Type := List w8
 
-/-- Rocq `astate.t`. -/
+/-- The abstract state: the log. -/
 structure AState where
   mk ::
   log : List Entry
 
 /-! ### Global definitions, not specific to a particular (generation of a) node. -/
 
-/-- Rocq `Axiom RaftNames : Type`. -/
+/-- Ghost names of a raft instance. -/
 axiom RaftNames : Type
 
-/-- Rocq `Axiom ownRaftLog` (Rocq abstracts only over `Σ`). -/
+/-- Ownership of the abstract raft log. -/
 axiom ownRaftLog {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) : IProp GF
 
-/-- Rocq `Axiom isRaftLog`. -/
+/-- Persistent knowledge about the abstract raft log. -/
 axiom isRaftLog {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) : IProp GF
 
-/-- Rocq `Axiom isRaftLog_pers`. -/
 axiom isRaftLog_pers {GF : BundledGFunctors} (γ : RaftNames) (log : List (List w8)) :
     Persistent (isRaftLog (GF := GF) γ log)
 
@@ -78,11 +73,11 @@ theorem isInitialized_access :
     isPkgInit (PROP := IProp GF) raft ⊢ v3.isInitialized :=
   isPkgInit_access (PROP := IProp GF) raft
 
-/-- Rocq `MsgProp`. -/
+/-- The message type of a proposal. -/
 def MsgProp : w32 := W32 2
 
 /-- `Pos.Countable` for `msgWithResult` (needed for a bag of them), through an
-injection into nested pairs of its fields (Lean addition). -/
+injection into nested pairs of its fields. -/
 instance msgWithResult_countable : Pos.Countable v3.msgWithResult :=
   .ofInjective (fun pm =>
       let m := pm.m'
@@ -98,13 +93,11 @@ instance msgWithResult_countable : Pos.Countable v3.msgWithResult :=
       subst h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15
       rfl)
 
-/-- Rocq `ownProposeMessage`.
+/-- Ownership of a proposal message carrying `data`.
 
-Lean deviations: Rocq has `"Hentries" ∷ pm.m'.Entries' ↦* [data_sl]` (a slice of
-`Entry`s described as a slice of byte slices) and `"data_sl" ∷ data_sl ↦* data`
-(full ownership, which `Propose` does not have: its precondition is
-`data_sl ↦*□ data`). Here `Entries` is a one-element slice of an `Entry` whose
-`Data` is `data_sl`, and `data_sl ↦*□ data`. -/
+`Entries` is a one-element slice of an `Entry` whose `Data` is `data_sl`, and
+`data_sl ↦*□ data` is persistent (not full ownership, which `Propose` does not
+have: its precondition is `data_sl ↦*□ data`). -/
 def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult) : IProp GF :=
   iprop(∃ (data_sl : GoSlice) (data : List w8) (γch : ChanNames) (e : v3.raftpb.Entry),
     "Hmsg" ∷ ⌜pm.m'.Type' = MsgProp⌝ ∗
@@ -117,23 +110,19 @@ def ownProposeMessage (γraft : RaftNames) (pm : v3.msgWithResult) : IProp GF :=
     "Hresult" ∷ isChanBag (V := GoInterface) γch pm.result'
       (fun _ => iprop(True)))
 
-/-- Rocq `isNodeInner` (`Local`).
+/-- The invariants of a node's channels.
 
-Lean deviations:
-* `"#Hpropc"`: Rocq `isChanBag γp n.propc' (λ (_ : error.t), True)`, a bag at
-  element type `error` (its `V` is inferred from the predicate) although `propc`
-  is a `chan msgWithResult`; here a bag of `msgWithResult` whose elements are
+* `"#Hpropc"`: a bag of `msgWithResult` whose elements are
   `ownProposeMessage`s (needed to send a proposal on it).
-* `"#Hadvancec"`: Rocq `isChan n.advancec' γa unit ∗ inv nroot (∃ s, ownChan γa unit s)`,
-  which allows a closed `advancec` (then the send in `Advance` panics); here a
-  bag (`isChanBag`, whose invariant excludes `Closed`) with trivial payload. -/
+* `"#Hadvancec"`: a bag (`isChanBag`, whose invariant excludes `Closed`, so the
+  send in `Advance` does not panic) with trivial payload. -/
 def isNodeInner (γraft : RaftNames) (n : v3.node) : IProp GF :=
   iprop(∃ (γp γa γd : ChanNames),
     "#Hpropc" ∷ isChanBag (V := v3.msgWithResult) γp n.propc' (ownProposeMessage γraft) ∗
     "#Hadvancec" ∷ isChanBag (V := Unit) γa n.advancec' (fun _ => iprop(True)) ∗
     "#Hdone" ∷ ownBroadcastChan n.done' γd iprop(True) Broadcast.Unknown)
 
-/-- Rocq `is_node`. -/
+/-- `n` points to a node satisfying `isNodeInner`. -/
 def is_node (γraft : RaftNames) (n : Loc) : IProp GF :=
   iprop(∃ nd : v3.node,
     "n_ptr" ∷ n ↦□ nd ∗
@@ -195,9 +184,7 @@ theorem node.wp_Advance (γraft : RaftNames) (n : Loc) :
   · iapply BigAndL.bigAndL_nil.2
     itrivial
 
-/-- (Rocq: admitted. Proved here by inlining `stepWait` and
-`stepWithWaitOption (wait := true)`, with the changed `isNodeInner` and
-`ownProposeMessage`.) -/
+/-- Proved by inlining `stepWait` and `stepWithWaitOption (wait := true)`. -/
 theorem node.wp_Propose (γraft : RaftNames) (n : Loc) (ctx : GoInterfaceOk)
     (ctx_desc : context.ContextDesc (IProp GF)) (data_sl : GoSlice) (data : List w8) :
     {{ isPkgInit (PROP := IProp GF) raft ∗

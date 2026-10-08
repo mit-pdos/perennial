@@ -1,14 +1,12 @@
 /-
-FFI module for distributed Perennial (Grove). Port of
-`src/goose_lang/ffi/grove_ffi/impl.v` [Trusted definitions!].
+FFI module for distributed Perennial (Grove) [Trusted definitions!].
 
 Consists only of a network, per-node file storage, and clocks.
 
-Differences from the Rocq version:
 * No crash semantics (`ffi_crash_step`).
-* `ffi_step` is a relation (see `Perennial/GooseLang/Lang.lean`); the Rocq
-  `transition` is unfolded into it: either the operation stutters (state
-  unchanged, `e' = ExternalOp op v`) or it takes an `IsGroveFfiStep`.
+* `ffi_step` is a relation (see `Perennial/GooseLang/Lang.lean`): either the
+  operation stutters (state unchanged, `e' = ExternalOp op v`) or it takes an
+  `IsGroveFfiStep`.
 -/
 import Perennial.GooseLang.Lang
 
@@ -69,7 +67,6 @@ instance : Pos.Countable GroveVal where
   ffi_val := GroveVal
 
 structure message where
-  /-- Rocq constructor `Message`. -/
   Message ::
   msgSender : Endpoint
   msgData : List w8
@@ -176,7 +173,7 @@ def IsGroveFfiStep (op : GroveOp) (v : val) (e' : Expr)
         g' = { g with groveGlobalTime := new_time } ∧
         e' = Val (PairV (#low) (#high))
 
-/-- Rocq `ffi_step` (as a relation): the operation either stutters or takes an
+/-- The Grove FFI step relation: the operation either stutters or takes an
 `IsGroveFfiStep`; only the FFI parts of the state change. -/
 def GroveFfiStep (op : GroveOp) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) :
     Prop :=

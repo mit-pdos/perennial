@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/math/bits.v`: package initialization of `math/bits` and
+Package initialization of `math/bits` and
 specs for `Len64` and `Len`.
 -/
 import Perennial.Proof.ProofPrelude

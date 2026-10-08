@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/au_spec/chan_au_send.v`: specifications of the
+Specifications of the
 channel model's `Cap`, `Len`, `TrySend`, `Send`, `tryClose` and `Close`.
 -/
 import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
@@ -27,7 +27,7 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 set_option goose.wp.extras true
 
 omit [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] in
-/-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`, as in Rocq). -/
+/-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`). -/
 theorem isLock_eq_is_Mutex (m : Loc) (R : IProp GF) : isLock m R = isMutex m R := by
   rw [isMutex_unseal]; rfl
 
@@ -328,7 +328,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     icases HΦ with ⟨-, HΦ⟩
     iexact HΦ
   | RcvWait =>
-    -- NOTE (Rocq): this leaves no freedom for picking the linearization order.
+    -- NOTE: this leaves no freedom for picking the linearization order.
     iNamed phys
     chan_unfold_consts
     wp_auto
@@ -807,7 +807,7 @@ theorem wp_Send (ch : Loc) (v : V) (γ : ChanNames) :
     wp_for_post
     iframe
 
-/-- Demo of a simple-to-understand AU (Rocq: `#[local]`). -/
+/-- Demo of a simple-to-understand AU. -/
 theorem wp_BlockingSend (ch : Loc) (v : V) (γ : ChanNames) (Hcapnz : sint.Z γ.chanCap > 0) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ bufferedSendAu γ v (Φ #())) -∗

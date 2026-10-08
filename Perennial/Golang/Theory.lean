@@ -1,17 +1,16 @@
 /-
-Port of `new/golang/theory.v`: the complete Go theory (plus the ghost-state
-libraries, as in Rocq).
+The complete Go theory (plus the ghost-state libraries).
 
 ## Proof tactics (overview; see the docstrings for details)
 
-Rocq tactic names are kept. Intro/cases patterns are iris-lean's
+Intro/cases patterns are iris-lean's
 (`%x`, `#H`, `⟨H1, H2⟩`, `-`), specialization patterns are `lem $$ [H1 $H2] %x`.
 
 | tactic | file | what it does |
 |---|---|---|
 | `wp_pures`, `wp_pure [e]`, `wp_pure_lc H` | ProofMode | pure steps (`PureWp`) |
 | `wp_call`, `wp_call_lc H` | ProofMode | beta step of a call whose head unfolds to `rec:` |
-| `wp_bind [e]` | ProofMode | focus on a subexpression (none: Rocq `wp_bind_next`) |
+| `wp_bind [e]` | ProofMode | focus on a subexpression |
 | `wp_apply_core lem $$ spats` | ProofMode | apply a WP spec (Texan triple) in evaluation position |
 | `wp_expr_simp` | ProofMode | normalize the WP expression |
 | `wp_load`, `wp_store`, `wp_alloc l as H`, `wp_alloc_auto` | Mem | typed memory (`l ↦{dq} v`, via `Access`) |

@@ -1,8 +1,5 @@
 /-
-Port of `src/Helpers/List.v`.
-
-Not ported (unused by new goose): `prefix_total` and the `lookup_total`
-(`!!!`) lemmas, the `Proper` instances for `concat`, `incl_Forall`, `in_concat`.
+Helper lemmas about lists.
 -/
 import Perennial.Std.ListLen
 
@@ -145,7 +142,7 @@ theorem length_nonzero_neq_nil (l : List A) (h : 0 < l.length) : l ≠ [] := Lis
 theorem drop_lt (l : List A) (n : Nat) (h : n < l.length) : l.drop n ≠ [] := by
   intro e; have := congrArg List.length e; simp at this; omega
 
-/-- Rocq `ForallIdx P start l`: `P (start + i) (l !! i)` for every index. -/
+/-- `ForallIdx P start l`: `P (start + i) (l !! i)` for every index. -/
 def ForallIdx (P : Nat → A → Prop) (start : Nat) (l : List A) : Prop :=
   List.Forall₂ P (List.range' start l.length) l
 

@@ -322,11 +322,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance hchan_typed_pointsto :
     TypedPointsto (GF := GF) runtime.hchan :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance hchan_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.hchan runtime.hchan.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end hchan
@@ -2122,11 +2122,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance TypeAssertionError_typed_pointsto :
     TypedPointsto (GF := GF) runtime.TypeAssertionError :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance TypeAssertionError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError runtime.TypeAssertionError.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end TypeAssertionError
@@ -2198,11 +2198,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance boundsError_typed_pointsto :
     TypedPointsto (GF := GF) runtime.boundsError :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance boundsError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.boundsError runtime.boundsError.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end boundsError
@@ -2217,11 +2217,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance typeCacheBucket_typed_pointsto :
     TypedPointsto (GF := GF) runtime.typeCacheBucket :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance typeCacheBucket_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end typeCacheBucket

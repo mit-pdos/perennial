@@ -1,17 +1,12 @@
 /-
 Extra lemmas about big separating conjunctions over lists.
-Port of `src/algebra/big_op/big_sepL.v`.
 
-Only lemmas that iris-lean's `Iris.BI.BigOp.BigSepList` lacks are ported. Differences from Rocq:
-* Rocq statements of the form `⊢ P -∗ Q` (or a Coq-level hypothesis `P -∗ Q`) are stated as
-  entailments `P ⊢ Q`.
+Only lemmas that iris-lean's `Iris.BI.BigOp.BigSepList` lacks are included.
+* Statements are entailments `P ⊢ Q` rather than `⊢ P -∗ Q` (or a meta-level hypothesis `P -∗ Q`).
 * `big_sepL2_const_sepL_l/r` are aliases of iris-lean's `bigSepL2_const_sepL_left/right`.
   `big_sepL2_sep_sepL_l/r` are re-proved here because iris-lean's versions need `BIAffine`.
 * `big_sepL2_fupd` is iris-lean's `BigSepL2.bigSepL2_fupd` and is not repeated.
-* `big_sepL2_mono_with_inv` and `big_sepL2_mono_with_fupd_inv` do not need `BIAffine`, so
-  that assumption is dropped.
-* The `Local` helper lemmas `big_sepL2_to_sepL_aux` and `big_sepL_exists_list_aux` are replaced by
-  inductions over the predicate.
+* `big_sepL2_mono_with_inv` and `big_sepL2_mono_with_fupd_inv` do not need `BIAffine`.
 -/
 import Iris.BI
 import Iris.BI.BigOp
@@ -132,7 +127,7 @@ theorem big_sepL2_elim_big_sepL_aux [BIAffine PROP] {C : Type _} (P : Nat → C 
       ([∗list] k ↦ y1;y2 ∈ l1;l2, Φ (k + n) y1 y2) -∗ [∗list] k ↦ z ∈ l, P (k + n) z :=
   big_sepL2_elim_big_sepL (fun k => P (k + n)) (fun k => Φ (k + n)) l1 l2 l hlen
 
-/-- Rocq `big_sepL2_to_sepL_1'`: an equivalence, given a separate length assumption. -/
+/-- An equivalence, given a separate length assumption. -/
 theorem big_sepL2_to_sepL_1' (Φ : Nat → A → B → PROP) (l1 : List A) (l2 : List B)
     (hlen : l1.length = l2.length) :
     ([∗list] k ↦ y1;y2 ∈ l1;l2, Φ k y1 y2) ⊣⊢

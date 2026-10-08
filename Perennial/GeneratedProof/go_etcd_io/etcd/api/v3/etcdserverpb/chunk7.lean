@@ -25,11 +25,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthUserAddRequest_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddRequest :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance AuthUserAddRequest_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddRequest go_etcd_io.etcd.api.v3.etcdserverpb.AuthUserAddRequest.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end AuthUserAddRequest
@@ -988,11 +988,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthRoleGrantPermissionRequest_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionRequest :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance AuthRoleGrantPermissionRequest_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionRequest go_etcd_io.etcd.api.v3.etcdserverpb.AuthRoleGrantPermissionRequest.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end AuthRoleGrantPermissionRequest

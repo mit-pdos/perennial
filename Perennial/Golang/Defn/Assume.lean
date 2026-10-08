@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/assume.v`.
+`assume` and overflow-assumption helpers used by generated code.
 -/
 import Perennial.Golang.Defn.Exception
 

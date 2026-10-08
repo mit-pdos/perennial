@@ -1,8 +1,7 @@
 /-
 The `goose_wp_simp_extra` simp set: extensions of `goose_wp_simp` used by
 `wp_pures`/`wp_auto` to normalize the expression of a WP goal when
-`goose.wp.extras` (on by default). No Rocq counterpart: in Rocq these
-reductions are done by `simpl`/`vm_compute`/`bool_decide` hints.
+`goose.wp.extras` (on by default).
 
 * `gooseReduceIteDecide`: `if p then a else b` whose (metavariable-free)
   decidable condition evaluates by `whnf` (e.g. `GoString` literal equalities in

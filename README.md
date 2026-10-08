@@ -14,15 +14,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 ## Do not consult the Rocq sources
 
 The Rocq code on `master` is frozen and will drift out of date. Do not read it,
-diff against it, or use it to decide what a definition or spec should be:
-
-* The Lean statement is authoritative. To improve a spec or prove a `sorry`,
-  work from the Go code and the Lean development, not from what Rocq did.
-* Comments of the form `-- Rocq: Admitted`, `(Rocq: ...)`, "Rocq `foo`" or
-  "Lean deviations from Rocq" are historical notes from the translation. They say
-  where something came from, not what it must be; there is no need to check
-  them against `master`, and they can be dropped when the code around them
-  changes.
+diff against it, or use it to decide what a definition or spec should be: the
+Lean statements are authoritative. To improve a spec or prove a `sorry`, work
+from the Go code and the Lean development.
 
 ## Design decisions
 
@@ -64,10 +58,9 @@ diff against it, or use it to decide what a definition or spec should be:
     `LawfulFiniteMap`, so iris-lean's `ghost_map`/`gen_heap` apply.
   * Machine words are `BitVec n` (`w64 = BitVec 64`, ...). `uint.Z x` is
     `(x.toNat : Int)` and `sint.Z x` is `x.toInt`. Arithmetic side conditions
-    are discharged with `word`, `omega` and `bv_omega` in place of
-    coqutil's `word`. Do not use `bv_decide`/`native_decide`: they trust
+    are discharged with `word`, `omega` and `bv_omega`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
-  * `GoString` (Rocq `byte_string`) is `List w8`.
+  * `GoString` is `List w8`.
 * **64-bit platform.** The Go semantics assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
@@ -109,9 +102,8 @@ Run `etc/lean-ci.sh` + `etc/lean-audit.py` for the build and soundness audit
   Go operators `e1 +⟨t⟩ e2` etc. Method calls are `rcvr @!! T @!! m`.
 * Everything lives in `namespace Perennial`.
 * Files do not use the Lean `module` system (no `public import`).
-* An unfinished proof is `sorry` with a comment saying what is missing (existing
-  `-- Rocq: Admitted` / `-- TODO(port)` markers mean the same: not proved yet).
-  Do not add new `axiom`s without discussing it first.
+* An unfinished proof is `sorry`, with a comment saying what is missing if it
+  is not obvious. Do not add new `axiom`s without discussing it first.
 * Notation: `#x` is `intoVal x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
   both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); stdpp's
   set-valued `dom m` is `domSet m`; `go!"abc"` is a `GoString` literal; `l +ₗ i` is location

@@ -1,5 +1,5 @@
 /-
-Port of `src/Helpers/gset.v`. (The `gset` operations themselves are in
+Lemmas about finite sets (`GSet`). (The operations themselves are in
 `Perennial.Std.GMap`.)
 -/
 import Perennial.Std.GMap

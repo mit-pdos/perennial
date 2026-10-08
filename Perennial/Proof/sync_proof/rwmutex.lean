@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/rwmutex.v`: `sync.RWMutex`, with a logically
+`sync.RWMutex`, with a logically
 atomic specification over an abstract `rwmutex` state.
 -/
 import Perennial.Proof.sync_proof.base
@@ -35,14 +35,14 @@ instance countable_wlock_state : Pos.Countable WlockState :=
 
 namespace sync
 
-/- Rocq's `rwmutex.v` is used qualified (`rwmutex.ownRWMutex`), since
-`rwmutex_guard.v` reuses the names for its fractional-resource interface. -/
+/- These definitions are used qualified (`rwmutex.ownRWMutex`), since the
+`rwmutex_guard` interface reuses the names for its fractional resources. -/
 namespace rwmutex
 
-/-- Rocq `rwmutexMaxReaders` (renamed: `sync.rwmutexMaxReaders` is the Go constant). -/
+/-- `rwmutexMaxReaders` as an `Int` (`sync.rwmutexMaxReaders` is the Go constant). -/
 abbrev rwmutexMaxReadersZ : Int := 1073741824
 
-/-- Rocq `actualMaxReaders` (sealed). -/
+/-- `rwmutexMaxReadersZ - 1` (sealed). -/
 @[irreducible] def actualMaxReaders : Int := 1073741824 - 1
 theorem actualMaxReaders_unseal : actualMaxReaders = 1073741824 - 1 := by
   with_unfolding_all rfl
@@ -155,8 +155,7 @@ local macro "rw_pure_finish" : tactic => `(tactic| (
   (try simp only [rwmutexMaxReadersZ, actualMaxReaders_unseal] at *)
   and_intros <;> (try subst_vars) <;> word))
 
--- Case on `state` and `wl` and reduce the invariant's `match`es
--- (Rocq: `destruct state, wl; iNamed "Hinv"`).
+-- Case on `state` and `wl` and reduce the invariant's `match`es.
 -- Re-establish the invariant with the given `wl`, `pos_reader_count` and
 -- `outstanding_reader_wait`.
 set_option hygiene false in

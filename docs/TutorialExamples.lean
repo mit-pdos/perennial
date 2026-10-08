@@ -487,7 +487,7 @@ example (P : PROP) (Φ : Nat → PROP) :
 example (P Q : PROP) [Persistent Q] (h : P ⊢ Q) :
     ⊢ P -∗ Q ∗ P := by
   iintro HP
-  -- `ihave pat : prop $$ spat` (Rocq `iAssert`): the new goal `Q` gets `HP`;
+  -- `ihave pat : prop $$ spat`: the new goal `Q` gets `HP`;
   -- since `Q` is persistent (`#HQ`), `HP` also stays available afterwards
   ihave #HQ : Q $$ [HP]
   · iapply h; iexact HP

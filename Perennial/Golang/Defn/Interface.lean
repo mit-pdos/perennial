@@ -1,5 +1,6 @@
 /-
-Port of `new/golang/defn/interface.v`.
+Interface semantics: type sets, comparison, conversion, type assertions and
+method calls on interface values.
 -/
 import Perennial.Golang.Defn.PostLang
 

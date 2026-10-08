@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel/etcd_session.v`:
-an etcd-style session monitor, using a broadcast channel (`sessionc`) that is
+An etcd-style session monitor, using a broadcast channel (`sessionc`) that is
 closed (and replaced) whenever the session expires.
 -/
 import Perennial.Proof.ProofPrelude
@@ -198,7 +197,7 @@ theorem wp_monitorSession (ch : GoChan) (γch : ChanNames) :
   subst Hv
   wp_auto
   icases (pointsto_halves _ _).1 $$ sessionc with ⟨sessionc, sessionc_inv⟩
-  -- (Rocq:) subtlety here: because we are deriving a persistent
+  -- Subtlety here: because we are deriving a persistent
   -- ownBroadcastChan(ch, broadcast.Pending), the function can retain Hsessionc
   -- asserting that the channel is specifically Pending; this is needed after the
   -- Unlock to safely close.
@@ -233,7 +232,7 @@ theorem wp_monitorSession (ch : GoChan) (γch : ChanNames) :
     ipureintro; simp
 
 set_option maxHeartbeats 800000 in
-/-- Rocq `waitSession` (renamed: the Lean name `waitSession` is the function). -/
+/-- Spec of the `waitSession` function. -/
 theorem wp_waitSession {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [Pos.Countable A']
     {A : go.GoType} [IntoValTyped (GF := GF) A' A]
     (cancel : Loc) (γcancel : ChanNames) (Pcancel : A' → IProp GF) :

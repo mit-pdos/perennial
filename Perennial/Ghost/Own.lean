@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/own.v`: derived properties of `own` (see `Perennial/Ghost/All.lean`
+Derived properties of `own` (see `Perennial/Ghost/All.lean`
 for the design).
 -/
 import Perennial.Ghost.All

@@ -1,28 +1,24 @@
 /-
-Port of `src/algebra/big_op/big_sepM.v`.
-
 Extra lemmas about `[∗map]` (and `[∗map]` over two maps) that iris-lean's
 `Iris.BI.BigOp.BigSepMap{,2}` does not provide, plus the finite-map facts
 (filter, zip, curry) they need.
 
-Differences from Rocq:
+Conventions:
 * Maps are any iris-lean `LawfulFiniteMap M K` (with `DecidableEq K`), so the
-  lemmas apply to `Perennial.gmap`. stdpp's `dom m1 = dom m2` is
+  lemmas apply to `Perennial.gmap`. Equality of domains is stated as
   `PartialMap.dom m1 = PartialMap.dom m2` (domains as predicates; see
   `map_dom_eq_iff`), and `mapZip` is an abbreviation for the
   `zipWith (·, ·)` that iris-lean's `bigSepM2` is defined with.
 * `big_sepS_exists_sepM` is stated for any iris-lean `LawfulFiniteSet`, with
   `dom m = s` as `FiniteMap.dom_set m = s`.
-* `big_sepM_mono_{fupd,bupd}` use `-∗` instead of `→` for the pure premise
-  (equivalent under `□`).
+* `big_sepM_mono_{fupd,bupd}` use `-∗` for the pure premise (equivalent to `→`
+  under `□`).
 * Filters by a key predicate `P : K → Prop` are written
   `filter (fun k _ => decide (P k)) m`; the complement uses `decide (¬ P k)`.
-* `big_sepM_mono_ncfupd` is dropped (no crash logic, see README.md).
-* `big_sepM_gmap_curry` is dropped: it is `Abort`ed in Rocq.
+* There are no `ncfupd` variants (no crash logic, see README.md).
 * `map_curry` lemmas are stated for `Perennial.gmap` with a local definition
   `gmapCurry`, since iris-lean has no `map_curry`.
-* Lemmas whose Rocq statement carries unused `Absorbing` arguments
-  (`big_sepM2_lookup_*`, `big_sepM2_sepM_*`) do not take them.
+* `big_sepM2_lookup_*` and `big_sepM2_sepM_*` need no `Absorbing` arguments.
 -/
 import Iris.BI
 import Iris.BI.BigOp
@@ -95,7 +91,7 @@ theorem filter_same_keys_1' (m1 : M A) (m2 : M B) (P : K → Prop) [DecidablePre
   simp only [mapLookup_filter_key] at h1 h2
   by_cases hP : P k <;> simp_all
 
-/-- Rocq `filter_dom`: the domain of a key-filtered map is the filtered domain. -/
+/-- The domain of a key-filtered map is the filtered domain. -/
 theorem filter_dom (P : K → Prop) [DecidablePred P] (m : M A) :
     dom (filter (fun k _ => decide (P k)) m) = fun k => P k ∧ dom m k := by
   funext k
@@ -164,7 +160,7 @@ theorem mapZip_with_empty_r (f : A → B → C) (m1 : M A) :
   simp only [get?_zipWith, get?_empty]
   cases get? m1 k <;> rfl
 
-/-- Rocq `mapZip`, in the form used by iris-lean's `[∗map] k ↦ x1;x2 ∈ m1;m2, _`
+/-- Zip of two maps, in the form used by iris-lean's `[∗map] k ↦ x1;x2 ∈ m1;m2, _`
 (`PartialMap.zip` itself has universe-polymorphism issues). -/
 abbrev mapZip (m1 : M A) (m2 : M B) : M (A × B) := zipWith (fun (x : A) (y : B) => (x, y)) m1 m2
 
@@ -637,7 +633,7 @@ def gmapCurryInner (m : GMap (A × B) T) (a : A) : GMap B T :=
     obtain ⟨l, hl⟩ := m.finite
     exact ⟨l.map Prod.snd, fun b h => List.mem_map.mpr ⟨(a, b), hl _ h, rfl⟩⟩⟩
 
-/-- Rocq `gmapCurry` (stdpp `map_curry`): only keys with a nonempty inner map
+/-- Currying of a map with pair keys (stdpp's `map_curry`): only keys with a nonempty inner map
 are present. -/
 def gmapCurry (m : GMap (A × B) T) : GMap A (GMap B T) :=
   ⟨fun a => if ∃ b, (m !! (a, b)).isSome then some (gmapCurryInner m a) else none, by

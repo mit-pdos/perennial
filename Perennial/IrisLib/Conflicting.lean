@@ -1,12 +1,10 @@
 /-
-Port of `src/iris_lib/conflicting.v`.
-
 Predicates `P0`, `P1` *conflict* if owning `P0 a0 v0` and `P1 a1 v1` together
 implies `a0 ≠ a1` (think: exclusive points-to facts). Big separating
 conjunctions over conflicting predicates have disjoint domains.
 
-Differences from Rocq:
-* `BiPureForall` is not needed (iris-lean proves `pure_forall` for every BI).
+Notes:
+* No `BiPureForall` assumption is needed (iris-lean proves `pure_forall` for every BI).
 * Maps are any iris-lean `LawfulFiniteMap` (in particular `Perennial.gmap`).
 * `Conflicting P` is a class of its own (with an instance from
   `ConflictsWith P P`) instead of a definitional alias, so that instance search
@@ -23,7 +21,7 @@ open Iris Iris.BI Iris.Std BigSepM PartialMap
 
 variable {PROP : Type _} [BI PROP]
 
-/-- Rocq `ConflictsWith`. -/
+/-- `P0` and `P1` conflict: owning `P0 a0 v0` and `P1 a1 v1` implies `a0 ≠ a1`. -/
 class ConflictsWith {L V : Type _} (P0 P1 : L → V → PROP) : Prop where
   conflicts_with : ∀ a0 v0 a1 v1, P0 a0 v0 ⊢ P1 a1 v1 -∗ ⌜a0 ≠ a1⌝
 
@@ -47,7 +45,7 @@ theorem big_sepM_disjoint_pred {L V : Type _} {M : Type _ → Type _} [LawfulFin
       ihave %Hne := (conflicts_with (P0 := P0) (P1 := P1) i v0 i v1) $$ H0 H1
       exact absurd rfl Hne
 
-/-- Rocq `Conflicting`: `P` conflicts with itself. -/
+/-- `P` conflicts with itself. -/
 class Conflicting {L V : Type _} (P : L → V → PROP) : Prop where
   conflicting : ∀ a0 v0 a1 v1, P a0 v0 ⊢ P a1 v1 -∗ ⌜a0 ≠ a1⌝
 

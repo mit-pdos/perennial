@@ -1,11 +1,11 @@
 /-
-Port of `new/golang/theory/chan.v`: user-facing specifications of Go channel
+User-facing specifications of Go channel
 operations (`make`, `<-`, `close`, `cap`, `for range`, `select`), in terms of the
 atomic-update style specifications of `Perennial/Golang/Theory/Chan/AuSpec/*`.
 
-Lean notes / deviations: see `ChanAuBase.lean` (`[Pos.Countable V]` for ghost state).
+Ghost state over element type `V` needs `[Pos.Countable V]` (see `ChanAuBase.lean`).
 The select specifications quantify over the element type `V` and its instances
-inside the Iris propositions (as Rocq does).
+inside the Iris propositions.
 -/
 import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
 import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
@@ -53,7 +53,7 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ff
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
--- (Rocq:) These are carefully ordered so that when the lemmas are applied, typeclass search
+-- These are carefully ordered so that when the lemmas are applied, typeclass search
 -- can fill everything in.
 variable {ct : go.GoType} {dir : go.ChanDir} {t : go.GoType} [Hunder : ct ↓u go.ChannelType dir t]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V]
@@ -143,7 +143,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
-/-- The precondition for a blocking select case (Rocq inlines this `match`). -/
+/-- The precondition for a blocking select case. -/
 def blockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
   match c with
   | .CommClause (.SendCase t send_chan_expr send_val) send_handler =>
@@ -164,7 +164,7 @@ def blockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
 set_option goose.wp.extras true
 
 set_option maxHeartbeats 400000 in
-/-- (Rocq:) The lemmas use Ψ because the original client-provided `send/recvAu` will
+/-- The lemmas use Ψ because the original client-provided `send/recvAu` will
 have some specific postcondition predicate. We don't want to force the caller to
 transform that into a `sendAu` of a different. So, these lemmas are written to take a
 wand that turns Ψ into Φ. -/
@@ -310,7 +310,7 @@ theorem wp_select_blocking (clauses : List comm_clause) (Φ : val → IProp GF) 
     wp_auto
     iexact Hr
 
-/-- The precondition for a nonblocking select case (Rocq inlines this `match`). -/
+/-- The precondition for a nonblocking select case. -/
 def nonblockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
   match c with
   | .CommClause (.SendCase t send_chan_expr send_val) send_handler =>
@@ -479,7 +479,7 @@ theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : v
     wp_auto
     iexact Hr
 
-/-- Rocq (stdpp) `permutation_zip`. -/
+/-- Zipping a permutation of `l1` with `l3` is a permutation of `l1.zip l3`. -/
 theorem permutation_zip {A B : Type} {l1 l2 : List A} (h : l1.Perm l2) (l3 : List B)
     (hlen : l1.length = l3.length) :
     ∃ l4 : List B, l3.Perm l4 ∧ (l1.zip l3).Perm (l2.zip l4) := by
@@ -502,8 +502,7 @@ theorem permutation_zip {A B : Type} {l1 l2 : List A} (h : l1.Perm l2) (l3 : Lis
     obtain ⟨l5, h3, h4⟩ := ih2 l4 (by rw [← h12.length_eq, hlen, h1.length_eq])
     exact ⟨l5, h1.trans h3, h2.trans h4⟩
 
-/-- The precondition for a select case in `wp_select_nonblocking_alt` (Rocq inlines this
-`match`). -/
+/-- The precondition for a select case in `wp_select_nonblocking_alt`. -/
 def nonblockingAltClausePre (c : comm_clause) (Ψ : val → IProp GF) (Pnr : IProp GF) :
     IProp GF :=
   match c with
@@ -620,7 +619,7 @@ theorem wp_trySelect_nonblocking_alt (Φnrs : List (IProp GF)) (clauses : List c
         iapply BigSepL.bigSepL_cons.2
         iframe
 
-/-- (Rocq:) This specification requires proving _separate_ atomic updates for each case,
+/-- This specification requires proving _separate_ atomic updates for each case,
 and requires a proposition `P` to represent the resources that are available to ALL of the
 handlers (rather than having to be split up among the cases).
 

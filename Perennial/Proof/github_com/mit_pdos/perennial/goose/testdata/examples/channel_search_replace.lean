@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_search_replace.v`:
-a parallel search-and-replace over a slice, with work items sent over a channel
+A parallel search-and-replace over a slice, with work items sent over a channel
 (bag idiom) and completion tracked by a `sync.WaitGroup` (join idiom).
 -/
 import Perennial.Proof.ProofPrelude
@@ -97,7 +96,7 @@ def chanP (wg : Loc) (x y : w64) (s : GoSlice) : IProp GF :=
 
 def waitgroupN : Namespace := nroot.@"waitgroup"
 
-/-- (Rocq: TODO: put this in slice.v) -/
+/-- An empty subslice is owned persistently. TODO: move to the slice theory. -/
 theorem ownSlice_slice_empty (index : w64) (s : GoSlice) (xs : List w64)
     (h : 0 ≤ sint.Z index ∧ sint.Z index ≤ sint.Z s.cap) :
     (s ↦* xs : IProp GF) ⊢ □ (slice.slice s w64 index index ↦* ([] : List w64)) := by

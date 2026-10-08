@@ -214,11 +214,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance iface_typed_pointsto :
     TypedPointsto (GF := GF) runtime.iface :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance iface_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.iface runtime.iface.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end iface
@@ -233,11 +233,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance eface_typed_pointsto :
     TypedPointsto (GF := GF) runtime.eface :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance eface_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.eface runtime.eface.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end eface
@@ -491,11 +491,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance m_typed_pointsto :
     TypedPointsto (GF := GF) runtime.m :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance m_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.m runtime.m.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end m
@@ -550,11 +550,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance p_typed_pointsto :
     TypedPointsto (GF := GF) runtime.p :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance p_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.p runtime.p.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end p
@@ -569,11 +569,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance schedt_typed_pointsto :
     TypedPointsto (GF := GF) runtime.schedt :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance schedt_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.schedt runtime.schedt.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end schedt
@@ -588,11 +588,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance _func_typed_pointsto :
     TypedPointsto (GF := GF) runtime._func :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance _func_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime._func runtime._func.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end _func
@@ -1357,11 +1357,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance semTable_typed_pointsto :
     TypedPointsto (GF := GF) runtime.semTable :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance semTable_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.semTable runtime.semTable.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end semTable
@@ -2037,11 +2037,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance pcHeader_typed_pointsto :
     TypedPointsto (GF := GF) runtime.pcHeader :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance pcHeader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.pcHeader runtime.pcHeader.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end pcHeader
@@ -2056,11 +2056,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance moduledata_typed_pointsto :
     TypedPointsto (GF := GF) runtime.moduledata :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance moduledata_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.moduledata runtime.moduledata.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end moduledata

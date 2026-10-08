@@ -1,5 +1,5 @@
 /-
-Go types. Port of `new/golang/defn/prelang.v`.
+Go types.
 -/
 import Perennial.Std.ByteString
 
@@ -10,7 +10,7 @@ abbrev Identifier := GoString
 abbrev TypeName := GoString
 
 mutual
-/-- https://go.dev/ref/spec#Types (see the Rocq source for the conventions).
+/-- https://go.dev/ref/spec#Types.
 Parameter/result names are omitted from signatures so that `=` is Go type
 identity. -/
 inductive GoType where
@@ -46,7 +46,7 @@ inductive type_term where
   | TypeTermUnderlying (type : GoType)
 end
 
--- Rocq admits these instances. The deriving handler does not support nested
+-- The deriving handler does not support nested
 -- mutual inductives, so we use classical decidability.
 noncomputable instance : DecidableEq GoType := fun a b => Classical.propDecidable (a = b)
 noncomputable instance : DecidableEq signature := fun a b => Classical.propDecidable (a = b)
@@ -54,7 +54,7 @@ noncomputable instance : DecidableEq signature := fun a b => Classical.propDecid
 
 instance : Inhabited GoType := ⟨.Named go!"any" []⟩
 
--- Rocq constructors live directly in `Module go` (`go.Named`, `go.FieldDecl`, ...).
+-- Constructors are available directly in `go` (`go.Named`, `go.FieldDecl`, ...).
 export GoType (Named ArrayType StructType PointerType FunctionType InterfaceType SliceType MapType
   ChannelType UntypedType)
 export ChanDir (sendrecv sendonly recvonly)
@@ -65,7 +65,7 @@ export type_term (TypeTerm TypeTermUnderlying)
 
 def stringToGoString (s : String) : GoString := Perennial.stringToGoString s
 
-/-- Rocq `typeToString`, used for comparisons and method lookups. -/
+/-- A string name of a type, used for comparisons and method lookups. -/
 def typeToString : GoType → GoString
   | .Named n _ => n
   | .ArrayType n elem => go!"[" ++ stringToGoString (toString n) ++ go!"]" ++ typeToString elem

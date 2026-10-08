@@ -57,8 +57,7 @@ etc/update-goose-new.py --lean --etcd-raft ../etcd-raft     # an external projec
 etc/update-goose-new.py --lean --all                        # everything found in ../<proj>
 ```
 
-Always pass `--lean`, which selects the Lean backend (without it the script
-writes the obsolete Rocq `new/code`, `new/generatedproof`); `--compile` first runs
+Always pass `--lean`, which selects the Lean backend; `--compile` first runs
 `go install ./goose/cmd/goose ./goose/cmd/proofgen`; `-n` prints the commands.
 For each package the script runs `goose -lean -out Perennial/Code -configdir Perennial/Code`
 and `proofgen -lean -out Perennial/GeneratedProof -configdir Perennial/Code`.
@@ -207,8 +206,7 @@ theorem wp_usePtr' :
 proves its `isPkgInit` premises, introduces the postcondition with the
 iris-lean intro patterns `pats` and runs `wp_auto`. (`with` is a synonym of
 `as`; `wp_apply +noauto lem ...` skips the `wp_auto`, `wp_apply (lc := n) lem ...`
-asks it for `n` later credits. Rocq's `--no-auto`/`--lc n` are Lean comments and
-are rejected.)
+asks it for `n` later credits.)
 
 ```lean
 /-- `func returnTwo(p []byte) (uint64, uint64) { return 0, 0 }`.

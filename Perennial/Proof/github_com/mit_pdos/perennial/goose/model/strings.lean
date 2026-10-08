@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/model/strings.v`: specs
-for the Go model of string/byte-slice conversions
+Specs for the Go model of string/byte-slice conversions
 (`github.com/mit-pdos/perennial/goose/model/strings`), used by
 `Perennial/Golang/Theory/String.lean`.
 -/

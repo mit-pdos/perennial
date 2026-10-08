@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel.v`:
-hedged requests, hello-world futures, cancellation, joins, pointer exchange and
+Proofs of the goose channel examples: hedged requests, hello-world futures, cancellation, joins, pointer exchange and
 broadcast examples, using the channel idioms (bag, handshake, broadcast, future).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init

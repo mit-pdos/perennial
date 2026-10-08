@@ -1,5 +1,5 @@
 /-
-Port of `src/Helpers/Map.v`. (`map_difference_union'`, `length_gmap_to_list`,
+Further lemmas about finite maps. (`map_difference_union'`, `length_gmap_to_list`,
 `map_size_filter`, `map_size_dom`, `map_size_nonzero` and
 `map_size_nonzero_lookup` live in `Perennial.Std.GMap`.)
 -/

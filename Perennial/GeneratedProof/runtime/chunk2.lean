@@ -316,11 +316,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance itabTableType_typed_pointsto :
     TypedPointsto (GF := GF) runtime.itabTableType :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance itabTableType_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.itabTableType runtime.itabTableType.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end itabTableType
@@ -335,11 +335,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance linknameIter_typed_pointsto :
     TypedPointsto (GF := GF) runtime.linknameIter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance linknameIter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.linknameIter runtime.linknameIter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end linknameIter
@@ -804,11 +804,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance typePointers_typed_pointsto :
     TypedPointsto (GF := GF) runtime.typePointers :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance typePointers_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.typePointers runtime.typePointers.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end typePointers

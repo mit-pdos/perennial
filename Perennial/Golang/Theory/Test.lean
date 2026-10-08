@@ -2,7 +2,7 @@
 Small worked examples of the GooseLang proof tactics (`wp_start`, `wp_auto`,
 `wp_apply`, `wp_pures`, `wp_bind`, `wp_load`/`wp_store`/`wp_alloc`, `wp_for`,
 `iNamed`) on hand-written GooseLang functions in the style of goose's output.
-These double as regression tests and as examples for proof porters.
+These double as regression tests and as examples for proof writers.
 -/
 import Perennial.Golang.Theory
 
@@ -370,9 +370,9 @@ example (Φ : val → IProp GF) :
 
 end proofs2
 
-/-! ### A struct, in the shape goose generates (with the template changes
-described in the porting notes: `[ext] [ffi]` instance binders, `heapGS hlc GF`,
-named field conjuncts, and `@[reducible]` `fieldsUnsealed`/`underlying` definitions). -/
+/-! ### A struct, in the shape goose generates (`[ext] [ffi]` instance binders,
+`heapGS hlc GF`, named field conjuncts, and `@[reducible]`
+`fieldsUnsealed`/`underlying` definitions). -/
 
 noncomputable section
 namespace testpkg
@@ -544,7 +544,7 @@ end def_
 end testpkg
 end
 
-/-! ### `uintptr` (Lean addition, see `go.UintptrSemantics`): a 64-bit unsigned integer -/
+/-! ### `uintptr` (see `go.UintptrSemantics`): a 64-bit unsigned integer -/
 section uintptr_tests
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]

@@ -1,16 +1,15 @@
 /-
-Port of `new/golang/theory/map.v`: the map points-to `mref ↦${dq} m`
+The map points-to `mref ↦${dq} m`
 (`ownMap`) and specs for the map operations (insert, delete, lookup, make,
 clear, `for range`).
 
-Differences from Rocq:
-* stdpp's `gmap K V` (with `EqDecision K` and `Countable K`) is
-  `Perennial.gmap K V`, which only needs `DecidableEq K`.
-* In `wp_map_for_range`, Rocq's `listToSet keys = dom m` is stated as
-  `∀ k, k ∈ keys ↔ (m !! k).isSome`.
+Notes:
+* Maps are `Perennial.gmap K V`, which only needs `DecidableEq K`.
+* In `wp_map_for_range`, the fact that `keys` lists the domain of `m` is stated
+  as `∀ k, k ∈ keys ↔ (m !! k).isSome`.
 * `wp_map_len` and `pure_wp_map_nil_len` are stated at any type whose
-  underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`);
-  Rocq states them at the literal `go.MapType key_type elem_type`.
+  underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`),
+  not only at the literal `go.MapType key_type elem_type`.
 -/
 import Perennial.Golang.Theory.TacticsSimp
 import Perennial.Golang.Theory.Auto
@@ -455,8 +454,7 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
 
 
 /-- `len(m)` of a map the caller owns. `t` is any type whose underlying type is
-a map (`len_map` takes `[t ↓u go.MapType ..]`; Rocq states this at the literal
-`go.MapType key_type elem_type`). The nil map is `pure_wp_map_nil_len`. -/
+a map (`len_map` takes `[t ↓u go.MapType ..]`). The nil map is `pure_wp_map_nil_len`. -/
 theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
     (mref : Loc) (m : GMap K V) (dq : DFrac) :
     {{ (mref ↦${dq} m : IProp GF) }}

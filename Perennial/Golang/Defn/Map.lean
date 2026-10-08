@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/map.v`.
+Map semantics.
 
 One subtlety (from https://go.dev/ref/spec#Map_types): inserting into or
 lookup up from a map can cause a run-time panic:
@@ -17,8 +17,8 @@ The latter is safe when
   `#(interface.mk key_type k) =⟨go.any⟩ #(interface.mk key_type k)`
 is safe.
 
-Lean deviation from Rocq: `len_map` takes `[t ↓u go.MapType key_type elem_type]`
-(Rocq: only a literal `go.MapType`), so `len` also unfolds at named map types.
+`len_map` takes `[t ↓u go.MapType key_type elem_type]`, so `len` also unfolds
+at named map types.
 -/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Predeclared
@@ -144,11 +144,11 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   make1_map (key_type elem_type : go.GoType) :
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0) : val)
-  /-- Lean deviation: Rocq's `len_map key_type elem_type` unfolds `len` only at a
-  literal `go.MapType key_type elem_type`, so `len(m)` is stuck when `m` has a
-  named map type (e.g. raft's `quorum.MajorityConfig`). Go's `len` works on any
-  type whose underlying type is a map, so (like `len_slice`/`len_chan`) this
-  takes `[t ↓u go.MapType key_type elem_type]`.
+  /-- Go's `len` works on any type whose underlying type is a map, so (like
+  `len_slice`/`len_chan`) this takes `[t ↓u go.MapType key_type elem_type]`
+  rather than only a literal `go.MapType key_type elem_type`; otherwise `len(m)`
+  would be stuck when `m` has a named map type (e.g. raft's
+  `quorum.MajorityConfig`).
 
   `len` of a nil map is `0` in Go (a nil map reads as empty), so the nil case
   is handled before the `Read`, exactly as `lookup2` and `for_range` do;

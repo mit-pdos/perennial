@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/au_spec/chan_au_new.v`: the specification of
+The specification of
 `channel.NewChannel`.
 -/
 import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase

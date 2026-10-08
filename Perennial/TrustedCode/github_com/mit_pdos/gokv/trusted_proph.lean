@@ -1,6 +1,5 @@
 /-
-Port of `new/trusted_code/github_com/mit_pdos/gokv/trusted_proph.v`. Rocq
-defines these at top level; here they are in namespace
+Trusted Go model of `github.com/mit-pdos/gokv/trusted_proph`, in namespace
 `github_com.mit_pdos.gokv.trusted_proph`, as the generated package.
 -/
 import Perennial.Golang.Defn.Pre

@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/tok_set.v`: a counter of tokens. `ownTokAuth γ n` says
+A counter of tokens. `ownTokAuth γ n` says
 that exactly `n` tokens `ownToks γ 1` have been handed out.
 
 Built on `Auth Nat` (with `(ℕ, +)`).
@@ -21,7 +21,6 @@ def ownTokAuthDfracDef (γ : GName) (dq : DFrac) (num_toks : Nat) : IProp GF :=
 theorem ownTokAuthDfrac_unseal : @ownTokAuthDfrac GF _ = @ownTokAuthDfracDef GF _ := by
   funext; with_unfolding_all rfl
 
-/-- Rocq notation `ownTokAuth γ n`. -/
 abbrev ownTokAuth (γ : GName) (n : Nat) : IProp GF := ownTokAuthDfrac γ (DFrac.own 1) n
 
 def ownToksDef (γ : GName) (n : Nat) : IProp GF :=
@@ -143,7 +142,6 @@ instance ownTokAuthDfrac_Timeless (γ : GName) (dq : DFrac) (n : Nat) :
     Timeless (ownTokAuthDfrac (GF := GF) γ dq n) := by
   unseal; infer_instance
 
-/-- Rocq names this `typed_pointsto_fractional` (a copy-paste name). -/
 instance ownTokAuth_fractional (γ : GName) (n : Nat) :
     Fractional (fun q => ownTokAuthDfrac (GF := GF) γ (DFrac.own q) n) where
   fractional p q := by

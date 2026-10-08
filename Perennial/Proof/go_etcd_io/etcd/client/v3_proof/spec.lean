@@ -1,15 +1,12 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/spec.v`: interpreting the
-etcd model's effects as separation-logic specifications.
+Interpreting the etcd model's effects as separation-logic specifications.
 
-Differences from Rocq:
-* Rocq imports `v3_proof/base`, which needs `proof.context` (not yet ported);
-  nothing from `base` is used here beyond the model and the prelude, so this
+Notes:
+* Nothing from `v3_proof/base` is used beyond the model and the prelude, so this
   file imports `model` directly.
-* Rocq's `ghost_varG Σ EtcdState.t` becomes `[allG GF] [Pos.Countable EtcdState.t]`
-  (Lean's `ghost_var` encodes its value via `Pos.Countable`).
-* The `MRet`/`MBind` instances for `Spec` are a Lean `Monad` instance.
-* The Rocq lemma `test` ends in `Abort` and is not ported.
+* The ghost state needs `[allG GF] [Pos.Countable EtcdState.t]`
+  (`ghost_var` encodes its value via `Pos.Countable`).
+* `Spec` has a `Monad` instance.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.model

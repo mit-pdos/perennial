@@ -1,10 +1,8 @@
 /-
-Tests for `go!"..."` literals. Port of `new/golang/test/go_string_parse_test.v`
-(not imported by the umbrella `Perennial.lean`).
+Tests for `go!"..."` literals (not imported by the umbrella `Perennial.lean`).
 
-Lean string literals have no `\a`, `\b`, `\f`, `\v` escapes; the Rocq tests of
-those use the equivalent hex escapes `\x07`, `\x08`, `\x0c`, `\x0b`. Rocq's `""`
-(an escaped double quote in a Rocq string) is `\"`.
+Lean string literals have no `\a`, `\b`, `\f`, `\v` escapes; the tests of
+those use the equivalent hex escapes `\x07`, `\x08`, `\x0c`, `\x0b`.
 -/
 import Perennial.Std.ByteString
 

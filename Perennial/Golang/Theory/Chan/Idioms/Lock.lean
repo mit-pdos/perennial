@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/lock.v`: the lock channel idiom.
+The lock channel idiom.
 
 Note: If you can change the code and you aren't using select, just use a mutex. This
 pattern otherwise doesn't serve a practical purpose.

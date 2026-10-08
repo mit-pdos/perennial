@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/fmt.v`: package initialization of `fmt` and `fmt.Errorf`.
+Package initialization of `fmt` and `fmt.Errorf`.
 -/
 import Perennial.Proof.io
 import Perennial.Code.fmt
@@ -59,14 +59,14 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
-/-- This is unsound (Rocq comment): really need to know that all of the args are
+/-- This is unsound: really need to know that all of the args are
 safe to convert into string. -/
 theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
     {{ (err : GoInterfaceOk), RET #(interface.ok err); True }} := by
   -- Unprovable: `fmt.Errorf` has no translated body (no `FuncUnfold` in `fmt.Assumptions`).
-  sorry -- Rocq: Admitted
+  sorry
 
 end wps
 

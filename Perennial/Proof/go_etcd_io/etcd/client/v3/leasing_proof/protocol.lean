@@ -1,9 +1,5 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3/leasing_proof/protocol.v`.
-
-The Rocq file consists of notes about bugs found in the leasing KV client and
-a protocol sketch that is entirely commented out; there is nothing to port
-beyond the imports and the notes.
+Notes about bugs found in the leasing KV client (no protocol is formalized yet).
 
 * NOTE(bug): the original leasingkv does not correctly check for lease
   expiration when handling a Get().
@@ -27,7 +23,7 @@ beyond the imports and the notes.
   Puts and waits for them to be finished. However, it is possible that the
   session that's ready is a *new* session.
 
-To simplify the proof for now (Rocq), all keys are assumed to be managed by
+To simplify the proof for now, all keys are assumed to be managed by
 leasingKV clients; the key being modified by `Put` must not have prefix `pfx`.
 -/
 import Perennial.Proof.ProofPrelude

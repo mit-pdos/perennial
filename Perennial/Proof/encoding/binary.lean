@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/encoding/binary.v`: `encoding/binary` little-endian
+`encoding/binary` little-endian
 `Uint64`/`PutUint64`/`Uint32`/`PutUint32`.
 -/
 import Perennial.Proof.sync
@@ -110,7 +110,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : encoding.binary.Assumptions]
 
-/-- Rocq `is_init` (local). -/
+/-- The package-initialized state: `LittleEndian` holds its zero value. -/
 abbrev isInit : IProp GF :=
   typedPointsto (globalAddr LittleEndian) (zero_val littleEndian) DFrac.discard
 

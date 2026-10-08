@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/loop.v`: `break:`, `continue:` and `for:`.
+Loops: `break:`, `continue:` and `for:`.
 -/
 import Perennial.Golang.Defn.Exception
 

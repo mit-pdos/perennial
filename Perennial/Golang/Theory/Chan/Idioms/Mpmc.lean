@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/mpmc.v`: multiple-producer multiple-consumer (MPMC)
+Multiple-producer multiple-consumer (MPMC)
 channels. Each producer/consumer tracks its OWN history using multisets:
 
 * producer `i` has sent `sent_i`, consumer `j` has received `recv_j`;
@@ -7,20 +7,20 @@ channels. Each producer/consumer tracks its OWN history using multisets:
 
 Uses the contribution theory (`Contrib.lean`) on multisets.
 
-Lean notes / deviations:
-* Multisets. Rocq uses `gmultiset V` (camera `gmultisetR V`). The `allG` camera codes
+Notes:
+* Multisets. The `allG` camera codes
   (`Perennial/Ghost/All.lean`) cannot mention `V` and have no multiset code, so a multiset
   of `V` is `mset := gmap Pos positive` (untyped: a parameter `V` would break
   type class search for the `gmap` camera) (each `encode v` mapped to its positive
   multiplicity; canonical, so `=` is multiset equality), with union `•` and empty
-  `UCMRA.unit`; `{[+ v +]}` is `msetSingleton v`, `list_to_set_disj` is `listToMset`, and
-  `foldr (⊎) ∅` is `msetSum`. The contribution camera is used at
+  `UCMRA.unit`; singletons are `msetSingleton v`, the multiset of a list is
+  `listToMset`, and the union of a list of multisets is `msetSum`. The contribution camera is used at
   `A := Auth (gmap Pos positive)` (code `authR (gmapUR pos positiveR)`), and only
   fragments `◯ m` are stored (`msetFrag`).
-* `bulk_dealloc_all` / `auth_map_agree` are replaced by `clients_agree` (the server's total
+* The server/client agreement facts are `clients_agree` (the server's total
   equals the sum of all `n` clients) and `clients_extra_false` (an `n+1`-st client
-  contradicts a server with `n` clients), proved directly on the camera; Rocq's
-  `delete_client*`/`bulk_*` lemmas (which use multiset difference) are not needed.
+  contradicts a server with `n` clients), proved directly on the camera; no lemmas
+  using multiset difference are needed.
 -/
 import Perennial.Golang.Theory.Chan.Idioms.Base
 import Perennial.Golang.Theory.Chan.Idioms.Contrib
@@ -88,7 +88,7 @@ theorem msetFrag_inj {a b : MSet} (h : msetFrag a = msetFrag b) : a = b := Auth.
 
 theorem msetFrag_valid (m : MSet) : ✓ msetFrag m := Auth.frag_valid.mpr (mset_valid m)
 
-/-- `(X, Y) ~l~> (X ⊎ Z, Y ⊎ Z)` (Rocq `gmultiset_disj_union_local_update`). -/
+/-- `(X, Y) ~l~> (X ⊎ Z, Y ⊎ Z)`. -/
 theorem mset_local_update (X Y Z : MSet) :
     (msetFrag X, msetFrag Y) ~l~> (msetFrag (X • Z), msetFrag (Y • Z)) := by
   have h := LocalUpdate.op_discrete (msetFrag X) (msetFrag Y) (msetFrag Z)
@@ -129,7 +129,7 @@ theorem clients_own (γ : GName) (ys : List MSet) (hne : ys ≠ []) :
       rw [← Auth.frag_op, contribCl_op, hp, ← msetFrag_op]
       rfl
 
-/-- The server's total is the sum of all `n` clients (replaces Rocq `auth_map_agree`). -/
+/-- The server's total is the sum of all `n` clients. -/
 theorem clients_agree (γ : GName) (X : MSet) (ys : List MSet) :
     server (GF := GF) γ ys.length (msetFrag X) ∗ ([∗list] y ∈ ys, client γ (msetFrag y)) ⊢
       ⌜X = msetSum ys⌝ := by
@@ -152,8 +152,7 @@ theorem clients_agree (γ : GName) (X : MSet) (ys : List MSet) :
     · exact msetFrag_inj h
     · exact absurd hr.symm (positive_add_ne_self _ _)
 
-/-- An extra client contradicts a server with `n` clients (replaces the uses of Rocq
-`bulk_dealloc_all` for contradictions). -/
+/-- An extra client contradicts a server with `n` clients. -/
 theorem clients_extra_false (γ : GName) (X : MSet) (ys : List MSet) (y : MSet) :
     server (GF := GF) γ ys.length (msetFrag X) ∗ ([∗list] z ∈ ys, client γ (msetFrag z)) ∗
       client γ (msetFrag y) ⊢ False := by

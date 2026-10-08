@@ -31,11 +31,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance authClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.authClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.authClient go_etcd_io.etcd.client.v3.authClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authClient
@@ -50,11 +50,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance Client_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.Client :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Client_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Client go_etcd_io.etcd.client.v3.Client.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Client
@@ -69,11 +69,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance cluster_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.cluster :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance cluster_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.cluster go_etcd_io.etcd.client.v3.cluster.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end cluster
@@ -145,11 +145,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance Config_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.Config :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Config_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.Config go_etcd_io.etcd.client.v3.Config.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Config
@@ -630,11 +630,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance kv_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.kv :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance kv_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.kv go_etcd_io.etcd.client.v3.kv.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end kv
@@ -746,11 +746,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance lessor_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.lessor :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance lessor_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.lessor go_etcd_io.etcd.client.v3.lessor.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end lessor
@@ -970,11 +970,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance maintenance_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.maintenance :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance maintenance_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.maintenance go_etcd_io.etcd.client.v3.maintenance.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end maintenance
@@ -1246,11 +1246,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance serverStreamingRetryingStream_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.serverStreamingRetryingStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance serverStreamingRetryingStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.serverStreamingRetryingStream go_etcd_io.etcd.client.v3.serverStreamingRetryingStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end serverStreamingRetryingStream
@@ -1265,11 +1265,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance retryOption_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.retryOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance retryOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.retryOption go_etcd_io.etcd.client.v3.retryOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end retryOption
@@ -1284,11 +1284,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance txn_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.txn :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance txn_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.txn go_etcd_io.etcd.client.v3.txn.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end txn

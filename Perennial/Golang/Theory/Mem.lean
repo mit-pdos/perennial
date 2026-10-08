@@ -1,13 +1,12 @@
 /-
-Port of `new/golang/theory/mem.v`: atomic WPs on typed points-to, the
+Atomic WPs on typed points-to, the
 `Access`/`AccessStrict` classes for accessing (struct field) points-to facts,
 and the typed memory tactics `wp_load`, `wp_store`, `wp_alloc`,
 `wp_alloc_auto`.
 
 `Access`/`AccessStrict` are iris-lean `ipm_class`es, searched with the proof
-mode's Rocq-style typeclass search (which can instantiate metavariables), the
-analogue of Rocq's `Hint Mode Access + ! ! - -`. The last two parameters are
-`outParam`s (Rocq: `-`).
+mode's typeclass search (which can instantiate metavariables). The last two
+parameters are `outParam`s.
 -/
 import Perennial.Golang.Theory.PostLifting
 
@@ -39,7 +38,7 @@ class AtomicWps (V : Type) [TypedPointsto (GF := GF) V] [ZeroVal V] : Prop where
 export AtomicWps (wp_cmpxchg_fail wp_cmpxchg_suc wp_atomic_load wp_atomic_swap)
 
 /-- Prove `AtomicWps V` for a type whose typed points-to is
-`heapPointsto l dq #v` (Rocq `solve_atomic_wps`). -/
+`heapPointsto l dq #v`. -/
 macro "solve_atomic_wps" : tactic => `(tactic| (
   constructor
   all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
@@ -501,7 +500,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_alloc_auto` performs an allocation `let: "x" := GoAlloc t #v in e`,
 naming the location `x_ptr` and the points-to `x`. If there is no `let:`-bound
 allocation, an anonymous allocation (e.g. `&S{..}`) is performed, with
-inaccessible names. (`wp_auto` only does `let:`-bound allocations, as in Rocq.) -/
+inaccessible names. (`wp_auto` only does `let:`-bound allocations.) -/
 elab "wp_alloc_auto" : tactic =>
   runTacticGooseWp `wp_alloc_auto fun mvar g wp => do
     let saved ← saveState
@@ -514,7 +513,7 @@ elab "wp_alloc_auto" : tactic =>
       mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-/-- `wp_alloc_anon` (Rocq `wp_alloc x as "?"`): perform an allocation
+/-- `wp_alloc_anon`: perform an allocation
 `GoAlloc t #v` in evaluation position (not necessarily bound by `let:`), with
 inaccessible names. -/
 elab "wp_alloc_anon" : tactic =>
@@ -583,7 +582,7 @@ partial def focusPf (P : Lean.Expr) (k : Nat) : MetaM (Lean.Expr × Lean.Expr) :
   let FR ← mkAppOptM ``Iris.BI.BIBase.sep #[none, none, F, R]
   return (← mkAppOptM ``sep_focus_there #[none, none, F, T, X, R, h], FR)
 
-/-- Rocq `solve_pointsto_access_struct`: prove an `AccessStrict` instance for a
+/-- Prove an `AccessStrict` instance for a
 struct field (`AccessStrict A A' (l ↦{dq} v) (l ↦{dq} v')`, with `v'` the struct
 with the field updated). Linear in the number of fields: the field is focused in
 the unfolded struct points-to by `sep_focus_*` lemmas (no framing). -/

@@ -1,7 +1,6 @@
 /-
 The step-bounded GooseLang semantics: the proof device behind time receipts
 (Mével, Jourdan, Pottier, "Time credits and time receipts in Iris", ESOP 2019).
-Lean addition, no Rocq counterpart.
 
 The real semantics (`base_step`, `gooseRealEctxiLang` in `Lang.lean`) is the
 trusted model of Go and is unchanged. This file adds a separate layer on top of

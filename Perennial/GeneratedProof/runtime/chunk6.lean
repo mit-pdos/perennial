@@ -83,11 +83,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance srcFunc_typed_pointsto :
     TypedPointsto (GF := GF) runtime.srcFunc :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance srcFunc_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.srcFunc runtime.srcFunc.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end srcFunc
@@ -267,11 +267,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance inlinedCall_typed_pointsto :
     TypedPointsto (GF := GF) runtime.inlinedCall :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance inlinedCall_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.inlinedCall runtime.inlinedCall.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end inlinedCall
@@ -514,11 +514,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance unwinder_typed_pointsto :
     TypedPointsto (GF := GF) runtime.unwinder :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance unwinder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.unwinder runtime.unwinder.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end unwinder
@@ -806,11 +806,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance traceWriter_typed_pointsto :
     TypedPointsto (GF := GF) runtime.traceWriter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance traceWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.traceWriter runtime.traceWriter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end traceWriter
@@ -939,11 +939,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance traceMap_typed_pointsto :
     TypedPointsto (GF := GF) runtime.traceMap :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance traceMap_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.traceMap runtime.traceMap.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end traceMap
@@ -1339,11 +1339,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance rtype_typed_pointsto :
     TypedPointsto (GF := GF) runtime.rtype :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance rtype_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.rtype runtime.rtype.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end rtype
@@ -1415,11 +1415,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance _typePair_typed_pointsto :
     TypedPointsto (GF := GF) runtime._typePair :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance _typePair_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime._typePair runtime._typePair.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end _typePair

@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_fibonacci.v`:
-a producer sends the Fibonacci numbers over a single-producer single-consumer
+A producer sends the Fibonacci numbers over a single-producer single-consumer
 channel (`go.dev/tour/concurrency/4`).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init

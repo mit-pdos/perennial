@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sort_proof/sort_init.v`: the `IsPkgInit` instance of `sort`.
+The `IsPkgInit` instance of `sort`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.sort

@@ -1,11 +1,9 @@
 /-
-Port of `new/proof/github_com/goose_lang/primitive.v`: specs for
-`github.com/goose-lang/primitive` (`Assume`, `RandomUint64`, `Mutex`).
+Specs for `github.com/goose-lang/primitive` (`Assume`, `RandomUint64`, `Mutex`).
 
-The proofs live in the package namespace `github_com.goose_lang.primitive`
-(Rocq: top level), so that e.g. `primitive.wp_initialize'` and
-`sync.wp_initialize'` do not clash. (`primitive/disk.v` is disk-only and not
-ported here.)
+The proofs live in the package namespace `github_com.goose_lang.primitive`,
+so that e.g. `primitive.wp_initialize'` and `sync.wp_initialize'` do not clash.
+The disk-only `primitive/disk` package is not covered here.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Golang.Theory.Lock
@@ -68,7 +66,7 @@ theorem wp_Assume_false :
   wp_apply wp_Assume as %H
   cases H
 
-/-- FIXME (Rocq): get rid of this, or document why a lemma for `ⁱᵐᵖˡ` is needed. -/
+/-- FIXME: get rid of this, or document why a lemma for `ⁱᵐᵖˡ` is needed. -/
 theorem «wp_RandomUint64__impl» :
     {{ (True : IProp GF) }} (App (Val RandomUint64.impl) (Val #()))
     {{ (x : w64), RET #x; True }} := by
@@ -86,13 +84,13 @@ theorem wp_RandomUint64 :
   itrivial
 
 def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
-/-- This means `m` is a valid mutex with invariant `R` (Rocq `Opaque isMutex`). -/
+/-- This means `m` is a valid mutex with invariant `R`. -/
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
 def ownMutexDef (m : Loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
-locked (Rocq `Opaque ownMutex`). -/
+locked. -/
 @[irreducible] def ownMutex (m : Loc) : IProp GF := ownMutexDef m
 theorem ownMutex_unseal : @ownMutex = @ownMutexDef := by funext; with_unfolding_all rfl
 

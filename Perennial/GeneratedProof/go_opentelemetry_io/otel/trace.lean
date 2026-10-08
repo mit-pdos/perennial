@@ -156,11 +156,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance autoSpan_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.autoSpan :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance autoSpan_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.autoSpan go_opentelemetry_io.otel.trace.autoSpan.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end autoSpan
@@ -300,11 +300,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance TracerConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.TracerConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance TracerConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.TracerConfig go_opentelemetry_io.otel.trace.TracerConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end TracerConfig
@@ -319,11 +319,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance SpanConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.SpanConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance SpanConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.SpanConfig go_opentelemetry_io.otel.trace.SpanConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end SpanConfig
@@ -338,11 +338,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance EventConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.EventConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance EventConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.EventConfig go_opentelemetry_io.otel.trace.EventConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end EventConfig
@@ -357,11 +357,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance attributeOption_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.attributeOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance attributeOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.attributeOption go_opentelemetry_io.otel.trace.attributeOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end attributeOption
@@ -701,11 +701,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance Span_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.Span :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Span_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Span go_opentelemetry_io.otel.trace.Span.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Span
@@ -720,11 +720,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance Link_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.Link :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Link_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Link go_opentelemetry_io.otel.trace.Link.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Link
@@ -847,11 +847,11 @@ variable [package_sem' : go_opentelemetry_io.otel.trace.Assumptions]
 
 instance Tracer_typed_pointsto :
     TypedPointsto (GF := GF) go_opentelemetry_io.otel.trace.Tracer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Tracer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_opentelemetry_io.otel.trace.Tracer go_opentelemetry_io.otel.trace.Tracer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Tracer

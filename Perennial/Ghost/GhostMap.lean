@@ -1,12 +1,12 @@
 /-
-Port of `new/ghost/ghost_map.v` (a modified copy of Iris' `ghost_map`): a "ghost
+A modified copy of Iris' `ghost_map`: a "ghost
 map" (or "ghost heap") with a proposition controlling authoritative ownership of
 the entire map, and a "points-to-like" proposition for (mutable, fractional, or
 persistent read-only) ownership of individual elements.
 
 Built on `own` (see `Perennial/Ghost/All.lean`): keys and values are stored as
 their `Pos.Countable` encodings in `HeapView Pos (Agree (DiscreteO Pos)) (gmap Pos)`,
-so `allG` suffices (Rocq's `ghost_mapG` class is not needed).
+so `allG` suffices (no dedicated `ghost_mapG`-style class is needed).
 -/
 import Perennial.Ghost.Own
 import Perennial.Ghost.Countable
@@ -158,7 +158,7 @@ def ghostMapElem (γ : GName) (k : K) (dq : DFrac) (v : V) : IProp GF :=
 
 end definitions
 
-/-- `k ↪[γ]{dq} v` (Rocq `k ↪[γ]{dq} v`). -/
+/-- `k ↪[γ]{dq} v`. -/
 notation:50 k:51 " ↪[" γ "]{" dq "} " v:51 => ghostMapElem γ k dq v
 /-- `k ↪[γ]{# q} v`. -/
 notation:50 k:51 " ↪[" γ "]{#" q "} " v:51 => ghostMapElem γ k (DFrac.own q) v

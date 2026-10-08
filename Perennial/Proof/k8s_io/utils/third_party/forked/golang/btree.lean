@@ -1,16 +1,11 @@
 /-
-Port of `new/proof/k8s_io/utils/third_party/forked/golang/btree.v`: an
-axiomatized (as in Rocq) specification of the forked `btree` package.
+An axiomatized specification of the forked `btree` package.
 
-Differences from Rocq:
-* Rocq also declares the `IsPkgInit` instance of `cmp` here; in Lean it lives in
-  `Perennial/Proof/cmp.lean`, which is imported.
-* Rocq re-exports `sync sort fmt go_etcd_io.etcd.client.v3`; only what this file
-  needs (the `IsPkgInit` instances of the imported packages) is imported.
-* In `BTree.wp_Get` and `BTree.wp_ReplaceOrInsert`, the Rocq statements pass
-  `#key` (of the abstract type `V`, resp. an unbound `key`) as the argument; the
-  Go argument is the item of type `T'`, so the Lean statements pass
-  `#key_item` and `#item`.
+Notes:
+* The `IsPkgInit` instance of `cmp` lives in `Perennial/Proof/cmp.lean`, which
+  is imported.
+* In `BTree.wp_Get` and `BTree.wp_ReplaceOrInsert`, the Go argument is the item
+  of type `T'`, so the statements pass `#key_item` and `#item`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.cmp
@@ -75,7 +70,7 @@ axiom BTree.wp_Get [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [T
         | false => ⌜item = _root_.Perennial.zero_val T'⌝
         | true => ∃ itv, is_item item itv ∗ ⌜¬ less itv key ∧ ¬ less key itv ∧ itv ∈ items⌝) }}
 
-/-- TODO (from Rocq): this is a conservative but weak spec; it does not
+/-- TODO: this is a conservative but weak spec; it does not
 constrain the final tree state. -/
 axiom BTree.wp_ReplaceOrInsert [package_sem : btree.Assumptions] {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.GoType} [IntoValTyped (GF := GF) T' T] {V : Type}

@@ -1,9 +1,8 @@
 /-
-Port of `new/proof/go_etcd_io/raft/v3.v`: the client-facing `Node` interface.
+The client-facing `Node` interface.
 
-Lean notes: Rocq's `n : interface.t` with `n = interface.mk ..` is
-`n : interface.t_ok` here (Rocq's `interface.mk` builds a `t_ok`). Rocq also
-imports `grove_prelude`, which is not needed (the proof is FFI-generic).
+Interface values are `n : interface.t_ok` (non-nil, as built by
+`interface.mk`). The proof is FFI-generic.
 -/
 import Perennial.Proof.go_etcd_io.raft.v3_proof.base
 import Perennial.Proof.go_etcd_io.raft.v3_proof.protocol
@@ -28,7 +27,7 @@ variable [package_sem : go_etcd_io.raft.v3.Assumptions]
 
 local notation "raft" => pkg_id.go_etcd_io.raft.v3
 
-/-- Rocq `is_Node`. -/
+/-- `n` is a `Node` interface value backed by a `*node` satisfying `is_node`. -/
 def is_Node (γ : RaftNames) (n : GoInterfaceOk) : IProp GF :=
   iprop(∃ n_ptr : Loc,
     "%Hn" ∷ ⌜n = interface.mk (go.GoType.PointerType v3.node.ty) #n_ptr⌝ ∗

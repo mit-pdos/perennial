@@ -1,9 +1,9 @@
 /-
-Port of `src/Helpers/Qextra.v`: facts about positive rationals.
+Facts about positive rationals.
 
 Positive rationals are iris-lean's `Iris.Qp = {q : Rat // 0 < q}`, which has
-`+`, `/`, `1`, `Qp.half` and `<`/`≤` (on the underlying `Rat`). Rocq's `q / 2`
-is `q.half`, `/2` is `(1 : Qp).half`. Multiplication and `min` are not in
+`+`, `/`, `1`, `Qp.half` and `<`/`≤` (on the underlying `Rat`). Halving `q` is
+`q.half`, and one half is `(1 : Qp).half`. Multiplication and `min` are not in
 iris-lean, so they are defined here as `QpMul` and `QpMin`.
 -/
 import Iris.Algebra.Frac
@@ -16,7 +16,7 @@ def QpMul (p q : Qp) : Qp := ⟨p.val * q.val, Rat.mul_pos p.2 q.2⟩
 
 def QpMin (p q : Qp) : Qp := if p.val ≤ q.val then p else q
 
-/-- Rocq `Qppower q n = q ^ n`. -/
+/-- `Qppower q n = q ^ n`. -/
 def Qppower (q : Qp) : Nat → Qp
   | 0 => 1
   | n + 1 => QpMul q (Qppower q n)

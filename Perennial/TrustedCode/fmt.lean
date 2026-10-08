@@ -1,6 +1,6 @@
 /-
-Port of `new/trusted_code/fmt.v`. Rocq defines these at top level; here they
-are in namespace `fmt`, as the generated package.
+Trusted code for the Go `fmt` package, in namespace `fmt` (as the generated
+package).
 -/
 import Perennial.Golang.Defn.Pre
 

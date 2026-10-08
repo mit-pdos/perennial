@@ -1,7 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/builtin.v`.
-
-The Rocq lemmas end in `Abort` ("TODO: min", "TODO: max"); they are proved here.
+Proofs of the goose semantics tests for the builtins `min` and `max`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 

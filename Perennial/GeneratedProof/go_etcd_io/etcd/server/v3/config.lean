@@ -23,11 +23,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.config.Assumptions]
 
 instance ServerConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.config.ServerConfig go_etcd_io.etcd.server.v3.config.ServerConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerConfig

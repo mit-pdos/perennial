@@ -1,18 +1,16 @@
 /-
-Adequacy for GooseLang. Port of `src/goose_lang/adequacy.v` together with the
-non-crash ("failstop") parts of `src/goose_lang/recovery_adequacy.v`.
+Adequacy for GooseLang (non-crash, "failstop").
 
-Differences from the Rocq version:
+Notes:
 * No crash logic: `FfiInterpAdequacy` has no `ffi_crash` obligation, and
   `gooseGpreS` has no `crashGpreS`. The adequacy theorem is the plain
   (non-recovery) one, built on iris-lean's `wp_adequacy`.
-* Rocq's `ffiGlobalStart`/`ffiLocalStart` live in `FfiInterp`; here
-  (as `FfiInterp` in `Lifting.lean` omits them) they are fields of
-  `FfiInterpAdequacy`.
+* `ffiGlobalStart`/`ffiLocalStart` are fields of `FfiInterpAdequacy` (`FfiInterp`
+  in `Lifting.lean` omits them).
 * iris-lean has no `gFunctors` lists: `heapΣ`/`subG_heapPreG` have no
   counterpart; `gooseGpreS GF` is assumed directly.
 * Later credits are part of iris-lean's `InvGpreS`.
-* (Lean addition, time receipts) The program logic is built for the step-bounded
+* Time receipts. The program logic is built for the step-bounded
   language of `BoundedLang.lean`; `goose_adequacy_blang` is its adequacy
   theorem. Every theorem here takes the time-receipt bound `N` as an argument:
   the receipt ghost state is allocated with `receiptBound GF = N` (handed to
@@ -120,8 +118,7 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
 built for): a WP proved for `e` under any instantiation of the GooseLang ghost
 state with time-receipt bound `N` (given the FFI's start resources and the
 initial package state) implies that `e` does not get stuck and its result
-satisfies `φ`, in the bounded semantics started with fuel `N - 1` (Rocq
-`goose_recv_adequacy_failstop`). See `goose_adequacy` for the real semantics. -/
+satisfies `φ`, in the bounded semantics started with fuel `N - 1`. See `goose_adequacy` for the real semantics. -/
 theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N : Nat) (hN : 0 < N)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
@@ -147,7 +144,7 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N : Nat) (hN : 0 < N)
   cases HinvEq
   iexact Hwp
 
-/-- Adequacy of GooseLang (Rocq `goose_recv_adequacy_failstop`), for the real
+/-- Adequacy of GooseLang, for the real
 semantics, under the time-receipt assumption: for any bound `N`, if the WP is
 proved for receipt bound `N` (`Hwp` may assume `receiptBound GF = N`), then
 in every real execution of `e` of fewer than `N` steps, every thread is a

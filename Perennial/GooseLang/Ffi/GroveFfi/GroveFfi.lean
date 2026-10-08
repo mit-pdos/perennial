@@ -1,16 +1,13 @@
 /-
-Iris reasoning principles for core Grove FFI. Port of
-`src/goose_lang/ffi/grove_ffi/grove_ffi.v`.
+Iris reasoning principles for core Grove FFI.
 
-Differences from the Rocq version:
-* No crash reasoning: `ffi_restart`, `ffi_crash_rel`, `file_pointsto_post_crash`
-  and the `IntoCrash` instance are omitted.
+Notes:
+* No crash reasoning (no restart or crash relation, no post-crash points-to).
 * The ghost state uses iris-lean's `genHeapGS` (with `gmap` as the map type)
   and `MonoNatG`. The `groveGS`/`groveNodeGS` fields are not instances (there
   are two `genHeapGS` and possibly two `MonoNatG` in play); definitions pass
   them explicitly.
-* `|NC={E}=>` becomes `|={E}=>`.
-* `wp_SendOp` drops the unused `(l : loc)` parameter.
+* Updates are plain fancy updates `|={E}=>`.
 * `ffiGlobalStart`/`ffiLocalStart` (and the adequacy instance
   `grove_interp_adequacy`) live in `Perennial/GooseLang/Ffi/GroveFfi/Adequacy.lean`.
 -/
@@ -78,11 +75,11 @@ theorem grove_interp_local_ctx_eq (hL : GroveNodeGS GF) (σ : GroveNodeState) :
           (MaxNat.ofNat σ.groveNodeTsc.toNat) ∗
         genHeapInterp (G := hL.groveGFilesHeapG) σ.groveNodeFiles) := .rfl
 
-/-- Rocq `c c↦ ms`. -/
+/-- `c c↦ ms`: the network channel `c` has received the messages `ms`. -/
 def chanPointsto (hG : GroveGS GF) (c : Endpoint) (ms : GSet message) : IProp GF :=
   pointsTo (G := hG.groveGNetHeapG) c (.own 1) ms
 
-/-- Rocq `s f↦{q} c`. -/
+/-- `f f↦{q} c`: the file `f` has contents `c`. -/
 def filePointsto (hL : GroveNodeGS GF) (f : byte_string) (q : DFrac) (c : List w8) : IProp GF :=
   pointsTo (G := hL.groveGFilesHeapG) f q c
 
@@ -105,7 +102,7 @@ variable {s : Stuckness} {E : CoPset}
 abbrev gooseGroveGS : GroveGS GF := G.gooseFfiGlobalGS
 abbrev gooseGroveNodeGS : GroveNodeGS GF := L.gooseFfiLocalGS
 
-/- Rocq notations `c c↦ ms`, `s f↦{q} c` and `s f↦ c`. -/
+/- Notations `c c↦ ms`, `f f↦{q} c` and `f f↦ c`. -/
 namespace grove_ffi
 scoped notation:50 c:51 " c↦ " ms:50 => chanPointsto gooseGroveGS c ms
 scoped notation:50 f:51 " f↦{" q "} " c:50 => filePointsto gooseGroveNodeGS f q c

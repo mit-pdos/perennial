@@ -1,6 +1,5 @@
 /-
 Time receipts (Mével, Jourdan, Pottier, ESOP 2019): ghost state and laws.
-Lean addition, no Rocq counterpart.
 
 * `⧗ n` (`receipt n`): `n` exclusive time receipts.
 * `⧖ n` (`preceipt n`): a persistent time receipt, "at least `n` counted steps

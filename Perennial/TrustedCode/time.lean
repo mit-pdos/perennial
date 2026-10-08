@@ -1,6 +1,5 @@
 /-
-Port of `new/trusted_code/time.v` (namespace `time`, as the generated
-package).
+Trusted model of `time` (namespace `time`, as the generated package).
 -/
 import Perennial.Golang.Defn
 

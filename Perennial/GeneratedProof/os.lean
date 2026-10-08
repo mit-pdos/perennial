@@ -23,11 +23,11 @@ variable [package_sem' : os.Assumptions]
 
 instance dirInfo_typed_pointsto :
     TypedPointsto (GF := GF) os.dirInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance dirInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.dirInfo os.dirInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end dirInfo
@@ -99,11 +99,11 @@ variable [package_sem' : os.Assumptions]
 
 instance Process_typed_pointsto :
     TypedPointsto (GF := GF) os.Process :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Process_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.Process os.Process.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Process
@@ -118,11 +118,11 @@ variable [package_sem' : os.Assumptions]
 
 instance processHandle_typed_pointsto :
     TypedPointsto (GF := GF) os.processHandle :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance processHandle_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.processHandle os.processHandle.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end processHandle
@@ -137,11 +137,11 @@ variable [package_sem' : os.Assumptions]
 
 instance ProcAttr_typed_pointsto :
     TypedPointsto (GF := GF) os.ProcAttr :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ProcAttr_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.ProcAttr os.ProcAttr.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ProcAttr
@@ -156,11 +156,11 @@ variable [package_sem' : os.Assumptions]
 
 instance ProcessState_typed_pointsto :
     TypedPointsto (GF := GF) os.ProcessState :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ProcessState_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.ProcessState os.ProcessState.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ProcessState
@@ -426,11 +426,11 @@ variable [package_sem' : os.Assumptions]
 
 instance file_typed_pointsto :
     TypedPointsto (GF := GF) os.file :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance file_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.file os.file.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end file
@@ -445,11 +445,11 @@ variable [package_sem' : os.Assumptions]
 
 instance unixDirent_typed_pointsto :
     TypedPointsto (GF := GF) os.unixDirent :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance unixDirent_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.unixDirent os.unixDirent.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end unixDirent
@@ -544,11 +544,11 @@ variable [package_sem' : os.Assumptions]
 
 instance root_typed_pointsto :
     TypedPointsto (GF := GF) os.root :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance root_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.root os.root.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end root
@@ -603,11 +603,11 @@ variable [package_sem' : os.Assumptions]
 
 instance fileStat_typed_pointsto :
     TypedPointsto (GF := GF) os.fileStat :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance fileStat_into_val_typed :
     IntoValTypedUnderlying (GF := GF) os.fileStat os.fileStat.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end fileStat

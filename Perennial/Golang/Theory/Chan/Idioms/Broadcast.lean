@@ -1,11 +1,7 @@
 /-
-Port of `new/golang/theory/chan/idioms/broadcast.v`.
-
 A pattern for channel usage: a channel that never has anything sent, and is only closed at
 some point. Closing broadcasts a persistent proposition to all readers.
-
-Lean notes: Rocq's `own γ (to_dfrac_agree dq b)` is `dghostVar γ dq b`
-(`Perennial/Ghost/DGhostVar.lean`).
+The done flag is a `dghostVar γ dq b` (`Perennial/Ghost/DGhostVar.lean`).
 -/
 import Perennial.Golang.Theory.Chan.Idioms.Base
 import Perennial.Golang.Theory.Chan
@@ -41,7 +37,7 @@ def broadcastInv (γ : ChanNames) (γch : BroadcastInternalNames) (Q : IProp GF)
       | .Closed [] => iprop(□ Q ∗ dghostVar γch.doneGn .discard true)
       | _ => iprop(False)))
 
-/-- (Note (Rocq): could make the namespace be user-chosen.) -/
+/-- Note: could make the namespace be user-chosen. -/
 def isBroadcastChanInternal (ch : GoChan) (γ : ChanNames) (γch : BroadcastInternalNames)
     (Q : IProp GF) : IProp GF :=
   iprop("#His_ch" ∷ isChan ch γ Unit ∗ "#Hinv" ∷ inv nroot (broadcastInv γ γch Q))
@@ -58,7 +54,6 @@ def ownBroadcastChanDef (ch : GoChan) (γ : ChanNames) (Q : IProp GF) (st : Broa
       | .Pending => dghostVar γch.doneGn (.own (1 : Qp).half) false
       | .Done => dghostVar γch.doneGn .discard true
       | .Unknown => iprop(True)))
-/-- (Rocq: `Opaque ownBroadcastChan`) -/
 @[irreducible] def ownBroadcastChan (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
     (st : Broadcast) : IProp GF := ownBroadcastChanDef ch γ Q st
 theorem ownBroadcastChan_unseal : @ownBroadcastChan = @ownBroadcastChanDef := by

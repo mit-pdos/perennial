@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/api/v3/membershippb.v`.
+Package initialization of `membershippb`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.api.v3.membershippb

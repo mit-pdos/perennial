@@ -1,7 +1,6 @@
 /-
-Port of `src/Helpers/LittleEndian.v` (from coqutil): little-endian encoding of
-numbers as bytes. Rocq uses length-indexed tuples; here the byte sequences are
-lists, and the numbers are `Nat`s (Rocq's are nonnegative `Z`s in all uses).
+Little-endian encoding of numbers as bytes. The byte sequences are lists, and
+the numbers are `Nat`s.
 -/
 import Perennial.Std.Word
 

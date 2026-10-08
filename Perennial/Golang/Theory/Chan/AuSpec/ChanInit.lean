@@ -1,6 +1,5 @@
 /-
-Port of `new/golang/theory/chan/au_spec/chan_init.v`: package initialization
-predicate for the channel model package
+Package initialization predicate for the channel model package
 (`github.com/mit-pdos/perennial/goose/model/channel`).
 -/
 import Perennial.Proof.ProofPrelude

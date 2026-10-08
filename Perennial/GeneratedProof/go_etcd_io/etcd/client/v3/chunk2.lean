@@ -31,11 +31,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance watcher_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.watcher :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance watcher_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watcher go_etcd_io.etcd.client.v3.watcher.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end watcher
@@ -50,11 +50,11 @@ variable [package_sem' : go_etcd_io.etcd.client.v3.Assumptions]
 
 instance watchGRPCStream_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.client.v3.watchGRPCStream :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance watchGRPCStream_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.client.v3.watchGRPCStream go_etcd_io.etcd.client.v3.watchGRPCStream.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end watchGRPCStream

@@ -1,16 +1,13 @@
 /-
-Port of `new/proof/go_etcd_io/raft/v3_proof/base.v`: package initialization
-instances for `go.etcd.io/raft/v3` and the packages it imports.
+Package initialization instances for `go.etcd.io/raft/v3` and the packages it
+imports.
 
-Lean notes:
-* Rocq defines `IsPkgInit` instances for `strings`, `math`, `bytes`, `log`,
-  `io` and `errors` here; in Lean those instances already exist in
-  `Perennial/Proof/{strings,math,bytes,log,io,errors}.lean`, which are imported
-  instead of redefined.
+Notes:
+* The `IsPkgInit` instances for `strings`, `math`, `bytes`, `log`, `io` and
+  `errors` come from `Perennial/Proof/{strings,math,bytes,log,io,errors}.lean`.
 * The instances for `os`, `crypto/rand`, `math/big` and `strconv` (all with
   user part `True`) are needed by `define_is_pkg_init` for `raft` and
-  `quorum` (Rocq: computed from the imports as well; Rocq's `raftpb`,
-  `quorum`, `tracker`, `confchange` instances are ported as is).
+  `quorum`, whose dependencies are computed from the imports.
 -/
 import Perennial.Code.go_etcd_io.raft.v3
 import Perennial.GeneratedProof.go_etcd_io.raft.v3
@@ -92,7 +89,8 @@ instance os_is_pkg_init_inst : IsPkgInit (IProp GF) pkg_id.os :=
 instance os_get_is_pkg_init_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.os :=
   build_get_is_pkg_init_wf
 
-/-- Rocq `isInitialized`. -/
+/-- The package-specific part of `raft`'s initialization: `ErrStopped` is set to
+a non-nil error. -/
 def isInitialized : IProp GF :=
   iprop(∃ errStopped : GoInterface,
     "ErrStopped" ∷ (globalAddr ErrStopped ↦□ errStopped : IProp GF) ∗

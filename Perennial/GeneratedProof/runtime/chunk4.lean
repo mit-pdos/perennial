@@ -328,11 +328,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance MemStats_typed_pointsto :
     TypedPointsto (GF := GF) runtime.MemStats :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance MemStats_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.MemStats runtime.MemStats.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end MemStats
@@ -979,11 +979,11 @@ variable [package_sem' : runtime.Assumptions]
 
 instance ptabEntry_typed_pointsto :
     TypedPointsto (GF := GF) runtime.ptabEntry :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ptabEntry_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.ptabEntry runtime.ptabEntry.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ptabEntry

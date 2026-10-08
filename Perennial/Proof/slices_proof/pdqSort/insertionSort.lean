@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/pdqSort/insertionSort.v`: specs of
+Specs of
 `insertionSortCmpFunc` and `partialInsertionSortCmpFunc`.
 -/
 import Perennial.Proof.ProofPrelude

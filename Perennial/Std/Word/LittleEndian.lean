@@ -1,10 +1,8 @@
 /-
-Port of `src/Helpers/Word/LittleEndian.v`: little-endian encodings of `w64`
-and `w32`.
+Little-endian encodings of `w64` and `w32`.
 
-Rocq seals these definitions (`u64Le := sealed u64LeDef`); here they are
-plain definitions with the same `_def`/`_unseal` names, so that
-`rw [u64Le_unseal]` still works.
+These are plain (unsealed) definitions, with `_def`/`_unseal` lemmas so that
+`rw [u64Le_unseal]` works.
 -/
 import Perennial.Std.LittleEndian
 import Perennial.Std.ListLen

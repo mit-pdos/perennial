@@ -6,8 +6,8 @@ store `Pos.Countable.encode a`; see `Perennial/Ghost/All.lean`. User types can g
 an instance from an injection with `Pos.Countable.ofInjective`.
 
 `GenTree` (stdpp `gen_tree`) is a countable type of finitely-branching trees
-with `Pos` leaves; a syntax type is shown countable by an injection into it (as
-Rocq `lang.v` does for `val`/`expr`), see `Perennial/GooseLang/Countable.lean`.
+with `Pos` leaves; a syntax type is shown countable by an injection into it
+(as done for `val`/`expr`), see `Perennial/GooseLang/Countable.lean`.
 -/
 import Iris.Std.Positives
 import Perennial.Std.GMap

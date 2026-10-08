@@ -1,8 +1,7 @@
 /-
-Port of `new/golang/defn/chan.v`. Channels are implemented by the Go channel
+Channel operations. Channels are implemented by the Go channel
 model (`github.com/mit-pdos/perennial/goose/model/channel`), whose generated
-translation lives in namespace `github_com.mit_pdos.perennial.goose.model.channel`
-(Rocq: `channel`).
+translation lives in namespace `github_com.mit_pdos.perennial.goose.model.channel`.
 -/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Assume

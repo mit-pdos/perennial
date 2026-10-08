@@ -1,11 +1,10 @@
 /-
-Term-level notation for GooseLang programs. Port of the notations in
-`src/goose_lang/lang.v` (and the Go-operator notations of
-`new/golang/defn/pre.v`).
+Term-level notation for GooseLang programs, including the Go-operator
+notations.
 
 Everything here elaborates to the plain constructors of `Lang.lean` (`App`,
-`Rec`, `RecV`, `If`, `Pair`, `PairV`, `Var`, `Val`, ...), exactly like Rocq's
-"only parsing" notations do. The notations are `scoped` to `Perennial`.
+`Rec`, `RecV`, `If`, `Pair`, `PairV`, `Var`, `Val`, ...); they are
+parsing-only. The notations are `scoped` to `Perennial`.
 
 ## Expressions and values
 
@@ -13,7 +12,7 @@ GooseLang code is written as ordinary Lean terms extended with the constructs
 below. The *bodies* of these constructs are elaborated in **goose mode**:
 
 * `"x"` (a string literal) is the variable `Var "x"`;
-* `(e1, e2, e3)` is a GooseLang pair, nested to the *left* as in Rocq:
+* `(e1, e2, e3)` is a GooseLang pair, nested to the *left*:
   `Pair (Pair e1 e2) e3` (`PairV` in value mode);
 * `e1 && e2` is `If e1 e2 #false` and `e1 || e2` is `If e1 #true e2`;
 * application `e1 e2` is GooseLang `App` when the head is a GooseLang
@@ -42,7 +41,7 @@ own, so `gl(...)` is only needed for pairs/strings outside them.
 | `λ: "x" "y", e` | `Rec BAnon "x" (Rec BAnon "y" e)`; `RecV BAnon "x" ...` when a `val` is expected |
 | `rec: "f" "x" "y" := e` | `Rec "f" "x" (Rec BAnon "y" e)` (or `RecV ...` when a `val` is expected) |
 | `let: "x" := e1 in e2` | `App (Rec BAnon "x" e2) e1` |
-| `let: ("a", "b") := e1 in e2` | destructuring let via `"__p"`, as in Rocq (left-nested tuples) |
+| `let: ("a", "b") := e1 in e2` | destructuring let via `"__p"` (left-nested tuples) |
 | `e1 ;; e2` | `App (Rec BAnon BAnon e2) e1` |
 | `if: c then e1 else e2` | `If c e1 e2` |
 | `e1 =⟨t⟩ e2`, `<⟨t⟩`, `≤⟨t⟩`, `>⟨t⟩`, `≥⟨t⟩`, `≠⟨t⟩` | Go comparison at type `t` |
@@ -52,17 +51,15 @@ own, so `gl(...)` is only needed for pairs/strings outside them.
 Binders are string literals, `<>` (anonymous), identifiers, or `&b` for an
 arbitrary Lean term of type `binder`.
 
-To get a *value* lambda in goose expression mode (Rocq `(λ: x, e)%V`), write a
+To get a *value* lambda in goose expression mode, write a
 type ascription `(λ: x, e : val)` or `glv(λ: x, e)`.
 
 ### Precedences (Lean)
 
 `;;` 10 (right assoc; its left side is at 11) · `λ:`, `rec:`, `let:`, `if:`
-are leading at 10 with bodies at 0 (so they extend as far as possible, like
-Rocq level 200) · `<-[t]` 40 · `⟨t⟩!` etc. 45 · comparisons 50 (non-assoc) ·
+are leading at 10 with bodies at 0 (so they extend as far as possible) · `<-[t]` 40 · `⟨t⟩!` etc. 45 · comparisons 50 (non-assoc) ·
 arithmetic 65 (left assoc) · `![t] e` max. Lean's `&&` (35) and `||` (30) bind
-more loosely than comparisons (unlike Rocq, where they bind more tightly), so
-parenthesize operands. Notations defined later: `![t] e`, `e1 <-[t] e2`,
+more loosely than comparisons, so parenthesize operands. Notations defined later: `![t] e`, `e1 <-[t] e2`,
 `@! f`, `r @!! t @!! m` (`Defn/PostLang`), `e1 ;;; e2`, `do: e`, `return: e`
 (`Defn/Exception`), `break: e`, `continue: e`, `for: c ; p := e`
 (`Defn/Loop`), `with_defer: e` (`Defn/Defer`).
@@ -79,14 +76,13 @@ open Lean Elab Term Meta
 section coercions
 variable [FfiSyntax]
 
-/-- Rocq `Coercion GoInstruction : GoInstruction >-> val`. -/
+/-- A `GoInstruction` is a value. -/
 instance : Coe GoInstruction val := ⟨GoInstruction⟩
 instance : CoeFun val (fun _ => Expr → Expr) := ⟨fun v => App (Val v)⟩
 instance : CoeFun GoInstruction (fun _ => Expr → Expr) := ⟨fun i => App (Val (GoInstruction i))⟩
 end coercions
 
-/-- `#"abc"` is the `GoString` literal `"abc"` (Rocq puts `#`'s argument in
-`%go` scope). -/
+/-- `#"abc"` is the `GoString` literal `"abc"`. -/
 scoped macro_rules
   | `(#$s:str) => `(intoVal go!$s)
 
@@ -219,7 +215,7 @@ partial def glValStx (stx : Term) : TermElabM Term := do
     else if ← isValTy ety then elabTerm (← `(glv($a))) ety
     else match a with
       | `($s:str) =>
-        -- a string literal where a `GoString` is expected (Rocq's `%go` scope)
+        -- a string literal where a `GoString` is expected
         let goStr ← elabType (← `(GoString))
         if ← withNewMCtxDepth (isDefEq ety goStr) then elabTerm (← `(go!$s)) ety
         else elabTerm a ety
@@ -236,11 +232,11 @@ private def valExpected (ety? : Option Lean.Expr) : TermElabM Bool := do
 
 /-! ## Binding constructs -/
 
-/-- GooseLang lambda (Rocq `λ: x y, e`). -/
+/-- GooseLang lambda `λ: x y, e`. -/
 scoped syntax:10 (name := glLam) "λ: " gl_binder+ ", " term : term
-/-- GooseLang recursive function (Rocq `rec: f x y := e`). -/
+/-- GooseLang recursive function `rec: f x y := e`. -/
 scoped syntax:10 (name := glRec) "rec: " gl_binder gl_binder+ " := " term : term
-/-- GooseLang let (Rocq `let: x := e1 in e2`), with tuple patterns. -/
+/-- GooseLang let `let: x := e1 in e2`, with tuple patterns. -/
 scoped syntax:10 "let: " gl_pat " := " term " in " term : term
 /-- GooseLang conditional. -/
 scoped syntax:10 "if: " term " then " term " else " term : term
@@ -290,7 +286,7 @@ macro_rules
   | `(if: $c then $e1 else $e2) => `(If gl($c) gl($e1) gl($e2))
   | `($e1 ;; $e2) => `(App (Rec BAnon BAnon gl($e2)) gl($e1))
 
-/-! ## Go operators (Rocq `new/golang/defn/pre.v`) -/
+/-! ## Go operators -/
 
 scoped syntax:50 term:51 " ≤⟨" term "⟩ " term:51 : term
 scoped syntax:50 term:51 " <⟨" term "⟩ " term:51 : term

@@ -1,5 +1,5 @@
 /-
-Pretty-printing of GooseLang code in goals, close to the Rocq display: `Val`
+Pretty-printing of GooseLang code in goals: `Val`
 and `GoInstruction` are hidden, `App` is juxtaposition, and the binding forms
 are shown with the notation of `Perennial/GooseLang/Notation.lean`
 (`λ:`, `rec:`, `let:`, `;;`, `if:`), the exception monad

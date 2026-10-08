@@ -1,6 +1,3 @@
-/-
-Port of `src/Helpers/range_set.v`.
--/
 import Perennial.Std.Word.Properties
 
 namespace Perennial

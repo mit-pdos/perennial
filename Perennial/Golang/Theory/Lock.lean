@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/lock.v`: a spin lock on a Boolean, the basis of
+A spin lock on a Boolean, the basis of
 `primitive.Mutex` and `sync.Mutex`.
 
 * `is_lock m R`: `m` is a lock protecting `R` (persistent);
@@ -27,8 +27,7 @@ variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 
 
 
-/-- Splitting a full typed points-to into `1/4` and `3/4` (Rocq
-`Qp.quarter_three_quarter`). -/
+/-- Splitting a full typed points-to into `1/4` and `3/4`. -/
 theorem typedPointsto_quarter_three_quarter {V : Type} [TypedPointsto (GF := GF) V]
     (l : Loc) (v : V) :
     typedPointsto (GF := GF) l v (DFrac.own 1) ⊣⊢ (l ↦{DFrac.own Qp.quarter} v ∗ l ↦{DFrac.own Qp.threeQuarters} v) := by
@@ -45,13 +44,13 @@ abbrev lockInv (m : Loc) (R : IProp GF) : IProp GF :=
 def isLockDef (m : Loc) (R : IProp GF) : IProp GF :=
   iprop("#Hinv" ∷ inv nroot (lockInv m R) ∗
     "_" ∷ True)
-/-- This means `m` is a valid lock with invariant `R` (Rocq `Opaque is_lock`). -/
+/-- This means `m` is a valid lock with invariant `R` (sealed). -/
 @[irreducible] def isLock (m : Loc) (R : IProp GF) : IProp GF := isLockDef m R
 theorem isLock_unseal : @isLock = @isLockDef := by funext; with_unfolding_all rfl
 
 def ownLockDef (m : Loc) : IProp GF := typedPointsto (GF := GF) m true (DFrac.own Qp.threeQuarters)
 /-- This resource denotes ownership of the fact that the lock is currently
-locked (Rocq `Opaque ownLock`). -/
+locked (sealed). -/
 @[irreducible] def ownLock (m : Loc) : IProp GF := ownLockDef m
 theorem ownLock_unseal : @ownLock = @ownLockDef := by funext; with_unfolding_all rfl
 

@@ -1,14 +1,9 @@
 /-
-Port of `new/trusted_code/github_com/goose_lang/primitive/disk.v` (namespace
-`github_com.goose_lang.primitive.disk`, as the generated package).
+Trusted code for `github.com/goose-lang/primitive/disk` (namespace
+`github_com.goose_lang.primitive.disk`, as the generated package), built on the
+disk FFI of `Perennial.GooseLang.Ffi.DiskFfi.Impl`.
 
-TODO (from Rocq): this isn't correct, the new translation needs certain
-go_type definitions.
-
-NOTE: depends on the port of `src/goose_lang/ffi/disk_ffi/impl.v`
-(`Perennial.GooseLang.Ffi.DiskFfi.Impl`, providing `disk_op : ffi_syntax`,
-`disk_model : ffi_model` and the opcodes `DiskOp.*`), which does not exist yet;
-adjust the import/names once it does.
+TODO: this isn't correct, the new translation needs certain go_type definitions.
 -/
 import Perennial.Golang.Defn
 import Perennial.GooseLang.Ffi.DiskFfi.Impl

@@ -1,8 +1,6 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/conversions.v`.
-
-The Rocq lemma ends in `Abort` ("missing semantics?" for the `[]byte -> string`
-conversion); it is proved here with `wp_bytes_to_string`.
+Semantics tests for conversions. The `[]byte -> string` conversion is handled
+with `wp_bytes_to_string`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 import Perennial.Golang.Theory.String

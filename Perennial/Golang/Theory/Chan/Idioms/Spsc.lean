@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/spsc.v`: single-producer single-consumer (SPSC)
+Single-producer single-consumer (SPSC)
 channels, with histories of sent and received values.
 
 * Producer maintains exclusive send permission with history tracking.
@@ -8,7 +8,7 @@ channels, with histories of sent and received values.
 * The invariant maintains `sent = received ++ in_flight`.
 * Resource protocols `P` (per-value, indexed by position) and `R` (final state).
 
-Lean notes: the per-state part of the invariant is the separate definition
+Note: the per-state part of the invariant is the separate definition
 `spscInvMatch`; `[Pos.Countable V]` as in `ChanAuBase.lean`.
 -/
 import Perennial.Golang.Theory.Chan.Idioms.Base

@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sort_proof/search.v`: proofs of `sort.Search` and
+Proofs of `sort.Search` and
 `sort.SearchInts`.
 
 The specification for `sort.Search` is simpler than `sort.Find`: it takes a

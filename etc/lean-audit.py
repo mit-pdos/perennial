@@ -7,7 +7,7 @@ Usage: etc/lean-audit.py [--modules ok|all] [-o REPORT] [--json AUDIT.json] [--r
   --modules  ok  (default): import the modules etc/lean-ci.sh recorded as ok in
                  .lake/lean-ci-status.tsv (falls back to `all` if missing)
              all: every Perennial/**/*.lean that has an .olean
-  -o         report path (default etc/lean-audit-report.md)
+  -o         report path (default .lake/lean-audit-report.md)
   --json     where to keep the raw output of etc/lean-audit.lean
              (default .lake/lean-audit.json); --reuse skips re-running Lean.
 
@@ -25,7 +25,7 @@ STD_AX = {"propext", "Classical.choice", "Quot.sound"}
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--modules", choices=["ok", "all"], default="ok")
-ap.add_argument("-o", "--out", default=os.path.join(ROOT, "etc", "lean-audit-report.md"))
+ap.add_argument("-o", "--out", default=os.path.join(ROOT, ".lake", "lean-audit-report.md"))
 ap.add_argument("--json", default=os.path.join(ROOT, ".lake", "lean-audit.json"))
 ap.add_argument("--reuse", action="store_true")
 args = ap.parse_args()

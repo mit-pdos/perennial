@@ -1,10 +1,9 @@
 /-
-Port of `new/proof/time.v`.
+Specs for the Go `time` package.
 
-Lean notes:
-* The Rocq axioms `wp_Now`, `wp_Until`, `Time.wp_Add` are stated without the
-  package assumptions in Rocq (a Rocq bug: `Collection W` is not used by
-  `Axiom`s). Here they bind `[package_sem : time.Assumptions]` explicitly.
+Notes:
+* The axioms `wp_Now`, `wp_Until`, `Time.wp_Add` bind their package assumptions
+  (`[package_sem : time.Assumptions]`) explicitly.
 * `wp_After` needs the channel theory, which fixes `hlc := HasLC.hasLC` and
   `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
   channel ghost state) is defined here.
@@ -49,7 +48,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     {{ RET #(); ownInitializing get_is_pkg_init ∗
         isPkgInit (PROP := IProp GF) pkg_id.time }} := by
   -- Unprovable: `UTC'init`, `Local'init`, ... are opaque (axioms in Perennial/Code/time.lean).
-  sorry -- Rocq: Admitted
+  sorry
 
 theorem Time.wp_sec (t : Loc) (tv : time.Time) :
     {{ (t ↦ tv : IProp GF) }}
@@ -97,7 +96,7 @@ theorem Time.wp_UnixNano (l : Loc) (t : time.Time) :
   wp_apply Time.wp_UnixNano' as %x -
   iapply HΦ $$ Hl
 
-/-- Rocq `Axiom wp_Now` (Rocq omits the package assumptions; bound here). -/
+/-- Spec of `time.Now` (axiom). -/
 axiom wp_Now [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] :
@@ -105,7 +104,7 @@ axiom wp_Now [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ex
       (App (Val (@! time.Now)) (Val #()))
     {{ (t : time.Time), RET #t; True }}
 
-/-- Rocq `Axiom wp_Until` (Rocq omits the package assumptions; bound here). -/
+/-- Spec of `time.Until` (axiom). -/
 axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (deadline : time.Time) :
@@ -113,7 +112,7 @@ axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics 
       (App (Val (@! time.Until)) (Val #deadline))
     {{ (x : w64), RET #x; True }}
 
-/-- Rocq `Axiom Time.wp_Add` (Rocq omits the package assumptions; bound here). -/
+/-- Spec of `Time.Add` (axiom). -/
 axiom Time.wp_Add [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) (d : time.Duration) :

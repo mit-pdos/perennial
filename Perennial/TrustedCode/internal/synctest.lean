@@ -1,6 +1,6 @@
 /-
-Port of `new/trusted_code/internal/synctest.v` (namespace
-`internal.synctest`, as the generated package).
+Trusted model of `internal/synctest` (namespace `internal.synctest`, as the
+generated package).
 -/
 import Perennial.Golang.Defn.Pre
 

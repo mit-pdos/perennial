@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/bytes.v`: specs for the Go `bytes` package.
+Specs for the Go `bytes` package.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Proof.errors

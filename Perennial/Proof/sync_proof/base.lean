@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/base.v`: common imports and package
+Common imports and package
 initialization of `sync`.
 -/
 import Perennial.Code.sync

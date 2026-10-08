@@ -99,11 +99,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance backend_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.backend :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance backend_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.backend go_etcd_io.etcd.server.v3.storage.backend.backend.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end backend
@@ -118,11 +118,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance BackendConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.BackendConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance BackendConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.BackendConfig go_etcd_io.etcd.server.v3.storage.backend.BackendConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end BackendConfig
@@ -137,11 +137,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance snapshot_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.snapshot :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance snapshot_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.snapshot go_etcd_io.etcd.server.v3.storage.backend.snapshot.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end snapshot
@@ -156,11 +156,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance zapBoltLogger_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance zapBoltLogger_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger go_etcd_io.etcd.server.v3.storage.backend.zapBoltLogger.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end zapBoltLogger
@@ -175,11 +175,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance batchTx_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTx :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance batchTx_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.batchTx go_etcd_io.etcd.server.v3.storage.backend.batchTx.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end batchTx
@@ -405,11 +405,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.storage.backend.Assumptions]
 
 instance baseReadTx_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.baseReadTx :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance baseReadTx_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.storage.backend.baseReadTx go_etcd_io.etcd.server.v3.storage.backend.baseReadTx.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end baseReadTx

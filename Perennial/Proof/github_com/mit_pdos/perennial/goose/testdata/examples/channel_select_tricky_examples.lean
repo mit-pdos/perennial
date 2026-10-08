@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_select_tricky_examples.v`:
-tricky nonblocking `select` examples.
+Tricky nonblocking `select` examples.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
 import Perennial.Golang.Theory.Chan

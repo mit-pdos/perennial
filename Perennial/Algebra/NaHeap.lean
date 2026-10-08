@@ -1,15 +1,13 @@
 /-
-Non-atomic heap. Port of `src/algebra/na_heap.v`.
+Non-atomic heap.
 
 A heap that supports non-atomic operations: each location carries a lock state
 (`WSt` while being written, `RSt n` while `n` readers are active). Adapted from
 lambda-rust by Jung et al.
 
-Differences from the Rocq version:
-* Only the value heap is kept. The meta-token (`meta_token`, `meta`) and block
-  size (`na_block_size`) ghost state are dropped, since new goose does not use
-  them; `naHeapCtx` is just the authoritative heap view.
-* Maps are `Perennial.gmap`.
+Only the value heap is kept: there is no meta-token (`meta_token`, `meta`) or
+block size ghost state, since goose does not use them; `naHeapCtx` is just the
+authoritative heap view over a `Perennial.gmap`.
 -/
 import Iris.Algebra.HeapView
 import Iris.Algebra.Csum
@@ -28,7 +26,7 @@ namespace Perennial
 
 open Iris Iris.BI Iris.Algebra Iris.Std CMRA HeapView
 
-/-- Rocq `LockStateR := csumR unitR natR`. The `Nat` CMRA is `(ℕ, +)`. -/
+/-- Lock state: `Cinl ()` while being written, `Cinr n` with `n` readers. The `Nat` CMRA is `(ℕ, +)`. -/
 abbrev LockStateR := Csum Unit Nat
 
 abbrev NaHeapCmra (V : Type) := LockStateR × Agree (DiscreteO V)

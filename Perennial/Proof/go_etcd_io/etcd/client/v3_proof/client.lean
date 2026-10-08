@@ -1,13 +1,11 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/client.v`: axiomatized
-specifications of the etcd client.
+Axiomatized specifications of the etcd client.
 
-Lean notes:
+Notes:
 * Every axiom binds its section assumptions explicitly (Lean does not add
   section variables to `axiom`s); the wp axioms bind
   `[package_sem : go_etcd_io.etcd.client.v3.Assumptions]`.
-* Rocq's `clientv3G Σ` (an unbound, implicitly generalized class) is
-  `[allG GF]`; `isContext` and the channel theory fix `hlc := HasLC.hasLC`.
+* The ghost-state assumption is just `[allG GF]`; `isContext` and the channel theory fix `hlc := HasLC.hasLC`.
 -/
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.base
 import Perennial.Proof.go_etcd_io.etcd.client.v3_proof.op
@@ -54,10 +52,10 @@ axiom isClient_pers [ext : FfiSyntax] {GF : BundledGFunctors} [AllG GF]
   (client : Loc) (γ : Clientv3Names) : Persistent (isClient (GF := GF) client γ)
 attribute [instance] isClient_pers
 
-/-- Rocq `Axiom N : namespace`. -/
+/-- The namespace of the client's invariants. -/
 axiom N : Namespace
 
-/-- Only specifying Do Get for now. (Rocq FIXME: wrong because a lease could
+/-- Only specifying Do Get for now. (FIXME: wrong because a lease could
 delete the value. TODO: return value.) -/
 axiom Client.wp_Do_Get [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
     [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}

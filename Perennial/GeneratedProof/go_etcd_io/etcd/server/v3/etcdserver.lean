@@ -81,11 +81,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance bootstrappedServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance bootstrappedServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer go_etcd_io.etcd.server.v3.etcdserver.bootstrappedServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end bootstrappedServer
@@ -157,11 +157,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance bootstrappedBackend_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance bootstrappedBackend_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend go_etcd_io.etcd.server.v3.etcdserver.bootstrappedBackend.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end bootstrappedBackend
@@ -176,11 +176,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance bootstrappedCluster_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance bootstrappedCluster_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster go_etcd_io.etcd.server.v3.etcdserver.bootstrappedCluster.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end bootstrappedCluster
@@ -195,11 +195,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance bootstrappedRaft_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance bootstrappedRaft_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft go_etcd_io.etcd.server.v3.etcdserver.bootstrappedRaft.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end bootstrappedRaft
@@ -214,11 +214,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance snapshotMetadata_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance snapshotMetadata_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata go_etcd_io.etcd.server.v3.etcdserver.snapshotMetadata.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end snapshotMetadata
@@ -233,11 +233,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance bootstrappedWAL_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance bootstrappedWAL_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL go_etcd_io.etcd.server.v3.etcdserver.bootstrappedWAL.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end bootstrappedWAL
@@ -252,11 +252,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance corruptionChecker_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance corruptionChecker_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker go_etcd_io.etcd.server.v3.etcdserver.corruptionChecker.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end corruptionChecker
@@ -271,11 +271,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance Hasher_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Hasher :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Hasher_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Hasher go_etcd_io.etcd.server.v3.etcdserver.Hasher.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Hasher
@@ -290,11 +290,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance hasherAdapter_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance hasherAdapter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter go_etcd_io.etcd.server.v3.etcdserver.hasherAdapter.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end hasherAdapter
@@ -309,11 +309,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance peerInfo_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance peerInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.peerInfo go_etcd_io.etcd.server.v3.etcdserver.peerInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end peerInfo
@@ -402,11 +402,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance hashKVHandler_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance hashKVHandler_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler go_etcd_io.etcd.server.v3.etcdserver.hashKVHandler.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end hashKVHandler
@@ -512,11 +512,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance raftNode_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNode :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance raftNode_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNode go_etcd_io.etcd.server.v3.etcdserver.raftNode.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end raftNode
@@ -531,11 +531,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance raftNodeConfig_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance raftNodeConfig_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig go_etcd_io.etcd.server.v3.etcdserver.raftNodeConfig.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end raftNodeConfig
@@ -550,11 +550,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance Response_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Response :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Response_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Response go_etcd_io.etcd.server.v3.etcdserver.Response.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Response
@@ -569,11 +569,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance ServerV2_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerV2 :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerV2_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerV2 go_etcd_io.etcd.server.v3.etcdserver.ServerV2.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerV2
@@ -588,11 +588,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance Server_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Server :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Server_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Server go_etcd_io.etcd.server.v3.etcdserver.Server.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Server
@@ -607,11 +607,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance EtcdServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.EtcdServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance EtcdServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.EtcdServer go_etcd_io.etcd.server.v3.etcdserver.EtcdServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end EtcdServer
@@ -626,11 +626,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance ServerPeer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerPeer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeer go_etcd_io.etcd.server.v3.etcdserver.ServerPeer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerPeer
@@ -645,11 +645,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance ServerPeerV2_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2 :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ServerPeerV2_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2 go_etcd_io.etcd.server.v3.etcdserver.ServerPeerV2.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ServerPeerV2
@@ -664,11 +664,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance downgradeEnabledHandler_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance downgradeEnabledHandler_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler go_etcd_io.etcd.server.v3.etcdserver.downgradeEnabledHandler.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end downgradeEnabledHandler
@@ -882,11 +882,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance confChangeResponse_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance confChangeResponse_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse go_etcd_io.etcd.server.v3.etcdserver.confChangeResponse.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end confChangeResponse
@@ -1049,11 +1049,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance Lessor_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Lessor :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Lessor_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.Lessor go_etcd_io.etcd.server.v3.etcdserver.Lessor.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Lessor
@@ -1068,11 +1068,11 @@ variable [package_sem' : go_etcd_io.etcd.server.v3.etcdserver.Assumptions]
 
 instance zapRaftLogger_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance zapRaftLogger_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger go_etcd_io.etcd.server.v3.etcdserver.zapRaftLogger.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end zapRaftLogger

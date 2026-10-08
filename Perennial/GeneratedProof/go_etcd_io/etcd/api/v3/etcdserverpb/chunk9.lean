@@ -25,11 +25,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance watchClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance watchClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.watchClient go_etcd_io.etcd.api.v3.etcdserverpb.watchClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end watchClient
@@ -44,11 +44,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance WatchServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance WatchServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer go_etcd_io.etcd.api.v3.etcdserverpb.WatchServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end WatchServer
@@ -86,11 +86,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance LeaseClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance LeaseClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient go_etcd_io.etcd.api.v3.etcdserverpb.LeaseClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end LeaseClient
@@ -105,11 +105,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance leaseClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance leaseClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient go_etcd_io.etcd.api.v3.etcdserverpb.leaseClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end leaseClient
@@ -124,11 +124,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance LeaseServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance LeaseServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer go_etcd_io.etcd.api.v3.etcdserverpb.LeaseServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end LeaseServer
@@ -166,11 +166,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance ClusterClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ClusterClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient go_etcd_io.etcd.api.v3.etcdserverpb.ClusterClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ClusterClient
@@ -185,11 +185,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance clusterClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance clusterClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient go_etcd_io.etcd.api.v3.etcdserverpb.clusterClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end clusterClient
@@ -204,11 +204,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance ClusterServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ClusterServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer go_etcd_io.etcd.api.v3.etcdserverpb.ClusterServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ClusterServer
@@ -246,11 +246,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance MaintenanceClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance MaintenanceClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end MaintenanceClient
@@ -265,11 +265,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance maintenanceClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance maintenanceClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient go_etcd_io.etcd.api.v3.etcdserverpb.maintenanceClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end maintenanceClient
@@ -284,11 +284,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance MaintenanceServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance MaintenanceServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer go_etcd_io.etcd.api.v3.etcdserverpb.MaintenanceServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end MaintenanceServer
@@ -326,11 +326,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance AuthClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient go_etcd_io.etcd.api.v3.etcdserverpb.AuthClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end AuthClient
@@ -345,11 +345,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance authClient_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance authClient_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.authClient go_etcd_io.etcd.api.v3.etcdserverpb.authClient.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end authClient
@@ -364,11 +364,11 @@ variable [package_sem' : go_etcd_io.etcd.api.v3.etcdserverpb.Assumptions]
 
 instance AuthServer_typed_pointsto :
     TypedPointsto (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance AuthServer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer go_etcd_io.etcd.api.v3.etcdserverpb.AuthServer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end AuthServer

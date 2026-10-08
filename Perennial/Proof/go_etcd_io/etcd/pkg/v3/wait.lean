@@ -1,11 +1,8 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/pkg/v3/wait.v`.
+Specs for etcd's `pkg/v3/wait` (`wait.Wait`).
 
-Lean notes:
-* Rocq's nested Texan triples inside `ownWait` (iProps) are written out as
-  `□ ∀ Φ, P -∗ ▷ (∀ x, Q -∗ Φ v) -∗ WP e {{ Φ }}`.
-* Rocq's `recvAu γch any.t Φ` is `recvAu γch interface.t Φ` (`any.t` is an
-  abbreviation of `GoInterface`).
+Texan triples nested inside `ownWait` are written out as
+`□ ∀ Φ, P -∗ ▷ (∀ x, Q -∗ Φ v) -∗ WP e {{ Φ }}`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.go_etcd_io.etcd.pkg.v3.wait
@@ -26,7 +23,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace go_etcd_io.etcd.pkg.v3.wait
 
-/-- Rocq `interfaceCall i m`. -/
+/-- The method `m` of the interface value `i`. -/
 abbrev interfaceCall [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (i : GoInterfaceOk)
     (m : GoString) : val :=
   #(methods i.ty m i.v)
@@ -83,7 +80,6 @@ def ownWaitDef (γ : WaitParams GF) (w : GoInterfaceOk) (R : w64 → GoInterface
         γ.I -∗
         ▷ (∀ reg : Bool, γ.I -∗ Φ #reg) -∗
         WP (App (Val (interfaceCall w go!"IsRegistered")) (Val #id')) {{ Φ }})))
-/-- (Rocq: `Opaque ownWait`) -/
 @[irreducible] def ownWait (γ : WaitParams GF) (w : GoInterfaceOk)
     (R : w64 → GoInterface → IProp GF) : IProp GF := ownWaitDef γ w R
 theorem ownWait_unseal : @ownWait = @ownWaitDef := by funext; with_unfolding_all rfl

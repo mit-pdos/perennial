@@ -27,11 +27,11 @@ variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance BufferedWriteSyncer_typed_pointsto :
     TypedPointsto (GF := GF) go_uber_org.zap.zapcore.BufferedWriteSyncer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance BufferedWriteSyncer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.BufferedWriteSyncer go_uber_org.zap.zapcore.BufferedWriteSyncer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end BufferedWriteSyncer
@@ -132,11 +132,11 @@ variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance Encoder_typed_pointsto :
     TypedPointsto (GF := GF) go_uber_org.zap.zapcore.Encoder :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance Encoder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.Encoder go_uber_org.zap.zapcore.Encoder.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end Encoder
@@ -1123,11 +1123,11 @@ variable [package_sem' : go_uber_org.zap.zapcore.Assumptions]
 
 instance jsonEncoder_typed_pointsto :
     TypedPointsto (GF := GF) go_uber_org.zap.zapcore.jsonEncoder :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance jsonEncoder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) go_uber_org.zap.zapcore.jsonEncoder go_uber_org.zap.zapcore.jsonEncoder.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end jsonEncoder

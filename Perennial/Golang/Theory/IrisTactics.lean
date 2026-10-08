@@ -1,8 +1,7 @@
 /-
-Perennial-side extensions and fixes of iris-lean proof mode tactics (no Rocq
-counterpart file; Rocq gets these from Iris/stdpp).
+Perennial-side extensions and fixes of iris-lean proof mode tactics.
 
-* `solve_ndisj` (Rocq/stdpp `solve_ndisj`): prove mask side conditions about
+* `solve_ndisj`: prove mask side conditions about
   namespaces, e.g. `↑(N.@"inv") ⊆ ⊤ ∖ ↑(N.@"sema")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@"x")` or
   `↑(N.@"a") ## ↑(N.@"b")`, using hypotheses about masks from the context.
   `iinv` uses it for its mask side condition (it is not hooked into `trivial`,
@@ -68,7 +67,7 @@ partial def isNdisjGoal (e : Lean.Expr) : MetaM Bool := do
 def isNdisjHyp (ty : Lean.Expr) : Bool :=
   (ty.find? fun s => s.isConstOf ``CoPset || s.isConstOf ``nclose || s.isConstOf ``ndot).isSome
 
-/-- Rocq `solve_ndisj`: prove a mask side condition built from `⊆`, `##`, `∈`,
+/-- `solve_ndisj`: prove a mask side condition built from `⊆`, `##`, `∈`,
 `∪`, `∩`, `∖`, `⊤`, `∅` and namespaces `↑N`, `↑(N.@x)` (with distinct `x`s for
 disjointness), using the hypotheses about masks in the context. Fails on goals
 of another shape. -/

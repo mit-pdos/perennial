@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/mono_list.v`: ghost state for an append-only list, wrapping
+Ghost state for an append-only list, wrapping
 iris-lean's `MonoList` camera. Elements (of any `Pos.Countable` type) are stored
 encoded (`encodeO`), see `Perennial/Ghost/All.lean`.
 

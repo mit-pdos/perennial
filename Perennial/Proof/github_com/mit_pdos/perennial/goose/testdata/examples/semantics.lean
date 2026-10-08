@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics.v`.
+Imports all proofs of the goose `semantics` test package.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.allocator
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.builtin

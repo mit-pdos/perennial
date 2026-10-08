@@ -1,6 +1,3 @@
-/-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics_proof/interfaces_complex.v`.
--/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
 
 set_option linter.iris.style.nameCheck false

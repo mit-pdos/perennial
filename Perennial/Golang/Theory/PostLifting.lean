@@ -1,18 +1,18 @@
 /-
-Port of `new/golang/theory/postlifting.v`: the typed points-to `l ↦{dq} v`,
+The typed points-to `l ↦{dq} v`,
 the classes `TypedPointsto`, `IntoValTypedUnderlying` and `IntoValTyped`, WPs
 for basic Go instructions, and the typed points-to instances for primitive
 types.
 
-Differences from Rocq:
-* `countable_interface` (admitted in Rocq) is omitted: `gmap` only needs
+Notes:
+* There is no `Countable` instance for interfaces: `gmap` only needs
   `DecidableEq`.
-* The Rocq `Hint Extern`s proving `go.NotNamed t`/`go.NotInterface t` by
-  computation are replaced by one instance per constructor of `go.GoType`. A type
+* `go.NotNamed t`/`go.NotInterface t` are proved by one instance per
+  constructor of `go.GoType`. A type
   hidden behind a (non-reducible) definition is therefore not seen through; make
   such definitions `@[reducible]` (or state the instance).
 * `IntoValTyped.wp_load` is not exported (it would clash with the untyped
-  `Perennial.wp_load` of `GooseLang/Lifting.lean`, Rocq's `lifting.wp_load`);
+  `Perennial.wp_load` of `GooseLang/Lifting.lean`);
   write `IntoValTyped.wp_load`. `wp_alloc` and `wp_store` are exported.
 * The typed points-to notation is `l ↦{dq} v`, `l ↦ v` (full ownership) and
   `l ↦□ v` (discarded), scoped to `Perennial`.
@@ -67,8 +67,8 @@ theorem underlying_trivial (t : go.GoType) : t ↓u (underlying t) := ⟨rfl⟩
 end underlying_instances
 
 /-- `go.go_zero_val_step` with the `ZeroVal V` instance determined by the
-`TypeRepr t V` instance (the Rocq-order binder `[ZeroVal V]` first makes Lean's
-typeclass search get stuck on `ZeroVal ?V`). -/
+`TypeRepr t V` instance (with the binder `[ZeroVal V]` first, typeclass search
+gets stuck on `ZeroVal ?V`). -/
 instance (priority := high) go_zero_val_step' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.CoreSemantics] {V : Type} {zv : ZeroVal V} {t : go.GoType}
     [TypeRepr t V] : ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V) :=
@@ -300,7 +300,7 @@ instance pure_wp_go_step_det (i : GoInstruction) (v : val) (e : Expr)
     iframe Hctx
     iapply HΦ $$ Hlc
 
-/-- (Lean addition, time receipts) A deterministic pure Go instruction step
+/-- (Time receipts) A deterministic pure Go instruction step
 that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).
 Use it with `wp_bind` on the instruction, before `wp_auto` takes the step. -/
 theorem wp_go_step_receipt (i : GoInstruction) (v : val) (e : Expr)
@@ -575,7 +575,7 @@ end typed_pointsto_instances
 /-! ## `IntoValTypedUnderlying` instances for primitive types -/
 
 /-- Internal Go steps (`⤳[internal]`) as untagged steps. Used as a local
-instance to prove `IntoValTyped` instances (Rocq: `pose proof (go.tagged_steps internal)`). -/
+instance to prove `IntoValTyped` instances. -/
 theorem go.tagged_internal_inst [FfiSyntax] [GoLocalContext] [GoGlobalContext]
     {instr : GoInstruction} {args : val} {e : Expr} [h : ⟦instr, args⟧ ⤳[internal] e] :
     ⟦instr, args⟧ ⤳ e :=
@@ -599,7 +599,7 @@ theorem heapPointsto_non_null_dup (l : Loc) (dq : DFrac) (v : val) :
 
 /-- Prove `IntoValTypedUnderlying V t` for a type whose typed points-to is
 `heapPointsto l dq #v` and which is allocated, loaded and stored with the
-untyped primitives (Rocq `solve_into_val_typed`). -/
+untyped primitives. -/
 macro "solve_into_val_typed" : tactic => `(tactic| (
   constructor
   all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
@@ -660,20 +660,20 @@ end into_val_typed_instances
 
 /-! ## Struct points-to tactics -/
 
-/-- Rocq `iStructNamed H`: split a typed points-to `H : l ↦{dq} v` for a struct
+/-- `iStructNamed H`: split a typed points-to `H : l ↦{dq} v` for a struct
 into its (named) field points-tos. -/
 macro "iStructNamed " H:ident : tactic =>
   `(tactic| (
     icases typedPointsto_split _ _ _ $$ $H:ident with $H:ident
     try simp only [TypedPointsto.typedPointstoDef]
     iNamed $H:ident))
-/-- Rocq `iStructNamedSuffix H "suf"`. -/
+/-- `iStructNamedSuffix H "suf"`: `iStructNamed H`, adding the suffix `suf` to the names. -/
 macro "iStructNamedSuffix " H:ident suff:str : tactic =>
   `(tactic| (
     icases typedPointsto_split _ _ _ $$ $H:ident with $H:ident
     try simp only [TypedPointsto.typedPointstoDef]
     iNamedSuffix $H:ident $suff))
-/-- Rocq `iStructNamedPrefix H "pre"`. -/
+/-- `iStructNamedPrefix H "pre"`: `iStructNamed H`, adding the prefix `pre` to the names. -/
 macro "iStructNamedPrefix " H:ident pref:str : tactic =>
   `(tactic| (
     icases typedPointsto_split _ _ _ $$ $H:ident with $H:ident
@@ -688,15 +688,15 @@ theorem typedPointsto_not_null_dup [FfiSyntax] {GF : BundledGFunctors} {V : Type
   iframe H
   isplit <;> ipureintro <;> exact h
 
-/-- Prove `typedPointstoDef_dfractional` for a struct (Rocq: solved by `Program`). -/
+/-- Prove `typedPointstoDef_dfractional` for a struct. -/
 macro "solve_typed_pointsto_dfractional" : tactic =>
   `(tactic| (intros; simp only [named]; infer_instance))
 
-/-- Prove `typedPointstoDef_timeless` for a struct (Rocq: solved by `Program`). -/
+/-- Prove `typedPointstoDef_timeless` for a struct. -/
 macro "solve_typed_pointsto_timeless" : tactic =>
   `(tactic| (intros; simp only [named]; infer_instance))
 
-/-- Rocq `solve_typed_pointsto_agree`: prove `typedPointsto_agree` for a
+/-- Prove `typedPointsto_agree` for a
 struct whose typed points-to is the conjunction of its field points-tos. -/
 macro "solve_typed_pointsto_agree" : tactic => `(tactic| (
   intro l dq1 dq2 v1 v2

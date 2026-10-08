@@ -69,11 +69,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ConnectParams_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ConnectParams :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ConnectParams_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ConnectParams google_golang_org.grpc.ConnectParams.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ConnectParams
@@ -88,11 +88,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ccBalancerWrapper_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ccBalancerWrapper :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ccBalancerWrapper_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ccBalancerWrapper google_golang_org.grpc.ccBalancerWrapper.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ccBalancerWrapper
@@ -107,11 +107,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance acBalancerWrapper_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.acBalancerWrapper :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance acBalancerWrapper_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.acBalancerWrapper google_golang_org.grpc.acBalancerWrapper.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end acBalancerWrapper
@@ -126,11 +126,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance healthData_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.healthData :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance healthData_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.healthData google_golang_org.grpc.healthData.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end healthData
@@ -145,11 +145,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance refCountedProducer_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.refCountedProducer :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance refCountedProducer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.refCountedProducer google_golang_org.grpc.refCountedProducer.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end refCountedProducer
@@ -204,11 +204,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ClientConn_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ClientConn :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ClientConn_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ClientConn google_golang_org.grpc.ClientConn.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ClientConn
@@ -223,11 +223,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance connectivityStateManager_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.connectivityStateManager :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance connectivityStateManager_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.connectivityStateManager google_golang_org.grpc.connectivityStateManager.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end connectivityStateManager
@@ -242,11 +242,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance addrConn_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.addrConn :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance addrConn_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.addrConn google_golang_org.grpc.addrConn.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end addrConn
@@ -392,11 +392,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance baseCodec_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.baseCodec :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance baseCodec_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.baseCodec google_golang_org.grpc.baseCodec.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end baseCodec
@@ -451,11 +451,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance dialOptions_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.dialOptions :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance dialOptions_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.dialOptions google_golang_org.grpc.dialOptions.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end dialOptions
@@ -470,11 +470,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance perTargetDialOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.perTargetDialOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance perTargetDialOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.perTargetDialOption google_golang_org.grpc.perTargetDialOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end perTargetDialOption
@@ -786,11 +786,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance pickerGeneration_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.pickerGeneration :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance pickerGeneration_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.pickerGeneration google_golang_org.grpc.pickerGeneration.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end pickerGeneration
@@ -805,11 +805,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance pick_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.pick :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance pick_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.pick google_golang_org.grpc.pick.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end pick
@@ -864,11 +864,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance PreparedMsg_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.PreparedMsg :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance PreparedMsg_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.PreparedMsg google_golang_org.grpc.PreparedMsg.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end PreparedMsg
@@ -883,11 +883,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ccResolverWrapper_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ccResolverWrapper :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ccResolverWrapper_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ccResolverWrapper google_golang_org.grpc.ccResolverWrapper.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ccResolverWrapper
@@ -982,11 +982,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance callInfo_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.callInfo :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance callInfo_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.callInfo google_golang_org.grpc.callInfo.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end callInfo
@@ -1024,11 +1024,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance HeaderCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.HeaderCallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance HeaderCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.HeaderCallOption google_golang_org.grpc.HeaderCallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end HeaderCallOption
@@ -1043,11 +1043,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance TrailerCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.TrailerCallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance TrailerCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.TrailerCallOption google_golang_org.grpc.TrailerCallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end TrailerCallOption
@@ -1062,11 +1062,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance PeerCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.PeerCallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance PeerCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.PeerCallOption google_golang_org.grpc.PeerCallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end PeerCallOption
@@ -1281,11 +1281,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance PerRPCCredsCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.PerRPCCredsCallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance PerRPCCredsCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.PerRPCCredsCallOption google_golang_org.grpc.PerRPCCredsCallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end PerRPCCredsCallOption
@@ -1420,11 +1420,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ForceCodecCallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ForceCodecCallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ForceCodecCallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ForceCodecCallOption google_golang_org.grpc.ForceCodecCallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ForceCodecCallOption
@@ -1439,11 +1439,11 @@ variable [package_sem' : google_golang_org.grpc.Assumptions]
 
 instance ForceCodecV2CallOption_typed_pointsto :
     TypedPointsto (GF := GF) google_golang_org.grpc.ForceCodecV2CallOption :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 instance ForceCodecV2CallOption_into_val_typed :
     IntoValTypedUnderlying (GF := GF) google_golang_org.grpc.ForceCodecV2CallOption google_golang_org.grpc.ForceCodecV2CallOption.underlying :=
-  sorry -- Rocq: Admitted
+  sorry -- axiomatized type
 
 end def_
 end ForceCodecV2CallOption

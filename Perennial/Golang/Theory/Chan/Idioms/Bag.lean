@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/chan/idioms/bag.v`: the "bag" channel specification.
+The "bag" channel specification.
 
 This channel spec has a user-chosen predicate `P` over values sent on the channel, but no
 ordering guarantees. It's like a "bag" of values, with `send` inserting and `receive`
@@ -37,7 +37,6 @@ def chanBagInv (γ : ChanNames) (P : V → IProp GF) : IProp GF :=
 
 def isChanBagDef (γ : ChanNames) (ch : Loc) (P : V → IProp GF) : IProp GF :=
   iprop("#Hch" ∷ isChan ch γ V ∗ "#Hinv" ∷ inv nroot (chanBagInv γ P))
-/-- (Rocq: `Opaque isChanBag`) -/
 @[irreducible] def isChanBag (γ : ChanNames) (ch : Loc) (P : V → IProp GF) : IProp GF :=
   isChanBagDef γ ch P
 theorem isChanBag_unseal : @isChanBag = @isChanBagDef := by funext; with_unfolding_all rfl

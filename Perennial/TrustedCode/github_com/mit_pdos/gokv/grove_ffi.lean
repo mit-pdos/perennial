@@ -1,11 +1,8 @@
 /-
-Port of `new/trusted_code/github_com/mit_pdos/gokv/grove_ffi.v` (namespace
-`github_com.mit_pdos.gokv.grove_ffi`, as the generated package).
-
-NOTE: depends on the port of `src/goose_lang/ffi/grove_ffi/impl.v`
-(`Perennial.GooseLang.Ffi.GroveFfi.Impl`, providing `grove_op : ffi_syntax`,
-`grove_model : ffi_model` and the opcodes `GroveOp.*`), which does not exist
-yet; adjust the import/names once it does.
+Trusted Go model of `github.com/mit-pdos/gokv/grove_ffi` (namespace
+`github_com.mit_pdos.gokv.grove_ffi`, as the generated package), in terms of
+the Grove FFI of `Perennial.GooseLang.Ffi.GroveFfi.Impl` (`grove_op`,
+`grove_model` and the opcodes `GroveOp.*`).
 -/
 import Perennial.Golang.Defn
 import Perennial.GooseLang.Ffi.GroveFfi.Impl

@@ -1,13 +1,12 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_google.v`:
 Rob Pike's "Google search" example, using the future channel idiom.
 
 Lean notes:
 * In `wp_Google`, the received contract is identified from
   `map (contractOf q) remk = pre ++ P :: post` with `List.map_eq_append_iff` /
-  `List.map_eq_cons_iff`, which gives the index into `remk` directly; Rocq instead
-  identifies it with `pureContractOf_inj` and a `NoDup remk` invariant. Those
-  lemmas are still ported, but the loop invariant does not need `NoDup`.
+  `List.map_eq_cons_iff`, which gives the index into `remk` directly, so the
+  loop invariant does not need `NoDup remk` (`pureContractOf_inj` and the
+  related lemmas are still available).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
 import Perennial.Golang.Theory.Chan

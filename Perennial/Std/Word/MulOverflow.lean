@@ -1,6 +1,3 @@
-/-
-Port of `src/Helpers/Word/MulOverflow.v`.
--/
 import Perennial.Std.Word.Automation
 
 namespace Perennial

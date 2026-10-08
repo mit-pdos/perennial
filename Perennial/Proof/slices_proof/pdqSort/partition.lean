@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/pdqSort/partition.v`: specs of
+Specs of
 `partitionCmpFunc`, `medianCmpFunc`, `medianAdjacentCmpFunc`,
 `choosePivotCmpFunc`, `breakPatternsCmpFunc` and `partitionEqualCmpFunc`.
 -/
@@ -369,7 +369,7 @@ variable {E : Type} [ZeroVal E] [TypedPointsto (GF := GF) E] {Et : go.GoType}
   [IntoValTyped (GF := GF) E Et]
 variable (R : E → E → Prop) [StrictWeakOrder R]
 
-/-- The loop invariant of `partitionCmpFunc` (Rocq `HI0`/`HI1`/`HI2`; `br1`/`br2`
+/-- The loop invariant of `partitionCmpFunc` (`br1`/`br2`
 record that the first/second inner loop has exited). -/
 def partInv (data : GoSlice) (a b : w64) (xp : E) (xs : List E) (i_ptr j_ptr : Loc)
     (br1 br2 : Bool) : IProp GF :=

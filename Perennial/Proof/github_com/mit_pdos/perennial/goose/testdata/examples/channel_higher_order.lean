@@ -1,11 +1,9 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/channel_higher_order.v`:
-worker goroutines run closures received over a channel and send the result back
+Worker goroutines run closures received over a channel and send the result back
 over a per-request future channel.
 
-Lean notes:
-* The channel ghost state needs `Pos.Countable request.t`; it is derived here
-  from the countability of `GoFunc` and `loc` (`Perennial/GooseLang/Countable.lean`).
+The channel ghost state needs `Pos.Countable request.t`; it is derived here
+from the countability of `GoFunc` and `loc` (`Perennial/GooseLang/Countable.lean`).
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
 import Perennial.Golang.Theory.Chan

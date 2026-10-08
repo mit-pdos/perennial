@@ -1,4 +1,4 @@
 /-
-Port of `new/manualproof/github_com/goose_lang/primitive.v`.
+Manually written proof support for `github.com/goose-lang/primitive`.
 -/
 import Perennial.Proof.ProofPrelude

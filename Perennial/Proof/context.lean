@@ -1,68 +1,57 @@
 /-
-Port of `new/proof/context.v`: specifications for Go's `context` package.
+Specifications for Go's `context` package.
 
-All specifications are `Admitted` in Rocq (and `wp_withCancel` is `Abort`ed, so
-it is omitted here). Proved here: `wp_Cause`, `wp_parentCancelCtx`, and
-`wp_WithDeadline` / `wp_WithTimeout` (from the specs of `WithDeadlineCause` /
-`WithDeadline`); `wp_WithCancel`, `wp_WithDeadlineCause` and `wp_propagateCancel` stay
-`sorry` (see the comments in their proofs: `atomic.Value` is unspecifiable in the model, and
-`time.Time.Before`, `time.AfterFunc`, `Timer.Stop` have no model).
+Proved: `wp_Cause`, `wp_parentCancelCtx`, and `wp_WithDeadline` / `wp_WithTimeout` (from the
+specs of `WithDeadlineCause` / `WithDeadline`). `wp_WithCancel`, `wp_WithDeadlineCause` and
+`wp_propagateCancel` are `sorry` (see the comments in their proofs: `atomic.Value` is
+unspecifiable in the model, and `time.Time.Before`, `time.AfterFunc`, `Timer.Stop` have no
+model). There is no spec for the internal `withCancel`.
 
-Lean deviations from Rocq (see the comments at each definition):
-* Lazily determined Done channel. Rocq's `ContextDesc` fixes the Done channel
-  (`Done : GoChan`, `Done_gn : ChanNames`) and `isContext` has
-  `"#HDone"`: `Done()` returns `s.Done` and `"#HDone_ch"`:
-  `ownBroadcastChan s.Done s.Done_gn s.PDone Unknown`. This made `wp_WithCancel`,
-  `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout` false as stated: their
-  postconditions fix the new context's channel `done'` at return time, but
-  `cancelCtx.Done` makes the channel lazily at the first `Done()` call, or `cancel`
-  stores the shared, already closed `closedchan` if it runs first. Now:
-  - `ContextDesc`: the fields `Done` and `Done_gn : ChanNames` are replaced by
-    `Done_gn : ContextNames`, two ghost names: `doneGn`, a one-shot cell holding the
-    Done channel once it is determined, and `closedGn`, the "context is done" flag.
-  - new `ContextClosed γ` (persistent: the context is done), replacing
-    `ownBroadcastChan s.Done s.Done_gn s.PDone Done`;
-  - new `isContextDone s ch γch` (persistent: `ch` is the Done channel; the done cell
-    holds `ch`, and `ch` is a broadcast channel, with an existential proposition `Q`
-    implying `□ s.PDone ∗ ContextClosed s.Done_gn`), replacing
-    `ownBroadcastChan s.Done s.Done_gn s.PDone Unknown`. Client lemmas:
-    `isContextDone_is_chan`, `isContextDone_receive` (`recvAu`, e.g. for a `select`
-    case), `isContextDone_nonblocking_receive`, `isContextDone_agree` (successive
-    `Done()` calls return the same channel), `isContextDone_weaken`;
-  - `isContext`: `"#HDone"` returns some `ch` with `isContextDone s ch γch`;
-    `"#HDone_ch"` is dropped; `"#HErr"` takes `ContextClosed s.Done_gn` for `cl = Done`
-    (nothing otherwise) and returns `□ s.PDone ∗ ContextClosed s.Done_gn` for a non-nil
-    error (where Rocq passes `ownBroadcastChan ... cl` in and out);
-  - new `isContext_weaken` (`isContext` is monotone in `PDone`);
-  - `wp_WithCancel`, `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout`: the
-    existential `done' : GoChan` becomes `γ' : ContextNames` and `Done := done'` becomes
-    `Done_gn := γ'`.
-* `wp_WithCancel`: the cancel function's precondition is `□ PDone'` instead of `PDone'`
-  (closing the broadcast channel needs `□ PDone`).
+Design (see also the comments at each definition):
+* Lazily determined Done channel. A context's Done channel cannot be fixed when the context
+  is created: `cancelCtx.Done` makes the channel lazily at the first `Done()` call, or
+  `cancel` stores the shared, already closed `closedchan` if it runs first. So a spec of
+  `WithCancel` etc. that fixes the new context's channel at return time would be false.
+  Instead:
+  - `ContextDesc` has `Done_gn : ContextNames`, two ghost names: `doneGn`, a one-shot cell
+    holding the Done channel once it is determined, and `closedGn`, the "context is done"
+    flag.
+  - `ContextClosed γ` (persistent): the context is done.
+  - `isContextDone s ch γch` (persistent): `ch` is the Done channel; the done cell holds
+    `ch`, and `ch` is a broadcast channel, with an existential proposition `Q` implying
+    `□ s.PDone ∗ ContextClosed s.Done_gn`. Client lemmas: `isContextDone_is_chan`,
+    `isContextDone_receive` (`recvAu`, e.g. for a `select` case),
+    `isContextDone_nonblocking_receive`, `isContextDone_agree` (successive `Done()` calls
+    return the same channel), `isContextDone_weaken`.
+  - `isContext`: `"#HDone"` returns some `ch` with `isContextDone s ch γch`; `"#HErr"` takes
+    `ContextClosed s.Done_gn` for `cl = Done` (nothing otherwise) and returns
+    `□ s.PDone ∗ ContextClosed s.Done_gn` for a non-nil error.
+  - `isContext_weaken`: `isContext` is monotone in `PDone`.
+  - `wp_WithCancel`, `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout` return
+    fresh ghost names `γ' : ContextNames` for the new context (`Done_gn := γ'`).
+* `wp_WithCancel`: the cancel function's precondition is `□ PDone'` (closing the broadcast
+  channel needs `□ PDone`).
 * `wp_WithDeadlineCause`, `wp_WithDeadline`: the deadline is an existential `some d'` with
-  `d' = d ∨ parent_desc.Deadline = some d'`, not `some d` (false when the parent's deadline
-  is earlier: then `WithDeadlineCause` returns `WithCancel(parent)`).
-* `is_init` has an extra conjunct `"#Hclosedchan"`: the global `closedchan`
-  holds a fixed channel (Go never writes it after initialization). Needed by
-  `parentCancelCtx`, which compares `parent.Done()` with `closedchan`.
-* `isContext` has an extra conjunct `"#HValue"`, the spec of
-  `c.Value(&cancelCtxKey)`: the result, if it is a `*cancelCtx`, is a valid one
-  (`isCancelCtx`). `Cause`, `parentCancelCtx` (and through it
-  `propagateCancel`, `removeChild`) call `Value(&cancelCtxKey)` to find the
-  innermost `*cancelCtx`; Rocq's `isContext` gives no spec for `Value`.
-* new definitions `cancelCtxKeyAny`, `cancelCtxLockInv`, `isCancelCtx`,
+  `d' = d ∨ parent_desc.Deadline = some d'`, since when the parent's deadline is earlier,
+  `WithDeadlineCause` returns `WithCancel(parent)`.
+* `isInit` includes `"#Hclosedchan"`: the global `closedchan` holds a fixed channel (Go never
+  writes it after initialization). Needed by `parentCancelCtx`, which compares
+  `parent.Done()` with `closedchan`.
+* `isContext` includes `"#HValue"`, the spec of `c.Value(&cancelCtxKey)`: the result, if it
+  is a `*cancelCtx`, is a valid one (`isCancelCtx`). `Cause`, `parentCancelCtx` (and through
+  it `propagateCancel`, `removeChild`) call `Value(&cancelCtxKey)` to find the innermost
+  `*cancelCtx`.
+* Helper definitions: `cancelCtxKeyAny`, `cancelCtxLockInv`, `isCancelCtx`,
   `isCancelCtxAny`, `isInit_access`, `broadcast_chan_nonblocking_receive_Q`.
-* `wp_parentCancelCtx`: postcondition `isCancelCtx ctx` instead of
-  `∃ c, ctx ↦ c` in the `ok` case.
+* `wp_parentCancelCtx`: the postcondition in the `ok` case is `isCancelCtx ctx`.
 
-Lean notes:
-* Rocq's nested Texan triples inside `isContext` (iProps) are written out as
+Notes:
+* Texan triples nested inside `isContext` are written out as
   `□ ∀ Φ, P -∗ ▷ (∀ x, Q -∗ Φ v) -∗ WP e {{ Φ }}`.
-* The broadcast idiom fixes `hlc := HasLC.hasLC` and uses `[allG GF]` (Rocq
-  `broadcast_chanG`); the package-init instances are generic in `hlc`.
+* The broadcast idiom fixes `hlc := HasLC.hasLC` and uses `[allG GF]`; the package-init
+  instances are generic in `hlc`.
 * A context whose Done channel is `nil` (never canceled, e.g. `Background()`) does not
-  satisfy `isContext`: `isContextDone` includes `isChan`, which excludes `nil` (as did
-  `ownBroadcastChan` in `"#HDone_ch"` before).
+  satisfy `isContext`: `isContextDone` includes `isChan`, which excludes `nil`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.context
@@ -84,7 +73,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace context
 
-/-- Ghost names of a context (Lean deviation; see the file header). -/
+/-- Ghost names of a context (see the file header). -/
 structure ContextNames where
   mk ::
   /-- `dghostVar (Option GoChan)`: the context's Done channel, fixed (as `some ch`, then
@@ -94,10 +83,8 @@ structure ContextNames where
   closedGn : GName
 
 /-! Context logical descriptor. -/
-/-- Lean deviation from Rocq: Rocq's fields `Done : chan.t` and `Done_gn : ChanNames` (the
-Done channel and its names, fixed when the context is created) are replaced by
-`Done_gn : ContextNames`, the ghost names through which the Done channel is determined
-later (see the file header). -/
+/-- The Done channel is not part of the descriptor: `Done_gn : ContextNames` holds the ghost
+names through which the Done channel is determined later (see the file header). -/
 structure ContextDesc [FfiSyntax] (PROP : Type) where
   mk ::
   Values : GMap GoInterface GoInterface
@@ -112,7 +99,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
-/-- Rocq `is_init`, plus (Lean deviation) `"#Hclosedchan"`: the global
+/-- The package invariant: the `goroutines` counter, and `"#Hclosedchan"`: the global
 `closedchan` holds a fixed channel. -/
 abbrev isInit : IProp GF :=
   iprop("Hgoroutines" ∷
@@ -189,8 +176,7 @@ instance isCancelCtxAny_pers (v : GoInterface) : Persistent (isCancelCtxAny (GF 
   · split <;> infer_instance
   · infer_instance
 
-/-- The context with ghost names `γ` is done (canceled or past its deadline). Persistent;
-replaces Rocq's `ownBroadcastChan s.Done s.Done_gn s.PDone broadcast.Done`. -/
+/-- The context with ghost names `γ` is done (canceled or past its deadline). Persistent. -/
 def ContextClosed (γ : ContextNames) : IProp GF :=
   dghostVar γ.closedGn .discard true
 
@@ -199,8 +185,7 @@ instance contextClosed_pers (γ : ContextNames) : Persistent (ContextClosed (GF 
 
 /-- `ch` (with channel names `γch`) is the Done channel of the context `s`: the context's
 done cell holds `ch`, and `ch` is a broadcast channel whose closing implies that `s` is done
-(`ContextClosed`) and `□ s.PDone`. Persistent; replaces Rocq's
-`ownBroadcastChan s.Done s.Done_gn s.PDone broadcast.Unknown`.
+(`ContextClosed`) and `□ s.PDone`. Persistent.
 
 The broadcast proposition `Q` is existential: a `*cancelCtx` whose channel is made by
 `Done()` uses `Q := s.PDone ∗ ContextClosed s.Done_gn`, while one whose `cancel` ran first
@@ -249,17 +234,13 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
       ▷ (∀ v : GoInterface, isCancelCtxAny v -∗ Φ #v) -∗
       WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}))
 
-/-- (Rocq: `isContext` is made `Transparent` again right after being sealed.)
-
-Lean deviations from Rocq (see the file header):
-* `"#HDone"` returns some channel `ch` with `isContextDone s ch γch` instead of the fixed
-  `s.Done`; Rocq's `"#HDone_ch"` (`ownBroadcastChan s.Done s.Done_gn s.PDone Unknown`) is
-  dropped, as that knowledge now comes with `Done()`'s result.
-* `"#HErr"`: the `ownBroadcastChan s.Done s.Done_gn s.PDone cl` resources are replaced by
-  `ContextClosed s.Done_gn` (precondition, only for `cl = Done`) and
+/-- `c` is a valid context described by `s` (not sealed). See the file header:
+* `"#HDone"` returns some channel `ch` with `isContextDone s ch γch`, which carries the
+  broadcast-channel knowledge about the Done channel.
+* `"#HErr"` takes `ContextClosed s.Done_gn` (precondition, only for `cl = Done`) and gives
   `□ s.PDone ∗ ContextClosed s.Done_gn` (postcondition, for a non-nil error).
-* the last conjunct `"#HValue"` is new. It only specifies the key `&cancelCtxKey`; the
-  `Values` field of `ContextDesc` stays unused, as in Rocq. -/
+* `"#HValue"` only specifies the key `&cancelCtxKey`; the `Values` field of `ContextDesc` is
+  unused. -/
 abbrev isContext (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   isContextDef c s
 
@@ -267,8 +248,8 @@ instance isContext_pers (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
     Persistent (isContext c s) := by
   unfold isContext isContextDef; infer_instance
 
-/-! Client lemmas for the Done channel (they replace the `ownBroadcastChan` lemmas that
-Rocq clients apply to `s.Done`). -/
+/-! Client lemmas for the Done channel (clients use them instead of `ownBroadcastChan`
+lemmas). -/
 
 theorem isContextDone_is_chan (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : ChanNames) :
     isContextDone s ch γch ⊢ isChan ch γch Unit := by
@@ -470,9 +451,8 @@ theorem wp_Cause (ctx : GoInterfaceOk) (ctx_desc : ContextDesc (IProp GF)) :
         wp_auto
         wp_end
 
-/-- Lean deviation from Rocq: the postcondition in the `ok` case is
-`isCancelCtx ctx` (persistent knowledge that `ctx` is a valid shared
-`*cancelCtx`) instead of Rocq's `∃ c, ctx ↦ c`. The returned `*cancelCtx` is
+/-- The postcondition in the `ok` case is `isCancelCtx ctx` (persistent
+knowledge that `ctx` is a valid shared `*cancelCtx`), not `∃ c, ctx ↦ c`. The returned `*cancelCtx` is
 shared with every other user of the parent context (its fields are protected
 by `ctx.mu` or are atomics), so full ownership of its points-to cannot be
 returned. -/
@@ -572,12 +552,11 @@ theorem wp_propagateCancel (c : Loc) (parent : GoInterfaceOk)
   --   `error`), and the `p.children` map with `canceler` interface keys;
   -- * `parent.(afterFuncer)`: a parent with an `AfterFunc` method needs a spec for it;
   -- * the forked goroutine selects on `parent.Done()` and `child.Done()`.
-  sorry -- Rocq: Admitted
+  sorry -- not proved
 
-/-- Lean deviations from Rocq: the new context's Done channel is no longer a fixed `done'`
-(it does not exist yet when `WithCancel` returns), the postcondition gives fresh ghost names
-`γ'` instead; the cancel function's precondition is `□ PDone'` instead of `PDone'` (closing a
-broadcast channel needs the persistent `□ PDone`, and observers of the Done channel get
+/-- The new context's Done channel does not exist yet when `WithCancel` returns, so the
+postcondition gives fresh ghost names `γ'` for it; the cancel function's precondition is
+`□ PDone'` (closing a broadcast channel needs the persistent `□ PDone`, and observers of the Done channel get
 `□ (ctx_desc.PDone ∨ PDone')`). -/
 theorem wp_WithCancel (PDone' : IProp GF) (ctx : GoInterfaceOk)
     (ctx_desc : ContextDesc (IProp GF)) :
@@ -610,12 +589,11 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : GoInterfaceOk)
   --   iteration over `c.children` (map `range` with interface keys);
   -- * `is_init` must additionally provide the `Canceled` global (a non-nil `error`) and the
   --   broadcast state of `closedchan` (closed, with `Q := True`).
-  sorry -- Rocq: Admitted
+  sorry -- not proved
 
-/-- Lean deviations from Rocq: no fixed Done channel `done'` (fresh ghost names `γ'`, see
-`wp_WithCancel`), and the deadline is `some d'` with `d' = d ∨ parent_desc.Deadline = some d'`
-instead of `some d`: Rocq's `Deadline := Some d` is false when the parent's deadline `cur`
-is before `d`, as `WithDeadlineCause` then returns `WithCancel(parent)`, whose `Deadline()` is
+/-- Fresh ghost names `γ'` for the Done channel (see `wp_WithCancel`), and the deadline is
+`some d'` with `d' = d ∨ parent_desc.Deadline = some d'`: `Deadline := some d` would be false
+when the parent's deadline `cur` is before `d`, as `WithDeadlineCause` then returns `WithCancel(parent)`, whose `Deadline()` is
 the parent's `cur`. -/
 theorem wp_WithDeadlineCause (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
     (d : time.Time) (cause : GoError) :
@@ -632,10 +610,10 @@ theorem wp_WithDeadlineCause (parent : GoInterfaceOk) (parent_desc : ContextDesc
   -- Unprovable: besides the `*cancelCtx` gaps of `wp_WithCancel` (`atomic.Value`), it calls
   -- `cur.Before(d)` (`time.Time.Before`), `time.AfterFunc` and (in `timerCtx.cancel`)
   -- `c.timer.Stop()`, which are neither translated (`Perennial/Code/time.toml`) nor
-  -- axiomatized (Rocq has no specs for them).
-  sorry -- Rocq: Admitted
+  -- axiomatized.
+  sorry -- not proved
 
-/-- Lean deviations from Rocq: as for `wp_WithDeadlineCause`. -/
+/-- Fresh ghost names and an existential deadline, as for `wp_WithDeadlineCause`. -/
 theorem wp_WithDeadline (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
     (d : time.Time) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}
@@ -654,7 +632,7 @@ theorem wp_WithDeadline (parent : GoInterfaceOk) (parent_desc : ContextDesc (IPr
   iframe #
   ipureintro; exact hd
 
-/-- Lean deviation from Rocq: no fixed Done channel `done'` (see `wp_WithCancel`). -/
+/-- Fresh ghost names `γ'` for the Done channel (see `wp_WithCancel`). -/
 theorem wp_WithTimeout (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
     (timeout : time.Duration) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent parent_desc }}

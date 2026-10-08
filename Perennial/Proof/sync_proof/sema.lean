@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/sync_proof/sema.v`: the runtime semaphore used by `sync`.
+The runtime semaphore used by `sync`.
 -/
 import Perennial.Proof.sync_proof.base
 

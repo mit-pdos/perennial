@@ -1,5 +1,5 @@
 /-
-Port of `new/disk_prelude.v`: makes the disk FFI the global FFI, for code that
+Makes the disk FFI the global FFI, for code that
 uses `github.com/goose-lang/primitive/disk`.
 -/
 import Perennial.GooseLang.Ffi.DiskFfi.Impl

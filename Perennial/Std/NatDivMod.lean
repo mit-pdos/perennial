@@ -1,7 +1,6 @@
 /-
-Port of `src/Helpers/NatDivMod.v`. In Rocq this file only enables `lia`
-support for `/` and `mod`; Lean's `omega` handles division and modulus by
-numerals natively, so there is nothing to port beyond the sanity check.
+Natural-number division and modulus. Lean's `omega` handles division and
+modulus by numerals natively, so this file only contains a sanity check.
 -/
 import Perennial.Std.Word
 

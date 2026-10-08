@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/crypto/ed25519.v`: package initialization of
+Package initialization of
 `crypto/ed25519`.
 -/
 import Perennial.Proof.ProofPrelude
@@ -38,7 +38,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   -- `cryptocustomrand'init` is opaque (an axiom in the generated code)
-  sorry -- Rocq: Admitted
+  sorry
 
 end proof
 

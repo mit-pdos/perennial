@@ -1,8 +1,7 @@
 /-
-Port of `new/golang/defn/string.v`. String conversions are implemented by the
+String conversions are implemented by the
 Go model `github.com/mit-pdos/perennial/goose/model/strings`, whose generated
-translation lives in namespace `github_com.mit_pdos.perennial.goose.model.strings`
-(Rocq: `strings`).
+translation lives in namespace `github_com.mit_pdos.perennial.goose.model.strings`.
 -/
 import Perennial.Golang.Defn.Loop
 import Perennial.Golang.Defn.Assume
@@ -13,8 +12,7 @@ namespace Perennial
 
 namespace go
 
-/-- Lexicographic order on byte strings (Rocq: stdpp `lexico` with
-`w8_lexico x y := uint.Z x < uint.Z y`). -/
+/-- Lexicographic order on byte strings, comparing bytes by `uint.Z`. -/
 def GoStringLt : GoString → GoString → Prop :=
   List.Lex (fun (x y : w8) => uint.Z x < uint.Z y)
 

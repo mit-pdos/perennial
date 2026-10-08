@@ -1,7 +1,5 @@
 /-
-Named propositions (port of `iris-named-props`, which Rocq's
-`src/Helpers/NamedProps.v` re-exports) and the helpers of `src/Helpers/ipm.v`
-that new goose uses.
+Named propositions, and related proof mode helpers.
 
 `name ∷ P` is equivalent to `P` but knows to name itself `name` when
 destructed by `iNamed`. Write definitions with `"H" ∷ P` for each conjunct,
@@ -12,14 +10,12 @@ names of their binders.
 The name of a named proposition is an iris-lean **cases pattern**, written as a
 string: `"H"`, `"#H"` (move to the intuitionistic context), `"%H"` (move to the
 Lean context), or any other `icasesPat` such as `"⟨H1, H2⟩"`. The special name
-`"*"` means "destruct this conjunct recursively with `iNamed`". (Rocq strings
-use Rocq intro-pattern syntax; only the forms above carry over unchanged.)
+`"*"` means "destruct this conjunct recursively with `iNamed`".
 
 Tactics:
 * `iNamed H` — destruct `H` (existentials, then the separating-conjunction
   spine of named conjuncts), naming the conjuncts. Definitions at the head of
-  `H`'s type are unfolded (unless `@[irreducible]`, which is the port of Rocq's
-  `Opaque`). An unnamed conjunct stops the destruction; the rest keeps the name
+  `H`'s type are unfolded (unless `@[irreducible]`). An unnamed conjunct stops the destruction; the rest keeps the name
   `H`.
 * `iNamed 1` — introduce the premise of a wand/implication and `iNamed` it.
 * `iNamedPrefix H "pre"` / `iNamedSuffix H "suf"` — like `iNamed`, adding a
@@ -309,13 +305,13 @@ partial def nameOne (h : Name) (n : String) (f : String → String) : TacticM Un
     stripNamedHyps [patIdent p]
 end
 
-/-- Rocq `iNamed` (see the module docstring). -/
+/-- `iNamed` (see the module docstring). -/
 syntax (name := iNamedTac) "iNamed" (ppSpace colGt (ident <|> num))? : tactic
-/-- Rocq `iNamedPrefix H "pre"`. -/
+/-- `iNamedPrefix H "pre"`: `iNamed H`, prefixing the introduced names with `pre`. -/
 syntax "iNamedPrefix " ident ppSpace str : tactic
-/-- Rocq `iNamedSuffix H "suf"`. -/
+/-- `iNamedSuffix H "suf"`: `iNamed H`, suffixing the introduced names with `suf`. -/
 syntax "iNamedSuffix " ident ppSpace str : tactic
-/-- Rocq `iNamedDestruct H`: `iNamed` without destructing existentials. -/
+/-- `iNamedDestruct H`: `iNamed` without destructing existentials. -/
 syntax "iNamedDestruct " ident : tactic
 
 /-- Name all anonymous-but-named hypotheses: hypotheses whose type is `n ∷ P`. -/
@@ -356,7 +352,7 @@ partial def namedAccuProp {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
     let acc ← namedAccuProp rhs acc
     namedAccuProp lhs acc
 
-/-- Rocq `iNamedAccu`: solve a goal that is a metavariable `?P` with the
+/-- `iNamedAccu`: solve a goal that is a metavariable `?P` with the
 separating conjunction of all spatial hypotheses, each named by its current
 name (so that `iNamed` restores the context). -/
 elab "iNamedAccu" : tactic => do
@@ -369,7 +365,7 @@ elab "iNamedAccu" : tactic => do
       throwIPMError "could not assign goal metavariable to {namedP}"
     mvar.assign pf
 
-/-- Rocq `iFrameNamed`: frame each conjunct `"H" ∷ P` of the goal with the
+/-- `iFrameNamed`: frame each conjunct `"H" ∷ P` of the goal with the
 hypothesis `H`. -/
 elab "iFrameNamed" : tactic => withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType))
@@ -388,7 +384,7 @@ elab "iFrameNamed" : tactic => withMainContext do
   for n in names do
     evalTactic (← `(tactic| try iframe $(mkIdent n):ident))
 
-/-- Rocq `iExactEq H`: prove the goal `Q` from the hypothesis `H : P`, leaving
+/-- `iExactEq H`: prove the goal `Q` from the hypothesis `H : P`, leaving
 the Lean goal `P = Q`. -/
 elab "iExactEq " h:ident : tactic => withMainContext do
   let (g, _, P) ← findIrisHyp h.getId
@@ -403,7 +399,7 @@ elab "iExactEq " h:ident : tactic => withMainContext do
   evalTactic (← `(tactic| iexact $h:ident))
   setGoals [mEq.mvarId!]
 
-/-- Rocq `iSplitDelay`: split a `P ∗ Q` goal, proving `P` (first goal) with
+/-- `iSplitDelay`: split a `P ∗ Q` goal, proving `P` (first goal) with
 an accumulated remainder `R` that is then available in the second goal as the
 premise of a wand. -/
 macro "iSplitDelay" : tactic =>

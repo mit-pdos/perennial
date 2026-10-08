@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/errors.v`: specs for the Go `errors` package.
+Specs for the Go `errors` package.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.errors
@@ -41,11 +41,11 @@ theorem wp_errorType_init :
     {{ (True : IProp GF) }}
       (App (Val errorType.init) (Val #()))
     {{ RET #(); True }} := by
-  -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean, as in
-  -- Rocq): `var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated
+  -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean):
+  -- `var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated
   -- (`errors.toml` excludes it and the `internal/reflectlite` import), so goose emits only
   -- an axiomatized `errorType'init : val`, which has no semantics.
-  sorry -- Rocq: Admitted
+  sorry
 
 theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.errors get_is_pkg_init) :
@@ -111,14 +111,13 @@ theorem wp_Unwrap (err : GoError) :
 
 /-! ### `AsType`
 
-Lean deviation from Rocq (where `wp_AsType` has precondition `True` and is
-`Admitted`): `AsType[E](err)` walks the error tree of `err`, calling the
+`AsType[E](err)` walks the error tree of `err`, calling the
 `Unwrap() error`, `Unwrap() []error` and `As(any) bool` methods of every error
 in the tree, so its precondition must specify these methods. We do so with a
 pure set `S` of errors that contains `err` and is closed under the `Unwrap`
 methods (`isErrorTree`); for each error in `S` the precondition gives the
 specs of its methods (persistently) and a typing fact for the type assertion
-`err.(E)` (`AsTypeTyped`). The postcondition is unchanged.
+`err.(E)` (`AsTypeTyped`).
 
 The proof relies on goose translating a bare `return` with blank named results
 (`func asType[E error](...) (_ E, _ bool)`) to the zero values; goose used to
@@ -413,8 +412,8 @@ theorem wp_asType (S : GoError → Prop) (err : GoError) (ppe pe : Loc)
         iapply HΦ
         iframe
 
-/-- Lean deviation from Rocq: new parameter `S` and precondition
-`isErrorTree S T' T ∗ ⌜S err⌝` (Rocq: `True`); see the section comment. -/
+/-- The parameter `S` and the precondition `isErrorTree S T' T ∗ ⌜S err⌝` specify the
+methods of the errors in the tree of `err`; see the section comment. -/
 theorem wp_AsType (S : GoError → Prop) (err : GoError) {T' : Type} [ZeroVal T']
     [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] :
     {{ "#Htree" ∷ isErrorTree (GF := GF) S T' T ∗ "%HS" ∷ ⌜S err⌝ }}

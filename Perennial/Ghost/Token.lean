@@ -1,5 +1,5 @@
 /-
-Port of `new/ghost/token.v`: "unique tokens". `token γ` provides ownership of
+"Unique tokens". `token γ` provides ownership of
 the token named `γ`; `token_exclusive` proves only one exists.
 -/
 import Perennial.Ghost.Own

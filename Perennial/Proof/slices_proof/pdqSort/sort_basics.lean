@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/slices_proof/pdqSort/sort_basics.v`: order relations,
+Order relations,
 list facts and the spec of `order2CmpFunc` shared by the `pdqsort` proofs.
 -/
 import Perennial.Proof.ProofPrelude

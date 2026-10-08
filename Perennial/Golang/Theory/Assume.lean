@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/theory/assume.v`: specs for `assume` and the overflow
+Specs for `assume` and the overflow
 assumptions built on it.
 -/
 import Perennial.Golang.Theory.PostLifting

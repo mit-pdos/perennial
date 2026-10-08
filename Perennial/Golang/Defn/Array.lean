@@ -1,5 +1,5 @@
 /-
-Port of `new/golang/defn/array.v`.
+Semantics of Go arrays.
 -/
 import Perennial.Golang.Defn.Predeclared
 
@@ -41,12 +41,10 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
                  ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val"))
          ) #(W64 n)))
 
-  /-- Deviates from Rocq, whose version is unusable (and whose `intoVal_typed_array`
-  is `Admitted`): Rocq stores `Index (v, #(W64 n))` (out of range, so it panics)
-  instead of `Index (v, #(W64 j))`; and it has no guard, so a value `#v` whose
-  length is not `n` (possible, `GoArray V n` does not enforce it) or an `n` past
-  the `w64` index range cannot satisfy `l ↦ v`. Here those cases are
-  `AngelicExit`, as in `load_array`, and the value is a typed `#v`. -/
+  /-- Stores element `j` of `#v` at index `j`. A value `#v` whose length is not
+  `n` (possible, `GoArray V n` does not enforce it) or an `n` past the `w64`
+  index range cannot satisfy `l ↦ v`, so those cases are `AngelicExit`, as in
+  `load_array`. -/
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
     (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
@@ -57,7 +55,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
                 (let elem_addr := gl(IndexRef (go.ArrayType n elem_type) (l, #(W64 j)))
                  let elem_val := gl(Index (go.ArrayType n elem_type) (#v, #(W64 j)))
                  gl(GoStore elem_type (elem_addr, elem_val)))))
-             (#() : Expr) ((List.range n.toNat).map (fun (i : Nat) => (i : Int)))) -- Rocq: seqZ 0 n
+             (#() : Expr) ((List.range n.toNat).map (fun (i : Nat) => (i : Int))))
 
   index_ref_array (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc) {V : Type} [ZeroVal V]
     [TypeRepr elem_type V] :

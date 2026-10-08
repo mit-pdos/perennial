@@ -1,6 +1,3 @@
-/-
-Port of `new/golang/defn/defer.v`.
--/
 import Perennial.Golang.Defn.Exception
 
 namespace Perennial

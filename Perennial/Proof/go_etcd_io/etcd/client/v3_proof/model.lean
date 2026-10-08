@@ -1,25 +1,24 @@
 /-
-Port of `new/proof/go_etcd_io/etcd/client/v3_proof/model.v`: a pure model of
+A pure model of
 etcd's KV/lease semantics as computations (`ecomp`) over effects (`etcdE`).
 
-Differences from Rocq:
-* Everything lives in `namespace go_etcd_io.etcd.client.v3_proof` (Rocq: global
-  scope), to avoid clashing with generic names such as `Error` or `interp`.
-* Rocq's `MRet`/`MBind` instances become Lean `Monad` instances, so `do`
-  notation works. `ecomp E` and `relation.t S` are monads; Rocq's
-  `M ∘ (sum R)` is `exnT M R`.
+Notes:
+* Everything lives in `namespace go_etcd_io.etcd.client.v3_proof`, to avoid
+  clashing with generic names such as `Error` or `interp`.
+* `ecomp E` and `relation.t S` are Lean `Monad` instances, so `do` notation
+  works; `exnT M R` is `M ∘ (R ⊕ ·)`.
 * Since effects quantify over types, `etcdE : Type → Type 1` and
-  `ecomp E R : Type 1` (Rocq uses universe polymorphism implicitly).
-* `relation.t` (Rocq `Perennial.Helpers.Transitions`) is not ported to
-  `Perennial/Std`; the (only) part needed here is defined locally.
+  `ecomp E R : Type 1`.
+* `relation.t` (state transitions) is not in `Perennial/Std`; the (only) part
+  needed here is defined locally.
 * `do` is a Lean keyword, so it is `«do»`.
 * The `Settable` instances are dropped: Lean has record-update syntax.
 * `RangeRequest.default`/`PutRequest.default` use the zero values directly
   rather than `zero_val` (so they do not need `FfiSyntax`).
 * `StronglySorted` is `List.Pairwise`, `Permutation` is `List.Perm`, stdpp
   `filter` is `List.filter`, `default d o` is `o.getD d`.
-* `DeleteRange` and `Txn` are `Admitted` definitions in Rocq; here they are
-  `opaque` constants (uninterpreted, no axiom or `sorry`).
+* `DeleteRange` and `Txn` are `opaque` constants (uninterpreted, no axiom or
+  `sorry`).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Golang.Defn.String
@@ -67,12 +66,12 @@ instance ecomp_Inhabited (E : Type → Type u) (R : Type) [Inhabited R] : Inhabi
 @[simp] theorem ecomp_pure_eq {E : Type → Type u} {A : Type} (a : A) :
     (pure a : Ecomp E A) = Ecomp.Pure a := rfl
 
-/-! ### Relations (Rocq `Perennial.Helpers.Transitions`) -/
+/-! ### Relations (state transitions) -/
 
 /-- `relation.t Σ A`: a transition from a state to a new state, returning an `A`. -/
 def Relation (S : Type) (A : Type) : Type := S → S → A → Prop
 
-/-- Establish monadicity of relation.t. Rocq `relation_mret`/`relation_mbind`. -/
+/-- Establish monadicity of relation.t. -/
 instance relation_Monad (S : Type) : Monad (Relation S) where
   pure a := fun σ σ' a' => a = a' ∧ σ' = σ
   bind ma kmb := fun σ σ' b => ∃ a σmiddle, ma σ σmiddle a ∧ kmb a σmiddle σ' b
@@ -120,8 +119,7 @@ inductive EtcdE : Type → Type 1 where
   | Assume (b : Prop) : EtcdE Unit
   | Assert (b : Prop) : EtcdE Unit
 
-/-! Monads can't be composed in general (see the Rocq source for a discussion
-of itree exceptions). `exnT M R` is Rocq's `M ∘ (sum R)`. -/
+/-! Monads can't be composed in general. `exnT M R` is `M ∘ (R ⊕ ·)`. -/
 
 def ExnT (M : Type → Type v) (R : Type) (A : Type) : Type v := M (R ⊕ A)
 
@@ -152,7 +150,7 @@ def HandleEtcdE (t : w64) : Handler EtcdE (Relation EtcdState) :=
     | .GetTime => fun σ σ' tret => tret = t ∧ σ' = σ
     | .Assume P => fun σ σ' _tret => P ∧ σ = σ'
     | .Assert P => fun σ σ' _tret => (P → σ = σ')
-    /- FIXME (from Rocq): the [Assert] case is a bit sketchy, and probably
+    /- FIXME: the [Assert] case is a bit sketchy, and probably
        wrong in some way; it implies that after an assert statement, there *is*
        some next state, but nothing about that state is known unless `P` is
        true. -/
@@ -203,7 +201,7 @@ structure LeaseGrantResponse where
   ID : w64
 
 def LeaseGrant (req : LeaseGrantRequest) : Ecomp EtcdE LeaseGrantResponse := do
-  -- FIXME (from Rocq): add this back
+  -- FIXME: add this back
   -- SpontaneousTransition
   -- req.TTL is advisory, so it is ignored.
   let ttl ← «do» (EtcdE.SuchThat (fun (ttl : w64) => uint.nat ttl > 0))
@@ -228,8 +226,8 @@ structure LeaseKeepAliveResponse where
   TTL : w64
   ID : w64
 
-/-- If the lease is expired, returns TTL=0. See the Rocq source for questions
-about the precise semantics of lease renewal. -/
+/-- If the lease is expired, returns TTL=0. The precise semantics of lease
+renewal are not settled. -/
 def LeaseKeepAlive (req : LeaseKeepAliveRequest) : Ecomp EtcdE LeaseKeepAliveResponse := do
   SpontaneousTransition
   let σ ← «do» EtcdE.GetState
@@ -444,7 +442,7 @@ structure DeleteRangeResponse where
   prev_kvs : List KeyValue
 deriving Inhabited
 
-/-- Rocq: Admitted (an opaque definition). -/
+/-- Uninterpreted. -/
 opaque DeleteRange (req : DeleteRangeRequest) : Ecomp EtcdE DeleteRangeResponse
 
 namespace Compare
@@ -493,11 +491,11 @@ structure TxnResponse where
   responses : List ResponseOp
 deriving Inhabited
 
-/- Q (from Rocq): What is the meaning of this from rpc.proto:
+/- Q: What is the meaning of this from rpc.proto:
   // It is not allowed to modify the same key several times within one txn.
   In particular, does Txn return an error if the ops try to modify the same key
   multiple times? Or does the Txn coalesce that into one modification? -/
-/-- Rocq: Admitted (an opaque definition). -/
+/-- Uninterpreted. -/
 opaque Txn (req : TxnRequest) : Ecomp EtcdE TxnResponse
 
 end go_etcd_io.etcd.client.v3_proof

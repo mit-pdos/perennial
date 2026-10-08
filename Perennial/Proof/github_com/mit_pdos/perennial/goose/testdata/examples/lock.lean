@@ -1,6 +1,5 @@
 /-
-Port of `new/proof/github_com/mit_pdos/perennial/goose/testdata/examples/lock.v`:
-a lock implemented with a buffered channel of capacity 1 (the lock channel idiom).
+Proof of the goose lock example: a lock implemented with a buffered channel of capacity 1 (the lock channel idiom).
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Golang.Theory.Chan

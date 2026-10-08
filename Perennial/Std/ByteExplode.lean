@@ -1,9 +1,9 @@
 /-
-Port of `src/Helpers/byte_explode.v`: proving a property of every byte (or
+Proving a property of every byte (or
 small offset) by enumerating the cases.
 
-Rocq's `byte_explode` takes 256 hypotheses `P (W8 0)`, ..., `P (W8 255)`; here
-they are bundled as `∀ i : Fin 256, P (BitVec.ofNat 8 i)`, which `decide` can
+Instead of 256 hypotheses `P (W8 0)`, ..., `P (W8 255)`, `byte_explode` takes
+them bundled as `∀ i : Fin 256, P (BitVec.ofNat 8 i)`, which `decide` can
 often discharge for a computable `P`.
 -/
 import Perennial.Std.Word.Automation
@@ -30,7 +30,7 @@ theorem Z_off_explode (P : Int → Prop) (h : ∀ i : Fin 8, P i) : ∀ off : In
   have := h ⟨off.toNat, by omega⟩
   simpa [Int.toNat_of_nonneg hoff.1] using this
 
-/-- Rocq `byte_cases b`: prove a goal about byte `b` by checking all 256 values. -/
+/-- `byte_cases b`: prove a goal about byte `b` by checking all 256 values. -/
 macro "byte_cases " b:term : tactic =>
   `(tactic| (revert $b:term; apply byte_explode; decide))
 

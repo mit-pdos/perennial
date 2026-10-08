@@ -1,11 +1,11 @@
 /-
-Port of `new/golang/defn/predeclared.v`: Go's predeclared identifiers and the
+Go's predeclared identifiers and the
 semantics of the predeclared types.
 
-coqutil word operations: `word.add/sub/mul` are `+ - *`, `word.divu/modu` are
-`/ %` (unsigned), `word.divs/mods` are `BitVec.sdiv/srem`, `word.and/or/xor`
-are `&&& ||| ^^^`, `word.slu/sru` are `<<< >>>`, `word.srs` is
-`BitVec.sshiftRight'`, `word.opp` is `-` and `word.not` is `~~~`.
+Word operations: add/sub/mul are `+ - *`, unsigned div/mod are `/ %`, signed
+div/mod are `BitVec.sdiv/srem`, and/or/xor are `&&& ||| ^^^`, left and logical
+right shift are `<<< >>>`, arithmetic right shift is `BitVec.sshiftRight'`,
+negation is `-` and bitwise not is `~~~`.
 -/
 import Perennial.Golang.Defn.PostLang
 
@@ -95,7 +95,7 @@ def int32 : go.GoType := go.Named go!"int32" []
 def int64 : go.GoType := go.Named go!"int64" []
 abbrev rune : go.GoType := int32
 def string : go.GoType := go.Named go!"string" []
-/-- `error` is reducible (like `any`; in Rocq it is a notation-like definition), so that
+/-- `error` is reducible (like `any`), so that
 typeclass search sees that it is an interface type (`go.error ↓u go.InterfaceType _`,
 `IntoValTyped GoInterface go.error`, ...). -/
 @[reducible] def error : go.GoType :=
@@ -107,8 +107,7 @@ abbrev byte : go.GoType := uint8
 def uint16 : go.GoType := go.Named go!"uint16" []
 def uint32 : go.GoType := go.Named go!"uint32" []
 def uint64 : go.GoType := go.Named go!"uint64" []
-/-- 64-bit unsigned integer (Lean addition: Rocq declares only the name); see
-`go.UintptrSemantics`. -/
+/-- 64-bit unsigned integer; see `go.UintptrSemantics`. -/
 def uintptr : go.GoType := go.Named go!"uintptr" []
 
 -- Untyped types
@@ -125,7 +124,7 @@ section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
 /-- These are the predeclareds that are modeled as taking up a single heap
-location. A `class` (Rocq: plain inductive) so that the `[IsPredeclared u]`
+location. A `class` so that the `[IsPredeclared u]`
 premises below are found by typeclass search. -/
 class inductive IsPredeclared : go.GoType → Prop
   | isPredeclared_uint : IsPredeclared go.uint
@@ -753,8 +752,7 @@ export Uint8Semantics (go_zero_val_uint8 comparable_uint8 underlying_uint8 go_eq
   convert_uint_to_uint8 convert_uint64_to_uint8 convert_uint32_to_uint8 convert_uint16_to_uint8
   convert_uint8_to_uint8)
 
-/-- Lean addition (not in Rocq: `new/golang/defn/predeclared.v` only declares the type name
-`go.uintptr`, with no semantics, so Rocq goose cannot use `uintptr` values). Trusted.
+/-- Semantics of `go.uintptr`. Trusted.
 
 Go's predeclared `uintptr` is "an unsigned integer type large enough to store the uninterpreted
 bits of a pointer value" (Go spec, Numeric types). It is word-sized: 64 bits on a 64-bit platform.
@@ -958,7 +956,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   [uint32_semantics : Uint32Semantics]
   [uint16_semantics : Uint16Semantics]
   [uint8_semantics : Uint8Semantics]
-  [uintptr_semantics : UintptrSemantics] -- Lean addition, see `UintptrSemantics`
+  [uintptr_semantics : UintptrSemantics] -- see `UintptrSemantics`
   [untypedFloat_semantics : UntypedFloatSemantics]
   [float64_semantics : Float64Semantics]
   [float32_semantics : Float32Semantics]

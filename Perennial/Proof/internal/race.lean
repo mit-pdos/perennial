@@ -1,5 +1,5 @@
 /-
-Port of `new/proof/internal/race.v`: package initialization of `internal/race`.
+Package initialization of `internal/race`.
 -/
 import Perennial.Proof.ProofPrelude
 import Perennial.Code.internal.race
