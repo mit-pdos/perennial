@@ -91,8 +91,8 @@ noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (LamV "cap"
   (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
-  (Let "local_state" (App (Val (GoInstruction (GoAlloc offerState.ty))) (App (Val (GoInstruction (GoZeroVal offerState.ty))) (Val #())))
   (Let "$r0" (Val idle)
+  (Let "local_state" (App (Val (GoInstruction (GoAlloc offerState.ty))) (App (Val (GoInstruction (GoZeroVal offerState.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -282,8 +282,8 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c")))) (Val #(W64 0)))))
+  (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
@@ -308,8 +308,8 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
-  (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType T)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c")))) (Val #(W64 0)))))
+  (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
@@ -404,9 +404,6 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "success" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -415,6 +412,9 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "success" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -515,12 +515,12 @@ noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel.ty T))))) (Var "c"))
-  (Let "return_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T)) go!"Receive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
+  (Let "return_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -546,9 +546,9 @@ noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel.ty T))))) (Var "c"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "chan_len" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$a0")))
+  (Let "chan_len" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -602,9 +602,6 @@ noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
   (Val #()))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -613,6 +610,9 @@ noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -657,18 +657,15 @@ noncomputable def NonBlockingSelect1.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel.ty T))))) (Var "ch"))
   (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir.ty))) (Pair (App (Val (GoInstruction (GoLoad SelectDir.ty))) (Var "dir")) (Val SelectSend))))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "value"))
   (Let "$a1" (Val #false)
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T)) go!"TrySend"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "ch"))) (Var "$a0")) (Var "$a1"))))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "selected")) (App (Val (GoInstruction (GoLoad T))) (Var "zero"))) (Val #false)))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0")))))))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "ch"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -677,6 +674,9 @@ noncomputable def NonBlockingSelect1.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -720,9 +720,6 @@ noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -731,6 +728,9 @@ noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -753,9 +753,6 @@ noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -764,6 +761,9 @@ noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -815,9 +815,6 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -826,6 +823,9 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -848,9 +848,6 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -859,6 +856,9 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -882,9 +882,6 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -893,6 +890,9 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -915,9 +915,6 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -926,6 +923,9 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -967,8 +967,8 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Let "zero3" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 3))))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r"))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
@@ -980,9 +980,6 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -991,6 +988,9 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1014,9 +1014,6 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -1025,6 +1022,9 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1047,9 +1047,6 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #true)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T3))))) (Var "ch3"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -1058,6 +1055,9 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1105,19 +1105,19 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Let "zero1" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
   (Let "zero2" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
   (Let "zero3" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
-  (Let "start" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.RandomUint64 []))) (Val #())) (Val #())) (Val #(W64 3))))
+  (Let "start" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Pair (Pair (Pair (Pair (Val #(W64 3)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))))
-  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))) (Lam BAnon
-  (Let "caseIdx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "start")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))) (Val #(W64 3))))
+  (Let "caseIdx" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "caseIdx")) (Val #(W64 0)))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals SelectDir.ty))) (Pair (App (Val (GoInstruction (GoLoad SelectDir.ty))) (Var "dir1")) (Val SelectSend))))
@@ -1128,9 +1128,6 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Pair (Pair (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T1)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T1))))) (Var "ch1"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -1139,6 +1136,9 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1162,9 +1162,6 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Pair (Pair (Pair (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T2)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T2))))) (Var "ch2"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -1173,6 +1170,9 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T2))) (App (Val (GoInstruction (GoZeroVal T2))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1195,9 +1195,6 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Pair (Pair (Pair (Pair (Val #(W64 2)) (App (Val (GoInstruction (GoLoad T1))) (Var "zero1"))) (App (Val (GoInstruction (GoLoad T2))) (Var "zero2"))) (App (Val (GoInstruction (GoLoad T3))) (Var "zero3"))) (Val #false)))
   (App (Val doExecute)
   (Val #())))
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
-  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "__p" (Let "$a0" (Val #false)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Channel.ty T3)) go!"TryReceive"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T3))))) (Var "ch3"))) (Var "$a0")))
   (Let "$ret0" (Fst (Fst (Var "__p")))
@@ -1206,6 +1203,9 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "recv_val" (App (Val (GoInstruction (GoAlloc T3))) (App (Val (GoInstruction (GoZeroVal T3))) (Val #())))
+  (Let "selected" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon

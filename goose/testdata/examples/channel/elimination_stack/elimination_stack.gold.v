@@ -54,12 +54,12 @@ Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
       return: (#""%go, #false)
     else do:  #());;;
-    let: "last" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0") -⟨go.int⟩ #(W64 1)) in
+    let: "last" := (GoAlloc go.int (GoZeroVal go.int #())) in
     do:  ("last" <-[go.int] "$r0");;;
-    let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")), ![go.int] "last"))) in
+    let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
     do:  ("v" <-[go.string] "$r0");;;
     let: "$r0" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     Slice (go.SliceType go.string) ("$s", #(W64 0), ![go.int] "last")) in
@@ -105,8 +105,8 @@ Definition EliminationStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$ch1" := (let: "$a0" := timeout in
     (FuncResolve time.After [] #()) "$a0") in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.string "$ch0") (λ: "$recvVal",
-      let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
       let: "$r0" := (Fst "$recvVal") in
+      let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
       do:  ("v" <-[go.string] "$r0");;;
       return: (![go.string] "v", #true)
       )); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal",

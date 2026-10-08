@@ -126,7 +126,6 @@ theorem wp_HigherOrderExample :
       (App (Val (@! HigherOrderExample)) (Val #()))
     {{ (s : GoSlice), RET #s; s ↦* [go!"hello world", go!"HELLO", go!"world"] }} := by
   wp_start
-  wp_auto
   iapply wp_fupd
   wp_apply chan.wp_make1 (V := request) $$ [] as %req_ch %γ ⟨#His, %Hcap, Hown⟩
   imod start_bag (fun r => iprop(∃ γfut Q, doRequest r γfut Q)) _ req_ch γ trivial $$ His Hown

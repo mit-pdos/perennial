@@ -19,11 +19,11 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "x" := (GoAlloc go.int "x") in
     let: "wg" := (GoAlloc (go.PointerType sync.WaitGroup) "wg") in
     let: "c" := (GoAlloc (go.ChannelType go.recvonly (go.SliceType go.int)) "c") in
-    (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "s" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
-    let: ("$ret0", "$ret1") := (chan.receive (go.SliceType go.int) (![go.ChannelType go.recvonly (go.SliceType go.int)] "c")) in
+    (let: ("$ret0", "$ret1") := (chan.receive (go.SliceType go.int) (![go.ChannelType go.recvonly (go.SliceType go.int)] "c")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "s" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     do:  ("s" <-[go.SliceType go.int] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (for: (λ: <>, ![go.bool] "ok"); (λ: <>, let: ("$ret0", "$ret1") := (chan.receive (go.SliceType go.int) (![go.ChannelType go.recvonly (go.SliceType go.int)] "c")) in
@@ -31,8 +31,8 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "$r1" := "$ret1" in
     do:  ("s" <-[go.SliceType go.int] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1")) := λ: <>,
-      (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := #(W64 0) in
+      (let: "$r0" := #(W64 0) in
+      let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
       do:  ("i" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
       (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
@@ -54,18 +54,18 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: (#())
     else do:  #());;;
-    let: "workers" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 8) in
+    let: "workers" := (GoAlloc go.int (GoZeroVal go.int #())) in
     do:  ("workers" <-[go.int] "$r0");;;
-    let: "workRange" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 1000) in
+    let: "workRange" := (GoAlloc go.int (GoZeroVal go.int #())) in
     do:  ("workRange" <-[go.int] "$r0");;;
-    let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.int)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.int)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.int)] #()) #(W64 4)) in
+    let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.int)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.int)) #())) in
     do:  ("c" <-[go.ChannelType go.sendrecv (go.SliceType go.int)] "$r0");;;
     let: "wg" := (GoAlloc sync.WaitGroup (GoZeroVal sync.WaitGroup #())) in
-    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := #(W64 0) in
+    (let: "$r0" := #(W64 0) in
+    let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "workers")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       let: "$a0" := (Convert (go.ChannelType go.sendrecv (go.SliceType go.int)) (go.ChannelType go.recvonly (go.SliceType go.int)) (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c")) in
@@ -74,13 +74,13 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "$a3" := (![go.int] "y") in
       let: "$go" := (FuncResolve worker [] #()) in
       do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"))));;;
-    (let: "offset" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := #(W64 0) in
+    (let: "$r0" := #(W64 0) in
+    let: "offset" := (GoAlloc go.int (GoZeroVal go.int #())) in
     do:  ("offset" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "offset") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, #()) := λ: <>,
-      let: "nextOffset" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := ((![go.int] "offset") +⟨go.int⟩ (![go.int] "workRange")) in
+      let: "nextOffset" := (GoAlloc go.int (GoZeroVal go.int #())) in
       do:  ("nextOffset" <-[go.int] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.int] "nextOffset") >⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
       (FuncResolve go.len [go.SliceType go.int] #()) "$a0"))
@@ -89,9 +89,9 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
         (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in
         do:  ("nextOffset" <-[go.int] "$r0")
       else do:  #());;;
-      let: "section" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
       let: "$r0" := (let: "$s" := (![go.SliceType go.int] "s") in
       Slice (go.SliceType go.int) ("$s", ![go.int] "offset", ![go.int] "nextOffset")) in
+      let: "section" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
       do:  ("section" <-[go.SliceType go.int] "$r0");;;
       do:  (let: "$a0" := #(W64 1) in
       (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go "wg") "$a0");;;

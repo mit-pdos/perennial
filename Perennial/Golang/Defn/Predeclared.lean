@@ -502,6 +502,7 @@ class UintSemantics [GoSemanticsFunctions] : Prop where
   shiftr_uint (v1 v2 : w64) : ⟦GoOp GoShiftr go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint (v : w64) : ⟦GoUnOp GoComplement go.uint, #v⟧ ⤳[under] #(~~~v)
+  neg_uint (v : w64) : ⟦GoUnOp GoNeg go.uint, #v⟧ ⤳[under] #(-v)
 
   convert_int_to_uint (v : w64) : ⟦Convert go.int go.uint, #v⟧ ⤳[under] #v
   convert_int64_to_uint (v : w64) : ⟦Convert go.int64 go.uint, #v⟧ ⤳[under] #v
@@ -519,7 +520,7 @@ attribute [instance] UintSemantics.go_zero_val_uint UintSemantics.comparable_uin
   UintSemantics.ge_uint UintSemantics.gt_uint UintSemantics.plus_uint UintSemantics.sub_uint
   UintSemantics.mul_uint UintSemantics.div_uint UintSemantics.remainder_uint UintSemantics.and_uint
   UintSemantics.or_uint UintSemantics.xor_uint UintSemantics.shiftl_uint UintSemantics.shiftr_uint
-  UintSemantics.complement_uint UintSemantics.convert_int_to_uint
+  UintSemantics.complement_uint UintSemantics.neg_uint UintSemantics.convert_int_to_uint
   UintSemantics.convert_int64_to_uint UintSemantics.convert_int32_to_uint
   UintSemantics.convert_int16_to_uint UintSemantics.convert_int8_to_uint
   UintSemantics.convert_uint_to_uint UintSemantics.convert_uint64_to_uint
@@ -527,7 +528,7 @@ attribute [instance] UintSemantics.go_zero_val_uint UintSemantics.comparable_uin
   UintSemantics.convert_uint8_to_uint
 export UintSemantics (go_zero_val_uint comparable_uint underlying_uint go_eq_uint le_uint lt_uint
   ge_uint gt_uint plus_uint sub_uint mul_uint div_uint remainder_uint and_uint or_uint xor_uint
-  shiftl_uint shiftr_uint complement_uint convert_int_to_uint convert_int64_to_uint
+  shiftl_uint shiftr_uint complement_uint neg_uint convert_int_to_uint convert_int64_to_uint
   convert_int32_to_uint convert_int16_to_uint convert_int8_to_uint convert_uint_to_uint
   convert_uint64_to_uint convert_uint32_to_uint convert_uint16_to_uint convert_uint8_to_uint)
 
@@ -556,6 +557,7 @@ class Uint64Semantics [GoSemanticsFunctions] : Prop where
   shiftr_uint64 (v1 v2 : w64) : ⟦GoOp GoShiftr go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint64 (v : w64) : ⟦GoUnOp GoComplement go.uint64, #v⟧ ⤳[under] #(~~~v)
+  neg_uint64 (v : w64) : ⟦GoUnOp GoNeg go.uint64, #v⟧ ⤳[under] #(-v)
 
   convert_int_to_uint64 (v : w64) : ⟦Convert go.int go.uint64, #v⟧ ⤳[under] #v
   convert_int64_to_uint64 (v : w64) : ⟦Convert go.int64 go.uint64, #v⟧ ⤳[under] #v
@@ -574,7 +576,7 @@ attribute [instance] Uint64Semantics.go_zero_val_uint64 Uint64Semantics.comparab
   Uint64Semantics.plus_uint64 Uint64Semantics.sub_uint64 Uint64Semantics.mul_uint64
   Uint64Semantics.div_uint64 Uint64Semantics.remainder_uint64 Uint64Semantics.and_uint64
   Uint64Semantics.or_uint64 Uint64Semantics.xor_uint64 Uint64Semantics.shiftl_uint64
-  Uint64Semantics.shiftr_uint64 Uint64Semantics.complement_uint64
+  Uint64Semantics.shiftr_uint64 Uint64Semantics.complement_uint64 Uint64Semantics.neg_uint64
   Uint64Semantics.convert_int_to_uint64 Uint64Semantics.convert_int64_to_uint64
   Uint64Semantics.convert_int32_to_uint64 Uint64Semantics.convert_int16_to_uint64
   Uint64Semantics.convert_int8_to_uint64 Uint64Semantics.convert_uint_to_uint64
@@ -582,7 +584,7 @@ attribute [instance] Uint64Semantics.go_zero_val_uint64 Uint64Semantics.comparab
   Uint64Semantics.convert_uint16_to_uint64 Uint64Semantics.convert_uint8_to_uint64
 export Uint64Semantics (go_zero_val_uint64 comparable_uint64 underlying_uint64 go_eq_uint64
   le_uint64 lt_uint64 ge_uint64 gt_uint64 plus_uint64 sub_uint64 mul_uint64 div_uint64
-  remainder_uint64 and_uint64 or_uint64 xor_uint64 shiftl_uint64 shiftr_uint64 complement_uint64
+  remainder_uint64 and_uint64 or_uint64 xor_uint64 shiftl_uint64 shiftr_uint64 complement_uint64 neg_uint64
   convert_int_to_uint64 convert_int64_to_uint64 convert_int32_to_uint64 convert_int16_to_uint64
   convert_int8_to_uint64 convert_uint_to_uint64 convert_uint64_to_uint64 convert_uint32_to_uint64
   convert_uint16_to_uint64 convert_uint8_to_uint64)
@@ -613,6 +615,7 @@ class Uint32Semantics [GoSemanticsFunctions] : Prop where
   shiftr_uint32 (v1 v2 : w32) : ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint32 (v : w32) : ⟦GoUnOp GoComplement go.uint32, #v⟧ ⤳[under] #(~~~v)
+  neg_uint32 (v : w32) : ⟦GoUnOp GoNeg go.uint32, #v⟧ ⤳[under] #(-v)
 
   convert_int_to_uint32 (v : w64) : ⟦Convert go.int go.uint32, #v⟧ ⤳[under] #(W32 (sint.Z v))
   convert_int64_to_uint32 (v : w64) : ⟦Convert go.int64 go.uint32, #v⟧ ⤳[under] #(W32 (sint.Z v))
@@ -631,7 +634,7 @@ attribute [instance] Uint32Semantics.go_zero_val_uint32 Uint32Semantics.comparab
   Uint32Semantics.plus_uint32 Uint32Semantics.sub_uint32 Uint32Semantics.mul_uint32
   Uint32Semantics.div_uint32 Uint32Semantics.remainder_uint32 Uint32Semantics.and_uint32
   Uint32Semantics.or_uint32 Uint32Semantics.xor_uint32 Uint32Semantics.shiftl_uint32
-  Uint32Semantics.shiftr_uint32 Uint32Semantics.complement_uint32
+  Uint32Semantics.shiftr_uint32 Uint32Semantics.complement_uint32 Uint32Semantics.neg_uint32
   Uint32Semantics.convert_int_to_uint32 Uint32Semantics.convert_int64_to_uint32
   Uint32Semantics.convert_int32_to_uint32 Uint32Semantics.convert_int16_to_uint32
   Uint32Semantics.convert_int8_to_uint32 Uint32Semantics.convert_uint_to_uint32
@@ -639,7 +642,7 @@ attribute [instance] Uint32Semantics.go_zero_val_uint32 Uint32Semantics.comparab
   Uint32Semantics.convert_uint16_to_uint32 Uint32Semantics.convert_uint8_to_uint32
 export Uint32Semantics (go_zero_val_uint32 comparable_uint32 underlying_uint32 go_eq_uint32
   le_uint32 lt_uint32 ge_uint32 gt_uint32 plus_uint32 sub_uint32 mul_uint32 div_uint32
-  remainder_uint32 and_uint32 or_uint32 xor_uint32 shiftl_uint32 shiftr_uint32 complement_uint32
+  remainder_uint32 and_uint32 or_uint32 xor_uint32 shiftl_uint32 shiftr_uint32 complement_uint32 neg_uint32
   convert_int_to_uint32 convert_int64_to_uint32 convert_int32_to_uint32 convert_int16_to_uint32
   convert_int8_to_uint32 convert_uint_to_uint32 convert_uint64_to_uint32 convert_uint32_to_uint32
   convert_uint16_to_uint32 convert_uint8_to_uint32)
@@ -669,6 +672,7 @@ class Uint16Semantics [GoSemanticsFunctions] : Prop where
   shiftr_uint16 (v1 v2 : w16) : ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint16 (v : w16) : ⟦GoUnOp GoComplement go.uint16, #v⟧ ⤳[under] #(~~~v)
+  neg_uint16 (v : w16) : ⟦GoUnOp GoNeg go.uint16, #v⟧ ⤳[under] #(-v)
 
   convert_int_to_uint16 (v : w64) : ⟦Convert go.int go.uint16, #v⟧ ⤳[under] #(W16 (sint.Z v))
   convert_int64_to_uint16 (v : w64) : ⟦Convert go.int64 go.uint16, #v⟧ ⤳[under] #(W16 (sint.Z v))
@@ -687,7 +691,7 @@ attribute [instance] Uint16Semantics.go_zero_val_uint16 Uint16Semantics.comparab
   Uint16Semantics.plus_uint16 Uint16Semantics.sub_uint16 Uint16Semantics.mul_uint16
   Uint16Semantics.div_uint16 Uint16Semantics.remainder_uint16 Uint16Semantics.and_uint16
   Uint16Semantics.or_uint16 Uint16Semantics.xor_uint16 Uint16Semantics.shiftl_uint16
-  Uint16Semantics.shiftr_uint16 Uint16Semantics.complement_uint16
+  Uint16Semantics.shiftr_uint16 Uint16Semantics.complement_uint16 Uint16Semantics.neg_uint16
   Uint16Semantics.convert_int_to_uint16 Uint16Semantics.convert_int64_to_uint16
   Uint16Semantics.convert_int32_to_uint16 Uint16Semantics.convert_int16_to_uint16
   Uint16Semantics.convert_int8_to_uint16 Uint16Semantics.convert_uint_to_uint16
@@ -695,7 +699,7 @@ attribute [instance] Uint16Semantics.go_zero_val_uint16 Uint16Semantics.comparab
   Uint16Semantics.convert_uint16_to_uint16 Uint16Semantics.convert_uint8_to_uint16
 export Uint16Semantics (go_zero_val_uint16 comparable_uint16 underlying_uint16 go_eq_uint16
   le_uint16 lt_uint16 ge_uint16 gt_uint16 plus_uint16 sub_uint16 mul_uint16 div_uint16
-  remainder_uint16 and_uint16 or_uint16 xor_uint16 shiftl_uint16 shiftr_uint16 complement_uint16
+  remainder_uint16 and_uint16 or_uint16 xor_uint16 shiftl_uint16 shiftr_uint16 complement_uint16 neg_uint16
   convert_int_to_uint16 convert_int64_to_uint16 convert_int32_to_uint16 convert_int16_to_uint16
   convert_int8_to_uint16 convert_uint_to_uint16 convert_uint64_to_uint16 convert_uint32_to_uint16
   convert_uint16_to_uint16 convert_uint8_to_uint16)
@@ -725,6 +729,7 @@ class Uint8Semantics [GoSemanticsFunctions] : Prop where
   shiftr_uint8 (v1 v2 : w8) : ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint8 (v : w8) : ⟦GoUnOp GoComplement go.uint8, #v⟧ ⤳[under] #(~~~v)
+  neg_uint8 (v : w8) : ⟦GoUnOp GoNeg go.uint8, #v⟧ ⤳[under] #(-v)
 
   convert_int_to_uint8 (v : w64) : ⟦Convert go.int go.uint8, #v⟧ ⤳[under] #(W8 (sint.Z v))
   convert_int64_to_uint8 (v : w64) : ⟦Convert go.int64 go.uint8, #v⟧ ⤳[under] #(W8 (sint.Z v))
@@ -743,7 +748,7 @@ attribute [instance] Uint8Semantics.go_zero_val_uint8 Uint8Semantics.comparable_
   Uint8Semantics.sub_uint8 Uint8Semantics.mul_uint8 Uint8Semantics.div_uint8
   Uint8Semantics.remainder_uint8 Uint8Semantics.and_uint8 Uint8Semantics.or_uint8
   Uint8Semantics.xor_uint8 Uint8Semantics.shiftl_uint8 Uint8Semantics.shiftr_uint8
-  Uint8Semantics.complement_uint8 Uint8Semantics.convert_int_to_uint8
+  Uint8Semantics.complement_uint8 Uint8Semantics.neg_uint8 Uint8Semantics.convert_int_to_uint8
   Uint8Semantics.convert_int64_to_uint8 Uint8Semantics.convert_int32_to_uint8
   Uint8Semantics.convert_int16_to_uint8 Uint8Semantics.convert_int8_to_uint8
   Uint8Semantics.convert_uint_to_uint8 Uint8Semantics.convert_uint64_to_uint8
@@ -751,7 +756,7 @@ attribute [instance] Uint8Semantics.go_zero_val_uint8 Uint8Semantics.comparable_
   Uint8Semantics.convert_uint8_to_uint8
 export Uint8Semantics (go_zero_val_uint8 comparable_uint8 underlying_uint8 go_eq_uint8 le_uint8
   lt_uint8 ge_uint8 gt_uint8 plus_uint8 sub_uint8 mul_uint8 div_uint8 remainder_uint8 and_uint8
-  or_uint8 xor_uint8 shiftl_uint8 shiftr_uint8 complement_uint8 convert_int_to_uint8
+  or_uint8 xor_uint8 shiftl_uint8 shiftr_uint8 complement_uint8 neg_uint8 convert_int_to_uint8
   convert_int64_to_uint8 convert_int32_to_uint8 convert_int16_to_uint8 convert_int8_to_uint8
   convert_uint_to_uint8 convert_uint64_to_uint8 convert_uint32_to_uint8 convert_uint16_to_uint8
   convert_uint8_to_uint8)
@@ -802,6 +807,7 @@ class UintptrSemantics [GoSemanticsFunctions] : Prop where
   shiftr_uintptr (v1 v2 : w64) : ⟦GoOp GoShiftr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uintptr (v : w64) : ⟦GoUnOp GoComplement go.uintptr, #v⟧ ⤳[under] #(~~~v)
+  neg_uintptr (v : w64) : ⟦GoUnOp GoNeg go.uintptr, #v⟧ ⤳[under] #(-v)
 
   convert_untyped_int_to_uintptr (v : Int) : ⟦Convert go.untypedInt go.uintptr, #v⟧
     ⤳[under] #(W64 v)
@@ -837,7 +843,7 @@ attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.compa
   UintptrSemantics.plus_uintptr UintptrSemantics.sub_uintptr UintptrSemantics.mul_uintptr
   UintptrSemantics.div_uintptr UintptrSemantics.remainder_uintptr UintptrSemantics.and_uintptr
   UintptrSemantics.or_uintptr UintptrSemantics.xor_uintptr UintptrSemantics.shiftl_uintptr
-  UintptrSemantics.shiftr_uintptr UintptrSemantics.complement_uintptr
+  UintptrSemantics.shiftr_uintptr UintptrSemantics.complement_uintptr UintptrSemantics.neg_uintptr
   UintptrSemantics.convert_untyped_int_to_uintptr UintptrSemantics.convert_int_to_uintptr
   UintptrSemantics.convert_int64_to_uintptr UintptrSemantics.convert_int32_to_uintptr
   UintptrSemantics.convert_int16_to_uintptr UintptrSemantics.convert_int8_to_uintptr
@@ -852,7 +858,7 @@ attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.compa
 export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintptr go_eq_uintptr
   le_uintptr lt_uintptr ge_uintptr gt_uintptr plus_uintptr sub_uintptr mul_uintptr div_uintptr
   remainder_uintptr and_uintptr or_uintptr xor_uintptr shiftl_uintptr shiftr_uintptr
-  complement_uintptr convert_untyped_int_to_uintptr convert_int_to_uintptr convert_int64_to_uintptr
+  complement_uintptr neg_uintptr convert_untyped_int_to_uintptr convert_int_to_uintptr convert_int64_to_uintptr
   convert_int32_to_uintptr convert_int16_to_uintptr convert_int8_to_uintptr convert_uint_to_uintptr
   convert_uint64_to_uintptr convert_uint32_to_uintptr convert_uint16_to_uintptr
   convert_uint8_to_uintptr convert_uintptr_to_uintptr convert_uintptr_to_int

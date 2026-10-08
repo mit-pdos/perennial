@@ -1,4 +1,4 @@
-translate = ["!*"]
+translate = ["NewInt", "Int.Int64", "low64"]
 imports = ["!*", "fmt"]
 
 # translate the definitions of all type declarations goose supports

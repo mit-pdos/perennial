@@ -101,7 +101,6 @@ theorem wp_useBoxGet :
       (App (Val (@! useBoxGet)) (Val #()))
     {{ RET #(W64 42); True }} := by
   wp_start
-  wp_auto
   wp_apply wp_makeGenericBox
   wp_apply Box.wp_Get $$ [$]
   wp_end
@@ -111,7 +110,6 @@ theorem wp_useContainer :
       (App (Val (@! useContainer)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply wp_map_make1 with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm

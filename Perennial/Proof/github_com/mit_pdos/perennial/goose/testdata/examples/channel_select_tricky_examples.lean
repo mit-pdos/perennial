@@ -97,7 +97,6 @@ theorem wp_select_nb_not_ready :
       (App (Val (@! select_nb_not_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#His_chan, -, Hownchan⟩
   imod start_select_nb_only ch γ $$ His_chan Hownchan with #Hnb
   ipersist ch
@@ -138,7 +137,6 @@ theorem wp_select_nb_guaranteed_ready :
       (App (Val (@! select_nb_guaranteed_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make1 (V := w64) as %ch %γ ⟨#His_ch, %Hcap, Hch⟩
   wp_apply_core chan.wp_close (V := w64) ch γ $$ His_ch
   iintro -
@@ -256,7 +254,6 @@ theorem wp_select_nb_full_buffer_not_ready :
       (App (Val (@! select_nb_full_buffer_not_ready)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make2 (V := w64) (W64 1) $$ [] as %ch %γ ⟨#His_chan, %Hcap, Hown⟩
   · ipureintro; decide
   -- First send: use the empty-buffer AU to fill buffer to [0].

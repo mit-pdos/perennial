@@ -70,13 +70,13 @@ noncomputable def Compare.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : v
   (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc T))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (Let "xNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
+  (Let "xNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "yNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "y"))
   (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
+  (Let "yNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon

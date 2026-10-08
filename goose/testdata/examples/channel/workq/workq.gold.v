@@ -31,8 +31,8 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       ])] (StructFieldRef shared "done"%go "sh")) in
       let: "$ch1" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
       let: "$ch2" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv (go.PointerType go.string))] (StructFieldRef Worker "steal"%go (![go.PointerType Worker] "w"))) in
-      SelectStmt (SelectStmtClauses (Some (let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
-      let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.PointerType go.string)] #()) #(W64 1)) in
+      SelectStmt (SelectStmtClauses (Some (let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.PointerType go.string)] #()) #(W64 1)) in
+      let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
       do:  ("reply" <-[go.ChannelType go.sendrecv (go.PointerType go.string)] "$r0");;;
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -44,8 +44,8 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
       ]) "$ch0") (λ: "$recvVal",
         return: (#())
-        )); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") ((let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
-      let: "$r0" := (Fst (chan.receive (go.PointerType go.string) (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply"))) in
+        )); (CommClause (SendCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch1" "$v1") ((let: "$r0" := (Fst (chan.receive (go.PointerType go.string) (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply"))) in
+      let: "doc" := (GoAlloc (go.PointerType go.string) (GoZeroVal (go.PointerType go.string) #())) in
       do:  ("doc" <-[go.PointerType go.string] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType go.string] "doc") ≠⟨go.PointerType go.string⟩ (Convert go.untyped_nil (go.PointerType go.string) UntypedNil))
       then
@@ -53,8 +53,8 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
         let: "$a1" := (![shared] "sh") in
         (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1")
       else do:  #())))); (CommClause (RecvCase go.string "$ch2") (λ: "$recvVal",
-        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
         let: "$r0" := (Fst "$recvVal") in
+        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
         do:  ("doc" <-[go.string] "$r0");;;
         do:  (let: "$a0" := (![go.string] "doc") in
         let: "$a1" := (![shared] "sh") in
@@ -64,22 +64,22 @@ Definition Worker__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       ]) "$ch0") (λ: "$recvVal",
         return: (#())
         )); (CommClause (RecvCase go.string "$ch1") (λ: "$recvVal",
-        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
         let: "$r0" := (Fst "$recvVal") in
+        let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
         do:  ("doc" <-[go.string] "$r0");;;
         do:  (let: "$a0" := (![go.string] "doc") in
         let: "$a1" := (![shared] "sh") in
         (MethodResolve (go.PointerType Worker) "process"%go (![go.PointerType Worker] "w")) "$a0" "$a1")
         )); (CommClause (RecvCase (go.ChannelType go.sendrecv (go.PointerType go.string)) "$ch2") (λ: "$recvVal",
-        let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
         let: "$r0" := (Fst "$recvVal") in
+        let: "reply" := (GoAlloc (go.ChannelType go.sendrecv (go.PointerType go.string)) (GoZeroVal (go.ChannelType go.sendrecv (go.PointerType go.string)) #())) in
         do:  ("reply" <-[go.ChannelType go.sendrecv (go.PointerType go.string)] "$r0");;;
         let: "$ch0" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] "w"))) in
         SelectStmt (SelectStmtClauses (Some (do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
         let: "$v" := (Convert go.untyped_nil (go.PointerType go.string) UntypedNil) in
         chan.send (go.PointerType go.string) "$chan" "$v"))) [(CommClause (RecvCase go.string "$ch0") (λ: "$recvVal",
-          let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
           let: "$r0" := (Fst "$recvVal") in
+          let: "doc" := (GoAlloc go.string (GoZeroVal go.string #())) in
           do:  ("doc" <-[go.string] "$r0");;;
           do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.PointerType go.string)] "reply") in
           let: "$v" := "doc" in
@@ -119,8 +119,8 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     then return: (#(W64 0))
     else do:  #());;;
     let numWorkers := #2 in
-    let: "workers" := (GoAlloc (go.SliceType (go.PointerType Worker)) (GoZeroVal (go.SliceType (go.PointerType Worker)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType Worker)] #()) (Convert go.untyped_int go.int numWorkers)) in
+    let: "workers" := (GoAlloc (go.SliceType (go.PointerType Worker)) (GoZeroVal (go.SliceType (go.PointerType Worker)) #())) in
     do:  ("workers" <-[go.SliceType (go.PointerType Worker)] "$r0");;;
     let: "$range" := (![go.SliceType (go.PointerType Worker)] "workers") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -139,7 +139,6 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef Worker "queue"%go (![go.PointerType Worker] (IndexRef (go.SliceType (go.PointerType Worker)) (![go.SliceType (go.PointerType Worker)] "workers", #(W64 0)))))) in
       let: "$v" := (![go.string] "doc") in
       chan.send go.string "$chan" "$v")));;;
-    let: "sh" := (GoAlloc shared (GoZeroVal shared #())) in
     let: "$r0" := (let: "$v0" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
     let: "$v1" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
     let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
@@ -148,6 +147,7 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     CompositeLiteral shared (LiteralValue [KeyedElement (Some (KeyField "remaining"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v0"); KeyedElement (Some (KeyField "total"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v1"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
      ])) "$v2")])) in
+    let: "sh" := (GoAlloc shared (GoZeroVal shared #())) in
     do:  ("sh" <-[shared] "$r0");;;
     do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType go.string] "docs") in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
@@ -158,8 +158,8 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     slice.for_range (go.PointerType Worker) "$range" (λ: "$key" "$value",
       do:  ("w" <-[go.PointerType Worker] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      let: "neighbor" := (GoAlloc (go.PointerType Worker) (GoZeroVal (go.PointerType Worker) #())) in
       let: "$r0" := (![go.PointerType Worker] (IndexRef (go.SliceType (go.PointerType Worker)) (![go.SliceType (go.PointerType Worker)] "workers", ((![go.int] "i") +⟨go.int⟩ #(W64 1)) %⟨go.int⟩ (Convert go.untyped_int go.int numWorkers)))) in
+      let: "neighbor" := (GoAlloc (go.PointerType Worker) (GoZeroVal (go.PointerType Worker) #())) in
       do:  ("neighbor" <-[go.PointerType Worker] "$r0");;;
       let: "$a0" := (![go.PointerType Worker] "neighbor") in
       let: "$a1" := (![shared] "sh") in

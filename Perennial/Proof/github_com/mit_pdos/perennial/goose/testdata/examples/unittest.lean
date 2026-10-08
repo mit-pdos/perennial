@@ -242,7 +242,6 @@ theorem wp_mapGetCall :
       (App (Val (@! mapGetCall)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply (wp_map_make1 (K := w64) (V := GoFunc)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm
@@ -253,7 +252,6 @@ theorem wp_NamedMapAssignment :
       (App (Val (@! NamedMapAssignment)) (Val #()))
     {{ (m : Loc), RET #m; m ↦$ ({[W64 1 := true]} : GMap w64 Bool) }} := by
   wp_start
-  wp_auto
   rw [go.make1_underlying, go.is_underlying (t := MapWrapper.ty)]
   wp_apply (wp_map_make1 (K := w64) (V := Bool)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
@@ -266,7 +264,6 @@ theorem wp_mapLiteralTest :
     {{ (l : Loc), RET #l;
         l ↦$ (<[go!"c" := W64 99]> (<[go!"b" := W64 98]> {[go!"a" := W64 97]}) : GMap GoString w64) }} := by
   wp_start
-  wp_auto
   wp_apply (wp_map_make1 (K := GoString) (V := w64)) with %m Hm
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
@@ -309,7 +306,6 @@ theorem wp_testU32NewtypeLen :
       (App (Val (@! testU32NewtypeLen)) (Val #()))
     {{ RET #true; True }} := by
   wp_start
-  wp_auto
   wp_apply (wp_slice_make2 (V := w8)) with %sl ⟨Hs, Hcap⟩
   · ipureintro; word
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs

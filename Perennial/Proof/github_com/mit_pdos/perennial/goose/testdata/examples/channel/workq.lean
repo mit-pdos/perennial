@@ -853,7 +853,6 @@ theorem wp_wordCount (docs_sl : GoSlice) (docs : List GoString) :
     · iframe; ipureintro; exact Hnb
     ihave #Hw := Hworkers $$ %w %(List.mem_of_getElem? Hw)
     ihave #Hnb := Hworkers $$ %nb %(List.mem_of_getElem? Hnb)
-    wp_auto
     wp_apply wp_fork $$ []
     · wp_apply Worker.wp_run ⟨docs, γtask_gn⟩ w nb ⟨«$v0_ptr», «$v1_ptr», done⟩ $$ []
       · iframe #
