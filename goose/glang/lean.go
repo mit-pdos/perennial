@@ -1274,7 +1274,7 @@ func LeanRocqImport(line string) string {
 }
 
 // RocqModuleToLean maps a Rocq module path under New (new/) to the Lean module
-// path, following PORTING.md (directories and files in UpperCamelCase).
+// path, following README.md (directories and files in UpperCamelCase).
 func RocqModuleToLean(m string) string {
 	parts := strings.Split(m, ".")
 	if len(parts) > 0 && parts[0] == "New" {

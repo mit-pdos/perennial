@@ -17,7 +17,7 @@ triples, at term level the notation means `⊢ ∀ Φ, ...` (the `□` is droppe
 
 Deviations from Rocq:
 * `new/atomic_fupd.v` uses the non-crash fancy update `|NC={E1,E2}=>`; this port
-  has no crash logic (see PORTING.md), so the plain `|={E1,E2}=>` is used (that
+  has no crash logic (see README.md), so the plain `|={E1,E2}=>` is used (that
   is `src/program_logic/atomic_fupd.v`).
 * The brackets are `<<{ … }>>` (as in iris-lean's `atomic_wp` notation) rather
   than `<<< … >>>`, because `>>>` is Lean's right-shift operator.

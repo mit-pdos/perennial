@@ -3,7 +3,7 @@
 The Lean port uses [iris-lean](https://github.com/leanprover-community/iris-lean)'s
 proof mode (`.lake/packages/iris/Iris/Iris/ProofMode/Tactics/*.lean`; upstream
 docs in `.lake/packages/iris/Iris/docs/tactics.md`). This page describes its
-syntax as used in Perennial and how to translate Rocq IPM proofs. Lean blocks are
+syntax as used in Perennial, with Rocq IPM equivalents for readers who know them. Lean blocks are
 copied from [`TutorialExamples.lean`](TutorialExamples.lean) (checked with
 `lake env lean docs/TutorialExamples.lean`).
 
@@ -337,7 +337,7 @@ example (P Q : IProp GF) (E : CoPset) : iprop(|={E}=> P ∗ Q) = iprop(|={E}=> (
 example (P Q : IProp GF) : iprop(▷ P ∗ Q) = iprop((▷ P) ∗ Q) := rfl
 ```
 
-## 5. Pitfalls when translating Rocq proofs
+## 5. Pitfalls for Rocq IPM users
 
 * `iDestruct "H" as "[H1 H2]"` → `icases H with ⟨H1, H2⟩`;
   `iDestruct "H" as (x y) "[H1 %H2]"` → `icases H with ⟨%x, %y, H1, %H2⟩`.

@@ -1,4 +1,4 @@
-"""Update the prose and examples of docs/ and PORTING.md to the renamed Lean names.
+"""Update the prose and examples of docs/ and README.md to the renamed Lean names.
 
 Usage: etc/lean-rename/docs.py FILE...
 """

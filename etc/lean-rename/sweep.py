@@ -22,7 +22,7 @@ ext = set(open(sys.argv[3]).read().split()) if len(sys.argv) > 3 else set()
 rep = {k: next(iter(v)) for k, v in m.items() if len(v) == 1 and surviving_short[k] == 0 and k not in ext}
 print("sweep vocabulary:", len(rep))
 pat = re.compile(r"(?<![\w'])(" + "|".join(map(re.escape, sorted(rep, key=len, reverse=True))) + r")(?![\w'])")
-files = subprocess.run(["git", "ls-files", "Perennial/*.lean", "docs/*.md", "PORTING.md"], capture_output=True,
+files = subprocess.run(["git", "ls-files", "Perennial/*.lean", "docs/*.md", "README.md"], capture_output=True,
                        text=True).stdout.split()
 tot = collections.Counter()
 for f in files:

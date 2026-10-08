@@ -17,7 +17,7 @@ Differences from Rocq:
   (equivalent under `□`).
 * Filters by a key predicate `P : K → Prop` are written
   `filter (fun k _ => decide (P k)) m`; the complement uses `decide (¬ P k)`.
-* `big_sepM_mono_ncfupd` is dropped (no crash logic, see PORTING.md).
+* `big_sepM_mono_ncfupd` is dropped (no crash logic, see README.md).
 * `big_sepM_gmap_curry` is dropped: it is `Abort`ed in Rocq.
 * `map_curry` lemmas are stated for `Perennial.gmap` with a local definition
   `gmapCurry`, since iris-lean has no `map_curry`.

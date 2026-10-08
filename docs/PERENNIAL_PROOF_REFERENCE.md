@@ -67,7 +67,7 @@ the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.le
 `sint.Z x = x.toInt`, `uint.nat`, `sint.nat`. Maps are `Perennial.gmap K V`
 (`m !! k`, `<[k := v]> m`, `{[k := v]}`, `GMap.delete k m`); on lists, `l !! i`
 is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `GoString` (a
-`List w8`). See `PORTING.md`.
+`List w8`). See `README.md`.
 
 ### Sealing
 
@@ -451,8 +451,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
 
 ## 4. Specification lemmas
 
-Names follow Rocq. Specs take `isPkgInit` of their package where Rocq does;
-`wp_apply` discharges it.
+Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 
 ### Memory (`Golang/Theory/Mem.lean`, `PostLifting.lean`)
 
@@ -516,8 +515,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 
 `Perennial/Proof/{sort,slices,math,bytes,strings,errors,cmp,unsafe}.lean` and
 their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
-`pdqSort` family, ...). See `PORTING_STATUS.md` if present, or
-`etc/lean-port-status.py`.
+`pdqSort` family, ...).
 
 ---
 

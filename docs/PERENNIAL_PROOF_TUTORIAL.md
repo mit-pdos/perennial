@@ -1,9 +1,7 @@
 # Perennial Proof Tutorial (Lean)
 
-A guide to writing program proofs for Go code in the Lean 4 port of Perennial
+A guide to writing program proofs for Go code in Perennial's Lean 4 development
 (new goose, on top of [iris-lean](https://github.com/leanprover-community/iris-lean)).
-It follows the structure of the Rocq tutorial (`new/proof/PERENNIAL_PROOF_TUTORIAL.md`
-on `master`) but describes how things work in this port.
 
 * Every Lean block below is copied verbatim from
   [`docs/TutorialExamples.lean`](TutorialExamples.lean) (between the
@@ -16,9 +14,9 @@ on `master`) but describes how things work in this port.
   from the repository root (it imports built modules, so `lake build` them
   first). If you change an example, change it in both places.
 * Tactic details and spec lemmas: [`PERENNIAL_PROOF_REFERENCE.md`](PERENNIAL_PROOF_REFERENCE.md).
-* The Iris proof mode (`iintro`, `icases`, ...) and a Rocq → Lean translation
-  table: [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).
-* Design decisions and porting conventions: [`../PORTING.md`](../PORTING.md).
+* The Iris proof mode (`iintro`, `icases`, ...) with Rocq IPM
+  equivalents: [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).
+* Design decisions and conventions: [`../README.md`](../README.md).
 
 ## 1. Project layout
 
@@ -42,8 +40,8 @@ lives in `Perennial/Code/github_com/mit_pdos/perennial/goose/testdata/examples/u
 `Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest`, and
 its package name is `pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest`.
 Standard-library packages are short: `Perennial/Code/sync.lean`, namespace
-`Perennial.sync`, package `pkg_id.sync`. Proofs mirror the Rocq layout:
-`new/proof/sync_proof/mutex.v` becomes `Perennial/Proof/sync_proof/mutex.lean`.
+`Perennial.sync`, package `pkg_id.sync`. Proofs follow the same package paths under `Perennial/Proof/`
+(`Perennial/Proof/sync_proof/mutex.lean`).
 
 Check a single file with `lake build Perennial.Proof.sync_proof.mutex` (module
 name = path with `.` for `/`).
@@ -59,8 +57,8 @@ etc/update-goose-new.py --lean --etcd-raft ../etcd-raft     # an external projec
 etc/update-goose-new.py --lean --all                        # everything found in ../<proj>
 ```
 
-`--lean` selects the Lean backend (without it the script writes the Rocq
-`new/code`, `new/generatedproof`); `--compile` first runs
+Always pass `--lean`, which selects the Lean backend (without it the script
+writes the obsolete Rocq `new/code`, `new/generatedproof`); `--compile` first runs
 `go install ./goose/cmd/goose ./goose/cmd/proofgen`; `-n` prints the commands.
 For each package the script runs `goose -lean -out Perennial/Code -configdir Perennial/Code`
 and `proofgen -lean -out Perennial/GeneratedProof -configdir Perennial/Code`.
