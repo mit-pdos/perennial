@@ -1,5 +1,0 @@
-translate = ["!*"]
-imports = ["!*", "go.etcd.io/etcd/api/v3/etcdserverpb", "go.etcd.io/etcd/server/v3/storage/backend"]
-
-# translate the definitions of all type declarations goose supports
-translate_types = true

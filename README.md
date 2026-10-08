@@ -22,7 +22,7 @@ from the Go code and the Lean development.
 
 * **One library, `Perennial`.** Framework directories are UpperCamelCase
   (`Perennial/Golang/Theory/Slice.lean`); generated and proof directories
-  follow Go package paths (`Perennial/Proof/go_etcd_io/raft/v3.lean`).
+  follow Go package paths (`Perennial/Proof/github_com/tchajed/marshal.lean`).
 * **No crash logic.** Perennial's crash program logic (`wpc`, staged
   invariants, `fupd_level`, recovery adequacy, `crash_borrow`) is used by new
   goose only for disk/crash examples, so it is dropped. GooseLang is an
@@ -42,7 +42,8 @@ from the Go code and the Lean development.
   `HeapGS`), so downstream files, whose sections already assume `HeapGS`, need
   no new argument, and the language instance and its `PureExec`/`Atomic`
   instances do not depend on it. A proof that needs `N` to be small takes a
-  premise (`idutil.Generator.wp_Next` takes `receiptBound GF ≤ 2 ^ 48`). The
+  premise (`wp_clock_incr` in `ProgramLogic/TimeReceiptsTest.lean` takes
+  `receiptBound GF ≤ 2 ^ 64`). The
   adequacy theorems (`goose_adequacy N`, `goose_invariance N`, and the
   grove/disk ones) hold for every `N`: they allocate the receipt ghost state
   with `receiptBound GF = N` (a hypothesis of the WP premise `Hwp`, from which

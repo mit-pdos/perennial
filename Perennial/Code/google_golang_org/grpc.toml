@@ -1,5 +1,0 @@
-translate = ["!*"]
-imports = ["!*", "context", "fmt", "io", "sync", "sync/atomic", "time"]
-
-# translate the definitions of all type declarations goose supports
-translate_types = true

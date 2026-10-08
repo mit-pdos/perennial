@@ -53,7 +53,7 @@ them:
 
 ```
 etc/update-goose-new.py --lean --compile --std-lib --goose-examples
-etc/update-goose-new.py --lean --etcd-raft ../etcd-raft     # an external project
+etc/update-goose-new.py --lean --marshal ../marshal         # an external project
 etc/update-goose-new.py --lean --all                        # everything found in ../<proj>
 ```
 
