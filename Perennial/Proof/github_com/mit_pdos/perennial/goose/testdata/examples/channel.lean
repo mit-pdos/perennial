@@ -68,7 +68,6 @@ theorem wp_HelloWorldAsync :
         isChan ch γfut GoString ∗
         isChanBag γfut ch (fun (v : GoString) => iprop(⌜v = go!"Hello, World!"⌝)) }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make2 (V := GoString) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
   imod start_bag (fun (v : GoString) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc
@@ -100,7 +99,6 @@ theorem wp_simple_join :
       (App (Val (@! simple_join)) (Val #()))
     {{ RET #(go!"Hello, World!"); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
   imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
@@ -127,7 +125,6 @@ theorem wp_simple_multi_join :
       (App (Val (@! simple_multi_join)) (Val #()))
     {{ RET #(go!"Hello World"); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
   imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc
@@ -201,7 +198,6 @@ theorem wp_BroadcastExample :
       (App (Val (@! BroadcastExample)) (Val #()))
     {{ RET #(); True }} := by
   wp_start
-  wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %done_ch %γdone ⟨#Hdone_ch, -, Hdone_own⟩
   wp_apply chan.wp_make1 (V := w64) as %result1_ch %γr1 ⟨#Hr1_ch, -, Hr1_own⟩
   wp_apply chan.wp_make1 (V := w64) as %result2_ch %γr2 ⟨#Hr2_ch, -, Hr2_own⟩
@@ -301,8 +297,6 @@ theorem wp_HelloWorldWithTimeout :
         ⌜result = go!"Hello, World!" ∨ result = go!"operation timed out"⌝ }} := by
   wp_start
   wp_pures
-  wp_alloc done_ptr as done
-  wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hchan, -, Hoc⟩
   imod alloc_broadcast_chan (E := ⊤) iprop(errMsg_ptr ↦□ go!"operation timed out") γ ch
     $$ Hchan Hoc with Hown

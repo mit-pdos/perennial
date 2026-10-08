@@ -23,8 +23,8 @@ Definition c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Name
 Definition c__Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType c) "c") in
-    let: "y" := (GoAlloc B (GoZeroVal B #())) in
     let: "$r0" := (Convert (go.PointerType c) B (![go.PointerType c] "c")) in
+    let: "y" := (GoAlloc B (GoZeroVal B #())) in
     do:  ("y" <-[B] "$r0");;;
     do:  ((MethodResolve B "Bar"%go (![B] "y")) #());;;
     return: #()).
@@ -33,8 +33,8 @@ Definition c__Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 Definition c__Barⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType c) "c") in
-    let: "y" := (GoAlloc A (GoZeroVal A #())) in
     let: "$r0" := (Convert (go.PointerType c) A (![go.PointerType c] "c")) in
+    let: "y" := (GoAlloc A (GoZeroVal A #())) in
     do:  ("y" <-[A] "$r0");;;
     do:  ((MethodResolve A "Foo"%go (![A] "y")) #());;;
     return: #()).

@@ -390,8 +390,6 @@ axiom SelectRecv [FfiSyntax] [GoGlobalContext] : val
 
 axiom SelectDefault [FfiSyntax] [GoGlobalContext] : val
 
-axiom stackAllocSelectCases [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def intArgRegs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.intArgRegs"
 
@@ -434,12 +432,6 @@ noncomputable def funcTypesMutex [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def structLookupCache [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.structLookupCache"
-
-noncomputable def pinAIXGCDataMu [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.pinAIXGCDataMu"
-
-noncomputable def pinAIXGCData [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.pinAIXGCData"
 
 noncomputable def layoutCache [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.layoutCache"
@@ -613,8 +605,8 @@ noncomputable def moveMakeFuncArgPtrs [FfiSyntax] [GoGlobalContext] : GoString :
 noncomputable def MapOf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.MapOf"
 
-noncomputable def groupOf [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.groupOf"
+noncomputable def groupAndSlotOf [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"reflect.groupAndSlotOf"
 
 noncomputable def mapIterStart [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.mapIterStart"
@@ -676,6 +668,9 @@ noncomputable def elem [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def canRangeFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.canRangeFunc"
 
+noncomputable def canRangeFunc2 [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"reflect.canRangeFunc2"
+
 noncomputable def add [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.add"
 
@@ -718,8 +713,8 @@ noncomputable def haveIdenticalType [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def haveIdenticalUnderlyingType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.haveIdenticalUnderlyingType"
 
-noncomputable def compiledTypelinks [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.compiledTypelinks"
+noncomputable def typelinks [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"reflect.typelinks"
 
 noncomputable def rtypeOff [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.rtypeOff"
@@ -783,12 +778,6 @@ noncomputable def typeptrdata [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def ArrayOf [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.ArrayOf"
-
-noncomputable def adjustAIXGCData [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.adjustAIXGCData"
-
-noncomputable def adjustAIXGCDataForRuntime [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.adjustAIXGCDataForRuntime"
 
 noncomputable def appendVarint [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.appendVarint"
@@ -870,9 +859,6 @@ noncomputable def rselect [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def Select [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.Select"
-
-noncomputable def select0 [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"reflect.select0"
 
 noncomputable def unsafe_New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.unsafe_New"

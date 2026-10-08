@@ -49,8 +49,8 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"done"))) (Var "sh")))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef Worker.ty go!"queue"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "w"))))
   (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string)))))) (App (Val (GoInstruction (StructFieldRef Worker.ty go!"steal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "w"))))
-  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (Let "reply" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Val #())))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))]))) (Val #())) (Val #(W64 1)))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))]))) (Val #())) (Val #(W64 1)))
+  (Let "reply" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"done"))) (Var "sh")))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))
@@ -59,8 +59,8 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
   (App (Val doReturn)
   (Val #())))),
-  (CommClause (SendCase (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string)) (Var "$ch1") (Var "$v1")) (Let "doc" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.string)))) (Val #())))
-  (Let "$r0" (Fst (App (Val (chan.receive (go.GoType.PointerType go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))))
+  (CommClause (SendCase (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string)) (Var "$ch1") (Var "$v1")) (Let "$r0" (Fst (App (Val (chan.receive (go.GoType.PointerType go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))))
+  (Let "doc" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.string)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "doc")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType go.string)))) (Val UntypedNil))))))
   (App (Val doExecute)
@@ -72,8 +72,8 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.string)))) (Pair (Var "doc") (Var "$r0")))))))),
   (CommClause (RecvCase go.string (Var "$ch2")) (Lam "$recvVal"
-  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Let "$r0" (Fst (Var "$recvVal"))
+  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "doc"))
@@ -86,8 +86,8 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #())))),
   (CommClause (RecvCase go.string (Var "$ch1")) (Lam "$recvVal"
-  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Let "$r0" (Fst (Var "$recvVal"))
+  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "doc"))
@@ -96,16 +96,16 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "doc") (Var "$r0"))))))))),
   (CommClause (RecvCase (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string)) (Var "$ch2")) (Lam "$recvVal"
-  (Let "reply" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Val #())))
   (Let "$r0" (Fst (Var "$recvVal"))
+  (Let "reply" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef Worker.ty go!"queue"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "w"))))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))
   (Let "$v" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType go.string)))) (Val UntypedNil))
   (App (App (Val (chan.send (go.GoType.PointerType go.string))) (Var "$chan")) (Var "$v")))))) [(CommClause (RecvCase go.string (Var "$ch0")) (Lam "$recvVal"
-  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Let "$r0" (Fst (Var "$recvVal"))
+  (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))
@@ -151,16 +151,16 @@ noncomputable def wordCount.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "docs"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (let numWorkers := #(2 : Int);
-  (Let "workers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType (go.GoType.PointerType Worker.ty))]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers)))
+  (Let "workers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "sh" (App (Val (GoInstruction (GoAlloc shared.ty))) (App (Val (GoInstruction (GoZeroVal shared.ty))) (Val #())))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.atomic.Int64.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.atomic.Int64.ty))) (Val #())))
   (Let "$v1" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.atomic.Int64.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.atomic.Int64.ty))) (Val #())))
   (Let "$v2" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
   (App (Val (GoInstruction (CompositeLiteral shared.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"remaining")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) (Var "$v0"))), (KeyedElement (some (KeyField go!"total")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) (Var "$v1"))), (KeyedElement (some (KeyField go!"done")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v2")))])))))
+  (Let "sh" (App (Val (GoInstruction (GoAlloc shared.ty))) (App (Val (GoInstruction (GoZeroVal shared.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -177,8 +177,8 @@ noncomputable def wordCount.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "neighbor" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Worker.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers")) (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers)))))))
+  (Let "neighbor" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Worker.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "neighbor"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad shared.ty))) (Var "sh"))

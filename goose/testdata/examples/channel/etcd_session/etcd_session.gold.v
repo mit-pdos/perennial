@@ -64,8 +64,8 @@ Definition monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
         ])] "$r0")
         ))]);;;
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
-      let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := ((FuncResolve newSession [] #()) #()) in
+      let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then continue: #()
@@ -85,14 +85,14 @@ Definition waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: "cancel",
     exception_do (let: "cancel" := (GoAlloc (go.ChannelType go.recvonly A) "cancel") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
+    let: "$r0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] (GlobalVarAddr sessionc #())) in
     let: "s" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
 
     ])) #())) in
-    let: "$r0" := (![go.ChannelType go.sendrecv (go.StructType [
-
-    ])] (GlobalVarAddr sessionc #())) in
     do:  ("s" <-[go.ChannelType go.sendrecv (go.StructType [
 
     ])] "$r0");;;

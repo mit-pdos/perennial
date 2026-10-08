@@ -168,9 +168,9 @@ noncomputable def makeBox.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def useBoxGet.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
   (Let "$r0" (Let "$a0" (Val #(W64 42))
   (App (App (Val (GoInstruction (FuncResolve makeGenericBox [go.uint64]))) (Val #())) (Var "$a0")))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box.ty go.uint64)) go!"Get"))) (Var "x")) (Val #())))))
@@ -184,7 +184,6 @@ noncomputable def useContainer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "container" (App (Val (GoInstruction (GoAlloc (Container.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Container.ty go.uint64)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Let "$k0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
@@ -192,6 +191,7 @@ noncomputable def useContainer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v2" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "$v3" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral (Container.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Y")) (ElementExpression (go.GoType.MapType go.int go.uint64) (Var "$v1"))), (KeyedElement (some (KeyField go!"Z")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v2"))), (KeyedElement (some (KeyField go!"W")) (ElementExpression go.uint64 (Var "$v3")))]))))))
+  (Let "container" (App (Val (GoInstruction (GoAlloc (Container.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Container.ty go.uint64)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -218,10 +218,10 @@ noncomputable def useMultiParam.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "mp" (App (Val (GoInstruction (GoAlloc (MultiParam.ty go.uint64 go.bool)))) (App (Val (GoInstruction (GoZeroVal (MultiParam.ty go.uint64 go.bool)))) (Val #())))
   (Let "$r0" (Let "$v0" (Val #true)
   (Let "$v1" (Val #(W64 1))
   (App (Val (GoInstruction (CompositeLiteral (MultiParam.ty go.uint64 go.bool)))) (LiteralValue [(KeyedElement (some (KeyField go!"Y")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "mp" (App (Val (GoInstruction (GoAlloc (MultiParam.ty go.uint64 go.bool)))) (App (Val (GoInstruction (GoZeroVal (MultiParam.ty go.uint64 go.bool)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 2))
   (App (Val doExecute)
@@ -237,8 +237,8 @@ noncomputable def swapMultiParam.impl [FfiSyntax] [GoGlobalContext] (A : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "temp" (App (Val (GoInstruction (GoAlloc A))) (App (Val (GoInstruction (GoZeroVal A))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))))
+  (Let "temp" (App (Val (GoInstruction (GoAlloc A))) (App (Val (GoInstruction (GoZeroVal A))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"Y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))))
   (App (App (Val exceptionSeq) (Lam BAnon

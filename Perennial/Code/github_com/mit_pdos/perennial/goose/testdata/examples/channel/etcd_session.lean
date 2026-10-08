@@ -80,8 +80,8 @@ noncomputable def monitorSession.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newSession []))) (Val #())) (Val #()))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -120,8 +120,8 @@ noncomputable def waitSession.impl [FfiSyntax] [GoGlobalContext] (A : go.GoType)
   (App (Val exceptionDo)
   (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "s"))

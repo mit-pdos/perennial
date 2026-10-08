@@ -792,20 +792,20 @@ noncomputable def Value.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "val" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Value.ty)))) (Var "v"))
-  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType Value.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Value.ty)))) (Var "v"))))
+  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"typ"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "data" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"data"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "data" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "vlp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "val")))
+  (Let "vlp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "typ"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -846,17 +846,17 @@ noncomputable def Value.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType Value.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Value.ty)))) (Var "v"))))
+  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "vlp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "val")))
+  (Let "vlp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"typ"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -940,23 +940,23 @@ noncomputable def Value.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Value.ty)))) (Var "v"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.any))) (Var "new"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType Value.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Value.ty)))) (Var "v"))))
+  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "np" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "new")))
+  (Let "np" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"typ"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "op" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "old")))
+  (Let "op" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"typ"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "np"))))
   (Let "$r1" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"data"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
@@ -1046,28 +1046,28 @@ noncomputable def Value.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val 
   (Let "new" (App (Val (GoInstruction (GoAlloc go.any))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.any))) (Var "old"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType Value.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Value.ty)))) (Var "v"))))
+  (Let "vp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "np" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "new")))
+  (Let "np" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "op" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.any) «unsafe».Pointer))) (Var "old")))
+  (Let "op" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType efaceWords.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType efaceWords.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"typ"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "typ" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "data" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef efaceWords.ty go!"data"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType efaceWords.ty)))) (Var "vp")))
   (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "data" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "i" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Let "$r0" (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "typ"))
