@@ -328,6 +328,8 @@ Definition elseIf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := 
 
 Definition ifStmtInitialization {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ifStmtInitialization"%go.
 
+Definition loopLocalCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.loopLocalCopy"%go.
+
 Definition typedLiteral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typedLiteral"%go.
 
 Definition literalCast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/perennial/goose/testdata/examples/unittest.literalCast"%go.
@@ -1042,6 +1044,40 @@ Definition ifStmtInitializationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "x") =⟨go.uint64⟩ #(W64 0))
     then return: (![go.uint64] "y")
     else return: ((![go.uint64] "y") -⟨go.uint64⟩ #(W64 1))))).
+
+(* loopLocalCopy sums the elements of xs through closures, each capturing its own
+   loop-local copy `x := x` of the loop variable: the right-hand side is the outer `x`,
+   not the variable being defined.
+
+   go: control_flow.go:80:6 *)
+Definition loopLocalCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "xs",
+    exception_do (let: "xs" := (GoAlloc (go.SliceType go.uint64) "xs") in
+    let: "fs" := (GoAlloc (go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))) (GoZeroVal (go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))) #())) in
+    let: "$range" := (![go.SliceType go.uint64] "xs") in
+    (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    slice.for_range go.uint64 "$range" (λ: "$key" "$value",
+      do:  ("x" <-[go.uint64] "$value");;;
+      do:  "$key";;;
+      let: "$def0" := (![go.uint64] "x") in
+      let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := "$def0" in
+      do:  ("x" <-[go.uint64] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))] "fs") in
+      let: "$a1" := ((let: "$sl0" := (λ: <>,
+        exception_do (return: (![go.uint64] "x"))
+        ) in
+      CompositeLiteral (go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))) (LiteralValue [KeyedElement None (ElementExpression (go.FunctionType (go.Signature [] false [go.uint64])) "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))] #()) "$a0" "$a1") in
+      do:  ("fs" <-[go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))] "$r0")));;;
+    let: "s" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$range" := (![go.SliceType (go.FunctionType (go.Signature [] false [go.uint64]))] "fs") in
+    (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [] false [go.uint64])) #())) in
+    slice.for_range (go.FunctionType (go.Signature [] false [go.uint64])) "$range" (λ: "$key" "$value",
+      do:  ("f" <-[go.FunctionType (go.Signature [] false [go.uint64])] "$value");;;
+      do:  "$key";;;
+      do:  ("s" <-[go.uint64] ((![go.uint64] "s") +⟨go.uint64⟩ ((![go.FunctionType (go.Signature [] false [go.uint64])] "f") #())))));;;
+    return: (![go.uint64] "s")).
 
 (* go: conversions.go:5:6 *)
 Definition typedLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2799,8 +2835,9 @@ Definition loopSpawnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
+      let: "$def0" := (![go.uint64] "i") in
       let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (![go.uint64] "i") in
+      let: "$r0" := "$def0" in
       do:  ("i" <-[go.uint64] "$r0");;;
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![go.uint64] "i") in
@@ -4469,6 +4506,7 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] conditionalAssign_unfold :: FuncUnfold conditionalAssign [] (conditionalAssignⁱᵐᵖˡ);
   #[global] elseIf_unfold :: FuncUnfold elseIf [] (elseIfⁱᵐᵖˡ);
   #[global] ifStmtInitialization_unfold :: FuncUnfold ifStmtInitialization [] (ifStmtInitializationⁱᵐᵖˡ);
+  #[global] loopLocalCopy_unfold :: FuncUnfold loopLocalCopy [] (loopLocalCopyⁱᵐᵖˡ);
   #[global] typedLiteral_unfold :: FuncUnfold typedLiteral [] (typedLiteralⁱᵐᵖˡ);
   #[global] literalCast_unfold :: FuncUnfold literalCast [] (literalCastⁱᵐᵖˡ);
   #[global] castInt_unfold :: FuncUnfold castInt [] (castIntⁱᵐᵖˡ);

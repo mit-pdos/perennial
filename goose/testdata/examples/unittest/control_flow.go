@@ -73,3 +73,19 @@ func ifStmtInitialization(x uint64) uint64 {
 		return y - 1
 	}
 }
+
+// loopLocalCopy sums the elements of xs through closures, each capturing its own
+// loop-local copy `x := x` of the loop variable: the right-hand side is the outer `x`,
+// not the variable being defined.
+func loopLocalCopy(xs []uint64) uint64 {
+	var fs []func() uint64
+	for _, x := range xs {
+		x := x
+		fs = append(fs, func() uint64 { return x })
+	}
+	var s uint64
+	for _, f := range fs {
+		s += f()
+	}
+	return s
+}

@@ -1391,7 +1391,30 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 }
 
 func (ctx *Ctx) defineStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
-	e := ctx.assignStmt(s, cont)
+	// The names this statement defines.
+	defined := map[string]bool{}
+	for _, lhsExpr := range s.Lhs {
+		if ident, ok := lhsExpr.(*ast.Ident); ok {
+			if _, ok := ctx.info.Defs[ident]; ok && ident.Name != "_" {
+				defined[ident.Name] = true
+			}
+		}
+	}
+
+	// Go evaluates the right-hand sides before the new variables are in scope: in
+	// `cc := cc`, the right-hand side is the outer `cc` (the loop-local-copy idiom
+	// `for _, cc := range ccs { cc := cc; ... }`). The allocations below bind the new
+	// names around the assignment, so a right-hand side that mentions a defined name
+	// would read the fresh cell instead. Evaluate such right-hand sides first, into
+	// temporaries `$def<i>`, and assign from those.
+	shadowing := len(s.Lhs) == len(s.Rhs) && ctx.mentionsAny(s.Rhs, defined)
+	var rhsExprs []glang.Expr
+	if shadowing {
+		for i := range s.Rhs {
+			rhsExprs = append(rhsExprs, glang.IdentExpr(fmt.Sprintf("$def%d", i)))
+		}
+	}
+	e := ctx.assignStmtRhs(s, rhsExprs, cont)
 
 	// Before the asignStmt "e", allocate everything that's new in this define stmt.
 	for _, lhsExpr := range s.Lhs {
@@ -1413,7 +1436,38 @@ func (ctx *Ctx) defineStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 		}
 	}
 
+	// The right-hand sides, outside the scope of the new names.
+	if shadowing {
+		for i := len(s.Rhs); i > 0; i-- {
+			e = glang.LetExpr{
+				Names:   []string{fmt.Sprintf("$def%d", i-1)},
+				ValExpr: ctx.expr(s.Rhs[i-1]),
+				Cont:    e,
+			}
+		}
+	}
+
 	return e
+}
+
+// mentionsAny reports whether any of the expressions reads a local variable named in
+// names: a use of a `*types.Var` that is not a struct field (a field or method of the
+// same name, `l.unstable`, is not the variable).
+func (ctx *Ctx) mentionsAny(exprs []ast.Expr, names map[string]bool) bool {
+	found := false
+	for _, e := range exprs {
+		ast.Inspect(e, func(n ast.Node) bool {
+			if ident, ok := n.(*ast.Ident); ok && names[ident.Name] {
+				if obj, isUse := ctx.info.Uses[ident]; isUse {
+					if v, ok := obj.(*types.Var); ok && !v.IsField() {
+						found = true
+					}
+				}
+			}
+			return !found
+		})
+	}
+	return found
 }
 
 func (ctx *Ctx) varSpec(s *ast.ValueSpec, cont glang.Expr) glang.Expr {
@@ -1569,6 +1623,12 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 }
 
 func (ctx *Ctx) assignStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
+	return ctx.assignStmtRhs(s, nil, cont)
+}
+
+// assignStmtRhs is assignStmt with the right-hand sides given as rhsExprs instead of
+// translated here (nil: translate them here); see defineStmt.
+func (ctx *Ctx) assignStmtRhs(s *ast.AssignStmt, rhsExprs []glang.Expr, cont glang.Expr) glang.Expr {
 	e := cont
 	if len(s.Rhs) == 0 {
 		return e
@@ -1593,8 +1653,9 @@ func (ctx *Ctx) assignStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 	}
 
 	// collect the RHS expressions
-	var rhsExprs []glang.Expr
-	if len(s.Rhs) == len(s.Lhs) {
+	if rhsExprs != nil {
+		// given by the caller (defineStmt's temporaries)
+	} else if len(s.Rhs) == len(s.Lhs) {
 		for _, rhs := range s.Rhs {
 			rhsExprs = append(rhsExprs, ctx.expr(rhs))
 		}

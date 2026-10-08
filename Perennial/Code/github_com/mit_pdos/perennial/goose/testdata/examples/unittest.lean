@@ -448,6 +448,9 @@ noncomputable def elseIf [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def ifStmtInitialization [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ifStmtInitialization"
 
+noncomputable def loopLocalCopy [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.loopLocalCopy"
+
 noncomputable def typedLiteral [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typedLiteral"
 
@@ -1509,6 +1512,61 @@ noncomputable def ifStmtInitialization.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #())))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Pair (Var "f") (Var "$r0"))))))))))
+
+/-- loopLocalCopy sums the elements of xs through closures, each capturing its own
+    loop-local copy `x := x` of the loop variable: the right-hand side is the outer `x`,
+    not the variable being defined.
+
+    go: control_flow.go:80:6 -/
+noncomputable def loopLocalCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "xs"
+  (App (Val exceptionDo)
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (Let "fs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s")))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Var "fs"))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Val #())))
+  (App (App (Val (slice.forRange (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s")) (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #())))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Pair (Var "f") (Var "$value"))))))))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val (slice.forRange go.uint64)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$def0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$r0" (Var "$def0")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Var "fs"))
+  (Let "$a1" (Let "$sl0" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])) (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Pair (Var "fs") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$value")))))))))))))))
 
 /-- go: conversions.go:5:6 -/
 noncomputable def typedLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4285,8 +4343,9 @@ noncomputable def loopSpawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 10)))))) (Lam BAnon
+  (Let "$def0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
+  (Let "$r0" (Var "$def0")
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
   (App (Val exceptionDo)
@@ -4300,7 +4359,7 @@ noncomputable def loopSpawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Fork
   (App (Var "$go") (Val #())))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
@@ -6163,6 +6222,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   conditionalAssign_unfold : FuncUnfold conditionalAssign [] conditionalAssign.impl
   elseIf_unfold : FuncUnfold elseIf [] elseIf.impl
   ifStmtInitialization_unfold : FuncUnfold ifStmtInitialization [] ifStmtInitialization.impl
+  loopLocalCopy_unfold : FuncUnfold loopLocalCopy [] loopLocalCopy.impl
   typedLiteral_unfold : FuncUnfold typedLiteral [] typedLiteral.impl
   literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
   castInt_unfold : FuncUnfold castInt [] castInt.impl
@@ -6413,6 +6473,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.conditionalAssign_unfold
   Assumptions.elseIf_unfold
   Assumptions.ifStmtInitialization_unfold
+  Assumptions.loopLocalCopy_unfold
   Assumptions.typedLiteral_unfold
   Assumptions.literalCast_unfold
   Assumptions.castInt_unfold
