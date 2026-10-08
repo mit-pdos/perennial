@@ -147,8 +147,7 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   /-- Go's `len` works on any type whose underlying type is a map, so (like
   `len_slice`/`len_chan`) this takes `[t ↓u go.MapType key_type elem_type]`
   rather than only a literal `go.MapType key_type elem_type`; otherwise `len(m)`
-  would be stuck when `m` has a named map type (e.g. raft's
-  `quorum.MajorityConfig`).
+  would be stuck when `m` has a named map type (`type M map[K]V`).
 
   `len` of a nil map is `0` in Go (a nil map reads as empty), so the nil case
   is handled before the `Read`, exactly as `lookup2` and `for_range` do;

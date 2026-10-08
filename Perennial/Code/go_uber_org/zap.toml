@@ -1,5 +1,0 @@
-imports = ["go.uber.org/zap/zapcore", "io", "sync/atomic", "time"]
-translate = ["!*"]
-
-# translate the definitions of all type declarations goose supports
-translate_types = true

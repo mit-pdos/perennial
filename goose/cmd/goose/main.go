@@ -92,6 +92,8 @@ func main() {
 	flag.BoolVar(&glang.Lean, "lean", false,
 		"emit Lean 4 (Perennial/Code) instead of Rocq")
 
+	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
+
 	flag.Parse()
 	if configDir == "" {
 		configDir = outRootDir

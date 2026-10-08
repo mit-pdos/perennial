@@ -675,12 +675,12 @@ proof can write `receiptBound GF` without new section variables. Nothing else
 depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
 receipt camera (`ReceiptGpreS`, `GooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
-`(Hbound : receiptBound GF ≤ 2 ^ 48)`, and every caller passes the premise on;
+`(Hbound : receiptBound GF ≤ 2 ^ 64)`, and every caller passes the premise on;
 the client discharges it when it picks `N` at adequacy time (below). Prefer to
 put the premise only where it is needed: if the code is safe for every `N` and
 only some resource of the postcondition depends on the bound, make that resource
-conditional (`⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i`, as `idutil.Generator.Next`)
-rather than the whole spec.
+conditional (a postcondition `⌜receiptBound GF ≤ 2 ^ 64⌝ -∗ R`) rather than
+the whole spec.
 
 **Semantics.** The trusted `BaseStep` is unchanged. The registered language
 instance `goose_ectxi_lang` is a layer on top of it whose state is
@@ -758,19 +758,16 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N : Nat)
 ```
 
 A client chooses `N` and discharges the premises its proof makes about it from
-`HN : receiptBound GF = N`. For a program that calls `idutil.Generator.Next`,
-`N = 2^48` (or anything smaller) works:
+`HN : receiptBound GF = N`. For a program that calls `wp_clock_incr`,
+`N = 2^64` (or anything smaller) works (`TimeReceiptsTest.lean`):
 
 ```
-  goose_adequacy (2 ^ 48) e σ g φ Hinitg Hinit
+  goose_adequacy (2 ^ 64) e σ g φ Hinitg Hinit
     (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
 ```
 
-where `Hwp` is the client's WP proof under the premise `receiptBound GF ≤ 2 ^ 48`
-(it uses the premise to specialize the `⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i`
-returned by `Generator.wp_Next`); `TimeReceiptsTest.lean` has this
-instantiation for `N = 2 ^ 64`. The result holds for executions of fewer than
-`2^48` steps. Since there is
+where `Hwp` is the client's WP proof under the premise `receiptBound GF ≤ 2 ^ 64`.
+The result holds for executions of fewer than `2^64` steps. Since there is
 nothing to gain from a smaller `N`, a client takes the largest `N` that all the
 premises allow. `RealNsteps`/`RealNotStuck` are iris-lean's
 `Language.NSteps`/`NotStuck` for `gooseRealEctxiLang`. The proof applies
@@ -780,59 +777,10 @@ real execution of at most `f` steps is a bounded one from fuel `f`; no Go
 instruction stutters) and `realNotStuck_of_bounded` (every bounded step is
 backed by a real one).
 
-**Example: `idutil.Generator.Next`** (`Perennial/Proof/go_etcd_io/etcd/pkg/v3/idutil.lean`).
-The invariant of `isGenerator g R` owns one receipt per completed call,
-`⧗ num_used`, next to the remaining `R` tokens (the list
-`seqZ (init + num_used + 1) (2^48 - num_used)`, empty once `num_used ≥ 2^48`).
-`Next` takes a receipt from an early Go instruction and adds it to the
-invariant when the atomic increment opens it; `receipt_add_one_lt` gives
-`num_used + 1 < receiptBound GF`. The specs hold for every `N` (the code never
-fails); only the token in `Next`'s postcondition is conditional. Either
-`num_used < 2^48` and the head of the token list is returned (the premise is
-unused), or the list is empty, stays empty, and the premise
-`receiptBound GF ≤ 2^48` contradicts `num_used + 1 < receiptBound GF`
-(`idutil.take_token`). The specs mention no ticket, apart from that
-premise:
-
-```
-theorem Generator.wp_Next (g : Loc) (R : w64 → IProp GF) :
-    {{ isPkgInit pkg ∗ isGenerator g R }}
-      (App (Val (g @!! go.GoType.PointerType Generator.ty @!! go!"Next")) (Val #()))
-    {{ (i : w64), RET #i; ⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i }}
-
-theorem wp_NewGenerator (R : w64 → IProp GF)
-    (memberID : w16) (now : time.Time) :
-    {{ isPkgInit pkg ∗ ([∗list] i ∈ seqZ 0 (2^64), R (W64 i)) }}
-      (App (App (Val (@! NewGenerator)) (Val #memberID)) (Val #now))
-    {{ (g : Loc), RET #g; isGenerator g R }}
-```
-
-The postcondition is a wand rather than `⌜…⌝ → R i` so that a caller holding
-`Hbound` specializes it with `ispecialize HR $$ %Hbound`. A caller takes the
-premise only if it consumes the token: `etcdserver.ownEtcdServer_access` hands
-out `isGenerator` with no premise, while
-`EtcdServer.wp_processInternalRaftRequestOnce` takes `Hbound` because the
-token stands for the `ownUnregisteredId` that `w.Register(id)` needs. The
-proof starts with
-
-```
-  wp_start as H
-  ...
-  wp_alloc g_ptr as Hg
-  wp_pure
-  wp_pure
-  wp_bind (App (Val (GoInstruction (GoZeroVal _))) (Val _))
-  iapply wp_go_step_receipt'
-  inext
-  iintro Htk _
-  wp_auto
-```
-
-and later, inside the atomic update of `AddUint64`,
-`icases receipt_add_one_lt _ $$ [Htk Hused] with ⟨%Hlt, Hused⟩` and
-`icases take_token (fun i => R (W64 (pfx * 2 ^ 48 + i % 2 ^ 48))) (init + num_used) num_used (receiptBound GF) Hlt $$ HR with ⟨HRi, HR⟩`.
-`TimeReceiptsTest.lean` has the same pattern for the paper's clock
-(`wp_clock_incr`, premise `receiptBound GF ≤ 2 ^ 64`).
+**Example.** `TimeReceiptsTest.lean` verifies the paper's clock
+(`wp_clock_incr`, premise `receiptBound GF ≤ 2 ^ 64`): the invariant owns one
+receipt per increment, and `receipt_add_one_lt` gives the bound on the counter
+when the increment opens it.
 
 ### Package initialization
 

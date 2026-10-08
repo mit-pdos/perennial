@@ -1,5 +1,0 @@
-translate = ["!*"]
-imports = ["!*"]
-
-# only the type declarations are translated
-translate_types = true

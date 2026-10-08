@@ -153,7 +153,7 @@ func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConf
 		h.WriteString("import Perennial.Golang.Defn\n")
 	}
 	if ctx.filter.HasTrusted() {
-		h.WriteString("import " + glang.LeanModule("Perennial.TrustedCode", pkg.PkgPath) + "\n")
+		h.WriteString("import " + glang.LeanModule(glang.LeanRootOf(pkg.PkgPath)+".TrustedCode", pkg.PkgPath) + "\n")
 	}
 	ffi := util.GetFfi(pkg)
 	if ffi != "" {

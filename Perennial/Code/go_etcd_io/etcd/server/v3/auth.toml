@@ -1,5 +1,0 @@
-translate = ["!*", "AuthInfo"]
-imports = ["!*", "context", "go.etcd.io/etcd/api/v3/etcdserverpb", "sync", "time", "go.etcd.io/etcd/api/v3/authpb"]
-
-# translate the definitions of all type declarations goose supports
-translate_types = true

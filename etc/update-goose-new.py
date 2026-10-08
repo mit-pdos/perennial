@@ -27,58 +27,6 @@ projs = [
     create_proj(repo="goose-lang/std"),
     create_proj(repo="tchajed/marshal"),
     create_proj(repo="goose-lang/primitive", pkgs=[".", "./disk"]),
-    create_proj(
-        repo="upamanyus/etcd-raft",
-        pkgs=[
-            ".",
-            "github.com/stretchr/testify/assert",
-            "go.etcd.io/raft/v3/confchange",
-            "go.etcd.io/raft/v3/quorum",
-            "go.etcd.io/raft/v3/raftpb",
-            "go.etcd.io/raft/v3/tracker",
-        ],
-    ),
-    create_proj(
-        repo="upamanyus/etcd",
-        pkgs=[
-            "math",
-            "google.golang.org/grpc",
-            "go.etcd.io/etcd/api/v3/membershippb",
-            "go.etcd.io/etcd/api/v3/etcdserverpb",
-            "go.etcd.io/etcd/api/v3/mvccpb",
-            "go.etcd.io/etcd/client/v3",
-            "go.etcd.io/etcd/client/v3/concurrency",
-            "go.etcd.io/etcd/client/v3/leasing",
-            "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
-            "google.golang.org/grpc/codes",
-            "google.golang.org/grpc/status",
-            "google.golang.org/genproto/googleapis/rpc/status",
-            "go.uber.org/zap",
-            "go.uber.org/zap/zapcore",
-            # etcdserver:
-            "go.etcd.io/etcd/server/v3/etcdserver",
-            "go.etcd.io/etcd/pkg/v3/wait",
-            "go.etcd.io/etcd/server/v3/etcdserver/errors",
-            "go.etcd.io/etcd/pkg/v3/idutil",
-            # Axiomatized for etcdserver:
-            "go.etcd.io/etcd/server/v3/etcdserver/apply",
-            "go.etcd.io/etcd/pkg/v3/traceutil",
-            "github.com/gogo/protobuf/proto",
-            "github.com/prometheus/client_golang/prometheus",
-            "go.etcd.io/etcd/server/v3/config",
-            "go.etcd.io/etcd/server/v3/auth",
-            "go.opentelemetry.io/otel/trace",
-            "go.opentelemetry.io/otel/attribute",
-            "go.etcd.io/etcd/server/v3/features",
-            # cindex:
-            "go.etcd.io/etcd/server/v3/etcdserver/cindex",
-            # Axiomatized for cindex:
-            "go.etcd.io/etcd/server/v3/storage/backend",
-            "go.etcd.io/etcd/server/v3/storage/schema",
-            "go.etcd.io/etcd/cache/v3",
-            "k8s.io/utils/third_party/forked/golang/btree",
-        ],
-    ),
     create_proj(repo="mit-pdos/go-liveness"),
 ]
 
@@ -299,7 +247,6 @@ def main():
         run_goose(goose_dir, "./model/strings")
 
     if args.std_lib:
-        # this list of packages comes from the dependencies of etcd-raft and others
         run_goose(
             goose_dir,
             "testing",
@@ -341,14 +288,6 @@ def main():
         # types of the packages above that refer to them can be translated
         if args.std_lib:
             run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
-        etcd = proj_dir("etcd")
-        if etcd is not None:
-            run_goose(
-                etcd,
-                "go.etcd.io/etcd/api/v3/authpb",
-                "github.com/prometheus/client_model/go",
-                "go.opentelemetry.io/otel/trace/embedded",
-            )
     pm.wait_all()
 
 

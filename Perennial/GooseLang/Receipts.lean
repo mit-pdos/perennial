@@ -57,8 +57,8 @@ class ReceiptGpreS (GF : BundledGFunctors) where
 receipts (`⧗ N ⊢ False`): an unspecified positive number, fixed when the ghost
 state is allocated at adequacy time (`goose_adequacy`), where it is also the
 bound on the length of the executions the adequacy theorems are about. A proof
-that needs `N` to be small enough takes it as a premise (e.g. the postcondition
-`⌜receiptBound GF ≤ 2 ^ 48⌝ -∗ R i` of `idutil.Generator.wp_Next`). -/
+that needs `N` to be small enough takes it as a premise (e.g. `wp_clock_incr`
+in `ProgramLogic/TimeReceiptsTest.lean` assumes `receiptBound GF ≤ 2 ^ 64`). -/
 class ReceiptGS (GF : BundledGFunctors) where
   receiptAllG : AllG GF
   /-- `ghost_map Nat Unit`: the token `k ↪ ()` of every counted step `k`. -/
