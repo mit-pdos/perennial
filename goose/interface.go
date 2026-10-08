@@ -139,7 +139,7 @@ func (ctx *Ctx) initCoqFile(pkg *packages.Package, config declfilter.FilterConfi
 func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConfig) (header string, footer string) {
 	var h strings.Builder
 	if config.Bootstrap.Enabled {
-		h.WriteString("import Perennial.Golang.Defn.Pre\n")
+		h.WriteString("public import Perennial.Golang.Defn.Pre\n")
 		if config.Bootstrap.LeanPrelude != nil {
 			for _, l := range config.Bootstrap.LeanPrelude {
 				h.WriteString(l + "\n")
@@ -150,15 +150,16 @@ func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConf
 			}
 		}
 	} else {
-		h.WriteString("import Perennial.Golang.Defn\n")
+		h.WriteString("public import Perennial.Golang.Defn\n")
 	}
 	if ctx.filter.HasTrusted() {
-		h.WriteString("import " + glang.LeanModule(glang.LeanRootOf(pkg.PkgPath)+".TrustedCode", pkg.PkgPath) + "\n")
+		h.WriteString("public import " + glang.LeanModule(glang.LeanRootOf(pkg.PkgPath)+".TrustedCode", pkg.PkgPath) + "\n")
 	}
 	ffi := util.GetFfi(pkg)
 	if ffi != "" {
-		h.WriteString("import " + glang.RocqModuleToLean("New."+ffi+"_prelude") + "\n")
+		h.WriteString("public import " + glang.RocqModuleToLean("New."+ffi+"_prelude") + "\n")
 	}
+	h.WriteString("\n@[expose] public section\n")
 	h.WriteString("\n" + glang.LeanFileOptions)
 	h.WriteString("\nnamespace Perennial\n")
 	h.WriteString("noncomputable section\n\n")
