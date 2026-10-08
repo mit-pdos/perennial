@@ -938,6 +938,41 @@ theorem wp_copyForward {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped
     iframe
     ipureintro; word
 
+/-- `copyForward` copies nothing when either slice is empty: it needs no ownership. -/
+theorem wp_copyForward_len_zero {st t : go.GoType} [st ↓u go.SliceType t]
+    [IntoValTyped (GF := GF) V t] (sl sl2 : GoSlice) (h : sl.len = W64 0 ∨ sl2.len = W64 0) :
+    {{ (True : IProp GF) }}
+      (App (App (Val (slice.copyForward st t)) (Val #sl)) (Val #sl2)) @ s; E
+    {{ RET #(W64 0); True }} := by
+  iintro %Φ - HΦ
+  unfold slice.copyForward
+  wp_call
+  wp_auto
+  wp_for
+  have hz : (zero_val w64 : w64) = W64 0 := rfl
+  wp_if_destruct
+  · wp_if_destruct
+    · exfalso; rcases h with h | h <;> word
+    · rw [hz]; iapply HΦ; itrivial
+  · rw [hz]; iapply HΦ; itrivial
+
+/-- `copy(dst, src)` from an empty `src` copies nothing: it needs no ownership. -/
+theorem wp_slice_copy_of_len_zero {st t : go.GoType} [st ↓u go.SliceType t]
+    [IntoValTyped (GF := GF) V t] (sl sl2 : GoSlice) (h : sl2.len = W64 0) :
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
+    {{ RET #(W64 0); True }} := by
+  wp_start
+  rw [h]
+  wp_apply wp_slice_make2 (V := V) (W64 0) $$ [] as %tmp ⟨Htmp, _⟩
+  · ipureintro; decide
+  ihave %Hlen := ownSlice_len _ _ _ $$ Htmp
+  have htmp : tmp.len = W64 0 := by
+    simp only [List.length_replicate] at Hlen; word
+  wp_apply wp_copyForward_len_zero (V := V) tmp sl2 (.inr h)
+  wp_apply wp_copyForward_len_zero (V := V) sl tmp (.inr htmp)
+  iapply HΦ; itrivial
+
 /-- `copy(dst, src)` on separately owned slices (for overlapping ones, see
 `wp_slice_copy_within`). -/
 theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
