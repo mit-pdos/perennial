@@ -26,6 +26,22 @@ def _new_cap : val :=
     if: "len" <⟨go.int⟩ ("len" +⟨go.int⟩ "extra") then "len" +⟨go.int⟩ "extra"
     else "len"
 
+/-- Copy `min(len(dst), len(src))` elements from `src` to `dst`, front to back. Only for
+internal use: it is not Go's `copy` when the slices overlap with `dst` past `src` (it
+then reads elements it has already overwritten); `copy` (`SliceSemantics.copy_slice`)
+runs it twice, through a fresh buffer. -/
+def copyForward (st elem_type : go.GoType) : val :=
+  λ: "dst" "src",
+    let: "i" := GoAlloc go.int (GoZeroVal go.int #()) in
+    (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
+             (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, #()) :=
+       (λ: <>,
+          do: (let: "i_val" := ![go.int] "i" in
+               IndexRef st ("dst", "i_val")
+                   <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val")) ;;
+               "i" <-[go.int] "i_val" +⟨go.int⟩ #(W64 1)))) ;;
+    ![go.int] "i"
+
 def forRange (elem_type : go.GoType) : val :=
   λ: "s" "body",
   let: "i" := GoAlloc go.int #(W64 0) in
@@ -94,18 +110,18 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
        FuncResolve go.copy [st] #() "sl" "zero_sl" ;;
     #() : val)
 
+  /-- `copy(dst, src)` is a memmove: the two slices may overlap ("The source and
+  destination may overlap", the Go spec), so all of `src` is read before `dst` is
+  written, through a fresh buffer. (Copying front to back in place is wrong when `dst`
+  starts past `src` in the same array, as in `copy(s[i+1:], s[i:])`: it reads elements
+  it has already overwritten.) The result, the number of elements copied, is
+  `min(len(dst), len(src))`, what the second `copyForward` returns. -/
   copy_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.copy [st]
     (λ: "dst" "src",
-       let: "i" := GoAlloc go.int (GoZeroVal go.int #()) in
-       (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
-                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, #()) :=
-          (λ: <>,
-             do: (let: "i_val" := ![go.int] "i" in
-                  IndexRef st ("dst", "i_val")
-                      <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val")) ;;
-                  "i" <-[go.int] "i_val" +⟨go.int⟩ #(W64 1)))) ;;
-       ![go.int] "i" : val)
+       let: "tmp" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "src") in
+       slice.copyForward st elem_type "tmp" "src" ;;
+       slice.copyForward st elem_type "dst" "tmp" : val)
 
   make3_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.make3 [st]
