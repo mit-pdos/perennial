@@ -878,13 +878,16 @@ theorem wp_store_slice_index {t : go.GoType} [IntoValTyped (GF := GF) V t] (sl :
   iapply HΦ
   iapply Hs $$ Hv
 
-theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+/-- The front-to-back loop of `copy`, on separately owned slices. -/
+theorem wp_copyForward {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
     {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
-      (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
+      (App (App (Val (slice.copyForward st t)) (Val #sl)) (Val #sl2)) @ s; E
     {{ (n : w64), RET #n; ⌜sint.nat n = min vs.length vs'.length⌝ ∗
         sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
-  wp_start as ⟨Hs1, Hs2⟩
+  iintro %Φ ⟨Hs1, Hs2⟩ HΦ
+  unfold slice.copyForward
+  wp_call
   ihave %Hlen1 := ownSlice_len _ _ _ $$ Hs1
   ihave %Hlen2 := ownSlice_len _ _ _ $$ Hs2
   wp_auto
@@ -938,6 +941,105 @@ theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped 
     rw [heq]
     iframe
     ipureintro; word
+
+/-- `copy(dst, src)` on separately owned slices (for overlapping ones, see
+`wp_slice_copy_within`). -/
+theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+    (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
+    {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
+      (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
+    {{ (n : w64), RET #n; ⌜sint.nat n = min vs.length vs'.length⌝ ∗
+        sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
+  wp_start as ⟨Hs1, Hs2⟩
+  ihave %Hlen2 := ownSlice_len _ _ _ $$ Hs2
+  wp_apply wp_slice_make2 (V := V) sl2.len $$ [] as %tmp ⟨Htmp, _⟩
+  · ipureintro; exact Hlen2.2
+  wp_apply wp_copyForward tmp _ sl2 vs' dq $$ [Htmp Hs2] as %n1 ⟨_, Htmp, Hs2⟩
+  · iframe
+  have e : vs'.take (List.replicate (sint.nat sl2.len) (zero_val V)).length ++
+      (List.replicate (sint.nat sl2.len) (zero_val V)).drop vs'.length = vs' := by
+    rw [List.length_replicate, ← Hlen2.1, List.take_length, List.drop_replicate, Nat.sub_self,
+      List.replicate_zero, List.append_nil]
+  rw [e]
+  wp_apply wp_copyForward sl vs tmp vs' (DFrac.own 1) $$ [Hs1 Htmp] as %n ⟨%Hn, Hs1, _⟩
+  · iframe
+  iapply HΦ
+  iframe
+  ipureintro; exact Hn
+
+theorem list_slice3 {A : Type} (l1 l2 l3 : List A) (a b : Nat) (h1 : l1.length = a)
+    (h2 : l2.length = b - a) (hab : a ≤ b) :
+    (l1 ++ l2 ++ l3).take a = l1 ∧ subslice a b (l1 ++ l2 ++ l3) = l2 ∧
+      (l1 ++ l2 ++ l3).drop b = l3 := by
+  subst h1
+  refine ⟨by simp, ?_, ?_⟩
+  · simp only [subslice, List.append_assoc, List.take_append, List.drop_append,
+      List.take_of_length_le (show l1.length ≤ b by omega), List.drop_length,
+      List.nil_append, Nat.sub_self, List.drop_zero]
+    rw [h2, Nat.sub_self, List.take_zero, Nat.zero_sub, List.drop_zero, List.append_nil,
+      List.take_of_length_le (by omega)]
+  · rw [List.append_assoc, List.drop_append, List.drop_of_length_le (by omega), List.nil_append,
+      List.drop_append, List.drop_of_length_le (by omega), List.nil_append, h2,
+      show b - l1.length - (b - l1.length) = 0 by omega, List.drop_zero]
+
+/-- `copy(s[a:b], s[c:d])`: a copy between two parts of the same slice, which may
+overlap (`copy` is a memmove), e.g. `copy(s[i+1:], s[i:])` shifting the tail right.
+`s[a:b]` becomes what `wp_slice_copy` says, of the old `s[c:d]`. -/
+theorem wp_slice_copy_within {st t : go.GoType} [st ↓u go.SliceType t]
+    [IntoValTyped (GF := GF) V t] (sl : GoSlice) (vs : List V) (a b c d : w64)
+    (hab : 0 ≤ sint.Z a ∧ sint.Z a ≤ sint.Z b ∧ sint.Z b ≤ sint.Z sl.len)
+    (hcd : 0 ≤ sint.Z c ∧ sint.Z c ≤ sint.Z d ∧ sint.Z d ≤ sint.Z sl.len) :
+    {{ (sl ↦* vs : IProp GF) }}
+      (App (App (Val #(functions go.copy [st])) (Val #(slice.slice sl V a b)))
+        (Val #(slice.slice sl V c d))) @ s; E
+    {{ (n : w64), RET #n;
+        ⌜sint.nat n = min (sint.nat b - sint.nat a) (sint.nat d - sint.nat c)⌝ ∗
+        sl ↦* (vs.take (sint.nat a) ++
+          ((subslice (sint.nat c) (sint.nat d) vs).take (sint.nat b - sint.nat a) ++
+            (subslice (sint.nat a) (sint.nat b) vs).drop (sint.nat d - sint.nat c)) ++
+          vs.drop (sint.nat b)) }} := by
+  wp_start as Hs
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
+  -- read `s[c:d]` into the buffer
+  icases (ownSlice_slice c d sl _ vs hcd).1 $$ Hs with ⟨Hc1, Hc2, Hc3⟩
+  ihave %Hlenc := ownSlice_len _ _ _ $$ Hc2
+  simp only [slice.slice] at Hlenc
+  wp_apply wp_slice_make2 (V := V) (d - c) $$ [] as %tmp ⟨Htmp, _⟩
+  · ipureintro; exact Hlenc.2
+  wp_apply wp_copyForward tmp _ _ _ (DFrac.own 1) $$ [Htmp Hc2] as %n1 ⟨_, Htmp, Hc2⟩
+  · iframe
+  have e : ∀ l : List V, l.length = sint.nat (d - c) →
+      l.take (List.replicate (sint.nat (d - c)) (zero_val V)).length ++
+      (List.replicate (sint.nat (d - c)) (zero_val V)).drop l.length = l := by
+    intro l hl
+    rw [List.length_replicate, ← hl, List.take_length, List.drop_replicate, Nat.sub_self,
+      List.replicate_zero, List.append_nil]
+  rw [e _ Hlenc.1]
+  ihave Hs := (ownSlice_slice c d sl _ vs hcd).2 $$ [Hc1 Hc2 Hc3]
+  · iframe
+  -- write the buffer into `s[a:b]`
+  icases (ownSlice_slice a b sl _ vs hab).1 $$ Hs with ⟨Ha1, Ha2, Ha3⟩
+  wp_apply wp_copyForward _ _ tmp _ (DFrac.own 1) $$ [Ha2 Htmp] as %n ⟨%Hn, Ha2, _⟩
+  · iframe
+  iapply HΦ
+  have hla : (subslice (sint.nat a) (sint.nat b) vs).length = sint.nat b - sint.nat a := by
+    simp only [subslice, List.length_drop, List.length_take]; word
+  have hlc : (subslice (sint.nat c) (sint.nat d) vs).length = sint.nat d - sint.nat c := by
+    simp only [subslice, List.length_drop, List.length_take]; word
+  rw [hla, hlc] at Hn ⊢
+  isplitr
+  · ipureintro; exact Hn
+  have hlt : (vs.take (sint.nat a)).length = sint.nat a := by
+    simp only [List.length_take]; word
+  have hmid : ((subslice (sint.nat c) (sint.nat d) vs).take (sint.nat b - sint.nat a) ++
+      (subslice (sint.nat a) (sint.nat b) vs).drop (sint.nat d - sint.nat c)).length =
+      sint.nat b - sint.nat a := by
+    simp only [List.length_append, List.length_take, List.length_drop, hla, hlc]; omega
+  iapply (ownSlice_slice a b sl _ _ hab).2
+  obtain ⟨h1, h2, h3⟩ := list_slice3 (vs.take (sint.nat a)) _ (vs.drop (sint.nat b)) _ _ hlt hmid
+    (by word)
+  rw [h1, h2, h3]
+  iframe
 
 theorem wp_slice_clear {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : GoSlice) (vs : List V) :
