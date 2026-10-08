@@ -8,10 +8,14 @@ Only lemmas that iris-lean's `Iris.BI.BigOp.BigSepList` lacks are included.
 * `big_sepL2_fupd` is iris-lean's `BigSepL2.bigSepL2_fupd` and is not repeated.
 * `big_sepL2_mono_with_inv` and `big_sepL2_mono_with_fupd_inv` do not need `BIAffine`.
 -/
-import Iris.BI
-import Iris.BI.BigOp
-import Iris.BI.Updates
-import Iris.ProofMode
+module
+
+public import Iris.BI
+public import Iris.BI.BigOp
+public import Iris.BI.Updates
+public import Iris.ProofMode
+
+@[expose] public section
 
 namespace Perennial
 

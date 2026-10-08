@@ -13,10 +13,14 @@ Notes:
 * `1/2` is `(1 : Qp).half`.
 * `isChan` and `ownChan` are sealed (`@[irreducible]` + `_unseal`).
 -/
-import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
-import Perennial.Golang.Theory.Lock
-import Perennial.Golang.Theory.Slice
-import Perennial.Golang.Defn.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
+public import Perennial.Golang.Theory.Lock
+public import Perennial.Golang.Theory.Slice
+public import Perennial.Golang.Defn.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

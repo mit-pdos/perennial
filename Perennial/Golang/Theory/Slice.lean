@@ -4,14 +4,18 @@ The slice points-to `s ↦*{dq} vs`
 splitting/combining slices, and specs for the slice built-ins (`len`, `cap`,
 `make`, `copy`, `clear`, `append`, indexing, slice literals, `for range`).
 -/
-import Perennial.Golang.Theory.Array
-import Perennial.Golang.Theory.Loop
-import Perennial.Golang.Theory.TacticsSimp
-import Perennial.Golang.Theory.Auto
-import Perennial.Golang.Theory.Assume
-import Perennial.Golang.Defn.Slice
-import Perennial.GooseLang.IPersist
-import Perennial.Std.List
+module
+
+public import Perennial.Golang.Theory.Array
+public import Perennial.Golang.Theory.Loop
+public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.Auto
+public import Perennial.Golang.Theory.Assume
+public import Perennial.Golang.Defn.Slice
+public import Perennial.GooseLang.IPersist
+public import Perennial.Std.List
+
+@[expose] public section
 
 namespace Perennial
 

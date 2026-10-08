@@ -6,7 +6,11 @@ Instead of 256 hypotheses `P (W8 0)`, ..., `P (W8 255)`, `byte_explode` takes
 them bundled as `∀ i : Fin 256, P (BitVec.ofNat 8 i)`, which `decide` can
 often discharge for a computable `P`.
 -/
-import Perennial.Std.Word.Automation
+module
+
+public import Perennial.Std.Word.Automation
+
+@[expose] public section
 
 namespace Perennial
 

@@ -1,9 +1,13 @@
 /-
 The `IsPkgInit` instance of `sort`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.sort
-import Perennial.GeneratedProof.sort
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.sort
+public import Perennial.GeneratedProof.sort
+
+@[expose] public section
 
 noncomputable section
 

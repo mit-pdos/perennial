@@ -2,14 +2,18 @@
 Common imports and package
 initialization of `sync`.
 -/
-import Perennial.Code.sync
-import Perennial.Proof.ProofPrelude
-import Perennial.GeneratedProof.sync
-import Perennial.Proof.sync.atomic
-import Perennial.Proof.internal.race
-import Perennial.Proof.internal.synctest
-import Perennial.Proof.TokSet
-import Perennial.Algebra.AuthProp
+module
+
+public import Perennial.Code.sync
+public import Perennial.Proof.ProofPrelude
+public import Perennial.GeneratedProof.sync
+public import Perennial.Proof.sync.atomic
+public import Perennial.Proof.internal.race
+public import Perennial.Proof.internal.synctest
+public import Perennial.Proof.TokSet
+public import Perennial.Algebra.AuthProp
+
+@[expose] public section
 
 noncomputable section
 

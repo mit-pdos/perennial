@@ -1,7 +1,11 @@
 /-
 Package initialization.
 -/
-import Perennial.Golang.Defn.PostLang
+module
+
+public import Perennial.Golang.Defn.PostLang
+
+@[expose] public section
 
 namespace Perennial
 

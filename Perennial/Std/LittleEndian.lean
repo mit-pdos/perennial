@@ -2,7 +2,11 @@
 Little-endian encoding of numbers as bytes. The byte sequences are lists, and
 the numbers are `Nat`s.
 -/
-import Perennial.Std.Word
+module
+
+public import Perennial.Std.Word
+
+@[expose] public section
 
 namespace Perennial
 

@@ -2,13 +2,17 @@
 Proofs of the goose channel examples: hedged requests, hello-world futures, cancellation, joins, pointer exchange and
 broadcast examples, using the channel idioms (bag, handshake, broadcast, future).
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Golang.Theory.Chan.Idioms.Handshake
-import Perennial.Golang.Theory.Chan.Idioms.Broadcast
-import Perennial.Golang.Theory.Chan.Idioms.Future
-import Perennial.Proof.time
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Golang.Theory.Chan.Idioms.Handshake
+public import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+public import Perennial.Golang.Theory.Chan.Idioms.Future
+public import Perennial.Proof.time
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

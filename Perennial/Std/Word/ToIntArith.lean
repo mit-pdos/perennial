@@ -4,7 +4,11 @@ case splits (used by `word_sint_arith` in `Perennial/Std/Word/Automation.lean`).
 The operands' signed values are given as `Int` terms `X`, `Y` (`x.toInt` itself,
 or the value of a literal).
 -/
-import Perennial.Std.Word
+module
+
+public import Perennial.Std.Word
+
+@[expose] public section
 
 namespace Perennial.word
 

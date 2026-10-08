@@ -1,9 +1,13 @@
 /-
 Specs for the Go `strings` package.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.strings
-import Perennial.GeneratedProof.strings
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.strings
+public import Perennial.GeneratedProof.strings
+
+@[expose] public section
 
 noncomputable section
 

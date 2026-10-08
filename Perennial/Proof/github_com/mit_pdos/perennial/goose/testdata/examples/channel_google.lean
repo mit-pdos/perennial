@@ -8,10 +8,14 @@ Lean notes:
   loop invariant does not need `NoDup remk` (`pureContractOf_inj` and the
   related lemmas are still available).
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Golang.Theory.Chan.Idioms.Future
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Golang.Theory.Chan.Idioms.Future
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

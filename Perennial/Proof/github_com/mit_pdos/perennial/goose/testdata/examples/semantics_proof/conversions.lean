@@ -2,8 +2,12 @@
 Semantics tests for conversions. The `[]byte -> string` conversion is handled
 with `wp_bytes_to_string`.
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
-import Perennial.Golang.Theory.String
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
+public import Perennial.Golang.Theory.String
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

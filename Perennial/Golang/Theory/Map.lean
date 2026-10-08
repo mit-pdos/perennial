@@ -11,11 +11,15 @@ Notes:
   underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`),
   not only at the literal `go.MapType key_type elem_type`.
 -/
-import Perennial.Golang.Theory.TacticsSimp
-import Perennial.Golang.Theory.Auto
-import Perennial.Golang.Theory.Array
-import Perennial.Golang.Defn.Map
-import Perennial.GooseLang.IPersist
+module
+
+public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.Auto
+public import Perennial.Golang.Theory.Array
+public import Perennial.Golang.Defn.Map
+public import Perennial.GooseLang.IPersist
+
+@[expose] public section
 
 namespace Perennial
 

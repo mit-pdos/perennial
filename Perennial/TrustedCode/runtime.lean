@@ -2,7 +2,11 @@
 Trusted code for `runtime`. `Goschedⁱᵐᵖˡ` is in namespace `runtime`, as the
 generated package.
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

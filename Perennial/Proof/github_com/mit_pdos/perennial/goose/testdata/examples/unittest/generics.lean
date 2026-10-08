@@ -1,9 +1,13 @@
 /-
 Specs for the goose generics unit tests.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

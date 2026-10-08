@@ -2,10 +2,14 @@
 Package initialization of
 `slices`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.math.bits
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.math.bits
+
+@[expose] public section
 
 noncomputable section
 

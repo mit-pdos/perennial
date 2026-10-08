@@ -20,12 +20,16 @@ Conventions:
   `gmapCurry`, since iris-lean has no `map_curry`.
 * `big_sepM2_lookup_*` and `big_sepM2_sepM_*` need no `Absorbing` arguments.
 -/
-import Iris.BI
-import Iris.BI.BigOp
-import Iris.ProofMode
-import Iris.Std.PartialMap
-import Iris.Std.GenSets
-import Perennial.Std.GMap
+module
+
+public import Iris.BI
+public import Iris.BI.BigOp
+public import Iris.ProofMode
+public import Iris.Std.PartialMap
+public import Iris.Std.GenSets
+public import Perennial.Std.GMap
+
+@[expose] public section
 
 namespace Perennial
 

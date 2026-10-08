@@ -1,9 +1,13 @@
 /-
 Package initialization for `cmp`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.cmp
-import Perennial.GeneratedProof.cmp
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.cmp
+public import Perennial.GeneratedProof.cmp
+
+@[expose] public section
 
 noncomputable section
 

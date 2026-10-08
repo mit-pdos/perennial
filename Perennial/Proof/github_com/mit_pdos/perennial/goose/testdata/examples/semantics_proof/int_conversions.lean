@@ -1,7 +1,11 @@
 /-
 Semantics tests for integer conversions.
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.semantics_init
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

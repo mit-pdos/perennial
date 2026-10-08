@@ -13,9 +13,13 @@ pre-condition only once.
 It is valid to call `Once.Do(f)` with different values of `f`, but they must
 all satisfy `{P} #f #() {Q}`.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.mutex
-import Perennial.Proof.sync.atomic
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.sync.atomic
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

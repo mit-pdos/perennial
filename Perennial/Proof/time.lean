@@ -8,11 +8,15 @@ Notes:
   `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
   channel ghost state) is defined here.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.time
-import Perennial.GeneratedProof.time
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.time
+public import Perennial.GeneratedProof.time
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

@@ -2,12 +2,16 @@
 Package initialization instances for the `channel` examples package.
 The `IsPkgInit` instance of `channel/lock` comes from the import of `lock.lean`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Proof.strings
-import Perennial.Proof.time
-import Perennial.Proof.sync
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.lock
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.strings
+public import Perennial.Proof.time
+public import Perennial.Proof.sync
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.lock
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

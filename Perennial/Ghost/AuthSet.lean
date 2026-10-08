@@ -5,7 +5,11 @@ Rather than using `Auth (GSetDisj A)` directly, the API is built on
 `ghost_map` with unit values (`gset A = gmap A Unit`): the authoritative set is
 `ghost_map_auth γ 1 s` and a fragment is `a ↪[γ] ()`.
 -/
-import Perennial.Ghost.GhostMap
+module
+
+public import Perennial.Ghost.GhostMap
+
+@[expose] public section
 
 noncomputable section
 

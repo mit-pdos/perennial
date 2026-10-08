@@ -1,6 +1,10 @@
-import Perennial.Golang.Defn.Loop
-import Perennial.Golang.Defn.Assume
-import Perennial.Golang.Defn.Predeclared
+module
+
+public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Assume
+public import Perennial.Golang.Defn.Predeclared
+
+@[expose] public section
 
 namespace Perennial
 

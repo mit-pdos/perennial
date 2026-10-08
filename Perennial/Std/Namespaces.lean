@@ -2,7 +2,11 @@
 Mask lemmas about namespaces, shared by proofs that open an invariant `N.@x`
 inside a mask `⊤ ∖ ↑N` (previously duplicated in several proof files).
 -/
-import Iris.Std.Namespaces
+module
+
+public import Iris.Std.Namespaces
+
+@[expose] public section
 
 namespace Perennial
 

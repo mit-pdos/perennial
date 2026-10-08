@@ -8,15 +8,19 @@ Lean notes:
 * There is no `solve_ndisj`; the mask side conditions are proved with the
   lemmas `mask_diff_ndot` and `mask_ndot_ne'` (`Perennial/Std/Namespaces.lean`).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Proof.sync_proof.mutex
-import Perennial.Proof.strings
-import Perennial.Proof.time
-import Perennial.Ghost.Token
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.strings
+public import Perennial.Proof.time
+public import Perennial.Ghost.Token
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

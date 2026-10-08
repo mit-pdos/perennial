@@ -1,9 +1,13 @@
 /-
 Package initialization of `log` and `log.Printf`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.log
-import Perennial.GeneratedProof.log
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.log
+public import Perennial.GeneratedProof.log
+
+@[expose] public section
 
 noncomputable section
 

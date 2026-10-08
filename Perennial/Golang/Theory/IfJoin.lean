@@ -32,7 +32,11 @@ Notes:
 * `wp_bind (if: _ then _ else _)` binds the outermost `if:` in evaluation
   position, whether or not its condition is already a value.
 -/
-import Perennial.Golang.Theory
+module
+
+public import Perennial.Golang.Theory
+
+@[expose] public section
 
 namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
@@ -59,7 +63,7 @@ the `if:` goal. Leaves the true branch, the false branch and the continuation
 syntax (name := wpIfJoin) "wp_if_join " term:max (" with " specPat)? : tactic
 
 open Lean Elab Tactic Meta in
-@[tactic wpIfJoin] def evalWpIfJoin : Tactic := fun stx => do
+@[tactic wpIfJoin] meta def evalWpIfJoin : Tactic := fun stx => do
   let asn : Term := ⟨stx[1]⟩
   let pat : TSyntax `specPat ←
     if stx[2].isNone then `(specPat| []) else Pure.pure ⟨stx[2][1]⟩

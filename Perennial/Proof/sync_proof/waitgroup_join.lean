@@ -3,8 +3,12 @@ The "join" idiom for
 `WaitGroup`: `Add` hands out permission to call `Done` with a chosen
 proposition, and `Wait` collects all of them.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.waitgroup
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.waitgroup
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

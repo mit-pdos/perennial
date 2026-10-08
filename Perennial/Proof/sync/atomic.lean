@@ -5,9 +5,13 @@ atomic updates (`|={⊤,∅}=> ▷ ∃ v, ... ∗ (... ={∅,⊤}=∗ Φ _)`).
 The integer sections (Uint64, Int64, Uint32, Int32) follow one template and
 differ only in the integer type.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.sync.atomic
-import Perennial.GeneratedProof.sync.atomic
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.sync.atomic
+public import Perennial.GeneratedProof.sync.atomic
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

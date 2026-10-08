@@ -7,7 +7,11 @@ div/mod are `BitVec.sdiv/srem`, and/or/xor are `&&& ||| ^^^`, left and logical
 right shift are `<<< >>>`, arithmetic right shift is `BitVec.sshiftRight'`,
 negation is `-` and bitwise not is `~~~`.
 -/
-import Perennial.Golang.Defn.PostLang
+module
+
+public import Perennial.Golang.Defn.PostLang
+
+@[expose] public section
 
 namespace Perennial
 

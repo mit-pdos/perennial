@@ -6,7 +6,11 @@ own file because a simp attribute cannot be used in the file that declares it.
 * `@[word_unfold]`: definitions that the `word` tactic unfolds.
 * `@[list_simp]`: rewrite rules used by `list_simplifier`.
 -/
-import Lean
+module
+
+public import Lean
+
+@[expose] public section
 
 register_simp_attr len
 register_simp_attr word_unfold

@@ -4,8 +4,12 @@ Little-endian encodings of `w64` and `w32`.
 These are plain (unsealed) definitions, with `_def`/`_unseal` lemmas so that
 `rw [u64Le_unseal]` works.
 -/
-import Perennial.Std.LittleEndian
-import Perennial.Std.ListLen
+module
+
+public import Perennial.Std.LittleEndian
+public import Perennial.Std.ListLen
+
+@[expose] public section
 
 namespace Perennial
 

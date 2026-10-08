@@ -28,16 +28,20 @@ Notes:
   (.own 1) [v]`; the `na_block_size`/`meta_token` parts of
   `wp_allocN_seq_sized_meta` are dropped along with that ghost state.
 -/
-import Iris.ProgramLogic.WeakestPre
-import Iris.ProgramLogic.Lifting
-import Perennial.ProgramLogic.EctxLifting
-import Iris.BI.Lib.ProphMap
-import Iris.Instances.Lib.GhostVar
-import Iris.Std.GenSets
-import Perennial.Algebra.NaHeap
-import Perennial.GooseLang.Lang
-import Perennial.GooseLang.BoundedLang
-import Perennial.GooseLang.Receipts
+module
+
+public import Iris.ProgramLogic.WeakestPre
+public import Iris.ProgramLogic.Lifting
+public import Perennial.ProgramLogic.EctxLifting
+public import Iris.BI.Lib.ProphMap
+public import Iris.Instances.Lib.GhostVar
+public import Iris.Std.GenSets
+public import Perennial.Algebra.NaHeap
+public import Perennial.GooseLang.Lang
+public import Perennial.GooseLang.BoundedLang
+public import Perennial.GooseLang.Receipts
+
+@[expose] public section
 
 noncomputable section
 

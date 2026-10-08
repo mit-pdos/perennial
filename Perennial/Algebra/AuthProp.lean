@@ -6,8 +6,12 @@ Representation: the set of saved-prop names is a `gmap GName Unit` (= `gmap GNam
 used directly as the ghost map; big separating conjunctions over the set are
 `[∗map] γp ↦ _ ∈ gns, _`.
 -/
-import Perennial.Ghost.GhostMap
-import Perennial.Ghost.SavedProp
+module
+
+public import Perennial.Ghost.GhostMap
+public import Perennial.Ghost.SavedProp
+
+@[expose] public section
 
 noncomputable section
 

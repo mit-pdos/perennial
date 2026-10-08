@@ -4,9 +4,13 @@ The spec of `with_defer:`.
 Note: `deferType` is an `abbrev` (unfolded by typeclass search) so that the
 instances for function types apply to it.
 -/
-import Perennial.Golang.Theory.TacticsSimp
-import Perennial.Golang.Theory.Auto
-import Perennial.Golang.Defn.Defer
+module
+
+public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.Auto
+public import Perennial.Golang.Defn.Defer
+
+@[expose] public section
 
 namespace Perennial
 

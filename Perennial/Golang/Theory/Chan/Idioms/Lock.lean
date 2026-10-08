@@ -8,8 +8,12 @@ A buffered channel with capacity 1 is used as a lock: an empty buffer means unlo
 (resource `R` available), one value in the buffer means locked. Unbuffered and close
 operations are banned. Lock acquisition is a send, release is a receive.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

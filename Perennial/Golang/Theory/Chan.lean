@@ -7,11 +7,15 @@ Ghost state over element type `V` needs `[Pos.Countable V]` (see `ChanAuBase.lea
 The select specifications quantify over the element type `V` and its instances
 inside the Iris propositions.
 -/
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
-import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuNew
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuRecv
+module
+
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuNew
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuRecv
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

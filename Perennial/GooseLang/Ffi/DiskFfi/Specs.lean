@@ -11,11 +11,15 @@ Iris reasoning principles for the disk FFI (non-crash parts only).
 * `ffiLocalStart` and the adequacy instance are in
   `Perennial/GooseLang/Ffi/DiskFfi/Adequacy.lean`.
 -/
-import Iris.BI.Lib.GenHeap
-import Perennial.GooseLang.Lifting
-import Perennial.GooseLang.Countable
-import Perennial.GooseLang.Ffi.DiskFfi.Impl
-import Perennial.GooseLang.Ffi.GenHeap
+module
+
+public import Iris.BI.Lib.GenHeap
+public import Perennial.GooseLang.Lifting
+public import Perennial.GooseLang.Countable
+public import Perennial.GooseLang.Ffi.DiskFfi.Impl
+public import Perennial.GooseLang.Ffi.GenHeap
+
+@[expose] public section
 
 noncomputable section
 

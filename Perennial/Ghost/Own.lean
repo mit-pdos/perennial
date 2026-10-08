@@ -2,7 +2,11 @@
 Derived properties of `own` (see `Perennial/Ghost/All.lean`
 for the design).
 -/
-import Perennial.Ghost.All
+module
+
+public import Perennial.Ghost.All
+
+@[expose] public section
 
 noncomputable section
 

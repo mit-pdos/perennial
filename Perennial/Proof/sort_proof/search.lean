@@ -9,11 +9,15 @@ As for `Find`, `0 ≤ n` is a precondition, `f` is only called on `[0, n)`, and
 the user-provided `f` is "adapted" (`adaptPred`) so that `f (-1) = false` and
 `f n = true`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.sort
-import Perennial.GeneratedProof.sort
-import Perennial.Proof.sort_proof.sort_init
-import Perennial.Proof.sort_proof.find
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.sort
+public import Perennial.GeneratedProof.sort
+public import Perennial.Proof.sort_proof.sort_init
+public import Perennial.Proof.sort_proof.find
+
+@[expose] public section
 
 noncomputable section
 

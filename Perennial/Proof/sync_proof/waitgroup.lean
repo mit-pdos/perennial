@@ -2,8 +2,12 @@
 `sync.WaitGroup`, with logically
 atomic specifications for `Add`, `Done` and `Wait`.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.sema
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.sema
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

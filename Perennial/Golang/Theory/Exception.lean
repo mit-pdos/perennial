@@ -3,7 +3,11 @@
 monad (`do:`, `return:`, `;;;`, `exceptionDo`), so that `wp_pures` steps
 through function bodies.
 -/
-import Perennial.Golang.Theory.PostLifting
+module
+
+public import Perennial.Golang.Theory.PostLifting
+
+@[expose] public section
 
 namespace Perennial
 

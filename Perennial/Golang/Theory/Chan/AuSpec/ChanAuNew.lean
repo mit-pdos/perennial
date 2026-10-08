@@ -2,7 +2,11 @@
 The specification of
 `channel.NewChannel`.
 -/
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
+module
+
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

@@ -1,9 +1,13 @@
 /-
 Package initialization of `fmt` and `fmt.Errorf`.
 -/
-import Perennial.Proof.io
-import Perennial.Code.fmt
-import Perennial.GeneratedProof.fmt
+module
+
+public import Perennial.Proof.io
+public import Perennial.Code.fmt
+public import Perennial.GeneratedProof.fmt
+
+@[expose] public section
 
 noncomputable section
 

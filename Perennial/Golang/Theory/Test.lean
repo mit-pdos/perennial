@@ -4,7 +4,11 @@ Small worked examples of the GooseLang proof tactics (`wp_start`, `wp_auto`,
 `iNamed`) on hand-written GooseLang functions in the style of goose's output.
 These double as regression tests and as examples for proof writers.
 -/
-import Perennial.Golang.Theory
+module
+
+public import Perennial.Golang.Theory
+
+@[expose] public section
 
 namespace Perennial
 open Iris Iris.BI

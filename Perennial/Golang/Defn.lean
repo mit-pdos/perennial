@@ -1,9 +1,13 @@
 /-
 The complete Go semantics.
 -/
-import Perennial.Golang.Defn.Pre
-import Perennial.Golang.Defn.Chan
-import Perennial.Golang.Defn.String
+module
+
+public import Perennial.Golang.Defn.Pre
+public import Perennial.Golang.Defn.Chan
+public import Perennial.Golang.Defn.String
+
+@[expose] public section
 
 namespace Perennial
 

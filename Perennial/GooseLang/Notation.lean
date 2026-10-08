@@ -64,8 +64,12 @@ more loosely than comparisons, so parenthesize operands. Notations defined later
 (`Defn/Exception`), `break: e`, `continue: e`, `for: c ; p := e`
 (`Defn/Loop`), `with_defer: e` (`Defn/Defer`).
 -/
-import Lean
-import Perennial.GooseLang.Lang
+module
+
+public import Lean
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 namespace Perennial
 
@@ -98,7 +102,7 @@ declare_syntax_cat gl_pat
 scoped syntax gl_binder : gl_pat
 scoped syntax "(" gl_pat ", " gl_pat,+ ")" : gl_pat
 
-def glBinder : TSyntax `gl_binder → MacroM Term
+meta def glBinder : TSyntax `gl_binder → MacroM Term
   | `(gl_binder| $s:str) => `(BNamed $s)
   | `(gl_binder| <>) => `(BAnon)
   | `(gl_binder| $x:ident) => `(BNamed $(quote x.getId.toString))
@@ -106,7 +110,7 @@ def glBinder : TSyntax `gl_binder → MacroM Term
   | _ => Macro.throwUnsupported
 
 /-- Flatten a left-nested tuple pattern `((a1, a2), a3)` into `[a1, a2, a3]`. -/
-partial def glPatBinders : TSyntax `gl_pat → MacroM (Array (TSyntax `gl_binder))
+meta partial def glPatBinders : TSyntax `gl_pat → MacroM (Array (TSyntax `gl_binder))
   | `(gl_pat| $b:gl_binder) => pure #[b]
   | `(gl_pat| ($p, $ps,*)) => do
     let mut acc ← glPatBinders p
@@ -127,14 +131,14 @@ scoped syntax:max (name := glVal) "glv(" term ")" : term
 goose mode iff its expected type is `expr` or `val`. -/
 syntax:max (name := glArg) "gl_arg% " term:max : term
 
-private def isExprTy (ty : Lean.Expr) : MetaM Bool := do
+private meta def isExprTy (ty : Lean.Expr) : MetaM Bool := do
   return (← whnfR (← instantiateMVars ty)).isAppOf ``Perennial.Expr
 
-private def isValTy (ty : Lean.Expr) : MetaM Bool := do
+private meta def isValTy (ty : Lean.Expr) : MetaM Bool := do
   return (← whnfR (← instantiateMVars ty)).isAppOf ``Perennial.val
 
 /-- Does `id` refer to a Lean local or global? -/
-private def isResolvable (id : Name) : TermElabM Bool := do
+private meta def isResolvable (id : Name) : TermElabM Bool := do
   let root := id.getRoot
   if (← getLCtx).findFromUserName? root |>.isSome then return true
   if (← getLCtx).findFromUserName? id |>.isSome then return true
@@ -142,14 +146,14 @@ private def isResolvable (id : Name) : TermElabM Bool := do
     return !(← resolveGlobalName id).isEmpty
   catch _ => return false
 
-private def leftNest (mk : Term → Term → TermElabM Term) (xs : Array Term) : TermElabM Term := do
+private meta def leftNest (mk : Term → Term → TermElabM Term) (xs : Array Term) : TermElabM Term := do
   let mut acc := xs[0]!
   for x in xs[1:] do
     acc ← mk acc x
   return acc
 
 /-- Translate goose expression-mode syntax into ordinary Lean syntax. -/
-partial def glExprStx (stx : Term) : TermElabM Term := do
+meta partial def glExprStx (stx : Term) : TermElabM Term := do
   match stx with
   | `($s:str) => `(Var $s)
   | `(($e)) => glExprStx e
@@ -186,7 +190,7 @@ partial def glExprStx (stx : Term) : TermElabM Term := do
       return stx
 
 /-- Translate goose value-mode syntax into ordinary Lean syntax. -/
-partial def glValStx (stx : Term) : TermElabM Term := do
+meta partial def glValStx (stx : Term) : TermElabM Term := do
   match stx with
   | `(($e)) => glValStx e
   | `(($e, $es,*)) =>
@@ -194,17 +198,17 @@ partial def glValStx (stx : Term) : TermElabM Term := do
     leftNest (fun a b => `(PairV $a $b)) xs
   | _ => return stx
 
-@[term_elab glExpr] def elabGlExpr : TermElab := fun stx _ => do
+@[term_elab glExpr] meta def elabGlExpr : TermElab := fun stx _ => do
   let e : Term := ⟨stx[1]⟩
   let ty ← elabType (← `(Expr))
   elabTermEnsuringType (← glExprStx e) ty
 
-@[term_elab glVal] def elabGlVal : TermElab := fun stx _ => do
+@[term_elab glVal] meta def elabGlVal : TermElab := fun stx _ => do
   let e : Term := ⟨stx[1]⟩
   let ty ← elabType (← `(val))
   elabTermEnsuringType (← glValStx e) ty
 
-@[term_elab glArg] def elabGlArg : TermElab := fun stx ety? => do
+@[term_elab glArg] meta def elabGlArg : TermElab := fun stx ety? => do
   let a : Term := ⟨stx[1]⟩
   match ety? with
   | none => elabTerm a none
@@ -222,7 +226,7 @@ partial def glValStx (stx : Term) : TermElabM Term := do
       | _ => elabTerm a ety
 
 /-- Is a `val` expected? Postpones if the expected type is not known yet. -/
-private def valExpected (ety? : Option Lean.Expr) : TermElabM Bool := do
+private meta def valExpected (ety? : Option Lean.Expr) : TermElabM Bool := do
   match ety? with
   | none => return false
   | some ety =>
@@ -243,10 +247,10 @@ scoped syntax:10 "if: " term " then " term " else " term : term
 /-- GooseLang sequencing. -/
 scoped syntax:10 term:11 " ;; " term:10 : term
 
-private def lamChain (bs : Array (TSyntax `gl_binder)) (body : Term) : MacroM Term := do
+private meta def lamChain (bs : Array (TSyntax `gl_binder)) (body : Term) : MacroM Term := do
   bs.foldrM (fun b acc => do `(Rec BAnon $(← glBinder b) $acc)) body
 
-@[term_elab glLam] def elabGlLam : TermElab := fun stx ety? => do
+@[term_elab glLam] meta def elabGlLam : TermElab := fun stx ety? => do
   let bs : Array (TSyntax `gl_binder) := stx[1].getArgs.map (⟨·⟩)
   let body : Term := ⟨stx[3]⟩
   let isVal ← valExpected ety?
@@ -255,7 +259,7 @@ private def lamChain (bs : Array (TSyntax `gl_binder)) (body : Term) : MacroM Te
   let res ← if isVal then `(RecV BAnon $b0 $inner) else `(Rec BAnon $b0 $inner)
   elabTerm res ety?
 
-@[term_elab glRec] def elabGlRec : TermElab := fun stx ety? => do
+@[term_elab glRec] meta def elabGlRec : TermElab := fun stx ety? => do
   let f : TSyntax `gl_binder := ⟨stx[1]⟩
   let bs : Array (TSyntax `gl_binder) := stx[2].getArgs.map (⟨·⟩)
   let body : Term := ⟨stx[4]⟩

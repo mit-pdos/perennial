@@ -4,9 +4,13 @@ and byte slices, which are implemented by the Go model
 `github.com/mit-pdos/perennial/goose/model/strings` (proved in
 `Perennial/Proof/github_com/mit_pdos/perennial/goose/model/strings.lean`).
 -/
-import Perennial.Golang.Defn.String
-import Perennial.Golang.Theory.Pre
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings
+module
+
+public import Perennial.Golang.Defn.String
+public import Perennial.Golang.Theory.Pre
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings
+
+@[expose] public section
 
 namespace Perennial
 

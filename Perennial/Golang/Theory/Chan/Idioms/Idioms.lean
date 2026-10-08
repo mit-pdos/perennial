@@ -1,11 +1,15 @@
 /-
 All channel idioms.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Golang.Theory.Chan.Idioms.Broadcast
-import Perennial.Golang.Theory.Chan.Idioms.Future
-import Perennial.Golang.Theory.Chan.Idioms.Handshake
-import Perennial.Golang.Theory.Chan.Idioms.Lock
-import Perennial.Golang.Theory.Chan.Idioms.Mpmc
-import Perennial.Golang.Theory.Chan.Idioms.Spsc
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+public import Perennial.Golang.Theory.Chan.Idioms.Future
+public import Perennial.Golang.Theory.Chan.Idioms.Handshake
+public import Perennial.Golang.Theory.Chan.Idioms.Lock
+public import Perennial.Golang.Theory.Chan.Idioms.Mpmc
+public import Perennial.Golang.Theory.Chan.Idioms.Spsc
+
+@[expose] public section

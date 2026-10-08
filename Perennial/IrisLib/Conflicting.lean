@@ -10,10 +10,14 @@ Notes:
   `ConflictsWith P P`) instead of a definitional alias, so that instance search
   does not loop.
 -/
-import Iris.BI
-import Iris.BI.BigOp
-import Iris.ProofMode
-import Iris.Std.PartialMap
+module
+
+public import Iris.BI
+public import Iris.BI.BigOp
+public import Iris.ProofMode
+public import Iris.Std.PartialMap
+
+@[expose] public section
 
 namespace Perennial
 

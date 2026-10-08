@@ -1,9 +1,13 @@
 /-
 Package initialization of `internal/race`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.internal.race
-import Perennial.GeneratedProof.internal.race
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.internal.race
+public import Perennial.GeneratedProof.internal.race
+
+@[expose] public section
 
 noncomputable section
 

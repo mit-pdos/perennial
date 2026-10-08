@@ -1,12 +1,16 @@
-import Perennial.Golang.Defn.Exception
-import Perennial.Golang.Defn.Pkg
-import Perennial.Golang.Defn.Loop
-import Perennial.Golang.Defn.Array
-import Perennial.Golang.Defn.Slice
-import Perennial.Golang.Defn.Map
-import Perennial.Golang.Defn.Predeclared
-import Perennial.Golang.Defn.Defer
-import Perennial.Golang.Defn.Interface
+module
+
+public import Perennial.Golang.Defn.Exception
+public import Perennial.Golang.Defn.Pkg
+public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Array
+public import Perennial.Golang.Defn.Slice
+public import Perennial.Golang.Defn.Map
+public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Golang.Defn.Defer
+public import Perennial.Golang.Defn.Interface
+
+@[expose] public section
 
 namespace Perennial
 

@@ -1,2 +1,6 @@
-import Perennial.Code.internal.synctest
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Code.internal.synctest
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section

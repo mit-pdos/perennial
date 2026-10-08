@@ -12,12 +12,16 @@ Notes:
 * `bigSepML_nodup` needs no `BiPureForall` (iris-lean proves `pure_forall`
   for every BI).
 -/
-import Iris.BI
-import Iris.BI.BigOp
-import Iris.ProofMode
-import Iris.Std.PartialMap
-import Perennial.IrisLib.Conflicting
-import Perennial.Algebra.BigOp.BigSepM
+module
+
+public import Iris.BI
+public import Iris.BI.BigOp
+public import Iris.ProofMode
+public import Iris.Std.PartialMap
+public import Perennial.IrisLib.Conflicting
+public import Perennial.Algebra.BigOp.BigSepM
+
+@[expose] public section
 
 namespace Perennial
 

@@ -27,7 +27,11 @@ The core of Goose's Go semantics, stated as typeclasses over an abstract
   operations are `BitVec` operations; list lookups are `l[i]?` and list updates
   are `l.set i v`.
 -/
-import Perennial.GooseLang.Notation
+module
+
+public import Perennial.GooseLang.Notation
+
+@[expose] public section
 
 namespace Perennial
 

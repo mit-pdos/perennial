@@ -10,13 +10,17 @@ that the output is ordered with respect to `R`.
 For integers, `R` can be `(<)`, and the postcondition `Hsorted` gives
 (informally) `∀ i < j, data[i] ≤ data[j]`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.math.bits
-import Perennial.Proof.slices_proof.slices_init
-import Perennial.Proof.slices_proof.pdqSort.sort_basics
-import Perennial.Proof.slices_proof.pdqSort.pdqSort
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.math.bits
+public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.slices_proof.pdqSort.sort_basics
+public import Perennial.Proof.slices_proof.pdqSort.pdqSort
+
+@[expose] public section
 
 noncomputable section
 

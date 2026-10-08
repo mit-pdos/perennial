@@ -1,7 +1,11 @@
 /-
 Loops: `break:`, `continue:` and `for:`.
 -/
-import Perennial.Golang.Defn.Exception
+module
+
+public import Perennial.Golang.Defn.Exception
+
+@[expose] public section
 
 namespace Perennial
 

@@ -5,9 +5,13 @@ of every element at `arrayIndexRef V i l`), and lemmas to access and split it.
 `intoVal_typed_array` relies on the guarded, element-wise `go.store_array` of
 `Perennial/Golang/Defn/Array.lean` (see there).
 -/
-import Perennial.Golang.Theory.TacticsSimp
-import Perennial.Golang.Theory.Auto
-import Perennial.Golang.Defn.Array
+module
+
+public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.Auto
+public import Perennial.Golang.Defn.Array
+
+@[expose] public section
 
 namespace Perennial
 

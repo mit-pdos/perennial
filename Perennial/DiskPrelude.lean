@@ -2,7 +2,11 @@
 Makes the disk FFI the global FFI, for code that
 uses `github.com/goose-lang/primitive/disk`.
 -/
-import Perennial.GooseLang.Ffi.DiskFfi.Impl
+module
+
+public import Perennial.GooseLang.Ffi.DiskFfi.Impl
+
+@[expose] public section
 
 namespace Perennial
 

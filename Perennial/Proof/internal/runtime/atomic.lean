@@ -2,9 +2,13 @@
 Package initialization of `internal/runtime/atomic` (only its types are
 translated, for `runtime`, which imports it).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.internal.runtime.atomic
-import Perennial.GeneratedProof.internal.runtime.atomic
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.internal.runtime.atomic
+public import Perennial.GeneratedProof.internal.runtime.atomic
+
+@[expose] public section
 
 noncomputable section
 

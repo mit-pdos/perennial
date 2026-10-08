@@ -17,11 +17,15 @@ Notes:
 * The typed points-to notation is `l ↦{dq} v`, `l ↦ v` (full ownership) and
   `l ↦□ v` (discarded), scoped to `Perennial`.
 -/
-import Perennial.Golang.Theory.ProofMode
-import Perennial.Golang.Theory.Display
-import Perennial.Golang.Defn.Pre
-import Perennial.Helpers.NamedProps
-import Perennial.IrisLib.DFractional
+module
+
+public import Perennial.Golang.Theory.ProofMode
+public import Perennial.Golang.Theory.Display
+public import Perennial.Golang.Defn.Pre
+public import Perennial.Helpers.NamedProps
+public import Perennial.IrisLib.DFractional
+
+@[expose] public section
 
 namespace Perennial
 

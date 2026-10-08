@@ -24,7 +24,11 @@ The implementation of these primitives is very simple. `do: e` is
 expected for the rules above. `exceptionDo m` is simply `Snd m` to remove the
 label.
 -/
-import Perennial.Golang.Defn.Predeclared
+module
+
+public import Perennial.Golang.Defn.Predeclared
+
+@[expose] public section
 
 namespace Perennial
 

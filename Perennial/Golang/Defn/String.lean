@@ -3,10 +3,14 @@ String conversions are implemented by the
 Go model `github.com/mit-pdos/perennial/goose/model/strings`, whose generated
 translation lives in namespace `github_com.mit_pdos.perennial.goose.model.strings`.
 -/
-import Perennial.Golang.Defn.Loop
-import Perennial.Golang.Defn.Assume
-import Perennial.Golang.Defn.Predeclared
-import Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings
+module
+
+public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Assume
+public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings
+
+@[expose] public section
 
 namespace Perennial
 

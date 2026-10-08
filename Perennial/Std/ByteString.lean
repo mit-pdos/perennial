@@ -5,8 +5,12 @@ Go strings are arbitrary byte sequences, so `GoString` is `List w8`. A literal
 `go!"abc"` elaborates to the explicit list of its UTF-8 bytes, so that equality
 of literals is decidable by `decide`/`simp` without unfolding `String.toUTF8`.
 -/
-import Lean
-import Perennial.Std.Word
+module
+
+public import Lean
+public import Perennial.Std.Word
+
+@[expose] public section
 
 namespace Perennial
 

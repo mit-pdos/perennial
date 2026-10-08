@@ -12,7 +12,11 @@ substituting into the result of a substitution extends the environment
 
 This is a separate module only for build parallelism (it only needs `Lang`).
 -/
-import Perennial.GooseLang.Lang
+module
+
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 namespace Perennial
 

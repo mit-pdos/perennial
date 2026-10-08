@@ -6,7 +6,11 @@ Each syntax type is injected into generic trees (`GenTree`, stdpp
 These instances let ghost state (channels, `ghost_var`, ...) store values that
 contain code: `val`, `expr`, `GoFunc`, `GoInterface`, `GoSlice`, `loc`, ...
 -/
-import Perennial.GooseLang.Lang
+module
+
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 noncomputable section
 
@@ -150,10 +154,10 @@ instance Binder.countable : Pos.Countable Binder :=
   countableOfLeftInverse (fun b : Binder => match b with | .BAnon => none | .BNamed s => some s)
     (fun | none => .BAnon | some s => .BNamed s) (by intro b; cases b <;> rfl)
 
-private local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
-private local instance : Inhabited GoOperator := ⟨.GoEquals⟩
-private local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
-private local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
+local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
+local instance : Inhabited GoOperator := ⟨.GoEquals⟩
+local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
+local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
 
 def PrimOp1.toNat : PrimOp1 → Nat
   | .PrepareWriteOp => 0

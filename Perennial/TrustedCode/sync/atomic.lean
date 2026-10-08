@@ -2,7 +2,11 @@
 Trusted code for the Go `sync/atomic` package (namespace `sync.atomic`, as the
 generated package).
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

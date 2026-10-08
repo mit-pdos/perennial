@@ -3,7 +3,11 @@ Exact specs of `math/bits.Len64` and `math/bits.Len` (`Perennial/Proof/math/bits
 only proves that they return some value). Used for
 `slices.nextPowerOfTwo` (`wp_breakPatternsCmpFunc`).
 -/
-import Perennial.Proof.math.bits
+module
+
+public import Perennial.Proof.math.bits
+
+@[expose] public section
 
 noncomputable section
 

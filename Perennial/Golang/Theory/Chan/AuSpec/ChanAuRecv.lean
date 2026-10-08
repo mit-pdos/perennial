@@ -2,7 +2,11 @@
 Specifications of the
 channel model's `TryReceive` and `Receive`.
 -/
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend
+module
+
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

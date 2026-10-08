@@ -1,2 +1,6 @@
-import Perennial.Code.sync.atomic
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Code.sync.atomic
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section

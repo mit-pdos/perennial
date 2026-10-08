@@ -5,8 +5,12 @@ The `len` tactic.
 tries `word` (which subsumes `omega`). It does not fail if the goal
 remains. Add your own rules with `attribute [len] foo_length`.
 -/
-import Perennial.Std.ListBasics
-import Perennial.Std.Word.Automation
+module
+
+public import Perennial.Std.ListBasics
+public import Perennial.Std.Word.Automation
+
+@[expose] public section
 
 namespace Perennial
 

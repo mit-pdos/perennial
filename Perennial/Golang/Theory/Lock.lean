@@ -8,10 +8,14 @@ A spin lock on a Boolean, the basis of
 The lock invariant owns `1/4` of `m ↦ b` and, when the lock is free, the other
 `3/4` and `R`; `ownLock m` is the `3/4` of `m ↦ true`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Defn.Lock
-import Perennial.Golang.Theory.Pre
-import Perennial.Proof.TokSet
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Defn.Lock
+public import Perennial.Golang.Theory.Pre
+public import Perennial.Proof.TokSet
+
+@[expose] public section
 
 noncomputable section
 

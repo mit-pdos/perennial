@@ -6,7 +6,11 @@ Positive rationals are iris-lean's `Iris.Qp = {q : Rat // 0 < q}`, which has
 `q.half`, and one half is `(1 : Qp).half`. Multiplication and `min` are not in
 iris-lean, so they are defined here as `QpMul` and `QpMin`.
 -/
-import Iris.Algebra.Frac
+module
+
+public import Iris.Algebra.Frac
+
+@[expose] public section
 
 namespace Perennial
 

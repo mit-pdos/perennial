@@ -3,7 +3,11 @@ Simp sets used by `word` (`Perennial/Std/Word/Automation.lean`). A simp set is
 indexed once, while a `simp only [l₁, …, lₙ]` call elaborates and indexes its
 lemma list on every call (a few milliseconds for the long lists of `word`).
 -/
-import Lean
+module
+
+public import Lean
+
+@[expose] public section
 
 /-- `word_tonat`: `toNat` of BitVec operations to `Nat` arithmetic (see `word_tonat`). -/
 register_simp_attr word_tonat_simp

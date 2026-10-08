@@ -6,9 +6,13 @@ disk FFI (`github.com/goose-lang/primitive/disk`).
 add `disk_semantics` and `disk_interp`. (`gooseDiskGS` is an `abbrev` that
 the disk specs use explicitly.)
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.DiskPrelude
-import Perennial.GooseLang.Ffi.DiskFfi.Specs
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.DiskPrelude
+public import Perennial.GooseLang.Ffi.DiskFfi.Specs
+
+@[expose] public section
 
 namespace Perennial
 

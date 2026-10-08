@@ -1,7 +1,11 @@
 /-
 The runtime semaphore used by `sync`.
 -/
-import Perennial.Proof.sync_proof.base
+module
+
+public import Perennial.Proof.sync_proof.base
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

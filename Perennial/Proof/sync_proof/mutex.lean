@@ -2,8 +2,12 @@
 Specs for `sync.Mutex` (a `lock`) and the
 `Locker` interface.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Golang.Theory.Lock
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Golang.Theory.Lock
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

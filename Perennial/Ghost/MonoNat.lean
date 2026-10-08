@@ -2,7 +2,11 @@
 Ghost state for a monotonically increasing nat,
 wrapping iris-lean's `MonoNat = Auth MaxNat` camera.
 -/
-import Perennial.Ghost.Own
+module
+
+public import Perennial.Ghost.Own
+
+@[expose] public section
 
 noncomputable section
 

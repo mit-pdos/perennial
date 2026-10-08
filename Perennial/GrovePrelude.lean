@@ -2,7 +2,11 @@
 Makes the Grove FFI the global FFI, for code
 that uses `github.com/mit-pdos/gokv/grove_ffi`.
 -/
-import Perennial.GooseLang.Ffi.GroveFfi.Impl
+module
+
+public import Perennial.GooseLang.Ffi.GroveFfi.Impl
+
+@[expose] public section
 
 namespace Perennial
 

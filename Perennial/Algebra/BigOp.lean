@@ -1,5 +1,9 @@
 /- Big separating conjunctions over lists, sets, maps and map/list pairs. -/
-import Perennial.Algebra.BigOp.BigSepL
-import Perennial.Algebra.BigOp.BigSepS
-import Perennial.Algebra.BigOp.BigSepM
-import Perennial.Algebra.BigOp.BigSepML
+module
+
+public import Perennial.Algebra.BigOp.BigSepL
+public import Perennial.Algebra.BigOp.BigSepS
+public import Perennial.Algebra.BigOp.BigSepM
+public import Perennial.Algebra.BigOp.BigSepML
+
+@[expose] public section

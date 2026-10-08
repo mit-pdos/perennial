@@ -1,8 +1,12 @@
 /-
 Bytes as lists of bits (least significant first).
 -/
-import Perennial.Std.ByteExplode
-import Perennial.Std.List
+module
+
+public import Perennial.Std.ByteExplode
+public import Perennial.Std.List
+
+@[expose] public section
 
 namespace Perennial
 

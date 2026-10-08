@@ -1,2 +1,6 @@
-import Perennial.Proof.sort_proof.find
-import Perennial.Proof.sort_proof.search
+module
+
+public import Perennial.Proof.sort_proof.find
+public import Perennial.Proof.sort_proof.search
+
+@[expose] public section

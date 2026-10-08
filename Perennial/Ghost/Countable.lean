@@ -6,8 +6,12 @@ The ghost libraries (`ghost_var`, `ghost_map`, `mono_list`, `saved_pred`, ...)
 store `Pos.Countable.encode a`; see `Perennial/Ghost/All.lean`. User types can get
 an instance from an injection with `Pos.Countable.ofInjective`.
 -/
-import Iris
-import Perennial.Std.Countable
+module
+
+public import Iris
+public import Perennial.Std.Countable
+
+@[expose] public section
 
 noncomputable section
 

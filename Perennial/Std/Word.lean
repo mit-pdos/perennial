@@ -2,7 +2,11 @@
 Machine words. Words are `BitVec n`. `uint.Z w` is the unsigned value (an
 `Int`), `sint.Z w` the signed value.
 -/
-import Std.Tactic.BVDecide
+module
+
+public import Std.Tactic.BVDecide
+
+@[expose] public section
 
 namespace Perennial
 

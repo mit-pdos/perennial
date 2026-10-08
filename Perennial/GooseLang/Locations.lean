@@ -3,7 +3,11 @@ Heap locations.
 
 A location is a block id `car` plus an offset `off`; `l +ₗ i` moves within a block.
 -/
-import Perennial.Std.Word
+module
+
+public import Perennial.Std.Word
+
+@[expose] public section
 
 namespace Perennial
 

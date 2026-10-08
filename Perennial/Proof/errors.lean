@@ -1,9 +1,13 @@
 /-
 Specs for the Go `errors` package.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.errors
-import Perennial.GeneratedProof.errors
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.errors
+public import Perennial.GeneratedProof.errors
+
+@[expose] public section
 
 noncomputable section
 

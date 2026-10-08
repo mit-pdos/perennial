@@ -3,8 +3,12 @@ Adequacy for the disk FFI (`disk_interp_adequacy`), plus a disk-specific
 instance of `goose_adequacy`. Crashes are not modeled: there is no crash
 obligation and there are no `IntoCrash` instances.
 -/
-import Perennial.GooseLang.Adequacy
-import Perennial.GooseLang.Ffi.DiskFfi.Specs
+module
+
+public import Perennial.GooseLang.Adequacy
+public import Perennial.GooseLang.Ffi.DiskFfi.Specs
+
+@[expose] public section
 
 noncomputable section
 

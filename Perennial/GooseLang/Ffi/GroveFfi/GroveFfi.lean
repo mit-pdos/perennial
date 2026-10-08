@@ -11,12 +11,16 @@ Notes:
 * `ffiGlobalStart`/`ffiLocalStart` (and the adequacy instance
   `grove_interp_adequacy`) live in `Perennial/GooseLang/Ffi/GroveFfi/Adequacy.lean`.
 -/
-import Iris.BI.Lib.GenHeap
-import Iris.BI.Lib.MonoNat
-import Perennial.GooseLang.Lifting
-import Perennial.GooseLang.Countable
-import Perennial.GooseLang.Ffi.GroveFfi.Impl
-import Perennial.GooseLang.Ffi.GenHeap
+module
+
+public import Iris.BI.Lib.GenHeap
+public import Iris.BI.Lib.MonoNat
+public import Perennial.GooseLang.Lifting
+public import Perennial.GooseLang.Countable
+public import Perennial.GooseLang.Ffi.GroveFfi.Impl
+public import Perennial.GooseLang.Ffi.GenHeap
+
+@[expose] public section
 
 noncomputable section
 

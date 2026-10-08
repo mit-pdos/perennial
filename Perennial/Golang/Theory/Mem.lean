@@ -8,7 +8,13 @@ and the typed memory tactics `wp_load`, `wp_store`, `wp_alloc`,
 mode's typeclass search (which can instantiate metavariables). The last two
 parameters are `outParam`s.
 -/
-import Perennial.Golang.Theory.PostLifting
+module
+
+public import Perennial.Golang.Theory.PostLifting
+public meta import Perennial.Golang.Theory.ProofMode
+public meta import Perennial.Golang.Theory.PostLifting
+
+@[expose] public section
 
 namespace Perennial
 
@@ -202,7 +208,7 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- If `e` is `#x` (`intoVal x`), return `(V, x)`. -/
-def isIntoVal? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta def isIntoVal? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← instantiateMVars e
   let e := e.consumeMData
   if e.isAppOfArity ``GoGlobalContext.intoVal 4 then
@@ -211,7 +217,7 @@ def isIntoVal? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
 
 /-- If `e` is `Val (GoInstruction i)` applied to `arg` with `i` satisfying
 `instr`, return `(i, arg)`. -/
-def isGoInstrApp? (e : Lean.Expr) (instr : Name) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta def isGoInstrApp? (e : Lean.Expr) (instr : Name) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR (← instantiateMVars e)
   let_expr Perennial.Expr.App _ f arg := e | return none
   let some fv ← isGooseVal? f | return none
@@ -228,7 +234,7 @@ def isGoInstrApp? (e : Lean.Expr) (instr : Name) : MetaM (Option (Lean.Expr × L
 points-to at exactly the address `l` first: these are tried first by
 `wp_load`/`wp_store`, so that the common case needs a single `Access` search
 instead of one per hypothesis. -/
-def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) (l : Lean.Expr) :
+meta def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) (l : Lean.Expr) :
     MetaM (List (Name × IVarId × Q(Bool) × Q($prop))) := do
   let mut exact := #[]
   let mut rest := #[]
@@ -241,7 +247,7 @@ def hypsListFor {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e)
 /-- The typed points-to `@typedPointsto GF V inst l v dq`, with fresh
 metavariables for `V`, the `TypedPointsto` instance, `v` (unless given) and
 `dq` (unless given). -/
-def mkTypedPointstoMVars (GF l : Lean.Expr) (V? v? dq? : Option Lean.Expr) :
+meta def mkTypedPointstoMVars (GF l : Lean.Expr) (V? v? dq? : Option Lean.Expr) :
     MetaM (Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) := do
   let V ← match V? with | some V => pure V | none => mkFreshExprMVar (mkSort (mkLevelSucc .zero))
   let instTy ← mkAppOptM ``TypedPointsto #[some GF, some V]
@@ -252,7 +258,7 @@ def mkTypedPointstoMVars (GF l : Lean.Expr) (V? v? dq? : Option Lean.Expr) :
   return (pt, V, inst, v, dq)
 
 /-- Search for `Access A A' P ?P'` with the proof mode's typeclass search. -/
-def synthAccess (A A' P : Lean.Expr) : ProofModeM (Option (Lean.Expr × Lean.Expr)) := do
+meta def synthAccess (A A' P : Lean.Expr) : ProofModeM (Option (Lean.Expr × Lean.Expr)) := do
   let P' ← mkFreshExprMVar (← inferType P)
   let ty ← mkAppM ``Access #[A, A', P, P']
   match ← ProofMode.trySynthInstance ty with
@@ -262,7 +268,7 @@ def synthAccess (A A' P : Lean.Expr) : ProofModeM (Option (Lean.Expr × Lean.Exp
 /-- One `wp_load` step: find `![t] #l` in evaluation position and a hypothesis
 `P` (spatial or intuitionistic) with `Access (l ↦{dq} v) (l ↦{dq} v) P P`;
 the load returns `#v` and keeps the context. Also returns the loaded value `#v`. -/
-def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr) × Lean.Expr) := do
   let some ((t, l), K, _) ← findEctx wp.e (fun _ e => do
@@ -296,7 +302,7 @@ def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   throwIPMError "could not find a points-to in context covering the address {l}"
 
 /-- `iWpLoadStepV` without the loaded value. -/
-def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let ⟨_, hyps', e', k, _⟩ ← iWpLoadStepV hyps wp
@@ -304,7 +310,7 @@ def iWpLoadStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 
 /-- One `wp_store` step: find `GoStore t (#l, #w)` and a spatial hypothesis
 `P` with `Access (l ↦ v) (l ↦ w) P P'`; `P` is replaced by `P'` (same name). -/
-def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let some ((t, l, W, w), K, _) ← findEctx wp.e (fun _ e => do
@@ -347,7 +353,7 @@ rewrite the stored value to the Go function value `#(func.mk f x e)`
 (`recv_eq_func_mk`), so that `wp_store` can use the typed points-to at `GoFunc`.
 Returns the new (inner) expression and a function turning a proof of the new goal
 into a proof of the old one. -/
-def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+meta def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     ProofModeM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   let some ((sv, lv, f, x, body), K, _) ← findEctx (α := Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) wp.e
       (fun _ e => do
@@ -385,7 +391,7 @@ def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :
 `let: "x" := _ in _`, when `auto`), and continue under a fresh location `l`
 with the new hypothesis `l ↦ v`. `names` gives the Lean and Iris names (from
 the `let:` binder when `auto`: `x_ptr` and `x`). -/
-def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (auto : Bool)
     (names : Option (Name × Name))
     (k : ∀ {ehyps' : Q($prop)}, Hyps bi ehyps' → GooseWpGoal → ProofModeM Lean.Expr) :
@@ -557,7 +563,7 @@ section access_struct_tac
 open Lean Elab Tactic Meta
 
 /-- The conjuncts of a right-nested `∗`-chain (`named` wrappers are kept). -/
-partial def sepChain (e : Lean.Expr) : MetaM (Array Lean.Expr) := do
+meta partial def sepChain (e : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let e ← whnfR e
   if e.isAppOfArity ``Iris.BI.BIBase.sep 4 then
     return #[e.getArg! 2] ++ (← sepChain (e.getArg! 3))
@@ -565,7 +571,7 @@ partial def sepChain (e : Lean.Expr) : MetaM (Array Lean.Expr) := do
 
 /-- A proof of `chain ⊣⊢ X ∗ R` (and `R`) focusing on the conjunct number `k` of
 the chain `P` (`P` itself as an expression). -/
-partial def focusPf (P : Lean.Expr) (k : Nat) : MetaM (Lean.Expr × Lean.Expr) := do
+meta partial def focusPf (P : Lean.Expr) (k : Nat) : MetaM (Lean.Expr × Lean.Expr) := do
   let P' ← whnfR P
   unless P'.isAppOfArity ``Iris.BI.BIBase.sep 4 do throwError "focusPf: not a ∗"
   let F := P'.getArg! 2; let T := P'.getArg! 3

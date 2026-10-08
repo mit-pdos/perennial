@@ -1,4 +1,8 @@
-import Perennial.Std.ListLen
+module
+
+public import Perennial.Std.ListLen
+
+@[expose] public section
 
 namespace Perennial
 

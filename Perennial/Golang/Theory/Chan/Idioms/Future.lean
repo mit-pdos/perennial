@@ -17,8 +17,12 @@ How to use:
 Matching happens *at receive time*: each receive identifies which contract was
 fulfilled (via ghost state agreement) and removes it from `pending`.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

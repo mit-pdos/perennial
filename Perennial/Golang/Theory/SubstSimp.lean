@@ -7,8 +7,12 @@ This is a separate module only for build parallelism: generating the equation le
 these large mutually recursive functions is slow, and here it only waits for `Lang`, not
 for `GooseLang/Lifting.lean`.
 -/
-import Perennial.GooseLang.Lang
-import Perennial.Golang.Theory.SimpAttr
+module
+
+public import Perennial.GooseLang.Lang
+public import Perennial.Golang.Theory.SimpAttr
+
+@[expose] public section
 
 namespace Perennial
 

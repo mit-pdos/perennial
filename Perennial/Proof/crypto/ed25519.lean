@@ -2,9 +2,13 @@
 Package initialization of
 `crypto/ed25519`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.crypto.ed25519
-import Perennial.GeneratedProof.crypto.ed25519
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.crypto.ed25519
+public import Perennial.GeneratedProof.crypto.ed25519
+
+@[expose] public section
 
 noncomputable section
 

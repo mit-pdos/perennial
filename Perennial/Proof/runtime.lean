@@ -2,11 +2,15 @@
 Package initialization of `runtime` and
 `runtime.Gosched`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.runtime
-import Perennial.GeneratedProof.runtime
-import Perennial.Proof.internal.runtime.atomic
-import Perennial.Proof.internal.runtime.sys
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.runtime
+public import Perennial.GeneratedProof.runtime
+public import Perennial.Proof.internal.runtime.atomic
+public import Perennial.Proof.internal.runtime.sys
+
+@[expose] public section
 
 noncomputable section
 

@@ -20,15 +20,19 @@ iris-lean's `Iris/HeapLang/ProofMode.lean`.
   instance is `goose_irisGS`, built from `gooseGlobalGS`/`gooseLocalGS`, or from
   `heapGS`), with stuckness `s`.
 -/
-import Perennial.GooseLang.Lifting
-import Perennial.GooseLang.Countable
-import Perennial.Golang.Theory.SimpAttr
-import Perennial.Golang.Theory.SubstSimp
-import Perennial.Golang.Theory.SubstEnv
-import Perennial.Golang.Theory.TacticsSimpAttr
-import Perennial.Golang.Theory.IrisTactics
-import Perennial.GooseLang.Notation
-import Iris.ProofMode
+module
+
+public import Perennial.GooseLang.Lifting
+public import Perennial.GooseLang.Countable
+public import Perennial.Golang.Theory.SimpAttr
+public import Perennial.Golang.Theory.SubstSimp
+public import Perennial.Golang.Theory.SubstEnv
+public import Perennial.Golang.Theory.TacticsSimpAttr
+public import Perennial.Golang.Theory.IrisTactics
+public import Perennial.GooseLang.Notation
+public import Iris.ProofMode
+
+@[expose] public section
 
 namespace Perennial
 
@@ -537,7 +541,7 @@ theorem substEnv_pf_fvClosed {σ : String → Option val} {e : Expr} (h : Closed
 
 end closed
 
-register_option goose.wp.extras : Bool := {
+meta register_option goose.wp.extras : Bool := {
   defValue := true
   descr := "enable the extra automation of `wp_pures`/`wp_auto` (on by default): \
     the `goose_wp_simp_extra` simp set, reduction of \
@@ -545,7 +549,7 @@ register_option goose.wp.extras : Bool := {
     and (in `wp_auto`) storing function literals and unfolding package constants"
 }
 
-register_option goose.wp.unfoldSliceLiterals : Bool := {
+meta register_option goose.wp.unfoldSliceLiterals : Bool := {
   defValue := false
   descr := "let `wp_pures`/`wp_auto` step slice composite literals \
     (`go.SliceSemantics.composite_literal_slice`) instead of stopping at them \
@@ -558,20 +562,20 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Names of the binders of a (∀-)type, in order. -/
-private partial def binderNames : Lean.Expr → List Name
+private meta partial def binderNames : Lean.Expr → List Name
   | .forallE n _ b _ => n :: binderNames b
   | _ => []
 
 /-- Names of context arguments (`GooseWpGoal.ctxArgs`, `PROP`) that `mkAppNamed`
 ignores for constants that do not take them. -/
-def ctxArgNames : List String := ["hlc", "GF", "ι", "PROP"]
+meta def ctxArgNames : List String := ["hlc", "GF", "ι", "PROP"]
 
 /-- `mkAppNamed c args` when `args` gives every argument of `c` except
 instance-implicit ones (which are synthesized): the application is built
 directly, without unification. Only binder types with metavariables (e.g.
 universe levels) are unified with the types of the given arguments; the kernel
 checks the final proof. `none` if some argument is missing. -/
-def mkAppNamedDirect? (c : Name) (args : List (String × Lean.Expr)) (partialApp := false) :
+meta def mkAppNamedDirect? (c : Name) (args : List (String × Lean.Expr)) (partialApp := false) :
     MetaM (Option Lean.Expr) := do
   let info ← getConstInfo c
   let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
@@ -608,7 +612,7 @@ arguments are synthesized. Types of the given arguments are checked with
 instance-implicit: then the application is built directly (`mkAppNamedDirect?`),
 which avoids unifying (and traversing) the large types of the arguments, and the
 kernel checks it. -/
-def mkAppNamed (c : Name) (args : List (String × Lean.Expr)) : MetaM Lean.Expr := do
+meta def mkAppNamed (c : Name) (args : List (String × Lean.Expr)) : MetaM Lean.Expr := do
   if let some r ← mkAppNamedDirect? c args then return r
   let info ← getConstInfo c
   let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
@@ -680,16 +684,16 @@ structure GooseWpGoal where
   tail : Option (Lean.Expr × Lean.Expr) := none
 
 /-- Wrap an inner expression into the opaque outer context of the goal. -/
-def GooseWpGoal.wrap (g : GooseWpGoal) (e : Lean.Expr) : Lean.Expr :=
+meta def GooseWpGoal.wrap (g : GooseWpGoal) (e : Lean.Expr) : Lean.Expr :=
   match g.tail with
   | none => e
   | some (fillKl, _) => mkApp fillKl e
 
-def GooseWpGoal.mk' (g : GooseWpGoal) (e Φ : Lean.Expr) : Lean.Expr :=
+meta def GooseWpGoal.mk' (g : GooseWpGoal) (e Φ : Lean.Expr) : Lean.Expr :=
   mkAppN g.wpHead #[g.s, g.E, g.wrap e, Φ]
 
 /-- Parse `goal` as a WP over GooseLang expressions. -/
-def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
+meta def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
   let goal ← instantiateMVars goal
   let goal := goal.consumeMData
   unless goal.isAppOfArity ``Iris.Wp.wp 9 do return none
@@ -708,32 +712,32 @@ def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
 
 /-- Caches of `needsGooseSimp` (cleared by `wp_auto`/`wp_pures` at the start):
 the simp heads, the result per (shared) subterm, and per constant. -/
-initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
-initialize needsCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
-initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
+meta initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
+meta initialize needsCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
+meta initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
 
 /-- Results of `synthPureWp`, per thread (declarations are elaborated in parallel)
 and cleared by every WP tactic (`withNoSorry`). The keys contain the local
 instances, so that a result never mentions free variables of another context. -/
-initialize pureWpCache :
+meta initialize pureWpCache :
     IO.Ref (Std.HashMap UInt64 (Std.HashMap Lean.Expr (Option (Lean.Expr × Lean.Expr × Lean.Expr)))) ← IO.mkRef {}
 
-def pureWpCacheFind? (key : Lean.Expr) : BaseIO (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr))) := do
+meta def pureWpCacheFind? (key : Lean.Expr) : BaseIO (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr))) := do
   let tid ← IO.getTID
   return (← pureWpCache.get)[tid]? >>= (·[key]?)
 
-def pureWpCacheInsert (key : Lean.Expr) (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) : BaseIO Unit := do
+meta def pureWpCacheInsert (key : Lean.Expr) (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) : BaseIO Unit := do
   let tid ← IO.getTID
   pureWpCache.modify fun m =>
     let c := m.getD tid {}
     m.insert tid ((if c.size > 10000 then {} else c).insert key r)
 
-def pureWpCacheClear : BaseIO Unit := do
+meta def pureWpCacheClear : BaseIO Unit := do
   let tid ← IO.getTID
   pureWpCache.modify (·.erase tid)
 
 /-- Clear the caches of `needsGooseSimp`. -/
-def clearNeedsCaches : BaseIO Unit := do
+meta def clearNeedsCaches : BaseIO Unit := do
   needsHeadsCache.set none; needsCache.set {}; needsConstCache.set {}
 
 /-- Run the tactic `k` on the main goal with elaboration errors raised as
@@ -741,7 +745,7 @@ exceptions (`Term.withoutErrToSorry`, no error recovery), and fail if the proof
 it produces contains a (synthetic) `sorry` that was not already in the goal.
 All GooseLang WP tactics run under this guard, so that e.g. an ill-typed lemma
 given to `wp_apply` is an error rather than a silently admitted goal. -/
-def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
+meta def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
   pureWpCacheClear
   let mvar ← getMainGoal
   let hadSorry := (← instantiateMVars (← mvar.getType)).hasSyntheticSorry
@@ -753,7 +757,7 @@ def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
 
 /-- Run `k` on the current Iris goal, which must be a GooseLang WP (under
 `withNoSorry`). -/
-def runTacticGooseWp {α} (tacName : Name)
+meta def runTacticGooseWp {α} (tacName : Name)
     (k : MVarId → IrisGoal → GooseWpGoal → ProofModeM α) : TacticM α :=
   withNoSorry tacName <| ProofModeM.runTactic tacName fun mvar g => do
     clearNeedsCaches
@@ -771,7 +775,7 @@ def runTacticGooseWp {α} (tacName : Name)
 /-- One evaluation-context item of a GooseLang expression: the item (as a
 `ectx_item` expression) and the sub-expression in the hole. Mirrors
 `fillItem` in `Perennial/GooseLang/Lang.lean`. -/
-def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR (← instantiateMVars e)
   let isVal (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
     let e ← whnfR e
@@ -806,7 +810,7 @@ def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) :=
   | _ => return none
 
 /-- `fillItem Ki e` at the meta level, producing constructor applications. -/
-def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
+meta def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
   let Ki ← whnfR Ki
   let ext := Ki.getAppArgs[0]!
   let a := Ki.getAppArgs
@@ -832,23 +836,23 @@ def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
   | _ => throwError "fillItemExpr: unknown evaluation context item {Ki}"
 
 /-- `fill K e` at the meta level (`K` innermost item first). -/
-def fillExpr (K : List Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr :=
+meta def fillExpr (K : List Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr :=
   K.foldlM (fun e Ki => fillItemExpr Ki e) e
 
 /-- Quote a list of `ectx_item`s (innermost first), ending in the opaque tail
 `tail` (default `[]`). -/
-def quoteEctx (ext : Lean.Expr) (K : List Lean.Expr) (tail : Option Lean.Expr := none) : Lean.Expr :=
+meta def quoteEctx (ext : Lean.Expr) (K : List Lean.Expr) (tail : Option Lean.Expr := none) : Lean.Expr :=
   let ty := mkApp (mkConst ``EctxItem) ext
   K.foldr (fun Ki acc => mkApp3 (mkConst ``List.cons [0]) ty Ki acc)
     (tail.getD (mkApp (mkConst ``List.nil [0]) ty))
 
 /-- `quoteEctx` with the goal's opaque tail. -/
-def GooseWpGoal.quoteK (g : GooseWpGoal) (K : List Lean.Expr) : Lean.Expr :=
+meta def GooseWpGoal.quoteK (g : GooseWpGoal) (K : List Lean.Expr) : Lean.Expr :=
   quoteEctx g.ext K (g.tail.map (·.2))
 
 /-- A proof of `fill K e2 = wrap e'` from a proof `p? : fill_items K e2 = e'`
 (`none` for `rfl`). -/
-def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Lean.Expr) (p? : Option Lean.Expr) : MetaM Lean.Expr := do
+meta def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Lean.Expr) (p? : Option Lean.Expr) : MetaM Lean.Expr := do
   match p?, g.tail with
   | none, _ => mkEqRefl (g.wrap e')
   | some p, none => pure p
@@ -857,7 +861,7 @@ def GooseWpGoal.wrapEq (g : GooseWpGoal) (e' : Lean.Expr) (p? : Option Lean.Expr
 /-- Find the *outermost* evaluation context `K` and sub-expression `e'` with
 `fill K e' = e` such that `pred K e'` succeeds. Values are
 never visited. -/
-partial def findEctx {α} (e : Lean.Expr) (pred : List Lean.Expr → Lean.Expr → ProofModeM α) :
+meta partial def findEctx {α} (e : Lean.Expr) (pred : List Lean.Expr → Lean.Expr → ProofModeM α) :
     ProofModeM (Option (α × List Lean.Expr × Lean.Expr)) :=
   go e []
 where
@@ -869,7 +873,7 @@ where
     go e'' (Ki :: K)
 
 /-- All evaluation-context decompositions of `e`, outermost first. -/
-partial def allEctx (e : Lean.Expr) : MetaM (List (List Lean.Expr × Lean.Expr)) :=
+meta partial def allEctx (e : Lean.Expr) : MetaM (List (List Lean.Expr × Lean.Expr)) :=
   go e [] []
 where
   go (e : Lean.Expr) (K : List Lean.Expr) (acc : List (List Lean.Expr × Lean.Expr)) :
@@ -882,14 +886,14 @@ where
 
 /-- The simp sets used to normalize WP expressions: `goose_wp_simp`, and
 `goose_wp_simp_extra` with `goose.wp.extras`. -/
-def gooseSimpSets (opts : Options) : List Name :=
+meta def gooseSimpSets (opts : Options) : List Name :=
   if goose.wp.extras.get opts then [`goose_wp_simp, `goose_wp_simp_extra] else [`goose_wp_simp]
 
 /-- Reduce the `match`es of `e` whose discriminants reduce to constructors with
 default transparency (e.g. `match interface.nil with ...` after `cases`, where
 `interface.nil` is a definition); `simp`'s `iota` only unfolds reducible
 definitions. The result is definitionally equal to `e`. -/
-def reduceMatchersDefault (e : Lean.Expr) : MetaM Lean.Expr := do
+meta def reduceMatchersDefault (e : Lean.Expr) : MetaM Lean.Expr := do
   unless goose.wp.extras.get (← getOptions) do return e
   let env ← getEnv
   unless (e.find? fun s => match s with
@@ -945,7 +949,7 @@ def reduceMatchersDefault (e : Lean.Expr) : MetaM Lean.Expr := do
 /-- Simplify a GooseLang expression with the `goose_wp_simp` simp set, returning
 the new expression and a proof of `e = e'` (or `none` if unchanged). `match`es
 on (definitions of) constructors are reduced first (`reduceMatchersDefault`). -/
-def gooseExprSimp (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+meta def gooseExprSimp (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
   let e0 := e
   let e ← reduceMatchersDefault e
   let p0? ← if e == e0 then pure none
@@ -975,7 +979,7 @@ where
 
 /-- Head constants that some `goose_wp_simp` rule (theorem, unfolding or simproc)
 could rewrite, or `none` if some rule is not keyed by a constant. -/
-def gooseSimpHeads : MetaM (Option NameSet) := do
+meta def gooseSimpHeads : MetaM (Option NameSet) := do
   let mut s : NameSet := {}
   for attr in gooseSimpSets (← getOptions) do
     let some ext ← getSimpExtension? attr | return none
@@ -997,7 +1001,7 @@ matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
 would do nothing. The subterms `known` are known to be in normal form (e.g. the
 subterms of the WP expression that a step only moves around) and are skipped. -/
-def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := do
+meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := do
   let heads? ← match ← needsHeadsCache.get with
     | some h => pure h
     | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
@@ -1060,7 +1064,7 @@ def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool
 
 /-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
 instance. -/
-def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
+meta def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let ι ← instantiateMVars ι
   let ι ← if ι.isAppOf ``goose_irisGS then pure ι else whnfR ι
   unless ι.isAppOfArity ``goose_irisGS 9 do
@@ -1071,18 +1075,18 @@ def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
   return #[a[0]!, a[1]!, a[2]!, a[5]!, a[6]!, a[3]!, a[4]!, a[7]!, a[8]!]
 
 /-- The context arguments `hlc`, `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
-def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Lean.Expr)) := do
+meta def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Lean.Expr)) := do
   let gs ← gooseGSArgs wp.ι
   return [("hlc", gs[5]!), ("GF", gs[6]!), ("ι", wp.ι)]
 
 /-- `mkAppNamed` with the context arguments of `wp` (`GooseWpGoal.ctxArgs`), so
 that the application can be built without unification (`mkAppNamedDirect?`). -/
-def GooseWpGoal.mkAppNamed (wp : GooseWpGoal) (c : Name) (args : List (String × Lean.Expr)) :
+meta def GooseWpGoal.mkAppNamed (wp : GooseWpGoal) (c : Name) (args : List (String × Lean.Expr)) :
     MetaM Lean.Expr := do
   Perennial.mkAppNamed c ((← wp.ctxArgs) ++ args)
 
 /-- Is the goal's expression a value `Val v` (with no opaque outer context)? -/
-def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Lean.Expr) := do
+meta def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Lean.Expr) := do
   if g.tail.isSome then return none
   let e ← whnfR (← instantiateMVars g.e)
   match_expr e with
@@ -1090,7 +1094,7 @@ def GooseWpGoal.isVal? (g : GooseWpGoal) : MetaM (Option Lean.Expr) := do
   | _ => return none
 
 /-- Is `e` a GooseLang value `Val v`? -/
-def isGooseVal? (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta def isGooseVal? (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let e ← whnfR (← instantiateMVars e)
   match_expr e with
   | Perennial.Expr.Val _ v => return some v
@@ -1110,7 +1114,7 @@ of values (`wp_pair`), built
 directly instead of by typeclass search: unifying the instance with `e1` assigns
 the (possibly large) body `e` to a metavariable, which costs a traversal of `e`
 at every step. Returns the same as `synthPureWp`. -/
-def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+meta def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   unless gs.size == 9 do return none
   let ext := gs[0]!
   let e ← whnfR (← instantiateMVars e1)
@@ -1139,7 +1143,7 @@ def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.E
 arguments) and then to one argument per remaining binder: instance-implicit ones
 are synthesized, the others are `args` in order (each given the binder type).
 Built directly, without unification: the kernel checks it. -/
-def mkAppPositional? (c : Name) (gs : Array Lean.Expr) (args : Array (Lean.Expr → MetaM Lean.Expr)) :
+meta def mkAppPositional? (c : Name) (gs : Array Lean.Expr) (args : Array (Lean.Expr → MetaM Lean.Expr)) :
     MetaM (Option Lean.Expr) := do
   let some info := (← getEnv).find? c | return none
   unless info.levelParams.isEmpty do return none
@@ -1168,7 +1172,7 @@ and `n` a literal: one `PureWp` step to the array value (`pure_wp_array_lit` of
 `Golang/Theory/ArrayLit.lean`, if it is imported), instead of the `ArraySet` chain of
 `go.composite_literal_array`, whose stepping is quadratic in the length.
 Returns the same as `synthPureWp`. -/
-def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+meta def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   unless gs.size == 9 do return none
   let e ← whnfR e
   let_expr Perennial.Expr.App _ f a := e | return none
@@ -1236,14 +1240,14 @@ def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean
 
 /-- Is `e` an application of a constructor of `go.GoType` (e.g. a struct type with its
 field list)? Such subterms are treated as atoms by the keys of `synthPureWp`. -/
-def isGoTypeApp (e : Lean.Expr) : Bool :=
+meta def isGoTypeApp (e : Lean.Expr) : Bool :=
   match e.getAppFn with
   | .const n _ => n.getPrefix == ``Perennial.go.GoType
   | _ => false
 
 /-- Is `e` small (at most `n` nodes, counting shared subterms repeatedly, and the
 payloads `x` of values `#x` as one node when `modPayloads`)? Takes `O(n)`. -/
-def exprSmall (e : Lean.Expr) (n : Nat) (modPayloads := false) : Bool :=
+meta def exprSmall (e : Lean.Expr) (n : Nat) (modPayloads := false) : Bool :=
   (go n e).isSome
 where
   go : Nat → Lean.Expr → Option Nat
@@ -1262,7 +1266,7 @@ in the key of a search (`synthPureWp`)? Machine words (`BitVec n`) and the struc
 types generated by goose: no instance matches on a particular word or struct.
 (Not locations, slices, maps, ...: e.g. the comparison of a map with `#map.nil`
 has its own instance.) -/
-def genericPayloadType (V : Lean.Expr) : MetaM Bool := do
+meta def genericPayloadType (V : Lean.Expr) : MetaM Bool := do
   let V ← whnfR V
   if V.isAppOfArity ``BitVec 1 then return true
   -- the struct types generated by goose (fields `f'`): Go structs are not compared
@@ -1278,7 +1282,7 @@ def genericPayloadType (V : Lean.Expr) : MetaM Bool := do
 /-- If `e` is `StructFieldRef t f` applied to a value: the instruction `StructFieldRef t f`
 and `f` (the instances are generic in the field name `f`, so that it can be
 abstracted in the key of the search, see `synthPureWp`). -/
-def fieldRefName? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta def fieldRefName? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR e
   let_expr Perennial.Expr.App _ fe _ := e | return none
   let some fv ← isGooseVal? fe | return none
@@ -1291,7 +1295,7 @@ def fieldRefName? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := d
 /-- The values `#x` in `e` (below applications) whose payload `x` has a generic type
 (`genericPayloadType`), as `(V, x)`, and for each value `#x` (in the order of
 `replaceGenericPayloads`) whether it is one of them. -/
-def genericPayloads (e : Lean.Expr) : MetaM (Array (Lean.Expr × Lean.Expr) × Array Bool) := do
+meta def genericPayloads (e : Lean.Expr) : MetaM (Array (Lean.Expr × Lean.Expr) × Array Bool) := do
   let mut acc : Array (Lean.Expr × Lean.Expr) := #[]
   let mut flags : Array Bool := #[]
   for s in collectIntoVals e #[] do
@@ -1311,7 +1315,7 @@ where
 
 /-- Replace the payloads found by `genericPayloads e` (`isGeneric`, in the same
 order) by `ys`. -/
-def replaceGenericPayloads (e : Lean.Expr) (isGeneric : Array Bool) (ys : Array Lean.Expr) : Lean.Expr :=
+meta def replaceGenericPayloads (e : Lean.Expr) (isGeneric : Array Bool) (ys : Array Lean.Expr) : Lean.Expr :=
   (go e 0 0).1
 where
   -- returns the new expression, the index of the next `#x` and of the next `y`
@@ -1331,7 +1335,7 @@ where
 
 /-- The free variables of `e` that are neither let-bound nor local instances
 (sorted by declaration order), or `none` if `e` mentions a let-bound variable. -/
-def pureWpKeyVars (e : Lean.Expr) : MetaM (Option (Array Lean.Expr)) := do
+meta def pureWpKeyVars (e : Lean.Expr) : MetaM (Option (Array Lean.Expr)) := do
   let lctx ← getLCtx
   let insts := (← getLocalInstances).map (·.fvar)
   let mut ds := #[]
@@ -1342,7 +1346,7 @@ def pureWpKeyVars (e : Lean.Expr) : MetaM (Option (Array Lean.Expr)) := do
   return some ((ds.qsort (·.index < ·.index)).map (·.toExpr))
 
 /-- The `PureWp` search for `e1` (no shortcut, no cache). -/
-def synthPureWpCore (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+meta def synthPureWpCore (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   let φ ← mkFreshExprMVar (mkSort .zero)
   let e2 ← mkFreshExprMVar (mkApp (mkConst ``Perennial.Expr) gs[0]!)
   let ty ← mkAppOptM ``PureWp (gs.map some ++ #[some φ, some e1, some e2])
@@ -1359,7 +1363,7 @@ local instances), the payloads of its machine-word and struct values
 that e.g. all the steps `#x +⟨go.uint64⟩ #(W64 1)` of a function, or all the field
 references of a struct, share one search; a failed generic search is final. A
 redex without such payloads is cached up to its free variables. -/
-def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   if let some r ← directPureWp gs e1 then return some r
   if let some r ← arrayLitPureWp? gs e1 then return some r
   let e1 ← instantiateMVars e1
@@ -1421,19 +1425,19 @@ def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Ex
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
 immediately; otherwise iris-lean's side-condition solver is tried, and if it
 fails the condition becomes a new goal (unless `failOnUnsolved`). -/
-def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) : ProofModeM Lean.Expr := do
+meta def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) : ProofModeM Lean.Expr := do
   let φ ← instantiateMVars φ
   if φ.isConstOf ``True then return mkConst ``True.intro
   iSolveSidecondition φ (failOnUnsolved := failOnUnsolved)
 
 /-- Is `e` a string literal? -/
-def strLit? (e : Lean.Expr) : MetaM (Option String) := do
+meta def strLit? (e : Lean.Expr) : MetaM (Option String) := do
   match (← whnfR e).consumeMData with
   | .lit (.strVal s) => return some s
   | _ => return none
 
 /-- A binder literal: `some none` for `BAnon`, `some (some x)` for `BNamed "x"`. -/
-def binderLit? (b : Lean.Expr) : MetaM (Option (Option String)) := do
+meta def binderLit? (b : Lean.Expr) : MetaM (Option (Option String)) := do
   let b ← whnfR b
   if b.isAppOf ``Binder.BAnon then return some none
   if b.isAppOfArity ``Binder.BNamed 1 then
@@ -1443,7 +1447,7 @@ def binderLit? (b : Lean.Expr) : MetaM (Option (Option String)) := do
 /-- `subst x v e` computed at the meta level on GooseLang constructor terms
 (definitionally equal to `Perennial.subst x v e`; non-constructor subterms are
 left as `subst x v _`). -/
-partial def substMeta (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
+meta partial def substMeta (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
   let e ← whnfR e
   let fallback := mkApp4 (mkConst ``Perennial.subst) ext xe v e
   let rec' := substMeta ext x xe v
@@ -1483,7 +1487,7 @@ partial def substMeta (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (e : Lea
 
 /-- Evaluate the `subst'`/`subst` applications at the head of `e` with
 `substMeta` (the result is definitionally equal to `e`). -/
-partial def evalSubsts (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
+meta partial def evalSubsts (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
   let e ← instantiateMVars e
   if e.isAppOfArity ``Perennial.subst' 4 then
     let b := e.getArg! 1
@@ -1504,7 +1508,7 @@ partial def evalSubsts (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
 
 /-- A proof of `ae ≠ be` for distinct string literals `a`, `b` (`ae`, `be` reduce to them),
 cheap to check for the kernel (no UTF-8 encoding). -/
-def strNeProof (a b : String) (ae be : Lean.Expr) : Lean.Expr :=
+meta def strNeProof (a b : String) (ae be : Lean.Expr) : Lean.Expr :=
   let rec go (cs ds : List Char) : Lean.Expr × Lean.Expr × Lean.Expr :=
     -- returns (cs expr, ds expr, proof cs ≠ ds)
     let charE (c : Char) := mkApp (mkConst ``Char.ofNat) (mkRawNatLit c.toNat)
@@ -1532,7 +1536,7 @@ def strNeProof (a b : String) (ae be : Lean.Expr) : Lean.Expr :=
   mkAppN (mkConst ``str_ne_of_list_ne) #[ae, be, ce, de, hs, ht, p]
 
 /-- A proof of `BNamed x ≠ b` for a binder literal `b` different from `BNamed x`. -/
-def binderNeProof (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (b : Option String) (be : Lean.Expr) : Lean.Expr :=
+meta def binderNeProof (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (b : Option String) (be : Lean.Expr) : Lean.Expr :=
   match b with
   | none => mkApp2 (mkConst ``binder_named_ne_anon) ext xe
   | some y =>
@@ -1560,21 +1564,21 @@ register_option goose.wp.fvAnnot : Bool := {
 /-- Whether `substPf` uses closedness annotations (`fvClosed`), and the caches of
 free-variable sets and closedness proofs (set up by `wp_auto`). -/
 initialize fvAnnotMode : IO.Ref Bool ← IO.mkRef false
-initialize fvCache : IO.Ref (Std.HashMap Lean.Expr (Option (List String))) ← IO.mkRef {}
-initialize closedCache : IO.Ref (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)) ← IO.mkRef {}
+meta initialize fvCache : IO.Ref (Std.HashMap Lean.Expr (Option (List String))) ← IO.mkRef {}
+meta initialize closedCache : IO.Ref (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)) ← IO.mkRef {}
 /-- Terms that `assignHoisted` may hoist out of binders (`hoistClosed`): the closedness
 annotations `fvClosed S e` and their proofs, which are shared by the steps below
 binders. In creation order: a term comes after the ones it contains. -/
-initialize hoistCandidates : IO.Ref (Array Lean.Expr) ← IO.mkRef #[]
+meta initialize hoistCandidates : IO.Ref (Array Lean.Expr) ← IO.mkRef #[]
 
 /-- A literal `List String` expression. -/
-def strListExpr (l : List String) : Lean.Expr :=
+meta def strListExpr (l : List String) : Lean.Expr :=
   let ty := mkConst ``String
   l.foldr (fun s acc => mkApp3 (mkConst ``List.cons [0]) ty (mkStrLit s) acc)
     (mkApp (mkConst ``List.nil [0]) ty)
 
 /-- Parse a literal `List String` expression. -/
-partial def strList? (e : Lean.Expr) : MetaM (Option (List String)) := do
+meta partial def strList? (e : Lean.Expr) : MetaM (Option (List String)) := do
   let e ← whnfR e
   if e.isAppOfArity ``List.nil 1 then return some []
   unless e.isAppOfArity ``List.cons 3 do return none
@@ -1583,7 +1587,7 @@ partial def strList? (e : Lean.Expr) : MetaM (Option (List String)) := do
   return some (s :: t)
 
 /-- A proof of `s ∈ l` for a literal list `l` (as `le`) containing `s`. -/
-def memPf (s : String) (l : List String) (le : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta def memPf (s : String) (l : List String) (le : Lean.Expr) : MetaM (Option Lean.Expr) := do
   match l with
   | [] => return none
   | a :: t =>
@@ -1595,7 +1599,7 @@ def memPf (s : String) (l : List String) (le : Lean.Expr) : MetaM (Option Lean.E
     return some (mkApp5 (mkConst ``List.Mem.tail [0]) (mkConst ``String) (mkStrLit s) (mkStrLit a) tl p)
 
 /-- A proof of `x ∉ l` for a literal list `l` not containing `x`. -/
-def notMemPf (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (l : List String) : Lean.Expr :=
+meta def notMemPf (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (l : List String) : Lean.Expr :=
   match l with
   | [] => mkApp2 (mkConst ``not_mem_nil') ext xe
   | a :: t =>
@@ -1605,7 +1609,7 @@ def notMemPf (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (l : List String) :
 
 /-- The free variables of an `expr` built from constructors (`none` if some part
 is not), using the annotations `fvClosed S e` (whose set is `S`). -/
-partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
+meta partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
   if let some r := (← fvCache.get)[e]? then return r
   let union (a b : List String) : List String := a ++ b.filter (!a.contains ·)
   let r ← do
@@ -1674,7 +1678,7 @@ where
 
 /-- A proof of `ClosedUnder S e` (`S` given as the literal `Se`), built from the
 constructors of `e`; `none` if it cannot be built. Cached on `(Se, e)`. -/
-partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   if let some r := (← closedCache.get)[(Se, e)]? then return r
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
   let r ← do
@@ -1804,7 +1808,7 @@ mutual
 
 /-- `subst x v e` with a proof `subst x v e = e'` built from per-constructor lemmas
 (non-constructor subterms are left as `subst x v _`, proved by `rfl`). -/
-partial def substPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (e : Lean.Expr) :
+meta partial def substPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (e : Lean.Expr) :
     MetaM (Lean.Expr × Lean.Expr) := do
   -- a closedness annotation `fvClosed S b`
   if e.isAppOfArity ``fvClosed 3 then
@@ -1891,7 +1895,7 @@ partial def substPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : I
 
 /-- `substKeyedElements x v l` with a proof, for a list `l` built from constructors
 (`none` otherwise). -/
-partial def substKEsPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (l : Lean.Expr) :
+meta partial def substKEsPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (l : Lean.Expr) :
     MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
   let l ← whnfR l
@@ -1904,7 +1908,7 @@ partial def substKEsPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty 
     lem ``subst_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
 /-- `substKeyedElement x v ke` with a proof (see `substKEsPf`). -/
-partial def substKEPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (ke : Lean.Expr) :
+meta partial def substKEPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirty : IO.Ref Bool) (ke : Lean.Expr) :
     MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, xe, v] ++ args)
   let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
@@ -1966,19 +1970,19 @@ structure MEnv where
   σ : Lean.Expr
 
 /-- Push a layer. -/
-def MEnv.push (ext : Lean.Expr) (env : MEnv) (l : EnvLayer) : MEnv :=
+meta def MEnv.push (ext : Lean.Expr) (env : MEnv) (l : EnvLayer) : MEnv :=
   let σ' := match l with
     | .ins _ b v => mkApp4 (mkConst ``envInsB) ext b v env.σ
     | .del _ b => mkApp3 (mkConst ``envDel) ext b env.σ
   { layers := (l, env.σ) :: env.layers, σ := σ' }
 
 /-- The string literal of a binder `BNamed x`. -/
-def binderStrExpr (b : Lean.Expr) : MetaM Lean.Expr := do
+meta def binderStrExpr (b : Lean.Expr) : MetaM Lean.Expr := do
   return (← whnfR b).getArg! 0
 
 /-- Look up `y` in the environment: the result (`some v`, or `none`) and a proof of
 `σ y = result`. Cached on `(σ, y)`. -/
-partial def envLookupPf (ext : Lean.Expr) (cache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+meta partial def envLookupPf (ext : Lean.Expr) (cache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
     (y : String) (ye : Lean.Expr) (layers : List (EnvLayer × Lean.Expr)) (σ : Lean.Expr) :
     MetaM (Option Lean.Expr × Lean.Expr) := do
   if let some r := (← cache.get)[(σ, y)]? then return r
@@ -2016,7 +2020,7 @@ mutual
 /-- `substEnv σ e` with a proof `substEnv σ e = e'`, for `e` built from
 constructors (`none` otherwise). Closedness annotations `fvClosed S b` with no
 variable of `S` bound by `σ` are kept as they are. -/
-partial def substEnvPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+meta partial def substEnvPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
     (env : MEnv) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let σ := env.σ
   let rec' := substEnvPf ext lcache env
@@ -2115,7 +2119,7 @@ partial def substEnvPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Exp
   | _, _ => return none
 
 /-- `substEnvKes σ l` with a proof (see `substEnvPf`). -/
-partial def substEnvKEsPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+meta partial def substEnvKEsPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
     (env : MEnv) (l : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
   let l ← whnfR l
@@ -2128,7 +2132,7 @@ partial def substEnvKEsPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.
     lem ``substEnv_pf_kes_cons #[ke, ke', tl, tl', p1, p2])
 
 /-- `substEnvKe σ ke` with a proof (see `substEnvPf`). -/
-partial def substEnvKEPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
+meta partial def substEnvKEPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lean.Expr × String) (Option Lean.Expr × Lean.Expr)))
     (env : MEnv) (ke : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, env.σ] ++ args)
   let mk (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext] ++ args)
@@ -2174,7 +2178,7 @@ end
 /-- Annotate the continuations (bodies of `let:`/`;;` lambdas and of the
 `exceptionSeq` continuation) of a large expression with their free variables
 (`fvClosed`); the result is definitionally equal to `e`. -/
-partial def annotateFv (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
+meta partial def annotateFv (ext : Lean.Expr) (e : Lean.Expr) : MetaM Lean.Expr := do
   let cache ← IO.mkRef ({} : Std.HashMap Lean.Expr Lean.Expr)
   go cache e
 where
@@ -2215,17 +2219,17 @@ where
     return r
 
 /-- Remove the closedness annotations (definitionally). -/
-partial def stripFvCore (e : Lean.Expr) : Lean.Expr :=
+meta partial def stripFvCore (e : Lean.Expr) : Lean.Expr :=
   e.replace fun s => if s.isAppOfArity ``fvClosed 3 then some (stripFvCore (s.getArg! 2)) else none
 
-def stripFv (e : Lean.Expr) : Lean.Expr :=
+meta def stripFv (e : Lean.Expr) : Lean.Expr :=
   if (e.find? (·.isConstOf ``fvClosed)).isNone then e else stripFvCore e
 
 theorem tac_goal_defeq {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢ Q) (heq : P = Q) : Δ ⊢ P :=
   heq ▸ h
 
 /-- Add the goal `hyps ⊢ goal` with the closedness annotations removed. -/
-def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Q($prop)) (k : Q($prop) → ProofModeM Lean.Expr := addBIGoal hyps) :
     ProofModeM Lean.Expr := do
   let goal' := stripFv goal
@@ -2238,7 +2242,7 @@ def addBIGoalStripped {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
 /-- Evaluate the `subst'`/`subst` applications at the head of `e`, with a proof
 (`none`: unchanged). `vals` collects the substituted values; `dirty` is set if
 some `subst` could not be evaluated. -/
-partial def evalSubstsPf (ext : Lean.Expr) (vals : IO.Ref (Array Lean.Expr)) (dirty : IO.Ref Bool)
+meta partial def evalSubstsPf (ext : Lean.Expr) (vals : IO.Ref (Array Lean.Expr)) (dirty : IO.Ref Bool)
     (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
   let e ← instantiateMVars e
   let orRefl (e : Lean.Expr) (p? : Option Lean.Expr) : MetaM Lean.Expr := match p? with
@@ -2291,7 +2295,7 @@ Substitutions are evaluated by `evalSubstsPf` (with a kernel-cheap proof). The
 `goose_wp_simp` simp set is then only run if it could change something: the
 expression of a WP goal is kept in `goose_wp_simp` normal form, so after a
 substitution only the substituted values need to be checked (`needsGooseSimp`). -/
-def simpReduct (ext : Lean.Expr) (K : List Lean.Expr) (e2 : Lean.Expr) (known : Array Lean.Expr := #[]) :
+meta def simpReduct (ext : Lean.Expr) (K : List Lean.Expr) (e2 : Lean.Expr) (known : Array Lean.Expr := #[]) :
     MetaM (Lean.Expr × Option Lean.Expr) := do
   let vals ← IO.mkRef #[]
   let dirty ← IO.mkRef false
@@ -2314,17 +2318,17 @@ def simpReduct (ext : Lean.Expr) (K : List Lean.Expr) (e2 : Lean.Expr) (known : 
     return (filled, some (← mkCongrArg f p))
 
 /-- `(modality_laterN 1)` at the given BI. -/
-def laterModality {u} (prop : Q(Type u)) (bi : Q(BI $prop)) : MetaM Q(Modality $prop $prop) :=
+meta def laterModality {u} (prop : Q(Type u)) (bi : Q(BI $prop)) : MetaM Q(Modality $prop $prop) :=
   mkAppOptM ``modality_laterN #[some prop, some (mkNatLit 1), some bi]
 
-initialize laterCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
+meta initialize laterCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
 
 /-- May `IntoLaterN` strip a later from (a part of) `ty`? A syntactic over-approximation:
 `ty` has a `▷` or `▷^[n]` that is not below a wand or an implication. (No
 `IntoLaterN` instance looks below `-∗`/`→`, so a `▷` there, as in a Löb induction hypothesis
 whose own `▷` has been stripped or in a Texan-triple specification `∀ Φ, P -∗ ▷ (Q -∗ Φ) -∗
 WP ...`, does not trigger the `IntoLaterN` search over all hypotheses on every step.) -/
-def strippableLater (ty : Lean.Expr) : Bool :=
+meta def strippableLater (ty : Lean.Expr) : Bool :=
   (ty.findExt? fun s =>
     if s.isAppOf ``BIBase.later || s.isAppOf ``BIBase.laterN then .found
     else if s.isAppOf ``BIBase.wand || s.isAppOf ``BIBase.imp then .done
@@ -2332,7 +2336,7 @@ def strippableLater (ty : Lean.Expr) : Bool :=
 
 /-- Does some hypothesis have a later that `IntoLaterN` may strip (`strippableLater`)?
 (Cached per hypothesis type and per context.) -/
-partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) :
+meta partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : Hyps bi e) :
     MetaM Bool := do
   match hyps with
   | .emp _ => return false
@@ -2355,7 +2359,7 @@ partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hyps : 
 from the hypotheses. When no hypothesis has a strippable `▷`,
 this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
 hypothesis on every step. -/
-def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) : ProofModeM ((e' : Q($prop)) × Hyps bi e' × Lean.Expr) := do
   if ← hypsHaveLater hyps then
     let ⟨e', hyps', pf⟩ ← iModAction (prop1 := prop) (bi1 := bi) hyps (← laterModality prop bi)
@@ -2365,7 +2369,7 @@ def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
   return ⟨ehyps, hyps, pf⟩
 
 /-- Is `e` an application of a `CompositeLiteral` instruction (possibly curried)? -/
-def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
+meta def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
   let mut e ← whnfR e
   for _ in [0:4] do
     let_expr Perennial.Expr.App _ f _ := e | return false
@@ -2378,7 +2382,7 @@ def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
 
 /-- Find the pure step that `iWpPureStep` would take (the outermost redex with a
 `PureWp` instance satisfying `pred`) and solve its side condition. -/
-def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
+meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
     (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
     ProofModeM (PureStep × Lean.Expr) := do
   let gs ← gooseGSArgs wp.ι
@@ -2427,7 +2431,7 @@ def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
 definitions such as `Let`): these are parts of the WP expression, hence in
 `goose_wp_simp` normal form, and a step that only moves them (e.g. `Rec` to
 `RecV`, or a beta step for an anonymous binder) need not re-check them. -/
-def redexParts (e1 : Lean.Expr) : MetaM (Array Lean.Expr) := do
+meta def redexParts (e1 : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let rec go : Nat → Lean.Expr → Array Lean.Expr → MetaM (Array Lean.Expr)
     | 0, _, acc => pure acc
     | d + 1, e, acc => do
@@ -2438,7 +2442,7 @@ def redexParts (e1 : Lean.Expr) : MetaM (Array Lean.Expr) := do
   go 3 e1 #[]
 
 /-- Take the pure step `st` found by `iWpPureStepFind`. -/
-def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (st : PureStep) (hφ : Lean.Expr) (lc : Bool) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let ⟨ehyps', hyps', hlater⟩ ← iLaterIntro hyps
@@ -2465,14 +2469,14 @@ def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 the new (simplified) expression, and a function turning a proof of the new goal
 (`hyps' ⊢ WP e' ...`, or `hyps' ⊢ £ 1 -∗ WP e' ...` when `lc`) into a proof of
 the old one. `pred` restricts the redexes considered. -/
-def iWpPureStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpPureStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (failOnUnsolved lc : Bool)
     (pred : Lean.Expr → MetaM Bool := fun _ => pure true) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let (st, hφ) ← iWpPureStepFind wp failOnUnsolved pred
   iWpPureStepTake hyps wp st hφ lc
 
-register_option goose.wp.letRun : Nat := {
+meta register_option goose.wp.letRun : Nat := {
   defValue := 2
   descr := "the minimal length of a run of `let:`s of values that `wp_pures`/`wp_auto` step \
     through at once, substituting an environment into the body after the run once \
@@ -2481,7 +2485,7 @@ register_option goose.wp.letRun : Nat := {
 
 /-- A `let:` (or `;;`) of a value: `App (Rec BAnon b body) (Val v)`, possibly under a
 closedness annotation; returns `(b, name of b, v, body)`. -/
-def valueLet? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Option String × Lean.Expr × Lean.Expr)) := do
+meta def valueLet? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Option String × Lean.Expr × Lean.Expr)) := do
   let e ← whnfR e
   let_expr Perennial.Expr.App _ f a := e | return none
   let f ← whnfR f
@@ -2493,7 +2497,7 @@ def valueLet? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Option String × Lea
 
 /-- The evaluation context `K` (innermost first) and the run of `let:`s of values
 `(b, name, v, body)` at the head of the WP expression `e`, if there is one. -/
-def findLetRun (e : Lean.Expr) :
+meta def findLetRun (e : Lean.Expr) :
     MetaM (Option (List Lean.Expr × Lean.Expr × Array (Lean.Expr × Option String × Lean.Expr × Lean.Expr))) := do
   let mut cur := e
   let mut K := []
@@ -2518,7 +2522,7 @@ introducing a `▷` as `iLaterIntro`). Returns the new context, the new expressi
 and a function turning a proof of the new goal into a proof
 of the old one; `none` if there is no such run, or if the body after the run is not
 built from constructors. -/
-def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) :
     ProofModeM (Option ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   let minRun := goose.wp.letRun.get (← getOptions)
@@ -2578,7 +2582,7 @@ def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 /-- Simplify the expression of the WP goal with `goose_wp_simp`. Returns the new
 (inner) expression and a function turning a proof of the new goal into a proof
 of the old one, or `none` if nothing changed. -/
-def iWpExprSimp (wp : GooseWpGoal) (Δ : Lean.Expr) : MetaM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
+meta def iWpExprSimp (wp : GooseWpGoal) (Δ : Lean.Expr) : MetaM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   unless ← needsGooseSimp wp.e do return none
   let (e', p?) ← gooseExprSimp wp.e
   let some _ := p? | return none
@@ -2593,7 +2597,7 @@ argument of a subexpression in evaluation position) where `c` is an application
 of a (non-irreducible, non-projection) definition whose unfolding is a value that
 is not a function (`#x` or a `val` constructor other than `RecV`), e.g. a Go
 package constant `def a : val := #(W64 3)`. Returns `(c, unfolding)`. -/
-def findValConst (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta def findValConst (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let env ← getEnv
   -- a value constant `c`, or one inside `PairV`/`InjLV`/`InjRV`
   let rec check : Nat → Lean.Expr → MetaM (Option (Lean.Expr × Lean.Expr))
@@ -2624,7 +2628,7 @@ def findValConst (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
 
 /-- Unfold one value constant in evaluation position (`findValConst`) in the WP
 goal (definitional). Used by `wp_auto` when no other step applies. -/
-def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+meta def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     MetaM (Option (Lean.Expr × (Lean.Expr → MetaM Lean.Expr))) := do
   let some (c, c') ← findValConst wp.e | return none
   let e' := wp.e.replace fun s => if s == c then some c' else none
@@ -2636,7 +2640,7 @@ def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
 
 /-- Turn the goal `hyps ⊢ WP (Val v) {{ Φ }}` into `hyps ⊢ Φ v` (by
 `wp_value`), continuing with `k` on the new conclusion. -/
-def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (v : Lean.Expr)
     (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
   let goal := (mkApp wp.Φ v).headBeta
@@ -2656,12 +2660,12 @@ unfocused first (`tac_wp_unfocus`), so focusing is invisible. -/
 
 /-- The evaluation-context depth from which the tactics focus, and the number of
 items they keep around the redex. -/
-def focusTrigger : Nat := 6
-def focusMargin : Nat := 3
+meta def focusTrigger : Nat := 6
+meta def focusMargin : Nat := 3
 
 /-- The evaluation-context path of `e` (items and holes, outermost first), if it
 is longer than `focusTrigger` (checked in `O(focusTrigger)` otherwise). -/
-def deepEctxPath? (e : Lean.Expr) : MetaM (Option (Array (Lean.Expr × Lean.Expr))) := do
+meta def deepEctxPath? (e : Lean.Expr) : MetaM (Option (Array (Lean.Expr × Lean.Expr))) := do
   let mut cur := e
   let mut acc := #[]
   for _ in [0:focusTrigger + 1] do
@@ -2679,7 +2683,7 @@ def deepEctxPath? (e : Lean.Expr) : MetaM (Option (Array (Lean.Expr × Lean.Expr
 /-- Focus on the redex of `wp` if it is deep in its evaluation context: the new
 goal (expression and postcondition `wpNestedPost`), and a function turning a proof
 of it into a proof of the old one. -/
-def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+meta def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     MetaM (Option (GooseWpGoal × (Lean.Expr → MetaM Lean.Expr))) := do
   unless wp.tail.isNone do return none
   let some path ← deepEctxPath? wp.e | return none
@@ -2696,7 +2700,7 @@ def GooseWpGoal.focus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
 
 /-- The arguments `(s, E, K, Φ)` of a postcondition `wpNestedPost s E K Φ`, and the
 partial application to the section variables. -/
-def nestedPostArgs? (Φ : Lean.Expr) : Option (Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) :=
+meta def nestedPostArgs? (Φ : Lean.Expr) : Option (Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr × Lean.Expr) :=
   let Φ := Φ.consumeMData
   if !Φ.getAppFn.isConstOf ``wpNestedPost then none else
   let args := Φ.getAppArgs
@@ -2709,7 +2713,7 @@ def nestedPostArgs? (Φ : Lean.Expr) : Option (Lean.Expr × Lean.Expr × Lean.Ex
 `WP (fillItem Ki (Val v)) @ s; E {{ wpNestedPost s E K' Φ }}`, or `Φ v` (popped
 again if it is of this form) if `K = []` (definitionally equal). `none` if the goal is
 not of this form. -/
-partial def popNestedPost? (wp : GooseWpGoal) (goal : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta partial def popNestedPost? (wp : GooseWpGoal) (goal : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let goal := goal.consumeMData
   unless goal.isApp do return none
   let some (s, E, K, Φ, head) := nestedPostArgs? goal.appFn! | return none
@@ -2724,7 +2728,7 @@ partial def popNestedPost? (wp : GooseWpGoal) (goal : Lean.Expr) : MetaM (Option
   return some ({ wp with s, E, tail := none }.mk' e (mkAppN head #[s, E, K'.getArg! 2, Φ]))
 
 /-- A literal list of evaluation-context items. -/
-partial def ectxListLit? (K : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
+meta partial def ectxListLit? (K : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
   let K ← whnfR K
   if K.isAppOfArity ``List.nil 1 then return some []
   unless K.isAppOfArity ``List.cons 3 do return none
@@ -2733,7 +2737,7 @@ partial def ectxListLit? (K : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
 
 /-- Undo `GooseWpGoal.focus?` (one level): `WP e {{ wpNestedPost K Φ }}` becomes
 `WP (fill K e) {{ Φ }}` with `fill K e` computed. -/
-def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
+meta def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     MetaM (Option (GooseWpGoal × (Lean.Expr → MetaM Lean.Expr))) := do
   unless wp.tail.isNone do return none
   let some (s, E, K, Φ, _) := nestedPostArgs? wp.Φ | return none
@@ -2743,7 +2747,7 @@ def GooseWpGoal.unfocus? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     [("Δ", Δ), ("s", s), ("E", E), ("K", K), ("e", wp.e), ("Φ", Φ), ("!h", h)])
 
 /-- Add the goal `hyps ⊢ WP e {{ Φ }}` of `wp`, unfocused (`GooseWpGoal.unfocus?`). -/
-partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Lean.Expr := do
   if let some (wp', k) ← wp.unfocus? ehyps then return ← k (← addWpGoal hyps wp')
   addBIGoal hyps (wp.mk' wp.e wp.Φ)
@@ -2751,7 +2755,7 @@ partial def addWpGoal {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
 /-- Repeatedly take pure steps (`wp_pures`); steps whose side condition cannot
 be discharged automatically are not taken. When the expression becomes a value
 `v`, the WP is replaced by `Φ v`, and if that is again a WP, stepping continues. -/
-partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (simpFirst : Bool := true) : ProofModeM Lean.Expr := do
   if simpFirst then
     if let some (e', k) ← iWpExprSimp wp ehyps then
@@ -2785,7 +2789,7 @@ partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
 
 /-- Finish a goal `hyps ⊢ WP e {{ Φ }}`: if `e` is a value, replace the WP by
 `Φ v`; otherwise leave it. -/
-def iWpFinish {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpFinish {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) : ProofModeM Lean.Expr := do
   if let some v ← wp.isVal? then
     iWpValue hyps wp v (addBIGoal hyps ·)
@@ -2795,7 +2799,7 @@ def iWpFinish {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
 /-- Bind the evaluation context `K` around `e'` in the goal
 `Δ ⊢ WP (fill K e') {{ Φ }}`: `k` is given the new conclusion
 `WP e' {{ v, WP (fill K (Val v)) {{ Φ }} }}` and must prove it from `Δ`. -/
-def iWpBindCore (Δ : Lean.Expr) (wp : GooseWpGoal) (K : List Lean.Expr) (e' : Lean.Expr)
+meta def iWpBindCore (Δ : Lean.Expr) (wp : GooseWpGoal) (K : List Lean.Expr) (e' : Lean.Expr)
     (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
   if K.isEmpty && wp.tail.isNone then return ← k (wp.mk' e' wp.Φ)
   let valTy := mkApp (mkConst ``Perennial.val) wp.ext
@@ -2809,7 +2813,7 @@ def iWpBindCore (Δ : Lean.Expr) (wp : GooseWpGoal) (K : List Lean.Expr) (e' : L
 /-- The evaluation context to bind for the "next"
 operation (a function call, possibly curried, or the innermost expression that
 is not an evaluation-context constructor). -/
-def findBindNext (e : Lean.Expr) : MetaM (Option (List Lean.Expr × Lean.Expr)) := do
+meta def findBindNext (e : Lean.Expr) : MetaM (Option (List Lean.Expr × Lean.Expr)) := do
   let mut bindCtx : Option (List Lean.Expr × Lean.Expr) := none
   let mut isCallSoFar := true
   let mut cur := e
@@ -2835,7 +2839,7 @@ def findBindNext (e : Lean.Expr) : MetaM (Option (List Lean.Expr × Lean.Expr)) 
 `isDefEq`)? Head symbols are compared first, so that most candidates are rejected
 without unification, and errors (including running out of heartbeats) count as
 no match. -/
-def gooseMatchesPattern (e p : Lean.Expr) : MetaM Bool := do
+meta def gooseMatchesPattern (e p : Lean.Expr) : MetaM Bool := do
   let e' ← whnfR e
   let p' ← whnfR (← instantiateMVars p)
   if let .const pn _ := p'.getAppFn then
@@ -2847,7 +2851,7 @@ def gooseMatchesPattern (e p : Lean.Expr) : MetaM Bool := do
   tryCatchRuntimeEx (withReducible (isDefEq e p)) (fun _ => return false)
 
 /-- Elaborate a GooseLang expression pattern (in goose expression mode). -/
-def elabGoosePattern (stx : Term) (ext : Lean.Expr) : TermElabM Lean.Expr := do
+meta def elabGoosePattern (stx : Term) (ext : Lean.Expr) : TermElabM Lean.Expr := do
   let ty := mkApp (mkConst ``Perennial.Expr) ext
   let e ← Term.elabTermEnsuringType (← `(gl($stx))) ty
   Term.synthesizeSyntheticMVarsNoPostponing (ignoreStuckTC := true)
@@ -3006,7 +3010,7 @@ GooseLang pattern `e` (goose expression mode, e.g. `wp_pure (if: _ then _ else _
 syntax (name := wpPureTac) "wp_pure" (ppSpace colGt term:max)? : tactic
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-@[tactic wpPureTac] def evalWpPure : Tactic := fun stx => do
+@[tactic wpPureTac] meta def evalWpPure : Tactic := fun stx => do
   let pat? : Option Term := if stx[1].isNone then none else some ⟨stx[1][0]⟩
   runTacticGooseWp `wp_pure fun mvar g wp => do
     if let some v ← wp.isVal? then
@@ -3056,7 +3060,7 @@ Example: `wp_bind (if: _ then _ else _)`. -/
 syntax (name := wpBindTac) "wp_bind" (ppSpace colGt term:max)? : tactic
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-@[tactic wpBindTac] def evalWpBind : Tactic := fun stx => do
+@[tactic wpBindTac] meta def evalWpBind : Tactic := fun stx => do
   let pat? : Option Term := if stx[1].isNone then none else some ⟨stx[1][0]⟩
   runTacticGooseWp `wp_bind fun mvar g wp => do
     let res ← match pat? with
@@ -3106,7 +3110,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Find a call `App (Val fv) (Val v)` where `fv` unfolds (with default
 transparency) to `RecV f x e`, and take the beta step. -/
-def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Bool := false) (onlyImpl : Bool := false) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
   let some ((fv, v2, f, x, body), K, _) ← findEctx wp.e (fun _ e => do

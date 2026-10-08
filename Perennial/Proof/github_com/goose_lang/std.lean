@@ -2,14 +2,18 @@
 Specs for
 `github.com/goose-lang/std`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Proof.math
-import Perennial.Proof.time
-import Perennial.Code.github_com.goose_lang.std
-import Perennial.GeneratedProof.github_com.goose_lang.std
-import Perennial.Proof.github_com.goose_lang.primitive
-import Perennial.Proof.github_com.goose_lang.std.std_core
-import Perennial.Proof.sync
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.math
+public import Perennial.Proof.time
+public import Perennial.Code.github_com.goose_lang.std
+public import Perennial.GeneratedProof.github_com.goose_lang.std
+public import Perennial.Proof.github_com.goose_lang.primitive
+public import Perennial.Proof.github_com.goose_lang.std.std_core
+public import Perennial.Proof.sync
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

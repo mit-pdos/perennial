@@ -1,10 +1,14 @@
 /-
 Package initialization of `io`.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.errors
-import Perennial.Code.io
-import Perennial.GeneratedProof.io
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.errors
+public import Perennial.Code.io
+public import Perennial.GeneratedProof.io
+
+@[expose] public section
 
 noncomputable section
 
