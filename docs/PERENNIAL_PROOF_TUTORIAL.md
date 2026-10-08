@@ -62,6 +62,14 @@ Always pass `--lean`, which selects the Lean backend; `--compile` first runs
 For each package the script runs `goose -lean -out Perennial/Code -configdir Perennial/Code`
 and `proofgen -lean -out Perennial/GeneratedProof -configdir Perennial/Code`.
 
+**Translating in another project.** A project that depends on Perennial and keeps
+the translation of its own Go code passes `-lean-root PKG=ROOT` to both `goose`
+and `proofgen` (e.g. `-lean-root go.etcd.io/raft/v3=EtcdRaft`): the modules of the
+packages under `PKG` are then `ROOT.Code.*` and `ROOT.GeneratedProof.*`, in a
+library `ROOT` of that project, while imports of other packages stay
+`Perennial.Code.*`. Without it the modules would be named `Perennial.*`, which Lake
+resolves to the Perennial library.
+
 **Configuration.** A `<pkg>.toml` next to the generated file (e.g.
 `Perennial/Code/sort.toml`, `Perennial/Code/sync.toml`) selects what is
 translated. Each key is a list of glob patterns applied left to right, starting

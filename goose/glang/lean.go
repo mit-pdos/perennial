@@ -44,6 +44,44 @@ set_option linter.iris.dupNamespace false
 // goose invocation produces only one kind of output.
 var Lean bool
 
+// LeanRoots maps Go package path prefixes to the Lean module root of their
+// translation, set with -lean-root. A package not under any of them has root
+// "Perennial" (modules Perennial.Code.*, Perennial.GeneratedProof.*, ...). A
+// project that translates its own Go packages gives them another root: the
+// Perennial library owns every module named Perennial.*, so Lake would look for
+// them there.
+var LeanRoots = map[string]string{}
+
+// LeanRootOf is the Lean module root of the translation of a Go package: that of
+// the longest prefix in LeanRoots, else "Perennial".
+func LeanRootOf(pkgPath string) string {
+	root, best := "Perennial", -1
+	for prefix, r := range LeanRoots {
+		if (pkgPath == prefix || strings.HasPrefix(pkgPath, prefix+"/")) && len(prefix) > best {
+			root, best = r, len(prefix)
+		}
+	}
+	return root
+}
+
+// LeanRootFlag is the flag.Value of -lean-root PKG=ROOT (repeatable).
+type LeanRootFlag struct{}
+
+func (LeanRootFlag) String() string { return "" }
+
+func (LeanRootFlag) Set(s string) error {
+	prefix, root, ok := strings.Cut(s, "=")
+	if !ok || prefix == "" || root == "" {
+		return fmt.Errorf("expected PKG=ROOT, got %q", s)
+	}
+	LeanRoots[prefix] = root
+	return nil
+}
+
+// LeanRootUsage is the help text of -lean-root.
+const LeanRootUsage = "PKG=ROOT: Lean modules of the packages under Go path PKG are ROOT.Code.*, " +
+	"ROOT.GeneratedProof.*, ... instead of Perennial.* (repeatable)"
+
 type LeanMode int
 
 const (
@@ -1191,7 +1229,7 @@ func (d AxiomDecl) LeanDecl() string {
 }
 
 func (decl ImportDecl) LeanDecl() string {
-	return "import " + LeanModule("Perennial.Code", decl.Path)
+	return "import " + LeanModule(LeanRootOf(decl.Path)+".Code", decl.Path)
 }
 
 func (d TypeDecl) LeanDecl() string {
