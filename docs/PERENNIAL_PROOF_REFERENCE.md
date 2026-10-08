@@ -504,7 +504,8 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 
 `Perennial/Proof/{sort,slices,math,bytes,strings,errors,cmp,unsafe}.lean` and
 their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
-`pdqSort` family, ...).
+`pdqSort` family, ...); `Perennial/Proof/math/big.lean` (`math.big.ownInt`,
+`wp_NewInt`, `wp_Int64`).
 
 ---
 

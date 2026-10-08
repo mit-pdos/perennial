@@ -449,6 +449,99 @@ noncomputable def three [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def newFloat [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.newFloat"
 
+/-- NewInt allocates and returns a new [Int] set to x.
+
+    go: int.go:77:6 -/
+noncomputable def NewInt.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "x")))
+  (Let "u" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "abs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Word.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType Word.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoAlloc Int'.ty))) (Let "$v0" (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "x")) (Val #(W64 0))))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Word.ty)))) (Var "abs"))
+  (App (Val (GoInstruction (CompositeLiteral Int'.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"neg")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"abs")) (ElementExpression (go.GoType.SliceType Word.ty) (Var "$v1")))]))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "x")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Val #()))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))) (Val #(W64 0))))) (Val #false)))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.uint64 Word.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u")))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.uint64 Word.ty))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Word.ty)))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0"))), (KeyedElement none (ElementExpression Word.ty (Var "$v1")))]))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Word.ty)))) (Pair (Var "abs") (Var "$r0")))))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.uint64 Word.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType Word.ty)))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0")))])))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Word.ty)))) (Pair (Var "abs") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "x")) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNeg go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "u") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "u") (Var "$r0"))))))))))
+
+/-- low64 returns the least significant 64 bits of x.
+
+    go: int.go:416:6 -/
+noncomputable def low64.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc nat.ty))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert Word.ty go.uint64))) (App (Val (GoInstruction (GoLoad Word.ty))) (App (Val (GoInstruction (IndexRef nat.ty))) (Pair (App (Val (GoInstruction (GoLoad nat.ty))) (Var "x")) (Val #(W64 0))))))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad nat.ty))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [nat.ty]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))) (Val #false)))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert Word.ty go.uint64))) (App (Val (GoInstruction (GoLoad Word.ty))) (App (Val (GoInstruction (IndexRef nat.ty))) (Pair (App (Val (GoInstruction (GoLoad nat.ty))) (Var "x")) (Val #(W64 1)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "v") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad nat.ty))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [nat.ty]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (Val doReturn)
+  (Val #(W64 0)))
+  (App (Val doExecute)
+  (Val #())))))))
+
+/-- Int64 returns the int64 representation of x.
+    If x cannot be represented in an int64, the result is undefined.
+
+    go: int.go:429:15 -/
+noncomputable def Int.Int64.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int'.ty)))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (Let "$a0" (App (Val (GoInstruction (GoLoad nat.ty))) (App (Val (GoInstruction (StructFieldRef Int'.ty go!"abs"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int'.ty)))) (Var "x"))))
+  (App (App (Val (GoInstruction (FuncResolve low64 []))) (Val #())) (Var "$a0"))))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "v")))))
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Int'.ty go!"neg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int'.ty)))) (Var "x"))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNeg go.int64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "v")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))))
+
 instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt]
 
@@ -738,6 +831,7 @@ class Int.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_neg : ∀ (x : Int') (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Int'.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int')))
   get_abs : ∀ (x : Int'), go.IsGoStepPureDetTagged under (StructFieldGet Int'.underlying go!"abs") #x (Val #(x.abs'))
   set_abs : ∀ (x : Int') (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet Int'.underlying go!"abs") (PairV #x #y) (Val #(({ x with abs' := y } : Int')))
+  ptr_Int64_unfold : MethodUnfold (go.GoType.PointerType Int'.ty) go!"Int64" Int.Int64.impl
 
 attribute [instance] Int.TypeAssumptions.type_repr
   Int.TypeAssumptions.underlying
@@ -745,6 +839,7 @@ attribute [instance] Int.TypeAssumptions.type_repr
   Int.TypeAssumptions.set_neg
   Int.TypeAssumptions.get_abs
   Int.TypeAssumptions.set_abs
+  Int.TypeAssumptions.ptr_Int64_unfold
 
 structure byteReader [FfiSyntax] where
   mk ::
@@ -902,6 +997,8 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   stack_instance : stack.TypeAssumptions
   divisor_instance : divisor.TypeAssumptions
   Rat_instance : Rat.TypeAssumptions
+  NewInt_unfold : FuncUnfold NewInt [] NewInt.impl
+  low64_unfold : FuncUnfold low64 [] low64.impl
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
 
 attribute [instance] Assumptions.Word_instance
@@ -917,6 +1014,8 @@ attribute [instance] Assumptions.Word_instance
   Assumptions.stack_instance
   Assumptions.divisor_instance
   Assumptions.Rat_instance
+  Assumptions.NewInt_unfold
+  Assumptions.low64_unfold
   Assumptions.import_fmt_Assumption
 
 end math.big
