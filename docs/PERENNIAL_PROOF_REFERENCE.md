@@ -778,6 +778,21 @@ real execution of at most `f` steps is a bounded one from fuel `f`; no Go
 instruction stutters) and `realNotStuck_of_bounded` (every bounded step is
 backed by a real one).
 
+**Distributed adequacy.** `goose_dist_adequacy` (`DistAdequacy.lean`) and
+its Grove instance `grove_ffi_dist_adequacy` are about a system of nodes
+(`DistLang.lean`): node `i` runs `ebσs[i].1` from local state `ebσs[i].2`,
+all nodes share one `GlobalState` (the network), and a step of the system
+(`RealDistStep`) is a thread-pool step of one node. There are no crash steps
+(fail-stop crashes are a node never being scheduled again). The WP premise is
+proved under a *global* ghost state only (`∀ [G : GooseGlobalGS .hasLC GF]`,
+with `receiptBound GF = N`); from `ffiGlobalStart` it provides, for every node
+and *any* local ghost state `L` for it, a not-stuck WP (with any
+postcondition) for the node's program (`distWpInit`, under `HeapGS`
+`⟨G, L⟩`). The conclusion `DistAdequate N ebσs g`: in every real distributed
+execution of fewer than `N` steps (in total, over all nodes) no thread of any
+node is stuck. Fancy
+updates under a `GooseGlobalGS` alone need `open scoped Perennial.DistGlobal`.
+
 **Example.** `TimeReceiptsTest.lean` verifies the paper's clock
 (`wp_clock_incr`, premise `receiptBound GF ≤ 2 ^ 64`): the invariant owns one
 receipt per increment, and `receipt_add_one_lt` gives the bound on the counter
