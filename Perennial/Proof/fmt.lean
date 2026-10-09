@@ -64,11 +64,14 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   is_pkg_init_finish
 
 /-- This is unsound: really need to know that all of the args are
-safe to convert into string. -/
+safe to convert into string. The error's `Error()` returns some string (a `*fmt.wrapError`
+or `*errors.errorString`). -/
 theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
-    {{ (err : GoInterfaceOk), RET #(interface.ok err); True }} := by
+    {{ (err : GoInterfaceOk), RET #(interface.ok err);
+        □ ∀ Φ : val → IProp GF, ▷ (∀ str : GoString, Φ #str) -∗
+          WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
   -- Unprovable: `fmt.Errorf` has no translated body (no `FuncUnfold` in `fmt.Assumptions`).
   sorry
 
