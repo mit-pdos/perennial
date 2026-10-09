@@ -8,7 +8,6 @@ translate = [
   "b32",
 
   "align64",
-  "Value*",
   "efaceWords",
 
   "noCopy",
@@ -47,6 +46,12 @@ trusted = [
   "StorePointer",
   "SwapPointer",
   "CompareAndSwapPointer",
+
+  # `Value`'s methods reinterpret the `any` field as two `unsafe.Pointer`s
+  # (`efaceWords`), which goose cannot model; `Value` is modeled in
+  # TrustedCode/sync/atomic.lean as an atomic cell holding an `any`.
+  "Value",
+  "Value.*",
 ]
 
 imports = ["!*"]

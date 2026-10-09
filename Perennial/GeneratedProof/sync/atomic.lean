@@ -514,46 +514,6 @@ instance Uintptr_access_store_v (l : Loc) (v : sync.atomic.Uintptr) (v' : w64) :
 end def_
 end Uintptr
 
-namespace Value
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
-
-instance Value_typed_pointsto :
-    TypedPointsto (GF := GF) sync.atomic.Value where
-  typedPointstoDef l v dq := iprop(
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Value sync.atomic.Value.underlying := by
-  solve_into_val_typed_struct
-
-instance Value_access_load_v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance Value_access_store_v (l : Loc) (v : sync.atomic.Value) (v' : GoInterface) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := v' } : sync.atomic.Value) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end Value
-
 namespace efaceWords
 section def_
 
