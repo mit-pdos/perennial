@@ -81,9 +81,12 @@ func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {
 func (tr *typesTranslator) Decl(d ast.Decl) {
 	switch d := d.(type) {
 	case *ast.FuncDecl:
-		// the types declared in the function (see util.TypeDecls)
-		for _, g := range util.TypeDecls(d) {
-			tr.Decl(g)
+		// the types declared in a translated function (see util.TypeDecls)
+		fn, ok := tr.pkg.TypesInfo.Defs[d.Name].(*types.Func)
+		if ok && tr.filter.GetAction(util.FuncName(fn)) == declfilter.Translate {
+			for _, g := range util.TypeDecls(d) {
+				tr.Decl(g)
+			}
 		}
 	case *ast.GenDecl:
 		switch d.Tok {

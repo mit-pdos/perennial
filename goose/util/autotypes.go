@@ -146,10 +146,25 @@ var typesLogMu sync.Mutex
 // If the environment variable GOOSE_TYPES_LOG is set to a file, a line is
 // appended there for every type declaration that df axiomatizes, with the
 // decision (and the reasons a type cannot be translated).
+// FuncName is the name of a function or method as the declaration filter
+// sees it: `f`, or `T.m` for a method of `T` or `*T`.
+func FuncName(f *types.Func) string {
+	maybeTypeName := ""
+	if recv := f.Type().(*types.Signature).Recv(); recv != nil {
+		recvType := recv.Type()
+		if ptrType, ok := recvType.(*types.Pointer); ok {
+			recvType = ptrType.Elem()
+		}
+		maybeTypeName = types.TypeString(recvType, func(_ *types.Package) string { return "" }) + "."
+	}
+	return maybeTypeName + f.Name()
+}
+
 // TypeDecls returns the type declarations under n (a file or a function
 // declaration), in source order: the package-level ones and those in function
-// bodies. Goose translates a type declared in a function like a package-level
-// type of the same name, which must therefore be unique in the package.
+// bodies. Goose translates a type declared in a translated function like a
+// package-level type of the same name, which must therefore be unique in the
+// package.
 func TypeDecls(n ast.Node) []*ast.GenDecl {
 	var decls []*ast.GenDecl
 	ast.Inspect(n, func(n ast.Node) bool {

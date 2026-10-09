@@ -2291,15 +2291,7 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 }
 
 func funcName(f *types.Func) string {
-	maybeTypeName := ""
-	if recv := f.Type().(*types.Signature).Recv(); recv != nil {
-		recvType := recv.Type()
-		if ptrType, ok := recvType.(*types.Pointer); ok {
-			recvType = ptrType.Elem()
-		}
-		maybeTypeName = types.TypeString(recvType, func(_ *types.Package) string { return "" }) + "."
-	}
-	return maybeTypeName + f.Name()
+	return util.FuncName(f)
 }
 
 // Returns a glang.FuncDecl and maybe also a glang.NameDecl. If the function is an `init` or `_`, this
@@ -2330,6 +2322,20 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 	if ctx.filter.GetAction(funcName) != declfilter.Translate {
 		return
+	}
+
+	// A type declared in a translated function is translated as a package-level
+	// type of the same name, which must therefore be unique in the package.
+	for _, g := range util.TypeDecls(d) {
+		for _, spec := range g.Specs {
+			spec := spec.(*ast.TypeSpec)
+			name := spec.Name.Name
+			if ctx.localTypes[name] || ctx.info.Defs[spec.Name].Pkg().Scope().Lookup(name) != nil {
+				ctx.unsupported(spec, "local type %s: the name is not unique in the package", name)
+			}
+			ctx.localTypes[name] = true
+			ctx.typeDecl(spec)
+		}
 	}
 
 	ctx.usesDefer = false
@@ -2804,19 +2810,6 @@ func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
 func (ctx *Ctx) decl(d ast.Decl) {
 	switch d := d.(type) {
 	case *ast.FuncDecl:
-		// A type declared in a function is translated as a package-level type
-		// of the same name, which must therefore be unique in the package.
-		for _, g := range util.TypeDecls(d) {
-			for _, spec := range g.Specs {
-				spec := spec.(*ast.TypeSpec)
-				name := spec.Name.Name
-				if ctx.localTypes[name] || ctx.info.Defs[spec.Name].Pkg().Scope().Lookup(name) != nil {
-					ctx.unsupported(spec, "local type %s: the name is not unique in the package", name)
-				}
-				ctx.localTypes[name] = true
-				ctx.typeDecl(spec)
-			}
-		}
 		ctx.funcDecl(d)
 	case *ast.GenDecl:
 		switch d.Tok {
