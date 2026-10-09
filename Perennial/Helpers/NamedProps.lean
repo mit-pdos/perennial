@@ -27,7 +27,11 @@ Tactics:
   the same name.
 * `iExactEq H` — prove the goal `Q` from `H : P`, leaving `P = Q` as a goal.
 -/
-import Iris.ProofMode
+module
+
+public import Iris.ProofMode
+
+@[expose] public section
 
 namespace Perennial
 
@@ -47,7 +51,7 @@ macro_rules
 
 open Lean PrettyPrinter.Delaborator SubExpr in
 @[app_delab named]
-def delabNamed : Delab := do
+meta def delabNamed : Delab := do
   let e ← getExpr
   guard <| e.getAppNumArgs == 3
   let n ← withNaryArg 1 delab
@@ -74,7 +78,7 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Replace the type of hypothesis `ivar` by a definitionally equal one. -/
-def changeHypType {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (ivar : IVarId)
+meta def changeHypType {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (ivar : IVarId)
     (newTy : Q($prop)) : ∀ {e}, Hyps bi e → (e' : Q($prop)) × Hyps bi e'
   | _, .emp h => ⟨_, .emp h⟩
   | _, h@(.hyp _ name ivar' p _ _) =>
@@ -85,7 +89,7 @@ def changeHypType {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (ivar : IVarId)
     ⟨_, Hyps.mkSep l r⟩
 
 /-- Is `e` (syntactically) `named n P`? Returns `(n, P)`. -/
-def isNamed? (e : Lean.Expr) : Option (String × Lean.Expr) :=
+meta def isNamed? (e : Lean.Expr) : Option (String × Lean.Expr) :=
   let e := e.consumeMData
   if e.isAppOfArity ``named 3 then
     match e.getArg! 1 with
@@ -93,17 +97,17 @@ def isNamed? (e : Lean.Expr) : Option (String × Lean.Expr) :=
     | _ => none
   else none
 
-def isBIExists (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.exists 4
-def isBISep (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.sep 4
+meta def isBIExists (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.exists 4
+meta def isBISep (e : Lean.Expr) : Bool := e.consumeMData.isAppOfArity ``BIBase.sep 4
 
 /-- `▷ Q` as `(▷ ·, Q)`. -/
-def isLater? (e : Lean.Expr) : Option (Lean.Expr × Lean.Expr) :=
+meta def isLater? (e : Lean.Expr) : Option (Lean.Expr × Lean.Expr) :=
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.later 3 then some (e.appFn!, e.appArg!) else none
 
 /-- Unfold definitions at the head of `e` until it is a `named`, `∃` or `∗`
 (or nothing can be unfolded). Irreducible definitions are not unfolded. -/
-partial def unfoldNamedHead (e : Lean.Expr) (fuel : Nat := 64) : MetaM Lean.Expr := do
+meta partial def unfoldNamedHead (e : Lean.Expr) (fuel : Nat := 64) : MetaM Lean.Expr := do
   if fuel == 0 then return e
   let e ← instantiateMVars e
   if (isNamed? e).isSome || isBIExists e || isBISep e then return e
@@ -134,7 +138,7 @@ inductive NamedPat where
 
 /-- Parse the name `n` of a named proposition into a cases pattern, applying
 `f` to the identifier it introduces (for prefixes/suffixes). -/
-def parseNamedPat (n : String) (f : String → String) : TacticM NamedPat := do
+meta def parseNamedPat (n : String) (f : String → String) : TacticM NamedPat := do
   if n == "*" then
     let i ← mkFreshId
     return .star (Name.mkSimple ("__Hstar_" ++ (i.toString.map fun c => if c.isAlphanum then c else '_')))
@@ -148,24 +152,24 @@ def parseNamedPat (n : String) (f : String → String) : TacticM NamedPat := do
   | .error err => throwError "iNamed: cannot parse the name {repr n} as a cases pattern: {err}"
 
 /-- The hypothesis introduced by a simple cases pattern `H` or `#H`. -/
-def patIdent (p : String) : String :=
+meta def patIdent (p : String) : String :=
   if p.startsWith "#" || p.startsWith "∗" then (p.drop 1).toString else p
 
 /-- Parse a cases pattern. -/
-def parsePat (s : String) : TacticM (TSyntax `icasesPat) := do
+meta def parsePat (s : String) : TacticM (TSyntax `icasesPat) := do
   match Parser.runParserCategory (← getEnv) `icasesPat s with
   | .ok stx => return ⟨stx⟩
   | .error err => throwError "cannot parse the cases pattern {repr s}: {err}"
 
 /-- Look up an Iris hypothesis by name in the main goal. -/
-def findIrisHyp (h : Name) : TacticM (IrisGoal × IVarId × Lean.Expr) := do
+meta def findIrisHyp (h : Name) : TacticM (IrisGoal × IVarId × Lean.Expr) := do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType))
     | throwError "not in the Iris proof mode"
   let some (ivar, ty) := g.hyps.find? h | throwError "hypothesis {h} not found"
   return (g, ivar, ty)
 
 /-- Hypotheses `H : "H" ∷ P` (whose name is the one they carry). -/
-def collectNamedHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (names : List String) :
+meta def collectNamedHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (names : List String) :
     ∀ {e}, Hyps bi e → List (IVarId × Lean.Expr)
   | _, .emp _ => []
   | _, .hyp _ name ivar _ ty _ =>
@@ -181,7 +185,7 @@ def collectNamedHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} (names : List Str
   | _, .sep _ _ _ _ lhs rhs => collectNamedHyps names lhs ++ collectNamedHyps names rhs
 
 /-- Strip the `named` wrapper from every hypothesis `H : "H" ∷ P`. -/
-def stripNamedHyps (names : List String) : TacticM Unit := do
+meta def stripNamedHyps (names : List String) : TacticM Unit := do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType)) | return
   let hs := collectNamedHyps names g.hyps
   if hs.isEmpty then return
@@ -191,7 +195,7 @@ def stripNamedHyps (names : List String) : TacticM Unit := do
   (← getMainGoal).setType (IrisGoal.toExpr { g with e := st.1, hyps := st.2 })
 
 /-- Unfold the head of hypothesis `h`'s type (see `unfoldNamedHead`). -/
-def unfoldHypHead (h : Name) : TacticM Lean.Expr := do
+meta def unfoldHypHead (h : Name) : TacticM Lean.Expr := do
   let (g, ivar, ty) ← findIrisHyp h
   -- under a later `▷ Q`: unfold `Q`
   let ty' ← match isLater? ty with
@@ -206,7 +210,7 @@ def unfoldHypHead (h : Name) : TacticM Lean.Expr := do
   return ty'
 
 /-- The binder name of an existential `∃ x, P` (as a usable identifier). -/
-def existsBinderName (e : Lean.Expr) : MetaM Name := do
+meta def existsBinderName (e : Lean.Expr) : MetaM Name := do
   let e := e.consumeMData
   let body := e.getArg! 3
   match body with
@@ -218,7 +222,7 @@ def existsBinderName (e : Lean.Expr) : MetaM Name := do
 mutual
 /-- Core of `iNamed`: name the conjuncts of `h`. `deex`: destruct top-level
 existentials first. -/
-partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : TacticM Unit :=
+meta partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : TacticM Unit :=
   -- the goal (and with it the local context) changes after each `icases`, which
   -- may introduce new Lean variables (`%x`): all inspection of hypothesis types
   -- must happen in the main goal's context
@@ -238,7 +242,7 @@ partial def iNamedCore (h : Name) (f : String → String) (deex : Bool) : Tactic
 
 /-- `iNamedCore` on the hypothesis `h` whose (unfolded, possibly under a later)
 type is `ty`. -/
-partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : Lean.Expr) : TacticM Unit :=
+meta partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : Lean.Expr) : TacticM Unit :=
   withMainContext do
   -- a single named hypothesis
   if let some (n, _) := isNamed? ty then
@@ -291,7 +295,7 @@ partial def iNamedCore' (h : Name) (f : String → String) (deex : Bool) (ty : L
   -- anything else: leave the hypothesis alone
 
 /-- Name the hypothesis `h : n ∷ P` according to the pattern `n`. -/
-partial def nameOne (h : Name) (n : String) (f : String → String) : TacticM Unit := do
+meta partial def nameOne (h : Name) (n : String) (f : String → String) : TacticM Unit := do
   match ← parseNamedPat n f with
   | .star _ =>
     -- strip the name and recurse
@@ -315,7 +319,7 @@ syntax "iNamedSuffix " ident ppSpace str : tactic
 syntax "iNamedDestruct " ident : tactic
 
 /-- Name all anonymous-but-named hypotheses: hypotheses whose type is `n ∷ P`. -/
-partial def iNamedAll : TacticM Unit := do
+meta partial def iNamedAll : TacticM Unit := do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType)) | return
   let some (h, _, _, _) ← g.hyps.findM? (m := TacticM) fun _ _ _ ty => pure (isNamed? ty).isSome
     | return
@@ -339,7 +343,7 @@ elab_rules : tactic
 
 /-- The separating conjunction of the spatial hypotheses, each wrapped in
 `named` with its current name (mirroring `Hyps.buildAccuProof`). -/
-partial def namedAccuProp {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
+meta partial def namedAccuProp {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
     ∀ {e}, Hyps bi e → Q($prop) → MetaM Q($prop)
   | _, .emp _, acc => return acc
   | _, .hyp _ name _ p ty _, acc => do

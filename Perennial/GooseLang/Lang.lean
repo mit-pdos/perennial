@@ -16,12 +16,16 @@ a customizable FFI (foreign-function interface) for new primitive operations.
   are transferred back to `gooseRealEctxiLang` (`goose_adequacy`).
 * Equality on the syntax is decided classically; nothing downstream computes with it.
 -/
-import Iris.ProgramLogic.EctxiLanguage
-import Iris.ProgramLogic.Language
-import Perennial.Std.GMap
-import Perennial.Std.Countable
-import Perennial.GooseLang.Locations
-import Perennial.Golang.Defn.PreLang
+module
+
+public import Iris.ProgramLogic.EctxiLanguage
+public import Iris.ProgramLogic.Language
+public import Perennial.Std.GMap
+public import Perennial.Std.Countable
+public import Perennial.GooseLang.Locations
+public import Perennial.Golang.Defn.PreLang
+
+@[expose] public section
 
 namespace Perennial
 

@@ -2,10 +2,14 @@
 Package initialization predicate for the channel model package
 (`github.com/mit-pdos/perennial/goose/model/channel`).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.channel
-import Perennial.Proof.github_com.goose_lang.primitive
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.channel
+public import Perennial.Proof.github_com.goose_lang.primitive
+
+@[expose] public section
 
 noncomputable section
 

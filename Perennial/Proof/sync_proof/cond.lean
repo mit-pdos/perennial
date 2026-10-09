@@ -17,8 +17,12 @@ Notes:
   `c.[Cond.t, "checker"] ↦□ zero_val copyChecker.t` (which `check` invalidates).
   `wp_NewCond` allocates the invariant.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.mutex
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.mutex
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

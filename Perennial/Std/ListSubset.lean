@@ -2,7 +2,11 @@
 List inclusion `l₁ ⊆ l₂` is Lean's
 `List.Subset` (`∀ x ∈ l₁, x ∈ l₂`).
 -/
-import Perennial.Std.ListBasics
+module
+
+public import Perennial.Std.ListBasics
+
+@[expose] public section
 
 namespace Perennial
 

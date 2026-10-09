@@ -7,9 +7,13 @@ The proof prelude for code that uses the Grove FFI
 `abbrev`s that the Grove specs use explicitly, as for the disk FFI in
 `Perennial.Proof.DiskPrelude`.)
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.GrovePrelude
-import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.GrovePrelude
+public import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
+
+@[expose] public section
 
 namespace Perennial
 

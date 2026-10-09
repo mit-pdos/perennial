@@ -2,7 +2,11 @@
 Lists indexed by integers (`listZ.length`,
 `listZ.lookup`, `listZ.take`, ...). Out-of-bounds lookups return `default`.
 -/
-import Perennial.Std.ListBasics
+module
+
+public import Perennial.Std.ListBasics
+
+@[expose] public section
 
 namespace Perennial
 

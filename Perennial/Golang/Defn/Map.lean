@@ -20,8 +20,12 @@ is safe.
 `len_map` takes `[t ↓u go.MapType key_type elem_type]`, so `len` also unfolds
 at named map types.
 -/
-import Perennial.Golang.Defn.Loop
-import Perennial.Golang.Defn.Predeclared
+module
+
+public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Predeclared
+
+@[expose] public section
 
 namespace Perennial
 

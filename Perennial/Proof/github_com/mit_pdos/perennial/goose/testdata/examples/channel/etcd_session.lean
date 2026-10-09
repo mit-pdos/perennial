@@ -2,15 +2,19 @@
 An etcd-style session monitor, using a broadcast channel (`sessionc`) that is
 closed (and replaced) whenever the session expires.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Proof.errors
-import Perennial.Proof.time
-import Perennial.Proof.sync_proof.mutex
-import Perennial.Proof.github_com.goose_lang.primitive
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Golang.Theory.Chan.Idioms.Broadcast
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.errors
+public import Perennial.Proof.time
+public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.github_com.goose_lang.primitive
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

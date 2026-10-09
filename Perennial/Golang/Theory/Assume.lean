@@ -2,10 +2,14 @@
 Specs for `assume` and the overflow
 assumptions built on it.
 -/
-import Perennial.Golang.Theory.PostLifting
-import Perennial.Golang.Defn.Assume
-import Perennial.Std.Word.Automation
-import Perennial.Std.Word.MulOverflow
+module
+
+public import Perennial.Golang.Theory.PostLifting
+public import Perennial.Golang.Defn.Assume
+public import Perennial.Std.Word.Automation
+public import Perennial.Std.Word.MulOverflow
+
+@[expose] public section
 
 namespace Perennial
 

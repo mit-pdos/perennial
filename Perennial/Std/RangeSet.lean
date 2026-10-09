@@ -1,4 +1,8 @@
-import Perennial.Std.Word.Properties
+module
+
+public import Perennial.Std.Word.Properties
+
+@[expose] public section
 
 namespace Perennial
 

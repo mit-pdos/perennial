@@ -2,7 +2,11 @@
 Lemmas about finite sets (`GSet`). (The operations themselves are in
 `Perennial.Std.GMap`.)
 -/
-import Perennial.Std.GMap
+module
+
+public import Perennial.Std.GMap
+
+@[expose] public section
 
 namespace Perennial
 

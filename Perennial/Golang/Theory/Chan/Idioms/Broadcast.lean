@@ -3,8 +3,12 @@ A pattern for channel usage: a channel that never has anything sent, and is only
 some point. Closing broadcasts a persistent proposition to all readers.
 The done flag is a `dghostVar γ dq b` (`Perennial/Ghost/DGhostVar.lean`).
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

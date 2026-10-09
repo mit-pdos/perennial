@@ -20,9 +20,13 @@ Notes:
 * The brackets are `<<{ … }>>` (as in iris-lean's `atomic_wp` notation) rather
   than `<<< … >>>`, because `>>>` is Lean's right-shift operator.
 -/
-import Iris.BI.WeakestPre
-import Iris.BI.Lib.Atomic
-import Iris.ProgramLogic.WeakestPre
+module
+
+public import Iris.BI.WeakestPre
+public import Iris.BI.Lib.Atomic
+public import Iris.ProgramLogic.WeakestPre
+
+@[expose] public section
 
 namespace Perennial
 

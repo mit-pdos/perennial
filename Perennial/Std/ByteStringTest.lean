@@ -4,7 +4,11 @@ Tests for `go!"..."` literals (not imported by the umbrella `Perennial.lean`).
 Lean string literals have no `\a`, `\b`, `\f`, `\v` escapes; the tests of
 those use the equivalent hex escapes `\x07`, `\x08`, `\x0c`, `\x0b`.
 -/
-import Perennial.Std.ByteString
+module
+
+public import Perennial.Std.ByteString
+
+@[expose] public section
 
 namespace Perennial.ByteStringTest
 

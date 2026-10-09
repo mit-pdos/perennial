@@ -8,7 +8,11 @@ The disk FFI [Trusted definitions!].
 * `Block` is `Vector w8 blockBytes`.
 * `heapArray` is defined here, as a recursive function on the list of values.
 -/
-import Perennial.GooseLang.Lang
+module
+
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 namespace Perennial
 

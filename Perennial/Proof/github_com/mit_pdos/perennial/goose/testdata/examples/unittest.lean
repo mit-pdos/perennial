@@ -5,15 +5,19 @@ Specs for some of the goose unit tests.
 disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
 section does not bind `FfiSyntax`/`FfiModel`.
 -/
-import Perennial.Proof.DiskPrelude
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
-import Perennial.Golang.Theory.IfJoin
-import Perennial.Proof.fmt
-import Perennial.Proof.log
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.github_com.goose_lang.primitive
-import Perennial.Proof.github_com.goose_lang.primitive.disk
-import Perennial.Proof.github_com.goose_lang.std
+module
+
+public import Perennial.Proof.DiskPrelude
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
+public import Perennial.Golang.Theory.IfJoin
+public import Perennial.Proof.fmt
+public import Perennial.Proof.log
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.github_com.goose_lang.primitive
+public import Perennial.Proof.github_com.goose_lang.primitive.disk
+public import Perennial.Proof.github_com.goose_lang.std
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

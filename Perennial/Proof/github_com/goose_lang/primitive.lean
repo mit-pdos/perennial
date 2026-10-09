@@ -5,10 +5,14 @@ The proofs live in the package namespace `github_com.goose_lang.primitive`,
 so that e.g. `primitive.wp_initialize'` and `sync.wp_initialize'` do not clash.
 The disk-only `primitive/disk` package is not covered here.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Theory.Lock
-import Perennial.Code.github_com.goose_lang.primitive
-import Perennial.GeneratedProof.github_com.goose_lang.primitive
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Theory.Lock
+public import Perennial.Code.github_com.goose_lang.primitive
+public import Perennial.GeneratedProof.github_com.goose_lang.primitive
+
+@[expose] public section
 
 noncomputable section
 

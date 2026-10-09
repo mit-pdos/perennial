@@ -9,7 +9,11 @@ free variable of the proof is declared in the current context exactly as when
 the proof was found (and every constant it uses exists), so the proof is valid
 as is (the kernel checks it again in any case).
 -/
-import Lean
+module
+
+public import Lean
+
+@[expose] public section
 
 namespace Perennial.word
 open Lean Meta

@@ -7,10 +7,14 @@ The common imports of goose proofs:
   helpers;
 * `Perennial.Ghost`: ghost-state libraries.
 -/
-import Perennial.Std.All
-import Perennial.Algebra.BigOp
-import Perennial.Helpers.NamedProps
-import Perennial.IrisLib.DFrac
-import Perennial.IrisLib.DFractional
-import Perennial.GooseLang.IPersist
-import Perennial.Ghost
+module
+
+public import Perennial.Std.All
+public import Perennial.Algebra.BigOp
+public import Perennial.Helpers.NamedProps
+public import Perennial.IrisLib.DFrac
+public import Perennial.IrisLib.DFractional
+public import Perennial.GooseLang.IPersist
+public import Perennial.Ghost
+
+@[expose] public section

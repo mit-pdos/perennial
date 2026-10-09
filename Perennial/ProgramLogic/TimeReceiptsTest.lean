@@ -9,8 +9,12 @@ receipts are contradictory, the counter stays below `N`; under the premise
 wraps around, without any precondition on the callers. A client discharges the
 premise when it instantiates `N` in `goose_adequacy`.
 -/
-import Perennial.Proof.sync.atomic
-import Perennial.GooseLang.Adequacy
+module
+
+public import Perennial.Proof.sync.atomic
+public import Perennial.GooseLang.Adequacy
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

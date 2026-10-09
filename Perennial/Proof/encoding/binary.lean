@@ -2,14 +2,18 @@
 `encoding/binary` little-endian
 `Uint64`/`PutUint64`/`Uint32`/`PutUint32`.
 -/
-import Perennial.Proof.sync
-import Perennial.Proof.slices_proof.slices_init
-import Perennial.Proof.math
-import Perennial.Proof.io
-import Perennial.Proof.errors
-import Perennial.Code.encoding.binary
-import Perennial.GeneratedProof.encoding.binary
-import Perennial.Std.Word.LittleEndian
+module
+
+public import Perennial.Proof.sync
+public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.math
+public import Perennial.Proof.io
+public import Perennial.Proof.errors
+public import Perennial.Code.encoding.binary
+public import Perennial.GeneratedProof.encoding.binary
+public import Perennial.Std.Word.LittleEndian
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

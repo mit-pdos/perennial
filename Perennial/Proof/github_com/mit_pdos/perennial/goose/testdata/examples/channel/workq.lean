@@ -8,15 +8,19 @@ Notes:
   `Perennial/Proof/time.lean` (`loc_countable`), hence the import.
 * The coordinator invariant is a separate definition `coordinatorInv`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Proof.sync.atomic
-import Perennial.Proof.strings
-import Perennial.Proof.time
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Golang.Theory.Chan.Idioms.Broadcast
-import Perennial.Ghost.GhostMap
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.sync.atomic
+public import Perennial.Proof.strings
+public import Perennial.Proof.time
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+public import Perennial.Ghost.GhostMap
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

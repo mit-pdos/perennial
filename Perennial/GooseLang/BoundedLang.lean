@@ -42,7 +42,11 @@ and typed memory access goes through a Go instruction, receipts are plentiful;
 the adequacy assumption (fewer than `N` steps in total) bounds the number of
 counted steps a fortiori.
 -/
-import Perennial.GooseLang.Lang
+module
+
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 noncomputable section
 

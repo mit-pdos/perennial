@@ -9,16 +9,20 @@ Only the value heap is kept: there is no meta-token (`meta_token`, `meta`) or
 block size ghost state, since goose does not use them; `naHeapCtx` is just the
 authoritative heap view over a `Perennial.gmap`.
 -/
-import Iris.Algebra.HeapView
-import Iris.Algebra.Csum
-import Iris.Algebra.Agree
-import Iris.Algebra.Numbers
-import Iris.Instances.IProp
-import Iris.Instances.Lib.LaterCredits
-import Iris.BI.Lib.Fractional
-import Iris.ProofMode
-import Perennial.Std.GMap
-import Perennial.IrisLib.DFractional
+module
+
+public import Iris.Algebra.HeapView
+public import Iris.Algebra.Csum
+public import Iris.Algebra.Agree
+public import Iris.Algebra.Numbers
+public import Iris.Instances.IProp
+public import Iris.Instances.Lib.LaterCredits
+public import Iris.BI.Lib.Fractional
+public import Iris.ProofMode
+public import Perennial.Std.GMap
+public import Perennial.IrisLib.DFractional
+
+@[expose] public section
 
 noncomputable section
 

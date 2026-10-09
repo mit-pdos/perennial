@@ -20,7 +20,11 @@ the continuation proof at every allocation, one typeclass search per hypothesis
 for the `▷` of every pure step, `simp` over the whole expression after every
 step, and instantiating the whole proof at every step (`mkAppNamed`).
 -/
-import Perennial.Golang.Theory
+module
+
+public import Perennial.Golang.Theory
+
+@[expose] public section
 
 namespace Perennial
 open Iris Iris.BI

@@ -10,7 +10,11 @@ List tactics:
   lengths. It turns hypotheses `l₁ = l₂` and `l₁ <+: l₂` into length and
   lookup facts, simplifies, case-splits and finishes with `omega`/`simp_all`.
 -/
-import Perennial.Std.ListLen
+module
+
+public import Perennial.Std.ListLen
+
+@[expose] public section
 
 namespace Perennial
 

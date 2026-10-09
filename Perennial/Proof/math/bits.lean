@@ -2,10 +2,14 @@
 Package initialization of `math/bits` and
 specs for `Len64` and `Len`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.math.bits
-import Perennial.GeneratedProof.math.bits
-import Perennial.Proof.«unsafe»
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.math.bits
+public import Perennial.GeneratedProof.math.bits
+public import Perennial.Proof.«unsafe»
+
+@[expose] public section
 
 noncomputable section
 

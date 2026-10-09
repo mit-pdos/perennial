@@ -5,9 +5,13 @@ Persisting hypotheses.
 replaces a hypothesis `H : P` by a persistent `H : Q` (for instance a
 `DFractional` points-to `l ↦{dq} v` becomes `l ↦□ v`).
 -/
-import Iris.BI
-import Iris.ProofMode
-import Perennial.IrisLib.DFractional
+module
+
+public import Iris.BI
+public import Iris.ProofMode
+public import Perennial.IrisLib.DFractional
+
+@[expose] public section
 
 namespace Perennial
 

@@ -3,8 +3,12 @@ A specification for `RWMutex`
 which guards a fractional resource `P q`. `RLock` returns `P rfrac` while
 `Lock` returns `P 1`.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.rwmutex
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.rwmutex
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option maxHeartbeats 400000

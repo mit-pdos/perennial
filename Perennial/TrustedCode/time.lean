@@ -1,7 +1,11 @@
 /-
 Trusted model of `time` (namespace `time`, as the generated package).
 -/
-import Perennial.Golang.Defn
+module
+
+public import Perennial.Golang.Defn
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

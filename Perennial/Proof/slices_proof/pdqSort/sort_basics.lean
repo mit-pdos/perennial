@@ -2,10 +2,14 @@
 Order relations,
 list facts and the spec of `order2CmpFunc` shared by the `pdqsort` proofs.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.slices_proof.slices_init
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.slices_proof.slices_init
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

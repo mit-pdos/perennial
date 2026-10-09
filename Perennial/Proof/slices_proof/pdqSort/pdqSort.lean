@@ -2,14 +2,18 @@
 The spec of
 `pdqsortCmpFunc` (and `reverseRangeCmpFunc`).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.slices_proof.slices_init
-import Perennial.Proof.slices_proof.pdqSort.sort_basics
-import Perennial.Proof.slices_proof.pdqSort.partition
-import Perennial.Proof.slices_proof.pdqSort.insertionSort
-import Perennial.Proof.slices_proof.pdqSort.heapSort
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.slices_proof.pdqSort.sort_basics
+public import Perennial.Proof.slices_proof.pdqSort.partition
+public import Perennial.Proof.slices_proof.pdqSort.insertionSort
+public import Perennial.Proof.slices_proof.pdqSort.heapSort
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.deprecated false

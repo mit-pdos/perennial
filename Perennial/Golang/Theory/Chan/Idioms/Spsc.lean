@@ -11,8 +11,12 @@ channels, with histories of sent and received values.
 Note: the per-state part of the invariant is the separate definition
 `spscInvMatch`; `[Pos.Countable V]` as in `ChanAuBase.lean`.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

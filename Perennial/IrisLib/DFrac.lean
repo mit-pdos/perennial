@@ -3,7 +3,11 @@ Names `DfracOwn`, `DfracDiscarded`, `DfracBoth` for iris-lean's `DFrac`
 constructors. There are no `1`/`□` notations for discardable fractions, since they
 would conflict with Lean's numerals and iris-lean's `□` modality.
 -/
-import Iris
+module
+
+public import Iris
+
+@[expose] public section
 
 namespace Perennial
 open Iris

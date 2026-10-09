@@ -4,8 +4,12 @@ Lifting lemmas for evaluation-context languages. A copy of iris-lean's
 open a `public section`, so its declarations are private to its module and cannot
 be used from here.
 -/
-import Iris.ProgramLogic.Lifting
-import Iris.ProgramLogic.EctxiLanguage
+module
+
+public import Iris.ProgramLogic.Lifting
+public import Iris.ProgramLogic.EctxiLanguage
+
+@[expose] public section
 
 namespace Perennial
 

@@ -2,11 +2,15 @@
 Specs of
 `insertionSortCmpFunc` and `partialInsertionSortCmpFunc`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.slices_proof.slices_init
-import Perennial.Proof.slices_proof.pdqSort.sort_basics
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.slices_proof.pdqSort.sort_basics
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

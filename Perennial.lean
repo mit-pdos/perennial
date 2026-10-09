@@ -1,21 +1,25 @@
 -- Hand-written framework modules. Generated code (Perennial.Code.*,
 -- Perennial.GeneratedProof.*) and program proofs (Perennial.Proof.*) are built
 -- by naming them explicitly, e.g. `lake build Perennial.Proof.sync_proof.mutex`.
-import Perennial.Std.All
-import Perennial.GooseLang.Lang
-import Perennial.GooseLang.Countable
-import Perennial.GooseLang.BoundedLang
-import Perennial.GooseLang.Receipts
-import Perennial.GooseLang.Lifting
-import Perennial.GooseLang.IPersist
-import Perennial.GooseLang.Adequacy
-import Perennial.ProgramLogic.AtomicFupd
-import Perennial.GooseLang.Ffi.GroveFfi.Adequacy
-import Perennial.GooseLang.Ffi.DiskFfi.Adequacy
-import Perennial.Ghost
-import Perennial.Golang.Defn
-import Perennial.Golang.Theory
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.ChanAuto
-import Perennial.Golang.Theory.IfJoin
-import Perennial.Golang.Theory.Chan.Idioms.Idioms
+module
+
+public import Perennial.Std.All
+public import Perennial.GooseLang.Lang
+public import Perennial.GooseLang.Countable
+public import Perennial.GooseLang.BoundedLang
+public import Perennial.GooseLang.Receipts
+public import Perennial.GooseLang.Lifting
+public import Perennial.GooseLang.IPersist
+public import Perennial.GooseLang.Adequacy
+public import Perennial.ProgramLogic.AtomicFupd
+public import Perennial.GooseLang.Ffi.GroveFfi.Adequacy
+public import Perennial.GooseLang.Ffi.DiskFfi.Adequacy
+public import Perennial.Ghost
+public import Perennial.Golang.Defn
+public import Perennial.Golang.Theory
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.ChanAuto
+public import Perennial.Golang.Theory.IfJoin
+public import Perennial.Golang.Theory.Chan.Idioms.Idioms
+
+@[expose] public section

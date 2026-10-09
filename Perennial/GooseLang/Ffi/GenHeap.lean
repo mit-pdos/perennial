@@ -1,7 +1,11 @@
 /-
 Small additions to iris-lean's `gen_heap` used by the FFI layers.
 -/
-import Iris.BI.Lib.GenHeap
+module
+
+public import Iris.BI.Lib.GenHeap
+
+@[expose] public section
 
 namespace Perennial
 

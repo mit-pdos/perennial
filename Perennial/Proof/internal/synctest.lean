@@ -1,8 +1,12 @@
 /-
 Specs for `internal/synctest`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.GeneratedProof.internal.synctest
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.GeneratedProof.internal.synctest
+
+@[expose] public section
 
 noncomputable section
 

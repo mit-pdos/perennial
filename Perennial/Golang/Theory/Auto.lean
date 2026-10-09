@@ -39,12 +39,16 @@ Details:
   arguments `[t, .., t]`.
 * `wp_alloc_auto` (not `wp_auto`) also does anonymous allocations.
 -/
-import Perennial.Golang.Theory.Pkg
-import Perennial.Golang.Theory.Loop
-import Perennial.Golang.Theory.Assume
-import Perennial.Golang.Theory.Mem
-import Perennial.Golang.Theory.Predeclared
-import Perennial.Golang.Theory.ArrayLit
+module
+
+public import Perennial.Golang.Theory.Pkg
+public import Perennial.Golang.Theory.Loop
+public import Perennial.Golang.Theory.Assume
+public import Perennial.Golang.Theory.Mem
+public import Perennial.Golang.Theory.Predeclared
+public import Perennial.Golang.Theory.ArrayLit
+
+@[expose] public section
 
 namespace Perennial
 
@@ -59,7 +63,7 @@ theorem tac_wp_func_unfold {PROP : Type _} [BI PROP] {Δ P Q : PROP} (h : Δ ⊢
     Δ ⊢ P := heq ▸ h
 
 /-- `[t, t, ..., t]` (`n` copies), as `(n, t)`. -/
-partial def replicateLit? (ts : Lean.Expr) (t? : Option Lean.Expr := none) (n : Nat := 0) :
+meta partial def replicateLit? (ts : Lean.Expr) (t? : Option Lean.Expr := none) (n : Nat := 0) :
     MetaM (Option (Nat × Lean.Expr)) := do
   let ts ← whnfR ts
   if ts.isAppOfArity ``List.nil 1 then return t?.map (n, ·)
@@ -73,7 +77,7 @@ partial def replicateLit? (ts : Lean.Expr) (t? : Option Lean.Expr := none) (n : 
 /-- A proof of `#(functions f ts) = impl` from a `FuncUnfold f ts impl` instance;
 if none is found and `ts = [t, ..., t]`, from `FuncUnfold f (List.replicate n t) impl`
 (e.g. `go.min`, `go.max`). -/
-def funcUnfoldEq (fv : Lean.Expr) (f ts : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta def funcUnfoldEq (fv : Lean.Expr) (f ts : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let valTy ← inferType fv
   let tryInst (ts' : Lean.Expr) : MetaM (Option Lean.Expr) := do
     let impl ← mkFreshExprMVar valTy
@@ -95,7 +99,7 @@ def funcUnfoldEq (fv : Lean.Expr) (f ts : Lean.Expr) : MetaM (Option Lean.Expr) 
 /-- The function value `#(functions f ts)` of the next call in the WP expression:
 the innermost call `App (Val #(functions f ts)) _` in evaluation position, or else
 the first `#(functions f ts)` in the expression. Returns `(#(functions f ts), f, ts)`. -/
-def findFuncCall (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+meta def findFuncCall (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   let isFn (fv : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
     let fv := (← instantiateMVars fv).consumeMData
     unless fv.isAppOfArity ``GoGlobalContext.intoVal 4 do return none
@@ -120,7 +124,7 @@ end func_call
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- The core of `wp_func_call`; `false` if no call was found. -/
-def wpFuncCallCore : TacticM Bool :=
+meta def wpFuncCallCore : TacticM Bool :=
   withNoSorry `wp_func_call <| ProofModeM.runTactic `wp_func_call fun mvar g => do
     let some wp ← parseGooseWp? g.goal | return false
     let some (fv, f, ts) ← findFuncCall wp.e | return false
@@ -142,7 +146,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- `wp_func_call`: unfold the function value `#(functions f ts)` of the next
 call in the WP expression (see `findFuncCall`) with its `FuncUnfold` instance
 (with `goose.wp.extras`, also for type arguments `[t, ..., t]` matching an
-instance for `List.replicate n t`), then try to solve `isPkgInit` goals. Only the WP
+meta instance for `List.replicate n t`), then try to solve `isPkgInit` goals. Only the WP
 expression is rewritten (all occurrences of that function value in it), not the
 hypotheses. Falls back to `rw [func_unfold]`. -/
 elab "wp_func_call" : tactic => do
@@ -161,14 +165,14 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Is `e` (up to `named`) `isPkgInit _`? -/
-def isPkgInitProp (e : Lean.Expr) : MetaM Bool := do
+meta def isPkgInitProp (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
   return e.isAppOfArity ``isPkgInit 4
 
 /-- Move the `isPkgInit` conjuncts at the front of
 `H` to the intuitionistic context. Returns `false` if `H` was entirely an
 `isPkgInit` (and is now gone). -/
-partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
+meta partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
   let some g := parseIrisGoal? (← instantiateMVars (← (← getMainGoal).getType)) | return true
   let some (_, ty) := g.hyps.find? h | return false
   -- the `isPkgInit` facts are named `Hpkg`, `Hpkg2`, ... (unless taken)
@@ -194,7 +198,7 @@ partial def destructPkgInit (h : Name) : TacticM Bool := withMainContext do
 /-- The fields `(isPkgInitDeps, isPkgInitDef)` of an `IsPkgInit`
 instance, obtained by unfolding the instance constant (e.g. one built with
 `define_is_pkg_init`) to an `IsPkgInit.mk` application. -/
-partial def pkgInitInstFields (inst : Lean.Expr) (fuel : Nat := 20) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
+meta partial def pkgInitInstFields (inst : Lean.Expr) (fuel : Nat := 20) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let inst := (← instantiateMVars inst).headBeta
   if inst.isAppOfArity ``IsPkgInit.mk 5 then return some (inst.getArg! 3, inst.getArg! 4)
   if fuel == 0 then return none
@@ -312,7 +316,7 @@ open Lean Meta Iris.ProofMode
 
 /-- The head `if: #(decide P) then e else AngelicExit #()` of a WP expression:
 `(P, e)` and its evaluation context. -/
-def findAngelicIf (e : Lean.Expr) : ProofModeM (Option ((Lean.Expr × Lean.Expr) × List Lean.Expr × Lean.Expr)) :=
+meta def findAngelicIf (e : Lean.Expr) : ProofModeM (Option ((Lean.Expr × Lean.Expr) × List Lean.Expr × Lean.Expr)) :=
   findEctx e (fun _ e => do
     let e ← whnfR e
     let_expr Perennial.Expr.If _ c e1 e2 := e | throwError "no"
@@ -340,7 +344,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Hypotheses `l ↦{dq} v` whose location `l` is the cell `x_ptr` of a Go local
 variable that occurs nowhere else. -/
-def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Lean.Expr) : MetaM (List (IVarId × FVarId)) := do
   let goal ← instantiateMVars goal
   if goal.hasExprMVar then return []
@@ -378,7 +382,7 @@ theorem tac_clear_hyp {PROP : Type _} [BI PROP] [BIAffine PROP] {Δ Δ' P Q : PR
 
 /-- Add the final goal `hyps ⊢ goal`, after clearing the points-to facts of
 dead local variables. -/
-def addGoalCleaning {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta def addGoalCleaning {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Lean.Expr) : ProofModeM Lean.Expr :=
   -- remove the closedness annotations of `wp_auto` first
   addBIGoalStripped hyps goal (addGoalCleaningCore hyps)
@@ -427,7 +431,7 @@ evaluation contexts.
 
 Only the search for the next step may fail silently; an error while taking a
 step that was found (e.g. in `simp`) is reported. -/
-partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Nat) (lcIdx : Nat := 1)
     (simpFirst : Bool := true) (simpOnlyIf : Option Lean.Expr := none) (allowFocus : Bool := true) :
     ProofModeM (Lean.Expr × Nat × Bool) := do
@@ -631,7 +635,7 @@ syntax wpPmTerm := term (colGt " $$ " (colGt ppSpace wpSpecPat)+)?
 
 open Lean in
 /-- Convert a `wpSpecPat` to the corresponding iris-lean `specPat`. -/
-def wpSpecPatToSpecPat : TSyntax `wpSpecPat → MacroM (TSyntax `specPat)
+meta def wpSpecPatToSpecPat : TSyntax `wpSpecPat → MacroM (TSyntax `specPat)
   | `(wpSpecPat| $x:ident) => `(specPat| $x:ident)
   | `(wpSpecPat| % $t:term) => `(specPat| % $t)
   | `(wpSpecPat| [$[-%$negTk]? $[$names:frameIdent]* $[//%$trivTk]?]) =>
@@ -648,7 +652,7 @@ def wpSpecPatToSpecPat : TSyntax `wpSpecPat → MacroM (TSyntax `specPat)
 
 open Lean in
 /-- Convert a `wpPmTerm` to an iris-lean `pmTerm`. -/
-def wpPmTermToPmTerm (stx : TSyntax ``wpPmTerm) : MacroM (TSyntax `pmTerm) := do
+meta def wpPmTermToPmTerm (stx : TSyntax ``wpPmTerm) : MacroM (TSyntax `pmTerm) := do
   let t : Term := ⟨stx.raw[0]⟩
   let spats := stx.raw[1]
   if spats.isNone then return ← `(pmTerm| $t:term)
@@ -686,7 +690,7 @@ elab "wp_focus_cont " tac:tactic : tactic => do
 /-- Simplify the types of the Iris hypotheses `ivars` with the `goose_wp_simp`
 simp set(s), so that they are in the same normal form as the WP expression
 (e.g. `W64 (go.arrayLiteralSize [..])` from a spec's postcondition). -/
-def simpIrisHyps (ivars : List IVarId) : TacticM Unit := withMainContext do
+meta def simpIrisHyps (ivars : List IVarId) : TacticM Unit := withMainContext do
   for ivar in ivars do
     let mvar ← getMainGoal
     let gty ← instantiateMVars (← mvar.getType)
@@ -762,7 +766,7 @@ syntax (name := wpApply) "wp_apply" (ppSpace wpApplyOpt)* ppSpace wpPmTerm (wpAs
 open Lean Elab Tactic in
 /-- Reject the options `--no-auto`/`--lc n` after a `wp_apply`: they
 are Lean comments, so they would be silently ignored. -/
-def checkNoDashDashOpts (stx : Syntax) : TacticM Unit := do
+meta def checkNoDashDashOpts (stx : Syntax) : TacticM Unit := do
   let some tail := stx.getTailPos? | return
   let src := (← getFileMap).source
   let rest := String.Pos.Raw.extract src tail src.rawEndPos
@@ -894,7 +898,7 @@ section if_destruct
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- Find a `decide p` (or `#b` for a Boolean variable `b`) in the WP expression. -/
-def findIfCond (e : Lean.Expr) : MetaM (Option (Sum Lean.Expr Lean.Expr)) := do
+meta def findIfCond (e : Lean.Expr) : MetaM (Option (Sum Lean.Expr Lean.Expr)) := do
   let e ← instantiateMVars e
   if let some d := e.find? (fun s => s.isAppOfArity ``Decidable.decide 2 && !s.hasLooseBVars) then
     return some (.inl (d.getArg! 0))
@@ -906,7 +910,7 @@ def findIfCond (e : Lean.Expr) : MetaM (Option (Sum Lean.Expr Lean.Expr)) := do
 
 /-- `#(decide P) = #b` (for a literal `b`) becomes `P`; other propositions are
 unchanged. -/
-def peelDecideEq (p : Lean.Expr) : MetaM Lean.Expr := do
+meta def peelDecideEq (p : Lean.Expr) : MetaM Lean.Expr := do
   let p ← instantiateMVars p
   let_expr Eq _ a b := p | return p
   let a := a.consumeMData
@@ -922,7 +926,7 @@ def peelDecideEq (p : Lean.Expr) : MetaM Lean.Expr := do
 /-- The condition of the `if:` at the head of the WP expression: the `If c _ _`
 in evaluation position whose condition `c` is a value (the next redex), or else
 the outermost `If` in evaluation position. -/
-def findHeadIf (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
+meta def findHeadIf (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   let mut outer : Option Lean.Expr := none
   for (_, e') in ← allEctx e do
     let e' ← whnfR (← instantiateMVars e')
@@ -1565,7 +1569,7 @@ section struct_tac
 open Lean Elab Tactic Meta
 
 /-- A literal list. -/
-partial def structListLit? (e : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
+meta partial def structListLit? (e : Lean.Expr) : MetaM (Option (List Lean.Expr)) := do
   let e ← whnfR e
   if e.isAppOfArity ``List.nil 1 then return some []
   unless e.isAppOfArity ``List.cons 3 do return none
@@ -1626,7 +1630,7 @@ theorem tac_frame_exact_true_l {PROP : Type _} [BI PROP] {Δ Q : PROP}
 theorem tac_frame_exact_true {PROP : Type _} [BI PROP] {Δ : PROP} : Δ ⊢ True := true_intro
 
 /-- Is `P` the proposition `True`? -/
-def isTrueProp (P : Lean.Expr) : Bool :=
+meta def isTrueProp (P : Lean.Expr) : Bool :=
   let P := P.consumeMData
   P.isAppOfArity ``BIBase.pure 3 && (P.getArg! 2).consumeMData.isConstOf ``True
 
@@ -1635,7 +1639,7 @@ hypotheses (`avail`; syntactically, or else definitionally for a hypothesis with
 the same head, tried in order), and `True`; stops at the first conjunct that is
 neither, leaving the rest as a new goal. Typically linear in the size of the goal
 (`iframe` searches a `Frame` instance per hypothesis and conjunct). -/
-partial def frameExactCore {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+meta partial def frameExactCore {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (goal : Q($prop)) (avail : List (IVarId × Lean.Expr)) :
     ProofModeM Lean.Expr := do
   let goal ← instantiateMVars goal

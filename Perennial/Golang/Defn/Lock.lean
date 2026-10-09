@@ -1,7 +1,11 @@
 /-
 A spin lock on a boolean location: `trylock`, `lock` and `unlock`.
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 namespace Perennial
 

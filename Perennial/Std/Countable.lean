@@ -9,8 +9,12 @@ an instance from an injection with `Pos.Countable.ofInjective`.
 with `Pos` leaves; a syntax type is shown countable by an injection into it
 (as done for `val`/`expr`), see `Perennial/GooseLang/Countable.lean`.
 -/
-import Iris.Std.Positives
-import Perennial.Std.GMap
+module
+
+public import Iris.Std.Positives
+public import Perennial.Std.GMap
+
+@[expose] public section
 
 noncomputable section
 

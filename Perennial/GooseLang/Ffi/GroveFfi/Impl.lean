@@ -8,7 +8,11 @@ Consists only of a network, per-node file storage, and clocks.
   operation stutters (state unchanged, `e' = ExternalOp op v`) or it takes an
   `IsGroveFfiStep`.
 -/
-import Perennial.GooseLang.Lang
+module
+
+public import Perennial.GooseLang.Lang
+
+@[expose] public section
 
 namespace Perennial
 

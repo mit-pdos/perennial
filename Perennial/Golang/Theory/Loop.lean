@@ -10,7 +10,11 @@ Loop reasoning:
 * use `wp_for` with the loop invariant;
 * use `wp_for_post` at the loop control points.
 -/
-import Perennial.Golang.Theory.Exception
+module
+
+public import Perennial.Golang.Theory.Exception
+
+@[expose] public section
 
 namespace Perennial
 

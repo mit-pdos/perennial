@@ -3,12 +3,16 @@ Specs of
 `partitionCmpFunc`, `medianCmpFunc`, `medianAdjacentCmpFunc`,
 `choosePivotCmpFunc`, `breakPatternsCmpFunc` and `partitionEqualCmpFunc`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.slices
-import Perennial.GeneratedProof.slices
-import Perennial.Proof.slices_proof.slices_init
-import Perennial.Proof.slices_proof.pdqSort.sort_basics
-import Perennial.Proof.math.bits_exact
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.slices
+public import Perennial.GeneratedProof.slices
+public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.slices_proof.pdqSort.sort_basics
+public import Perennial.Proof.math.bits_exact
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

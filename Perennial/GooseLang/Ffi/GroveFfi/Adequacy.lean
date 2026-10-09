@@ -6,8 +6,12 @@ Adequacy for the Grove FFI.
   proved. Distributed adequacy theorems would need a distributed-language
   semantics, which is not available.
 -/
-import Perennial.GooseLang.Adequacy
-import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
+module
+
+public import Perennial.GooseLang.Adequacy
+public import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
+
+@[expose] public section
 
 noncomputable section
 

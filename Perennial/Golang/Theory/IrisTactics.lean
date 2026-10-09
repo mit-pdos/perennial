@@ -14,8 +14,12 @@ Perennial-side extensions and fixes of iris-lean proof mode tactics.
   An unsolved condition is left as a goal (as in iris-lean); an `Atomic`
   condition on a non-atomic expression is an error suggesting `wp_bind`.
 -/
-import Iris.ProofMode
-import Perennial.Helpers.NamedProps
+module
+
+public import Iris.ProofMode
+public import Perennial.Helpers.NamedProps
+
+@[expose] public section
 
 namespace Perennial
 
@@ -49,7 +53,7 @@ open Lean Elab Tactic Meta
 /-- Is `e` a mask side condition that `solve_ndisj` should try: a (conjunction
 of) `E1 ⊆ E2`, `E1 ## E2` or `p ∈ E` over `CoPset`s, or `N1 ## N2` over
 namespaces? -/
-partial def isNdisjGoal (e : Lean.Expr) : MetaM Bool := do
+meta partial def isNdisjGoal (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
   if e.isAppOfArity ``And 2 then
     return (← isNdisjGoal (e.getArg! 0)) && (← isNdisjGoal (e.getArg! 1))
@@ -64,7 +68,7 @@ partial def isNdisjGoal (e : Lean.Expr) : MetaM Bool := do
   return false
 
 /-- Does the type of a local hypothesis talk about masks or namespaces? -/
-def isNdisjHyp (ty : Lean.Expr) : Bool :=
+meta def isNdisjHyp (ty : Lean.Expr) : Bool :=
   (ty.find? fun s => s.isConstOf ``CoPset || s.isConstOf ``nclose || s.isConstOf ``ndot).isSome
 
 /-- `solve_ndisj`: prove a mask side condition built from `⊆`, `##`, `∈`,
@@ -99,14 +103,14 @@ namespace IrisTactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- `wandM`/`Option.getD` reduction (copy of iris-lean's private `reduceWandM`). -/
-def reduceWandM (e : Lean.Expr) : ProofModeM Lean.Expr := do
+meta def reduceWandM (e : Lean.Expr) : ProofModeM Lean.Expr := do
   let simpThms ← #[``BIBase.wandM, ``Option.getD].foldlM (·.addDeclToUnfold ·) {}
   let simpContext ← Simp.mkContext {} #[simpThms] (← getSimpCongrTheorems)
   Lean.Meta.dsimp e simpContext <&> Prod.fst
 
 /-- Try to close `goal` (a side condition of `iinv`) with `tac`, catching all
 errors, including runtime ones (deep recursion, heartbeats). -/
-def tryCloseWith (goal : MVarId) (tac : TSyntax `tactic) : TermElabM Bool := do
+meta def tryCloseWith (goal : MVarId) (tac : TSyntax `tactic) : TermElabM Bool := do
   let saved ← saveState
   let msgs ← Core.getMessageLog
   tryCatchRuntimeEx (do
@@ -119,7 +123,7 @@ def tryCloseWith (goal : MVarId) (tac : TSyntax `tactic) : TermElabM Bool := do
 /-- Solve the side condition `φ` of `iinv` (a conjunction): mask conditions with
 `solve_ndisj`, others with `trivial`/`infer_instance`/`simp`; unsolved parts
 become new goals. An `Atomic` condition that cannot be proved is an error. -/
-partial def solveInvSidecondition (φ : Q(Prop)) : ProofModeM Q($φ) := do
+meta partial def solveInvSidecondition (φ : Q(Prop)) : ProofModeM Q($φ) := do
   let φ ← instantiateMVars φ
   if φ.isAppOfArity ``And 2 then
     let a : Q(Prop) := φ.getArg! 0
@@ -144,7 +148,7 @@ partial def solveInvSidecondition (φ : Q(Prop)) : ProofModeM Q($φ) := do
     addMVarGoal g
   return pf
 
-private def iInvCore {u} {prop : Q(Type u)} {bi} {e}
+private meta def iInvCore {u} {prop : Q(Type u)} {bi} {e}
     (hyps : Hyps bi e) (goal : Q($prop)) (ivar : IVarId) (specPat : Option SpecPat)
     (casesPat : iCasesPat) (closePat : Option iCasesPat) :
     ProofModeM Q($e ⊢ $goal) := do
@@ -224,7 +228,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- The atoms of a goal: the conjuncts of its `∗`-spine, looking through `∃`
 (atoms mentioning the bound variable are skipped) and `named`. -/
-partial def goalAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : MetaM (Array Lean.Expr) := do
+meta partial def goalAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : MetaM (Array Lean.Expr) := do
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.sep 4 then
     return ← goalAtoms (e.getArg! 3) (← goalAtoms (e.getArg! 2) acc)
@@ -239,7 +243,7 @@ partial def goalAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : MetaM (Ar
 /-- Does `P` match `Q` by computation (default transparency, no metavariable
 assignment), e.g. `P [v]` and `P ([] ++ [v])`, `ghost_var γ q a` under a `let`?
 Bounded; errors count as no match. -/
-def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
+meta def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
   if Q.hasMVar || P.hasMVar then return false
   if P.getAppFn != Q.getAppFn then return false
   -- cheap filter: few arguments may differ syntactically (e.g. `P [v]` and
@@ -259,7 +263,7 @@ def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
 
 /-- The conjuncts of the `∗`-spine of `e` (through `named`), with loose bound
 variables allowed. -/
-partial def sepAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : Array Lean.Expr :=
+meta partial def sepAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : Array Lean.Expr :=
   let e := e.consumeMData
   if e.isAppOfArity ``BIBase.sep 4 then sepAtoms (e.getArg! 3) (sepAtoms (e.getArg! 2) acc)
   else if e.isAppOfArity ``Perennial.named 3 then sepAtoms (e.getArg! 2) acc
@@ -269,7 +273,7 @@ partial def sepAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : Array Lean
 hypotheses, ignoring hypotheses that exactly match a conjunct of `body` that
 does not mention `x` (those are framed there). `none` unless exactly one
 witness is found. -/
-def existsWitness? (goal : Lean.Expr) (hs : Array (Name × Lean.Expr)) : MetaM (Option Lean.Expr) := do
+meta def existsWitness? (goal : Lean.Expr) (hs : Array (Name × Lean.Expr)) : MetaM (Option Lean.Expr) := do
   let goal := goal.consumeMData
   unless goal.isAppOfArity ``BIBase.exists 4 do return none
   let .lam _ ty body _ := goal.getArg! 3 | return none
@@ -296,9 +300,9 @@ def existsWitness? (goal : Lean.Expr) (hs : Array (Name × Lean.Expr)) : MetaM (
         found := some w
   return found
 
-initialize inIframe : IO.Ref Bool ← IO.mkRef false
+meta initialize inIframe : IO.Ref Bool ← IO.mkRef false
 
-register_option goose.iframe.prepass : Bool := {
+meta register_option goose.iframe.prepass : Bool := {
   defValue := true
   descr := "let `iframe`/`iframe ∗` first frame up to computation, make persistent \
     hypotheses needed several times intuitionistic and choose existential witnesses \
@@ -306,7 +310,7 @@ register_option goose.iframe.prepass : Bool := {
 }
 
 /-- The spatial hypotheses (name, type). -/
-def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
+meta def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
     ∀ {e}, Hyps bi e → Array (Name × Lean.Expr)
   | _, .emp _ => #[]
   | _, .hyp _ name _ p ty _ => if isTrue p then #[] else #[(name, ty)]
@@ -322,7 +326,7 @@ def hypsSpatial {u} {prop : Q(Type u)} {bi : Q(BI $prop)} :
    conjunct that mentions `x`, ignoring hypotheses that exactly match a
    conjunct that does not (so that framing `∃ n, P n ∗ P 2` with `H1 : P n`,
    `H2 : P 2` picks `n`, not `2`); it is only used when it is unique. -/
-def iframePrep (n0 : Nat) : TacticM Unit := withMainContext do
+meta def iframePrep (n0 : Nat) : TacticM Unit := withMainContext do
   let mvar ← getMainGoal
   let some g := parseIrisGoal? (← instantiateMVars (← mvar.getType)) | return
   let hs := hypsSpatial g.hyps

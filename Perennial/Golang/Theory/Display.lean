@@ -10,35 +10,39 @@ This is display only (unexpanders); the printed terms are not always valid
 input. A function value `RecV f x e` is printed in value mode, `glv(λ: x, e)`,
 to distinguish it from the expression `Rec f x e` (`λ: x, e`).
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 namespace Perennial
 
 open Lean PrettyPrinter
 
 @[app_unexpander Perennial.Expr.Val]
-def unexpandGooseVal : Unexpander
+meta def unexpandGooseVal : Unexpander
   | `($_ $v) => `($v)
   | _ => throw ()
 
 @[app_unexpander Perennial.val.GoInstruction]
-def unexpandGooseInstr : Unexpander
+meta def unexpandGooseInstr : Unexpander
   | `($_ $i) => `($i)
   | _ => throw ()
 
 @[app_unexpander Perennial.Expr.Var]
-def unexpandGooseVar : Unexpander
+meta def unexpandGooseVar : Unexpander
   | `($_ $s:str) => `($s:str)
   | _ => throw ()
 
 /-- A binder `BNamed "x"`/`BAnon` as a goose binder. -/
-def binderStx : Term → UnexpandM (TSyntax `gl_binder)
+meta def binderStx : Term → UnexpandM (TSyntax `gl_binder)
   | `(BAnon) => `(gl_binder| <>)
   | `(BNamed $x:str) => `(gl_binder| $x:str)
   | _ => throw ()
 
 /-- `Rec`/`RecV` as `λ:`/`rec:`. -/
-def unexpandGooseRec : Unexpander
+meta def unexpandGooseRec : Unexpander
   | `($_ $f $x $e) => do
     let x ← binderStx x
     match f with
@@ -51,7 +55,7 @@ attribute [app_unexpander Perennial.Expr.Rec] unexpandGooseRec
 /-- A function value `RecV f x e` is shown as `glv(λ: x, e)` / `glv(rec: f x := e)`,
 to distinguish it from the (unevaluated) expression `Rec f x e`, shown as `λ: x, e`. -/
 @[app_unexpander Perennial.val.RecV]
-def unexpandGooseRecV : Unexpander
+meta def unexpandGooseRecV : Unexpander
   | `($_ $f $x $e) => do
     let x ← binderStx x
     match f with
@@ -60,12 +64,12 @@ def unexpandGooseRecV : Unexpander
   | _ => throw ()
 
 @[app_unexpander Perennial.Expr.If]
-def unexpandGooseIf : Unexpander
+meta def unexpandGooseIf : Unexpander
   | `($_ $c $a $b) => `(if: $c then $a else $b)
   | _ => throw ()
 
 /-- Binary Go operators. -/
-def goOpStx (o t a b : Term) : UnexpandM Term :=
+meta def goOpStx (o t a b : Term) : UnexpandM Term :=
   match o with
   | `(GoPlus) => `($a +⟨$t⟩ $b)
   | `(GoSub) => `($a -⟨$t⟩ $b)
@@ -83,7 +87,7 @@ def goOpStx (o t a b : Term) : UnexpandM Term :=
   | _ => throw ()
 
 @[app_unexpander Perennial.Expr.App]
-def unexpandGooseApp : Unexpander
+meta def unexpandGooseApp : Unexpander
   | `($_ $f $a) => do
     match f with
     | `(λ: <>, $e2) => `($a ;; $e2)
@@ -108,12 +112,12 @@ def unexpandGooseApp : Unexpander
   | _ => throw ()
 
 @[app_unexpander Perennial.Expr.Pair]
-def unexpandGoosePair : Unexpander
+meta def unexpandGoosePair : Unexpander
   | `($_ $a $b) => `(($a, $b))
   | _ => throw ()
 
 @[app_unexpander Perennial.val.PairV]
-def unexpandGoosePairV : Unexpander
+meta def unexpandGoosePairV : Unexpander
   | `($_ $a $b) => `(($a, $b))
   | _ => throw ()
 

@@ -53,14 +53,18 @@ Notes:
 * A context whose Done channel is `nil` (never canceled, e.g. `Background()`) does not
   satisfy `isContext`: `isContextDone` includes `isChan`, which excludes `nil`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.context
-import Perennial.GeneratedProof.context
-import Perennial.Proof.sync.atomic
-import Perennial.Proof.sync
-import Perennial.Proof.time
-import Perennial.Proof.errors
-import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.context
+public import Perennial.GeneratedProof.context
+public import Perennial.Proof.sync.atomic
+public import Perennial.Proof.sync
+public import Perennial.Proof.time
+public import Perennial.Proof.errors
+public import Perennial.Golang.Theory.Chan.Idioms.Broadcast
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

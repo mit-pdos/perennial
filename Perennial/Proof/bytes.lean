@@ -1,10 +1,14 @@
 /-
 Specs for the Go `bytes` package.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Proof.errors
-import Perennial.Code.bytes
-import Perennial.GeneratedProof.bytes
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.errors
+public import Perennial.Code.bytes
+public import Perennial.GeneratedProof.bytes
+
+@[expose] public section
 
 noncomputable section
 

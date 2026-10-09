@@ -8,7 +8,12 @@ execution.
 
 stdpp notation: `m !! k` is lookup, `<[k := v]> m` is insert, `delete k m` is delete.
 -/
-import Iris.Std.PartialMap
+module
+
+public import Iris.Std.PartialMap
+public import Batteries.Data.List.Perm
+
+@[expose] public section
 
 noncomputable section
 
@@ -156,7 +161,7 @@ scoped notation "{[" k " := " v "]}" => GMap.singleton k v
 open Lean Elab Term Meta in
 /-- Classify the container type of `m` for `!!` / `<[ ]>`: 0 = gmap, 1 = list,
 2 = other, 3 = unknown (metavariable). -/
-private def lookupKind (m : Lean.Expr) : TermElabM Nat := do
+private meta def lookupKind (m : Lean.Expr) : TermElabM Nat := do
   let ty ← whnfR (← instantiateMVars (← inferType m))
   if ty.isAppOf ``GMap then return 0
   if ty.isAppOf ``List then return 1
@@ -164,7 +169,7 @@ private def lookupKind (m : Lean.Expr) : TermElabM Nat := do
   return 2
 
 open Lean Elab Term Meta in
-@[term_elab lookupNotation] def elabLookupNotation : TermElab := fun stx expectedType => do
+@[term_elab lookupNotation] meta def elabLookupNotation : TermElab := fun stx expectedType => do
   match stx with
   | `($m !! $k) =>
     let mE ← elabTerm m none
@@ -180,7 +185,7 @@ open Lean Elab Term Meta in
   | _ => throwUnsupportedSyntax
 
 open Lean Elab Term Meta in
-@[term_elab insertNotation] def elabInsertNotation : TermElab := fun stx expectedType => do
+@[term_elab insertNotation] meta def elabInsertNotation : TermElab := fun stx expectedType => do
   match stx with
   | `(<[ $k := $v ]> $m) =>
     let mE ← elabTerm m none
@@ -194,11 +199,11 @@ open Lean Elab Term Meta in
     | _ => elabTerm (← `(GMap.insert $k $v $mS)) expectedType
   | _ => throwUnsupportedSyntax
 
-@[app_unexpander GMap.lookup] def GMap.unexpandLookup : Lean.PrettyPrinter.Unexpander
+@[app_unexpander GMap.lookup] meta def GMap.unexpandLookup : Lean.PrettyPrinter.Unexpander
   | `($_ $m $k) => `($m !! $k)
   | _ => throw ()
 
-@[app_unexpander GMap.insert] def GMap.unexpandInsert : Lean.PrettyPrinter.Unexpander
+@[app_unexpander GMap.insert] meta def GMap.unexpandInsert : Lean.PrettyPrinter.Unexpander
   | `($_ $k $v $m) => `(<[$k := $v]> $m)
   | _ => throw ()
 

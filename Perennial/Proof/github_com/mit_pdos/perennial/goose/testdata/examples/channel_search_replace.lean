@@ -2,11 +2,15 @@
 A parallel search-and-replace over a slice, with work items sent over a channel
 (bag idiom) and completion tracked by a `sync.WaitGroup` (join idiom).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Proof.sync_proof.waitgroup_join
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Proof.sync_proof.waitgroup_join
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

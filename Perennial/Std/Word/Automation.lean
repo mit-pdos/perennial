@@ -56,11 +56,16 @@ bitwise operations unless `bv_normalize` can do the whole goal.
 which rewrites `uint.Z` of arithmetic ops into `Int` arithmetic, discharging
 no-overflow side conditions with `word`.
 -/
-import Perennial.Std.Word
-import Perennial.Std.Attrs
-import Perennial.Std.Word.ToIntArith
-import Perennial.Std.Word.Cache
-import Perennial.Std.Word.SimpSets
+module
+
+public import Perennial.Std.Word
+public import Perennial.Std.Attrs
+public import Perennial.Std.Word.ToIntArith
+public import Perennial.Std.Word.Cache
+public import Perennial.Std.Word.SimpSets
+public meta import Perennial.Std.Word.Cache
+
+@[expose] public section
 
 namespace Perennial
 
@@ -118,7 +123,7 @@ open Lean Meta
 
 /-- A word literal `BitVec.ofInt n z` / `BitVec.ofNat n k` (also through `W64`
 and friends) as `(n, value)`. -/
-def wordLit? (b : Lean.Expr) : MetaM (Option (Nat × Nat)) := do
+meta def wordLit? (b : Lean.Expr) : MetaM (Option (Nat × Nat)) := do
   let b ← whnfR b
   if let some (n, z) ← (do
       let_expr BitVec.ofInt n z := b | return none
@@ -142,7 +147,7 @@ def wordLit? (b : Lean.Expr) : MetaM (Option (Nat × Nat)) := do
 
 /-- Evaluate `toInt`/`toNat` of a word literal (`sint.Z (W64 7) = 7`,
 `uint.nat (W64 0) = 0`, `sint.nat (W64 3) = 3`, ...), by reduction. -/
-def evalWordLitConv (e : Lean.Expr) : MetaM Simp.Step :=
+meta def evalWordLitConv (e : Lean.Expr) : MetaM Simp.Step :=
   tryCatchRuntimeEx (evalWordLitConvCore e) fun _ => return .continue
 where evalWordLitConvCore (e : Lean.Expr) : MetaM Simp.Step := do
   let e' ← whnfR e
@@ -200,7 +205,7 @@ namespace word
 open Lean Elab Tactic Meta
 
 /-- Collect the subterms `BitVec.toInt t` of `e` (without loose bound variables). -/
-partial def collectToInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
+meta partial def collectToInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
   let acc :=
     if e.isAppOfArity ``BitVec.toInt 2 && !e.hasLooseBVars && !acc.contains e then acc.push e
     else acc
@@ -214,7 +219,7 @@ partial def collectToInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Ex
   | _ => acc
 
 /-- Does `e` mention an Iris entailment (an Iris proof mode goal, a spec, ...)? -/
-def mentionsEntailment (e : Lean.Expr) : Bool :=
+meta def mentionsEntailment (e : Lean.Expr) : Bool :=
   (e.find? fun s => match s with
     | .const n _ => n == `Iris.BI.BIBase.Entails || n == `Iris.ProofMode.Entails' ||
         n == `Iris.Wp.wp
@@ -300,28 +305,26 @@ elab "word_bitwise_goal" : tactic => withMainContext do
     throwError "word: not a bitwise goal"
 
 attribute [word_unfold_simp] uint.Z uint.nat sint.Z sint.nat W64 W32 W16 W8 toInt_ofInt_toInt
-  BitVec.reduceOfInt BitVec.reduceToInt BitVec.reduceToNat Int.reducePow Nat.reducePow Int.reduceNeg
 
 /-- Unfolding and literal evaluation of `word` (step 2 of the module docstring). -/
 macro "word_unfold_lit" : tactic => `(tactic| (
-  (try simp (disch := decide) only [word_unfold_simp, word_unfold] at *)))
+  (try simp (disch := decide) only [word_unfold_simp, word_unfold,
+    BitVec.reduceOfInt, BitVec.reduceToInt, BitVec.reduceToNat, Int.reducePow, Nat.reducePow, Int.reduceNeg] at *)))
 
-attribute [word_tonat_simp] BitVec.toNat_ofNat BitVec.toNat_ofFin
-    BitVec.toNat_setWidth BitVec.toNat_neg BitVec.ofNat_eq_ofNat BitVec.toNat_eq
-    BitVec.toNat_ne BitVec.toNat_ofInt BitVec.toNat_not BitVec.toNat_shiftLeft
-    BitVec.toNat_ushiftRight BitVec.toNat_add BitVec.toNat_sub BitVec.toNat_mul
-    BitVec.le_def BitVec.lt_def BitVec.toNat_udiv BitVec.toNat_umod BitVec.toNat_twoPow
-    BitVec.toNat_cast BitVec.toNat_ofNatLT BitVec.toNat_ofBool
-    BitVec.ushiftRight_eq' BitVec.shiftLeft_eq' Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq
-    Int.toNat_natCast Int.natCast_pow Nat.reduceMod Nat.reducePow Nat.reduceSub
-    Nat.reduceAdd Nat.reduceMul Nat.reduceDiv Int.reduceMod Int.reducePow Int.reduceToNat
-    Int.reduceNeg Int.reduceNatCast implies_true and_true true_and and_self true_implies
-    not_true_eq_false not_false_eq_true false_implies or_true true_or
+attribute [word_tonat_simp] BitVec.toNat_ofNat BitVec.toNat_ofFin BitVec.toNat_setWidth
+  BitVec.toNat_neg BitVec.ofNat_eq_ofNat BitVec.toNat_eq BitVec.toNat_ne BitVec.toNat_ofInt
+  BitVec.toNat_not BitVec.toNat_shiftLeft BitVec.toNat_ushiftRight BitVec.toNat_add
+  BitVec.toNat_sub BitVec.toNat_mul BitVec.le_def BitVec.lt_def BitVec.toNat_udiv
+  BitVec.toNat_umod BitVec.toNat_twoPow BitVec.toNat_cast BitVec.toNat_ofNatLT BitVec.toNat_ofBool
+  BitVec.ushiftRight_eq' BitVec.shiftLeft_eq' Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq
+  Int.toNat_natCast Int.natCast_pow implies_true and_true true_and and_self true_implies
+  not_true_eq_false not_false_eq_true false_implies or_true true_or
 
 /-- `toNat` of BitVec operations to `Nat` arithmetic, shifts by literals to
 division/multiplication, literal arithmetic evaluated (step 5). -/
 macro "word_tonat" : tactic => `(tactic|
-  (try simp -implicitDefEqProofs only [word_tonat_simp] at *))
+  (try simp -implicitDefEqProofs only [word_tonat_simp,
+    Nat.reduceMod, Nat.reducePow, Nat.reduceSub, Nat.reduceAdd, Nat.reduceMul, Nat.reduceDiv, Int.reduceMod, Int.reducePow, Int.reduceToNat, Int.reduceNeg, Int.reduceNatCast] at *))
 
 /-- `word_tonat` on the goal only. -/
 macro "word_tonat_goal" : tactic => `(tactic|
@@ -340,7 +343,7 @@ namespace word
 open Lean Elab Tactic Meta
 
 /-- Could `omega` use a hypothesis of this type (after `word_tonat`)? -/
-partial def isArithTy (e : Lean.Expr) : MetaM Bool := do
+meta partial def isArithTy (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR e
   if e.isAppOfArity ``Not 1 then return ← isArithTy e.appArg!
   if [``And, ``Or, ``Iff].any (e.isAppOfArity · 2) then
@@ -362,7 +365,7 @@ partial def isArithTy (e : Lean.Expr) : MetaM Bool := do
   return [``Nat, ``Int, ``Bool].any ty.isConstOf
 
 /-- Variables that connect hypotheses (not types, functions or proofs). -/
-def isDataVar (lctx : LocalContext) (x : FVarId) : MetaM Bool := do
+meta def isDataVar (lctx : LocalContext) (x : FVarId) : MetaM Bool := do
   let some d := lctx.find? x | return false
   let ty ← whnfR d.type
   if ty.isForall then return false
@@ -423,7 +426,7 @@ elab "word_filter" iris:(&" iris")? pre:(&" pre")? : tactic => withMainContext d
 
 /-- Does `e` contain something that makes `omega` case split (Nat subtraction,
 `Int.toNat`, `min`/`max`, `≠`, `∨`, `↔`, `→`)? -/
-def splitty (e : Lean.Expr) : MetaM Bool := do
+meta def splitty (e : Lean.Expr) : MetaM Bool := do
   let e ← instantiateMVars e
   if e.isAppOfArity ``Not 1 then
     if e.appArg!.isAppOfArity ``Eq 3 then return true
@@ -438,14 +441,14 @@ def splitty (e : Lean.Expr) : MetaM Bool := do
     else s.isConstOf ``Max.max).isSome
 
 /-- The conjuncts of `e`. -/
-partial def conjuncts (e : Lean.Expr) : List Lean.Expr :=
+meta partial def conjuncts (e : Lean.Expr) : List Lean.Expr :=
   if e.isAppOfArity ``And 2 then conjuncts (e.getArg! 0) ++ conjuncts (e.getArg! 1) else [e]
 
 /-- `MVarId.note` (add `h : t` with proof `v`), building the proof term as an
 explicit redex `(fun h => ?body) v`. (`MVarId.assert` + `intro` builds `?m v`
 with `?m := fun h => ?body`, which `instantiateMVars` beta-reduces, copying `v`
 into every use of `h`; for chained facts this blows up the proof term.) -/
-def noteNoBeta (g : MVarId) (n : Name) (t v : Lean.Expr) : MetaM (FVarId × MVarId) := g.withContext do
+meta def noteNoBeta (g : MVarId) (n : Name) (t v : Lean.Expr) : MetaM (FVarId × MVarId) := g.withContext do
   let target ← g.getType
   let tag ← g.getTag
   withLocalDeclD n t fun h => do
@@ -454,7 +457,7 @@ def noteNoBeta (g : MVarId) (n : Name) (t v : Lean.Expr) : MetaM (FVarId × MVar
     return (h.fvarId!, new.mvarId!)
 
 /-- Collect the subterms `Int.toNat t` of `e` (without loose bound variables). -/
-partial def collectToNatInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
+meta partial def collectToNatInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
   let acc :=
     if e.isAppOfArity ``Int.toNat 1 && !e.hasLooseBVars && !acc.contains e then acc.push e
     else acc
@@ -469,7 +472,7 @@ partial def collectToNatInt (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean
 
 /-- Collect the subterms `BitVec.toInt e` and `BitVec.toNat e` of `e` (without
 loose bound variables). -/
-partial def collectBVAtoms (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
+meta partial def collectBVAtoms (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
   let acc :=
     if (e.isAppOfArity ``BitVec.toInt 2 || e.isAppOfArity ``BitVec.toNat 2) &&
         !e.hasLooseBVars && !acc.contains e then acc.push e
@@ -494,7 +497,7 @@ With `toNatAtoms` (the default), `Int.toNat z` becomes a variable `k` too, with
 the fact `(k : Int) = z` when `omega` proves `0 ≤ z` without the hypotheses that
 make it case split, and the case split `toNat_cases` otherwise. (`omega` itself
 case splits on every `Int.toNat`, which costs 0.2-0.8s in large contexts.) -/
-partial def omegaAtomized (g : MVarId) (toNatAtoms := true) : TacticM Unit := g.withContext do
+meta partial def omegaAtomized (g : MVarId) (toNatAtoms := true) : TacticM Unit := g.withContext do
   let tgt ← instantiateMVars (← g.getType)
   let mut hs : Array Lean.Expr := #[]
   let mut simple : Array FVarId := #[]
@@ -583,7 +586,7 @@ partial def omegaAtomized (g : MVarId) (toNatAtoms := true) : TacticM Unit := g.
 /-- A proof of `p` by `omegaAtomized` in the context of `main` with the
 hypotheses `clear` cleared, if it succeeds; cached (see `Cache.lean`), also the
 failures. Changes the goal list. -/
-def omegaCached (main : MVarId) (p : Lean.Expr) (clear : Array FVarId) : TacticM (Option Lean.Expr) := do
+meta def omegaCached (main : MVarId) (p : Lean.Expr) (clear : Array FVarId) : TacticM (Option Lean.Expr) := do
   if let some pf ← main.withContext (cacheLookup p) then return some pf
   let m ← main.withContext (mkFreshExprSyntheticOpaqueMVar p)
   let mg ← m.mvarId!.tryClearMany clear
@@ -613,9 +616,7 @@ attribute [word_resolve_simp] BitVec.toNat_ofNat BitVec.toNat_ofFin BitVec.toNat
   BitVec.toNat_shiftLeft BitVec.toNat_ushiftRight BitVec.toNat_add BitVec.toNat_sub
   BitVec.toNat_mul BitVec.toNat_udiv BitVec.toNat_umod BitVec.toNat_twoPow BitVec.toNat_cast
   BitVec.toNat_ofNatLT BitVec.toNat_ofBool BitVec.ushiftRight_eq' BitVec.shiftLeft_eq'
-  Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq Int.toNat_natCast Int.natCast_pow Nat.reduceMod
-  Nat.reducePow Nat.reduceSub Nat.reduceAdd Nat.reduceMul Nat.reduceDiv Int.reduceMod
-  Int.reducePow Int.reduceToNat Int.reduceNeg Int.reduceNatCast
+  Nat.shiftRight_eq_div_pow Nat.shiftLeft_eq Int.toNat_natCast Int.natCast_pow
 
 /-- Add the fact `sint_Z_cases t` for every `BitVec.toInt t` in the goal and
 the context (rewritten by `word_tonat`). A case split is then resolved
@@ -644,7 +645,7 @@ elab "word_sint_resolve" : tactic => withMainContext do
       let (_, g) ← (← g.assert n ty pf).intro1P
       return [g]
   let ids : Array (TSyntax `ident) := names.map mkIdent
-  evalTactic (← `(tactic| (try simp -implicitDefEqProofs only [word_resolve_simp] at $ids*)))
+  evalTactic (← `(tactic| (try simp -implicitDefEqProofs only [word_resolve_simp, Nat.reduceMod, Nat.reducePow, Nat.reduceSub, Nat.reduceAdd, Nat.reduceMul, Nat.reduceDiv, Int.reduceMod, Int.reducePow, Int.reduceToNat, Int.reduceNeg, Int.reduceNatCast] at $ids*)))
   -- resolve them in order
   let mut eqs : Array Name := #[]
   for i in [:names.size] do
@@ -698,7 +699,7 @@ elab "word_sint_resolve" : tactic => withMainContext do
 
 /-- Prove `p` with `omega` (`omegaCached`) in the context of the main goal, with
 the hypotheses `clear` cleared; `none` if `omega` fails. -/
-def omegaProve (p : Lean.Expr) (clear : Array FVarId) : TacticM (Option Lean.Expr) := do
+meta def omegaProve (p : Lean.Expr) (clear : Array FVarId) : TacticM (Option Lean.Expr) := do
   let main ← getMainGoal
   let r ← omegaCached main p clear
   setGoals [main]
@@ -706,14 +707,14 @@ def omegaProve (p : Lean.Expr) (clear : Array FVarId) : TacticM (Option Lean.Exp
 
 /-- The signed value of an operand: a literal's value, or `x.toInt` itself, with
 a proof of `x.toInt = X`. -/
-def operandVal (n x : Lean.Expr) : MetaM (Lean.Expr × Lean.Expr) := do
+meta def operandVal (n x : Lean.Expr) : MetaM (Lean.Expr × Lean.Expr) := do
   let t := mkApp2 (mkConst ``BitVec.toInt) n x
   if let some (w, v) ← wordLit? x then
     let X := toExpr (BitVec.ofNat w v).toInt
     return (X, mkExpectedPropHint (← mkEqRefl X) (← mkEq t X))
   return (t, ← mkEqRefl t)
 
-def isLit (x : Lean.Expr) : MetaM Bool := return (← wordLit? x).isSome
+meta def isLit (x : Lean.Expr) : MetaM Bool := return (← wordLit? x).isSome
 
 /-- How `word_sint_arith` handles `t = BitVec.toInt e` for an arithmetic
 operation `e`: `lem` is the lemma application `e.toInt = X op Y` still expecting
@@ -725,7 +726,7 @@ structure ArithLemma where
   auto : Option (Lean.Expr ⊕ Lean.Expr)
   ops : Array Lean.Expr
 
-def toIntArithLemma? (t : Lean.Expr) : MetaM (Option ArithLemma) := do
+meta def toIntArithLemma? (t : Lean.Expr) : MetaM (Option ArithLemma) := do
   let n := t.getArg! 0
   let e := t.getArg! 1
   if ← isLit e then return none
@@ -870,7 +871,7 @@ elab "word_filter_simple" : tactic => withMainContext do
   replaceMainGoal [← (← getMainGoal).tryClearMany drop]
 
 /-- Collect the subterms `BitVec.sdiv x y` of `e` (without loose bound variables). -/
-partial def collectSDiv (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
+meta partial def collectSDiv (e : Lean.Expr) (acc : Array Lean.Expr) : Array Lean.Expr :=
   let acc :=
     if e.isAppOfArity ``BitVec.sdiv 3 && !e.hasLooseBVars && !acc.contains e then acc.push e
     else acc

@@ -2,10 +2,14 @@
 `sync.RWMutex`, with a logically
 atomic specification over an abstract `rwmutex` state.
 -/
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.sync_proof.mutex
-import Perennial.Proof.sync_proof.sema
-import Perennial.Proof.sync.atomic
+module
+
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.sync_proof.sema
+public import Perennial.Proof.sync.atomic
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

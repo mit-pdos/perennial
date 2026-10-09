@@ -36,11 +36,15 @@ of this file only: `heapGS` (of which `receiptGS` is a part) does not provide
 `allG`, and proofs take `[allG GF]` separately, so making `receiptAllG` a global
 instance would put two `allG GF` instances in scope.
 -/
-import Iris.Instances.IProp
-import Iris.ProofMode
-import Perennial.Ghost.GhostMap
-import Perennial.Ghost.MonoNat
-import Perennial.GooseLang.BoundedLang
+module
+
+public import Iris.Instances.IProp
+public import Iris.ProofMode
+public import Perennial.Ghost.GhostMap
+public import Perennial.Ghost.MonoNat
+public import Perennial.GooseLang.BoundedLang
+
+@[expose] public section
 
 noncomputable section
 

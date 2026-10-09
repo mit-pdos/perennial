@@ -23,9 +23,13 @@ Notes:
   simulation `bounded_nsteps_of_real`. `gooseGpreS` also allocates the receipt
   ghost state (`goose_preG_receipt`), which does not depend on `N`.
 -/
-import Iris.ProgramLogic.Adequacy
-import Perennial.GooseLang.Lifting
-import Perennial.GooseLang.Countable
+module
+
+public import Iris.ProgramLogic.Adequacy
+public import Perennial.GooseLang.Lifting
+public import Perennial.GooseLang.Countable
+
+@[expose] public section
 
 noncomputable section
 

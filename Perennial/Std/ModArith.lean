@@ -1,7 +1,11 @@
 /-
 Overflow facts about `w64` addition.
 -/
-import Perennial.Std.Word.Automation
+module
+
+public import Perennial.Std.Word.Automation
+
+@[expose] public section
 
 namespace Perennial
 

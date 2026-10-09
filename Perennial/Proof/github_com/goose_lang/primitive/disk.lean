@@ -9,10 +9,14 @@ since there is no crash logic. The ordinary triples `wp_Write`/`wp_Read` are
 proved directly from the disk FFI lifting lemmas `wp_ReadOp`/`wp_WriteOp`
 rather than derived from the atomic specs.
 -/
-import Perennial.Proof.DiskPrelude
-import Perennial.ProgramLogic.AtomicFupd
-import Perennial.Code.github_com.goose_lang.primitive.disk
-import Perennial.GeneratedProof.github_com.goose_lang.primitive.disk
+module
+
+public import Perennial.Proof.DiskPrelude
+public import Perennial.ProgramLogic.AtomicFupd
+public import Perennial.Code.github_com.goose_lang.primitive.disk
+public import Perennial.GeneratedProof.github_com.goose_lang.primitive.disk
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

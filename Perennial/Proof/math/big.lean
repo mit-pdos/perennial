@@ -6,9 +6,13 @@ Specs for `math/big`: `NewInt` and `(*Int).Int64`.
 magnitude need not be normalized (Go keeps it normalized, but nothing here needs
 that), so a value has several representations.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.math.big
-import Perennial.GeneratedProof.math.big
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.math.big
+public import Perennial.GeneratedProof.math.big
+
+@[expose] public section
 
 noncomputable section
 

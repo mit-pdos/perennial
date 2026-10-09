@@ -2,9 +2,13 @@
 A producer sends the Fibonacci numbers over a single-producer single-consumer
 channel (`go.dev/tour/concurrency/4`).
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Spsc
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Spsc
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

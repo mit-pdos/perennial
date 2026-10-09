@@ -16,9 +16,14 @@ Package initialization.
   intuitionistic context), `iPkgInit` (solve `isPkgInit` goals and conjuncts
   at the front of the goal).
 -/
-import Perennial.Golang.Theory.PostLifting
-import Perennial.Golang.Defn.Pkg
-import Perennial.Algebra.BigOp
+module
+
+public import Perennial.Golang.Theory.PostLifting
+public import Perennial.Golang.Defn.Pkg
+public import Perennial.Algebra.BigOp
+public meta import Perennial.Golang.Theory.PostLifting
+
+@[expose] public section
 
 namespace Perennial
 
@@ -113,7 +118,7 @@ open Lean Elab Term Meta
 
 /-- The list of imported packages of `pkg` (from its `PkgInfo` instance), as a
 list of expressions. -/
-def importedPkgs (pkg : Lean.Expr) : TermElabM (List Lean.Expr) := do
+meta def importedPkgs (pkg : Lean.Expr) : TermElabM (List Lean.Expr) := do
   let deps ← whnf (← mkAppOptM ``pkgImportedPkgs #[some pkg, none])
   let rec go (e : Lean.Expr) (fuel : Nat) : TermElabM (List Lean.Expr) := do
     match fuel with
@@ -192,7 +197,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- A proof of `P ⊢ target`, where `target` is `isPkgInit pkg`, by unfolding
 `isPkgInit` hypotheses into their dependencies. -/
-partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM (Option Lean.Expr) := do
+meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM (Option Lean.Expr) := do
   if fuel == 0 then return none
   let P ← instantiateMVars P
   if ← withReducible (isDefEq P target) then

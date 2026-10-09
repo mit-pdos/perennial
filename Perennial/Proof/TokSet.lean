@@ -4,7 +4,11 @@ that exactly `n` tokens `ownToks γ 1` have been handed out.
 
 Built on `Auth Nat` (with `(ℕ, +)`).
 -/
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section
 
 noncomputable section
 

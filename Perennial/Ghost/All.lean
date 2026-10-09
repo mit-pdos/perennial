@@ -1,5 +1,9 @@
-import Iris
-import Perennial.Std.GMap
+module
+
+public import Iris
+public import Perennial.Std.GMap
+
+@[expose] public section
 
 /-!
 A universal camera and an `own` that needs no

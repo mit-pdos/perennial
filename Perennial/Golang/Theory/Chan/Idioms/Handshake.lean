@@ -2,8 +2,12 @@
 A simple handshake on an unbuffered
 channel.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

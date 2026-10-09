@@ -3,11 +3,15 @@ Specs for the Go model of string/byte-slice conversions
 (`github.com/mit-pdos/perennial/goose/model/strings`), used by
 `Perennial/Golang/Theory/String.lean`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Theory.Pre
-import Perennial.Golang.Defn.String
-import Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.strings
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Theory.Pre
+public import Perennial.Golang.Defn.String
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.strings
+
+@[expose] public section
 
 noncomputable section
 

@@ -5,8 +5,12 @@ Trusted definitions of `sync` (namespace `sync`, as the generated package).
 than axiomatized, which would leave `copyChecker.wp_check` unprovable). See
 `«copyCheckerⁱᵐᵖˡ»` below.
 -/
-import Perennial.Golang.Defn.Pre
-import Perennial.Golang.Defn.Lock
+module
+
+public import Perennial.Golang.Defn.Pre
+public import Perennial.Golang.Defn.Lock
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

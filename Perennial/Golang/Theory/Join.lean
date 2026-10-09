@@ -59,8 +59,12 @@ rest of the function is symbolically executed once.
 Examples: below, `docs/TutorialExamples.lean`, `WaitGroup.wp_Add` in
 `Perennial/Proof/sync_proof/waitgroup.lean`.
 -/
-import Perennial.Golang.Theory.TacticsSimp
-import Perennial.Golang.Theory.Auto
+module
+
+public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.Auto
+
+@[expose] public section
 
 namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
@@ -165,7 +169,7 @@ elab "wp_bind_stmts" n?:(ppSpace num)? : tactic => do
     mvar.assign (← iWpBindCore g.e wp (Ki :: K) s (addBIGoal g.hyps ·))
 
 open Lean Elab Tactic Meta in
-@[tactic wpJoin] def evalWpJoin : Tactic := fun stx => do
+@[tactic wpJoin] meta def evalWpJoin : Tactic := fun stx => do
   let mut v₀? : Option Term := none
   let mut Q? : Option Term := none
   for o in stx[1].getArgs do

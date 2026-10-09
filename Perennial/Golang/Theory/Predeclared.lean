@@ -3,7 +3,11 @@
 for the predeclared Go types (integers, including `uintptr`, `bool`,
 `string`, `unsafe.Pointer`, floats, `proph_id`).
 -/
-import Perennial.Golang.Theory.PostLifting
+module
+
+public import Perennial.Golang.Theory.PostLifting
+
+@[expose] public section
 
 namespace Perennial
 

@@ -27,8 +27,12 @@ Intro/cases patterns are iris-lean's
 
 See `Perennial/Golang/Theory/Test.lean` for worked examples.
 -/
-import Perennial.Golang.Defn
-import Perennial.Golang.Theory.Pre
-import Perennial.Golang.Theory.String
-import Perennial.Golang.Theory.Join
-import Perennial.Ghost
+module
+
+public import Perennial.Golang.Defn
+public import Perennial.Golang.Theory.Pre
+public import Perennial.Golang.Theory.String
+public import Perennial.Golang.Theory.Join
+public import Perennial.Ghost
+
+@[expose] public section

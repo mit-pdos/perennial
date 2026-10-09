@@ -1,4 +1,8 @@
 /-
 Manually written proof support for `github.com/goose-lang/primitive`.
 -/
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section

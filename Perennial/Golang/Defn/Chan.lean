@@ -3,10 +3,14 @@ Channel operations. Channels are implemented by the Go channel
 model (`github.com/mit-pdos/perennial/goose/model/channel`), whose generated
 translation lives in namespace `github_com.mit_pdos.perennial.goose.model.channel`.
 -/
-import Perennial.Golang.Defn.Loop
-import Perennial.Golang.Defn.Assume
-import Perennial.Golang.Defn.Predeclared
-import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
+module
+
+public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Assume
+public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
+
+@[expose] public section
 
 namespace Perennial
 

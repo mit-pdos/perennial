@@ -1,9 +1,13 @@
 /-
 Package initialization of `unsafe`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.«unsafe»
-import Perennial.GeneratedProof.«unsafe»
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.«unsafe»
+public import Perennial.GeneratedProof.«unsafe»
+
+@[expose] public section
 
 noncomputable section
 

@@ -8,8 +8,12 @@ Built on `own` (see `Perennial/Ghost/All.lean`): keys and values are stored as
 their `Pos.Countable` encodings in `HeapView Pos (Agree (DiscreteO Pos)) (gmap Pos)`,
 so `allG` suffices (no dedicated `ghost_mapG`-style class is needed).
 -/
-import Perennial.Ghost.Own
-import Perennial.Ghost.Countable
+module
+
+public import Perennial.Ghost.Own
+public import Perennial.Ghost.Countable
+
+@[expose] public section
 
 noncomputable section
 

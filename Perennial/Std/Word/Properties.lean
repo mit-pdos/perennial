@@ -1,5 +1,9 @@
-import Perennial.Std.Word.Automation
-import Perennial.Std.ListBasics
+module
+
+public import Perennial.Std.Word.Automation
+public import Perennial.Std.ListBasics
+
+@[expose] public section
 
 namespace Perennial
 

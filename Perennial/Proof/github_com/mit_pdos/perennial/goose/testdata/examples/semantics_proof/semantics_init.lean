@@ -7,12 +7,16 @@ FFI is the disk FFI (via `DiskPrelude`): the generated
   `semantics.Assumptions` is stated for `disk_op`, and the sections below do not
 bind `FfiSyntax`/`FfiModel`.
 -/
-import Perennial.Proof.DiskPrelude
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
-import Perennial.Proof.sync_proof.base
-import Perennial.Proof.encoding.binary
-import Perennial.Proof.github_com.goose_lang.primitive
-import Perennial.Proof.github_com.goose_lang.primitive.disk
+module
+
+public import Perennial.Proof.DiskPrelude
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
+public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.encoding.binary
+public import Perennial.Proof.github_com.goose_lang.primitive
+public import Perennial.Proof.github_com.goose_lang.primitive.disk
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

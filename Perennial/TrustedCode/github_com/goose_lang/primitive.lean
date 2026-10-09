@@ -6,8 +6,12 @@ The definitions live in the namespace of the generated package
 The named type `primitive.Mutex` is not defined here: the
 generated code defines `github_com.goose_lang.primitive.Mutex`.
 -/
-import Perennial.Golang.Defn.Pre
-import Perennial.Golang.Defn.Lock
+module
+
+public import Perennial.Golang.Defn.Pre
+public import Perennial.Golang.Defn.Lock
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

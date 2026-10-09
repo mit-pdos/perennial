@@ -2,7 +2,11 @@
 Natural-number division and modulus. Lean's `omega` handles division and
 modulus by numerals natively, so this file only contains a sanity check.
 -/
-import Perennial.Std.Word
+module
+
+public import Perennial.Std.Word
+
+@[expose] public section
 
 namespace Perennial
 

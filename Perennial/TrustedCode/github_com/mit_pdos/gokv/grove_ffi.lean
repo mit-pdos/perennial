@@ -4,8 +4,12 @@ Trusted Go model of `github.com/mit-pdos/gokv/grove_ffi` (namespace
 the Grove FFI of `Perennial.GooseLang.Ffi.GroveFfi.Impl` (`grove_op`,
 `grove_model` and the opcodes `GroveOp.*`).
 -/
-import Perennial.Golang.Defn
-import Perennial.GooseLang.Ffi.GroveFfi.Impl
+module
+
+public import Perennial.Golang.Defn
+public import Perennial.GooseLang.Ffi.GroveFfi.Impl
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

@@ -2,7 +2,11 @@
 Trusted model of `internal/synctest` (namespace `internal.synctest`, as the
 generated package).
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

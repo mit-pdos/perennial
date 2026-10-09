@@ -1,9 +1,13 @@
 /-
 Tricky nonblocking `select` examples.
 -/
-import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Base
+module
+
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_examples_init
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSectionVars false

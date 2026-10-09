@@ -1,1 +1,5 @@
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section

@@ -5,8 +5,12 @@ This channel spec has a user-chosen predicate `P` over values sent on the channe
 ordering guarantees. It's like a "bag" of values, with `send` inserting and `receive`
 removing.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

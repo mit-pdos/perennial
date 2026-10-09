@@ -2,9 +2,13 @@
 A ghost variable of arbitrary (countable) type
 with `DFrac` ownership; can be mutated when fully owned.
 -/
-import Perennial.Ghost.Own
-import Perennial.Ghost.Countable
-import Perennial.IrisLib.DFractional
+module
+
+public import Perennial.Ghost.Own
+public import Perennial.Ghost.Countable
+public import Perennial.IrisLib.DFractional
+
+@[expose] public section
 
 noncomputable section
 

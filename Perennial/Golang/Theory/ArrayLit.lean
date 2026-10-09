@@ -6,7 +6,11 @@ of stepping through the `ArraySet` chain that `go.composite_literal_array`
 unfolds to, which re-simplified the partly built array (and its index arithmetic
 `0 + 1 + ... + 1`) at every element: quadratic in the length of the literal.
 -/
-import Perennial.Golang.Theory.PostLifting
+module
+
+public import Perennial.Golang.Theory.PostLifting
+
+@[expose] public section
 
 namespace Perennial
 

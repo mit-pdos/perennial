@@ -13,8 +13,12 @@ Correspondence with stdpp:
 * ``l₁ `prefix_of` l₂`` is `l₁ <+: l₂`, `l₁ ≡ₚ l₂` is `List.Perm l₁ l₂`.
 * stdpp `Forall P l` is best stated as `∀ x ∈ l, P x` (core has the simp set).
 -/
-import Perennial.Std.GMap
-import Perennial.Std.Attrs
+module
+
+public import Perennial.Std.GMap
+public import Perennial.Std.Attrs
+
+@[expose] public section
 
 namespace Perennial
 

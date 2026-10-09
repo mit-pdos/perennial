@@ -7,8 +7,12 @@ the universal `own` (see `Perennial/Ghost/All.lean`).
 `[Pos.Countable A]` stores `Φ ∘ decode : Pos → Later (IProp GF)` (code
 `prodR dfracR (agreeR (discreteFunO pos laterO))`), since the codes cannot mention `A`.
 -/
-import Perennial.Ghost.Own
-import Perennial.Ghost.Countable
+module
+
+public import Perennial.Ghost.Own
+public import Perennial.Ghost.Countable
+
+@[expose] public section
 
 noncomputable section
 

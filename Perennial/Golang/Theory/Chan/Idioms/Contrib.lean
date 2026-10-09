@@ -1,4 +1,8 @@
-import Perennial.Ghost.Own
+module
+
+public import Perennial.Ghost.Own
+
+@[expose] public section
 
 /-!
 The "authoritative

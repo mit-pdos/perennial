@@ -1,9 +1,13 @@
 /-
 Package initialization of `math`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.math
-import Perennial.GeneratedProof.math
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.math
+public import Perennial.GeneratedProof.math
+
+@[expose] public section
 
 noncomputable section
 

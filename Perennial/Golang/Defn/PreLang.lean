@@ -1,7 +1,11 @@
 /-
 Go types.
 -/
-import Perennial.Std.ByteString
+module
+
+public import Perennial.Std.ByteString
+
+@[expose] public section
 
 namespace Perennial
 namespace go

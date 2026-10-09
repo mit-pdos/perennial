@@ -11,10 +11,14 @@ only the *sign* of `cmp` matters, `cmp` is only called on `[0, n)`, and the
 user-provided `cmp` is "adapted" (`adaptCmp`) so that `cmp (-1) = 1` and
 `cmp n ≤ 0`.
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.sort
-import Perennial.GeneratedProof.sort
-import Perennial.Proof.sort_proof.sort_init
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.sort
+public import Perennial.GeneratedProof.sort
+public import Perennial.Proof.sort_proof.sort_init
+
+@[expose] public section
 
 noncomputable section
 

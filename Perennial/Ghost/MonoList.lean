@@ -8,8 +8,12 @@ encoded (`encodeO`), see `Perennial/Ghost/All.lean`.
   least `l`;
 - `mono_list_idx_own γ i a`: persistent witness that index `i` is `a`.
 -/
-import Perennial.Ghost.Own
-import Perennial.Ghost.Countable
+module
+
+public import Perennial.Ghost.Own
+public import Perennial.Ghost.Countable
+
+@[expose] public section
 
 noncomputable section
 

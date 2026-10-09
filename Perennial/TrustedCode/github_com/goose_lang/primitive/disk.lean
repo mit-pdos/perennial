@@ -5,8 +5,12 @@ disk FFI of `Perennial.GooseLang.Ffi.DiskFfi.Impl`.
 
 TODO: this isn't correct, the new translation needs certain go_type definitions.
 -/
-import Perennial.Golang.Defn
-import Perennial.GooseLang.Ffi.DiskFfi.Impl
+module
+
+public import Perennial.Golang.Defn
+public import Perennial.GooseLang.Ffi.DiskFfi.Impl
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

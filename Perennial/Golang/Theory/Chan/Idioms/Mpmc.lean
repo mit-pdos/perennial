@@ -22,9 +22,13 @@ Notes:
   contradicts a server with `n` clients), proved directly on the camera; no lemmas
   using multiset difference are needed.
 -/
-import Perennial.Golang.Theory.Chan.Idioms.Base
-import Perennial.Golang.Theory.Chan.Idioms.Contrib
-import Perennial.Golang.Theory.Chan
+module
+
+public import Perennial.Golang.Theory.Chan.Idioms.Base
+public import Perennial.Golang.Theory.Chan.Idioms.Contrib
+public import Perennial.Golang.Theory.Chan
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

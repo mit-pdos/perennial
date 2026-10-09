@@ -19,12 +19,16 @@ Notes on the statements:
   `⌜new_cap = min_cap ∨ new_cap = old_cap * W64 2⌝` (needed to bound the
   capacity passed to `make3`).
 -/
-import Perennial.Proof.github_com.goose_lang.std
-import Perennial.Proof.github_com.goose_lang.primitive
-import Perennial.Proof.encoding.binary
-import Perennial.Code.github_com.tchajed.marshal
-import Perennial.GeneratedProof.github_com.tchajed.marshal
-import Perennial.Std.Word.LittleEndian
+module
+
+public import Perennial.Proof.github_com.goose_lang.std
+public import Perennial.Proof.github_com.goose_lang.primitive
+public import Perennial.Proof.encoding.binary
+public import Perennial.Code.github_com.tchajed.marshal
+public import Perennial.GeneratedProof.github_com.tchajed.marshal
+public import Perennial.Std.Word.LittleEndian
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 set_option linter.unusedSimpArgs false

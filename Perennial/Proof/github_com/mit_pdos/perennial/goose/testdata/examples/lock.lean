@@ -1,13 +1,17 @@
 /-
 Proof of the goose lock example: a lock implemented with a buffered channel of capacity 1 (the lock channel idiom).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Golang.Theory.Chan
-import Perennial.Golang.Theory.Chan.Idioms.Lock
-import Perennial.Golang.Theory.Chan.Idioms.Bag
-import Perennial.Proof.strings
-import Perennial.Proof.time
-import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Golang.Theory.Chan
+public import Perennial.Golang.Theory.Chan.Idioms.Lock
+public import Perennial.Golang.Theory.Chan.Idioms.Bag
+public import Perennial.Proof.strings
+public import Perennial.Proof.time
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

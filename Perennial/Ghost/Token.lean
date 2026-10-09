@@ -2,7 +2,11 @@
 "Unique tokens". `token γ` provides ownership of
 the token named `γ`; `token_exclusive` proves only one exists.
 -/
-import Perennial.Ghost.Own
+module
+
+public import Perennial.Ghost.Own
+
+@[expose] public section
 
 noncomputable section
 

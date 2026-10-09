@@ -2,9 +2,13 @@
 Package initialization of `internal/runtime/sys` (only its types are
 translated, for `runtime`, which imports it).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.internal.runtime.sys
-import Perennial.GeneratedProof.internal.runtime.sys
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.internal.runtime.sys
+public import Perennial.GeneratedProof.internal.runtime.sys
+
+@[expose] public section
 
 noncomputable section
 

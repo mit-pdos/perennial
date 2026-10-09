@@ -3,10 +3,14 @@ Specs for
 `github.com/goose-lang/std/std_core` (overflow checks, `Shuffle`,
 `Permutation`).
 -/
-import Perennial.Proof.ProofPrelude
-import Perennial.Code.github_com.goose_lang.std.std_core
-import Perennial.GeneratedProof.github_com.goose_lang.std.std_core
-import Perennial.Proof.github_com.goose_lang.primitive
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.github_com.goose_lang.std.std_core
+public import Perennial.GeneratedProof.github_com.goose_lang.std.std_core
+public import Perennial.Proof.github_com.goose_lang.primitive
+
+@[expose] public section
 
 noncomputable section
 

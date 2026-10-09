@@ -2,7 +2,11 @@
 Trusted Go model of `github.com/mit-pdos/gokv/trusted_proph`, in namespace
 `github_com.mit_pdos.gokv.trusted_proph`, as the generated package.
 -/
-import Perennial.Golang.Defn.Pre
+module
+
+public import Perennial.Golang.Defn.Pre
+
+@[expose] public section
 
 set_option linter.iris.style.nameCheck false
 

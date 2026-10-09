@@ -1,5 +1,9 @@
 /-
 The common imports of the channel idioms.
 -/
-import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
-import Perennial.Golang.Defn
+module
+
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
+public import Perennial.Golang.Defn
+
+@[expose] public section

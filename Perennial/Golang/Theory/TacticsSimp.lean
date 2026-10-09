@@ -21,8 +21,13 @@ The `goose_wp_simp_extra` simp set: extensions of `goose_wp_simp` used by
 These were first written as local workarounds in a goose testdata
 file (`TacticWorkarounds.lean`, now removed).
 -/
-import Perennial.Golang.Theory.Pkg
-import Perennial.Std.Word.Automation
+module
+
+public import Perennial.Golang.Theory.Pkg
+public import Perennial.Std.Word.Automation
+public meta import Lean.Meta.Tactic.Simp.BuiltinSimprocs.Int
+
+@[expose] public section
 
 namespace Perennial
 
@@ -151,7 +156,7 @@ open Lean Meta
 
 /-- The value of `go.arrayLiteralSize kvs` for a literal list `kvs` whose keys
 are all `none` (the elements themselves are not inspected). -/
-def arrayLiteralSize? (kvs : Lean.Expr) : MetaM (Option Int) := do
+meta def arrayLiteralSize? (kvs : Lean.Expr) : MetaM (Option Int) := do
   let mut n : Int := 0
   let mut l ← whnfR kvs
   repeat
@@ -191,7 +196,11 @@ simproc [goose_wp_simp_extra] gooseSintNatLit (sint.nat _) := fun e => word.eval
 simproc [goose_wp_simp_extra] gooseUintNatLit (uint.nat _) := fun e => word.evalWordLitConv e
 
 attribute [goose_wp_simp_extra] Option.getD_some Option.getD_none
-attribute [goose_wp_simp_extra] Int.reduceToNat List.set_cons_zero List.set_cons_succ List.set_nil
+/-- `Int.reduceToNat` in `goose_wp_simp_extra`: a core simproc can only be added to a simp
+set from a `module` through a `meta` declaration of this module. -/
+dsimproc [goose_wp_simp_extra] gooseIntReduceToNat (Int.toNat _) := Int.reduceToNat
+
+attribute [goose_wp_simp_extra] List.set_cons_zero List.set_cons_succ List.set_nil
 
 @[goose_wp_simp_extra] theorem zeroVal_interface_nil [FfiSyntax] [GoLocalContext] :
     (zero_val GoInterface) = interface.nil := rfl

@@ -1,7 +1,11 @@
 /-
 Semantics of Go arrays.
 -/
-import Perennial.Golang.Defn.Predeclared
+module
+
+public import Perennial.Golang.Defn.Predeclared
+
+@[expose] public section
 
 namespace Perennial
 

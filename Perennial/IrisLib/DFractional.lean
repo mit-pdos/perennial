@@ -2,7 +2,11 @@
 This library is a (partial) copy of the Iris fractional library, adapted to
 dfrac. We do extend the interface to include dfrac-specific laws.
 -/
-import Iris
+module
+
+public import Iris
+
+@[expose] public section
 
 namespace Perennial
 open Iris Iris.Std BI OFE ProofMode

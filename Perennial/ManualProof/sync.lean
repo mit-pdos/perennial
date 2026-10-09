@@ -1,5 +1,9 @@
 /-
 Manually written proof support for `sync`.
 -/
-import Perennial.Code.sync
-import Perennial.Proof.ProofPrelude
+module
+
+public import Perennial.Code.sync
+public import Perennial.Proof.ProofPrelude
+
+@[expose] public section

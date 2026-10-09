@@ -2,8 +2,12 @@
 A ghost variable of arbitrary (countable) type
 with fractional ownership; can be mutated when fully owned.
 -/
-import Perennial.Ghost.Own
-import Perennial.Ghost.Countable
+module
+
+public import Perennial.Ghost.Own
+public import Perennial.Ghost.Countable
+
+@[expose] public section
 
 noncomputable section
 
