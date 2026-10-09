@@ -1945,6 +1945,22 @@ theorem cancelSpec_weaken (cancel : GoFunc) (γ : ContextNames) (P P' : IProp GF
   iapply Hc $$ [] HΦ
   imodintro; iapply HP $$ Hp'
 
+/-- The cancel-function spec of `wp_WithCancel` without its `ContextClosed` postcondition (the
+form used before it gave `ContextClosed`). -/
+theorem cancel_spec_forget (cancel : GoFunc) (γ : ContextNames) (P : IProp GF) :
+    (□ (∀ Φ : val → IProp GF, □ P -∗ ▷ (ContextClosed γ -∗ Φ #()) -∗
+        WP (App (Val #cancel) (Val #())) {{ Φ }}) : IProp GF) ⊢
+      □ (∀ Φ : val → IProp GF, □ P -∗ ▷ (True -∗ Φ #()) -∗
+        WP (App (Val #cancel) (Val #())) {{ Φ }}) := by
+  iintro #Hc
+  imodintro
+  iintro %Φ #Hp HΦ
+  iapply Hc $$ Hp
+  inext
+  iintro -
+  iapply HΦ $$ []
+  itrivial
+
 /-- `WithCancel(parent)`, given the spec of `c.propagateCancel(parent, c)` (see `wp_withCancel`):
 the new `*cancelCtx` and its cancel function. -/
 theorem wp_WithCancel_gen (parent : GoInterfaceOk) (P Pre : IProp GF)
