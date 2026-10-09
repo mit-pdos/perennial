@@ -1,34 +1,25 @@
-# Perennial (new goose) in Lean
+# Perennial
 
-Perennial's new-goose framework and program proofs, in Lean 4 on top of
+Perennial's goose framework and program proofs, in Lean 4 on top of
 [iris-lean](https://github.com/leanprover-community/iris-lean). This branch
-(`lean`) is the primary branch. The development began as a translation of the
-Rocq code on `master` (`new/` and the parts of `src/` it uses). That translation
-is finished, and the Rocq code is no longer a reference. Old Perennial (old
-goose, crash/recovery reasoning, `program_proof/`) is not included.
+(`lean`) is the primary branch. It covers Go programs translated by goose,
+without crash/recovery reasoning.
 
 Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 [`docs/PERENNIAL_PROOF_REFERENCE.md`](docs/PERENNIAL_PROOF_REFERENCE.md),
 [`docs/IRIS_PROOF_MODE.md`](docs/IRIS_PROOF_MODE.md).
-
-## Do not consult the Rocq sources
-
-The Rocq code on `master` is frozen and will drift out of date. Do not read it,
-diff against it, or use it to decide what a definition or spec should be: the
-Lean statements are authoritative. To improve a spec or prove a `sorry`, work
-from the Go code and the Lean development.
 
 ## Design decisions
 
 * **One library, `Perennial`.** Framework directories are UpperCamelCase
   (`Perennial/Golang/Theory/Slice.lean`); generated and proof directories
   follow Go package paths (`Perennial/Proof/github_com/tchajed/marshal.lean`).
-* **No crash logic.** Perennial's crash program logic (`wpc`, staged
-  invariants, `fupd_level`, recovery adequacy, `crash_borrow`) is used by new
-  goose only for disk/crash examples, so it is dropped. GooseLang is an
-  instance of iris-lean's `Language`, and proofs use iris-lean's `wp`, which
-  already has later credits and `numLatersPerStep`. Perennial's
-  `state * GlobalState` pair becomes a single iris-lean `State`.
+* **No crash logic.** There is no crash program logic (`wpc`, staged
+  invariants, recovery adequacy, `crash_borrow`): proofs reason about
+  executions without crashes. GooseLang is an instance of iris-lean's
+  `Language`, and proofs use iris-lean's `wp`, which has later credits and
+  `numLatersPerStep`. The local and global state (`state × GlobalState`) form
+  the single iris-lean `State`, `CfgState`.
 * **Bounded-step layer and time receipts.** The trusted semantics `BaseStep`
   (and its iris-lean language `gooseRealEctxiLang`, `GooseLang/Lang.lean`)
   is unchanged, but the language instance used by the program logic is a
@@ -50,11 +41,12 @@ from the Go code and the Lean development.
   the client discharges the proof's premises about `N`) and are about real
   executions of *fewer than `N` steps*, an explicit hypothesis. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts".
-* **Iris/stdpp substrate.** iris-lean provides the BI, proof mode, invariants,
-  ghost maps, later credits and the WP. stdpp-style helpers that iris-lean lacks
-  live in `Perennial/Std`.
+* **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
+  ghost maps, later credits and the WP. General-purpose libraries that iris-lean
+  lacks (finite maps and sets, machine words, list lemmas) live in
+  `Perennial/Std`.
   * Finite maps are `Perennial.gmap K V` (`Perennial/Std/GMap.lean`): finite
-    partial functions, extensional so `=` works as in stdpp, needing only
+    partial functions, extensional so `=` is equality of bindings, needing only
     `DecidableEq K`. `gset K = gmap K Unit`. It is an iris-lean
     `LawfulFiniteMap`, so iris-lean's `ghost_map`/`gen_heap` apply.
   * Machine words are `BitVec n` (`w64 = BitVec 64`, ...). `uint.Z x` is
@@ -67,15 +59,15 @@ from the Go code and the Lean development.
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
   conversions are not modelled: they are stuck.
-* **Generated code comes from goose.** `goose/` carries a Lean backend that
-  emits `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
-  `etc/update-goose-new.py --lean` rather than editing them by hand.
+* **Generated code comes from goose.** The translator in `goose/` emits
+  `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
+  `etc/update-goose-new.py` rather than editing them by hand.
 
 ## Layering (bottom up)
 
 | Directory                    | Contents                                                    |
 |------------------------------|-------------------------------------------------------------|
-| `Perennial/Std`              | stdpp-style helpers (gmap, words, lists, bytes)             |
+| `Perennial/Std`              | general libraries (gmap, words, lists, bytes)               |
 | `Perennial/Algebra`          | cameras and ghost-state algebra                             |
 | `Perennial/GooseLang`        | GooseLang: semantics, lifting, bounded-step layer, receipts |
 | `Perennial/GooseLang/Ffi`    | grove and disk FFIs                                         |
@@ -106,8 +98,8 @@ Run `etc/lean-ci.sh` + `etc/lean-audit.py` for the build and soundness audit
 * An unfinished proof is `sorry`, with a comment saying what is missing if it
   is not obvious. Do not add new `axiom`s without discussing it first.
 * Notation: `#x` is `intoVal x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on
-  both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); stdpp's
-  set-valued `dom m` is `domSet m`; `go!"abc"` is a `GoString` literal; `l +ₗ i` is location
+  both `gmap` and `List` (on lists they are `l[i]?` and `l.set i v`); the
+  set-valued domain of a map is `domSet m`; `go!"abc"` is a `GoString` literal; `l +ₗ i` is location
   offset.
 * Equality on GooseLang syntax and `go.GoType` is decided classically
   (`noncomputable instance`).

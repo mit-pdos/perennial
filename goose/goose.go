@@ -1,13 +1,11 @@
 // Package goose implements conversion from Go source to Perennial definitions.
 //
 // The exposed interface allows converting individual files as well as whole
-// packages to a single Coq Ast with all the converted definitions, which
-// include user-defined structs in Go as Coq records and a Perennial procedure
-// for each Go function.
+// packages to a single Lean file with all the converted definitions, which
+// include user-defined structs in Go as Lean structures and a GooseLang
+// function for each Go function.
 //
-// See the Goose README at https://github.com/mit-pdos/perennial/goose for a high-level
-// overview. The source also has some design documentation at
-// https://github.com/mit-pdos/perennial/goose/tree/master/docs.
+// See goose/README.md for a high-level overview.
 package goose
 
 import (
@@ -64,18 +62,13 @@ type Ctx struct {
 	info    *types.Info
 	pkgPath string
 
-	// XXX: Initially tried using `pkg.Name` as the Gallina identifier holding
-	// the full package path, but that doesn't work in a `package main` with a `func main`.
-	// In that case, as soon as `func main` is defined inside `Module main.`,
-	// reference to simply `main` (which should be the go_string holding the
-	// package path) end up referring to the function. So, this uses `filename +
-	// "." + pkg.Name` to refer to the Gallina definition that holds a package's
-	// full path as a go_string (e.g. in `globals_test`, instead of `func_call #main ...`,
-	// this results in `func_call #globals_test.main ...`).
+	// The name of the GoString holding the package's full path (see
+	// glang.LeanPkgId).
 	pkgIdent string
 	errorReporter
 
-	declImplicitParams string
+	// the package uses an FFI (and so has no FfiSyntax parameter)
+	hasFfi bool
 
 	// XXX: this is so we can determine the expected return type when handling a
 	// `returnStmt` so the appropriate conversion is inserted
@@ -93,13 +86,10 @@ type Ctx struct {
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
-	// Full Go import path -> Coq module ref used in generated code. For
-	// colliding package names, imports ending in "a/v1" and "b/v1" become
-	// "a_v1" and "b_v1" rather than both using package name "v1".
-	importRefs map[string]string
-	// Full Go import path -> Assumptions class field name. For the same
-	// "a/v1" and "b/v1" imports, these become "import_a_v1_Assumption" and
-	// "import_b_v1_Assumption".
+	// Full Go import path -> Assumptions class field name. For colliding
+	// package names, imports ending in "a/v1" and "b/v1" become
+	// "import_a_v1_Assumption" and "import_b_v1_Assumption" rather than both
+	// using package name "v1".
 	importAssumptions map[string]string
 
 	inits []glang.Expr
@@ -110,24 +100,15 @@ type Ctx struct {
 
 // NewPkgCtx initializes a context based on a properly loaded package
 func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
-	declImplicitParams := ""
-	if util.GetFfi(pkg) == "" {
-		declImplicitParams = " {ext : ffi_syntax}"
-	}
-	pkgIdent := "pkg_id" + "." + pkg.Name
-	if glang.Lean {
-		pkgIdent = glang.LeanPkgId(pkg.PkgPath)
-	}
 	return Ctx{
-		info:               pkg.TypesInfo,
-		pkgPath:            pkg.PkgPath,
-		declImplicitParams: declImplicitParams,
-		pkgIdent:           pkgIdent,
-		errorReporter:      newErrorReporter(pkg.Fset),
-		importNames:        make(map[string]*types.PkgName),
-		importRefs:         make(map[string]string),
-		importAssumptions:  make(map[string]string),
-		filter:             filter,
+		info:              pkg.TypesInfo,
+		pkgPath:           pkg.PkgPath,
+		hasFfi:            util.GetFfi(pkg) != "",
+		pkgIdent:          glang.LeanPkgId(pkg.PkgPath),
+		errorReporter:     newErrorReporter(pkg.Fset),
+		importNames:       make(map[string]*types.PkgName),
+		importAssumptions: make(map[string]string),
+		filter:            filter,
 	}
 }
 
@@ -149,8 +130,8 @@ func (ctx *Ctx) paramList(fs *ast.FieldList) (names []glang.Binder, types []glan
 	return names, types
 }
 
-func (ctx *Ctx) gallinaIdent(x string) glang.Expr {
-	return glang.GallinaIdent(x)
+func (ctx *Ctx) termIdent(x string) glang.Expr {
+	return glang.TermIdent(x)
 }
 
 func (ctx *Ctx) typeParamList(fs *ast.FieldList) []string {
@@ -417,7 +398,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
-				ctx.gallinaIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
+				ctx.termIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
 			)
 		} else {
@@ -471,7 +452,7 @@ func (ctx *Ctx) fieldSelection(n locatable, index *[]int, curType *types.Type, e
 		}
 		v := info.structType.Field(i)
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldGet"),
-			ctx.structInfoToGlangType(info), glang.GallinaString(v.Name()), *expr)
+			ctx.structInfoToGlangType(info), glang.TermString(v.Name()), *expr)
 		*curType = v.Type()
 	}
 }
@@ -510,7 +491,7 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 			args := glang.ListExpr(ctx.convertTypeArgsToGlang(nil, typeArgs))
 			return glang.NewCallExpr(
 				glang.VerbatimExpr("FuncResolve"),
-				ctx.gallinaIdent(ctx.pkgRef(f.Pkg())+"."+f.Name()),
+				ctx.termIdent(ctx.pkgRef(f.Pkg())+"."+f.Name()),
 				args,
 				glang.Tt,
 			)
@@ -519,7 +500,7 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 			return ctx.handleImplicitConversion(e,
 				ctx.info.TypeOf(e.Sel),
 				ctx.info.TypeOf(e),
-				ctx.gallinaIdent(ctx.pkgRef(obj.Pkg())+"."+e.Sel.Name),
+				ctx.termIdent(ctx.pkgRef(obj.Pkg())+"."+e.Sel.Name),
 			)
 		}
 	}
@@ -810,7 +791,7 @@ func (ctx *Ctx) function(s *ast.Ident) glang.Expr {
 	}
 	typeArgs := ctx.info.Instances[s].TypeArgs
 	return glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
-		ctx.gallinaIdent(f.Name()),
+		ctx.termIdent(f.Name()),
 		glang.ListExpr(ctx.convertTypeArgsToGlang(s, typeArgs)),
 		glang.Tt,
 	)
@@ -974,7 +955,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 				}
 			}
 		}
-		constE := ctx.gallinaIdent(e.Name)
+		constE := ctx.termIdent(e.Name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
 	}
 	if _, ok := obj.(*types.Var); ok {
@@ -1482,7 +1463,7 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		if _, ok := obj.(*types.Var); ok {
 			if obj.Pkg().Scope() == obj.Parent() {
 				return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
-					ctx.gallinaIdent(e.Name),
+					ctx.termIdent(e.Name),
 					glang.Tt,
 				)
 			} else {
@@ -2232,7 +2213,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		for i := range namedType.TypeArgs().Len() {
 			arg := namedType.TypeArgs().At(i)
 			if arg, ok := arg.(*types.TypeParam); ok {
-				fd.TypeArgs = append(fd.TypeArgs, glang.GallinaIdent(arg.Obj().Name()))
+				fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(arg.Obj().Name()))
 			} else {
 				// it doesn't seem possible to have the receiver be a specialized
 				// generic type (all args are interpreted as bound parameters)
@@ -2271,7 +2252,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		if d.Type.TypeParams != nil {
 			for _, p := range d.Type.TypeParams.List {
 				for _, name := range p.Names {
-					fd.TypeArgs = append(fd.TypeArgs, glang.GallinaIdent(name.Name))
+					fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(name.Name))
 				}
 			}
 		}
@@ -2454,7 +2435,7 @@ func (ctx *Ctx) constDecl(d *ast.GenDecl) {
 }
 
 // functionConstSpec translates constant declarations within functions, which
-// become GooseLang let bindings (unlike constSpec, which creates Gallina
+// become GooseLang let bindings (unlike constSpec, which creates Lean
 // definitions); supports untyped ints (unlike varSpec)
 func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Expr {
 	var e glang.Expr = cont
@@ -2469,7 +2450,7 @@ func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Ex
 			continue
 		}
 		constVal := ctx.constantLiteral(spec.Names[i])
-		e = glang.GallinaLetExpr{
+		e = glang.TermLetExpr{
 			Name:    spec.Names[i].Name,
 			ValExpr: constVal,
 			Cont:    e,
@@ -2518,21 +2499,18 @@ func stringLitValue(lit *ast.BasicLit) string {
 	return s
 }
 
-func coqImportQualid(pkgPath string) string {
-	return strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/", ".")
-}
-
 func importSuffixAlias(pkgPath string, suffixLen int) string {
-	parts := strings.Split(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/")
+	parts := strings.Split(glang.GoPathToIdentPath(pkgPath), "/")
 	if suffixLen > len(parts) {
 		suffixLen = len(parts)
 	}
 	return glang.ToIdent(strings.Join(parts[len(parts)-suffixLen:], "_"))
 }
 
-// uniqueImportAliases assigns Coq module aliases for imports whose Go package
-// names collide. It tries increasingly long import-path suffixes until every
-// package gets a unique Coq identifier that also avoids refs already present in used.
+// uniqueImportAliases assigns aliases (used in the names of the Assumptions
+// class fields) for imports whose Go package names collide. It tries
+// increasingly long import-path suffixes until every package gets a unique
+// identifier that also avoids refs already present in used.
 //
 // For example, imports ending in "a/v1" and "b/v1" both have package name "v1",
 // so the one-component suffix "v1" conflicts and the two-component suffixes
@@ -2547,7 +2525,7 @@ func uniqueImportAliases(pkgs []*types.Package, used map[string]bool) map[string
 
 	maxParts := 0
 	for _, pkg := range pkgs {
-		if n := len(strings.Split(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.Path()), "/")); n > maxParts {
+		if n := len(strings.Split(glang.GoPathToIdentPath(pkg.Path()), "/")); n > maxParts {
 			maxParts = n
 		}
 	}
@@ -2618,21 +2596,18 @@ func (ctx *Ctx) finalizeImports() {
 		importsByName[pkg.Name()] = append(importsByName[pkg.Name()], pkg)
 	}
 
-	// Imports with unique package names keep the old simple Coq reference, so
-	// existing generated code is unchanged when there is no collision.
+	// Imports with unique package names are referred to by their package name.
 	usedRefs := make(map[string]bool)
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
 		if len(importsByName[pkg.Name()]) == 1 {
 			ref := glang.ToIdent(pkg.Name())
-			ctx.importRefs[pkg.Path()] = ref
 			ctx.importAssumptions[pkg.Path()] = "import_" + ref + "_Assumption"
 			usedRefs[ref] = true
 		}
 	}
 
-	// Imports with colliding package names get path-suffix aliases, and we emit
-	// local Coq module aliases so the rest of code generation can use those refs.
+	// Imports with colliding package names get path-suffix aliases.
 	seenName := make(map[string]bool)
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
@@ -2646,14 +2621,8 @@ func (ctx *Ctx) finalizeImports() {
 		aliases := uniqueImportAliases(group, usedRefs)
 		for _, groupPkg := range group {
 			ref := aliases[groupPkg.Path()]
-			ctx.importRefs[groupPkg.Path()] = ref
 			ctx.importAssumptions[groupPkg.Path()] = "import_" + ref + "_Assumption"
 			usedRefs[ref] = true
-			if !glang.Lean {
-				ctx.out.importDecls = append(ctx.out.importDecls, glang.VerbatimDecl{
-					Content: fmt.Sprintf("Module %s := code.%s.%s.", ref, coqImportQualid(groupPkg.Path()), glang.ToIdent(groupPkg.Name())),
-				})
-			}
 		}
 	}
 }
@@ -2662,32 +2631,25 @@ func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	if pkg == nil {
 		return ""
 	}
-	if glang.Lean {
-		// Lean namespaces are global, so packages are referred to by their
-		// full (unique) namespace; see glang.LeanNamespace. This is unquoted
-		// since it is quoted when printed.
-		//
-		// References are rooted (`_root_.Perennial.<ns>`): a relative
-		// reference `errors.X` from inside namespace `a.errors` would resolve
-		// to `a.errors.X`.
-		path := pkg.Path()
-		if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
-			// Not imported (filtered out by the config). The Rocq output then
-			// refers to `<pkg name>.X`, which resolves to an imported package
-			// with the same name, if any; do the same.
-			for _, n := range ctx.importNamesOrdered {
-				if n.Imported().Name() == pkg.Name() {
-					path = n.Imported().Path()
-					break
-				}
+	// Lean namespaces are global, so packages are referred to by their full
+	// (unique) namespace; see glang.LeanNamespace. This is unquoted since it is
+	// quoted when printed.
+	//
+	// References are rooted (`_root_.Perennial.<ns>`): a relative reference
+	// `errors.X` from inside namespace `a.errors` would resolve to
+	// `a.errors.X`.
+	path := pkg.Path()
+	if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
+		// Not imported (filtered out by the config): refer to an imported
+		// package with the same name, if any.
+		for _, n := range ctx.importNamesOrdered {
+			if n.Imported().Name() == pkg.Name() {
+				path = n.Imported().Path()
+				break
 			}
 		}
-		return "_root_.Perennial." + strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(path), "/", ".")
 	}
-	if ref, ok := ctx.importRefs[pkg.Path()]; ok {
-		return ref
-	}
-	return glang.ToIdent(pkg.Name())
+	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(path), "/", ".")
 }
 
 func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
@@ -2729,18 +2691,10 @@ func (ctx *Ctx) decl(d ast.Decl) {
 func (ctx *Ctx) packagePropClass() []glang.Decl {
 	var decls = []glang.Decl{}
 
-	// top-level decl
-	w := new(strings.Builder)
-	fmt.Fprintf(w, "Class Assumptions%s `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=\n",
-		ctx.declImplicitParams,
-	)
-	fmt.Fprintln(w, "{")
-
 	// toposort named types specs
 	nameToTypeSpecMap := make(map[string]*ast.TypeSpec)
 	for _, t := range ctx.namedTypeSpecs {
 		nameToTypeSpecMap[t.Name.Name] = t
-		fmt.Fprintln(w, "  #[global] "+t.Name.Name+"_instance :: "+t.Name.Name+"_Assumptions;")
 	}
 	for t := range toposort.ToposortSeq(slices.Values(ctx.namedTypeSpecs),
 		func(s *ast.TypeSpec) iter.Seq[*ast.TypeSpec] {
@@ -2769,46 +2723,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 		decls = append(decls, ctx.namedTypeSemanticsDecl(t)...)
 	}
 
-	for _, f := range ctx.functions {
-		if ctx.filter.GetAction(f.Name.Name) == declfilter.Axiomatize {
-			continue
-		}
-
-		typeParams := ""
-		typeArgList, sep := "[", ""
-		if f.Type.TypeParams != nil {
-			for _, p := range f.Type.TypeParams.List {
-				for _, name := range p.Names {
-					typeParams += (" " + name.Name)
-					typeArgList += sep + name.Name
-					sep = "; "
-				}
-			}
-		}
-		typeArgList += "]"
-
-		impl := glang.FuncImpl(f.Name.Name)
-		fmt.Fprintf(w, "  #[global] %s_unfold%s :: FuncUnfold %s %s (%s%s);\n",
-			f.Name.Name, typeParams, f.Name.Name, typeArgList, impl, typeParams)
-	}
-
-	for _, impName := range ctx.importNamesOrdered {
-		pkg := impName.Imported()
-		fmt.Fprintf(w, "  #[global] %s :: %s.Assumptions;\n",
-			ctx.importAssumptionName(pkg), ctx.pkgRef(pkg))
-	}
-
-	fmt.Fprint(w, "}.")
-
-	topDecl := glang.VerbatimDecl{
-		Content: w.String(),
-	}
-	if glang.Lean {
-		var specs []*ast.TypeSpec
-		specs = append(specs, ctx.namedTypeSpecs...)
-		topDecl = glang.LeanVerbatim(w.String(), ctx.leanPackagePropClass(specs))
-	}
-	decls = append(decls, topDecl)
+	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanPackagePropClass(ctx.namedTypeSpecs)})
 
 	return decls
 }
@@ -2818,17 +2733,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 func (ctx *Ctx) finalExtraDecls() {
 	var decls = []glang.Decl{}
 
-	infoContents := fmt.Sprintf("#[global] Instance info' : PkgInfo %s :=\n", ctx.pkgIdent) +
-		"{|\n  pkg_imported_pkgs := ["
-	sep := ""
-	for _, impName := range ctx.importNamesOrdered {
-		pkg := impName.Imported()
-		infoContents += sep + fmt.Sprintf("code.%s.pkg_id.%s", coqImportQualid(pkg.Path()), pkg.Name())
-		sep = "; "
-	}
-	infoContents += "]\n|}."
-	infoInstanceDecl := glang.LeanVerbatim(infoContents, ctx.leanInfoInstance())
-	decls = append(decls, infoInstanceDecl)
+	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanInfoInstance()})
 
 	initFunc := glang.FuncDecl{Name: "initialize'"}
 
@@ -2857,7 +2762,7 @@ InitLoop:
 			varName := init.Lhs[i].Name()
 			if ctx.filter.GetAction(varName) != declfilter.Translate {
 				e = glang.NewDoSeq(
-					glang.NewCallExpr(ctx.gallinaIdent(varName+"'init"), glang.Tt),
+					glang.NewCallExpr(ctx.termIdent(varName+"'init"), glang.Tt),
 					e)
 				continue InitLoop
 			}
@@ -2869,7 +2774,7 @@ InitLoop:
 				e = glang.NewDoSeq(
 					glang.StoreStmt{
 						Dst: glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
-							ctx.gallinaIdent(init.Lhs[i-1].Name()), glang.Tt,
+							ctx.termIdent(init.Lhs[i-1].Name()), glang.Tt,
 						),
 						X:  glang.IdentExpr(fmt.Sprintf("$r%d", i-1)),
 						Ty: ctx.glangType(init.Lhs[i-1], init.Lhs[i-1].Type()),
@@ -2931,7 +2836,7 @@ InitLoop:
 		pkg := importName.Imported()
 		e = glang.NewDoSeq(
 			glang.NewCallExpr(
-				ctx.gallinaIdent(ctx.pkgRef(pkg)+"."+"initialize'"),
+				ctx.termIdent(ctx.pkgRef(pkg)+"."+"initialize'"),
 				glang.Tt),
 			e)
 	}
@@ -2944,7 +2849,7 @@ InitLoop:
 		e = glang.NewDoSeq(
 			glang.NewCallExpr(
 				glang.VerbatimExpr("go.GlobalAlloc"),
-				glang.GallinaIdent(varIdent.Name),
+				glang.TermIdent(varIdent.Name),
 				ctx.glangType(varIdent, ctx.typeOf(varIdent)),
 				glang.Tt,
 			),
@@ -2953,7 +2858,7 @@ InitLoop:
 
 	e = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), e)
 	e = glang.NewCallExpr(glang.VerbatimExpr("package.init"),
-		ctx.gallinaIdent(ctx.pkgIdent),
+		ctx.termIdent(ctx.pkgIdent),
 		glang.FuncLit{Args: nil, Body: e},
 	)
 

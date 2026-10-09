@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
-	"github.com/mit-pdos/perennial/goose/glang"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -31,7 +30,7 @@ func (c *typeTranslatability) fail(format string, args ...any) {
 }
 
 // check walks t. byValue is true if t appears in a position where goose needs
-// a Lean/Gallina type modeling its values (a struct field, an array element,
+// a Lean type modeling its values (a struct field, an array element,
 // a type argument, or the underlying type of a non-struct named type), and
 // false where only its go.type is needed (under a pointer, slice, map,
 // channel, function or interface).
@@ -41,12 +40,7 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 		switch t.Name() {
 		case "uint64", "int64", "uint32", "int32", "uint16", "int16",
 			"uint8", "int8", "byte", "uint", "int", "float64", "float32",
-			"bool", "string", "Pointer":
-		case "uintptr":
-			// Rocq has no semantics for uintptr values
-			if byValue && !glang.Lean {
-				c.fail("uintptr value")
-			}
+			"bool", "string", "Pointer", "uintptr":
 		default:
 			if byValue {
 				c.fail("unsupported basic type %s", t.Name())

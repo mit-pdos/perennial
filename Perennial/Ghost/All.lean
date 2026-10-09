@@ -32,7 +32,7 @@ Built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
   functor.
 * `class allG (GF : outParam BundledGFunctors)` bundles a single
   `ElemG GF allURF` (field `any_inG`). `GF` is an `outParam`, so in a context
-  `[allG GF]` a bare `own γ a` (or `ghost_var γ q v`) elaborates with that
+  `[allG GF]` a bare `own γ a` (or `ghostVar γ q v`) elaborates with that
   `GF`. There should be exactly one `allG` instance in scope.
   Note: `allG` is defined for `GF : BundledGFunctors.{0,0,0}` (forced by the
   universe of the codes); downstream simply writes `{GF} [allG GF]`.
@@ -57,7 +57,7 @@ Built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
 
 How a proof obtains ghost state: assume `{GF} [allG GF]` (or a GS class that
 extends `allG GF`), then use `own`/the libraries directly, e.g.
-`iMod (ghost_var_alloc v)`; no further class assumptions are needed, except
+`imod ghostVar_alloc v`; no further class assumptions are needed, except
 `[Pos.Countable A]` for the types of stored data.
 -/
 

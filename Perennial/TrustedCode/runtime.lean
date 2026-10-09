@@ -1,5 +1,5 @@
 /-
-Trusted code for `runtime`. `Goschedⁱᵐᵖˡ` is in namespace `runtime`, as the
+Trusted code for `runtime`. `Gosched.impl` is in namespace `runtime`, as the
 generated package.
 -/
 module

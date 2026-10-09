@@ -21,7 +21,7 @@ namespace github_com.goose_lang.primitive.disk
 /-
 This is generalized over `ext` so functions that are generalized over `ext`
 can refer to it. The only definition in a goose translation that is
-specialized to a concrete FFI is the Assumptions propclass. So, only `ⁱᵐᵖˡ`
+specialized to a concrete FFI is the Assumptions propclass. So, only `.impl`
 stuff should be specialized to the ffi in trusted code.
 -/
 section disk_consts

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build every module of the Lean port and print a per-module pass/fail summary.
+# Build every module of the Perennial library and print a per-module pass/fail summary.
 #
 # Usage: etc/lean-ci.sh [-g GROUPS] [-o LOG] [--mem-cap GB] [--min-avail GB] [-q]
 #

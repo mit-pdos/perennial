@@ -44,11 +44,9 @@ type FilterConfig struct {
 type Bootstrap struct {
 	// Set to true to enable bootstrapping.
 	Enabled bool `toml:"enabled"`
-	// These lines (typically imports from New.golang.defn) are joined to form
-	// the new prelude.
+	// Lean modules (typically from Perennial.Golang.Defn) imported in addition
+	// to Perennial.Golang.Defn.Pre.
 	Prelude []string `toml:"prelude"`
-	// Lean imports to use instead of translating Prelude (Lean backend only).
-	LeanPrelude []string `toml:"lean_prelude"`
 }
 
 type setOpType int

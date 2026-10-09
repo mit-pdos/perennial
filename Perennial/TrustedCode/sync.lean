@@ -3,7 +3,7 @@ Trusted definitions of `sync` (namespace `sync`, as the generated package).
 
 `copyChecker` and its `check` method are given trusted definitions here (rather
 than axiomatized, which would leave `copyChecker.wp_check` unprovable). See
-`«copyCheckerⁱᵐᵖˡ»` below.
+`copyChecker.underlying` below.
 -/
 module
 

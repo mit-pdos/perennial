@@ -168,7 +168,7 @@ def main (args : List String) : IO UInt32 := do
     let line := match declRangeExt.find? env a (level := .private) with
       | some r => r.range.pos.line | none => 0
     out.putStrLn s!"\{\"t\":\"axiom\",\"name\":{jstr a.toString},\"module\":{jstr (modOf env a).toString},\"line\":{line}}"
-  -- sorries outside the port (iris-lean, batteries, ...) that Perennial reaches
+  -- sorries outside Perennial (iris-lean, batteries, ...) that Perennial reaches
   for (n, axs) in memo.toList do
     if !axs.contains ``sorryAx || isPerennial (modOf env n) then continue
     let some ci := env.find? n | continue

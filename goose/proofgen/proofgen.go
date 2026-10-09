@@ -13,20 +13,14 @@ import (
 )
 
 func Package(w io.Writer, pkg *packages.Package, ffi string, bootstrap bool, filter declfilter.DeclFilter) map[string]string {
-	coqPath := strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.PkgPath), "/", ".")
-
-	if glang.Lean {
-		coqPath = glang.LeanNamespace(pkg.PkgPath)
-	}
 	pf := tmpl.PackageProof{
-		Lean:          glang.Lean,
-		FfiPrelude:    glang.RocqModuleToLean(ffi + "_prelude")[len("Perennial."):],
+		FfiPrelude:    glang.LeanFfiPrelude(ffi),
 		Ffi:           ffi,
 		Bootstrap:     bootstrap,
 		Name:          pkgName(pkg),
 		HasTrusted:    filter.HasTrusted(),
 		TrustProofGen: filter.TrustProofGen(),
-		ImportPath:    coqPath,
+		ImportPath:    glang.LeanNamespace(pkg.PkgPath),
 		Root:          glang.LeanRootPrefix(pkg.PkgPath),
 	}
 
@@ -39,32 +33,25 @@ func Package(w io.Writer, pkg *packages.Package, ffi string, bootstrap bool, fil
 	sort.Strings(imports)
 
 	for _, path := range imports {
-		coqPath := strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(path), "/", ".")
-		if glang.Lean {
-			coqPath = glang.LeanNamespace(path)
-		}
 		pf.Imports = append(pf.Imports, tmpl.Import{
-			Path: coqPath,
+			Path: glang.LeanNamespace(path),
 			Root: glang.LeanRootPrefix(path),
 		})
 	}
 
 	types := translateTypesDeps(pkg, filter)
-	var chunks map[string]string
-	if glang.Lean {
-		chunks = leanChunks(pf, types)
-		if chunks != nil {
-			// the package module only re-exports the chunks
-			var names []string
-			for name := range chunks {
-				names = append(names, name)
-			}
-			sort.Strings(names)
-			for _, name := range names {
-				pf.ExtraImports = append(pf.ExtraImports, pf.Root+"GeneratedProof."+pf.ImportPath+"."+name)
-			}
-			types = nil
+	chunks := leanChunks(pf, types)
+	if chunks != nil {
+		// the package module only re-exports the chunks
+		var names []string
+		for name := range chunks {
+			names = append(names, name)
 		}
+		sort.Strings(names)
+		for _, name := range names {
+			pf.ExtraImports = append(pf.ExtraImports, pf.Root+"GeneratedProof."+pf.ImportPath+"."+name)
+		}
+		types = nil
 	}
 	for _, t := range types {
 		pf.Types = append(pf.Types, t.decl)
@@ -162,10 +149,7 @@ func leanChunks(pf tmpl.PackageProof, types []translatedType) map[string]string 
 	return files
 }
 
-// pkgName is the Rocq module/Lean namespace of the package
+// pkgName is the Lean namespace of the package
 func pkgName(pkg *packages.Package) string {
-	if glang.Lean {
-		return glang.LeanNamespace(pkg.PkgPath)
-	}
-	return pkg.Name
+	return glang.LeanNamespace(pkg.PkgPath)
 }

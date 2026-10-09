@@ -97,11 +97,6 @@ def main():
         const="..",
     )
     parser.add_argument(
-        "--lean",
-        help="emit Lean (Perennial/Code, Perennial/GeneratedProof) rather than Rocq (new/code, new/generatedproof)",
-        action="store_true",
-    )
-    parser.add_argument(
         "--goose-examples",
         help="also translate tests in Goose",
         action="store_true",
@@ -136,18 +131,10 @@ def main():
             if getattr(args, proj_arg, None) is None and os.path.isdir(proj_path):
                 setattr(args, proj_arg, proj_path)
 
-    # this script lives in etc/ (on master: new/etc/)
+    # this script lives in etc/
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
-    if not os.path.isdir(path.join(perennial_dir, "goose")):
-        perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
-    if args.lean:
-        code_dir = path.join(perennial_dir, "Perennial/Code")
-        proof_dir = path.join(perennial_dir, "Perennial/GeneratedProof")
-        lean_args = ["-lean"]
-    else:
-        code_dir = path.join(perennial_dir, "new/code/")
-        proof_dir = path.join(perennial_dir, "new/generatedproof")
-        lean_args = []
+    code_dir = path.join(perennial_dir, "Perennial/Code")
+    proof_dir = path.join(perennial_dir, "Perennial/GeneratedProof")
     goose_dir = path.join(perennial_dir, "goose")
 
     def proj_dir(name):
@@ -195,9 +182,8 @@ def main():
 
         goose_bin = path.join(gopath, "bin", "goose")
         do_run(
-            [goose_bin]
-            + lean_args
-            + [
+            [
+                goose_bin,
                 "-out",
                 code_dir,
                 "-configdir",
@@ -211,9 +197,8 @@ def main():
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
         do_run(
-            [proofgen_bin]
-            + lean_args
-            + [
+            [
+                proofgen_bin,
                 "-out",
                 proof_dir,
                 "-configdir",
@@ -223,12 +208,6 @@ def main():
             ]
             + pkgs
         )
-
-    # NOTE: new goose doesn't have executable tests for now, evaluation is blocked due to sealing
-    # def run_goose_test_gen(src_path, output):
-    #    gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
-    #    args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
-    #    do_run(args)
 
     if args.compile:
         compile_goose()
@@ -284,11 +263,10 @@ def main():
             proj_dir(proj.name),
             *proj.pkgs,
         )
-    if args.lean:
-        # Lean only: packages whose types (only) are translated, so that the
-        # types of the packages above that refer to them can be translated
-        if args.std_lib:
-            run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
+    # packages whose types (only) are translated, so that the types of the
+    # packages above that refer to them can be translated
+    if args.std_lib:
+        run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
     pm.wait_all()
 
 

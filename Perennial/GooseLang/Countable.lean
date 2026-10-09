@@ -1,8 +1,8 @@
 /-
 `Pos.Countable` instances for Go types and GooseLang syntax.
 
-Each syntax type is injected into generic trees (`GenTree`, stdpp
-`gen_tree`); injectivity is proved directly instead of through a decoder.
+Each syntax type is injected into generic trees (`GenTree`); injectivity is
+proved directly instead of through a decoder.
 These instances let ghost state (channels, `ghost_var`, ...) store values that
 contain code: `val`, `expr`, `GoFunc`, `GoInterface`, `GoSlice`, `loc`, ...
 -/

@@ -1,6 +1,6 @@
 package unittest
 
-// Make sure that goose tracks dependencies and emits A's Coq definition before
+// Make sure that goose tracks dependencies and emits A's Lean definition before
 // B's.
 
 type B struct {
