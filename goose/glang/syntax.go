@@ -20,8 +20,10 @@ func indent(spaces int, s string) string {
 	return strings.Join(lines, "\n")
 }
 
+// FuncImpl is the name of the GooseLang implementation of a function (the
+// function's own name is a GoString naming it).
 func FuncImpl(name string) string {
-	return name + "ⁱᵐᵖˡ"
+	return name + ".impl"
 }
 
 type Expr interface {
@@ -405,8 +407,9 @@ type Decl interface {
 	LeanDecl() string
 }
 
+// TypeMethod is the name of the GooseLang implementation of a method.
 func TypeMethod(typeName string, methodName string) string {
-	return fmt.Sprintf("%s__%sⁱᵐᵖˡ", typeName, methodName)
+	return fmt.Sprintf("%s.%s.impl", typeName, methodName)
 }
 
 // These will not end up in `File.Decls`, they are put into `File.Imports` by `translatePackage`.

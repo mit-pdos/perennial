@@ -82,9 +82,6 @@ func main() {
 	flag.StringVar(&configDir, "configdir", "",
 		"directory containing Goose config files (default is the output directory)")
 
-	// accepted for compatibility with existing scripts
-	flag.Bool("lean", true, "ignored (the output is always Lean)")
-
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 
 	flag.Parse()

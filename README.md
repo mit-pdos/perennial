@@ -87,14 +87,18 @@ Run `etc/lean-ci.sh` + `etc/lean-audit.py` for the build and soundness audit
 ## Conventions
 
 * Follow the naming of the surrounding code (`wp_load`, `isMutex`, `ownSlice`).
-  Quote names that are not legal Lean with «» (e.g. `Mutex.impl`, `«unsafe»`).
-* Sealing: `def foo_def`, `@[irreducible] def foo := foo_def`,
-  `theorem foo_unseal : foo = foo_def`. `Global Opaque` is `attribute [irreducible]`.
+  Quote names that are not legal Lean identifiers with «» (e.g. `«unsafe»`,
+  `«_»`).
+* Sealing: `def fooDef`, `@[irreducible] def foo := fooDef`,
+  `theorem foo_unseal : foo = fooDef`. To make an existing definition opaque,
+  use `attribute [irreducible] foo`.
 * GooseLang code notation (`Perennial/GooseLang/Notation.lean`): `λ: "x", e`,
   `let: "x" := e1 in e2`, `e1 ;; e2`, `if: c then a else b`, `rec: "f" "x" := e`,
   Go operators `e1 +⟨t⟩ e2` etc. Method calls are `rcvr @!! T @!! m`.
 * Everything lives in `namespace Perennial`.
-* Files do not use the Lean `module` system (no `public import`).
+* Every file is a module of Lean's module system: `module`, then its
+  `public import`s, then `@[expose] public section`, so that all declarations
+  are public with their bodies exposed.
 * An unfinished proof is `sorry`, with a comment saying what is missing if it
   is not obvious. Do not add new `axiom`s without discussing it first.
 * Notation: `#x` is `intoVal x`; `m !! k`, `<[k := v]> m`, `{[k := v]}` work on

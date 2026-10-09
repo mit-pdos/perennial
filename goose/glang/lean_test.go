@@ -16,6 +16,7 @@ func TestLeanIdent(t *testing.T) {
 	assert.Equal("lookup'", LeanIdent("lookup"))
 	assert.Equal("Foo.impl", LeanIdent(FuncImpl("Foo")))
 	assert.Equal("T.M.impl", LeanIdent(TypeMethod("T", "M")))
+	assert.Equal("«_».impl", LeanIdent(FuncImpl("_")))
 	assert.Equal("T.underlying", LeanIdent(TypeImpl("T")))
 	assert.Equal("go.GoType.Named", LeanIdent("go.Named"))
 	assert.Equal("«end»", LeanIdent("end"))

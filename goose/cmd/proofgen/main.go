@@ -27,9 +27,6 @@ func main() {
 	flag.StringVar(&modDir, "dir", ".",
 		"directory containing necessary go.mod")
 
-	// accepted for compatibility with existing scripts
-	flag.Bool("lean", true, "ignored (the output is always Lean)")
-
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 
 	flag.Parse()
