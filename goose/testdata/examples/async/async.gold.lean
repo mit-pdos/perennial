@@ -34,7 +34,7 @@ noncomputable def TakesDisk.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 /-- go: async.go:8:6 -/

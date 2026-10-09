@@ -68,7 +68,7 @@ noncomputable def newSession.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def waitForSessionExpiration.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: e.go:26:6 -/

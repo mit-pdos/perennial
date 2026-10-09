@@ -5,7 +5,7 @@ package localtype_shadow
 type t struct{ a uint64 }
 
 func f() uint64 {
-	type t struct{ b uint64 } // ERROR local type t has the name of a package-level declaration
+	type t struct{ b uint64 } // ERROR local type t: the name is not unique in the package
 	return t{b: 1}.b
 }
 

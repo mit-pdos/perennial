@@ -8,6 +8,6 @@ func f() uint64 {
 }
 
 func g() uint64 {
-	type t struct{ b uint64 } // ERROR two local types are named t
+	type t struct{ b uint64 } // ERROR local type t: the name is not unique in the package
 	return t{b: 1}.b
 }

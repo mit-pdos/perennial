@@ -1304,7 +1304,7 @@ noncomputable def chanRange.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def doSubtleThings.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- This comment starts a Lean comment / -
@@ -1313,7 +1313,7 @@ noncomputable def doSubtleThings.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def hasStartComment.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- This comment - / ends a Lean comment
@@ -1322,7 +1322,7 @@ noncomputable def hasStartComment.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def hasEndComment.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: condvar.go:5:6 -/
@@ -1781,7 +1781,7 @@ noncomputable def atomicCreateStub.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "data"))
   (Let "fname" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fname"))
   (Let "dir" (App (Val (GoInstruction (GoAlloc go.string))) (Var "dir"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))))))
 
 /-- go: data_structures.go:9:6 -/
@@ -2135,7 +2135,7 @@ noncomputable def useEmbeddedMethod2.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def empty.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: empty_functions.go:5:6 -/
@@ -2152,14 +2152,14 @@ noncomputable def emptyReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def unnamedParams.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: empty_functions.go:11:6 -/
 noncomputable def anonymousParam.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: float.go:8:6 -/
@@ -2418,7 +2418,7 @@ noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concreteFooer.ty)))) (Var "f"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))))
 
 /-- go: interfaces.go:18:6 -/
@@ -2608,7 +2608,7 @@ noncomputable def takeMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Fooer.ty)))) (Var "f"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))))
 
 /-- go: interfaces.go:85:6 -/
@@ -2655,7 +2655,7 @@ noncomputable def concrete1.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc concrete1.ty))) (Var "c"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))))
 
 /-- go: interfaces.go:109:21 -/
@@ -2664,7 +2664,7 @@ noncomputable def concrete1.B.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType concrete1.ty)))) (Var "c"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))))
 
 /-- go: interfaces.go:112:6 -/
@@ -2877,7 +2877,7 @@ noncomputable def DoSomething.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 /-- go: loops.go:6:6 -/
@@ -3354,7 +3354,7 @@ noncomputable def mapGetCall.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -3460,7 +3460,7 @@ noncomputable def multipleVar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))))
 
 /-- go: multiple.go:14:6 -/
@@ -3913,7 +3913,7 @@ noncomputable def TwoDiskLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 /-- TwoDiskUnlock is a dummy function to represent unlocking an address in the
@@ -3924,7 +3924,7 @@ noncomputable def TwoDiskUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 /-- go: replicated_disk.go:29:6 -/
@@ -4256,7 +4256,7 @@ noncomputable def makeAlias.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def Skip.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- go: spawn.go:10:6 -/
@@ -4316,7 +4316,7 @@ noncomputable def threadCode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "tid"
   (App (Val exceptionDo)
   (Let "tid" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "tid"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 /-- go: spawn.go:28:6 -/
@@ -4808,7 +4808,7 @@ noncomputable def variadicFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "cs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "cs"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.string))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))))))
 
 /-- go: varargs.go:6:6 -/

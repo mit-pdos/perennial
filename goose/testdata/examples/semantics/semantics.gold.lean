@@ -36,15 +36,15 @@ def localPair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] localPair.ty
 
-def pairs.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.pairs" [])
-
-attribute [irreducible] pairs.ty
-
 def pair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.pair" [])
 
 attribute [irreducible] pair.ty
+
+def pairs.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.pairs" [])
+
+attribute [irreducible] pairs.ty
 
 def Editor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Editor" [])
@@ -3339,14 +3339,12 @@ noncomputable def testLoopVarClosures.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Pair (Var "prints") (Var "$r0")))))))))
   (Lam BAnon
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "i" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let BAnon (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))
 
@@ -3377,14 +3375,12 @@ noncomputable def testLoopVarAddress.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.PointerType go.uint64))))) (Pair (Var "ptrs") (Var "$r0"))))))))
   (Lam BAnon
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "i" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let BAnon (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))
 
@@ -3419,14 +3415,12 @@ noncomputable def testLoopVarContinue.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (Val #())))))))
   (Lam BAnon
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "i" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let BAnon (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))
 
@@ -3470,11 +3464,15 @@ noncomputable def testLoopVarsNoPost.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64])))))) (Pair (Var "fs") (Var "$r0"))))))))))
   (Lam BAnon
-  (Let BAnon (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))
-  (Let BAnon (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_j"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_j") (Var "j"))))
-  (Val #())))))))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "j" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_j"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_j") (Var "j"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "j") (Var "$r1")))))))
   (App (Val doExecute)
@@ -3626,14 +3624,12 @@ noncomputable def testLoopVarCapture.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "i" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let BAnon (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "$iter_i"))))
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i"))))
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "$iter_i") (Var "i")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))))
 
@@ -5557,7 +5553,7 @@ noncomputable def switchConcrete.marker.impl [FfiSyntax] [GoGlobalContext] : val
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType switchConcrete.ty)))) (Var "c"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))))
 
 /-- go: switch.go:48:6 -/
@@ -6296,16 +6292,6 @@ attribute [instance] localPair.TypeAssumptions.type_repr
   localPair.TypeAssumptions.get_a
   localPair.TypeAssumptions.set_a
 
-abbrev pairs [FfiSyntax] : Type := GoSlice
-
-@[reducible] def pairs.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.SliceType pair.ty)
-
-class pairs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq pairs.ty pairs.underlying
-
-attribute [instance] pairs.TypeAssumptions.underlying
-
 structure pair [FfiSyntax] where
   mk ::
   a' : w64
@@ -6342,6 +6328,16 @@ attribute [instance] pair.TypeAssumptions.type_repr
   pair.TypeAssumptions.set_a
   pair.TypeAssumptions.get_b
   pair.TypeAssumptions.set_b
+
+abbrev pairs [FfiSyntax] : Type := GoSlice
+
+@[reducible] def pairs.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType pair.ty)
+
+class pairs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq pairs.ty pairs.underlying
+
+attribute [instance] pairs.TypeAssumptions.underlying
 
 structure Editor [FfiSyntax] where
   mk ::
@@ -7408,8 +7404,8 @@ attribute [instance] Log.TypeAssumptions.type_repr
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   unit_instance : unit.TypeAssumptions
   localPair_instance : localPair.TypeAssumptions
-  pairs_instance : pairs.TypeAssumptions
   pair_instance : pair.TypeAssumptions
+  pairs_instance : pairs.TypeAssumptions
   Editor_instance : Editor.TypeAssumptions
   Pair_instance : Pair.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
@@ -7635,8 +7631,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
 
 attribute [instance] Assumptions.unit_instance
   Assumptions.localPair_instance
-  Assumptions.pairs_instance
   Assumptions.pair_instance
+  Assumptions.pairs_instance
   Assumptions.Editor_instance
   Assumptions.Pair_instance
   Assumptions.Uint32_instance

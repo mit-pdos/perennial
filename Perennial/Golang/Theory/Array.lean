@@ -485,21 +485,20 @@ instance pure_wp_array_for_range (n : Int) (t : go.GoType) (a body : val) :
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
-          (λ: <>, body (![go.int] "i")
-            (Index (go.ArrayType n t) (a, (![go.int] "i"))))) where
+          (λ: <>, glv(λ: "k", body "k" (Index (go.ArrayType n t) (a, "k"))) (![go.int] "i"))) where
   pure_wp_wp s E Φ K _ := by
     unfold array.forRange
     iintro H
     wp_call_lc Hlc
     iapply H $$ Hlc
 
-instance pure_wp_array_for_range_ptr (n : Int) (t : go.GoType) (p : Loc) (body : val) :
-    PureWp (G := G) (L := L) True (App (App (Val (array.forRangePtr n t)) (Val #p)) (Val body))
+instance pure_wp_array_for_range_ptr (n : Int) (t : go.GoType) (p body : val) :
+    PureWp (G := G) (L := L) True (App (App (Val (array.forRangePtr n t)) (Val p)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
-          (λ: <>, body (![go.int] "i")
-            (![t] (IndexRef (go.ArrayType n t) (#p, (![go.int] "i")))))) where
+          (λ: <>, glv(λ: "k", body "k" (![t] (IndexRef (go.ArrayType n t) (p, "k"))))
+            (![go.int] "i"))) where
   pure_wp_wp s E Φ K _ := by
     unfold array.forRangePtr
     iintro H
