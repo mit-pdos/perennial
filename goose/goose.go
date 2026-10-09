@@ -83,6 +83,7 @@ type Ctx struct {
 	globalVars     []*ast.Ident
 	functions      []*ast.FuncDecl
 	namedTypeSpecs []*ast.TypeSpec
+	localTypes     map[string]bool // names of the types declared in functions
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
@@ -109,6 +110,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importNames:       make(map[string]*types.PkgName),
 		importAssumptions: make(map[string]string),
 		filter:            filter,
+		localTypes:        make(map[string]bool),
 	}
 }
 
@@ -1149,7 +1151,10 @@ func (ctx *Ctx) exprSpecial(e ast.Expr, multipleBindings bool) glang.Expr {
 
 func (ctx *Ctx) stmtList(ss []ast.Stmt, cont glang.Expr) glang.Expr {
 	if len(ss) == 0 {
-		return glang.DoExpr{Expr: glang.Tt}
+		if cont == nil {
+			return glang.DoExpr{Expr: glang.Tt}
+		}
+		return cont
 	}
 	var e glang.Expr = nil
 	for len(ss) > 0 {
@@ -1174,11 +1179,25 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 		tagExpr = ctx.expr(s.Tag)
 	}
 
+	// The translation of each case body. A body that ends in `fallthrough`
+	// continues with the next body in the source (including the default case).
+	bodies := make([]glang.Expr, len(s.Body.List))
+	for i := len(s.Body.List) - 1; i >= 0; i-- {
+		body := s.Body.List[i].(*ast.CaseClause).Body
+		var cont glang.Expr
+		if n := len(body); n > 0 {
+			if b, ok := body[n-1].(*ast.BranchStmt); ok && b.Tok == token.FALLTHROUGH {
+				body, cont = body[:n-1], bodies[i+1]
+			}
+		}
+		bodies[i] = ctx.stmtList(body, cont)
+	}
+
 	// Get default handler (if it exists)
 	e = glang.DoExpr{Expr: glang.Tt}
-	for _, c := range s.Body.List {
+	for i, c := range s.Body.List {
 		if c := c.(*ast.CaseClause); c.List == nil {
-			e = ctx.stmtList(c.Body, nil)
+			e = bodies[i]
 		}
 	}
 
@@ -1214,7 +1233,7 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 
 		e = glang.IfExpr{
 			Cond: cond,
-			Then: ctx.stmtList(c.Body, nil),
+			Then: bodies[i],
 			Else: e,
 		}
 	}
@@ -1223,6 +1242,9 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 
 	if s.Init != nil {
 		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
+	}
+	if breaksOut(s.Body) {
+		e = glang.CatchBreakExpr{Body: e}
 	}
 
 	e = glang.SeqExpr{Expr: e, Cont: cont}
@@ -1246,6 +1268,67 @@ func (ctx *Ctx) ifStmt(s *ast.IfStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: ife, Cont: cont}
 }
 
+// loopVarEscapes reports whether a variable v declared by a loop whose
+// condition, body and post statement are nodes may be observed to be a new
+// variable in each iteration (as Go specifies) rather than one variable shared
+// by all iterations: whether nodes capture v in a function literal or take its
+// address, or that of a field or array element of it (with &, by slicing an
+// array, or by selecting a method with a pointer receiver). Otherwise every use
+// of v loads or stores the current iteration's variable, and a shared variable
+// behaves the same.
+func (ctx *Ctx) loopVarEscapes(v types.Object, nodes ...ast.Node) bool {
+	// root is the variable whose storage e is part of: e itself, or a field or
+	// array element of it
+	var root func(e ast.Expr) types.Object
+	root = func(e ast.Expr) types.Object {
+		switch e := e.(type) {
+		case *ast.ParenExpr:
+			return root(e.X)
+		case *ast.Ident:
+			return ctx.info.ObjectOf(e)
+		case *ast.SelectorExpr:
+			if sel := ctx.info.Selections[e]; sel != nil && sel.Kind() == types.FieldVal && !sel.Indirect() {
+				return root(e.X)
+			}
+		case *ast.IndexExpr:
+			if _, ok := ctx.typeOf(e.X).Underlying().(*types.Array); ok {
+				return root(e.X)
+			}
+		}
+		return nil
+	}
+	escapes := false
+	for _, n := range nodes {
+		if n == nil {
+			continue
+		}
+		ast.Inspect(n, func(n ast.Node) bool {
+			switch n := n.(type) {
+			case *ast.FuncLit:
+				ast.Inspect(n, func(n ast.Node) bool {
+					id, ok := n.(*ast.Ident)
+					escapes = escapes || ok && ctx.info.Uses[id] == v
+					return !escapes
+				})
+				return false
+			case *ast.UnaryExpr:
+				escapes = escapes || n.Op == token.AND && root(n.X) == v
+			case *ast.SliceExpr:
+				_, isArray := ctx.typeOf(n.X).Underlying().(*types.Array)
+				escapes = escapes || isArray && root(n.X) == v
+			case *ast.SelectorExpr:
+				if sel := ctx.info.Selections[n]; sel != nil && sel.Kind() == types.MethodVal {
+					_, ptrRecv := sel.Obj().Type().(*types.Signature).Recv().Type().(*types.Pointer)
+					_, ptrX := ctx.typeOf(n.X).Underlying().(*types.Pointer)
+					escapes = escapes || ptrRecv && !ptrX && root(n.X) == v
+				}
+			}
+			return !escapes
+		})
+	}
+	return escapes
+}
+
 func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	var cond glang.Expr = glang.GooseBoolLiteral(true)
 	if s.Cond != nil {
@@ -1255,12 +1338,41 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	if s.Post != nil {
 		post = ctx.stmt(s.Post, nil)
 	}
-
 	body := ctx.blockStmt(s.Body, nil)
-	var e glang.Expr = glang.ForLoopExpr{
-		Cond: cond,
-		Post: post,
-		Body: body,
+
+	// Each iteration has its own copy of each variable x the init statement
+	// declares, which matters only if the loop captures x or takes its address
+	// (loopVarEscapes). Then the cell `$iter_x` holds the address of the
+	// current iteration's copy: the condition and body load it as x, and the
+	// post statement first replaces it by a copy (the Go spec: the next
+	// iteration's variable is declared, with the current value, before the
+	// post statement) and runs with the copy as x.
+	var cells []*ast.Ident
+	if init, ok := s.Init.(*ast.AssignStmt); ok && init.Tok == token.DEFINE {
+		for _, lhs := range init.Lhs {
+			if x := lhs.(*ast.Ident); x.Name != "_" &&
+				ctx.loopVarEscapes(ctx.info.Defs[x], s.Cond, s.Post, s.Body) {
+				cells = append(cells, x)
+			}
+		}
+	}
+	for _, x := range slices.Backward(cells) {
+		t := ctx.glangType(x, ctx.typeOf(x))
+		ptrT := ctx.glangType(x, types.NewPointer(ctx.typeOf(x)))
+		cell := glang.IdentExpr("$iter_" + x.Name)
+		load := glang.DerefExpr{X: cell, Ty: ptrT}
+		cond = glang.LetExpr{Names: []string{x.Name}, ValExpr: load, Cont: cond}
+		body = glang.LetExpr{Names: []string{x.Name}, ValExpr: load, Cont: body}
+		post = glang.LetExpr{Names: []string{x.Name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t, glang.DerefExpr{X: load, Ty: t}),
+			Cont:    glang.NewDoSeq(glang.StoreStmt{Dst: cell, Ty: ptrT, X: glang.IdentExpr(x.Name)}, post)}
+	}
+	var e glang.Expr = glang.ForLoopExpr{Cond: cond, Post: post, Body: body}
+	for _, x := range slices.Backward(cells) {
+		e = glang.LetExpr{Names: []string{"$iter_" + x.Name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"),
+				ctx.glangType(x, types.NewPointer(ctx.typeOf(x))), glang.IdentExpr(x.Name)),
+			Cont: e}
 	}
 	if s.Init != nil {
 		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
@@ -1269,16 +1381,43 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
-	var body glang.Expr = ctx.blockStmt(s.Body, nil)
-	if s.Key != nil {
-		body = ctx.assignFromTo(s.Key, glang.IdentExpr("$key"), body)
-	}
-	if s.Value != nil {
-		body = ctx.assignFromTo(s.Value, glang.IdentExpr("$value"), body)
+	// Each iteration has its own iteration variables. A variable the loop
+	// declares is allocated in the body if the body captures it or takes its
+	// address (loopVarEscapes), and otherwise once, before the loop.
+	body := ctx.blockStmt(s.Body, nil)
+	var shared []*ast.Ident
+	for _, kv := range []struct {
+		x ast.Expr
+		v string
+	}{{s.Key, "$key"}, {s.Value, "$value"}} {
+		x, _ := kv.x.(*ast.Ident)
+		switch {
+		case kv.x == nil:
+		case s.Tok == token.DEFINE && x.Name != "_" && ctx.loopVarEscapes(ctx.info.Defs[x], s.Body):
+			body = glang.LetExpr{Names: []string{x.Name},
+				ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"),
+					ctx.glangType(x, ctx.typeOf(x)), glang.IdentExpr(kv.v)),
+				Cont: body}
+		default:
+			if s.Tok == token.DEFINE && x.Name != "_" {
+				shared = append(shared, x)
+			}
+			body = ctx.assignFromTo(kv.x, glang.IdentExpr(kv.v), body)
+		}
 	}
 
+	// Go evaluates the range expression, except when the loop has no value
+	// variable and its length is constant: an array, or pointer to one, with no
+	// calls or receives. Evaluating it could then only panic (`range *p` with
+	// `p` nil), so goose does not either; nor is it read.
+	evalRange := true
 	var e glang.Expr
-	switch t := ctx.typeOf(s.X).Underlying().(type) {
+	t := ctx.typeOf(s.X).Underlying()
+	ptr, isPtr := t.(*types.Pointer)
+	if isPtr {
+		t = ptr.Elem().Underlying()
+	}
+	switch t := t.(type) {
 	case *types.Map:
 		e = glang.ForRangeMapExpr{
 			KeyType:  ctx.glangType(s.X, t.Key()),
@@ -1298,76 +1437,49 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			Elem: ctx.glangType(s.X, chanElem(ctx.typeOf(s.X))),
 			Body: body,
 		}
+	case *types.Array:
+		arr := glang.ForRangeArrayExpr{
+			Len:  t.Len(),
+			Elem: ctx.glangType(s.X, t.Elem()),
+			Ptr:  isPtr,
+			Body: body,
+		}
+		if s.Value != nil {
+			arr.Array = glang.IdentExpr("$range")
+		} else {
+			evalRange = false
+			ast.Inspect(s.X, func(n ast.Node) bool {
+				_, isCall := n.(*ast.CallExpr)
+				u, ok := n.(*ast.UnaryExpr)
+				evalRange = evalRange || isCall || ok && u.Op == token.ARROW
+				return !evalRange
+			})
+		}
+		e = arr
 	default:
-		ctx.unsupported(s,
-			"range over %v (only maps and slices are supported)",
-			ctx.typeOf(s.X).Underlying())
+		ctx.unsupported(s, "range over %v (only maps, slices, channels and arrays are supported)", t)
 		return nil
 	}
 
-	// declare new vars if needed
+	for _, x := range shared {
+		t := ctx.glangType(x, ctx.typeOf(x))
+		e = glang.LetExpr{
+			Names: []string{x.Name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
+			Cont: e,
+		}
+	}
 	if s.Tok == token.DEFINE {
-		if s.Key != nil {
-			key, ok := s.Key.(*ast.Ident)
-			if !ok {
-				ctx.nope(s.Key, "expected left side of of `:=` in for range to be an ident")
-			}
-			if key.Name != "_" {
-				t := ctx.glangType(s.Key, ctx.typeOf(s.Key))
-				e = glang.LetExpr{
-					Names: []string{key.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: e,
-				}
-			}
-		}
-
-		if s.Value != nil {
-			value, ok := s.Value.(*ast.Ident)
-			if !ok {
-				ctx.nope(s.Value, "expected left side of of `:=` in for range to be an ident")
-			}
-			if value.Name != "_" {
-				t := ctx.glangType(s.Value, ctx.typeOf(s.Value))
-				e = glang.LetExpr{
-					Names: []string{value.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: e,
-				}
-			}
-		}
-
 		e = glang.ParenExpr{Inner: e}
 	}
-
-	switch ctx.typeOf(s.X).Underlying().(type) {
-	case *types.Map:
+	if evalRange {
 		e = glang.LetExpr{
 			Names:   []string{"$range"},
 			ValExpr: ctx.expr(s.X),
 			Cont:    e,
 		}
-	case *types.Slice:
-		e = glang.LetExpr{
-			Names:   []string{"$range"},
-			ValExpr: ctx.expr(s.X),
-			Cont:    e,
-		}
-	case *types.Chan:
-		e = glang.LetExpr{
-			Names:   []string{"$range"},
-			ValExpr: ctx.expr(s.X),
-			Cont:    e,
-		}
-	default:
-		ctx.unsupported(s,
-			"range over %v (only maps and slices are supported)",
-			ctx.typeOf(s.X).Underlying())
-		return nil
 	}
-
 	return e
 }
 
@@ -1413,8 +1525,11 @@ func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 		ctx.noExample(s, "declaration that is not a GenDecl")
 	}
 	if decl.Tok == token.TYPE {
-		// type declarations within a function are obscure but Go does have them
-		ctx.unsupported(s, "function type declarations")
+		// translated with the package-level types (see Ctx.decl)
+		if cont == nil {
+			return glang.DoExpr{Expr: glang.Tt}
+		}
+		return cont
 	}
 	if decl.Tok == token.CONST {
 		var expr glang.Expr = cont
@@ -1695,6 +1810,26 @@ func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
 	return nil
 }
 
+// breaksOut reports whether the body of a switch, type switch or select
+// statement has a `break` that ends that statement (one not inside a nested
+// loop, switch, select or function literal).
+func breaksOut(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt, *ast.TypeSwitchStmt,
+			*ast.SelectStmt, *ast.FuncLit:
+			return false
+		case *ast.BranchStmt:
+			if n.Tok == token.BREAK && n.Label == nil {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	args := make([]glang.Expr, 0, len(e.Call.Args))
 	for i := range len(e.Call.Args) {
@@ -1944,6 +2079,9 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 		}
 	}
 
+	if breaksOut(s.Body) {
+		expr = glang.CatchBreakExpr{Body: expr}
+	}
 	expr = glang.SeqExpr{Expr: expr, Cont: cont}
 	return
 }
@@ -2088,13 +2226,17 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 			}
 		}
 	}
-	if s.Init != nil {
-		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
-	}
+	// the guard is evaluated after the init statement, in its scope
 	e = glang.LetExpr{
 		Names:   []string{"$y"},
 		ValExpr: ctx.expr(y),
 		Cont:    e,
+	}
+	if s.Init != nil {
+		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
+	}
+	if breaksOut(s.Body) {
+		e = glang.CatchBreakExpr{Body: e}
 	}
 	e = glang.SeqExpr{Expr: e, Cont: cont}
 	return
@@ -2149,15 +2291,7 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 }
 
 func funcName(f *types.Func) string {
-	maybeTypeName := ""
-	if recv := f.Type().(*types.Signature).Recv(); recv != nil {
-		recvType := recv.Type()
-		if ptrType, ok := recvType.(*types.Pointer); ok {
-			recvType = ptrType.Elem()
-		}
-		maybeTypeName = types.TypeString(recvType, func(_ *types.Package) string { return "" }) + "."
-	}
-	return maybeTypeName + f.Name()
+	return util.FuncName(f)
 }
 
 // Returns a glang.FuncDecl and maybe also a glang.NameDecl. If the function is an `init` or `_`, this
@@ -2188,6 +2322,20 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 	if ctx.filter.GetAction(funcName) != declfilter.Translate {
 		return
+	}
+
+	// A type declared in a translated function is translated as a package-level
+	// type of the same name, which must therefore be unique in the package.
+	for _, g := range util.TypeDecls(d) {
+		for _, spec := range g.Specs {
+			spec := spec.(*ast.TypeSpec)
+			name := spec.Name.Name
+			if ctx.localTypes[name] || ctx.info.Defs[spec.Name].Pkg().Scope().Lookup(name) != nil {
+				ctx.unsupported(spec, "local type %s: the name is not unique in the package", name)
+			}
+			ctx.localTypes[name] = true
+			ctx.typeDecl(spec)
+		}
 	}
 
 	ctx.usesDefer = false

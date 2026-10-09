@@ -338,6 +338,27 @@ before `wp_for`.
 `wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
+Range loops are `for:` loops too: `slice.forRange`, and for arrays
+`array.forRange n t` (over an array value), `array.forRangePtr n t` (over a
+pointer to an array) and `array.forRangeIndex n` (no value variable), unfold to
+their `for:` loop by `wp_auto` (`Theory/Array.lean`), whose counter is an extra
+`int` points-to in the context. A `break` in a case body of a `switch`, type
+switch or `select` ends that statement: Goose wraps such a statement in
+`catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
+`pure_catch_break_*` instances in `Theory/Loop.lean`).
+
+Each iteration of a loop has its own iteration variables. Goose shares one
+variable among the iterations unless that is observable, that is, unless the
+loop captures the variable in a function literal or takes its address (`&x`,
+slicing an array, a pointer-receiver method call). A range loop then allocates
+its variables in the body, so each iteration has a fresh points-to. A
+three-clause loop keeps the address of the current iteration's variable `x` in
+a cell `«$iter_x»`, which the condition and body load; the post statement first
+replaces it by a copy (the next iteration's variable) and runs with the copy as
+`x`. The invariant quantifies over the current pointer (`∃ p, «$iter_x_ptr» ↦ p
+∗ p ↦ v`), and earlier iterations' variables stay in the context
+(`wp_testLoopVarCapture`, `semantics_proof/loopvars.lean`).
+
 Proof state of `wp_intSliceLoop'` after `wp_for HI` (abbreviated):
 
 ```

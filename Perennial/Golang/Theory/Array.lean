@@ -456,4 +456,55 @@ instance pure_wp_array_cap {st : go.GoType} {n : Int} {elem : go.GoType}
 
 end lenCap
 
+/-! ## Range loops over arrays
+
+Applying `array.forRangeIndex`, `array.forRange` and `array.forRangePtr` unfolds
+them to their `for:` loop, which proofs then reason about with `wp_for`, as for
+`slice.forRange`. -/
+
+section forRange
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+instance pure_wp_array_for_range_index (n : Int) (body : val) :
+    PureWp (G := G) (L := L) True (App (Val (array.forRangeIndex n)) (Val body))
+      gl(let: "i" := GoAlloc go.int #(W64 0) in
+        for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+             (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+          (λ: <>, body (![go.int] "i"))) where
+  pure_wp_wp s E Φ K _ := by
+    unfold array.forRangeIndex
+    iintro H
+    wp_call_lc Hlc
+    iapply H $$ Hlc
+
+instance pure_wp_array_for_range (n : Int) (t : go.GoType) (a body : val) :
+    PureWp (G := G) (L := L) True (App (App (Val (array.forRange n t)) (Val a)) (Val body))
+      gl(let: "i" := GoAlloc go.int #(W64 0) in
+        for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+             (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+          (λ: <>, glv(λ: "k", body "k" (Index (go.ArrayType n t) (a, "k"))) (![go.int] "i"))) where
+  pure_wp_wp s E Φ K _ := by
+    unfold array.forRange
+    iintro H
+    wp_call_lc Hlc
+    iapply H $$ Hlc
+
+instance pure_wp_array_for_range_ptr (n : Int) (t : go.GoType) (p body : val) :
+    PureWp (G := G) (L := L) True (App (App (Val (array.forRangePtr n t)) (Val p)) (Val body))
+      gl(let: "i" := GoAlloc go.int #(W64 0) in
+        for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+             (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+          (λ: <>, glv(λ: "k", body "k" (![t] (IndexRef (go.ArrayType n t) (p, "k"))))
+            (![go.int] "i"))) where
+  pure_wp_wp s E Φ K _ := by
+    unfold array.forRangePtr
+    iintro H
+    wp_call_lc Hlc
+    iapply H $$ Hlc
+
+end forRange
+
 end Perennial

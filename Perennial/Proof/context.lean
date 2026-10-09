@@ -1849,8 +1849,8 @@ theorem wp_withCancel (parent : GoInterfaceOk) (P Pre : IProp GF)
     iexists map.nil, GoInterface.nil, none, false
     simp only [Bool.false_eq_true, ↓reduceIte, named]
     iframe
-    unfold childrenInv
-    ileft; ipureintro; rfl
+    simp only [childrenInv]
+    ileft; ipureintro; trivial
   imod sync.init_Mutex (cancelCtxLockInv «$r0_ptr» ⟨gd, gc⟩ P) ⊤ _ $$ Fmu HR with #Hmu
   ihave #Hc : isCancelCtxOf «$r0_ptr» ⟨gd, gc⟩ P $$ []
   · unfold isCancelCtxOf; iframe #

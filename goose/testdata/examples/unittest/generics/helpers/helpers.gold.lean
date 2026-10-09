@@ -29,7 +29,7 @@ noncomputable def AnyPointer.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "x"))
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #())))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers where

@@ -24,6 +24,38 @@ func (suite *GoTestSuite) TestAllocateFull() {
 	suite.Equal(true, testAllocateFull())
 }
 
+func (suite *GoTestSuite) TestRangeArray() {
+	suite.Equal(true, testRangeArray())
+}
+
+func (suite *GoTestSuite) TestRangeArrayCopy() {
+	suite.Equal(true, testRangeArrayCopy())
+}
+
+func (suite *GoTestSuite) TestRangeArrayPtr() {
+	suite.Equal(true, testRangeArrayPtr())
+}
+
+func (suite *GoTestSuite) TestRangeArrayKeys() {
+	suite.Equal(true, testRangeArrayKeys())
+}
+
+func (suite *GoTestSuite) TestRangeArrayNilPtr() {
+	suite.Equal(true, testRangeArrayNilPtr())
+}
+
+func (suite *GoTestSuite) TestRangeArrayBreak() {
+	suite.Equal(true, testRangeArrayBreak())
+}
+
+func (suite *GoTestSuite) TestLocalType() {
+	suite.Equal(true, testLocalType())
+}
+
+func (suite *GoTestSuite) TestRangeArrayLit() {
+	suite.Equal(true, testRangeArrayLit())
+}
+
 func (suite *GoTestSuite) TestExplicitBlockStmt() {
 	suite.Equal(true, testExplicitBlockStmt())
 }
@@ -58,6 +90,38 @@ func (suite *GoTestSuite) TestCompareLT() {
 
 func (suite *GoTestSuite) TestCompareLE() {
 	suite.Equal(true, testCompareLE())
+}
+
+func (suite *GoTestSuite) TestFallthrough() {
+	suite.Equal(true, testFallthrough())
+}
+
+func (suite *GoTestSuite) TestFallthroughReturn() {
+	suite.Equal(true, testFallthroughReturn())
+}
+
+func (suite *GoTestSuite) TestBreakSwitch() {
+	suite.Equal(true, testBreakSwitch())
+}
+
+func (suite *GoTestSuite) TestBreakLoopInSwitch() {
+	suite.Equal(true, testBreakLoopInSwitch())
+}
+
+func (suite *GoTestSuite) TestFallthroughBreak() {
+	suite.Equal(true, testFallthroughBreak())
+}
+
+func (suite *GoTestSuite) TestBreakTypeSwitch() {
+	suite.Equal(true, testBreakTypeSwitch())
+}
+
+func (suite *GoTestSuite) TestBreakSelect() {
+	suite.Equal(true, testBreakSelect())
+}
+
+func (suite *GoTestSuite) TestEmptyBlock() {
+	suite.Equal(true, testEmptyBlock())
 }
 
 func (suite *GoTestSuite) TestByteSliceToString() {
@@ -222,6 +286,42 @@ func (suite *GoTestSuite) TestNestedGoStyleLoops() {
 
 func (suite *GoTestSuite) TestNestedGoStyleLoopsNoComparison() {
 	suite.Equal(true, testNestedGoStyleLoopsNoComparison())
+}
+
+func (suite *GoTestSuite) TestLoopVarClosures() {
+	suite.Equal(true, testLoopVarClosures())
+}
+
+func (suite *GoTestSuite) TestLoopVarAddress() {
+	suite.Equal(true, testLoopVarAddress())
+}
+
+func (suite *GoTestSuite) TestLoopVarContinue() {
+	suite.Equal(true, testLoopVarContinue())
+}
+
+func (suite *GoTestSuite) TestLoopVarsNoPost() {
+	suite.Equal(true, testLoopVarsNoPost())
+}
+
+func (suite *GoTestSuite) TestRangeVarClosures() {
+	suite.Equal(true, testRangeVarClosures())
+}
+
+func (suite *GoTestSuite) TestRangeVarAddress() {
+	suite.Equal(true, testRangeVarAddress())
+}
+
+func (suite *GoTestSuite) TestRangeVarMethod() {
+	suite.Equal(true, testRangeVarMethod())
+}
+
+func (suite *GoTestSuite) TestRangeVarShared() {
+	suite.Equal(true, testRangeVarShared())
+}
+
+func (suite *GoTestSuite) TestLoopVarCapture() {
+	suite.Equal(true, testLoopVarCapture())
 }
 
 func (suite *GoTestSuite) TestIterateMap() {

@@ -24,6 +24,7 @@ import (
 	"io"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -165,7 +166,7 @@ func init() {
 	PkgInfo GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder
 	GoAnd GoOr GoXor GoBitClear GoShiftl GoShiftr GoPos GoNeg GoNot GoComplement
 	struct_field_ref intoVal exceptionSeq doExecute doReturn exceptionDo doBreak
-	doContinue doFor wrapDefer GoString Loc zeroValDef structFieldRef`) {
+	doContinue doFor catchBreak wrapDefer GoString Loc zeroValDef structFieldRef`) {
 		LeanShadowNames[w] = true
 	}
 }
@@ -809,6 +810,10 @@ func (e ContinueExpr) Lean(m LeanMode) string {
 	return eApp(eVal("doContinue"), eVal("#()"))
 }
 
+func (e CatchBreakExpr) Lean(m LeanMode) string {
+	return eApp(eVal("catchBreak"), e.Body.Lean(LeanExpr))
+}
+
 func (e BreakExpr) Lean(m LeanMode) string {
 	return eApp(eVal("doBreak"), eVal("#()"))
 }
@@ -1054,6 +1059,21 @@ func (e ForLoopExpr) Lean(m LeanMode) string {
 func (e ForRangeSliceExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
 		lapp("App", eVal(lapp("slice.forRange", e.Ty.Lean(LeanTerm))), e.Slice.Lean(LeanExpr))},
+		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
+}
+
+func (e ForRangeArrayExpr) Lean(m LeanMode) string {
+	n := strconv.FormatInt(e.Len, 10)
+	if e.Array == nil {
+		return eLetLike("App", []string{eVal(lapp("array.forRangeIndex", n))},
+			eLam([]string{"$key"}, e.Body.Lean(LeanExpr)))
+	}
+	f := "array.forRange"
+	if e.Ptr {
+		f = "array.forRangePtr"
+	}
+	return eLetLike("App", []string{
+		lapp("App", eVal(lapp(f, n, e.Elem.Lean(LeanTerm))), e.Array.Lean(LeanExpr))},
 		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
 }
 

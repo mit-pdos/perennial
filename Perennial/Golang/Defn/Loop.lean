@@ -1,5 +1,6 @@
 /-
-Loops: `break:`, `continue:` and `for:`.
+Loops: `break:`, `continue:` and `for:`; and `catchBreak`, for a `break` that
+ends a `switch` or `select` statement.
 -/
 module
 
@@ -42,6 +43,16 @@ def doForDef : val :=
 
 @[irreducible] def doFor : val := doForDef
 theorem doFor_unseal : doFor = doForDef := by with_unfolding_all rfl
+
+/-- `catchBreak b` is the outcome of a `switch`, type switch or `select`
+statement whose case body has the outcome `b`: in Go, a `break` in a case body
+(not in a loop nested in it) ends the statement, which then continues normally.
+Goose emits it only around statements with such a `break`. -/
+def catchBreakDef : val :=
+  λ: "b", if: (Fst "b") =⟨go.string⟩ #"break" then do: #() else "b"
+
+@[irreducible] def catchBreak : val := catchBreakDef
+theorem catchBreak_unseal : catchBreak = catchBreakDef := by with_unfolding_all rfl
 
 end goose_lang
 
