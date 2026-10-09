@@ -100,6 +100,41 @@ theorem wp_Equal (sl_b0 sl_b1 : GoSlice) (d0 d1 : DFrac) (b0 b1 : List w8) :
   iapply HΦ
   iframe
 
+/-- What `bytes.Compare(a, b)` returns: `-1`, `0` or `+1` as `a` is lexicographically
+less than, equal to or greater than `b` (Go's `<` on strings, `GoStringLt`). -/
+def compareResult (a b : List w8) : w64 :=
+  if go.GoStringLt a b then W64 (-1) else if a = b then W64 0 else W64 1
+
+theorem wp_Compare (sl_a sl_b : GoSlice) (da db : DFrac) (a b : List w8) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.bytes ∗
+       "Ha" ∷ sl_a ↦*{da} a ∗
+       "Hb" ∷ sl_b ↦*{db} b }}
+      (App (App (Val (@! Compare)) (Val #sl_a)) (Val #sl_b))
+    {{ RET #(compareResult a b);
+       sl_a ↦*{da} a ∗
+       sl_b ↦*{db} b }} := by
+  wp_start
+  iNamed Hpre
+  wp_apply wp_bytes_to_string $$ Ha with Ha
+  wp_apply wp_bytes_to_string $$ Hb with Hb
+  unfold compareResult
+  by_cases hlt : go.GoStringLt a b
+  · simp only [hlt, decide_true, ↓reduceIte]
+    wp_auto
+    iapply HΦ
+    iframe
+  · simp only [hlt, decide_false, ↓reduceIte]
+    wp_auto
+    by_cases heq : a = b
+    · simp only [heq, decide_true, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      iframe
+    · simp only [heq, decide_false, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      iframe
+
 end wps
 
 end bytes

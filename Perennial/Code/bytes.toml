@@ -6,6 +6,8 @@ translate = [
   "errUnreadByte",
   "asciiSpace",
 ]
+# `Compare` calls `internal/bytealg.Compare` (assembly): a model in TrustedCode/bytes.lean.
+trusted = ["Compare"]
 imports = ["!*", "errors"]
 
 # translate the definitions of all type declarations goose supports
