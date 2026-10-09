@@ -221,6 +221,58 @@ theorem wp_for_post_return (s : Stuckness) (E : CoPset) (post : val) (P : IProp 
 
 end wp_for2
 
+section catch_break
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-! `catchBreak` (a `switch` or `select` with a `break` in a case body) on each
+outcome of the case body: a `break:` ends the statement normally, and the other
+outcomes are unchanged. -/
+
+instance pure_catch_break_break :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val breakVal)) (Val executeVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, breakVal_unseal]
+    simp only [catchBreakDef, breakValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_break_execute :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val executeVal)) (Val executeVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, executeVal_unseal]
+    simp only [catchBreakDef, executeValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_break_continue :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val continueVal)) (Val continueVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, continueVal_unseal]
+    simp only [catchBreakDef, continueValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_break_return (v : val) :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val (returnVal v))) (Val (returnVal v)) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, returnVal_unseal]
+    simp only [catchBreakDef, returnValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+end catch_break
+
 set_option hygiene false in
 /-- `wp_for_core`: apply `wp_for` to the loop at the head of the goal,
 generalizing the whole spatial context into the invariant with `iNamedAccu`,
