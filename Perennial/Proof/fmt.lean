@@ -1,5 +1,5 @@
 /-
-Package initialization of `fmt`, `fmt.Errorf` and `fmt.Printf`.
+Package initialization of `fmt`, `fmt.Errorf`, `fmt.Sprintf` and `fmt.Printf`.
 -/
 module
 
@@ -81,6 +81,16 @@ theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
   iapply Herr
   inext
   iapply HΦ
+
+/-- `fmt.Sprintf(format, args...)` returns some string. The model of `Sprintf`
+(`Perennial/TrustedCode/fmt.lean`) does not format, so this says nothing of the string. -/
+theorem wp_Sprintf (format : GoString) (args_sl : GoSlice) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt }}
+      (App (App (Val (@! Sprintf)) (Val #format)) (Val #args_sl))
+    {{ (s : GoString), RET #s; True }} := by
+  wp_start
+  iapply HΦ
+  itrivial
 
 /-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. -/
 theorem wp_Printf (format : GoString) (args_sl : GoSlice) :

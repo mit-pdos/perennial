@@ -26,6 +26,13 @@ formatting. `wp_Errorf` only promises a non-nil error whose `Error()` returns so
 noncomputable def Errorf.impl : val :=
   λ: "format" "a", FuncResolve errors.New [] #() "format"
 
+/-- `Sprintf(format, a...)`: the formatted string. The model does not format: it ignores the
+arguments `a` and returns `format` itself (as `Errorf.impl` does), so it does not model the
+formatted text or any method the arguments' `Error()`/`String()` would call during
+formatting. `wp_Sprintf` only promises some string. -/
+def Sprintf.impl : val :=
+  λ: "format" "a", "format"
+
 -- FIXME: Returns some stuff
 def Print.impl : val :=
   λ: "format" "a",

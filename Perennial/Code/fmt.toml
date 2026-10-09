@@ -1,6 +1,6 @@
 translate = ["!*", "ppFree", "ssFree", "errBool", "errComplex", "space"]
 imports = ["!*", "io", "errors", "sync"]
-trusted = ["Errorf", "Print", "Printf"]
+trusted = ["Errorf", "Print", "Printf", "Sprintf"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

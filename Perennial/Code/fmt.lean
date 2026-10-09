@@ -864,6 +864,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   readRune_instance : readRune.TypeAssumptions
   Errorf_unfold : FuncUnfold Errorf [] Errorf.impl
   Printf_unfold : FuncUnfold Printf [] Printf.impl
+  Sprintf_unfold : FuncUnfold Sprintf [] Sprintf.impl
   Print_unfold : FuncUnfold Print [] Print.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_io_Assumption : _root_.Perennial.io.Assumptions
@@ -888,6 +889,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.readRune_instance
   Assumptions.Errorf_unfold
   Assumptions.Printf_unfold
+  Assumptions.Sprintf_unfold
   Assumptions.Print_unfold
   Assumptions.import_errors_Assumption
   Assumptions.import_io_Assumption
