@@ -156,6 +156,12 @@ type ContinueExpr struct{}
 
 type BreakExpr struct{}
 
+// CatchBreakExpr runs a switch or select statement (Body) whose case bodies
+// break out of it: a break outcome becomes a normal one.
+type CatchBreakExpr struct {
+	Body Expr
+}
+
 type ReturnExpr struct {
 	Value Expr
 }
@@ -335,6 +341,17 @@ type ForLoopExpr struct {
 type ForRangeSliceExpr struct {
 	Ty    Expr
 	Slice Expr
+	Body  Expr
+}
+
+// ForRangeArrayExpr is a range loop over an array of length Len, or a pointer
+// to one (Ptr). Without Array, it only counts the indices: the elements are
+// not read, and Body only binds the key.
+type ForRangeArrayExpr struct {
+	Len   int64
+	Elem  Expr
+	Ptr   bool
+	Array Expr // nil: indices only
 	Body  Expr
 }
 

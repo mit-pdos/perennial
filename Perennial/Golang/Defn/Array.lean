@@ -4,6 +4,7 @@ Semantics of Go arrays.
 module
 
 public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Golang.Defn.Loop
 
 @[expose] public section
 
@@ -157,5 +158,51 @@ export ArraySemantics (array_set_step array_length_step equals_array type_repr_a
 
 end defs
 end go
+
+/-! ## Range loops over arrays
+
+`for k, v := range x` over an array `x : [n]T` takes the elements of the value
+of `x` when the loop starts (an array is a value, so later writes to `x` are not
+seen); over a pointer `p : *[n]T` it reads element `k` of `*p` at iteration `k`.
+When the loop has no value variable, or a blank one, it does not read the
+elements and only counts the indices (`forRangeIndex`); Go then evaluates `x`
+only if there is a value variable or `len(x)` is not a constant. The key is an `int`, from `0` to
+`n - 1`. As for `slice.forRange`, `body` takes the key and the value and returns
+the outcome of the loop body (`do:`, `break:`, `continue:` or `return:`). -/
+
+namespace array
+section goose_lang
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+
+/-- `for k := range x`, `x` an array (or a pointer to one) of length `n`. -/
+def forRangeIndex (n : Int) : val :=
+  λ: "body",
+  let: "i" := GoAlloc go.int #(W64 0) in
+  for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+                      (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+    (λ: <>, "body" (![go.int] "i"))
+
+/-- `for k, v := range a`, `a : [n]elem_type` (an array value). -/
+def forRange (n : Int) (elem_type : go.GoType) : val :=
+  λ: "a" "body",
+  let: "i" := GoAlloc go.int #(W64 0) in
+  for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+                      (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+    (λ: <>, "body" (![go.int] "i")
+      (Index (go.ArrayType n elem_type) ("a", (![go.int] "i"))))
+
+/-- `for k, v := range p`, `p : *[n]elem_type`. -/
+def forRangePtr (n : Int) (elem_type : go.GoType) : val :=
+  λ: "p" "body",
+  let: "i" := GoAlloc go.int #(W64 0) in
+  for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
+                      (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+    (λ: <>, "body" (![go.int] "i")
+      (![elem_type] (IndexRef (go.ArrayType n elem_type) ("p", (![go.int] "i")))))
+
+end goose_lang
+end array
+
+attribute [irreducible] array.forRangeIndex array.forRange array.forRangePtr
 
 end Perennial

@@ -338,6 +338,15 @@ before `wp_for`.
 `wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
+Range loops are `for:` loops too: `slice.forRange`, and for arrays
+`array.forRange n t` (over an array value), `array.forRangePtr n t` (over a
+pointer to an array) and `array.forRangeIndex n` (no value variable), unfold to
+their `for:` loop by `wp_auto` (`Theory/Array.lean`), whose counter is an extra
+`int` points-to in the context. A `break` in a case body of a `switch`, type
+switch or `select` ends that statement: Goose wraps such a statement in
+`catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
+`pure_catch_break_*` instances in `Theory/Loop.lean`).
+
 Proof state of `wp_intSliceLoop'` after `wp_for HI` (abbreviated):
 
 ```

@@ -143,10 +143,14 @@ var typesLogMu sync.Mutex
 // to the package itself, predeclared types and imported packages. Methods,
 // constants and functions are unaffected.
 //
+// Independently of translate_types, it also translates the local types (see
+// LocalTypeSpecs) of every function df translates.
+//
 // If the environment variable GOOSE_TYPES_LOG is set to a file, a line is
 // appended there for every type declaration that df axiomatizes, with the
 // decision (and the reasons a type cannot be translated).
 func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df declfilter.DeclFilter) declfilter.DeclFilter {
+	df = withLocalTypes(pkg, df)
 	logFile := os.Getenv("GOOSE_TYPES_LOG")
 	if !config.TranslateTypes && logFile == "" {
 		return df

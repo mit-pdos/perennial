@@ -83,6 +83,9 @@ type Ctx struct {
 	globalVars     []*ast.Ident
 	functions      []*ast.FuncDecl
 	namedTypeSpecs []*ast.TypeSpec
+	// local types translated so far, by name (see localTypeDecl)
+	localTypes map[string]types.Object
+	pkg        *types.Package
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
@@ -109,6 +112,8 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importNames:       make(map[string]*types.PkgName),
 		importAssumptions: make(map[string]string),
 		filter:            filter,
+		localTypes:        make(map[string]types.Object),
+		pkg:               pkg.Types,
 	}
 }
 
@@ -1174,11 +1179,29 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 		tagExpr = ctx.expr(s.Tag)
 	}
 
+	// The translation of each case body. A body that ends in `fallthrough`
+	// continues with the next body in the source (including the default case).
+	bodies := make([]glang.Expr, len(s.Body.List))
+	for i := len(s.Body.List) - 1; i >= 0; i-- {
+		body := s.Body.List[i].(*ast.CaseClause).Body
+		if n := len(body); n > 0 {
+			if b, ok := body[n-1].(*ast.BranchStmt); ok && b.Tok == token.FALLTHROUGH {
+				if n == 1 {
+					bodies[i] = bodies[i+1]
+				} else {
+					bodies[i] = ctx.stmtList(body[:n-1], bodies[i+1])
+				}
+				continue
+			}
+		}
+		bodies[i] = ctx.stmtList(body, nil)
+	}
+
 	// Get default handler (if it exists)
 	e = glang.DoExpr{Expr: glang.Tt}
-	for _, c := range s.Body.List {
+	for i, c := range s.Body.List {
 		if c := c.(*ast.CaseClause); c.List == nil {
-			e = ctx.stmtList(c.Body, nil)
+			e = bodies[i]
 		}
 	}
 
@@ -1214,7 +1237,7 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 
 		e = glang.IfExpr{
 			Cond: cond,
-			Then: ctx.stmtList(c.Body, nil),
+			Then: bodies[i],
 			Else: e,
 		}
 	}
@@ -1224,6 +1247,7 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 	if s.Init != nil {
 		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
 	}
+	e = catchBreak(s.Body, e)
 
 	e = glang.SeqExpr{Expr: e, Cont: cont}
 	return
@@ -1268,17 +1292,65 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
+func isBlank(e ast.Expr) bool {
+	ident, ok := e.(*ast.Ident)
+	return ok && ident.Name == "_"
+}
+
+// hasCallsOrReceives reports whether e contains a channel receive or a
+// non-constant function call: if it does not, and e is an array or a pointer
+// to one, len(e) is a constant.
+func (ctx *Ctx) hasCallsOrReceives(e ast.Expr) bool {
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.UnaryExpr:
+			if n.Op == token.ARROW {
+				found = true
+			}
+		case *ast.CallExpr:
+			if tv, ok := ctx.info.Types[n.Fun]; ok && tv.IsType() {
+				return true // a conversion
+			}
+			if tv, ok := ctx.info.Types[n]; !ok || tv.Value == nil {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+	rangeType := ctx.typeOf(s.X).Underlying()
+	arrayType, isArray := rangeType.(*types.Array)
+	isArrayPtr := false
+	if ptr, ok := rangeType.(*types.Pointer); ok {
+		if a, ok := ptr.Elem().Underlying().(*types.Array); ok {
+			arrayType, isArray, isArrayPtr = a, true, true
+		}
+	}
+	value := s.Value
+	if isArray && value != nil && isBlank(value) {
+		value = nil
+	}
+	// Go does not evaluate the range expression when there is at most one
+	// iteration variable and its length is a constant. With a blank value
+	// variable, it evaluates it but does not read the elements.
+	evalRange := !isArray || s.Value != nil || ctx.hasCallsOrReceives(s.X)
+
 	var body glang.Expr = ctx.blockStmt(s.Body, nil)
 	if s.Key != nil {
 		body = ctx.assignFromTo(s.Key, glang.IdentExpr("$key"), body)
 	}
-	if s.Value != nil {
-		body = ctx.assignFromTo(s.Value, glang.IdentExpr("$value"), body)
+	if value != nil {
+		body = ctx.assignFromTo(value, glang.IdentExpr("$value"), body)
 	}
 
 	var e glang.Expr
-	switch t := ctx.typeOf(s.X).Underlying().(type) {
+	switch t := rangeType.(type) {
 	case *types.Map:
 		e = glang.ForRangeMapExpr{
 			KeyType:  ctx.glangType(s.X, t.Key()),
@@ -1299,10 +1371,22 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			Body: body,
 		}
 	default:
-		ctx.unsupported(s,
-			"range over %v (only maps and slices are supported)",
-			ctx.typeOf(s.X).Underlying())
-		return nil
+		if !isArray {
+			ctx.unsupported(s,
+				"range over %v (only maps, slices, channels and arrays are supported)",
+				ctx.typeOf(s.X).Underlying())
+			return nil
+		}
+		arr := glang.ForRangeArrayExpr{
+			Len:  arrayType.Len(),
+			Elem: ctx.glangType(s.X, arrayType.Elem()),
+			Ptr:  isArrayPtr,
+			Body: body,
+		}
+		if value != nil {
+			arr.Array = glang.IdentExpr("$range")
+		}
+		e = arr
 	}
 
 	// declare new vars if needed
@@ -1323,13 +1407,13 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			}
 		}
 
-		if s.Value != nil {
-			value, ok := s.Value.(*ast.Ident)
+		if value != nil {
+			value, ok := value.(*ast.Ident)
 			if !ok {
 				ctx.nope(s.Value, "expected left side of of `:=` in for range to be an ident")
 			}
 			if value.Name != "_" {
-				t := ctx.glangType(s.Value, ctx.typeOf(s.Value))
+				t := ctx.glangType(value, ctx.typeOf(value))
 				e = glang.LetExpr{
 					Names: []string{value.Name},
 					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
@@ -1342,30 +1426,13 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		e = glang.ParenExpr{Inner: e}
 	}
 
-	switch ctx.typeOf(s.X).Underlying().(type) {
-	case *types.Map:
+	if evalRange {
+		// (unused for an array whose elements the loop does not read)
 		e = glang.LetExpr{
 			Names:   []string{"$range"},
 			ValExpr: ctx.expr(s.X),
 			Cont:    e,
 		}
-	case *types.Slice:
-		e = glang.LetExpr{
-			Names:   []string{"$range"},
-			ValExpr: ctx.expr(s.X),
-			Cont:    e,
-		}
-	case *types.Chan:
-		e = glang.LetExpr{
-			Names:   []string{"$range"},
-			ValExpr: ctx.expr(s.X),
-			Cont:    e,
-		}
-	default:
-		ctx.unsupported(s,
-			"range over %v (only maps and slices are supported)",
-			ctx.typeOf(s.X).Underlying())
-		return nil
 	}
 
 	return e
@@ -1406,6 +1473,25 @@ func (ctx *Ctx) varSpec(s *ast.ValueSpec, cont glang.Expr) glang.Expr {
 	return ctx.defineStmt(&ast.AssignStmt{Lhs: lhs, Rhs: s.Values}, cont)
 }
 
+// localTypeDecl translates a type declared in a function body as a
+// package-level type of the same name (see util.LocalTypeSpecs), so its name
+// must be unique in the package.
+func (ctx *Ctx) localTypeDecl(spec *ast.TypeSpec) {
+	obj := ctx.info.Defs[spec.Name]
+	name := spec.Name.Name
+	if spec.TypeParams != nil || (ctx.curFuncType != nil && ctx.curFuncType.TypeParams() != nil) {
+		ctx.unsupported(spec, "generic local type %s", name)
+	}
+	if ctx.pkg.Scope().Lookup(name) != nil {
+		ctx.unsupported(spec, "local type %s has the name of a package-level declaration", name)
+	}
+	if prev, ok := ctx.localTypes[name]; ok && prev != obj {
+		ctx.unsupported(spec, "two local types are named %s", name)
+	}
+	ctx.localTypes[name] = obj
+	ctx.typeDecl(spec)
+}
+
 // varDeclStmt translates declarations within functions
 func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 	decl, ok := s.Decl.(*ast.GenDecl)
@@ -1413,8 +1499,13 @@ func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 		ctx.noExample(s, "declaration that is not a GenDecl")
 	}
 	if decl.Tok == token.TYPE {
-		// type declarations within a function are obscure but Go does have them
-		ctx.unsupported(s, "function type declarations")
+		for _, spec := range decl.Specs {
+			ctx.localTypeDecl(spec.(*ast.TypeSpec))
+		}
+		if cont == nil {
+			return glang.DoExpr{Expr: glang.Tt}
+		}
+		return cont
 	}
 	if decl.Tok == token.CONST {
 		var expr glang.Expr = cont
@@ -1691,8 +1782,42 @@ func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
 	if s.Tok == token.BREAK {
 		return glang.SeqExpr{Expr: glang.BreakExpr{}, Cont: cont}
 	}
+	if s.Tok == token.FALLTHROUGH {
+		// switchStmt handles the `fallthrough` that ends a case body, the only
+		// place Go allows one
+		ctx.nope(s, "fallthrough that does not end a case of a switch")
+	}
 	ctx.noExample(s, "unexpected control flow %v in loop", s.Tok)
 	return nil
+}
+
+// breaksOut reports whether the body of a switch, type switch or select
+// statement has a `break` that ends that statement (one not inside a nested
+// loop, switch, select or function literal).
+func breaksOut(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt, *ast.TypeSwitchStmt,
+			*ast.SelectStmt, *ast.FuncLit:
+			return false
+		case *ast.BranchStmt:
+			if n.Tok == token.BREAK && n.Label == nil {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// catchBreak wraps e, the translation of a switch, type switch or select
+// statement with the given body, so that a `break` in a case body ends it.
+func catchBreak(body *ast.BlockStmt, e glang.Expr) glang.Expr {
+	if !breaksOut(body) {
+		return e
+	}
+	return glang.CatchBreakExpr{Body: e}
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
@@ -1944,6 +2069,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 		}
 	}
 
+	expr = catchBreak(s.Body, expr)
 	expr = glang.SeqExpr{Expr: expr, Cont: cont}
 	return
 }
@@ -2088,14 +2214,16 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 			}
 		}
 	}
-	if s.Init != nil {
-		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
-	}
+	// the guard is evaluated after the init statement, in its scope
 	e = glang.LetExpr{
 		Names:   []string{"$y"},
 		ValExpr: ctx.expr(y),
 		Cont:    e,
 	}
+	if s.Init != nil {
+		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
+	}
+	e = catchBreak(s.Body, e)
 	e = glang.SeqExpr{Expr: e, Cont: cont}
 	return
 }
@@ -2131,6 +2259,10 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.RangeStmt:
 		return glang.SeqExpr{Expr: ctx.rangeStmt(s), Cont: cont}
 	case *ast.BlockStmt:
+		if len(s.List) == 0 && cont != nil {
+			// stmtList would drop cont
+			return cont
+		}
 		return ctx.blockStmt(s, cont)
 	case *ast.SwitchStmt:
 		return ctx.switchStmt(s, cont)
@@ -2149,15 +2281,7 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 }
 
 func funcName(f *types.Func) string {
-	maybeTypeName := ""
-	if recv := f.Type().(*types.Signature).Recv(); recv != nil {
-		recvType := recv.Type()
-		if ptrType, ok := recvType.(*types.Pointer); ok {
-			recvType = ptrType.Elem()
-		}
-		maybeTypeName = types.TypeString(recvType, func(_ *types.Package) string { return "" }) + "."
-	}
-	return maybeTypeName + f.Name()
+	return util.FuncName(f)
 }
 
 // Returns a glang.FuncDecl and maybe also a glang.NameDecl. If the function is an `init` or `_`, this

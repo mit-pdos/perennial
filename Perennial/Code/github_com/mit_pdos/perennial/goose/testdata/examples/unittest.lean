@@ -4748,10 +4748,10 @@ noncomputable def fancyTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.int))) (Var "r")))))
-  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
   (Let "$r0" (Val #(W64 0))
   (Let "z" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
@@ -4778,9 +4778,9 @@ noncomputable def fancyTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "r") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "z") (Var "$r0")))))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "z") (Var "$r0"))))))))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "z") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "z") (Var "$r0"))))))))))))
 
 /-- go: type_switch.go:44:6 -/
 noncomputable def multiTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=

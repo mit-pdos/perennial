@@ -81,25 +81,38 @@ func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {
 func (tr *typesTranslator) Decl(d ast.Decl) {
 	switch d := d.(type) {
 	case *ast.FuncDecl:
+		// goose translates the local types of a translated function as
+		// package-level types (see util.LocalTypeSpecs)
+		fn, ok := tr.pkg.TypesInfo.Defs[d.Name].(*types.Func)
+		if ok && tr.filter.GetAction(util.FuncName(fn)) == declfilter.Translate {
+			tr.typeSpecs(util.LocalTypeSpecs(d.Body))
+		}
 	case *ast.GenDecl:
 		switch d.Tok {
 		case token.TYPE:
+			var specs []*ast.TypeSpec
 			for _, spec := range d.Specs {
-				spec := spec.(*ast.TypeSpec)
-				if spec.Assign == token.NoPos {
-					switch tr.filter.GetAction(spec.Name.Name) {
-					case declfilter.Translate, declfilter.Axiomatize:
-						tr.specs = append(tr.specs, spec)
-						tr.nameToTypeSpec[spec.Name.Name] = spec
-						continue
-					case declfilter.Trust:
-						continue
-					}
-				}
+				specs = append(specs, spec.(*ast.TypeSpec))
 			}
+			tr.typeSpecs(specs)
 		}
 	case *ast.BadDecl:
 	default:
+	}
+}
+
+func (tr *typesTranslator) typeSpecs(specs []*ast.TypeSpec) {
+	for _, spec := range specs {
+		if spec.Assign == token.NoPos {
+			switch tr.filter.GetAction(spec.Name.Name) {
+			case declfilter.Translate, declfilter.Axiomatize:
+				tr.specs = append(tr.specs, spec)
+				tr.nameToTypeSpec[spec.Name.Name] = spec
+				continue
+			case declfilter.Trust:
+				continue
+			}
+		}
 	}
 }
 
