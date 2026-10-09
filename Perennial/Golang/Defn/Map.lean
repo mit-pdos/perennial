@@ -48,16 +48,23 @@ def insert (key_type : go.GoType) : val :=
     InternalMapCheckKey key_type "k" ;;
     Store "m" (InternalMapInsert (Read "m", "k", "v"))
 
-/-- Does not support modifications to the map during the loop. -/
+/-- `for k, v := range m { body }`. The loop does not hold the map: it reads the map once to
+get its keys (`InternalMapForRange` enumerates them, in an arbitrary order), then for each key
+reads the map again and looks the key up, skipping it if it is no longer there, and calls the
+body with its current value. So the body may write the map (as Go allows), and this follows Go's
+rule for such writes (https://go.dev/ref/spec#For_range): an entry removed before it is reached
+is not produced, the current entry may be deleted or assigned, and an entry added during the
+loop is not produced (Go allows either). The value `InternalMapForRange` passes for a key, from
+the first read, is ignored. -/
 def forRange (key_type elem_type : go.GoType) : val :=
   λ: "m" "body",
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       do: #()
     else
-      let: "mv" := StartRead "m" in
-      let: "v" := exceptionDo (InternalMapForRange key_type elem_type ("mv", "body")) in
-      FinishRead "m" ;;
-      "v"
+      exceptionDo (InternalMapForRange key_type elem_type (Read "m",
+        (λ: "k" "v",
+          let: "p" := InternalMapLookup (Read "m", "k") in
+          if: Snd "p" then "body" "k" (Fst "p") else (do: #()))))
 
 end defs
 end map

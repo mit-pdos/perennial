@@ -7,6 +7,10 @@ Notes:
 * Maps are `Perennial.gmap K V`, which only needs `DecidableEq K`.
 * In `wp_map_for_range`, the fact that `keys` lists the domain of `m` is stated
   as `∀ k, k ∈ keys ↔ (m !! k).isSome`.
+* `map.forRange` does not hold the map across the body, so a body may write the
+  map it ranges over: `wp_map_for_range_gen` (any change; keys deleted before
+  they are reached are skipped), `wp_map_for_range_mut_keys`/`wp_map_for_range_mut`
+  (the body changes only the current key), `wp_map_for_range` (read only).
 * `wp_map_len` and `pure_wp_map_nil_len` are stated at any type whose
   underlying type is a map (see `len_map` in `Perennial/Golang/Defn/Map.lean`),
   not only at the literal `go.MapType key_type elem_type`.
@@ -318,6 +322,17 @@ theorem list_nodup_of_map {α β : Type} (f : α → β) (l : List α) (h : (l.m
     l.Nodup :=
   (List.pairwise_map.1 h).imp (fun h e => h (congrArg f e))
 
+theorem list_nodup_getElem?_inj {α} (l : List α) (h : l.Nodup) (i j : Nat) (a : α)
+    (hi : l[i]? = some a) (hj : l[j]? = some a) : i = j := by
+  rw [List.getElem?_eq_some_iff] at hi hj
+  obtain ⟨hi, ei⟩ := hi
+  obtain ⟨hj, ej⟩ := hj
+  have hp := List.pairwise_iff_getElem.1 h
+  rcases Nat.lt_trichotomy i j with hlt | heq | hgt
+  · exact absurd (ei.trans ej.symm) (hp i j hi hj hlt)
+  · exact heq
+  · exact absurd (ej.trans ei.symm) (hp j i hj hi hgt)
+
 section forRange
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
@@ -358,6 +373,153 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
 
+/-- Reading the map cell: the value read represents the map. -/
+theorem wp_ownMap_read (mref : Loc) (dq : DFrac) (m : GMap K V) (Φ : val → IProp GF) :
+    (mref ↦${dq} m : IProp GF) -∗
+    (∀ (mv : val) (mp : val → Bool × val),
+      ⌜is_map_pure mv mp ∧
+        (∀ k : K, mp #k = (match m !! k with
+                           | none => (false, #(zero_val V))
+                           | some v => (true, #v))) ∧
+        (∀ kv, (mp kv).1 = true → ∃ k : K, kv = #k)⌝ -∗
+      mref ↦${dq} m -∗ Φ mv) -∗
+    WP (App (Val Read) (Val #mref)) @ s; E {{ Φ }} := by
+  iintro Hm HΦ
+  rw [ownMap_unseal]
+  iNamed Hm
+  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  iapply HΦ $$ %mv %mp %(⟨His_map, Hagree, Hdom⟩)
+  unfold ownMapDef
+  simp only [named]
+  iexists mv, mp
+  iframe Hown
+  ipureintro
+  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+
+/-- The general `for range` rule. `keys` lists the keys of `m`, the map when the loop starts, in
+iteration order; `P keys i m'` is the loop invariant before the `i`-th key, when the map is `m'`.
+The body gets the map's points-to and may change the map (with `dq = 1`). At the `i`-th key
+`key`, if `key` is in the current map `m'` the body is called with its current value; if it is
+not (deleted since the loop started), it is skipped. Keys added during the loop are not
+visited. A `break`/`return` of the body must establish `Φ` itself (the body holds the map). -/
+theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (body : GoFunc)
+    (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (dq : DFrac)
+    [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
+    (mref ↦${dq} m : IProp GF) -∗
+    (∀ keys : List K,
+      ⌜(∀ k, k ∈ keys ↔ (m !! k).isSome) ∧ keys.length = GMap.size m ∧ keys.Nodup⌝ -∗
+      (P keys 0 m ∗
+       □ (∀ (i : Nat) (key : K) (v : V) (m' : GMap K V),
+          ⌜keys[i]? = some key ∧ m' !! key = some v⌝ -∗
+          P keys i m' -∗ mref ↦${dq} m' -∗
+          WP (App (App (Val #body) (Val #key)) (Val #v)) @ s; E
+            {{ bv, forMapPostcondition
+                iprop(∃ m'' : GMap K V, mref ↦${dq} m'' ∗ P keys (i + 1) m'') Φ bv }}) ∗
+       □ (∀ (i : Nat) (key : K) (m' : GMap K V),
+          ⌜keys[i]? = some key ∧ m' !! key = none⌝ -∗ P keys i m' -∗ P keys (i + 1) m') ∗
+       (∀ m' : GMap K V, P keys keys.length m' -∗ mref ↦${dq} m' -∗ Φ executeVal))) -∗
+    WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) @ s; E {{ Φ }} := by
+  iintro Hm HΦ
+  ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
+  wp_call
+  rw [decide_eq_false Hnn]
+  wp_pures
+  wp_bind (App (Val Read) (Val #mref))
+  iapply wp_ownMap_read $$ Hm
+  iintro %mv %mp %Hmv Hm
+  obtain ⟨His_map, Hagree, Hdom⟩ := Hmv
+  wp_pures
+  wp_bind (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) _)
+  iapply wp_InternalMapForRange mv mp _ key_type elem_type _ $$ %His_map
+  iintro %e' %He'
+  rw [go.internal_map_domain_literal_step_pure mv mp _ key_type elem_type His_map] at He'
+  obtain ⟨ks, hks, rfl⟩ := He'
+  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
+  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (intoVal (V := K)) ks
+    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
+  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
+    intro k
+    rw [← list_mem_map_inj (intoVal (V := K)) go.intoVal_inj, ← Hks, Hagree k]
+    cases m !! k <;> simp
+  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
+  have Hsize : keys.length = GMap.size m := (GMap.size_eq_length m keys Hnd Hmem).symm
+  icases HΦ $$ %keys %(⟨Hmem, Hsize, Hnd⟩) with ⟨HP, #Hiter, #Hskip, HΦ⟩
+  ihave Hinv : iprop(∃ m' : GMap K V, mref ↦${dq} m' ∗ P keys 0 m') $$ [Hm HP]
+  · iexists m
+    iframe HP Hm
+  obtain ⟨i, hi⟩ : ∃ i : Nat, i = 0 := ⟨0, rfl⟩
+  have hile : i ≤ keys.length := by omega
+  rw [show List.map intoVal keys = List.map intoVal (keys.drop i) by rw [hi, List.drop_zero],
+    show P keys 0 = P keys i by rw [hi]]
+  clear hi
+  iloeb as IH generalizing %i %hile
+  by_cases hlt : i < keys.length
+  · have hkey : keys[i]? = some keys[i] := List.getElem?_eq_getElem hlt
+    rw [List.drop_eq_getElem_cons hlt, List.map_cons, List.foldr_cons]
+    icases Hinv with ⟨%m', Hm', HP⟩
+    wp_auto
+    wp_bind (App (Val Read) (Val #mref))
+    iapply wp_ownMap_read $$ Hm'
+    iintro %mv' %mp' %Hmv' Hm'
+    obtain ⟨His_map', Hagree', -⟩ := Hmv'
+    wp_pures
+    rw [go.mapLookup_pure _ mv' mp' His_map', Hagree' keys[i]]
+    cases hk : m' !! keys[i] with
+    | none =>
+      simp only
+      wp_auto
+      rw [executeVal_unseal]; simp only [executeValDef]
+      wp_auto
+      ihave HP := Hskip $$ %i %(keys[i]) %m' %(⟨hkey, hk⟩) HP
+      iapply IH $$ %(i + 1) %(by omega) HΦ [Hm' HP]
+      iexists m'
+      iframe Hm' HP
+    | some v =>
+      simp only
+      wp_pures
+      ihave Hb := Hiter $$ %i %(keys[i]) %v %m' %(⟨hkey, hk⟩) HP Hm'
+      wp_bind (App (App (Val #body) (Val #(keys[i]))) (Val #v))
+      iapply wp_wand $$ Hb
+      iintro %bv Hpost
+      unfold forMapPostcondition
+      icases Hpost with (⟨%hbv, Hinv⟩ | ⟨%hbv, Hinv⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩)
+      · subst hbv
+        rw [continueVal_unseal]; simp only [continueValDef]
+        wp_auto
+        iapply IH $$ %(i + 1) %(by omega) HΦ Hinv
+      · subst hbv
+        rw [executeVal_unseal]; simp only [executeValDef]
+        wp_auto
+        iapply IH $$ %(i + 1) %(by omega) HΦ Hinv
+      · subst hbv
+        rw [breakVal_unseal]; simp only [breakValDef]
+        wp_auto
+        iexact HΦ'
+      · subst hbv
+        rw [returnVal_unseal]; simp only [returnValDef]
+        wp_auto
+        iexact HΦ'
+  · rw [List.drop_of_length_le (by omega)]
+    simp only [List.map_nil, List.foldr_nil]
+    wp_auto
+    icases Hinv with ⟨%m', Hm', HP⟩
+    have hi : i = keys.length := by omega
+    subst hi
+    iapply HΦ $$ HP Hm'
+/-- Weakening `forMapPostcondition`; the `∧` lets both sides share resources. -/
+theorem forMapPostcondition_mono (P Q : IProp GF) (Φ Ψ : val → IProp GF) (bv : val) :
+    ((P -∗ Q) ∧ (∀ v, Φ v -∗ Ψ v)) -∗ forMapPostcondition P Φ bv -∗
+      forMapPostcondition Q Ψ bv := by
+  iintro Hw H
+  unfold forMapPostcondition
+  icases H with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ⟩ | ⟨%v', %hbv, HΦ⟩)
+  · ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
+  · iright; ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
+  · iright; iright; ileft; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
+  · iright; iright; iright; iexists v'; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
+
+/-- `for range` over a map the loop only reads (`mref ↦${dq} m`, any fraction): the body is
+called on each key of `m` once, in the order of `keys`, with its value. -/
 theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
     (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (dq : DFrac)
     [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
@@ -372,89 +534,139 @@ theorem wp_map_for_range (P : List K → Int → IProp GF) (body : GoFunc)
        (P keys (GMap.size m) -∗ mref ↦${dq} m -∗ Φ executeVal))) -∗
     WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) @ s; E {{ Φ }} := by
   iintro Hm HΦ
-  ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
-  wp_call
-  rw [decide_eq_false Hnn]
-  wp_pures
-  rw [ownMap_unseal]
-  iNamed Hm
-  -- the map, re-sealed, once `FinishRead` has given the points-to back
-  have hseal : (heapPointsto mref dq mv : IProp GF) ⊢ ownMapDef mref dq m := by
-    iintro Hown
-    unfold ownMapDef
-    simp only [named]
-    iexists mv, mp
-    iframe Hown
-    ipureintro
-    exact ⟨His_map, Hagree, Hdom, Hdefault⟩
-  wp_apply wp_start_read $$ Hown with ⟨Hown, Hclose⟩
-  wp_bind (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) _)
-  iapply wp_InternalMapForRange mv mp #body key_type elem_type _ $$ %His_map
-  iintro %e' %He'
-  rw [go.internal_map_domain_literal_step_pure mv mp #body key_type elem_type His_map] at He'
-  obtain ⟨ks, hks, rfl⟩ := He'
-  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
-  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (intoVal (V := K)) ks
-    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
-  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
-    intro k
-    rw [← list_mem_map_inj (intoVal (V := K)) go.intoVal_inj, ← Hks, Hagree k]
-    cases m !! k <;> simp
-  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
-  have Hsize : keys.length = GMap.size m := (GMap.size_eq_length m keys Hnd Hmem).symm
-  icases HΦ $$ %keys %(⟨Hmem, Hsize, Hnd⟩) with ⟨HP, #Hiter, HΦ⟩
-  obtain ⟨i, hi⟩ : ∃ i : Nat, i = 0 := ⟨0, rfl⟩
-  have hile : i ≤ keys.length := by omega
-  rw [show List.map intoVal keys = List.map intoVal (keys.drop i) by rw [hi, List.drop_zero],
-    show P keys 0 = P keys (i : Int) by rw [hi]; rfl]
-  clear hi
-  iloeb as IH generalizing %i %hile
-  by_cases hlt : i < keys.length
-  · have hkey : keys[i]? = some keys[i] := List.getElem?_eq_getElem hlt
-    obtain ⟨v, hv⟩ : ∃ v, m !! keys[i] = some v :=
-      Option.isSome_iff_exists.1 ((Hmem _).1 (List.getElem_mem hlt))
-    rw [List.drop_eq_getElem_cons hlt, List.map_cons, List.foldr_cons]
-    simp only [Hagree keys[i], hv]
-    ihave Hb := Hiter $$ %(i : Int) %(keys[i]) %v %(⟨by simpa using hkey, hv⟩) HP
-    wp_bind (App (App (Val #body) (Val #(keys[i]))) (Val #v))
-    iapply wp_wand $$ Hb
+  iapply wp_map_for_range_gen (fun keys (i : Nat) m' => iprop(⌜m' = m⌝ ∗ P keys (i : Int)))
+    body key_type elem_type mref m dq Φ $$ Hm
+  iintro %keys %Hkeys
+  icases HΦ $$ %keys %Hkeys with ⟨HP, #Hiter, HΦ⟩
+  obtain ⟨Hmem, Hsize, Hnd⟩ := Hkeys
+  isplitl [HP]
+  · isplitr
+    · ipureintro; rfl
+    · iexact HP
+  isplitr
+  · imodintro
+    iintro %i %key %v %m' %Hiv ⟨%hm, HP⟩ Hm
+    subst hm
+    obtain ⟨hk, hv⟩ := Hiv
+    iapply wp_wand $$ (Hiter $$ %(i : Int) %key %v %(⟨by simpa using hk, hv⟩) HP)
     iintro %bv Hpost
-    unfold forMapPostcondition
-    have hcast : ((i + 1 : Nat) : Int) = (i : Int) + 1 := by push_cast; rfl
-    icases Hpost with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩)
-    · subst hbv
-      rw [continueVal_unseal]; simp only [continueValDef]
-      wp_auto
-      rw [← hcast]
-      iapply IH $$ %(i + 1) %(by omega) Hown Hclose HP HΦ
-    · subst hbv
-      rw [executeVal_unseal]; simp only [executeValDef]
-      wp_auto
-      rw [← hcast]
-      iapply IH $$ %(i + 1) %(by omega) Hown Hclose HP HΦ
-    · subst hbv
-      rw [breakVal_unseal]; simp only [breakValDef]
-      wp_auto
-      wp_apply wp_finish_read $$ [Hown Hclose] with Hown
-      · iframe Hown Hclose
-      iapply HΦ'
-      iapply hseal $$ Hown
-    · subst hbv
-      rw [returnVal_unseal]; simp only [returnValDef]
-      wp_auto
-      wp_apply wp_finish_read $$ [Hown Hclose] with Hown
-      · iframe Hown Hclose
-      iapply HΦ'
-      iapply hseal $$ Hown
-  · rw [List.drop_of_length_le (by omega)]
-    simp only [List.map_nil, List.foldr_nil]
-    wp_auto
-    wp_apply wp_finish_read $$ [Hown Hclose] with Hown
-    · iframe Hown Hclose
-    have hsz : (i : Int) = (GMap.size m : Int) := by omega
-    rw [hsz]
-    iapply HΦ $$ HP
-    iapply hseal $$ Hown
+    iapply forMapPostcondition_mono $$ [Hm] Hpost
+    isplit
+    · iintro HP
+      iexists m'
+      iframe Hm
+      isplitr
+      · ipureintro; rfl
+      · have hcast : ((i + 1 : Nat) : Int) = (i : Int) + 1 := by push_cast; rfl
+        rw [hcast]
+        iexact HP
+    · iintro %v' HΦ'
+      iapply HΦ' $$ Hm
+  isplitr
+  · imodintro
+    iintro %i %key %m' %Hin ⟨%hm, HP⟩
+    subst hm
+    obtain ⟨hk, hnone⟩ := Hin
+    exfalso
+    have := (Hmem key).1 (List.mem_of_getElem? hk)
+    rw [hnone] at this
+    exact Bool.false_ne_true this
+  · iintro %m' ⟨%hm, HP⟩ Hm
+    subst hm
+    rw [Hsize]
+    iapply HΦ $$ HP Hm
+
+/-- `for k, v := range m { body }` where the body owns the map (full ownership, `mref ↦$`)
+and changes at most the current key: called on the `i`-th key `key` of the domain `keys`
+(the map's keys at the start, each once) with the value `v` it had at the start, when the
+map is `m'` (equal to `m` on the keys not yet visited), it returns the map as `m''`, equal
+to `m'` except at `key`. `P keys i m'` is the loop invariant (it may mention the order of
+the keys, as `wp_map_for_range`'s does). A `break`/`return` of the body must establish `Φ`
+itself (the body holds the map). For a body that changes other keys, see
+`wp_map_for_range_gen`. -/
+theorem wp_map_for_range_mut_keys (P : List K → Nat → GMap K V → IProp GF) (body : GoFunc)
+    (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V)
+    [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
+    (mref ↦$ m : IProp GF) -∗
+    (∀ keys : List K,
+      ⌜(∀ k, k ∈ keys ↔ (m !! k).isSome) ∧ keys.length = GMap.size m ∧ keys.Nodup⌝ -∗
+      (P keys 0 m ∗
+       □ (∀ (i : Nat) (key : K) (v : V) (m' : GMap K V),
+          ⌜keys[i]? = some key ∧ m !! key = some v ∧
+            ∀ (j : Nat) (k : K), i ≤ j → keys[j]? = some k → m' !! k = m !! k⌝ -∗
+          P keys i m' -∗ mref ↦$ m' -∗
+          WP (App (App (Val #body) (Val #key)) (Val #v))
+            {{ bv, forMapPostcondition
+                iprop(∃ m'' : GMap K V, mref ↦$ m'' ∗ P keys (i + 1) m'' ∗
+                  ⌜∀ k, k ≠ key → m'' !! k = m' !! k⌝) Φ bv }}) ∗
+       (∀ m' : GMap K V, P keys keys.length m' -∗ mref ↦$ m' -∗ Φ executeVal))) -∗
+    WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) {{ Φ }} := by
+  iintro Hm HΦ
+  iapply wp_map_for_range_gen (fun keys i m' => iprop(P keys i m' ∗
+      ⌜∀ (j : Nat) (k : K), i ≤ j → keys[j]? = some k → m' !! k = m !! k⌝))
+    body key_type elem_type mref m (DFrac.own 1) Φ $$ Hm
+  iintro %keys %Hkeys
+  icases HΦ $$ %keys %Hkeys with ⟨HP, #Hiter, HΦ⟩
+  obtain ⟨Hmem, Hsize, Hnd⟩ := Hkeys
+  isplitl [HP]
+  · iframe HP
+    ipureintro
+    intro j k _ _
+    rfl
+  isplitr
+  · imodintro
+    iintro %i %key %v %m' %Hiv ⟨HP, %Hagree⟩ Hm
+    obtain ⟨hk, hv⟩ := Hiv
+    have hvm : m !! key = some v := (Hagree i key (Nat.le_refl _) hk).symm.trans hv
+    iapply wp_wand $$ (Hiter $$ %i %key %v %m' %(⟨hk, hvm, Hagree⟩) HP Hm)
+    iintro %bv Hpost
+    iapply forMapPostcondition_mono $$ [] Hpost
+    isplit
+    · iintro ⟨%m'', Hm, HP, %Hchg⟩
+      iexists m''
+      iframe Hm HP
+      ipureintro
+      intro j k hj hkj
+      have hne : k ≠ key := by
+        rintro rfl
+        have := list_nodup_getElem?_inj keys Hnd i j k hk hkj
+        omega
+      rw [Hchg k hne]
+      exact Hagree j k (by omega) hkj
+    · iintro %v' HΦ'
+      iexact HΦ'
+  isplitr
+  · imodintro
+    iintro %i %key %m' %Hin ⟨HP, %Hagree⟩
+    obtain ⟨hk, hnone⟩ := Hin
+    exfalso
+    have := (Hmem key).1 (List.mem_of_getElem? hk)
+    rw [← Hagree i key (Nat.le_refl _) hk, hnone] at this
+    exact Bool.false_ne_true this
+  · iintro %m' ⟨HP, _⟩ Hm
+    iapply HΦ $$ HP Hm
+
+/-- `wp_map_for_range_mut_keys` with an invariant that does not mention the keys. -/
+theorem wp_map_for_range_mut (P : Nat → GMap K V → IProp GF) (body : GoFunc)
+    (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V)
+    [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K key_type] (Φ : val → IProp GF) :
+    (mref ↦$ m : IProp GF) -∗
+    (∀ keys : List K,
+      ⌜(∀ k, k ∈ keys ↔ (m !! k).isSome) ∧ keys.length = GMap.size m ∧ keys.Nodup⌝ -∗
+      (P 0 m ∗
+       □ (∀ (i : Nat) (key : K) (v : V) (m' : GMap K V),
+          ⌜keys[i]? = some key ∧ m !! key = some v ∧
+            ∀ (j : Nat) (k : K), i ≤ j → keys[j]? = some k → m' !! k = m !! k⌝ -∗
+          P i m' -∗ mref ↦$ m' -∗
+          WP (App (App (Val #body) (Val #key)) (Val #v))
+            {{ bv, forMapPostcondition
+                iprop(∃ m'' : GMap K V, mref ↦$ m'' ∗ P (i + 1) m'' ∗
+                  ⌜∀ k, k ≠ key → m'' !! k = m' !! k⌝) Φ bv }}) ∗
+       (∀ m' : GMap K V, P keys.length m' -∗ mref ↦$ m' -∗ Φ executeVal))) -∗
+    WP (App (App (Val (map.forRange key_type elem_type)) (Val #mref)) (Val #body)) {{ Φ }} := by
+  iintro Hm H
+  iapply wp_map_for_range_mut_keys (fun _ i m' => P i m') body key_type elem_type mref m Φ
+    $$ Hm H
 
 
 /-- `len(m)` of a map the caller owns. `t` is any type whose underlying type is
