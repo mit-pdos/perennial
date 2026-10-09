@@ -1,5 +1,5 @@
 /-
-Package initialization of `fmt` and `fmt.Errorf`.
+Package initialization of `fmt`, `fmt.Errorf` and `fmt.Printf`.
 -/
 module
 
@@ -74,6 +74,15 @@ theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
           WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
   -- Unprovable: `fmt.Errorf` has no translated body (no `FuncUnfold` in `fmt.Assumptions`).
   sorry
+
+/-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. -/
+theorem wp_Printf (format : GoString) (args_sl : GoSlice) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt }}
+      (App (App (Val (@! Printf)) (Val #format)) (Val #args_sl))
+    {{ (n : w64) (err : GoInterface), RET (PairV #n #err); True }} := by
+  wp_start
+  iapply HΦ
+  itrivial
 
 end wps
 

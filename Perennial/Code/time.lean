@@ -361,9 +361,11 @@ axiom maxDuration [FfiSyntax] [GoGlobalContext] : val
 @[reducible] noncomputable def Second [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1000000000)
 
-axiom Minute [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def Minute [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 60000000000)
 
-axiom Hour [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def Hour [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 3600000000000)
 
 axiom timeBinaryVersionV1 [FfiSyntax] [GoGlobalContext] : val
 
