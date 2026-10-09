@@ -595,6 +595,47 @@ instance LoopStruct_access_store_loopNext (l : Loc) (v : github_com.mit_pdos.per
 end def_
 end LoopStruct
 
+namespace loopCounter
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+instance loopCounter_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter where
+  typedPointstoDef l v dq := iprop(
+    "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) v.n' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance loopCounter_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter.underlying := by
+  solve_into_val_typed_struct
+
+instance loopCounter_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance loopCounter_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter) (n' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end loopCounter
+
 namespace BoolTest
 section def_
 

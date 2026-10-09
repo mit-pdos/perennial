@@ -347,6 +347,18 @@ switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
 
+Each iteration of a loop has its own iteration variables. Goose shares one
+variable among the iterations unless that is observable, that is, unless the
+loop captures the variable in a function literal or takes its address (`&x`,
+slicing an array, a pointer-receiver method call). A range loop then allocates
+its variables in the body, so each iteration has a fresh points-to. A
+three-clause loop keeps the current iteration's variable `x` in a cell
+`«$iter_x»` (a pointer to a pointer), which the condition, body and post
+statement read; before the post statement it allocates the next iteration's
+copy, so the invariant quantifies over the current pointer (`∃ p, «$iter_x_ptr»
+↦ p ∗ p ↦ v`), and earlier iterations' variables stay in the context
+(`wp_testLoopVarCapture`, `semantics_proof/loopvars.lean`).
+
 Proof state of `wp_intSliceLoop'` after `wp_for HI` (abbreviated):
 
 ```

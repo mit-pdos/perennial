@@ -288,6 +288,42 @@ func (suite *GoTestSuite) TestNestedGoStyleLoopsNoComparison() {
 	suite.Equal(true, testNestedGoStyleLoopsNoComparison())
 }
 
+func (suite *GoTestSuite) TestLoopVarClosures() {
+	suite.Equal(true, testLoopVarClosures())
+}
+
+func (suite *GoTestSuite) TestLoopVarAddress() {
+	suite.Equal(true, testLoopVarAddress())
+}
+
+func (suite *GoTestSuite) TestLoopVarContinue() {
+	suite.Equal(true, testLoopVarContinue())
+}
+
+func (suite *GoTestSuite) TestLoopVarsNoPost() {
+	suite.Equal(true, testLoopVarsNoPost())
+}
+
+func (suite *GoTestSuite) TestRangeVarClosures() {
+	suite.Equal(true, testRangeVarClosures())
+}
+
+func (suite *GoTestSuite) TestRangeVarAddress() {
+	suite.Equal(true, testRangeVarAddress())
+}
+
+func (suite *GoTestSuite) TestRangeVarMethod() {
+	suite.Equal(true, testRangeVarMethod())
+}
+
+func (suite *GoTestSuite) TestRangeVarShared() {
+	suite.Equal(true, testRangeVarShared())
+}
+
+func (suite *GoTestSuite) TestLoopVarCapture() {
+	suite.Equal(true, testLoopVarCapture())
+}
+
 func (suite *GoTestSuite) TestIterateMap() {
 	suite.Equal(true, testIterateMap())
 }

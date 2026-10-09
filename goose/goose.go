@@ -1270,6 +1270,93 @@ func (ctx *Ctx) ifStmt(s *ast.IfStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: ife, Cont: cont}
 }
 
+// addressRoot is the variable whose storage e denotes part of (e itself, a
+// field of it, or an element of it if it is an array), or nil.
+func (ctx *Ctx) addressRoot(e ast.Expr) types.Object {
+	for {
+		switch x := e.(type) {
+		case *ast.ParenExpr:
+			e = x.X
+		case *ast.Ident:
+			return ctx.info.ObjectOf(x)
+		case *ast.SelectorExpr:
+			sel, ok := ctx.info.Selections[x]
+			if !ok || sel.Kind() != types.FieldVal || sel.Indirect() {
+				return nil
+			}
+			e = x.X
+		case *ast.IndexExpr:
+			if _, ok := ctx.typeOf(x.X).Underlying().(*types.Array); !ok {
+				return nil
+			}
+			e = x.X
+		default:
+			return nil
+		}
+	}
+}
+
+// loopVarObservable reports whether nodes (the parts of a loop that run in
+// each iteration) can observe whether the loop variable v is a new variable in
+// each iteration, as Go specifies, or one variable shared by all iterations:
+// that is, whether they capture v in a function literal or take its address
+// (explicitly with &, by slicing an array, or by calling a method with a
+// pointer receiver on it). This is conservative: if it reports false, every
+// use of v is a load or store of the current iteration's variable, so the
+// translation can share one variable.
+func (ctx *Ctx) loopVarObservable(v types.Object, nodes ...ast.Node) bool {
+	found := false
+	for _, n := range nodes {
+		if n == nil || found {
+			continue
+		}
+		var lits int // depth of function literals
+		var visit func(n ast.Node) bool
+		visit = func(n ast.Node) bool {
+			if found {
+				return false
+			}
+			switch n := n.(type) {
+			case *ast.FuncLit:
+				lits++
+				ast.Inspect(n.Body, visit)
+				lits--
+				return false
+			case *ast.Ident:
+				if lits > 0 && ctx.info.Uses[n] == v {
+					found = true
+				}
+			case *ast.UnaryExpr:
+				if n.Op == token.AND && ctx.addressRoot(n.X) == v {
+					found = true
+				}
+			case *ast.SliceExpr:
+				if _, ok := ctx.typeOf(n.X).Underlying().(*types.Array); ok &&
+					ctx.addressRoot(n.X) == v {
+					found = true
+				}
+			case *ast.SelectorExpr:
+				if sel, ok := ctx.info.Selections[n]; ok && sel.Kind() == types.MethodVal {
+					_, ptrRecv := sel.Obj().Type().(*types.Signature).Recv().Type().(*types.Pointer)
+					_, ptrX := ctx.typeOf(n.X).Underlying().(*types.Pointer)
+					if ptrRecv && !ptrX && ctx.addressRoot(n.X) == v {
+						found = true
+					}
+				}
+			}
+			return !found
+		}
+		ast.Inspect(n, visit)
+	}
+	return found
+}
+
+// iterVarCell is the name of the variable holding (the address of) the current
+// iteration's copy of the loop variable name.
+func iterVarCell(name string) string {
+	return "$iter_" + name
+}
+
 func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	var cond glang.Expr = glang.GooseBoolLiteral(true)
 	if s.Cond != nil {
@@ -1281,10 +1368,73 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	}
 
 	body := ctx.blockStmt(s.Body, nil)
+
+	// Each iteration has its own copy of the variables the init statement
+	// declares: the copy for the next iteration is declared just before the
+	// post statement, with the value of the current one. Where that is
+	// observable (see loopVarObservable), the variable is the cell
+	// iterVarCell(x) holding the address of the current copy, which the
+	// condition, body and post statement read as `x`.
+	var vars []*ast.Ident
+	if init, ok := s.Init.(*ast.AssignStmt); ok && init.Tok == token.DEFINE {
+		for _, lhs := range init.Lhs {
+			if ident, ok := lhs.(*ast.Ident); ok && ident.Name != "_" {
+				if obj := ctx.info.Defs[ident]; obj != nil &&
+					ctx.loopVarObservable(obj, s.Cond, s.Post, s.Body) {
+					vars = append(vars, ident)
+				}
+			}
+		}
+	}
+	if len(vars) > 0 {
+		current := func(e glang.Expr) glang.Expr {
+			for _, v := range slices.Backward(vars) {
+				e = glang.LetExpr{
+					Names: []string{v.Name},
+					ValExpr: glang.DerefExpr{X: glang.IdentExpr(iterVarCell(v.Name)),
+						Ty: ctx.glangType(v, types.NewPointer(ctx.typeOf(v)))},
+					Cont: e,
+				}
+			}
+			return e
+		}
+		var copies glang.Expr = glang.Tt
+		for _, v := range slices.Backward(vars) {
+			t := ctx.glangType(v, ctx.typeOf(v))
+			ptrT := ctx.glangType(v, types.NewPointer(ctx.typeOf(v)))
+			cell := glang.IdentExpr(iterVarCell(v.Name))
+			copies = glang.LetExpr{
+				Names: []string{"_"},
+				ValExpr: glang.LetExpr{
+					Names: []string{v.Name},
+					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+						glang.DerefExpr{X: glang.DerefExpr{X: cell, Ty: ptrT}, Ty: t}),
+					Cont: glang.StoreStmt{Dst: cell, Ty: ptrT, X: glang.IdentExpr(v.Name)},
+				},
+				Cont: copies,
+			}
+		}
+		cond = current(cond)
+		body = current(body)
+		if s.Post != nil {
+			post = glang.SeqExpr{Expr: glang.DoExpr{Expr: copies}, Cont: current(post)}
+		} else {
+			post = copies
+		}
+	}
+
 	var e glang.Expr = glang.ForLoopExpr{
 		Cond: cond,
 		Post: post,
 		Body: body,
+	}
+	for _, v := range slices.Backward(vars) {
+		e = glang.LetExpr{
+			Names: []string{iterVarCell(v.Name)},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"),
+				ctx.glangType(v, types.NewPointer(ctx.typeOf(v))), glang.IdentExpr(v.Name)),
+			Cont: e,
+		}
 	}
 	if s.Init != nil {
 		e = glang.ParenExpr{Inner: ctx.stmt(s.Init, e)}
@@ -1341,12 +1491,36 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 	// variable, it evaluates it but does not read the elements.
 	evalRange := !isArray || s.Value != nil || ctx.hasCallsOrReceives(s.X)
 
+	// Each iteration has its own iteration variables. A variable declared by
+	// the loop is allocated in the body when that is observable (see
+	// loopVarObservable), and otherwise once, before the loop.
+	fresh := func(x ast.Expr) bool {
+		ident, ok := x.(*ast.Ident)
+		if !ok || s.Tok != token.DEFINE || ident.Name == "_" {
+			return false
+		}
+		obj := ctx.info.Defs[ident]
+		return obj != nil && ctx.loopVarObservable(obj, s.Body)
+	}
+	bind := func(x ast.Expr, v string, body glang.Expr) glang.Expr {
+		if !fresh(x) {
+			return ctx.assignFromTo(x, glang.IdentExpr(v), body)
+		}
+		ident := x.(*ast.Ident)
+		return glang.LetExpr{
+			Names: []string{ident.Name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"),
+				ctx.glangType(ident, ctx.typeOf(ident)), glang.IdentExpr(v)),
+			Cont: body,
+		}
+	}
+
 	var body glang.Expr = ctx.blockStmt(s.Body, nil)
 	if s.Key != nil {
-		body = ctx.assignFromTo(s.Key, glang.IdentExpr("$key"), body)
+		body = bind(s.Key, "$key", body)
 	}
 	if value != nil {
-		body = ctx.assignFromTo(value, glang.IdentExpr("$value"), body)
+		body = bind(value, "$value", body)
 	}
 
 	var e glang.Expr
@@ -1396,7 +1570,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			if !ok {
 				ctx.nope(s.Key, "expected left side of of `:=` in for range to be an ident")
 			}
-			if key.Name != "_" {
+			if key.Name != "_" && !fresh(key) {
 				t := ctx.glangType(s.Key, ctx.typeOf(s.Key))
 				e = glang.LetExpr{
 					Names: []string{key.Name},
@@ -1412,7 +1586,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			if !ok {
 				ctx.nope(s.Value, "expected left side of of `:=` in for range to be an ident")
 			}
-			if value.Name != "_" {
+			if value.Name != "_" && !fresh(value) {
 				t := ctx.glangType(value, ctx.typeOf(value))
 				e = glang.LetExpr{
 					Names: []string{value.Name},
