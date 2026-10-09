@@ -89,6 +89,84 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
+/-- A join with one more element at the end. -/
+theorem intercalate_snoc (sep : GoString) :
+    ∀ (ys : List GoString) (x : GoString), ys ≠ [] →
+      sep.intercalate (ys ++ [x]) = sep.intercalate ys ++ sep ++ x
+  | [], _, h => absurd rfl h
+  | [y], x, _ => by simp [List.intercalate]
+  | y :: y' :: ys, x, _ => by
+    have ih := intercalate_snoc sep (y' :: ys) x (List.cons_ne_nil _ _)
+    simp only [List.cons_append, List.intercalate_cons_cons] at ih ⊢
+    rw [ih]; simp only [List.append_assoc]
+
+/-- One more element of a join: the first alone, then after a separator. -/
+theorem intercalate_take_succ (sep : GoString) (xs : List GoString) (n : Nat) (x : GoString)
+    (hn : n < xs.length) (hx : xs[n] = x) :
+    sep.intercalate (xs.take (n + 1)) =
+      if n = 0 then x else sep.intercalate (xs.take n) ++ sep ++ x := by
+  rw [List.take_succ, List.getElem?_eq_getElem hn, hx]
+  split
+  · subst_vars
+    cases xs with
+    | nil => simp at hn
+    | cons y ys => simp [List.intercalate]
+  · have : xs.take n ≠ [] := by
+      simp only [ne_eq, List.take_eq_nil_iff, not_or]
+      exact ⟨by omega, List.ne_nil_of_length_pos (by omega)⟩
+    simp only [Option.toList_some]
+    exact intercalate_snoc sep _ x this
+
+/-- `strings.Join(elems, sep)`: the elements of `elems` separated by `sep`. Proved from
+the model of `Join` (`Perennial/TrustedCode/strings.lean`), which does not model Go's panic
+when the result's length overflows `int`. -/
+theorem wp_Join (elems : GoSlice) (xs : List GoString) (dq : DFrac) (sep : GoString) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ elems ↦*{dq} xs }}
+      (App (App (Val (@! Join)) (Val #elems)) (Val #sep))
+    {{ RET #(sep.intercalate xs); elems ↦*{dq} xs }} := by
+  wp_start as Hs
+  wp_auto
+  -- `forRange`'s counter is `i`; the model's own `i` (the key) is shadowed
+  rename_i k_ptr
+  irename : (k_ptr ↦ zero_val w64 : IProp GF) => k
+  ihave %Hlen := ownSlice_len $$ Hs
+  ihave IH : iprop(∃ (n kv : w64) (acc ev : GoString),
+      "i" ∷ i_ptr ↦ n ∗
+      "k" ∷ k_ptr ↦ kv ∗
+      "s" ∷ s_ptr ↦ acc ∗
+      "e" ∷ e_ptr ↦ ev ∗
+      "%Hn" ∷ ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ (xs.length : Int)⌝ ∗
+      "%Hacc" ∷ ⌜acc = sep.intercalate (xs.take (sint.Z n).toNat)⌝) $$ [i k s e]
+  · iexists _, _, _, _
+    iframe
+    ipureintro
+    exact ⟨⟨by word, by word⟩, by simp; rfl⟩
+  wp_for IH
+  wp_if_destruct
+  · have Hlt : (sint.Z n).toNat < xs.length := by word
+    obtain ⟨x, Hx⟩ : ∃ x, xs[(sint.Z n).toNat]? = some x :=
+      ⟨_, List.getElem?_eq_getElem Hlt⟩
+    simp only [show 0 ≤ sint.Z n ∧ sint.Z n < sint.Z elems.len from ⟨Hn.1, Hif⟩]
+    wp_apply wp_load_slice_index elems (sint.Z n) xs dq x Hn.1 $$ [Hs] as Hs
+    · iframe; ipureintro; exact Hx
+    wp_if_destruct
+    all_goals
+      wp_for_post
+      iframe
+      iexists _, _, _, _
+      iframe
+      ipureintro
+      refine ⟨⟨by word, by word⟩, ?_⟩
+      have Hx' : xs[(sint.Z n).toNat] = x := by
+        rw [List.getElem?_eq_getElem Hlt] at Hx; exact Option.some.inj Hx
+      have Hsucc : (sint.Z (n + W64 1)).toNat = (sint.Z n).toNat + 1 := by word
+      rw [Hsucc, intercalate_take_succ sep xs _ x Hlt Hx']
+    · simp [Hacc, show (sint.Z n).toNat ≠ 0 by word]
+    · simp [Hacc, show (sint.Z n).toNat = 0 by word]
+  · rw [Hacc, List.take_of_length_le (by word)]
+    iapply HΦ
+    iframe
+
 /-- FIXME: this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be
 all ASCII. -/

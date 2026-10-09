@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.strings
 
 @[expose] public section
 
@@ -734,6 +735,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   byteStringReplacer_instance : byteStringReplacer.TypeAssumptions
   stringFinder_instance : stringFinder.TypeAssumptions
   asciiSet_instance : asciiSet.TypeAssumptions
+  Join_unfold : FuncUnfold Join [] Join.impl
 
 attribute [instance] Assumptions.Builder_instance
   Assumptions.Reader_instance
@@ -748,6 +750,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.byteStringReplacer_instance
   Assumptions.stringFinder_instance
   Assumptions.asciiSet_instance
+  Assumptions.Join_unfold
 
 end strings
 
