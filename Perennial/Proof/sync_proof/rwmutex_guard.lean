@@ -2,6 +2,9 @@
 A specification for `RWMutex`
 which guards a fractional resource `P q`. `RLock` returns `P rfrac` while
 `Lock` returns `P 1`.
+
+A writer needs only the persistent guard `isRWMutexGuard rw P` (no reader token):
+`RWMutex.wp_Lock_guard`/`wp_Unlock_guard`, for an unbounded number of writers.
 -/
 module
 
@@ -138,6 +141,39 @@ def ownRWMutexLockedDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
 @[irreducible] def ownRWMutexLocked (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
   ownRWMutexLockedDef rw P
 theorem ownRWMutexLocked_unseal : @ownRWMutexLocked = @ownRWMutexLockedDef := by
+  funext; with_unfolding_all rfl
+
+open rwmutex_guard in
+/-- The persistent part of `ownRWMutex`: what a writer needs (`RWMutex.wp_Lock_guard`), with
+no reader token, so any number of writers can hold it. -/
+def isRWMutexGuardDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
+  iprop(∃ (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName),
+    "#His" ∷ rwmutex.isRWMutex rw γ (nroot.@"rw") ∗
+    "#HPfrac" ∷ □ (∀ q1 q2, P (q1 + q2) ∗-∗ P q1 ∗ P q2) ∗
+    "#Hauth" ∷ ownTokAuthDfrac γmax DFrac.discard (Int.toNat rwmutex.actualMaxReaders) ∗
+    "#Hinv" ∷ isInv P γ γmax γrlocked γlocked)
+@[irreducible] def isRWMutexGuard (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
+  isRWMutexGuardDef rw P
+theorem isRWMutexGuard_unseal : @isRWMutexGuard = @isRWMutexGuardDef := by
+  funext; with_unfolding_all rfl
+
+instance isRWMutexGuard_persistent (rw : Loc) (P : Qp → IProp GF) :
+    Persistent (isRWMutexGuard (GF := GF) rw P) := by
+  rw [isRWMutexGuard_unseal]; unfold isRWMutexGuardDef named; infer_instance
+
+open rwmutex_guard in
+/-- Write-locked through the guard (`RWMutex.wp_Lock_guard`): the lock's token, with the
+persistent guard (no reader token to give back). -/
+def ownRWMutexWLockedDef (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
+  iprop(∃ (γ : rwmutex.RWMutexNames) (γmax γrlocked γlocked : GName),
+    "Hlocked" ∷ ghostVar γlocked 1 () ∗
+    "#His" ∷ rwmutex.isRWMutex rw γ (nroot.@"rw") ∗
+    "#HPfrac" ∷ □ (∀ q1 q2, P (q1 + q2) ∗-∗ P q1 ∗ P q2) ∗
+    "#Hauth" ∷ ownTokAuthDfrac γmax DFrac.discard (Int.toNat rwmutex.actualMaxReaders) ∗
+    "#Hinv" ∷ isInv P γ γmax γrlocked γlocked)
+@[irreducible] def ownRWMutexWLocked (rw : Loc) (P : Qp → IProp GF) : IProp GF :=
+  ownRWMutexWLockedDef rw P
+theorem ownRWMutexWLocked_unseal : @ownRWMutexWLocked = @ownRWMutexWLockedDef := by
   funext; with_unfolding_all rfl
 
 open rwmutex_guard
@@ -307,6 +343,114 @@ theorem RWMutex.wp_Unlock (rw : Loc) (P : Qp → IProp GF) :
   iexists γ, γmax, γrlocked, γlocked
   iframe Hown_rlock Hmax
   iframe #
+
+theorem ownRWMutex_guard (rw : Loc) (P : Qp → IProp GF) :
+    ownRWMutex rw P ⊢ ownRWMutex rw P ∗ isRWMutexGuard rw P := by
+  simp only [ownRWMutex_unseal, ownRWMutexDef, isRWMutexGuard_unseal, isRWMutexGuardDef]
+  iintro H
+  icases H with ⟨%γ, %γmax, %γrlocked, %γlocked, H⟩
+  iNamed H
+  isplitl
+  · iexists γ, γmax, γrlocked, γlocked; iframe; iframe #
+  · iexists γ, γmax, γrlocked, γlocked; iframe #
+
+theorem ownRWMutexRLocked_guard (rw : Loc) (P : Qp → IProp GF) :
+    ownRWMutexRLocked rw P ⊢ ownRWMutexRLocked rw P ∗ isRWMutexGuard rw P := by
+  simp only [ownRWMutexRLocked_unseal, ownRWMutexRLockedDef, isRWMutexGuard_unseal,
+    isRWMutexGuardDef]
+  iintro H
+  icases H with ⟨%γ, %γmax, %γrlocked, %γlocked, H⟩
+  iNamed H
+  isplitl
+  · iexists γ, γmax, γrlocked, γlocked; iframe; iframe #
+  · iexists γ, γmax, γrlocked, γlocked; iframe #
+
+theorem ownRWMutexLocked_guard (rw : Loc) (P : Qp → IProp GF) :
+    ownRWMutexLocked rw P ⊢ ownRWMutexLocked rw P ∗ isRWMutexGuard rw P := by
+  simp only [ownRWMutexLocked_unseal, ownRWMutexLockedDef, isRWMutexGuard_unseal,
+    isRWMutexGuardDef]
+  iintro H
+  icases H with ⟨%γ, %γmax, %γrlocked, %γlocked, H⟩
+  iNamed H
+  isplitl
+  · iexists γ, γmax, γrlocked, γlocked; iframe; iframe #
+  · iexists γ, γmax, γrlocked, γlocked; iframe #
+
+/-- `Lock` by a writer holding only the guard. -/
+theorem RWMutex.wp_Lock_guard (rw : Loc) (P : Qp → IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutexGuard rw P }}
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Lock")) (Val #()))
+    {{ RET #(); ownRWMutexWLocked rw P ∗ ▷ P 1 }} := by
+  wp_start_folded as Ho
+  simp only [isRWMutexGuard_unseal, isRWMutexGuardDef]
+  icases Ho with ⟨%γ, %γmax, %γrlocked, %γlocked, Ho⟩
+  iNamed Ho
+  wp_apply_core rwmutex.RWMutex.wp_Lock γ rw (nroot.@"rw") $$ [] [-]
+  · iframe #
+  iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
+  icases Hi with ⟨%st, >Hst, HP⟩
+  iframe Hst
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  iintro %Hst' Hst
+  subst Hst'
+  simp only [invSt]
+  rw [invFrac_0]
+  icases HP with ⟨Hrauth, Htoks, >Hl, HP⟩
+  imod Hmask with _
+  imod Hclose $$ [Hst Hrauth] with _
+  · inext
+    iexists rwmutex.Locked
+    iframe Hst
+    simp only [invSt]
+    iexact Hrauth
+  imodintro
+  iapply HΦ
+  simp only [ownRWMutexWLocked_unseal, ownRWMutexWLockedDef]
+  iframe HP
+  iexists γ, γmax, γrlocked, γlocked
+  iframe Hl
+  iframe #
+
+/-- `Unlock` by a writer that locked through the guard. -/
+theorem RWMutex.wp_Unlock_guard (rw : Loc) (P : Qp → IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownRWMutexWLocked rw P ∗ ▷ P 1 }}
+      (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Unlock")) (Val #()))
+    {{ RET #(); True }} := by
+  wp_start_folded as ⟨Ho, HP_in⟩
+  simp only [ownRWMutexWLocked_unseal, ownRWMutexWLockedDef]
+  icases Ho with ⟨%γ, %γmax, %γrlocked, %γlocked, Ho⟩
+  iNamed Ho
+  wp_apply_core rwmutex.RWMutex.wp_Unlock γ rw (nroot.@"rw") $$ [] [-]
+  · iframe #
+  iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
+  icases Hi with ⟨%st, >Hst, HP⟩
+  cases st with
+  | RLocked n =>
+    simp only [invSt]
+    icases HP with ⟨_, _, >Hbad, _⟩
+    icombine Hlocked Hbad gives % ⟨Hbad, _⟩
+    exfalso
+    simp only [Qp.le_iff, Qp.val_add, Qp.val_one] at Hbad
+    grind
+  | Locked =>
+  simp only [invSt]
+  iframe Hst
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  iintro Hst
+  imod ownToks_0 γmax with H0
+  imod Hmask with _
+  imod Hclose $$ [Hst HP Hlocked HP_in H0] with _
+  · inext
+    iexists (rwmutex.RLocked 0)
+    iframe Hst
+    simp only [invSt]
+    rw [invFrac_0]
+    iframe
+  imodintro
+  iapply HΦ
+  itrivial
 
 theorem replicate_helper (R Q : IProp GF) (γ : GName) (n : Nat) :
     □ (R -∗ ownToks γ 1 -∗ Q) ∗ ownToks γ n ∗ ([∗list] _x ∈ List.replicate n (), R) ⊢
