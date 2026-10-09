@@ -11,8 +11,8 @@ type importantStruct struct{}
 // (actually, it does nothing)
 func doSubtleThings() {}
 
-// This comment starts a Coq comment (*
+// This comment starts a Lean comment /-
 func hasStartComment() {}
 
-// This comment *) ends a Coq comment
+// This comment -/ ends a Lean comment
 func hasEndComment() {}

@@ -4,5 +4,4 @@ use (
 	.
 	./goose/testdata/examples
 	./goose/testdata/goose-tests
-	./goose/testdata/proofsetup-tests
 )

@@ -36,10 +36,10 @@ func (e *errorCatcher) do(f func()) {
 // Decls converts an entire package (possibly multiple files) to a list of decls
 func (ctx *Ctx) files(fs []*ast.File) (preDecls []glang.Decl, sortedDecls []glang.Decl, errs []error) {
 	var e errorCatcher
-	// Collect imports from every file before translating declarations. Import
-	// aliases in the generated Coq file are package-wide, so we need the full
-	// import set before deciding how to disambiguate packages with the same Go
-	// package name.
+	// Collect imports from every file before translating declarations. The
+	// names of the imports in the Assumptions class are package-wide, so we
+	// need the full import set before deciding how to disambiguate packages
+	// with the same Go package name.
 	for _, f := range fs {
 		for _, d := range f.Decls {
 			if d, ok := d.(*ast.GenDecl); ok && d.Tok == token.IMPORT {
@@ -76,11 +76,11 @@ func pkgErrors(errors []packages.Error) error {
 	return MultipleErrors(errs)
 }
 
-// translatePackage translates an entire package to a single Coq file.
+// translatePackage translates an entire package to a single Lean file.
 //
 // If the source directory has multiple source files, these are processed in
 // alphabetical order; this must be a topological sort of the definitions or the
-// Coq code will be out-of-order. Sorting ensures the results are stable
+// Lean code will be out-of-order. Sorting ensures the results are stable
 // and not dependent on map or directory iteration order.
 func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (glang.File, error) {
 	if len(pkg.Errors) > 0 {
@@ -89,65 +89,27 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 			pkgErrors(pkg.Errors))
 	}
 	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
-	coqFile := ctx.initCoqFile(pkg, config)
+	f := ctx.initFile(pkg, config)
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 
-	coqFile.PreHeaderDecls = preDecls
-	coqFile.Decls = decls
+	f.PreHeaderDecls = preDecls
+	f.Decls = decls
 	if len(errs) != 0 {
-		return coqFile, errors.Wrap(MultipleErrors(errs),
+		return f, errors.Wrap(MultipleErrors(errs),
 			"conversion failed")
 	}
-	return coqFile, nil
+	return f, nil
 }
 
-func (ctx *Ctx) initCoqFile(pkg *packages.Package, config declfilter.FilterConfig) (f glang.File) {
+// initFile starts the Lean file for a package: its header (after the code
+// imports) and footer.
+func (ctx *Ctx) initFile(pkg *packages.Package, config declfilter.FilterConfig) (f glang.File) {
 	f.PkgPath = pkg.PkgPath
-	if config.Bootstrap.Enabled {
-		f.Header = glang.BootstrapHeader + "\n" + strings.Join(config.Bootstrap.Prelude, "\n") + "\n"
-	} else {
-		f.Header = glang.DefaultHeader + "\n"
-	}
-
-	if ctx.filter.HasTrusted() {
-		importPath := strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.PkgPath), "/", ".")
-		f.Header += fmt.Sprintf("Require Export New.trusted_code.%s.\n", importPath) +
-			fmt.Sprintf("Import %s.\n", pkg.Name)
-	}
-
-	ffi := util.GetFfi(pkg)
-	if ffi != "" {
-		f.Header += fmt.Sprintf("From New Require Import %s_prelude.\n", ffi)
-	}
-
-	f.Header += "Module pkg_id.\n"
-	f.Header += fmt.Sprintf("Definition %s : go_string := \"%s\".\n\n", pkg.Name, pkg.PkgPath)
-	f.Header += "End pkg_id.\nExport pkg_id.\n"
-
-	f.Header += fmt.Sprintf("Module %s.", pkg.Name)
-
-	f.Footer = fmt.Sprintf("End %s.\n", pkg.Name)
-
-	if glang.Lean {
-		f.LeanHeader, f.LeanFooter = ctx.initLeanFile(pkg, config)
-	}
-	return
-}
-
-// initLeanFile computes the header (after the code imports) and footer of the
-// Lean file for a package.
-func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConfig) (header string, footer string) {
 	var h strings.Builder
 	if config.Bootstrap.Enabled {
 		h.WriteString("public import Perennial.Golang.Defn.Pre\n")
-		if config.Bootstrap.LeanPrelude != nil {
-			for _, l := range config.Bootstrap.LeanPrelude {
-				h.WriteString(l + "\n")
-			}
-		} else {
-			for _, l := range config.Bootstrap.Prelude {
-				h.WriteString(glang.LeanRocqImport(l) + "\n")
-			}
+		for _, m := range config.Bootstrap.Prelude {
+			h.WriteString("public import " + m + "\n")
 		}
 	} else {
 		h.WriteString("public import Perennial.Golang.Defn\n")
@@ -157,7 +119,7 @@ func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConf
 	}
 	ffi := util.GetFfi(pkg)
 	if ffi != "" {
-		h.WriteString("public import " + glang.RocqModuleToLean("New."+ffi+"_prelude") + "\n")
+		h.WriteString("public import Perennial." + glang.LeanFfiPrelude(ffi) + "\n")
 	}
 	h.WriteString("\n@[expose] public section\n")
 	h.WriteString("\n" + glang.LeanFileOptions)
@@ -168,8 +130,8 @@ func (ctx *Ctx) initLeanFile(pkg *packages.Package, config declfilter.FilterConf
 	h.WriteString("end pkg_id\n\n")
 	ns := glang.LeanNamespace(pkg.PkgPath)
 	fmt.Fprintf(&h, "namespace %s", ns)
-	header = h.String()
-	footer = fmt.Sprintf("\nend %s\n\nend\nend Perennial\n", ns)
+	f.Header = h.String()
+	f.Footer = fmt.Sprintf("\nend %s\n\nend\nend Perennial\n", ns)
 	return
 }
 

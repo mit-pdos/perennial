@@ -1,7 +1,7 @@
 # Perennial Proof Tutorial (Lean)
 
 A guide to writing program proofs for Go code in Perennial's Lean 4 development
-(new goose, on top of [iris-lean](https://github.com/leanprover-community/iris-lean)).
+(goose, on top of [iris-lean](https://github.com/leanprover-community/iris-lean)).
 
 * Every Lean block below is copied verbatim from
   [`docs/TutorialExamples.lean`](TutorialExamples.lean) (between the
@@ -14,15 +14,15 @@ A guide to writing program proofs for Go code in Perennial's Lean 4 development
   from the repository root (it imports built modules, so `lake build` them
   first). If you change an example, change it in both places.
 * Tactic details and spec lemmas: [`PERENNIAL_PROOF_REFERENCE.md`](PERENNIAL_PROOF_REFERENCE.md).
-* The Iris proof mode (`iintro`, `icases`, ...) with Rocq IPM
-  equivalents: [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).
+* The Iris proof mode (`iintro`, `icases`, ...):
+  [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).
 * Design decisions and conventions: [`../README.md`](../README.md).
 
 ## 1. Project layout
 
 | Directory | Contents |
 |:--|:--|
-| `Perennial/Std` | stdpp-style helpers: `gmap`, words (`w64 = BitVec 64`), list lemmas, `word`/`len` tactics |
+| `Perennial/Std` | general libraries: `gmap`, words (`w64 = BitVec 64`), list lemmas, `word`/`len` tactics |
 | `Perennial/Algebra`, `Perennial/Ghost` | cameras and ghost-state libraries (`ghostVar`, `ghost_map`, `mono_list`, ...) |
 | `Perennial/GooseLang` | the GooseLang language, its lifting lemmas (`wp_fork`, `wp_cmpxchg_suc`, ...) |
 | `Perennial/Golang/Defn` | the Go model: types, instructions, `@!` notation |
@@ -31,7 +31,7 @@ A guide to writing program proofs for Go code in Perennial's Lean 4 development
 | `Perennial/Code/**` | **generated**: GooseLang translation of Go packages |
 | `Perennial/GeneratedProof/**` | **generated**: per-package proof boilerplate (struct points-to instances, ...) |
 | `Perennial/Proof/**` | hand-written proofs (`Perennial/Proof/sync_proof/mutex.lean`, `Perennial/Proof/sort_proof/search.lean`, ...) |
-| `goose/` | the goose translator, with the Lean backend (`goose -lean`, `proofgen -lean`) |
+| `goose/` | the goose translator (`goose` for code, `proofgen` for generated proofs) |
 | `etc/update-goose-new.py` | runs goose and proofgen over all supported packages |
 
 A Go package with import path `github.com/mit-pdos/perennial/goose/testdata/examples/unittest`
@@ -52,15 +52,15 @@ Never edit `Perennial/Code` or `Perennial/GeneratedProof` by hand; regenerate
 them:
 
 ```
-etc/update-goose-new.py --lean --compile --std-lib --goose-examples
-etc/update-goose-new.py --lean --marshal ../marshal         # an external project
-etc/update-goose-new.py --lean --all                        # everything found in ../<proj>
+etc/update-goose-new.py --compile --std-lib --goose-examples
+etc/update-goose-new.py --marshal ../marshal         # an external project
+etc/update-goose-new.py --all                        # everything found in ../<proj>
 ```
 
-Always pass `--lean`, which selects the Lean backend; `--compile` first runs
-`go install ./goose/cmd/goose ./goose/cmd/proofgen`; `-n` prints the commands.
-For each package the script runs `goose -lean -out Perennial/Code -configdir Perennial/Code`
-and `proofgen -lean -out Perennial/GeneratedProof -configdir Perennial/Code`.
+`--compile` first runs `go install ./goose/cmd/goose ./goose/cmd/proofgen`;
+`-n` prints the commands.
+For each package the script runs `goose -out Perennial/Code -configdir Perennial/Code`
+and `proofgen -out Perennial/GeneratedProof -configdir Perennial/Code`.
 
 **Translating in another project.** A project that depends on Perennial and keeps
 the translation of its own Go code passes `-lean-root PKG=ROOT` to both `goose`
@@ -154,7 +154,7 @@ before `RET` are optional (`{{ RET #(); True }}`).
 * Multiple return values are a pair: `RET (PairV #a #b)`.
 * The precondition starts with `isPkgInit (PROP := IProp GF) pkg`; the
   `(PROP := ...)` is needed when nothing else in the precondition fixes the
-  logic (write it always, as the ported proofs do).
+  logic (write it always, as the existing proofs do).
 
 The first example: `wp_start` introduces the continuation `HΦ` and the
 precondition (moving `isPkgInit` facts to the intuitionistic context) and
@@ -313,7 +313,7 @@ with `simp only [foo_unseal, foo_def]` (see `isMutex` in
 
 ## 8. Loops, slices
 
-For a loop, state the invariant with `ihave HI : P $$ [hyps]` (Rocq `iAssert`):
+For a loop, state the invariant with `ihave HI : P $$ [hyps]`:
 the first goal proves `P` from `hyps`, then `HI` is available. `wp_for HI`
 applies the loop rule (the whole remaining context becomes the loop invariant)
 and destructs `HI` with `iNamed`. The loop condition is a `decide`: split it with
@@ -600,9 +600,8 @@ example (l : List w64) (h : 2 < l.length) : True := by
 ## 13. Common pitfalls
 
 * **`|==> A ∗ B` is `(|==> A) ∗ B`.** In iris-lean `|==>`, `▷` and `□` bind
-  tighter than `∗` (in Rocq `|==> A ∗ B` is `|==> (A ∗ B)`); the fancy update
-  `|={E}=>` and the wands `==∗`, `={E}=∗` extend to the right. Write
-  `|==> (A ∗ B)`.
+  tighter than `∗`; the fancy update `|={E}=>` and the wands `==∗`, `={E}=∗`
+  extend to the right. Write `|==> (A ∗ B)`.
 
   ```lean
   -- `|==>` (and `▷`, `□`) bind tighter than `∗`; `|={E}=>` extends to the right.
@@ -663,7 +662,7 @@ example (l : List w64) (h : 2 < l.length) : True := by
   `unfold` it first or make it an `abbrev`. `iNamed` unfolds the head
   definition unless it is `@[irreducible]`.
 * **`_` vs `-` in patterns.** In iris-lean `_` keeps an anonymous hypothesis and
-  `-` drops it (Rocq: `?` and `_`).
+  `-` drops it.
 * **Ambiguous names after `open Iris.BI`.** E.g. `decide_true` is both
   `_root_.decide_true` and `BI.decide_true`; write `_root_.decide_true` in `simp`.
 * **`wp_auto` fails when it makes no progress.** It stops at calls, `if:` on a

@@ -5,7 +5,7 @@ The ghost libraries (`ghost_var`, `ghost_map`, `mono_list`, `saved_pred`, ...)
 store `Pos.Countable.encode a`; see `Perennial/Ghost/All.lean`. User types can get
 an instance from an injection with `Pos.Countable.ofInjective`.
 
-`GenTree` (stdpp `gen_tree`) is a countable type of finitely-branching trees
+`GenTree` is a countable type of finitely-branching trees
 with `Pos` leaves; a syntax type is shown countable by an injection into it
 (as done for `val`/`expr`), see `Perennial/GooseLang/Countable.lean`.
 -/
@@ -96,14 +96,14 @@ instance gmap_countable {K V : Type} [DecidableEq K] [Pos.Countable K] [Pos.Coun
         rw [h, GMap.mem_toList] at this
         exact this.symm)
 
-/-- Countability from a left-inverse map into a countable type (stdpp `inj_countable'`). -/
+/-- Countability from a left-inverse map into a countable type. -/
 abbrev countableOfLeftInverse {A B : Type} [Pos.Countable B] (f : A → B) (g : B → A)
     (h : ∀ a, g (f a) = a) : Pos.Countable A where
   encode a := Pos.Countable.encode (f a)
   decode p := (Pos.Countable.decode p : Option B).map g
   decode_encode a := by simp [Pos.Countable.decode_encode, h]
 
-/-! ## Generic trees (stdpp `gen_tree`) -/
+/-! ## Generic trees -/
 
 /-- Finitely-branching trees with `Pos` leaves and `Nat`-tagged nodes. -/
 inductive GenTree where

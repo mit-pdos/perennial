@@ -11,10 +11,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// PackageProof is the data that is passed to the top-level package_proof.v.tmpl
-// template.
+// PackageProof is the data that is passed to the top-level
+// package_proof.lean.tmpl template.
 type PackageProof struct {
-	Lean          bool
 	FfiPrelude    string
 	Name          string
 	Ffi           string
@@ -33,10 +32,8 @@ type TypeDecl struct {
 	PkgName    string
 	Name       string
 	TypeParams []string
-	Fields     []string
 	Axiomatize bool
 
-	// Lean backend only
 	RawName    string
 	ImplName   string
 	LeanFields []LeanField
@@ -60,18 +57,6 @@ type Import struct {
 	Name string
 	Path string
 	Root string // prefix of the imported package's Lean modules (glang.LeanRootPrefix)
-}
-
-type Variable struct {
-	Name    string
-	CoqType string
-}
-
-type MethodSet struct {
-	// a named type
-	TypeName string
-	TypeId   string
-	Methods  []string
 }
 
 func indent(n int) string {
@@ -100,11 +85,7 @@ func loadTemplates() *template.Template {
 var templates *template.Template = loadTemplates()
 
 func (pf PackageProof) Write(w io.Writer) error {
-	name := "package_proof.v.tmpl"
-	if pf.Lean {
-		name = "package_proof.lean.tmpl"
-	}
-	if err := templates.ExecuteTemplate(w, name, pf); err != nil {
+	if err := templates.ExecuteTemplate(w, "package_proof.lean.tmpl", pf); err != nil {
 		return errors.Wrap(err, "could not emit template")
 	}
 	return nil

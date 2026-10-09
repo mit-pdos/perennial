@@ -5,9 +5,8 @@ A heap that supports non-atomic operations: each location carries a lock state
 (`WSt` while being written, `RSt n` while `n` readers are active). Adapted from
 lambda-rust by Jung et al.
 
-Only the value heap is kept: there is no meta-token (`meta_token`, `meta`) or
-block size ghost state, since goose does not use them; `naHeapCtx` is just the
-authoritative heap view over a `Perennial.gmap`.
+The ghost state is only the value heap: `naHeapCtx` is the authoritative heap
+view over a `Perennial.gmap`, with no per-location metadata or block sizes.
 -/
 module
 

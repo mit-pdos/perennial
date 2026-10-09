@@ -14,13 +14,9 @@ import (
 	"github.com/mit-pdos/perennial/goose/util"
 )
 
-func coqFileContents(f glang.File) []byte {
+func fileContents(f glang.File) []byte {
 	var b bytes.Buffer
-	if glang.Lean {
-		f.WriteLean(&b)
-	} else {
-		f.Write(&b)
-	}
+	f.Write(&b)
 	return b.Bytes()
 }
 
@@ -43,17 +39,14 @@ func translate(pkgPatterns []string, outRootDir string, configDir string, modDir
 				continue
 			}
 		}
-		outFile := path.Join(outRootDir, glang.ImportToPath(f.PkgPath))
-		if glang.Lean {
-			outFile = path.Join(outRootDir, glang.ImportToLeanPath(f.PkgPath))
-		}
+		outFile := path.Join(outRootDir, glang.ImportToLeanPath(f.PkgPath))
 		outDir := path.Dir(outFile)
 		err = os.MkdirAll(outDir, 0777)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			fmt.Fprintln(os.Stderr, red("could not create output directory"))
 		}
-		err = util.WriteFileIfChanged(outFile, coqFileContents(f), 0666)
+		err = util.WriteFileIfChanged(outFile, fileContents(f), 0666)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			fmt.Fprintln(os.Stderr, red("could not write output"))
@@ -88,9 +81,6 @@ func main() {
 	var configDir string
 	flag.StringVar(&configDir, "configdir", "",
 		"directory containing Goose config files (default is the output directory)")
-
-	flag.BoolVar(&glang.Lean, "lean", false,
-		"emit Lean 4 (Perennial/Code) instead of Rocq")
 
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 

@@ -1,12 +1,13 @@
 /-
-Finite maps, in the role of stdpp's `gmap`.
+Finite maps (`gmap K V`) and finite sets (`gset K`).
 
 `gmap K V` is a partial function with finite support. Equality is extensional
-(`GMap.ext`), as with stdpp's canonical `gmap`. Only `DecidableEq K` is needed.
+(`GMap.ext`): two maps with the same bindings are equal. Only `DecidableEq K` is
+needed.
 The operations are noncomputable: they exist for specifications, not for
 execution.
 
-stdpp notation: `m !! k` is lookup, `<[k := v]> m` is insert, `delete k m` is delete.
+Notation: `m !! k` is lookup, `<[k := v]> m` is insert, `delete k m` is delete.
 -/
 module
 
@@ -58,7 +59,7 @@ def delete (k : K) (m : GMap K V) : GMap K V :=
 
 def singleton (k : K) (v : V) : GMap K V := insert k v empty
 
-/-- Union, left-biased (stdpp `∪`). -/
+/-- Union, left-biased (`m₁ ∪ m₂`). -/
 def union (m₁ m₂ : GMap K V) : GMap K V :=
   ⟨fun k => (m₁.lookup k).or (m₂.lookup k),
    by
@@ -111,11 +112,11 @@ theorem _root_.Perennial.nodup_list_dedup {α} [DecidableEq α] (l : List α) : 
 def domList (m : GMap K V) : List K :=
   (listDedup (Classical.choose m.finite)).filter (fun k => (m.lookup k).isSome)
 
-/-- The bindings of `m`, in unspecified order (stdpp `mapToList`). -/
+/-- The bindings of `m`, in unspecified order (also `mapToList`). -/
 noncomputable def toList (m : GMap K V) : List (K × V) :=
   m.domList.filterMap (fun k => (m.lookup k).map (k, ·))
 
-/-- stdpp `dom`, as a membership predicate. -/
+/-- The domain of `m`, as a membership predicate (see `domSet` for the set). -/
 def dom (m : GMap K V) (k : K) : Prop := (m.lookup k).isSome
 
 instance : Membership K (GMap K V) := ⟨fun m k => (m.lookup k).isSome⟩
@@ -132,22 +133,22 @@ def Subseteq (m₁ m₂ : GMap K V) : Prop := ∀ k v, m₁.lookup k = some v �
 
 instance : HasSubset (GMap K V) := ⟨Subseteq⟩
 
-/-- stdpp `listToMap`; later bindings win. -/
+/-- The map with the bindings of a list (also `listToMap`); later bindings win. -/
 def ofList : List (K × V) → GMap K V
   | [] => empty
   | (k, v) :: l => insert k v (ofList l)
 
-/-- Maps from `List.range`-style index (stdpp `map_seq`). -/
+/-- The map from the indices `start, start+1, ...` to the elements of a list. -/
 def mapSeq (start : Nat) : List V → GMap Nat V
   | [] => empty
   | v :: l => insert start v (mapSeq (start + 1) l)
 
 end GMap
 
-/-! ## stdpp-style notation -/
+/-! ## Lookup and insert notation -/
 
 /-
-`m !! k` and `<[k := v]> m` are overloaded on the type of `m`, as in stdpp:
+`m !! k` and `<[k := v]> m` are overloaded on the type of `m`:
 * for `m : gmap K V` they are `GMap.lookup m k` and `GMap.insert k v m`;
 * for `l : List A` (index `i : Nat`) they are `l[i]?` and `l.set i v`, so that
   Lean core's `List` lemmas apply directly;
@@ -346,21 +347,22 @@ instance GMap.instLawfulFiniteMap {K : Type u} [DecidableEq K] : LawfulFiniteMap
   toList_noDupKeys := GMap.toList_keys_nodup _
   toList_get := GMap.mem_toList _ _ _
 
-/-- Finite sets, in the role of stdpp's `gset`. -/
+/-- Finite sets, as maps to `Unit`. -/
 abbrev GSet (K : Type u) := GMap K Unit
 
-/-! ## More operations (stdpp `fin_maps`, `fin_map_dom`, `fin_sets`)
+/-! ## More operations (finite maps, their domains, finite sets)
 
-stdpp's set-valued `dom m` is `GMap.domSet m : gset K` here (`GMap.dom` is
-the older membership predicate and is kept for compatibility). The lemmas keep
-their stdpp names; a lemma `foo_L` (Leibniz version) is the same as `foo`,
-since all equalities here are Leibniz. -/
+The set-valued domain of `m` is `GMap.domSet m : gset K` (`GMap.dom` is the
+older membership predicate and is kept for compatibility). Lemmas are named
+after the operations (`lookup_insert`, `union_comm_L`, ...); a lemma `foo_L`
+(Leibniz version) is the same as `foo`, since all equalities here are
+Leibniz. -/
 
 namespace GMap
 
 variable {K : Type u} {V : Type v} [DecidableEq K]
 
-/-- Map difference (stdpp `m₁ ∖ m₂`): the bindings of `m₁` whose key is not in `m₂`. -/
+/-- Map difference (`m₁ ∖ m₂`): the bindings of `m₁` whose key is not in `m₂`. -/
 def difference {V' : Type w} (m₁ : GMap K V) (m₂ : GMap K V') : GMap K V :=
   ⟨fun k => if (m₂.lookup k).isSome then none else m₁.lookup k,
    by
@@ -368,7 +370,7 @@ def difference {V' : Type w} (m₁ : GMap K V) (m₂ : GMap K V') : GMap K V :=
     refine ⟨l, fun k h => hl k ?_⟩
     split at h <;> simp_all⟩
 
-/-- Map intersection, left-biased (stdpp `m₁ ∩ m₂`). -/
+/-- Map intersection, left-biased (`m₁ ∩ m₂`). -/
 def intersection {V' : Type w} (m₁ : GMap K V) (m₂ : GMap K V') : GMap K V :=
   ⟨fun k => if (m₂.lookup k).isSome then m₁.lookup k else none,
    by
@@ -379,29 +381,29 @@ def intersection {V' : Type w} (m₁ : GMap K V) (m₂ : GMap K V') : GMap K V :
 instance : SDiff (GMap K V) := ⟨difference⟩
 instance : Inter (GMap K V) := ⟨intersection⟩
 
-/-- stdpp `dom m`, as a `gset`. -/
+/-- The domain of `m`, as a `gset`. -/
 def domSet (m : GMap K V) : GMap K Unit := fmap (fun _ => ()) m
 
-/-- stdpp `gsetToGmap x X`. -/
+/-- The map sending every element of `X` to `x`. -/
 def gsetToGmap (x : V) (X : GMap K Unit) : GMap K V := fmap (fun _ => x) X
 
-/-- stdpp `MapForall P m`. -/
+/-- `P k v` holds for every binding `k ↦ v` of `m`. -/
 def MapForall (P : K → V → Prop) (m : GMap K V) : Prop := ∀ k v, m.lookup k = some v → P k v
 
-/-- stdpp `MapForall2 P m₁ m₂`: same domain, and `P` holds pointwise. -/
+/-- `m₁` and `m₂` have the same domain, and `P` holds pointwise. -/
 def MapForall2 {V' : Type w} (P : K → V → V' → Prop) (m₁ : GMap K V) (m₂ : GMap K V') : Prop :=
   ∀ k, match m₁.lookup k, m₂.lookup k with
     | some a, some b => P k a b
     | none, none => True
     | _, _ => False
 
-/-- stdpp `mapToList`. -/
+/-- The bindings of `m`, in unspecified order (`toList`). -/
 abbrev mapToList (m : GMap K V) : List (K × V) := m.toList
 
-/-- stdpp `listToMap`. -/
+/-- The map with the bindings of a list (`ofList`); later bindings win. -/
 abbrev listToMap (l : List (K × V)) : GMap K V := ofList l
 
-/-- stdpp `mapFold f b m`: fold over the bindings in an unspecified order. -/
+/-- `mapFold f b m`: fold over the bindings in an unspecified order. -/
 def mapFold {B : Type w} (f : K → V → B → B) (b : B) (m : GMap K V) : B :=
   m.toList.foldr (fun kv acc => f kv.1 kv.2 acc) b
 
@@ -410,7 +412,7 @@ instance : Functor (GMap K) where
 
 end GMap
 
-/-- stdpp `m₁ ##ₘ m₂`. -/
+/-- Disjoint maps: `m₁ ##ₘ m₂` (no key in both). -/
 scoped infix:50 " ##ₘ " => GMap.Disjoint
 
 namespace GMap
@@ -1190,28 +1192,28 @@ instance : Insert K (GMap K Unit) := ⟨fun k s => insert k () s⟩
 
 end GMap
 
-/-- stdpp `{[x]}` (singleton set). -/
+/-- `{[x]}`: the singleton set. -/
 scoped notation "{[" x "]}" => (Singleton.singleton x : GSet _)
 
-/-- stdpp `X ## Y` (disjoint sets). -/
+/-- `X ## Y`: disjoint sets. -/
 scoped infix:50 " ## " => GMap.Disjoint
 
-/-- stdpp's `X ∖ Y` (U+2216), the same as Lean's `X \ Y`. -/
+/-- Set difference `X ∖ Y` (U+2216), the same as `X \ Y`. -/
 scoped infixl:70 " ∖ " => SDiff.sdiff
 
 namespace GMap
 
 variable {K : Type u} {V : Type v} [DecidableEq K]
 
-/-- stdpp `elements X`. -/
+/-- The elements of `X`, in unspecified order. -/
 def elements (X : GSet K) : List K := X.domList
 
-/-- stdpp `listToSet l`. -/
+/-- The set of the elements of `l`. -/
 def listToSet : List K → GSet K
   | [] => ∅
   | k :: l => insert k () (listToSet l)
 
-/-- stdpp `⋃ Xs` (`unionList`). -/
+/-- The union `⋃ Xs` of a list of sets. -/
 def unionList : List (GSet K) → GSet K
   | [] => ∅
   | X :: Xs => X ∪ unionList Xs

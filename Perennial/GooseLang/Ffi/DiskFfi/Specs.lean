@@ -1,13 +1,12 @@
 /-
 Iris reasoning principles for the disk FFI (non-crash parts only).
 
-* No crash reasoning (`ffi_crash_rel`, `ffi_restart`, `disk_array_acc_disc`,
-  which uses Perennial's `<bdisc>` modality, is omitted).
+* No crash reasoning: there is no crash relation or restart rule for the
+  disk.
 * The ghost state uses iris-lean's `genHeapGS` with `gmap Int` as the map type.
 * `pointstoBlock l q b` is a big separating conjunction over the list
-  `BlockToVals b` (`[∗list] i ↦ v ∈ BlockToVals b, (l +ₗ i) ↦{q} v`)
-  rather than over the map `heapArray l ...`, so no block-index helpers are needed.
-* Argument values are `#a` (`intoVal`) rather than `LitV (LitInt a)`.
+  `BlockToVals b` (`[∗list] i ↦ v ∈ BlockToVals b, (l +ₗ i) ↦{q} v`).
+* Argument values are written `#a` (`intoVal`).
 * `ffiLocalStart` and the adequacy instance are in
   `Perennial/GooseLang/Ffi/DiskFfi/Adequacy.lean`.
 -/

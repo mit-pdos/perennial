@@ -2,10 +2,10 @@
 Program-logic base for GooseLang, without crash machinery.
 
 Notes:
-* No crash logic: no `wpc`, `crash_borrow`, crash generations, `cred_*` credit
-  tokens or `pinv_tok`. iris-lean's `wp` (with its own later credits) is used.
-* iris-lean has a single `IrisGS_gen` class; it is instantiated
-  (`goose_irisGS`) from `gooseGlobalGS` and `gooseLocalGS`. `heapGS` bundles the
+* No crash logic: the program logic is iris-lean's `wp` (with its own later
+  credits).
+* iris-lean's `IrisGS_gen` class is instantiated (`goose_irisGS`) from
+  `gooseGlobalGS` and `gooseLocalGS`. `heapGS` bundles the
   two. `heapGS` does *not* contain the `GoGlobalContext` (the language instance
   itself depends on it, so it must be a separate instance argument), nor the
   `allG` ghost state.
@@ -21,12 +21,11 @@ Notes:
   and `gooseStateInterp` (as `gooseCfgInterp`); Go instructions, the only
   counted steps, have their own lemma `wp_GoInstruction_receipt`, which handles
   the stutter by Löb induction and hands out a time receipt.
-* The state interpretation consists of a per-generation part (`naHeapCtx`,
+* The state interpretation consists of a local part (`naHeapCtx`,
   `ffiLocalCtx`, `ownGoStateCtx`, `goLctx` equality) plus the global part
   (`ffiGlobalCtx`, iris-lean's prophecy map `prophMapInterp`).
 * `Alloc` allocates a single cell, so `wp_allocN_seq` gives `pointstoVals l
-  (.own 1) [v]`; the `na_block_size`/`meta_token` parts of
-  `wp_allocN_seq_sized_meta` are dropped along with that ghost state.
+  (.own 1) [v]`.
 -/
 module
 

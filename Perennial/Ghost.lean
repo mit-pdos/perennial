@@ -1,5 +1,5 @@
 /-
-All of new goose's ghost-state libraries.
+All of Perennial's ghost-state libraries.
 See `Perennial/Ghost/All.lean` for the `allG` design.
 -/
 module

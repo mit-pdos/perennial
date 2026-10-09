@@ -1,30 +1,27 @@
 package glang
 
-// Lean 4 backend for the GooseLang printer.
+// The Lean printer for GooseLang.
 //
-// The Lean output is the analogue of the Rocq output (same definitions with the
-// same names), but GooseLang expressions are printed as plain constructor
-// applications of Perennial/GooseLang/Lang.lean (`Val`, `Var`, `App`, `Lam`,
-// `Let`, `If`, `Pair`, ...) rather than with notations, so that elaboration is
-// fast and predictable.
+// GooseLang expressions are printed as plain constructor applications of
+// Perennial/GooseLang/Lang.lean (`Val`, `Var`, `App`, `Lam`, `Let`, `If`,
+// `Pair`, ...) rather than with notations, so that elaboration is fast and
+// predictable.
 //
 // Every Expr can be printed in one of two modes:
 //
-//   - LeanTerm: a Lean term (the analogue of a Gallina term), e.g. a go.GoType,
-//     a GoString, a val (`#x`), a list.
+//   - LeanTerm: a Lean term, e.g. a go.GoType, a GoString, a val (`#x`), a
+//     list.
 //   - LeanExpr: a GooseLang `Expr`. Values are wrapped in `Val`, identifiers
 //     become `Var "x"`, applications become `App`.
 //
 // Generated code lives in `namespace Perennial` and then a namespace derived
 // from the full Go import path (see LeanNamespace), which is globally unique
-// (Lean namespaces are global, unlike Rocq modules, so the Rocq scheme of
-// naming the module after the Go package name would make e.g. crypto/rand and
-// math/rand collide).
+// (Lean namespaces are global, so naming the namespace after the Go package
+// name would make e.g. crypto/rand and math/rand collide).
 
 import (
 	"fmt"
 	"io"
-	"math/big"
 	"path"
 	"path/filepath"
 	"strings"
@@ -39,10 +36,6 @@ set_option linter.unusedVariables false
 set_option linter.iris.style.nameCheck false
 set_option linter.iris.dupNamespace false
 `
-
-// Lean is set when generating Lean rather than Rocq. It is a global since a
-// goose invocation produces only one kind of output.
-var Lean bool
 
 // LeanRoots maps Go package path prefixes to the Lean module root of their
 // translation, set with -lean-root. A package not under any of them has root
@@ -95,7 +88,7 @@ const LeanRootUsage = "PKG=ROOT: Lean modules of the packages under Go path PKG 
 type LeanMode int
 
 const (
-	// A Lean term (Gallina-level object)
+	// A Lean term
 	LeanTerm LeanMode = iota
 	// A GooseLang expr
 	LeanExpr
@@ -153,8 +146,8 @@ func init() {
 
 // LeanShadowNames are names that the Lean printer emits unqualified (GooseLang
 // constructors and Golang/Defn definitions). A Go identifier with one of these
-// names would shadow them inside the package's namespace, so (like the Rocq
-// GallinaKeywords) such identifiers get a "'" suffix in the Lean output.
+// names would shadow them inside the package's namespace, so (like
+// primedNames) such identifiers get a "'" suffix (see ToIdent).
 var LeanShadowNames = map[string]bool{}
 
 func init() {
@@ -193,7 +186,7 @@ func LeanQuoteComponent(s string) string {
 	if s == "" || strings.HasPrefix(s, "«") {
 		return s
 	}
-	ok := !LeanKeywords[s]
+	ok := s != "_" && !LeanKeywords[s]
 	for i, r := range s {
 		if i == 0 && !leanIdentFirst(r) {
 			ok = false
@@ -217,8 +210,8 @@ func LeanQuote(s string) string {
 	return strings.Join(parts, ".")
 }
 
-// leanConstructors maps the Rocq names of the go.type constructors (Rocq
-// constructors are not namespaced by their inductive) to their Lean names in
+// leanConstructors maps the short names of the go.GoType constructors, which
+// the translator emits, to their full names in
 // Perennial/Golang/Defn/PreLang.lean.
 var leanConstructors = map[string]string{
 	"go.Named":              "go.GoType.Named",
@@ -243,7 +236,7 @@ var leanConstructors = map[string]string{
 	"go.TypeTermUnderlying": "go.type_term.TypeTermUnderlying",
 }
 
-// leanVerbatims maps verbatim Rocq snippets used by the translator to Lean.
+// leanVerbatims maps verbatim snippets used by the translator to Lean.
 var leanVerbatims = map[string]string{
 	"None":           "none",
 	"Some":           "some",
@@ -251,8 +244,8 @@ var leanVerbatims = map[string]string{
 	"#interface.nil": "#GoInterface.nil",
 }
 
-// leanRenames maps the Rocq names of framework definitions, which the shared
-// translator emits, to their Lean names (Lean naming conventions).
+// leanRenames maps the snake_case names of framework definitions, which the
+// translator emits, to their Lean names.
 var leanRenames = map[string]string{
 	"go_string":         "GoString",
 	"loc":               "Loc",
@@ -268,17 +261,8 @@ var leanRenames = map[string]string{
 	"go.untyped_nil":    "go.untypedNil",
 }
 
-// LeanRename maps the Rocq name of a framework definition to its Lean name
-// (unchanged if it has no Lean-specific name).
-func LeanRename(s string) string {
-	if c, ok := leanRenames[s]; ok {
-		return c
-	}
-	return s
-}
-
-// leanEncoded translates the Rocq-style encodings of generated names into Lean
-// namespaces: Xⁱᵐᵖˡ -> X.impl, T__Mⁱᵐᵖˡ (method M of T) -> T.M.impl,
+// leanEncoded translates the suffix encodings of generated names, which the
+// translator uses internally, into Lean namespaces:
 // X'underlying -> X.underlying (see TypeImpl), X'fds -> X.fields,
 // X'fds_unsealed -> X.fieldsUnsealed, X'init -> X.init,
 // X_Assumptions -> X.TypeAssumptions (the per-type assumptions class; the
@@ -289,21 +273,9 @@ func leanEncoded(s string) (string, bool) {
 	if i := strings.LastIndex(s, "."); i >= 0 {
 		prefix, last = s[:i], s[i+1:]
 	}
-	q := func(c string) string {
-		if c == "_" {
-			return "«_»"
-		}
-		return LeanQuoteComponent(c)
-	}
+	q := LeanQuoteComponent
 	var comps []string
 	switch {
-	case strings.HasSuffix(last, "ⁱᵐᵖˡ"):
-		base := strings.TrimSuffix(last, "ⁱᵐᵖˡ")
-		if t, m, ok := strings.Cut(base, "__"); ok {
-			comps = []string{q(t), q(m), "impl"}
-		} else {
-			comps = []string{q(base), "impl"}
-		}
 	case strings.HasSuffix(last, "'underlying") && last != "'underlying":
 		comps = []string{q(strings.TrimSuffix(last, "'underlying")), "underlying"}
 	case strings.HasSuffix(last, "'fds_unsealed") && last != "'fds_unsealed":
@@ -325,24 +297,17 @@ func leanEncoded(s string) (string, bool) {
 }
 
 // TypeImpl is the name of the definition of the underlying type of a Go named
-// type: Rocq's Xⁱᵐᵖˡ (shared with function implementations), in Lean
-// X.underlying, distinct from the X.impl of functions and methods (a method M
-// named like its type T has T.T.impl, which `T.impl` would resolve to inside
-// namespace T).
+// type: X.underlying, distinct from the X.impl of functions and methods (a
+// method M named like its type T has T.T.impl, which `T.impl` would resolve to
+// inside namespace T).
 func TypeImpl(name string) string {
-	if Lean {
-		return name + "'underlying"
-	}
-	return name + "ⁱᵐᵖˡ"
+	return name + "'underlying"
 }
 
 // TypeIdent is a (possibly qualified) reference to the type descriptor (a
-// go.GoType) of a Go named type. Rocq names the descriptor after the type; in Lean
-// the Go name is the type of the values (a structure for a struct type) and the
-// descriptor is X.ty.
+// go.GoType) of a Go named type. The Go name is the type of the values (a
+// structure for a struct type) and the descriptor is X.ty.
 type TypeIdent string
-
-func (e TypeIdent) Coq(needs_paren bool) string { return GallinaIdent(e).Coq(needs_paren) }
 
 func (e TypeIdent) Lean(m LeanMode) string {
 	s := LeanTypeDesc(string(e))
@@ -364,8 +329,8 @@ func LeanUniverseType(name string) string {
 	return "Go" + strings.ToUpper(name[:1]) + name[1:]
 }
 
-// LeanEncodedName renders a generated name: the Lean form of a Rocq-style
-// encoded name (see leanEncoded), or the quoted name.
+// LeanEncodedName renders a generated name: the Lean form of an encoded name
+// (see leanEncoded), or the quoted name.
 func LeanEncodedName(s string) string {
 	if r, ok := leanEncoded(s); ok {
 		return r
@@ -373,9 +338,9 @@ func LeanEncodedName(s string) string {
 	return LeanQuote(s)
 }
 
-// LeanIdent renders a (possibly qualified) Gallina identifier as a Lean
-// identifier: applies the keyword renaming of the Rocq printer (plus
-// LeanShadowNames) to the last component, and quotes components as needed.
+// LeanIdent renders a (possibly qualified) identifier of a term as a Lean
+// identifier: applies the keyword renaming of ToIdent to the last component,
+// and quotes components as needed.
 func LeanIdent(s string) string {
 	if r, ok := leanEncoded(s); ok {
 		return r
@@ -386,14 +351,14 @@ func LeanIdent(s string) string {
 	if c, ok := leanRenames[s]; ok {
 		return c
 	}
-	return LeanQuote(GallinaIdent(s).Coq(false))
+	return LeanQuote(ToIdent(s))
 }
 
-// LeanNamespace is the Lean namespace for a Go package: the Rocq path of the
-// package with "/" replaced by ".", e.g. "github.com/goose-lang/std" becomes
+// LeanNamespace is the Lean namespace for a Go package: GoPathToIdentPath of
+// the package path with "/" replaced by ".", e.g. "github.com/goose-lang/std" becomes
 // "github_com.goose_lang.std" and "math/rand" becomes "math.rand".
 func LeanNamespace(pkgPath string) string {
-	return LeanQuote(strings.ReplaceAll(ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/", "."))
+	return LeanQuote(strings.ReplaceAll(GoPathToIdentPath(pkgPath), "/", "."))
 }
 
 // LeanModule is the Lean module for a Go package under the given root (e.g.
@@ -402,17 +367,16 @@ func LeanModule(root string, pkgPath string) string {
 	return root + "." + LeanNamespace(pkgPath)
 }
 
-// LeanPkgId is the name of the go_string holding the package path (the Rocq
-// `pkg_id.<name>`).
+// LeanPkgId is the name of the GoString holding the package path.
 func LeanPkgId(pkgPath string) string {
 	return "pkg_id." + LeanNamespace(pkgPath)
 }
 
 // ImportToLeanPath converts a Go import path to the relative Lean file path
 func ImportToLeanPath(pkgPath string) string {
-	coqPath := ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath)
-	p := path.Dir(coqPath)
-	filename := path.Base(coqPath) + ".lean"
+	identPath := GoPathToIdentPath(pkgPath)
+	p := path.Dir(identPath)
+	filename := path.Base(identPath) + ".lean"
 	return filepath.Join(p, filename)
 }
 
@@ -646,7 +610,7 @@ func LeanTermOf(e Expr) string { return e.Lean(LeanTerm) }
 
 // ---- Expr implementations ----
 
-func (e GallinaIdent) Lean(m LeanMode) string {
+func (e TermIdent) Lean(m LeanMode) string {
 	s := LeanIdent(string(e))
 	if m == LeanExpr {
 		return eVal(s)
@@ -692,17 +656,17 @@ func (e IdentExpr) Lean(m LeanMode) string {
 	return LeanRawString(string(e))
 }
 
-func (s GallinaString) Lean(m LeanMode) string {
+func (s TermString) Lean(m LeanMode) string {
 	return LeanStringLit(string(s))
 }
 
 type leanHeadKind int
 
 const (
-	// go_instruction constructor applied to nTerm Gallina args, then applied
+	// GoInstruction constructor applied to nTerm Lean term args, then applied
 	// (GooseLang App) to the remaining args
 	headInstr leanHeadKind = iota
-	// Gallina function returning a val, applied to nTerm Gallina args, then
+	// Lean function returning a val, applied to nTerm Lean term args, then
 	// App to the remaining args
 	headValFn
 	// a val, App to all args
@@ -879,8 +843,7 @@ func (b LetExpr) Lean(m LeanMode) string {
 	if len(b.Names) == 1 {
 		return eLet(b.Names[0], v, cont)
 	}
-	// tuple destructuring, following the Rocq notation
-	// let: ((a1, a2), a3) := e1 in e2
+	// tuple destructuring of a left-nested pair ((a1, a2), a3)
 	n := len(b.Names)
 	p := lapp("Var", `"__p"`)
 	proj := func(i int) string {
@@ -902,7 +865,7 @@ func (b LetExpr) Lean(m LeanMode) string {
 	return eLet("__p", v, body)
 }
 
-func (b GallinaLetExpr) Lean(m LeanMode) string {
+func (b TermLetExpr) Lean(m LeanMode) string {
 	return "(let " + LeanIdent(b.Name) + " := " + b.ValExpr.Lean(LeanTerm) + ";\n" +
 		b.Cont.Lean(LeanExpr) + ")"
 }
@@ -1043,7 +1006,7 @@ func (be UnaryExpr) Lean(m LeanMode) string {
 	return eApp(eInstr("GoUnOp", op, be.Op.Type.Lean(LeanTerm)), be.X.Lean(LeanExpr))
 }
 
-func (e GallinaNotExpr) Lean(m LeanMode) string {
+func (e TermNotExpr) Lean(m LeanMode) string {
 	return "(!" + lparen(e.X.Lean(LeanTerm)) + ")"
 }
 
@@ -1191,7 +1154,7 @@ func (d StructType) Lean(m LeanMode) string {
 // computable since Golang/Defn uses some of them in computable definitions.
 const leanDeclParams = "[FfiSyntax] [GoGlobalContext]"
 
-func leanTypeParams(names []GallinaIdent) string {
+func leanTypeParams(names []TermIdent) string {
 	if len(names) == 0 {
 		return ""
 	}
@@ -1221,8 +1184,7 @@ func (d FuncDecl) LeanDecl() string {
 func (d ConstDecl) LeanDecl() string {
 	attr := ""
 	if v, ok := d.Type.(VerbatimExpr); ok && v == "val" {
-		// package constants are transparent in Rocq; make them visible to
-		// the wp automation
+		// make package constants visible to the wp automation
 		attr = "@[reducible] "
 	}
 	nc := "noncomputable "
@@ -1232,10 +1194,7 @@ func (d ConstDecl) LeanDecl() string {
 }
 
 func (e VerbatimDecl) LeanDecl() string {
-	if e.LeanContent == nil {
-		panic("Lean printer: VerbatimDecl without Lean content: " + e.Content)
-	}
-	return *e.LeanContent
+	return e.Content
 }
 
 func (d AxiomDecl) LeanDecl() string {
@@ -1252,7 +1211,7 @@ func (d TypeDecl) LeanDecl() string {
 		typeParams += fmt.Sprintf(" (%s : go.GoType)", LeanIdent(t))
 	}
 	attr := ""
-	if strings.HasSuffix(d.Name, "ⁱᵐᵖˡ") || strings.HasSuffix(d.Name, "'underlying") || d.Alias {
+	if strings.HasSuffix(d.Name, "'underlying") || d.Alias {
 		// unfolded by the struct tactics of the theory; aliases are reducible so
 		// that instances for the aliased type apply
 		attr = "@[reducible] "
@@ -1266,18 +1225,13 @@ func (d TypeDecl) LeanDecl() string {
 		indent(2, d.Body.Lean(LeanTerm)))
 }
 
-// LeanVerbatim creates a VerbatimDecl with both Rocq and Lean content.
-func LeanVerbatim(coq string, lean string) VerbatimDecl {
-	return VerbatimDecl{Content: coq, LeanContent: &lean}
-}
-
-// WriteLean outputs the Lean source for a File.
+// Write outputs the Lean source for a File.
 //
 // noinspection GoUnhandledErrorResult
-func (f File) WriteLean(w io.Writer) {
+func (f File) Write(w io.Writer) {
 	fmt.Fprintf(w, "-- autogenerated from %s\n", f.PkgPath)
 	// a module of Lean's module system: every declaration public, with its body
-	// exposed (`@[expose] public section`, opened in LeanHeader after the imports)
+	// exposed (`@[expose] public section`, opened in Header after the imports)
 	fmt.Fprint(w, "module\n\n")
 	// imports must come first
 	for _, d := range f.PreHeaderDecls {
@@ -1285,7 +1239,7 @@ func (f File) WriteLean(w io.Writer) {
 			fmt.Fprintln(w, d.LeanDecl())
 		}
 	}
-	fmt.Fprintln(w, f.LeanHeader)
+	fmt.Fprintln(w, f.Header)
 	for _, d := range f.PreHeaderDecls {
 		if _, ok := d.(ImportDecl); !ok {
 			fmt.Fprintln(w, d.LeanDecl())
@@ -1298,47 +1252,14 @@ func (f File) WriteLean(w io.Writer) {
 			fmt.Fprintln(w)
 		}
 	}
-	fmt.Fprint(w, f.LeanFooter)
+	fmt.Fprint(w, f.Footer)
 }
 
-// LeanRocqImport translates a Rocq `From A Require Import/Export x y.` or
-// `Require Import/Export A.x.` line (as found in bootstrap preludes) to Lean
-// imports, mapping `New.golang.defn.slice` to `Perennial.Golang.Defn.Slice`.
-func LeanRocqImport(line string) string {
-	line = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(line), "."))
-	fields := strings.Fields(line)
-	var prefix string
-	var mods []string
-	if len(fields) >= 4 && fields[0] == "From" && fields[2] == "Require" {
-		prefix = fields[1]
-		mods = fields[4:]
-	} else if len(fields) >= 3 && fields[0] == "Require" {
-		mods = fields[2:]
-	} else {
-		return "-- (untranslated Rocq prelude) " + line
-	}
-	var out []string
-	for _, m := range mods {
-		full := m
-		if prefix != "" {
-			full = prefix + "." + m
-		}
-		out = append(out, "public import "+RocqModuleToLean(full))
-	}
-	return strings.Join(out, "\n")
-}
-
-// RocqModuleToLean maps a Rocq module path under New (new/) to the Lean module
-// path, following README.md (directories and files in UpperCamelCase).
-func RocqModuleToLean(m string) string {
-	parts := strings.Split(m, ".")
-	if len(parts) > 0 && parts[0] == "New" {
-		parts = parts[1:]
-	}
-	for i, p := range parts {
-		parts[i] = upperCamel(p)
-	}
-	return "Perennial." + strings.Join(parts, ".")
+// LeanFfiPrelude is the name of the prelude module of an FFI ("disk" has
+// DiskPrelude: Perennial.DiskPrelude for code, Perennial.Proof.DiskPrelude for
+// proofs).
+func LeanFfiPrelude(ffi string) string {
+	return upperCamel(ffi + "_prelude")
 }
 
 func upperCamel(s string) string {
@@ -1358,5 +1279,3 @@ func upperCamel(s string) string {
 	}
 	return b.String()
 }
-
-var _ = big.NewInt

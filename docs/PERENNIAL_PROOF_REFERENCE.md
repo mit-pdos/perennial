@@ -1,6 +1,6 @@
 # Perennial Proof Reference (Lean)
 
-Detailed reference for the GooseLang/Go proof tactics of the Lean port, the
+Detailed reference for the GooseLang/Go proof tactics, the
 Perennial-specific proof mode helpers, and the main specification lemmas. For a
 guided introduction see [`PERENNIAL_PROOF_TUTORIAL.md`](PERENNIAL_PROOF_TUTORIAL.md);
 for the generic Iris proof mode see [`IRIS_PROOF_MODE.md`](IRIS_PROOF_MODE.md).

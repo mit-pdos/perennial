@@ -536,7 +536,7 @@ meta partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($p
       return (← wp.mkAppNamed ``tac_wp_if_angelic'
         [("P", P), ("K", wp.quoteK K), ("e", e1), ("Δ", ehyps), ("s", wp.s), ("E", wp.E),
          ("Φ", wp.Φ), ("!h", pf)], ← res0.get, true)
-  -- a call of an implementation constant `«Fooⁱᵐᵖˡ» v` (e.g. after
+  -- a call of an implementation constant `Foo.impl v` (e.g. after
   -- `wp_method_call`): take the beta step
   if extras then
     let saved ← saveState

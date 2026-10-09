@@ -20,8 +20,8 @@ import (
 
 // PackageTranslator writes the translation of a package to the writer. It may
 // return extra files, as a map from names (without extension) to contents,
-// which are written in a directory named after the package file (Lean
-// backend: chunks of a large generated proof, see proofgen.Package).
+// which are written in a directory named after the package file (chunks of
+// a large generated proof, see proofgen.Package).
 type PackageTranslator func(io.Writer, *packages.Package, string, bool, declfilter.DeclFilter) map[string]string
 
 func NewPackageConfig(modDir string, needDeps bool) *packages.Config {
@@ -120,13 +120,7 @@ func GetFfi(pkg *packages.Package) string {
 
 // ReadConfig reads the filter config toml file for a package
 func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, error) {
-	configPath := path.Join(configDir,
-		glang.ImportToPath(pkgPath)+".toml")
-	if glang.Lean {
-		// Lean configs are named <path>.toml (rather than <path>.v.toml)
-		configPath = path.Join(configDir,
-			glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath)+".toml")
-	}
+	configPath := path.Join(configDir, glang.GoPathToIdentPath(pkgPath)+".toml")
 	configContents, err := os.ReadFile(configPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		// if config does not exist, treat it as an empty file
@@ -164,7 +158,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		ffi := GetFfi(pkg)
 		extra := translatePkg(w, pkg, ffi, config.Bootstrap.Enabled, filter)
 
-		filePath := path.Join(outRootDir, glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkg.PkgPath))
+		filePath := path.Join(outRootDir, glang.GoPathToIdentPath(pkg.PkgPath))
 		outDir := path.Dir(filePath)
 		err = os.MkdirAll(outDir, 0777)
 		if err != nil {
@@ -172,22 +166,16 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 			fmt.Fprintln(os.Stderr, red("could not create output directory"))
 		}
 
-		outFile := filePath + ".v"
-		if glang.Lean {
-			outFile = filePath + ".lean"
-		}
-		err = WriteFileIfChanged(outFile, []byte(w.String()), 0666)
+		err = WriteFileIfChanged(filePath+".lean", []byte(w.String()), 0666)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			fmt.Fprintln(os.Stderr, red("could not write output"))
 			os.Exit(1)
 		}
-		if glang.Lean {
-			if err := writeChunks(filePath, extra); err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				fmt.Fprintln(os.Stderr, red("could not write output"))
-				os.Exit(1)
-			}
+		if err := writeChunks(filePath, extra); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Fprintln(os.Stderr, red("could not write output"))
+			os.Exit(1)
 		}
 	}
 }

@@ -637,8 +637,8 @@ def gmapCurryInner (m : GMap (A × B) T) (a : A) : GMap B T :=
     obtain ⟨l, hl⟩ := m.finite
     exact ⟨l.map Prod.snd, fun b h => List.mem_map.mpr ⟨(a, b), hl _ h, rfl⟩⟩⟩
 
-/-- Currying of a map with pair keys (stdpp's `map_curry`): only keys with a nonempty inner map
-are present. -/
+/-- Currying of a map with pair keys: `a ↦ (b ↦ m !! (a, b))`; only keys with a nonempty inner
+map are present. -/
 def gmapCurry (m : GMap (A × B) T) : GMap A (GMap B T) :=
   ⟨fun a => if ∃ b, (m !! (a, b)).isSome then some (gmapCurryInner m a) else none, by
     obtain ⟨l, hl⟩ := m.finite

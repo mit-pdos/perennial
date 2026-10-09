@@ -70,7 +70,7 @@ theorem wp_Assume_false :
   wp_apply wp_Assume as %H
   cases H
 
-/-- FIXME: get rid of this, or document why a lemma for `ⁱᵐᵖˡ` is needed. -/
+/-- FIXME: get rid of this, or document why a lemma for `RandomUint64.impl` is needed. -/
 theorem «wp_RandomUint64__impl» :
     {{ (True : IProp GF) }} (App (Val RandomUint64.impl) (Val #()))
     {{ (x : w64), RET #x; True }} := by

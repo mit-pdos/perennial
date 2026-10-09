@@ -93,12 +93,12 @@ func TestCurrentDirectory(t *testing.T) {
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose")
 
-	content, err := os.ReadFile(filepath.Join(outDir(dir), "m.v"))
+	content, err := os.ReadFile(filepath.Join(outDir(dir), "m.lean"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(content), "Require Export New.code.github_com.tchajed.marshal.") {
-		t.Error("m.v should contain marshal Require Export")
+	if !strings.Contains(string(content), "public import Perennial.Code.github_com.tchajed.marshal") {
+		t.Error("m.lean should contain the marshal import")
 	}
 }
 
@@ -106,7 +106,7 @@ func TestDot(t *testing.T) {
 	dir := testDir(t)
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose", ".")
-	assertFileExists(t, filepath.Join(outDir(dir), "m.v"))
+	assertFileExists(t, filepath.Join(outDir(dir), "m.lean"))
 }
 
 func TestMultiplePatterns(t *testing.T) {
@@ -115,9 +115,9 @@ func TestMultiplePatterns(t *testing.T) {
 	mustRunGoose(t, dir, "-out", "Goose", ".", "./use_disk", "./use_grove")
 
 	out := outDir(dir)
-	assertFileExists(t, filepath.Join(out, "m.v"))
-	assertFileExists(t, filepath.Join(out, "m", "use_disk.v"))
-	assertFileExists(t, filepath.Join(out, "m", "use_grove.v"))
+	assertFileExists(t, filepath.Join(out, "m.lean"))
+	assertFileExists(t, filepath.Join(out, "m", "use_disk.lean"))
+	assertFileExists(t, filepath.Join(out, "m", "use_grove.lean"))
 }
 
 func TestGroveFFI(t *testing.T) {
@@ -125,12 +125,12 @@ func TestGroveFFI(t *testing.T) {
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose", "./use_grove")
 
-	content, err := os.ReadFile(filepath.Join(outDir(dir), "m", "use_grove.v"))
+	content, err := os.ReadFile(filepath.Join(outDir(dir), "m", "use_grove.lean"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(content), "grove_prelude") {
-		t.Error("use_grove.v should contain grove_prelude")
+	if !strings.Contains(string(content), "public import Perennial.GrovePrelude") {
+		t.Error("use_grove.lean should import Perennial.GrovePrelude")
 	}
 }
 
@@ -151,16 +151,16 @@ func TestBuildTag(t *testing.T) {
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose", "./errors/build_tag")
 
-	content, err := os.ReadFile(filepath.Join(outDir(dir), "m", "errors", "build_tag.v"))
+	content, err := os.ReadFile(filepath.Join(outDir(dir), "m", "errors", "build_tag.lean"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	s := string(content)
-	if !strings.Contains(s, "Definition Foo") {
-		t.Error("build_tag.v should contain Definition Foo")
+	if !strings.Contains(s, "def Foo ") {
+		t.Error("build_tag.lean should contain def Foo")
 	}
 	if strings.Contains(s, "WontTranslate") {
-		t.Error("build_tag.v should not contain WontTranslate")
+		t.Error("build_tag.lean should not contain WontTranslate")
 	}
 }
 
@@ -170,9 +170,9 @@ func TestWildcard(t *testing.T) {
 	mustRunGoose(t, dir, "-out", "Goose", "./...")
 
 	out := outDir(dir)
-	assertFileExists(t, filepath.Join(out, "m.v"))
-	assertFileExists(t, filepath.Join(out, "m", "use_disk.v"))
-	assertFileExists(t, filepath.Join(out, "m", "errors", "build_tag.v"))
+	assertFileExists(t, filepath.Join(out, "m.lean"))
+	assertFileExists(t, filepath.Join(out, "m", "use_disk.lean"))
+	assertFileExists(t, filepath.Join(out, "m", "errors", "build_tag.lean"))
 }
 
 func TestExternalPackage(t *testing.T) {
@@ -180,12 +180,12 @@ func TestExternalPackage(t *testing.T) {
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose", "github.com/tchajed/marshal")
 
-	content, err := os.ReadFile(filepath.Join(dir, "Goose", "github_com", "tchajed", "marshal.v"))
+	content, err := os.ReadFile(filepath.Join(dir, "Goose", "github_com", "tchajed", "marshal.lean"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(string(content), "NewEnc") {
-		t.Error("marshal.v should contain NewEnc")
+		t.Error("marshal.lean should contain NewEnc")
 	}
 }
 
@@ -200,14 +200,14 @@ func TestDirFlag(t *testing.T) {
 	t.Cleanup(func() { os.RemoveAll(outRoot) })
 
 	mustRunGoose(t, repoRoot, "-out", outRoot, "-dir", dir)
-	assertFileExists(t, filepath.Join(outDir(dir), "m.v"))
+	assertFileExists(t, filepath.Join(outDir(dir), "m.lean"))
 }
 
 func TestLocalPath(t *testing.T) {
 	dir := testDir(t)
 	withCleanOutput(t, dir)
 	mustRunGoose(t, dir, "-out", "Goose", "example.com/goose-demo/m")
-	assertFileExists(t, filepath.Join(outDir(dir), "m.v"))
+	assertFileExists(t, filepath.Join(outDir(dir), "m.lean"))
 }
 
 func TestLocalPathWithSubdir(t *testing.T) {
@@ -216,8 +216,8 @@ func TestLocalPathWithSubdir(t *testing.T) {
 	mustRunGoose(t, dir, "-out", "Goose", "-dir", "use_disk", "example.com/goose-demo/m")
 
 	out := outDir(dir)
-	assertFileExists(t, filepath.Join(out, "m.v"))
-	assertFileNotExist(t, filepath.Join(out, "m", "use_disk.v"))
+	assertFileExists(t, filepath.Join(out, "m.lean"))
+	assertFileNotExist(t, filepath.Join(out, "m", "use_disk.lean"))
 }
 
 func TestAfterChange(t *testing.T) {
@@ -244,11 +244,11 @@ func TestAfterChange(t *testing.T) {
 	os.RemoveAll(filepath.Join(dir, "Goose"))
 	mustRunGoose(t, dir, "-out", "Goose")
 
-	content, err := os.ReadFile(filepath.Join(outDir(dir), "m.v"))
+	content, err := os.ReadFile(filepath.Join(outDir(dir), "m.lean"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(string(content), "ExampleFunc") {
-		t.Error("m.v should contain ExampleFunc after source change")
+		t.Error("m.lean should contain ExampleFunc after source change")
 	}
 }

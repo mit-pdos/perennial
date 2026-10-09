@@ -2,13 +2,12 @@
 Adequacy for GooseLang (non-crash, "failstop").
 
 Notes:
-* No crash logic: `FfiInterpAdequacy` has no `ffi_crash` obligation, and
-  `gooseGpreS` has no `crashGpreS`. The adequacy theorem is the plain
-  (non-recovery) one, built on iris-lean's `wp_adequacy`.
-* `ffiGlobalStart`/`ffiLocalStart` are fields of `FfiInterpAdequacy` (`FfiInterp`
-  in `Lifting.lean` omits them).
-* iris-lean has no `gFunctors` lists: `heapΣ`/`subG_heapPreG` have no
-  counterpart; `gooseGpreS GF` is assumed directly.
+* No crash logic: `FfiInterpAdequacy` has no crash obligations. The adequacy
+  theorem is the plain (non-recovery) one, built on iris-lean's `wp_adequacy`.
+* `ffiGlobalStart`/`ffiLocalStart` are fields of `FfiInterpAdequacy`, not of
+  `FfiInterp` (`Lifting.lean`).
+* The ghost-state preconditions are the class `GooseGpreS ffi GF`, assumed
+  directly by the adequacy theorems.
 * Later credits are part of iris-lean's `InvGpreS`.
 * Time receipts. The program logic is built for the step-bounded
   language of `BoundedLang.lean`; `goose_adequacy_blang` is its adequacy

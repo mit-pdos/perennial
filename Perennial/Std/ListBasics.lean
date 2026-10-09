@@ -1,9 +1,9 @@
 /-
-stdpp list lemmas under their stdpp names (`list_basics`, `list_relations`,
-`list_monad`, `list_numbers`), plus a few other classic list lemma names
-(`app_nil_r`, ...), as thin wrappers around Lean core.
+List lemmas (lookup, insert, delete, take/drop, map, permutations, prefixes,
+numeric ranges, ...) as thin wrappers around Lean core, plus a few other
+classic list lemma names (`app_nil_r`, ...).
 
-Correspondence with stdpp:
+Notation and lemma-name vocabulary, in terms of Lean core:
 * `l !! i` is `l[i]?` (the `!!` notation elaborates to it), `<[i := x]> l` is
   `l.set i x`, `delete i l` is `l.eraseIdx i`, `take`/`drop`/`replicate`/
   `reverse` are `List.take`/`List.drop`/`List.replicate`/`List.reverse`,
@@ -11,7 +11,8 @@ Correspondence with stdpp:
   `List.flatten`, `seq` is `List.range'`, `last` is `List.getLast?`.
 * `is_Some o` is `∃ x, o = some x`.
 * ``l₁ `prefix_of` l₂`` is `l₁ <+: l₂`, `l₁ ≡ₚ l₂` is `List.Perm l₁ l₂`.
-* stdpp `Forall P l` is best stated as `∀ x ∈ l, P x` (core has the simp set).
+* A property of all elements is best stated as `∀ x ∈ l, P x` (core has the
+  simp set).
 -/
 module
 
@@ -22,10 +23,10 @@ public import Perennial.Std.Attrs
 
 namespace Perennial
 
-/-- stdpp `l₁ ≡ₚ l₂`. -/
+/-- `l₁ ≡ₚ l₂`: `l₁` is a permutation of `l₂`. -/
 scoped infix:50 " ≡ₚ " => List.Perm
 
-/-- stdpp `seqZ m n`: the integers `m, m+1, ..., m+n-1`. -/
+/-- `seqZ m n`: the integers `m, m+1, ..., m+n-1`. -/
 def seqZ (m n : Int) : List Int := (List.range n.toNat).map (fun (i : Nat) => m + (i : Int))
 
 section list
@@ -552,7 +553,7 @@ theorem length_join (ls : List (List A)) : ls.flatten.length = (ls.map List.leng
 theorem join_app (ls₁ ls₂ : List (List A)) : (ls₁ ++ ls₂).flatten = ls₁.flatten ++ ls₂.flatten :=
   List.flatten_append
 
-/-! ### Option helpers (stdpp `option`) -/
+/-! ### Option helpers -/
 
 theorem eq_None_not_Some {o : Option A} : o = none ↔ ¬ ∃ x, o = some x := by
   cases o <;> simp

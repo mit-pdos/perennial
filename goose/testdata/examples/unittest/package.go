@@ -3,8 +3,8 @@ package unittest
 
 import "github.com/goose-lang/std"
 
-// Note that compiling this test in Coq relies on the external marshal package
-// being compiled and available.
+// Note that compiling this test relies on the translation of the external std
+// package being compiled and available.
 
 type wrapExternalStruct struct {
 	j *std.JoinHandle

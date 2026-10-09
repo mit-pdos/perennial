@@ -46,17 +46,14 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 		if fieldName == "_" {
 			fieldName = "_" + strconv.Itoa(i)
 		}
-		decl.Fields = append(decl.Fields, fieldName)
-		if glang.Lean {
-			decl.LeanFields = append(decl.LeanFields, tmpl.LeanField{
-				Name:     fieldName,
-				Proj:     glang.LeanQuoteComponent(fieldName + "'"),
-				GoString: glang.LeanStringLit(fieldName),
-				// iNamed needs the name to parse as an identifier
-				HypName: leanHypName(fieldName),
-				Type:    tr.toLeanType(s.Field(i).Type()),
-			})
-		}
+		decl.LeanFields = append(decl.LeanFields, tmpl.LeanField{
+			Name:     fieldName,
+			Proj:     glang.LeanQuoteComponent(fieldName + "'"),
+			GoString: glang.LeanStringLit(fieldName),
+			// iNamed needs the name to parse as an identifier
+			HypName: leanHypName(fieldName),
+			Type:    tr.toLeanType(s.Field(i).Type()),
+		})
 	}
 	return []tmpl.TypeDecl{decl}
 }
@@ -181,23 +178,18 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 }
 
 func (tr *typesTranslator) newTypeDecl(spec *ast.TypeSpec, axiomatize bool) tmpl.TypeDecl {
-	decl := tmpl.TypeDecl{
-		PkgName:    tr.pkg.Name,
-		Name:       glang.GallinaIdent(spec.Name.Name).Coq(false),
+	rawName := glang.ToIdent(spec.Name.Name)
+	return tmpl.TypeDecl{
+		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
+		Name:       glang.LeanIdent(spec.Name.Name),
+		RawName:    rawName,
+		ImplName:   glang.LeanIdent(glang.TypeImpl(rawName)),
 		TypeParams: nil, // populated by caller
-		Fields:     nil, // populated by caller
 		Axiomatize: axiomatize,
 	}
-	if glang.Lean {
-		decl.PkgName = glang.LeanNamespace(tr.pkg.PkgPath)
-		decl.RawName = decl.Name
-		decl.ImplName = glang.LeanIdent(glang.TypeImpl(decl.Name))
-		decl.Name = glang.LeanIdent(spec.Name.Name)
-	}
-	return decl
 }
 
-// toLeanType is the Lean type modeling a Go type (cf. goose's toGallinaType)
+// toLeanType is the Lean type modeling a Go type (cf. goose's toLeanType)
 func (tr *typesTranslator) toLeanType(t types.Type) string {
 	switch t := types.Unalias(t).(type) {
 	case *types.Basic:

@@ -1,7 +1,7 @@
 package goose
 
-// Lean versions of the declarations that the Rocq backend emits as verbatim
-// text (see types.go and goose.go).
+// The declarations that are emitted as verbatim Lean text (see types.go and
+// goose.go).
 
 import (
 	"fmt"
@@ -88,8 +88,8 @@ func primed(xs []string) []string {
 	return ys
 }
 
-// namedLeanTypeDecl is the Lean version of namedRocqTypeDecl: the Lean type
-// modeling values of the Go named type, in a namespace named after the type.
+// namedLeanTypeDecl is the Lean type modeling values of the Go named type, in a
+// namespace named after the type.
 func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	w := new(strings.Builder)
 	ns := glang.LeanIdent(spec.Name.Name)
@@ -145,7 +145,8 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	return w.String()
 }
 
-// leanFdsDecl is the Lean version of the 'fds declarations for a struct type.
+// leanFdsDecl declares the field list of a struct type: X.fieldsUnsealed, and
+// X.fields, an irreducible copy.
 func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	name := spec.Name.Name
 	params := ctx.typeParamList(spec.TypeParams)
@@ -167,23 +168,25 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 }
 
 func (ctx *Ctx) leanStructImplBody(spec *ast.TypeSpec) glang.Expr {
-	var fdsArg glang.Expr = glang.GallinaIdent(spec.Name.Name + "'fds")
+	var fdsArg glang.Expr = glang.TermIdent(spec.Name.Name + "'fds")
 	params := ctx.typeParamList(spec.TypeParams)
 	if len(params) > 0 {
 		var args []glang.Expr
 		for _, p := range params {
-			args = append(args, glang.GallinaIdent(p))
+			args = append(args, glang.TermIdent(p))
 		}
 		fdsArg = glang.CallExpr{MethodName: fdsArg, Args: args}
 	}
 	return glang.CallExpr{MethodName: glang.VerbatimExpr("go.StructType"), Args: []glang.Expr{fdsArg}}
 }
 
-// namedTypeLeanPropClassDecl is the Lean version of namedTypePropClassDecl.
+// namedTypeLeanPropClassDecl is the class of assumptions about a named type
+// (X.TypeAssumptions): its type representation, its underlying type, the struct
+// field accessors and its method set.
 func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	typeName := spec.Name.Name
-	gallinaTypeName := glang.LeanTypeDesc(typeName)
-	gallinaImplTypeName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
+	descName := glang.LeanTypeDesc(typeName)
+	implName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
 
 	t := ctx.typeOf(spec.Name).(*types.Named)
 	tunder := ctx.typeOf(spec.Type)
@@ -195,29 +198,29 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 		}
 	}
 	goBinders := leanTypeParamBinders(params, "go.GoType")
-	rocqBinders := leanTypeParamBinders(primed(params), "Type")
+	valBinders := leanTypeParamBinders(primed(params), "Type")
 
 	var fields []leanClassField
 	add := func(name, ty string) {
 		fields = append(fields, leanClassField{name: name, ty: ty})
 	}
 
-	implTy := leanApplied(gallinaImplTypeName, params)
-	ty := leanApplied(gallinaTypeName, params)
-	rocqTy := leanApplied(glang.LeanIdent(typeName), primed(params))
+	implTy := leanApplied(implName, params)
+	ty := leanApplied(descName, params)
+	valTy := leanApplied(glang.LeanIdent(typeName), primed(params))
 
 	// type repr instance
 	if _, ok := ctx.typeOf(spec.Type).(*types.Struct); ok ||
 		ctx.filter.GetAction(typeName) == declfilter.Axiomatize {
 		binders := ""
 		if len(params) > 0 {
-			binders = goBinders + " " + rocqBinders
+			binders = goBinders + " " + valBinders
 			for _, p := range params {
 				pi, pi_ := glang.LeanIdent(p), glang.LeanIdent(p+"'")
 				binders += fmt.Sprintf(" [ZeroVal %s] [TypeRepr %s %s]", pi_, pi, pi_)
 			}
 		}
-		add("type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, rocqTy)))
+		add("type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, valTy)))
 	}
 
 	// underlying instance
@@ -235,18 +238,18 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 				projName := glang.LeanQuoteComponent(recordProjection(i, st.Field(i).Name()))
 				fieldTy := ctx.toLeanTypeP(spec, st.Field(i).Type(), true)
 				xBinder := goBinders
-				if rocqBinders != "" {
-					xBinder += " " + rocqBinders
+				if valBinders != "" {
+					xBinder += " " + valBinders
 				}
 				if xBinder != "" {
 					xBinder += " "
 				}
 				add("get_"+fieldName, fmt.Sprintf(
 					"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
-					xBinder, rocqTy, implTy, glang.LeanStringLit(fieldName), projName))
+					xBinder, valTy, implTy, glang.LeanStringLit(fieldName), projName))
 				add("set_"+fieldName, fmt.Sprintf(
 					"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
-					xBinder, rocqTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, rocqTy))
+					xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, valTy))
 			}
 		}
 	}
@@ -352,7 +355,7 @@ func lparenS(s string) string {
 	return "(" + s + ")"
 }
 
-// toLeanType is the Lean version of toGallinaType
+// toLeanType is the Lean type modeling the values of a Go type
 func (ctx *Ctx) toLeanType(l locatable, t types.Type) string {
 	return ctx.toLeanTypeP(l, t, false)
 }
@@ -362,11 +365,7 @@ func (ctx *Ctx) toLeanType(l locatable, t types.Type) string {
 func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 	switch t := types.Unalias(t).(type) {
 	case *types.Basic:
-		s := ctx.basicTypeToGallina(l, t)
-		if s == "bool" {
-			return "Bool"
-		}
-		return glang.LeanRename(s)
+		return ctx.basicLeanType(l, t)
 	case *types.Slice:
 		return "GoSlice"
 	case *types.Array:
@@ -415,8 +414,8 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 	return ""
 }
 
-// leanPackagePropClass is the Lean version of the package-level Assumptions
-// class (see packagePropClass).
+// leanPackagePropClass is the package-level Assumptions class (see
+// packagePropClass).
 func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	var fields []leanClassField
 	for _, t := range typeSpecs {
@@ -451,7 +450,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 			ty: glang.LeanQuote(ctx.pkgRef(pkg) + ".Assumptions")})
 	}
 	params := " " + leanClassParams
-	if ctx.declImplicitParams != "" {
+	if !ctx.hasFfi {
 		params = " [FfiSyntax]" + params
 	}
 	return leanClass("Assumptions", params, fields)

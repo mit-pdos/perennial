@@ -27,9 +27,6 @@ func main() {
 	flag.StringVar(&modDir, "dir", ".",
 		"directory containing necessary go.mod")
 
-	flag.BoolVar(&glang.Lean, "lean", false,
-		"emit Lean 4 (Perennial/GeneratedProof) instead of Rocq")
-
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 
 	flag.Parse()
