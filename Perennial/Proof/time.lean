@@ -116,6 +116,15 @@ axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics 
       (App (Val (@! time.Until)) (Val #deadline))
     {{ (x : w64), RET #x; True }}
 
+/-- Spec of `time.Since` (axiom): some duration (`time.Now().Sub(t)`, a clock reading, like
+`time.Now` and `time.Until`). -/
+axiom wp_Since [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.Since)) (Val #t))
+    {{ (d : w64), RET #d; True }}
+
 /-- Spec of `Time.Add` (axiom). -/
 axiom Time.wp_Add [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]

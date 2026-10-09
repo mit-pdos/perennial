@@ -9,6 +9,7 @@ translate = [
   "waitGroupBubbleFlag",
   "noCopy",
   "rlocker",
+  "rlocker.*",
   "Once",
   "Once.*",
   "Cond",

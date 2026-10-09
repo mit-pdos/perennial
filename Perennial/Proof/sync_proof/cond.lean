@@ -222,6 +222,25 @@ theorem Cond.wp_Wait (c : Loc) (m : GoInterfaceOk) (R : IProp GF) :
   wp_apply H_Lock $$ [] with HR
   wp_end
 
+/-- `Wait` on a condition variable whose locker's `Lock` needs a resource `Pre` that its
+`Unlock` gives back (`isLockerWith`), such as `rw.RLocker()` (`rlocker_isLockerWith`). -/
+theorem Cond.wp_Wait_with (c : Loc) (m : GoInterfaceOk) (Pre R : IProp GF) :
+    {{ isCond c m ∗ isLockerWith m Pre R ∗ R }}
+      (App (Val (c @!! go.GoType.PointerType Cond.ty @!! go!"Wait")) (Val #()))
+    {{ RET #(); R }} := by
+  wp_start as ⟨H, #Hlock, HR⟩
+  simp only [isCond_unseal, isCondDef]
+  iNamed H
+  wp_auto
+  wp_apply copyChecker.wp_check $$ [$Hchecker]
+  wp_apply wp_runtime_notifyListAdd $$ [$Hnotify] with %x _
+  unfold isLockerWith
+  iNamed Hlock
+  wp_apply H_Unlock $$ HR as HPre
+  wp_apply wp_runtime_notifyListWait $$ [$Hnotify] with _
+  wp_apply H_Lock $$ HPre with HR
+  wp_end
+
 end wps
 
 end sync

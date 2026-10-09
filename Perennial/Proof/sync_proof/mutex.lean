@@ -97,6 +97,29 @@ instance isLocker_persistent (v : GoInterfaceOk) (P : IProp GF) :
     Persistent (isLocker v P) := by
   unfold isLocker named; infer_instance
 
+/-- `i` implements `Locker` with `Lock` taking `Pre` and producing `P`, and `Unlock` taking
+`P` and giving `Pre` back: a locker whose `Lock` needs a resource, such as
+`rw.RLocker()`, whose `Lock` is `rw.RLock()` and needs one of the `RWMutex`'s bounded
+reader tokens (`ownRWMutex`), which `Unlock` returns. `isLocker i P` is the case `Pre = True`
+(`isLocker_isLockerWith`). -/
+def isLockerWith (i : GoInterfaceOk) (Pre P : IProp GF) : IProp GF :=
+  iprop("#H_Lock" ∷ iprop({{ Pre }} (App (Val #(methods i.ty go!"Lock" i.v)) (Val #()))
+      {{ RET #(); P }}) ∗
+    "#H_Unlock" ∷ iprop({{ P }} (App (Val #(methods i.ty go!"Unlock" i.v)) (Val #()))
+      {{ RET #(); Pre }}))
+
+instance isLockerWith_persistent (v : GoInterfaceOk) (Pre P : IProp GF) :
+    Persistent (isLockerWith v Pre P) := by
+  unfold isLockerWith named; infer_instance
+
+theorem isLocker_isLockerWith (i : GoInterfaceOk) (P : IProp GF) :
+    isLocker i P ⊢ isLockerWith i iprop(True) P := by
+  unfold isLocker isLockerWith
+  iintro ⟨#HL, #HU⟩
+  isplitl
+  · iexact HL
+  · iexact HU
+
 theorem Mutex_is_Locker (m : Loc) (R : IProp GF) :
     ⊢ isPkgInit (PROP := IProp GF) pkg_id.sync -∗ isMutex m R -∗
       isLocker (interface.mk (go.GoType.PointerType Mutex.ty) #m) iprop(ownMutex m ∗ R) := by

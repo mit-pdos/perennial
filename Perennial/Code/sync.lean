@@ -788,6 +788,30 @@ noncomputable def RWMutex.RLocker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker.ty) Locker.ty))) (App (Val (GoInstruction (Convert (go.GoType.PointerType RWMutex.ty) (go.GoType.PointerType rlocker.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))))))))
 
+/-- go: rwmutex.go:246:19 -/
+noncomputable def rlocker.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rlocker.ty)))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RWMutex.ty) go!"RLock"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker.ty) (go.GoType.PointerType RWMutex.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rlocker.ty)))) (Var "r")))) (Val #()))))))))
+
+/-- go: rwmutex.go:247:19 -/
+noncomputable def rlocker.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rlocker.ty)))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RWMutex.ty) go!"RUnlock"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker.ty) (go.GoType.PointerType RWMutex.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rlocker.ty)))) (Var "r")))) (Val #()))))))))
+
 /-- Add adds delta, which may be negative, to the [WaitGroup] task counter.
     If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
     If the counter goes negative, Add panics.
@@ -1768,8 +1792,12 @@ abbrev rlocker [FfiSyntax] : Type := RWMutex
 
 class rlocker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq rlocker.ty rlocker.underlying
+  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType rlocker.ty) go!"Lock" rlocker.Lock.impl
+  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType rlocker.ty) go!"Unlock" rlocker.Unlock.impl
 
 attribute [instance] rlocker.TypeAssumptions.underlying
+  rlocker.TypeAssumptions.ptr_Lock_unfold
+  rlocker.TypeAssumptions.ptr_Unlock_unfold
 
 structure WaitGroup [FfiSyntax] where
   mk ::
