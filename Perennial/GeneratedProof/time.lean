@@ -22,7 +22,7 @@ namespace ParseError
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -130,7 +130,7 @@ namespace parseDurationError
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -187,7 +187,7 @@ namespace Timer
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -244,7 +244,7 @@ namespace Ticker
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -301,7 +301,7 @@ namespace Time
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -375,7 +375,7 @@ namespace Location
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -517,7 +517,7 @@ namespace zone
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -591,7 +591,7 @@ namespace zoneTrans
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -682,7 +682,7 @@ namespace rule
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 
@@ -790,7 +790,7 @@ namespace dataIO
 section def_
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : time.Assumptions]
 

@@ -36,3 +36,5 @@ public import Perennial.Golang.Theory.Join
 public import Perennial.Ghost
 
 @[expose] public section
+
+noncomputable section

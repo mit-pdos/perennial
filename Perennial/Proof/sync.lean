@@ -16,3 +16,5 @@ public import Perennial.Proof.sync_proof.waitgroup
 public import Perennial.Proof.sync_proof.waitgroup_join
 
 @[expose] public section
+
+noncomputable section

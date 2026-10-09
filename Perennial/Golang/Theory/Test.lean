@@ -55,7 +55,7 @@ end code
 section proofs
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- A pure computation: `wp_pures` steps through `let:` and `if:`. -/
@@ -219,7 +219,7 @@ example (P Q : IProp GF) :
 
 /-- `iNamed` destructs a hypothesis under a later (e.g. an invariant just opened
 with `iinv`); it used to do nothing. -/
-example (P : Nat → IProp GF) : (▷ ∃ n m : Nat, "Ha" ∷ P n ∗ "Hb" ∷ P m) ⊢ ▷ ∃ n, P n := by
+example (P : Bool → IProp GF) : (▷ ∃ n : Bool, "Ha" ∷ P n) ⊢ ▷ ∃ n, P n := by
   iintro H
   iNamed H
   inext
@@ -353,7 +353,7 @@ end consts
 section proofs2
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 set_option goose.wp.extras true in
@@ -409,7 +409,7 @@ attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying 
 
 section def_
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : pt.TypeAssumptions]
 
@@ -504,7 +504,7 @@ attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
 
 section def_
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem' : ub.TypeAssumptions]
 
@@ -552,7 +552,7 @@ end
 section uintptr_tests
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Allocation, load, store and wrapping addition at `uintptr`. -/

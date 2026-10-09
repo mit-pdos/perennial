@@ -8,6 +8,8 @@ public import Perennial.GooseLang.Ffi.GroveFfi.Impl
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 attribute [instance] grove_op grove_model

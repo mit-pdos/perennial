@@ -35,7 +35,7 @@ theorem sint_nonneg_of_lt (i n : w64) (h : uint.Z i < uint.Z n) (hn : 0 ≤ sint
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.std.Assumptions]
 

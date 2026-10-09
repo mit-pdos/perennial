@@ -15,7 +15,7 @@ open Iris BI OFE CMRA ProofMode Iris.Std Iris.Algebra
 
 section global
 variable {GF : BundledGFunctors} [AllG GF]
-variable {A : Type} [CMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
+variable {A : Type _} [CMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
 
 theorem own_mono (γ : GName) (a1 a2 : A) (h : a2 ≼ a1) : own γ a1 ⊢ own γ a2 := by
   obtain ⟨c, rfl⟩ := h
@@ -87,7 +87,7 @@ end global
 /-! ## Big-op homomorphisms -/
 section big_op_instances
 variable {GF : BundledGFunctors} [AllG GF]
-variable {A : Type} [UCMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
+variable {A : Type _} [UCMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
 
 instance own_cmra_sep_homomorphism (γ : GName) :
     Algebra.WeakMonoidHomomorphism (CMRA.op (α := A)) sep
@@ -131,7 +131,7 @@ end big_op_instances
 /-! ## Proof mode instances -/
 section proofmode_instances
 variable {GF : BundledGFunctors} [AllG GF]
-variable {A : Type} [CMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
+variable {A : Type _} [CMRA A] {e : Syntax.Cmra} [H : IsCmra (IProp GF) A e]
 
 set_option synthInstance.checkSynthOrder false in
 instance into_sep_own {γ} {a b1 b2 : A} [h : IsOp .split a b1 b2] :

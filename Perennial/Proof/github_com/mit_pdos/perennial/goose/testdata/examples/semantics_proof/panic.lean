@@ -19,7 +19,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
 /-- This doesn't formally mean anything, but if panic is opaque it tells you

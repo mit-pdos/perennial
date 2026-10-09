@@ -40,20 +40,20 @@ attribute [local instance] GSet.lawfulSet
 
 /-- What an FFI must provide to obtain an adequacy theorem: how to allocate its
 ghost state for valid initial states. -/
-class FfiInterpAdequacy (ffi : FfiModel) [FFI : FfiInterp ffi] where
-  ffiGpreS : BundledGFunctors → Type
+class FfiInterpAdequacy.{u, v, w} (ffi : FfiModel) [FFI : FfiInterp.{u, v} ffi] where
+  ffiGpreS : BundledGFunctors.{u} → Type w
   ffi_initgP : ffi_global_state → Prop
   /-- Valid local starting states may depend on whatever the current global
   state is. -/
   ffi_initP : ffi_state → ffi_global_state → Prop
   /-- Resources handed to the program for the initial global FFI state. -/
-  ffiGlobalStart : ∀ {GF : BundledGFunctors}, @ffiGlobalGS ffi FFI GF → ffi_global_state → IProp GF
+  ffiGlobalStart : ∀ {GF : BundledGFunctors.{u}}, @ffiGlobalGS ffi FFI GF → ffi_global_state → IProp GF
   /-- Resources handed to the program for the initial local FFI state. -/
-  ffiLocalStart : ∀ {GF : BundledGFunctors}, @ffiLocalGS ffi FFI GF → ffi_state → IProp GF
-  ffi_global_init : ∀ (GF : BundledGFunctors) (_hPre : ffiGpreS GF) (g : ffi_global_state),
+  ffiLocalStart : ∀ {GF : BundledGFunctors.{u}}, @ffiLocalGS ffi FFI GF → ffi_state → IProp GF
+  ffi_global_init : ∀ (GF : BundledGFunctors.{u}) (_hPre : ffiGpreS GF) (g : ffi_global_state),
     ffi_initgP g →
     ⊢@{IProp GF} |==> ∃ hG : @ffiGlobalGS ffi FFI GF, ffiGlobalCtx hG g ∗ ffiGlobalStart hG g
-  ffi_local_init : ∀ (GF : BundledGFunctors) (_hPre : ffiGpreS GF) (σ : ffi_state)
+  ffi_local_init : ∀ (GF : BundledGFunctors.{u}) (_hPre : ffiGpreS GF) (σ : ffi_state)
     (g : ffi_global_state), ffi_initP σ g →
     ⊢@{IProp GF} |==> ∃ hL : @ffiLocalGS ffi FFI GF, ffiLocalCtx hL σ ∗ ffiLocalStart hL σ
 

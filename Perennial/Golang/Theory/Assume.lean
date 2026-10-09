@@ -11,6 +11,8 @@ public import Perennial.Std.Word.MulOverflow
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic
@@ -18,7 +20,7 @@ open Iris Iris.BI Iris.ProgramLogic
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 

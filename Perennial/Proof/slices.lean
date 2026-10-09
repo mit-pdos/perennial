@@ -7,3 +7,5 @@ public import Perennial.Proof.slices_proof.sort
 public import Perennial.Proof.slices_proof.slices_init
 
 @[expose] public section
+
+noncomputable section

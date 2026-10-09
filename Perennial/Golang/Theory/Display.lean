@@ -16,6 +16,8 @@ public import Perennial.Golang.Defn.Pre
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Lean PrettyPrinter

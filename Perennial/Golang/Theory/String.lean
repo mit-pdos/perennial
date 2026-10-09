@@ -12,6 +12,8 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -19,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics] [go.StringSemantics]
 variable {s : Stuckness} {E : CoPset}
 

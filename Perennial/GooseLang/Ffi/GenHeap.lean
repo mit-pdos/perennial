@@ -7,6 +7,8 @@ public import Iris.BI.Lib.GenHeap
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.Std ProofMode

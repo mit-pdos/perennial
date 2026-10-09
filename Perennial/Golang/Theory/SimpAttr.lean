@@ -9,6 +9,8 @@ public import Lean
 
 @[expose] public section
 
+noncomputable section
+
 /-- Simp set used by `wp_pure`/`wp_call`/... to simplify the expression of a WP
 goal after a step (substitution and context filling). -/
 register_simp_attr goose_wp_simp

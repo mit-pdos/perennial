@@ -17,6 +17,8 @@ public import Perennial.Std.List
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode BigSepL
@@ -26,7 +28,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode BigSepL
 noncomputable section defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 
 /-- A nil slice has no backing array (its pointer is null), so it cannot satisfy
@@ -44,6 +46,7 @@ def ownSliceDef {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     (s : GoSlice) (vs : List V) (dq : DFrac) : IProp GF :=
   ownSliceDef s vs dq
 
+omit [FfiInterp ffi] [FfiSemantics ext ffi] in
 theorem ownSlice_unseal : @ownSlice = @ownSliceDef := by
   funext; with_unfolding_all rfl
 
@@ -111,7 +114,7 @@ end pure
 section lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -406,7 +409,7 @@ theorem slice_mk_eq_nil (p : Loc) (l c : w64) :
 section lemmas2
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -750,7 +753,7 @@ instance (priority := high) fullSlice_slice_step_pure' [FfiSyntax] [GoLocalConte
 section pure_wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_wp_slice_len {st t : go.GoType} [st ↓u go.SliceType t] (sl : GoSlice) :
@@ -787,7 +790,7 @@ end pure_wps
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]

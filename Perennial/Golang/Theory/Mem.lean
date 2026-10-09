@@ -16,6 +16,8 @@ public meta import Perennial.Golang.Theory.PostLifting
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -23,7 +25,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section goose_lang
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Atomic operations on a typed points-to. -/
@@ -49,20 +51,20 @@ macro "solve_atomic_wps" : tactic => `(tactic| (
   constructor
   all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
   · intro l v' v1 v2 dq s E Hne
-    iintro %Φ Hl HΦ
-    icases Hl with ⟨Hl, >%Hnn⟩
+    iintro %Φ >Hl HΦ
+    icases Hl with ⟨Hl, %Hnn⟩
     iapply Perennial.wp_cmpxchg_fail l dq #v' #v1 #v2 (fun h => Hne (go.intoVal_inj h)) $$ Hl
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn
   · intro l v' v1 v2 s E Heq
-    iintro %Φ Hl HΦ
-    icases Hl with ⟨Hl, >%Hnn⟩
+    iintro %Φ >Hl HΦ
+    icases Hl with ⟨Hl, %Hnn⟩
     iapply Perennial.wp_cmpxchg_suc l #v1 #v2 #v' (congrArg _ Heq) $$ Hl
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn
   · intro s E l dq v
-    iintro %Φ Hl HΦ
-    icases Hl with ⟨Hl, >%Hnn⟩
+    iintro %Φ >Hl HΦ
+    icases Hl with ⟨Hl, %Hnn⟩
     iapply Perennial.wp_load l dq #v $$ Hl
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn
@@ -118,7 +120,7 @@ instance access_trivial {PROP : Type _} [BI PROP] (P P' : PROP) : Access P P' P 
 section tac_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem access_split {Δ Δ' P A : IProp GF} {p : Bool} [h : Access A A P P]
@@ -276,7 +278,7 @@ meta def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
       let some (_, l) ← isIntoVal? lv | throwError "no"
       return (i.getArg! 1, l))
     | throwIPMError "could not find a load `![t] #l`"
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   for (_, ivar, p, P) in ← hypsListFor hyps l do
     let saved ← saveState
     let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none none
@@ -321,7 +323,7 @@ meta def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
       let some (W, w) ← isIntoVal? wv | throwError "no"
       return (i.getArg! 1, l, W, w))
     | throwIPMError "could not find a store `GoStore t (#l, #w)`"
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   -- (instantiated: an assigned instance metavariable in the context would make every
   -- later `instantiateMVars` of the context traverse it)
   let own1 ← instantiateMVars (← mkAppM ``DFrac.own
@@ -426,7 +428,7 @@ meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
     | some ns, _ => ns
     | none, some x => (Name.mkSimple (x ++ "_ptr"), Name.mkSimple x)
     | none, none => (`l, `Hl)
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   -- (instantiated: an assigned instance metavariable in the context would make every
   -- later `instantiateMVars` of the context traverse it)
   let own1 ← instantiateMVars (← mkAppM ``DFrac.own

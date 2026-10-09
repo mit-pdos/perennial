@@ -7,6 +7,8 @@ public import Perennial.Golang.Defn.Pre
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace lock

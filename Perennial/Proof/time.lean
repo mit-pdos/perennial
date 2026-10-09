@@ -36,7 +36,7 @@ instance Time.countable [FfiSyntax] : Pos.Countable time.Time :=
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
@@ -102,7 +102,7 @@ theorem Time.wp_UnixNano (l : Loc) (t : time.Time) :
 
 /-- Spec of `time.Now` (axiom). -/
 axiom wp_Now [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] :
     {{ (True : IProp GF) }}
       (App (Val (@! time.Now)) (Val #()))
@@ -110,7 +110,7 @@ axiom wp_Now [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ex
 
 /-- Spec of `time.Until` (axiom). -/
 axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (deadline : time.Time) :
     {{ (True : IProp GF) }}
       (App (Val (@! time.Until)) (Val #deadline))
@@ -119,7 +119,7 @@ axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics 
 /-- Spec of `time.Since` (axiom): some duration (`time.Now().Sub(t)`, a clock reading, like
 `time.Now` and `time.Until`). -/
 axiom wp_Since [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) :
     {{ (True : IProp GF) }}
       (App (Val (@! time.Since)) (Val #t))
@@ -127,7 +127,7 @@ axiom wp_Since [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics 
 
 /-- Spec of `Time.Add` (axiom). -/
 axiom Time.wp_Add [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) (d : time.Duration) :
     {{ (True : IProp GF) }}
       (App (Val (t @!! time.Time.ty @!! go!"Add")) (Val #d))

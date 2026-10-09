@@ -7,6 +7,7 @@ public import Perennial.Std.ByteString
 public import Perennial.Std.GMap
 public import Perennial.Std.Countable
 public import Perennial.Std.Namespaces
+public import Perennial.Std.LaterExists
 public import Perennial.Std.GSet
 public import Perennial.Std.Map
 public import Perennial.Std.ListBasics
@@ -29,3 +30,5 @@ public import Perennial.Std.Word.MulOverflow
 public import Perennial.Std.Word.LittleEndian
 
 @[expose] public section
+
+noncomputable section

@@ -12,6 +12,8 @@ public import Lean
 
 @[expose] public section
 
+noncomputable section
+
 register_simp_attr len
 register_simp_attr word_unfold
 register_simp_attr list_simp

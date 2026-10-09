@@ -19,6 +19,8 @@ public import Iris.Std.PartialMap
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.Std BigSepM PartialMap

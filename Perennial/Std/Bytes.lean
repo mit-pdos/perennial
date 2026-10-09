@@ -8,6 +8,8 @@ public import Perennial.Std.List
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- The 8 bits of a byte, least significant first. -/

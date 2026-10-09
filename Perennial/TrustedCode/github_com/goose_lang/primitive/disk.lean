@@ -12,6 +12,8 @@ public import Perennial.GooseLang.Ffi.DiskFfi.Impl
 
 @[expose] public section
 
+noncomputable section
+
 set_option linter.iris.style.nameCheck false
 
 namespace Perennial

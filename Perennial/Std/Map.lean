@@ -9,6 +9,8 @@ public import Perennial.Std.ListBasics
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace GMap

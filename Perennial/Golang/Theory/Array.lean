@@ -13,6 +13,8 @@ public import Perennial.Golang.Defn.Array
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std BigSepL
@@ -38,7 +40,7 @@ instance (priority := high) slice_array_step' [FfiSyntax] [GoLocalContext] [GoGl
 section lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -196,7 +198,7 @@ end lemmas
 section intoVal
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
@@ -417,7 +419,7 @@ end intoVal
 section lenCap
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- `len` of an array is its length, which lives in the type rather than next

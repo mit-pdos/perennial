@@ -7,6 +7,8 @@ public import Perennial.Golang.Defn.PostLang
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- `PkgInfo` associates a pkg_name to its static information. -/

@@ -7,6 +7,8 @@ public import Perennial.Std.ListLen
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 section list_misc

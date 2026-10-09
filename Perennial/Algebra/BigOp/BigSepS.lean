@@ -8,3 +8,5 @@ public import Iris.BI.BigOp
 public import Perennial.Algebra.BigOp.BigSepL
 
 @[expose] public section
+
+noncomputable section

@@ -8,6 +8,8 @@ public import Std.Tactic.BVDecide
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 abbrev w64 := BitVec 64

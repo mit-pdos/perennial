@@ -7,6 +7,8 @@ public import Perennial.Std.Word.Automation
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 theorem sum_overflow_check (x y : w64) :

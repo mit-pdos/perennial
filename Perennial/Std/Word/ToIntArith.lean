@@ -10,6 +10,8 @@ public import Perennial.Std.Word
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial.word
 
 variable {n : Nat}

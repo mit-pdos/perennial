@@ -83,17 +83,17 @@ def isFuture (γ : FutureNames) (ch : Loc) : IProp GF :=
 instance isFuture_pers (γ : FutureNames) (ch : Loc) : Persistent (isFuture V (GF := GF) γ ch) := by
   unfold isFuture; infer_instance
 
-theorem mapToList_snd_insert {K A : Type} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
+theorem mapToList_snd_insert {K : Type} {A : Type _} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
     (h : m !! k = none) :
     ((mapToList (<[k := v]> m)).map Prod.snd).Perm (v :: (mapToList m).map Prod.snd) :=
   (GMap.mapToList_insert m k v h).map Prod.snd
 
-theorem mapToList_snd_delete {K A : Type} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
+theorem mapToList_snd_delete {K : Type} {A : Type _} [DecidableEq K] (m : GMap K A) (k : K) (v : A)
     (h : m !! k = some v) :
     ((mapToList m).map Prod.snd).Perm (v :: (mapToList (GMap.delete k m)).map Prod.snd) :=
   (GMap.mapToList_delete m k v h).map Prod.snd
 
-theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x :: l')) :
+theorem Permutation_cons_split {A : Type _} (x : A) (l l' : List A) (h : l.Perm (x :: l')) :
     ∃ pre post, l = pre ++ x :: post ∧ l'.Perm (pre ++ post) := by
   obtain ⟨pre, post, rfl⟩ := List.append_of_mem (h.symm.subset (List.mem_cons_self))
   refine ⟨pre, post, rfl, ?_⟩

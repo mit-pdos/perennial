@@ -28,9 +28,9 @@ instance disk_interp_adequacy : FfiInterpAdequacy disk_model where
     iprop([∗map] a ↦ b ∈ (d : DiskState), diskPointsto hL a (.own 1) b)
   ffi_global_init _ _ _ _ := by
     iapply bupd_intro
-    iexists ()
+    iexists PUnit.unit
     isplit
-    · iapply (show iprop(True) ⊢ disk_interp.ffiGlobalCtx () _ from .rfl); itrivial
+    · iapply (show iprop(True) ⊢ disk_interp.ffiGlobalCtx PUnit.unit _ from .rfl); itrivial
     · itrivial
   ffi_local_init GF hPre σ _ _ := by
     letI := hPre.diskPreGGenHeapG

@@ -67,6 +67,8 @@ public meta import Perennial.Std.Word.Cache
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- The signed value in terms of the unsigned one. -/

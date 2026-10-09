@@ -7,6 +7,8 @@ public import Perennial.Std.ByteString
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 namespace go
 

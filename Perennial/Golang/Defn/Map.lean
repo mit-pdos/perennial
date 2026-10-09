@@ -27,6 +27,8 @@ public import Perennial.Golang.Defn.Predeclared
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace map

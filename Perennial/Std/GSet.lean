@@ -8,6 +8,8 @@ public import Perennial.Std.GMap
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 theorem gset_elem_is_empty {A : Type u} [DecidableEq A] (c : GSet A) (h : ∀ x, x ∉ c) : c = ∅ :=

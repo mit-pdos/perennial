@@ -50,6 +50,8 @@ public import Perennial.Golang.Theory.ArrayLit
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -279,7 +281,7 @@ macro "is_pkg_init_finish" : tactic => `(tactic| (
 section if_angelic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- `if: #(decide P) then e else AngelicExit #()`: the `else` branch proves
@@ -1019,7 +1021,7 @@ checked. If this fails, the struct code is executed symbolically (`wp_auto`). -/
 section struct_generic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- A field of a struct with Lean type `V` and Go type `T`. -/
@@ -1171,7 +1173,7 @@ theorem struct_alloc_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
         @ s; E {{ Φ }} :=
   struct_alloc_fields x l s E fds fs hm [] Φ
 
-theorem wp_pure_raw_step {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (hlc := hlc) (GF := GF) φ e1 e2] (hφ : φ)
+theorem wp_pure_raw_step {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (GF := GF) φ e1 e2] (hφ : φ)
     {s : Stuckness} {E : CoPset} {Φ : val → IProp GF} :
     iprop(▷ WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }} :=
   tac_wp_pure_wp (Hwp := Hwp) (K := []) hφ .rfl .rfl
@@ -1186,7 +1188,7 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
     {{ (l : Loc), RET #l; l ↦ v }} := by
   iintro %Φ _ HΦ
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
+  have hpw : PureWp (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
       (allocStructRaw fds #v fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
@@ -1351,7 +1353,7 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v dq).1 $$ Hl
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoLoad t))) (Val #l))
+  have hpw : PureWp (GF := GF) True (App (Val (GoInstruction (GoLoad t))) (Val #l))
       (loadStructRaw fds #l fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
@@ -1530,7 +1532,7 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v _).1 $$ Hl
-  have hpw : PureWp (hlc := hlc) (GF := GF) True
+  have hpw : PureWp (GF := GF) True
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w)))
       (storeStructRaw fds #l #w fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
@@ -1750,7 +1752,7 @@ instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A)
 section intoVal_typed_unit
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance intoVal_typed_unit : IntoValTypedUnderlying (GF := GF) Unit (go.StructType []) := by

@@ -7,3 +7,5 @@ public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
 public import Perennial.Golang.Defn
 
 @[expose] public section
+
+noncomputable section

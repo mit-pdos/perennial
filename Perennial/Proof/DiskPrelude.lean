@@ -14,6 +14,8 @@ public import Perennial.GooseLang.Ffi.DiskFfi.Specs
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 attribute [instance] disk_semantics disk_interp

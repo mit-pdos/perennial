@@ -13,3 +13,5 @@ public import Perennial.Golang.Theory.Chan.Idioms.Mpmc
 public import Perennial.Golang.Theory.Chan.Idioms.Spsc
 
 @[expose] public section
+
+noncomputable section

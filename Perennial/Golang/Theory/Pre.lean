@@ -22,3 +22,5 @@ public import Perennial.Golang.Theory.Slice
 public import Perennial.Golang.Theory.Map
 
 @[expose] public section
+
+noncomputable section

@@ -4,6 +4,8 @@ public import Perennial.Std.Word.Automation
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 theorem mul_overflow_check_conservative (x y : w64) (h0 : 0 < uint.Z x)

@@ -26,7 +26,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 
 
@@ -103,15 +103,15 @@ theorem wp_lock_trylock (m : Loc) (R : IProp GF) :
     {{ (locked : Bool), RET #locked; if locked then ownLock m ∗ R else True }} := by
   wp_start_folded as H
   unfold lock.trylock
-  wp_call
+  wp_call_lc Hlc
   simp only [isLock_unseal, isLockDef]
   iNamed H
   wp_bind (CmpXchg _ _ _)
-  iinv Hinv with ⟨%b, Hl, HR⟩
+  iinv Hinv with Hi
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%b, Hl, HR⟩
   cases b
   · simp only [Bool.false_eq_true, ↓reduceIte]
-    icases HR with ⟨>Hl2, HR⟩
-    icases Hl with >Hl
+    icases HR with ⟨Hl2, HR⟩
     ihave Hfull := (typedPointsto_quarter_three_quarter m false).2 $$ [Hl Hl2]
     · iframe
     wp_apply_core wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
@@ -140,15 +140,15 @@ theorem wp_lock_lock (m : Loc) (R : IProp GF) :
   unfold lock.lock
   iloeb as IH
   wp_start_folded as H
-  wp_call
+  wp_call_lc Hlc
   simp only [isLock_unseal, isLockDef]
   iNamed H
   wp_bind (CmpXchg _ _ _)
-  iinv Hinv with ⟨%b, Hl, HR⟩
+  iinv Hinv with Hi
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%b, Hl, HR⟩
   cases b
   · simp only [Bool.false_eq_true, ↓reduceIte]
-    icases HR with ⟨>Hl2, HR⟩
-    icases Hl with >Hl
+    icases HR with ⟨Hl2, HR⟩
     ihave Hfull := (typedPointsto_quarter_three_quarter m false).2 $$ [Hl Hl2]
     · iframe
     wp_apply_core wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
@@ -176,11 +176,12 @@ theorem wp_lock_unlock (m : Loc) (R : IProp GF) :
     {{ isLock m R ∗ ownLock m ∗ ▷ R }} (App (Val lock.unlock) (Val #m)) {{ RET #(); True }} := by
   wp_start_folded as ⟨#His, Hlocked, HR⟩
   unfold lock.unlock
-  wp_call
+  wp_call_lc Hlc
   simp only [isLock_unseal, isLockDef, ownLock_unseal, ownLockDef]
   iNamed His
   wp_bind (CmpXchg _ _ _)
-  iinv Hinv with ⟨%b, >Hl, _⟩
+  iinv Hinv with Hi
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%b, Hl, _⟩
   icombine Hl Hlocked gives %Heq
   subst Heq
   ihave Hfull := (typedPointsto_quarter_three_quarter m true).2 $$ [Hl Hlocked]

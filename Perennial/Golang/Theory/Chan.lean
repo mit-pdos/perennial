@@ -32,7 +32,7 @@ namespace chan
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
 instance pure_wp_chan_for_range (c : GoChan) (elem_type : go.GoType) (body : val) :
@@ -627,7 +627,7 @@ theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : v
   iapply and_mono (BigAndL.bigAndL_mono_of_forall fun _ _ => or_intro_l) .rfl $$ Hcases
 
 /-- Zipping a permutation of `l1` with `l3` is a permutation of `l1.zip l3`. -/
-theorem permutation_zip {A B : Type} {l1 l2 : List A} (h : l1.Perm l2) (l3 : List B)
+theorem permutation_zip {A : Type} {B : Type _} {l1 l2 : List A} (h : l1.Perm l2) (l3 : List B)
     (hlen : l1.length = l3.length) :
     ∃ l4 : List B, l3.Perm l4 ∧ (l1.zip l3).Perm (l2.zip l4) := by
   induction h generalizing l3 with

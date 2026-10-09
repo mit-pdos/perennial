@@ -10,6 +10,8 @@ public import Perennial.Std.ByteString
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial.ByteStringTest
 
 example : go!"\n" = [W8 10] := rfl

@@ -48,7 +48,7 @@ theorem block_to_list_to_block (i : _root_.Perennial.Block) : listToBlock i.toLi
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.primitive.disk.Assumptions]
 
@@ -64,7 +64,7 @@ def isBlockFull (s : GoSlice) (b : _root_.Perennial.Block) : IProp GF := s ↦* 
 
 instance isBlock_timeless (s : GoSlice) (q : DFrac) (b : _root_.Perennial.Block) :
     Timeless (isBlock (GF := GF) s q b) := by
-  unfold isBlock; rw [ownSlice_unseal]; unfold ownSliceDef; infer_instance
+  unfold isBlock; infer_instance
 
 instance isBlock_dfractional (s : GoSlice) (b : _root_.Perennial.Block) :
     DFractional (fun dq => isBlock (GF := GF) s dq b) := by
@@ -256,7 +256,7 @@ theorem wp_Write' (z : Int) (a : w64) (s : GoSlice) (q : DFrac) (b : _root_.Pere
     {{ RET #(); z d↦ b ∗ s ↦*{q} b.toList }} := by
   iintro %Φ ⟨#Hpkg, %Hz, Hpre⟩ HΦ
   subst Hz
-  icases Hpre with ⟨%b0, >Hda, >Hs⟩
+  icases Hpre with > ⟨%b0, Hda, Hs⟩
   iapply wp_Write a s q b $$ [Hda Hs] HΦ
   iframe Hpkg
   iexists b0

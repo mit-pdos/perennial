@@ -21,6 +21,8 @@ public import Perennial.Helpers.NamedProps
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.Std

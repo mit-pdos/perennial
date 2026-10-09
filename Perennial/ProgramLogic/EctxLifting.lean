@@ -11,6 +11,8 @@ public import Iris.ProgramLogic.EctxiLanguage
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.ProgramLogic Iris.BI
@@ -20,7 +22,7 @@ open Language.Notation EctxLanguage EctxLanguage.Notation
 variable {hlc : outParam HasLC} {Expr Ectx State Obs Val}
 variable [Λ : EctxLanguage Expr Ectx State Obs Val]
 variable {GF : BundledGFunctors}
-variable [ι : IrisGS_gen hlc Expr GF]
+variable [ι : IrisGS_gen .hasLC Expr GF]
 variable {s : Stuckness} {E E₁ E₂ : CoPset} {v : Val} {e e₁ e₂ : Expr}
 variable {σ : State} {P Q : IProp GF} {Φ : Val → IProp GF}
 

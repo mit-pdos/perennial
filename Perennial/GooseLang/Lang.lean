@@ -27,6 +27,8 @@ public import Perennial.Golang.Defn.PreLang
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris.ProgramLogic

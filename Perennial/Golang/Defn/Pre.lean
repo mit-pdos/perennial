@@ -12,6 +12,8 @@ public import Perennial.Golang.Defn.Interface
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace go

@@ -638,7 +638,7 @@ theorem sext_32_64 (x : w32) : sint.Z (W64 (sint.Z x)) = sint.Z x := by
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -703,7 +703,7 @@ instance isRWMutex_pers (rw : Loc) (γ : RWMutexNames) (N : Namespace) :
 theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N ∗ ownRLockToken γ) -∗
-      ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
+      ▷ (£ 1 -∗ |={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (∀ num_readers, ⌜state = .RLocked num_readers⌝ →
             ownRWMutex γ (.RLocked (num_readers + 1)) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RLock")) (Val #())) {{ Φ }} := by
@@ -711,7 +711,7 @@ theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
   simp only [internal.race.Enabled]
-  wp_auto
+  wp_auto_lc 1
   wp_apply_core sync.atomic.Int32.wp_Add $$ [] [-]
   · iPkgInit
   iinv Hinv with >Hi Hclose
@@ -732,7 +732,7 @@ theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     icases Hprot_inv with ⟨%n, %Hst, Hprot⟩
     subst Hst
     imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
-    imod HΦ with ⟨%st, Hst, HΦ⟩
+    imod HΦ $$ Hlc1 with ⟨%st, Hst, HΦ⟩
     simp only [ownRWMutex_unseal, ownRWMutexDef]
     icombine Hst Hstate gives % ⟨_, heq⟩
     subst heq
@@ -779,7 +779,7 @@ theorem RWMutex.wp_RLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       (by simp only [uint.nat] at Hpos; simp only [uint.Z]; omega) $$ Hprot with ⟨%n, %Hst, Hprot⟩
     subst Hst
     imod fupd_mask_subseteq (mask_diff_ndot2 N "sema" "inv") with Hmask
-    imod HΦ with ⟨%st, Hst, HΦ⟩
+    imod HΦ $$ Hlc1 with ⟨%st, Hst, HΦ⟩
     simp only [ownRWMutex_unseal, ownRWMutexDef]
     icombine Hst Hstate gives % ⟨_, heq⟩
     subst heq
@@ -887,14 +887,14 @@ set_option maxRecDepth 200000 in
 theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
-      ▷ (|={⊤ \ ↑N,∅}=> ∃ num_readers, ownRWMutex γ (.RLocked (num_readers + 1)) ∗
+      ▷ (£ 1 -∗ |={⊤ \ ↑N,∅}=> ∃ num_readers, ownRWMutex γ (.RLocked (num_readers + 1)) ∗
           (ownRWMutex γ (.RLocked num_readers) ∗ ownRLockToken γ ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"RUnlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
   simp only [internal.race.Enabled]
-  wp_auto
+  wp_auto_lc 1
   wp_apply_core sync.atomic.Int32.wp_Add $$ [] [-]
   · iPkgInit
   iinv Hinv with >Hi Hclose
@@ -908,7 +908,7 @@ theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
   iintro HreaderCount
   imod Hmask with _
   imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
-  imod HΦ with ⟨%n, Hst, HΦ⟩
+  imod HΦ $$ Hlc1 with ⟨%n, Hst, HΦ⟩
   simp only [ownRWMutex_unseal, ownRWMutexDef]
   icombine Hst Hstate gives % ⟨_, heq⟩
   subst heq
@@ -1020,14 +1020,14 @@ theorem RWMutex.wp_RUnlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
 theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
-      ▷ (|={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
+      ▷ (£ 1 -∗ |={⊤ \ ↑N,∅}=> ∃ state, ownRWMutex γ state ∗
           (⌜state = .RLocked 0⌝ → ownRWMutex γ .Locked ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Lock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
   simp only [internal.race.Enabled, sync.rwmutexMaxReaders]
-  wp_auto
+  wp_auto_lc 1
   wp_apply Mutex.wp_Lock (RWW rw)
     (ghostVar γ.protGn.wlockGn (1 : Qp).half (WlockState.NotLocked (W32 0))) $$ [$Hmu]
     with ⟨Hmtx, Hwl⟩
@@ -1052,7 +1052,7 @@ theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     icases X with ⟨%Hst, Hwl_inv, Hprot⟩
     subst Hst
     imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
-    imod HΦ with ⟨%st, Hst, HΦ⟩
+    imod HΦ $$ Hlc1 with ⟨%st, Hst, HΦ⟩
     simp only [ownRWMutex_unseal, ownRWMutexDef]
     icombine Hst Hstate gives % ⟨_, heq⟩
     subst heq
@@ -1104,7 +1104,7 @@ theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
       imod X with ⟨%Hst, Hwl_inv, Hprot⟩
       subst Hst
       imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
-      imod HΦ with ⟨%st, Hst, HΦ⟩
+      imod HΦ $$ Hlc1 with ⟨%st, Hst, HΦ⟩
       simp only [ownRWMutex_unseal, ownRWMutexDef]
       icombine Hst Hstate gives % ⟨_, heq⟩
       subst heq
@@ -1156,7 +1156,7 @@ theorem RWMutex.wp_Lock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
         imod Y with ⟨%Hst, Hwl_inv, Hprot⟩
         subst Hst
         imod fupd_mask_subseteq (mask_diff_ndot2 N "sema" "inv") with Hmask
-        imod HΦ with ⟨%st, Hst, HΦ⟩
+        imod HΦ $$ Hlc1 with ⟨%st, Hst, HΦ⟩
         simp only [ownRWMutex_unseal, ownRWMutexDef]
         icombine Hst Hstate gives % ⟨_, heq⟩
         subst heq
@@ -1257,14 +1257,14 @@ theorem RWMutex.wp_TryLock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
 theorem RWMutex.wp_Unlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isRWMutex rw γ N) -∗
-      ▷ (|={⊤ \ ↑N,∅}=> ownRWMutex γ .Locked ∗
+      ▷ (£ 1 -∗ |={⊤ \ ↑N,∅}=> ownRWMutex γ .Locked ∗
           (ownRWMutex γ (.RLocked 0) ={∅,⊤ \ ↑N}=∗ Φ #())) -∗
       WP (App (Val (rw @!! go.GoType.PointerType RWMutex.ty @!! go!"Unlock")) (Val #())) {{ Φ }} := by
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
   simp only [internal.race.Enabled, sync.rwmutexMaxReaders]
-  wp_auto
+  wp_auto_lc 1
   wp_apply_core sync.atomic.Int32.wp_Add $$ [] [-]
   · iPkgInit
   iinv Hinv with >Hi Hclose
@@ -1278,7 +1278,7 @@ theorem RWMutex.wp_Unlock (γ : RWMutexNames) (rw : Loc) (N : Namespace) :
   iintro HreaderCount
   imod Hmask with -
   imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
-  imod HΦ with ⟨Hst, HΦ⟩
+  imod HΦ $$ Hlc1 with ⟨Hst, HΦ⟩
   simp only [ownRWMutex_unseal, ownRWMutexDef]
   icombine Hst Hstate gives % ⟨_, heq⟩
   subst heq

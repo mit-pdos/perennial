@@ -6,6 +6,8 @@ public import Perennial.Golang.Defn.Predeclared
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 def sliceIndexRef [FfiSyntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : GoSlice) :

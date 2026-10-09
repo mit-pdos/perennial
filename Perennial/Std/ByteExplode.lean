@@ -12,6 +12,8 @@ public import Perennial.Std.Word.Automation
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 theorem byte_explode (P : U8 → Prop) (h : ∀ i : Fin 256, P (BitVec.ofNat 8 i)) : ∀ x, P x := by

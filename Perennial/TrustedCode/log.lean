@@ -7,6 +7,8 @@ public import Perennial.Golang.Defn.Pre
 
 @[expose] public section
 
+noncomputable section
+
 set_option linter.iris.style.nameCheck false
 
 namespace Perennial

@@ -23,7 +23,7 @@ variable {GF : BundledGFunctors} [AllG GF]
 
 /-! ## Generic layer: `dfrac_agree` over a coded OFE -/
 section saved_anything
-variable {T : Type} [OFE T] {o : Syntax.Ofe} [IsOfe (IProp GF) T o]
+variable {T : Type _} [OFE T] {o : Syntax.Ofe} [IsOfe (IProp GF) T o]
 
 /-- Shared implementation of saved props/preds: own `to_dfrac_agree dq x`. -/
 def savedAnythingOwn (γ : GName) (dq : DFrac) (x : T) : IProp GF :=

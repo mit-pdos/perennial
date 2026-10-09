@@ -10,5 +10,7 @@ public import Lean
 
 @[expose] public section
 
+noncomputable section
+
 /-- Extra simp set for WP expressions, enabled by `goose.wp.extras`. -/
 register_simp_attr goose_wp_simp_extra

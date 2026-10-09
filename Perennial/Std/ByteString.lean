@@ -12,6 +12,8 @@ public import Perennial.Std.Word
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 abbrev byte_string := List w8

@@ -8,6 +8,8 @@ public import Iris.Std.Namespaces
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.Std

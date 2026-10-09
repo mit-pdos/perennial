@@ -59,7 +59,7 @@ theorem select_nb_only_send_au (γ : ChanNames) (ch : Loc) (v : Unit) (Φ Φnotr
   unfold isSelectNbOnly nonblockingSendAu nonblockingSendAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
-  · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
+  · iinv Hinv with > ⟨%s, Hoc, %Hs⟩ Hclose
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext
@@ -78,7 +78,7 @@ theorem select_nb_only_rcv_au (γ : ChanNames) (ch : Loc) (Φ : Unit → Bool �
   unfold isSelectNbOnly nonblockingRecvAu nonblockingRecvAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
-  · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
+  · iinv Hinv with > ⟨%s, Hoc, %Hs⟩ Hclose
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext

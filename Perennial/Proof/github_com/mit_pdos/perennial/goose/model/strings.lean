@@ -24,7 +24,7 @@ namespace github_com.mit_pdos.perennial.goose.model.strings
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : go.StringSemantics]
 variable {s : Stuckness} {E : CoPset}

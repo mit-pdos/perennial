@@ -38,13 +38,15 @@ public import Perennial.Golang.Theory
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section lemma
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 
 /-- Joining the branches of an `if:` at the assertion `asn`: it suffices to
 prove `WP (if: c then e1 else e2) {{ asn }}` and `∀ v, asn v -∗ Φ v`. -/
@@ -82,7 +84,7 @@ open Lean Elab Tactic Meta in
 section examples
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Both branches store to `l`; the join assertion forgets which value. -/

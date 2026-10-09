@@ -9,6 +9,8 @@ public import Perennial.Golang.Defn.String
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace go

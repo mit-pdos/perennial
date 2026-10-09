@@ -11,6 +11,8 @@ public import Perennial.Std.ListLen
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 def u64LeDef (x : U64) : List Byte := LittleEndian.split 8 x.toNat

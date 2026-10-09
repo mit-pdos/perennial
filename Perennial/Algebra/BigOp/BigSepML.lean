@@ -23,6 +23,8 @@ public import Perennial.Algebra.BigOp.BigSepM
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.Std BigSepM BigSepM2 BigSepL PartialMap LawfulPartialMap LawfulFiniteMap

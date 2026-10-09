@@ -9,3 +9,5 @@ public import Perennial.Golang.Theory.Auto
 public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
 
 @[expose] public section
+
+noncomputable section

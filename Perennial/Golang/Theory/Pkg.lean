@@ -25,6 +25,8 @@ public meta import Perennial.Golang.Theory.PostLifting
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -32,7 +34,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 noncomputable section init_defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 
 def IsInit [FfiModel] (σ : state) : Prop :=
   σ.goState.packageState = ∅
@@ -258,7 +260,7 @@ macro "iPkgInit" : tactic => `(tactic| first
 section package_init
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem wp_package_init (pkg_name : GoString) [PkgInfo pkg_name] (init_func : val)

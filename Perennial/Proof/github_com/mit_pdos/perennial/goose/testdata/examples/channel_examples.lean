@@ -15,3 +15,5 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
 @[expose] public section
+
+noncomputable section

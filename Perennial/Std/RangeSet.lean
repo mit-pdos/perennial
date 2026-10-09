@@ -4,6 +4,8 @@ public import Perennial.Std.Word.Properties
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- The set of words `W64 start, ..., W64 (start + sz - 1)`. -/

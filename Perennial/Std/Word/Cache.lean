@@ -15,6 +15,8 @@ public import Lean
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial.word
 open Lean Meta
 

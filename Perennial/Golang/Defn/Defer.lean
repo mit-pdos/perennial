@@ -4,6 +4,8 @@ public import Perennial.Golang.Defn.Exception
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 section defn

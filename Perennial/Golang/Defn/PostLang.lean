@@ -33,6 +33,8 @@ public import Perennial.GooseLang.Notation
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- `EqualsUnfold a a'`, written `a =→ a'`: a sealed definition `a`

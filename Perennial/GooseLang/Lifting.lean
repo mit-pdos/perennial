@@ -290,11 +290,11 @@ end go_state_definitions
 ghost names it uses, and `ffiLocalCtx`/`ffiGlobalCtx` interpret its states.
 (The start resources `ffiGlobalStart`/`ffiLocalStart` are in
 `FfiInterpAdequacy`; there is no crash machinery.) -/
-class FfiInterp (ffi : FfiModel) where
-  ffiLocalGS : BundledGFunctors → Type
-  ffiGlobalGS : BundledGFunctors → Type
-  ffiGlobalCtx : ∀ {GF : BundledGFunctors}, ffiGlobalGS GF → ffi_global_state → IProp GF
-  ffiLocalCtx : ∀ {GF : BundledGFunctors}, ffiLocalGS GF → ffi_state → IProp GF
+class FfiInterp.{u, v} (ffi : FfiModel) where
+  ffiLocalGS : BundledGFunctors.{u} → Type v
+  ffiGlobalGS : BundledGFunctors.{u} → Type v
+  ffiGlobalCtx : ∀ {GF : BundledGFunctors.{u}}, ffiGlobalGS GF → ffi_global_state → IProp GF
+  ffiLocalCtx : ∀ {GF : BundledGFunctors.{u}}, ffiLocalGS GF → ffi_state → IProp GF
 
 export FfiInterp (ffiLocalGS ffiGlobalGS ffiGlobalCtx ffiLocalCtx)
 
@@ -341,11 +341,11 @@ def tls : NaMode → LockState
 @[simp] theorem tls_Writing : tls Writing = WSt := rfl
 @[simp] theorem tls_Reading (n : Nat) : tls (Reading n) = RSt n := rfl
 
-variable {hlc : HasLC} {GF : BundledGFunctors}
+variable {GF : BundledGFunctors}
 
 /-- The GooseLang state interpretation: the per-generation part together with
 the global part (FFI global state and prophecy map). -/
-def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+def gooseStateInterp [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
     (σ : CfgState) (κs : List Observation) : IProp GF :=
   iprop(naHeapCtx tls σ.1.heap ∗
     ffiLocalCtx L.gooseFfiLocalGS σ.1.world ∗
@@ -356,17 +356,17 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
 the real configuration and the authoritative receipt counter for the fuel. -/
-def gooseBstateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+def gooseBstateInterp [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
     (σ : BcfgState) (κs : List Observation) : IProp GF :=
   iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2)
 
-instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
+instance goose_stateInterp [GooseGlobalGS .hasLC GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
   stateInterp σ _ κs _ := gooseBstateInterp σ κs
 
 variable [FfiSemantics ext ffi] [GoGlobalContext]
 
-instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc Expr GF where
+instance goose_irisGS [G : GooseGlobalGS .hasLC GF] [GooseLocalGS GF] : IrisGS_gen .hasLC Expr GF where
   invGS := G.gooseInvGS
   numLatersPerStep _ := 0
   forkPost _ := iprop(True)
@@ -617,7 +617,7 @@ end inversion
 section lifting
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
 
 open EctxLanguage ProofMode
@@ -1115,6 +1115,7 @@ theorem gmap_singleton_union_eq_insert {K V : Type} [DecidableEq K] (m : GMap K 
   rw [show ({[k := v]} : GMap K V).lookup k' = _ from GMap.lookup_singleton_iff k k' v]
   split <;> simp
 
+omit [FfiInterp ffi] in
 theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
   refine ⟨freshLocs σ.1.heap.domList, fun i => ⟨freshLocs_non_null _ i, ?_⟩, freshLocs_off_0 _⟩
   cases h : σ.1.heap !! (freshLocs σ.1.heap.domList +ₗ i) with

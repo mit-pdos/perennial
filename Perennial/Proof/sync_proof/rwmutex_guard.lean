@@ -80,7 +80,7 @@ instance : Inhabited rwmutex := ⟨.Locked⟩
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -152,15 +152,16 @@ theorem RWMutex.wp_RLock (rw : Loc) (P : Qp → IProp GF) :
   iNamed Hpre
   wp_apply_core rwmutex.RWMutex.wp_RLock γ rw (nroot.@"rw") $$ [Hown] [-]
   · iframe #; iframe
+  iintro Hlc
   iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
-  icases Hi with ⟨%st, >Hst, HP⟩
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%st, Hst, HP⟩
   iframe Hst
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   iintro %n %Hst' H
   subst Hst'
   simp only [invSt]
-  icases HP with ⟨>Hrtok, >Htoks, Hl, HP⟩
+  icases HP with ⟨Hrtok, Htoks, Hl, HP⟩
   icombine Htoks Hmax as Htoks
   icombine Hauth Htoks gives %Hle
   rw [invFrac_S n (by omega)]
@@ -191,17 +192,17 @@ theorem RWMutex.wp_RUnlock (rw : Loc) (P : Qp → IProp GF) :
   iNamed Ho
   wp_apply_core rwmutex.RWMutex.wp_RUnlock γ rw (nroot.@"rw") $$ [] [-]
   · iframe #
+  iintro Hlc
   iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
-  icases Hi with ⟨%st, >Hst, HP⟩
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%st, Hst, HP⟩
   cases st with
   | Locked =>
     simp only [invSt]
-    icases HP with >HP
     icombine HP Hrlocked gives %Hbad
     omega
   | RLocked n =>
   simp only [invSt]
-  icases HP with ⟨>Hrauth, >Htoks, Hl, HP⟩
+  icases HP with ⟨Hrauth, Htoks, Hl, HP⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   icombine Hrauth Hrlocked gives %Hle
@@ -241,8 +242,9 @@ theorem RWMutex.wp_Lock (rw : Loc) (P : Qp → IProp GF) :
   iNamed Ho
   wp_apply_core rwmutex.RWMutex.wp_Lock γ rw (nroot.@"rw") $$ [] [-]
   · iframe #
+  iintro Hlc
   iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
-  icases Hi with ⟨%st, >Hst, HP⟩
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%st, Hst, HP⟩
   iframe Hst
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -250,7 +252,7 @@ theorem RWMutex.wp_Lock (rw : Loc) (P : Qp → IProp GF) :
   subst Hst'
   simp only [invSt]
   rw [invFrac_0]
-  icases HP with ⟨Hrauth, Htoks, >Hl, HP⟩
+  icases HP with ⟨Hrauth, Htoks, Hl, HP⟩
   imod Hmask with _
   imod Hclose $$ [Hst Hrauth] with _
   · inext
@@ -276,12 +278,13 @@ theorem RWMutex.wp_Unlock (rw : Loc) (P : Qp → IProp GF) :
   iNamed Ho
   wp_apply_core rwmutex.RWMutex.wp_Unlock γ rw (nroot.@"rw") $$ [] [-]
   · iframe #
+  iintro Hlc
   iinv Hinv with Hi Hclose <;> try exact ⟨mask_ndot_ne nroot "inv" "rw" (by decide), trivial⟩
-  icases Hi with ⟨%st, >Hst, HP⟩
+  imod lc_fupd_elim_later $$ Hlc Hi with ⟨%st, Hst, HP⟩
   cases st with
   | RLocked n =>
     simp only [invSt]
-    icases HP with ⟨_, _, >Hbad, _⟩
+    icases HP with ⟨_, _, Hbad, _⟩
     icombine Hlocked Hbad gives % ⟨Hbad, _⟩
     exfalso
     simp only [Qp.le_iff, Qp.val_add, Qp.val_one] at Hbad

@@ -9,6 +9,8 @@ public import Iris
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 open Iris
 

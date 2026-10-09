@@ -14,6 +14,8 @@ public import Perennial.GooseLang.Lang
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-! ## The Grove extension to GooseLang: primitive operations -/

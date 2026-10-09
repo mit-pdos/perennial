@@ -13,6 +13,8 @@ public import Perennial.Golang.Defn.PostLang
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace error

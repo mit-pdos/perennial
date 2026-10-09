@@ -7,3 +7,5 @@ public import Perennial.Code.sync
 public import Perennial.Proof.ProofPrelude
 
 @[expose] public section
+
+noncomputable section

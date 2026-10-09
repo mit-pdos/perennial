@@ -21,6 +21,8 @@ public import Perennial.Std.Attrs
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- `l₁ ≡ₚ l₂`: `l₁` is a permutation of `l₂`. -/

@@ -15,3 +15,5 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.type_equality
 
 @[expose] public section
+
+noncomputable section

@@ -14,6 +14,8 @@ public import Perennial.Golang.Theory.SimpAttr
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 attribute [goose_wp_simp] subst substOpt substKeyedElements substKeyedElement substOptKey

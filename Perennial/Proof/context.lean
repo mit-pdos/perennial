@@ -90,7 +90,7 @@ structure ContextNames where
 /-! Context logical descriptor. -/
 /-- The Done channel is not part of the descriptor: `Done_gn : ContextNames` holds the ghost
 names through which the Done channel is determined later (see the file header). -/
-structure ContextDesc [FfiSyntax] (PROP : Type) where
+structure ContextDesc [FfiSyntax] (PROP : Type _) where
   mk ::
   Values : GMap GoInterface GoInterface
   Deadline : Option time.Time
@@ -100,7 +100,7 @@ structure ContextDesc [FfiSyntax] (PROP : Type) where
 section init
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 

@@ -5,6 +5,8 @@ public import Perennial.Std.ListBasics
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 /-- The character with this byte as its code. -/

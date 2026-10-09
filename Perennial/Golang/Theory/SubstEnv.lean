@@ -18,6 +18,8 @@ public import Perennial.GooseLang.Lang
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 section substEnv

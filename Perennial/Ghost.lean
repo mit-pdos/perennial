@@ -17,3 +17,5 @@ public import Perennial.Ghost.Token
 public import Perennial.Ghost.AuthSet
 
 @[expose] public section
+
+noncomputable section

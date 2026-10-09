@@ -35,7 +35,7 @@ class DiskPreG (GF : BundledGFunctors) where
 /-- The GooseLang `FfiInterp` for the disk. -/
 @[reducible] def disk_interp : FfiInterp disk_model where
   ffiLocalGS := DiskGS
-  ffiGlobalGS _ := Unit
+  ffiGlobalGS _ := PUnit
   ffiLocalCtx hL d := genHeapInterp (G := hL.diskGGenHeapG) (d : DiskState)
   ffiGlobalCtx _ _ := iprop(True)
 
@@ -110,7 +110,7 @@ end na_heap_alloc
 section disk
 attribute [local instance] disk_op disk_model disk_semantics disk_interp
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
 
 abbrev gooseDiskGS : DiskGS GF := L.gooseFfiLocalGS

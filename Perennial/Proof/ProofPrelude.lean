@@ -18,3 +18,5 @@ public import Perennial.GooseLang.IPersist
 public import Perennial.Ghost
 
 @[expose] public section
+
+noncomputable section

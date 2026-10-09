@@ -35,7 +35,7 @@ abbrev wgjN : Namespace := nroot.@"wgjoin"
 section waitgroup_join_idiom
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -288,11 +288,7 @@ theorem WaitGroup.wp_Wait (P : IProp GF) (n : w32) (wg : Loc) :
   imodintro
   iapply HΦ
   isplitl [Hdone_P_inv HimpliesP]
-  · icases HPeq with ⟨HPa, HPb⟩
-    ihave H : (▷ P0 : IProp GF) $$ [Hdone_P_inv]
-    · iapply HPa
-      inext
-      iexact Hdone_P_inv
+  · ihave H := HPeq $$ Hdone_P_inv
     inext
     iapply HimpliesP $$ H
   iexists γ, iprop(True)

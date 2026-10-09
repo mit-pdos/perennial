@@ -11,6 +11,8 @@ public import Perennial.GooseLang.Ffi.GroveFfi.Impl
 
 @[expose] public section
 
+noncomputable section
+
 set_option linter.iris.style.nameCheck false
 
 namespace Perennial

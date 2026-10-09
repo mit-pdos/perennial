@@ -133,7 +133,7 @@ theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 

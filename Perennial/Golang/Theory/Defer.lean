@@ -12,6 +12,8 @@ public import Perennial.Golang.Defn.Defer
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic
@@ -19,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem wp_with_defer (e : Expr) (Φ : val → IProp GF) :

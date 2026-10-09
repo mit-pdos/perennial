@@ -100,7 +100,7 @@ end grove
 section lifting
 attribute [local instance] grove_op grove_model grove_semantics grove_interp
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
 
 abbrev gooseGroveGS : GroveGS GF := G.gooseFfiGlobalGS

@@ -13,6 +13,8 @@ public import Perennial.IrisLib.DFractional
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI

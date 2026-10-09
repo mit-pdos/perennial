@@ -48,8 +48,8 @@ namespace DistGlobal
 hypothesis) has no single `HeapGS`. Scoped (`open scoped Perennial.DistGlobal`)
 rather than global, since with a `HeapGS` in scope it is a second path to the
 `InvGS` of `goose_irisGS`. -/
-scoped instance distGlobalInvGS [FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] {hlc : HasLC}
-    {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] : InvGS_gen hlc GF :=
+scoped instance distGlobalInvGS [FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] : InvGS_gen .hasLC GF :=
   G.gooseInvGS
 
 end DistGlobal
@@ -148,7 +148,7 @@ theorem distNodes_steps [G : GooseGlobalGS .hasLC GF] {n : Nat} {dns₁ dns₂ :
   induction H generalizing κs' dns₁ gf₁ dns₂ gf₂ with
   | refl ρ =>
     cases hρ1; cases hρ2
-    simp only [List.nil_append, Nat.repeat]
+    simp only [List.nil_append, step_fupdN]
     iintro Hg Hnodes _
     iapply fupd_mask_intro empty_subset
     iintro Hcl; imod Hcl; imodintro
@@ -156,7 +156,7 @@ theorem distNodes_steps [G : GooseGlobalGS .hasLC GF] {n : Nat} {dns₁ dns₂ :
   | @cons n_inner ρ1' ρ_mid ρ2' obs obs' hstep hrest ih =>
     cases hρ1; cases hρ2
     obtain ⟨dns_mid, gf_mid⟩ := ρ_mid
-    rw [List.append_assoc obs obs' κs', show n_inner + 1 = 1 + n_inner by omega, Nat.repeat_add]
+    rw [List.append_assoc obs obs' κs', show n_inner + 1 = 1 + n_inner by omega, step_fupdN_add.to_eq]
     iintro Hg Hnodes ⟨Hcred1, Hcred2⟩
     imod distNodes_step (κs := obs' ++ κs') hstep $$ Hg Hnodes Hcred1 with Hstep
     imodintro

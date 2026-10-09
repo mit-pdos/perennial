@@ -5,6 +5,13 @@ fragments, built from a `ghost_map` of saved-proposition names.
 Representation: the set of saved-prop names is a `gmap GName Unit` (= `gmap GName Unit`),
 used directly as the ghost map; big separating conjunctions over the set are
 `[∗map] γp ↦ _ ∈ gns, _`.
+
+With transfinite step indices `▷ (P ∗ Q)` does not imply `▷ P ∗ ▷ Q`, so the
+authority and the fragments relate their proposition to the saved
+propositions in one direction each, so that no `▷` ever has to be split: the
+authority `□ (apropHolds gns -∗ ▷ P)`, a fragment `□ (P -∗ apropHolds gns)`.
+Agreement of a fragment covering the whole set with the authority is then
+`□ (P' -∗ ▷ P)`.
 -/
 module
 
@@ -30,13 +37,13 @@ def ownApropAuth (γ : GName) (P : IProp GF) (n : Nat) : IProp GF :=
   iprop(∃ gns : GMap GName Unit,
     ghostMapAuth γ 1 gns ∗
     □ ([∗map] γp ↦ _u ∈ gns, ∃ Q, savedPropOwn γp .discard Q) ∗
-    □ (apropHolds gns ∗-∗ ▷ P) ∗
+    □ (apropHolds gns -∗ ▷ P) ∗
     ⌜GMap.size gns = n⌝)
 
 def ownApropFrag (γ : GName) (P : IProp GF) (n : Nat) : IProp GF :=
   iprop(∃ gns : GMap GName Unit,
     ([∗map] γp ↦ _u ∈ gns, γp ↪[γ] ()) ∗
-    □ (apropHolds gns ∗-∗ ▷ P) ∗
+    □ (P -∗ apropHolds gns) ∗
     ⌜GMap.size gns = n⌝)
 
 /-- A full (multiplicity `1`) fragment of the authoritative proposition. -/
@@ -56,13 +63,9 @@ theorem ownApropAuth_alloc : ⊢ |==> ∃ γ, ownApropAuth (GF := GF) γ iprop(T
     itrivial
   isplitr
   · imodintro
-    isplit
-    · iintro -
-      inext
-      itrivial
-    · iintro -
-      iapply BigSepM.bigSepM_empty.2
-      itrivial
+    iintro -
+    inext
+    itrivial
   · ipureintro
     exact GMap.map_size_empty
 
@@ -74,13 +77,9 @@ theorem ownApropFrag_0 (γ : GName) : ⊢ ownApropFrag (GF := GF) γ iprop(True)
     itrivial
   isplitr
   · imodintro
-    isplit
-    · iintro -
-      inext
-      itrivial
-    · iintro -
-      iapply BigSepM.bigSepM_empty.2
-      itrivial
+    iintro -
+    iapply BigSepM.bigSepM_empty.2
+    itrivial
   · ipureintro
     exact GMap.map_size_empty
 
@@ -135,22 +134,13 @@ theorem ownApropAuth_add (Q : IProp GF) (γ : GName) (P : IProp GF) (n : Nat) :
         unfold apropHolds
         rw [insert_eq, (BigSepM.bigSepM_insert (Φ := fun γp (_ : Unit) =>
           iprop(∃ Q, savedPropOwn (GF := GF) γp .discard Q ∗ ▷ Q)) (m := gns) hγ).to_eq]
-        isplit
-        · iintro ⟨⟨%Q', HQ', HQf⟩, Hs⟩
-          ihave HP := Himp $$ Hs
-          ihave HQ'' := saved_prop_transfer γp _ _ Q Q' $$ HQ HQ' HQf
-          inext
-          isplitl [HP]
-          · iexact HP
-          · iexact HQ''
-        · iintro HPQ
-          icases HPQ with ⟨HP, HQf⟩
-          isplitl [HQf]
-          · iexists Q
-            isplitr
-            · iexact HQ
-            · iexact HQf
-          · iapply Himp $$ HP
+        iintro ⟨⟨%Q', HQ', HQf⟩, Hs⟩
+        ihave HP := Himp $$ Hs
+        ihave HQ'' := saved_prop_transfer γp _ _ Q Q' $$ HQ HQ' HQf
+        inext
+        isplitl [HP]
+        · iexact HP
+        · iexact HQ''
       · ipureintro
         rw [GMap.map_size_insert_None gns γp () hγ, Hn]
     · iexists PartialMap.insert (∅ : GMap GName Unit) γp ()
@@ -166,16 +156,13 @@ theorem ownApropAuth_add (Q : IProp GF) (γ : GName) (P : IProp GF) (n : Nat) :
         rw [(BigSepM.bigSepM_insert (Φ := fun γp (_ : Unit) =>
           iprop(∃ Q, savedPropOwn (GF := GF) γp .discard Q ∗ ▷ Q))
           (m := (∅ : GMap GName Unit)) rfl).to_eq]
-        isplit
-        · iintro ⟨⟨%Q', HQ', HQf⟩, -⟩
-          iapply saved_prop_transfer γp _ _ Q Q' $$ HQ HQ' HQf
-        · iintro HQf
-          isplitl [HQf]
-          · iexists Q
-            isplitr
-            · iexact HQ
-            · iexact HQf
-          · iapply BigSepM.bigSepM_empty.2; itrivial
+        iintro HQf
+        isplitl [HQf]
+        · iexists Q
+          isplitr
+          · iexact HQ
+          · inext; iexact HQf
+        · iapply BigSepM.bigSepM_empty.2; itrivial
       · ipureintro
         exact (GMap.map_size_insert_None (∅ : GMap GName Unit) γp () rfl).trans
           (by rw [GMap.map_size_empty])
@@ -192,7 +179,7 @@ private theorem own_aprop_auth_of_empty (γ : GName) :
       iprop(∃ gns : GMap GName Unit,
         ghostMapAuth γ 1 gns ∗
         □ ([∗map] γp ↦ _u ∈ gns, ∃ Q, savedPropOwn γp .discard Q) ∗
-        □ (apropHolds gns ∗-∗ ▷ True) ∗
+        □ (apropHolds gns -∗ ▷ True) ∗
         ⌜GMap.size gns = 0⌝) := by
   iintro H
   iexists ∅
@@ -204,13 +191,9 @@ private theorem own_aprop_auth_of_empty (γ : GName) :
     itrivial
   isplitr
   · imodintro
-    isplit
-    · iintro -
-      inext
-      itrivial
-    · iintro -
-      iapply BigSepM.bigSepM_empty.2
-      itrivial
+    iintro -
+    inext
+    itrivial
   · ipureintro
     exact GMap.map_size_empty
 
@@ -231,7 +214,7 @@ theorem ownApropAuth_reset (γ : GName) (P P' : IProp GF) (n : Nat) :
 private theorem own_aprop_auth_frag_sub (γ : GName) (P P' : IProp GF) (n n' : Nat) :
     ownApropAuth γ P n ∗ ownApropFrag γ P' n' ⊢
       ∃ gns gns0 : GMap GName Unit, ⌜gns0 ⊆ gns ∧ GMap.size gns = n ∧ GMap.size gns0 = n'⌝ ∗
-        □ (apropHolds (GF := GF) gns ∗-∗ ▷ P) ∗ □ (apropHolds (GF := GF) gns0 ∗-∗ ▷ P') := by
+        □ (apropHolds (GF := GF) gns -∗ ▷ P) ∗ □ (P' -∗ apropHolds (GF := GF) gns0) := by
   unfold ownApropAuth ownApropFrag
   iintro ⟨⟨%gns, Hgns, -, #Himp, %Hn⟩, ⟨%gns0, Hgns', #Himp', %Hn'⟩⟩
   ihave %Hsub := ghost_map_lookup_big (GF := GF) (γ := γ) (q := 1) (m := gns) (dq := DFrac.own 1)
@@ -244,33 +227,27 @@ private theorem own_aprop_auth_frag_sub (γ : GName) (P P' : IProp GF) (n n' : N
   · iexact Himp
   · iexact Himp'
 
+/-- A fragment covering the whole authoritative set gives the authoritative
+proposition: `□ (P' -∗ ▷ P)`. (Only this direction: see the module doc.) -/
 instance ownApropAuth_agree (γ : GName) (P P' : IProp GF) (n : Nat) :
-    CombineSepGives (ownApropAuth γ P n) (ownApropFrag γ P' n) iprop(▷ P ∗-∗ ▷ P') where
+    CombineSepGives (ownApropAuth γ P n) (ownApropFrag γ P' n) iprop(P' -∗ ▷ P) where
   combine_sep_gives := by
     refine (own_aprop_auth_frag_sub γ P P' n n).trans ?_
     iintro ⟨%gns, %gns0, %⟨Hsub, Hn, Hn'⟩, #Himp, #Himp'⟩
     have heq : gns0 = gns := GMap.set_subseteq_size_eq Hsub (by omega)
     subst heq
     imodintro
-    isplit
-    · iintro HP
-      ihave H := Himp $$ HP
-      iapply Himp' $$ H
-    · iintro HP
-      ihave H := Himp' $$ HP
-      iapply Himp $$ H
+    iintro HP'
+    ihave H := Himp' $$ HP'
+    iapply Himp $$ H
 
 instance ownApropAuth_agree' (γ : GName) (P P' : IProp GF) (n : Nat) :
-    CombineSepGives (ownApropFrag γ P' n) (ownApropAuth γ P n) iprop(▷ P' ∗-∗ ▷ P) where
+    CombineSepGives (ownApropFrag γ P' n) (ownApropAuth γ P n) iprop(P' -∗ ▷ P) where
   combine_sep_gives := by
     iintro ⟨H, H'⟩
     icombine H' H gives #Heq
     imodintro
-    isplit
-    · iintro HP
-      iapply Heq $$ HP
-    · iintro HP
-      iapply Heq $$ HP
+    iexact Heq
 
 /-- Lower priority, to prefer `ownApropAuth_agree`. -/
 instance (priority := default - 10) ownApropAuth_le (γ : GName) (P P' : IProp GF) (n n' : Nat) :
@@ -324,19 +301,10 @@ instance ownApropFrag_combine (γ : GName) (P P' : IProp GF) (n n' : Nat) :
         unfold apropHolds
         rw [(bigSepM_union_gset (fun γp (_ : Unit) =>
           iprop(∃ Q, savedPropOwn (GF := GF) γp .discard Q ∗ ▷ Q)) gns gns' hd).to_eq]
-        isplit
-        · iintro ⟨H1, H2⟩
-          ihave HP := Himp $$ H1
-          ihave HP' := Himp' $$ H2
-          inext
-          isplitl [HP]
-          · iexact HP
-          · iexact HP'
-        · iintro HPP
-          icases HPP with ⟨HP, HP'⟩
-          isplitl [HP]
-          · iapply Himp $$ HP
-          · iapply Himp' $$ HP'
+        iintro ⟨HP, HP'⟩
+        ihave H1 := Himp $$ HP
+        ihave H2 := Himp' $$ HP'
+        iframe
       · ipureintro
         rw [GMap.size_union hd, Hn, Hn']
     · have : ∃ k, (gns.lookup k).isSome ∧ (gns'.lookup k).isSome := by

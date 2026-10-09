@@ -9,6 +9,8 @@ public import Perennial.Std.Word
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 structure Loc where

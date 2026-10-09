@@ -28,6 +28,8 @@ public import Iris.ProgramLogic.WeakestPre
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Lean Iris Iris.BI

@@ -66,13 +66,15 @@ public import Perennial.Golang.Theory.Auto
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section lemma
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 
 /-- Joining at a known value `v₀`: it suffices to prove that `e` returns `v₀`
 with `R`, and `R -∗ Φ v₀`. -/
@@ -259,7 +261,7 @@ open Lean Elab Tactic Meta in
 section examples
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- Both branches store to `l`; the join forgets which value. The load after

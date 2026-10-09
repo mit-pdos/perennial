@@ -29,6 +29,8 @@ public meta import Lean.Meta.Tactic.Simp.BuiltinSimprocs.Int
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Lean Meta in

@@ -12,6 +12,8 @@ public import Perennial.Std.Word.Automation
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Lean Elab Tactic Meta in

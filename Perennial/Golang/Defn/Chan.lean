@@ -12,6 +12,8 @@ public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 namespace chan

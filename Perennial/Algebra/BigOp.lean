@@ -7,3 +7,5 @@ public import Perennial.Algebra.BigOp.BigSepM
 public import Perennial.Algebra.BigOp.BigSepML
 
 @[expose] public section
+
+noncomputable section

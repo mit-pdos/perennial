@@ -26,13 +26,15 @@ public import Perennial.Golang.Theory
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 open Iris Iris.BI
 
 section bench
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 set_option maxRecDepth 100000

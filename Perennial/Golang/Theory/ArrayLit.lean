@@ -12,6 +12,8 @@ public import Perennial.Golang.Theory.PostLifting
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -49,7 +51,7 @@ theorem arrayLitSets_eq {V : Type} (z : V) :
 section array_lit
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem wp_arrayLit_set {s : Stuckness} {E : CoPset} (n : Int) (t : go.GoType) {V : Type} (e0 : Expr)

@@ -12,6 +12,8 @@ public import Iris.Algebra.Frac
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris

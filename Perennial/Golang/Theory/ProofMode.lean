@@ -34,6 +34,8 @@ public import Iris.ProofMode
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
@@ -43,7 +45,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section classes
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 
 /-- Classes that are used to tell `wp_pures` about steps it can take:
 `PureWp φ e e'` says that, under the pure side condition `φ`, `e` takes a
@@ -105,7 +107,7 @@ end classes
 section instances
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 
 instance wp_snd (v1 v2 : val) : PureWp (G := G) (L := L) True (Snd (Val (PairV v1 v2))) (Val v2) :=
   pure_exec_pure_wp (pure_snd v1 v2)
@@ -158,7 +160,7 @@ instead costs the size of the rest of the run per `let:`.) -/
 section let_env
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 
 theorem tac_wp_let_env {σ : String → Option val} {b : Binder} {v : val} {e : Expr}
     {K : List EctxItem} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
@@ -186,7 +188,7 @@ end let_env
 
 section lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [ι : IrisGS_gen hlc Expr GF]
+variable {GF : BundledGFunctors} [ι : IrisGS_gen .hasLC Expr GF]
 
 theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e' : Expr}
     {Φ : val → IProp GF}
@@ -198,7 +200,7 @@ theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxI
 evaluation context `K` is moved into the postcondition, one `WP` per item. Used
 by `wp_auto`/`wp_pures` to work on a redex deep inside an evaluation context
 (e.g. in the field-by-field load of a wide struct) in constant time per step. -/
-def wpNestedPost (s : Stuckness) (E : CoPset) (K : List EctxItem) (Φ : val → IProp GF) :
+noncomputable def wpNestedPost (s : Stuckness) (E : CoPset) (K : List EctxItem) (Φ : val → IProp GF) :
     val → IProp GF :=
   match K with
   | [] => Φ
@@ -1062,22 +1064,43 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
     return b
   go e
 
-/-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
+/-- Instance arguments `ext ffi interp sem gctx GF G L` of a `goose_irisGS`
 instance. -/
 meta def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let ι ← instantiateMVars ι
   let ι ← if ι.isAppOf ``goose_irisGS then pure ι else whnfR ι
-  unless ι.isAppOfArity ``goose_irisGS 9 do
+  unless ι.isAppOfArity ``goose_irisGS 8 do
     throwError "the WP is not over the GooseLang `IrisGS_gen` instance `goose_irisGS`:{indentExpr ι}"
-  -- `goose_irisGS` takes `ext ffi interp hlc GF sem gctx G L`; return them in the
-  -- order of the section variables of this file: `ext ffi interp sem gctx hlc GF G L`
+  -- `goose_irisGS` takes `ext ffi interp GF sem gctx G L`; return them in the
+  -- order of the section variables of this file: `ext ffi interp sem gctx GF G L`
   let a := ι.getAppArgs
-  return #[a[0]!, a[1]!, a[2]!, a[5]!, a[6]!, a[3]!, a[4]!, a[7]!, a[8]!]
+  return #[a[0]!, a[1]!, a[2]!, a[4]!, a[5]!, a[3]!, a[6]!, a[7]!]
 
-/-- The context arguments `hlc`, `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
+/-- The universe levels of the constant `c`, a lemma whose first arguments are
+the section variables `gs` (as `gooseGSArgs` returns them): found by unifying the
+types of these binders with the types of `gs`, which determine all the levels
+(those of `GF` and of `FfiInterp`). -/
+meta def levelsOfGS (c : Name) (gs : Array Lean.Expr) : MetaM (List Level) := do
+  let info ← getConstInfo c
+  if info.levelParams.isEmpty then return []
+  let us ← info.levelParams.mapM fun _ => mkFreshLevelMVar
+  let mut ty ← instantiateTypeLevelParams info.toConstantVal us
+  for g in gs do
+    let .forallE _ d b _ := ty | break
+    if d.hasLevelMVar then
+      unless ← isDefEq d (← inferType g) do
+        throwError "levelsOfGS: cannot instantiate the universe levels of {c}"
+    ty := b.instantiate1 g
+  us.mapM instantiateLevelMVars
+
+/-- The constant `c` (see `levelsOfGS`) at the universe levels of `gs`. -/
+meta def mkConstGS (c : Name) (gs : Array Lean.Expr) : MetaM Lean.Expr := do
+  return mkConst c (← levelsOfGS c gs)
+
+/-- The context arguments `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
 meta def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Lean.Expr)) := do
   let gs ← gooseGSArgs wp.ι
-  return [("hlc", gs[5]!), ("GF", gs[6]!), ("ι", wp.ι)]
+  return [("GF", gs[5]!), ("ι", wp.ι)]
 
 /-- `mkAppNamed` with the context arguments of `wp` (`GooseWpGoal.ctxArgs`), so
 that the application can be built without unification (`mkAppNamedDirect?`). -/
@@ -1115,14 +1138,14 @@ directly instead of by typeclass search: unifying the instance with `e1` assigns
 the (possibly large) body `e` to a metavariable, which costs a traversal of `e`
 at every step. Returns the same as `synthPureWp`. -/
 meta def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
-  unless gs.size == 9 do return none
+  unless gs.size == 8 do return none
   let ext := gs[0]!
   let e ← whnfR (← instantiateMVars e1)
   let val (v : Lean.Expr) := mkApp2 (mkConst ``Perennial.Expr.Val) ext v
   match_expr e with
   | Perennial.Expr.Rec _ f x body =>
     return some (mkConst ``True, val (mkApp4 (mkConst ``Perennial.val.RecV) ext f x body),
-      mkAppN (mkConst ``wp_recc) (gs ++ #[f, x, body]))
+      mkAppN (← mkConstGS ``wp_recc gs) (gs ++ #[f, x, body]))
   | Perennial.Expr.App _ a b =>
     let some fv ← isGooseVal? a | return none
     let some v2 ← isGooseVal? b | return none
@@ -1131,12 +1154,12 @@ meta def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (L
     let recv := mkApp4 (mkConst ``Perennial.val.RecV) ext f x body
     let s1 := mkApp4 (mkConst ``Perennial.subst') ext f recv body
     return some (mkConst ``True, mkApp4 (mkConst ``Perennial.subst') ext x v2 s1,
-      mkAppN (mkConst ``wp_call) (gs ++ #[v2, f, x, body]))
+      mkAppN (← mkConstGS ``wp_call gs) (gs ++ #[v2, f, x, body]))
   | Perennial.Expr.Pair _ a b =>
     let some v1 ← isGooseVal? a | return none
     let some v2 ← isGooseVal? b | return none
     return some (mkConst ``True, val (mkApp3 (mkConst ``Perennial.val.PairV) ext v1 v2),
-      mkAppN (mkConst ``wp_pair) (gs ++ #[v1, v2]))
+      mkAppN (← mkConstGS ``wp_pair gs) (gs ++ #[v1, v2]))
   | _ => return none
 
 /-- Apply the constant `c` (without universe parameters) to `gs` (its first
@@ -1145,9 +1168,9 @@ are synthesized, the others are `args` in order (each given the binder type).
 Built directly, without unification: the kernel checks it. -/
 meta def mkAppPositional? (c : Name) (gs : Array Lean.Expr) (args : Array (Lean.Expr → MetaM Lean.Expr)) :
     MetaM (Option Lean.Expr) := do
-  let some info := (← getEnv).find? c | return none
-  unless info.levelParams.isEmpty do return none
-  let mut ty := info.type
+  let some _ := (← getEnv).find? c | return none
+  let us ← levelsOfGS c gs
+  let mut ty ← instantiateTypeLevelParams (← getConstInfo c).toConstantVal us
   let mut out := #[]
   let mut j := 0
   repeat
@@ -1163,7 +1186,7 @@ meta def mkAppPositional? (c : Name) (gs : Array Lean.Expr) (args : Array (Lean.
       else return none
     out := out.push v
     ty := b.instantiate1 v
-  return some (mkAppN (mkConst c) out)
+  return some (mkAppN (mkConst c us) out)
 
 /-- The step of an array literal whose elements are all values of the element
 type, `App (Val (GoInstruction (CompositeLiteral (go.ArrayType n t)))) (Val
@@ -1173,7 +1196,7 @@ and `n` a literal: one `PureWp` step to the array value (`pure_wp_array_lit` of
 `go.composite_literal_array`, whose stepping is quadratic in the length.
 Returns the same as `synthPureWp`. -/
 meta def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
-  unless gs.size == 9 do return none
+  unless gs.size == 8 do return none
   let e ← whnfR e
   let_expr Perennial.Expr.App _ f a := e | return none
   let some fv ← isGooseVal? f | return none
@@ -2452,9 +2475,10 @@ meta def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($p
   let heq ← wp.wrapEq e' heq?
   let Kq := wp.quoteK st.K
   let gs ← gooseGSArgs wp.ι
-  if !lc && gs.size == 9 then
-    -- built directly (`tac_wp_pure_wp'` takes the 9 section variables of `gs` first)
-    let k := fun (h : Lean.Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp')
+  if !lc && gs.size == 8 then
+    -- built directly (`tac_wp_pure_wp'` takes the 8 section variables of `gs` first)
+    let us ← levelsOfGS ``tac_wp_pure_wp' gs
+    let k := fun (h : Lean.Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp' us)
       (gs ++ #[st.φ, st.e1, st.e2, wp.wrap e', st.inst, Kq, ehyps, ehyps', wp.s, wp.E, wp.Φ,
         hφ, hlater, heq, h])
     return ⟨ehyps', hyps', e', k⟩
@@ -2570,13 +2594,14 @@ meta def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
        ("e", wp.wrap (← fillExpr K (mkApp3 (mkConst ``substEnv) ext sigmas[run.size]! body))),
        ("e'", wp.wrap e'), ("!h", h), ("!heq", heq)]
     -- the `let:`s, last first
+    let letEnv ← mkConstGS ``tac_wp_let_env gs
     for i' in [0:run.size] do
       let i := run.size - 1 - i'
       let (b, _, v, bd) := run[i]!
-      pf := mkAppN (mkConst ``tac_wp_let_env) (gs ++ #[sigmas[i]!, b, v, bd, Kq,
+      pf := mkAppN letEnv (gs ++ #[sigmas[i]!, b, v, bd, Kq,
         deltas[2 * i]!, deltas[2 * i + 1]!, deltas[2 * i + 2]!, wp.s, wp.E, wp.Φ,
         laters[2 * i]!, laters[2 * i + 1]!, pf])
-    return mkAppN (mkConst ``tac_wp_env_enter) (gs ++ #[c0, Kq, ehyps, wp.s, wp.E, wp.Φ, pf])
+    return mkAppN (← mkConstGS ``tac_wp_env_enter gs) (gs ++ #[c0, Kq, ehyps, wp.s, wp.E, wp.Φ, pf])
   return some ⟨ehyps', hyps', e', k⟩
 
 /-- Simplify the expression of the WP goal with `goose_wp_simp`. Returns the new
@@ -3083,7 +3108,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
 section call_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {GF : BundledGFunctors} [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
 
 /-- Call a function value `fv` that unfolds to
 `rec: f x := e`. The recursive occurrences of `f` are replaced by the folded `fv`. -/

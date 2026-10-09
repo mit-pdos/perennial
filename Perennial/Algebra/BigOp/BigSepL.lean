@@ -17,6 +17,8 @@ public import Iris.ProofMode
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 open Iris Iris.BI Iris.BI.BigSepL Iris.BI.BigSepL2

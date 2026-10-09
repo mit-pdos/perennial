@@ -15,6 +15,8 @@ public import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
 
 @[expose] public section
 
+noncomputable section
+
 namespace Perennial
 
 attribute [instance] grove_semantics grove_interp

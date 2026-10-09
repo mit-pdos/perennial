@@ -9,6 +9,8 @@ public import Lean
 
 @[expose] public section
 
+noncomputable section
+
 /-- `word_tonat`: `toNat` of BitVec operations to `Nat` arithmetic (see `word_tonat`). -/
 register_simp_attr word_tonat_simp
 /-- `word_unfold_lit`: unfold `uint.Z`, `sint.Z`, `W64`, ... and evaluate word literals. -/

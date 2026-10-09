@@ -49,7 +49,7 @@ end laws
 section clock
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF]
 variable [sem : go.Semantics] [package_sem : sync.atomic.Assumptions]
 
 /-- The clock invariant: the counter `l` holds `n`, and `n` receipts back it. -/

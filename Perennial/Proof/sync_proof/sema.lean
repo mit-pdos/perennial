@@ -20,7 +20,7 @@ namespace sync
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -67,7 +67,7 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   wp_for
   wp_bind (Primitive1 _ _)
-  iinv Hsem with ⟨%v, >Hs, Hv⟩
+  iinv Hsem with > ⟨%v, Hs, Hv⟩
   wp_apply_core wp_atomic_load _ _ sema _ v $$ Hs
   iintro Hs
   imodintro
@@ -80,7 +80,7 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
     iframe
   · -- try to acquire
     wp_bind (CmpXchg _ _ _)
-    iinv Hsem with ⟨%v0, >Hs, >Hv⟩
+    iinv Hsem with > ⟨%v0, Hs, Hv⟩
     by_cases hv : v0 = v
     · subst hv
       imod HΦ with ⟨%v1, Hv2, HΦ⟩
@@ -152,7 +152,7 @@ theorem wp_runtime_Semrelease (sema : Loc) (γ : GName) (N : Namespace) (_u1 : B
   wp_start as #Hsem
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   wp_bind (AtomicAdd _ _)
-  iinv Hsem with ⟨%v, >Hs, >Hv⟩
+  iinv Hsem with > ⟨%v, Hs, Hv⟩
   imod HΦ with ⟨%v1, Hv2, HΦ⟩
   icombine Hv Hv2 gives % ⟨_, Heq⟩
   subst Heq

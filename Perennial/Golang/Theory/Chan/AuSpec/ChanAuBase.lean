@@ -141,7 +141,7 @@ def ChanCapValid {V : Type} (s : ChanState V) (cap : Int) : Prop :=
 section au_defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 def chanstate (q : Qp) (s : ChanState V) : IProp GF :=
@@ -324,7 +324,7 @@ end au_defns
 section defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 variable [ZeroVal V] [TypedPointsto (GF := GF) V]
@@ -471,7 +471,7 @@ end defns
 section lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem blocking_rcv_implies_nonblocking [ZeroVal V] (Φ : V → Bool → IProp GF) :
@@ -480,9 +480,10 @@ theorem blocking_rcv_implies_nonblocking [ZeroVal V] (Φ : V → Bool → IProp 
   unfold nonblockingRecvAu nonblockingRecvAuInner
   isplit
   · unfold recvAu
-    imod Hau with ⟨%s, Hoc, Hcont⟩
+    imod Hau with Hau
     imodintro
     inext
+    icases Hau with ⟨%s, Hoc, Hcont⟩
     iexists s
     iframe Hoc
     rcases s with (_ | ⟨_, _⟩) | _ | _ | _ | _ | _ | (_ | ⟨_, _⟩) <;> first | iexact Hcont | itrivial
@@ -494,9 +495,10 @@ theorem blocking_send_implies_nonblocking (Φ : IProp GF) (v : V) :
   unfold nonblockingSendAu nonblockingSendAuInner
   isplit
   · unfold sendAu
-    imod Hchan with ⟨%s, Hoc, Hcont⟩
+    imod Hchan with Hchan
     imodintro
     inext
+    icases Hchan with ⟨%s, Hoc, Hcont⟩
     iexists s
     iframe Hoc
     rcases s with _ | _ | _ | _ | _ | _ | _ <;> first | iexact Hcont | itrivial
@@ -687,7 +689,7 @@ end lemmas
 section ghost_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS .hasLC GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 
