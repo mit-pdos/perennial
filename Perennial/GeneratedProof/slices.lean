@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.GeneratedProof.cmp
 public import Perennial.GeneratedProof.math.bits
 public import Perennial.Golang.Theory
 public import Perennial.Code.slices
