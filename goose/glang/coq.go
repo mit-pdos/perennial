@@ -189,6 +189,16 @@ func (e VerbatimExpr) Coq(needs_paren bool) string {
 	return string(e)
 }
 
+// GenericTypeExpr is the type of an axiomatized generic type with type
+// parameters Params: a function from go.type arguments to a go.type.
+type GenericTypeExpr struct {
+	Params []string
+}
+
+func (e GenericTypeExpr) Coq(needs_paren bool) string {
+	return fmt.Sprintf("∀ (%s : go.type), go.type", strings.Join(e.Params, " "))
+}
+
 // A Go qualified identifier, which is translated to a Gallina qualified
 // identifier.
 type PackageIdent struct {

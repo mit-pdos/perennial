@@ -669,6 +669,10 @@ func (e VerbatimExpr) Lean(m LeanMode) string {
 	return s
 }
 
+func (e GenericTypeExpr) Lean(m LeanMode) string {
+	return fmt.Sprintf("∀ (%s : go.GoType), go.GoType", strings.Join(e.Params, " "))
+}
+
 func (e PackageIdent) Lean(m LeanMode) string {
 	s := LeanNamespace(e.Package) + "." + LeanIdent(e.Ident)
 	if m == LeanExpr {
