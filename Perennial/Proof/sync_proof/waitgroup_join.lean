@@ -130,8 +130,9 @@ theorem WaitGroup.wp_Add (P' : IProp GF) (wg : Loc) (P : IProp GF) (num_added : 
   iNamed Hinv
   wp_apply_core sync.WaitGroup.wp_Add wg (W64 1) γ.wgGn (wgjN.@"wg") $$ [] [-]
   · iframe #
-  imod inv_acc (E := ⊤) (fun _ _ => CoPset.mem_full) $$ Hinv with ⟨Hi, Hclose⟩
-  iapply fupd_mask_intro (wg_mask_ndot_ne wgjN "wg" "inv" (by decide))
+  imod inv_acc (E := ⊤ \ ↑(wgjN.@"wg")) (wg_mask_ndot_ne wgjN "inv" "wg" (by decide)) $$ Hinv
+    with ⟨Hi, Hclose⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
   icases Hi with ⟨%ctr, %added, %done, %Pdone, Hi⟩
@@ -149,7 +150,7 @@ theorem WaitGroup.wp_Add (P' : IProp GF) (wg : Loc) (P : IProp GF) (num_added : 
     omega
   iright
   iframe Hno_waiters
-  iintro Hno_waiters Hwg_ctr_inv
+  iintro %_ Hno_waiters Hwg_ctr_inv
   imod Hmask with -
   imod ownApropAuth_add P' γ.wgApropGn P0 (sint.nat num_added) $$ Haprop with ⟨Haprop, Hdone_aprop⟩
   ihave Hadded := (ownTokAuth_halves γ.wgNotDoneGn (sint.nat num_added)).2 $$ [Hadded Hadded_inv]
@@ -196,8 +197,9 @@ theorem WaitGroup.wp_Done (P : IProp GF) (wg : Loc) :
   iNamed Hinv
   wp_apply_core sync.WaitGroup.wp_Done wg γ.wgGn (wgjN.@"wg") $$ [] [-]
   · iframe #
-  imod inv_acc (E := ⊤) (fun _ _ => CoPset.mem_full) $$ Hinv with ⟨Hi, Hclose⟩
-  iapply fupd_mask_intro (wg_mask_ndot_ne wgjN "wg" "inv" (by decide))
+  imod inv_acc (E := ⊤ \ ↑(wgjN.@"wg")) (wg_mask_ndot_ne wgjN "inv" "wg" (by decide)) $$ Hinv
+    with ⟨Hi, Hclose⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
   icases Hi with ⟨%ctr, %added, %done, %Pdone, Hi⟩

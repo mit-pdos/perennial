@@ -484,7 +484,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `wp_for`, `wp_for_post_do/continue/break/return` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`) |
 | `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
-| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*` |
+| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`, `WaitGroup.Add`'s counter) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
 ### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
@@ -497,6 +497,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `sync.wp_NewCond`, `Cond.wp_Wait`, `Cond.wp_Signal`, `Cond.wp_Broadcast` | condition variables |
 | `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
 | `sync.wp_RWMutex__*` | `RWMutex` |
+| `sync.init_WaitGroup`, `WaitGroup.wp_Add`, `WaitGroup.wp_Done`, `WaitGroup.wp_Wait` | `WaitGroup`, logically atomic (updates open at `⊤ \ ↑N`); `Add` assumes its counter does not overflow (`waitGroupStateAddAssume`), so its caller bounds the new counter only from below; `sync.join.*` the join idiom |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
 | `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 

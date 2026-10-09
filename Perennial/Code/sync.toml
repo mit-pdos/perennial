@@ -6,6 +6,10 @@ translate = [
 
   "WaitGroup",
   "WaitGroup.*",
+  # Add is a trusted model (TrustedCode/sync.lean): the generated body, with the
+  # counter update made an atomic add that assumes the int32 counter does not
+  # overflow (a model assumption, like append's length).
+  "!WaitGroup.Add",
   "waitGroupBubbleFlag",
   "noCopy",
   "rlocker",
@@ -40,6 +44,10 @@ trusted = [
   # both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
   "copyChecker",
   "copyChecker.*",
+
+  # The model assumes the WaitGroup counter does not overflow: see
+  # WaitGroup.Add.impl and waitGroupStateAddAssume in TrustedCode/sync.lean.
+  "WaitGroup.Add",
 
   "runtime_Semacquire*",
   "runtime_Semrelease",

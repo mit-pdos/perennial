@@ -59,6 +59,22 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
   conversions are not modelled: they are stuck.
+* **Model assumptions (overflow).** Where Go panics on an overflow that a real
+  program cannot reach (it would run out of memory first), the model assumes the
+  overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
+  `assume` that fails loops forever, so the proofs cover the executions where
+  it holds):
+  * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`);
+  * `strings.Join`'s total length (`TrustedCode/strings.lean`);
+  * `sync.WaitGroup`'s `int32` counter (`waitGroupStateAddAssume`,
+    `TrustedCode/sync.lean`): `WaitGroup.Add` is a trusted model, Goose's
+    translation of Go's `Add` with its atomic add replaced by a compare-and-swap
+    loop that assumes the counter plus the delta stays at most `2^31 - 1`. The
+    assumption is checked on the value the compare-and-swap replaces, so it is
+    atomic with the add (an `assume` after Go's atomic add would come too late:
+    other goroutines would already see the overflowed counter). So
+    `WaitGroup.wp_Add` needs no upper bound on the counter; its commit tells the
+    caller that the new counter did not overflow.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.
