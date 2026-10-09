@@ -165,7 +165,78 @@ def blockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
         isChan recv_chan γ V ∗
         recvAu γ V (fun v ok => WP (App recv_handler (Val (PairV #v #ok))) {{ Ψ }}))
 
+/-- The precondition for a select case on a nil channel (Go: such a case is never ready, so
+it never fires; `chan.tryCommClause` returns `(#(), #false)` for it). A receive needs only the
+channel to be `chan.nil`, and a send also the sent value; the element type must have a typed
+value `V` (the channel model's `TrySend` and `TryReceive` allocate the sent value or a zero
+value before their nil check). Prove it with `nilClausePre_recv` and
+`nilClausePre_send`. Used by `wp_select_blocking_nil` and `wp_select_nonblocking_nil`. -/
+def nilClausePre (c : comm_clause) : IProp GF :=
+  match c with
+  | .CommClause (.SendCase t send_chan_expr send_val) _ =>
+      iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
+          (_ : IntoValTyped (GF := GF) V t) (v : V),
+        ⌜send_val = Val #v ∧ send_chan_expr = Val #chan.nil⌝)
+  | .CommClause (.RecvCase t recv_chan_expr) _ =>
+      iprop(∃ (V : Type) (_ : ZeroVal V) (_ : TypedPointsto (GF := GF) V)
+          (_ : IntoValTyped (GF := GF) V t),
+        ⌜recv_chan_expr = Val #chan.nil⌝)
+
+/-- A receive case on a nil channel satisfies `nilClausePre`. -/
+theorem nilClausePre_recv (V : Type) [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
+    [IntoValTyped (GF := GF) V t] (ch : GoChan) (body : Expr) (h : ch = chan.nil) :
+    ⊢ nilClausePre (GF := GF) (.CommClause (.RecvCase t (Val #ch)) body) := by
+  subst h
+  simp only [nilClausePre]
+  iexists V, inferInstance, inferInstance, inferInstance
+  ipureintro
+  trivial
+
+/-- A send case on a nil channel satisfies `nilClausePre`. -/
+theorem nilClausePre_send {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
+    [IntoValTyped (GF := GF) V t] (ch : GoChan) (v : V) (body : Expr) (h : ch = chan.nil) :
+    ⊢ nilClausePre (GF := GF) (.CommClause (.SendCase t (Val #ch) (Val #v)) body) := by
+  subst h
+  simp only [nilClausePre]
+  iexists V, inferInstance, inferInstance, inferInstance, v
+  ipureintro
+  trivial
+
 set_option goose.wp.extras true
+
+set_option maxHeartbeats 400000 in
+/-- A select case on a nil channel is not ready, whether the select blocks or not. -/
+theorem wp_tryCommClause_nil (c : comm_clause) (blocking : Bool) :
+    ⊢ ∀ Φ : val → IProp GF, (nilClausePre c ∧ Φ (PairV #() #false)) -∗
+      WP (App (Val (chan.tryCommClause c)) (Val #blocking)) {{ Φ }} := by
+  rcases c with ⟨⟨t, ch, e⟩ | ⟨t, ch⟩, body⟩
+  · iintro %Φ HΦ
+    simp only [chan.tryCommClause, nilClausePre]
+    wp_call
+    icases and_exists_right.1 $$ HΦ with ⟨%V, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hZ, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hT, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hI, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%v, HΦ⟩
+    icases HΦ with ⟨%Heq, HΦ⟩
+    obtain ⟨rfl, rfl⟩ := Heq
+    simp only [subst]
+    wp_auto
+    wp_apply wp_TrySend_nil (V := V) (t := t) v blocking
+    iexact HΦ
+  · iintro %Φ HΦ
+    simp only [chan.tryCommClause, nilClausePre]
+    wp_call
+    icases and_exists_right.1 $$ HΦ with ⟨%V, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hZ, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hT, HΦ⟩
+    icases and_exists_right.1 $$ HΦ with ⟨%hI, HΦ⟩
+    icases HΦ with ⟨%Heq, HΦ⟩
+    subst Heq
+    simp only [subst]
+    wp_auto
+    wp_apply wp_TryReceive_nil (V := V) (t := t) blocking
+    iexact HΦ
 
 set_option maxHeartbeats 400000 in
 /-- The lemmas use Ψ because the original client-provided `send/recvAu` will
@@ -239,9 +310,19 @@ theorem wp_tryCommClause_blocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_auto
       iexact HΦ
 
+/-- `wp_tryCommClause_blocking`, for a case that may also be on a nil channel. -/
+theorem wp_tryCommClause_blocking_nil (c : comm_clause) (Ψ : val → IProp GF) :
+    ⊢ ∀ Φ : val → IProp GF, ((blockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
+      WP (App (Val (chan.tryCommClause c)) (Val #true)) {{ Φ }} := by
+  iintro %Φ HΦ Hwand
+  icases BI.and_or_right.1 $$ HΦ with (HΦ | HΦ)
+  · iapply wp_tryCommClause_blocking c Ψ $$ HΦ Hwand
+  · iapply wp_tryCommClause_nil c true $$ HΦ
+
 set_option maxHeartbeats 400000 in
-theorem wp_trySelect_blocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
-    ⊢ (([∧list] c ∈ clauses, blockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
+theorem wp_trySelect_blocking_nil (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, blockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
       □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect true clauses) {{ Φ }} := by
   induction clauses with
@@ -254,7 +335,7 @@ theorem wp_trySelect_blocking (clauses : List comm_clause) (Ψ Φ : val → IPro
   | cons c cs ih =>
     iintro HΦ #Hwand
     simp only [chan.trySelect, List.foldr] at ih ⊢
-    wp_apply wp_tryCommClause_blocking c Ψ $$ [HΦ] []
+    wp_apply wp_tryCommClause_blocking_nil c Ψ $$ [HΦ] []
     · isplit
       · icases HΦ with ⟨H, -⟩
         icases BigAndL.bigAndL_cons.1 $$ H with ⟨H, -⟩
@@ -271,6 +352,14 @@ theorem wp_trySelect_blocking (clauses : List comm_clause) (Ψ Φ : val → IPro
     · iintro %r Hr
       wp_auto
       iapply Hwand $$ Hr
+
+theorem wp_trySelect_blocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, blockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
+      WP (chan.trySelect true clauses) {{ Φ }} := by
+  iintro HΦ #Hwand
+  iapply wp_trySelect_blocking_nil clauses Ψ Φ $$ [HΦ] Hwand
+  iapply and_mono (BigAndL.bigAndL_mono_of_forall fun _ _ => or_intro_l) .rfl $$ HΦ
 
 theorem wp_SelectStmt_blocking {s : Stuckness} {E : CoPset} (clauses : List comm_clause)
     (Φ : val → IProp GF) :
@@ -296,16 +385,34 @@ theorem wp_SelectStmt_blocking {s : Stuckness} {E : CoPset} (clauses : List comm
   iframe Hctx
   iapply HΦ $$ %clauses' %Hperm
 
-theorem wp_select_blocking (clauses : List comm_clause) (Φ : val → IProp GF) :
-    ⊢ ([∧list] c ∈ clauses, blockingClausePre c Φ) -∗
+/-- `wp_select_blocking`, where a case may be on a nil channel: such a case never fires, and
+its precondition is `nilClausePre c` instead of `blockingClausePre c Φ`. Usage, for
+`select { case v := <-ch: ...; case <-nilCh: ... }` with `nilCh = chan.nil`:
+```
+wp_apply_core chan.wp_select_blocking_nil
+iapply BigAndL.bigAndL_cons.2
+isplit
+· ileft
+  simp only [chan.blockingClausePre]
+  iexists V, inferInstance, inferInstance, inferInstance, inferInstance, ch, γ
+  ...
+iapply BigAndL.bigAndL_cons.2
+isplit
+· iright
+  iapply chan.nilClausePre_recv V _ _ Hnil   -- `Hnil : nilCh = chan.nil` (or `rfl`)
+iapply BigAndL.bigAndL_nil.2
+itrivial
+``` -/
+theorem wp_select_blocking_nil (clauses : List comm_clause) (Φ : val → IProp GF) :
+    ⊢ ([∧list] c ∈ clauses, blockingClausePre c Φ ∨ nilClausePre c) -∗
       WP (App (Val (GoInstruction SelectStmt)) (Val (SelectStmtClausesV none clauses))) {{ Φ }} := by
   iloeb as IH
   iintro Hcases
   iapply wp_SelectStmt_blocking
   iintro %clauses' %Hperm
-  wp_apply wp_trySelect_blocking clauses' Φ $$ [Hcases] []
+  wp_apply wp_trySelect_blocking_nil clauses' Φ $$ [Hcases] []
   · isplit
-    · rw [BigAndL.bigAndL_perm (Φ := fun c => blockingClausePre c Φ) Hperm]
+    · rw [BigAndL.bigAndL_perm (Φ := fun c => iprop(blockingClausePre c Φ ∨ nilClausePre c)) Hperm]
       iexact Hcases
     · wp_auto
       iapply IH $$ Hcases
@@ -313,6 +420,13 @@ theorem wp_select_blocking (clauses : List comm_clause) (Φ : val → IProp GF) 
     iintro %r Hr
     wp_auto
     iexact Hr
+
+theorem wp_select_blocking (clauses : List comm_clause) (Φ : val → IProp GF) :
+    ⊢ ([∧list] c ∈ clauses, blockingClausePre c Φ) -∗
+      WP (App (Val (GoInstruction SelectStmt)) (Val (SelectStmtClausesV none clauses))) {{ Φ }} := by
+  iintro Hcases
+  iapply wp_select_blocking_nil
+  iapply BigAndL.bigAndL_mono_of_forall (fun _ _ => or_intro_l) $$ Hcases
 
 /-- The precondition for a nonblocking select case. -/
 def nonblockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
@@ -405,9 +519,19 @@ theorem wp_tryCommClause_nonblocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_auto
       iexact HΦ
 
+/-- `wp_tryCommClause_nonblocking`, for a case that may also be on a nil channel. -/
+theorem wp_tryCommClause_nonblocking_nil (c : comm_clause) (Ψ : val → IProp GF) :
+    ⊢ ∀ Φ : val → IProp GF, ((nonblockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
+      WP (App (Val (chan.tryCommClause c)) (Val #false)) {{ Φ }} := by
+  iintro %Φ HΦ Hwand
+  icases BI.and_or_right.1 $$ HΦ with (HΦ | HΦ)
+  · iapply wp_tryCommClause_nonblocking c Ψ $$ HΦ Hwand
+  · iapply wp_tryCommClause_nil c false $$ HΦ
+
 set_option maxHeartbeats 400000 in
-theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
-    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
+theorem wp_trySelect_nonblocking_nil (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
       □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect false clauses) {{ Φ }} := by
   induction clauses with
@@ -420,7 +544,7 @@ theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → I
   | cons c cs ih =>
     iintro HΦ #Hwand
     simp only [chan.trySelect, List.foldr] at ih ⊢
-    wp_apply wp_tryCommClause_nonblocking c Ψ $$ [HΦ] []
+    wp_apply wp_tryCommClause_nonblocking_nil c Ψ $$ [HΦ] []
     · isplit
       · icases HΦ with ⟨H, -⟩
         icases BigAndL.bigAndL_cons.1 $$ H with ⟨H, -⟩
@@ -437,6 +561,14 @@ theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → I
     · iintro %r Hr
       wp_auto
       iapply Hwand $$ Hr
+
+theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
+      WP (chan.trySelect false clauses) {{ Φ }} := by
+  iintro HΦ #Hwand
+  iapply wp_trySelect_nonblocking_nil clauses Ψ Φ $$ [HΦ] Hwand
+  iapply and_mono (BigAndL.bigAndL_mono_of_forall fun _ _ => or_intro_l) .rfl $$ HΦ
 
 theorem wp_SelectStmt_nonblocking {s : Stuckness} {E : CoPset} (dflt : Expr)
     (clauses : List comm_clause) (Φ : val → IProp GF) :
@@ -463,16 +595,19 @@ theorem wp_SelectStmt_nonblocking {s : Stuckness} {E : CoPset} (dflt : Expr)
   iframe Hctx
   iapply HΦ $$ %clauses' %Hperm
 
-theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
-    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Φ) ∧ WP dflt {{ Φ }}) -∗
+/-- `wp_select_nonblocking`, where a case may be on a nil channel: such a case never fires, and
+its precondition is `nilClausePre c` instead of `nonblockingClausePre c Φ` (see
+`wp_select_blocking_nil` for a usage example). -/
+theorem wp_select_nonblocking_nil (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Φ ∨ nilClausePre c) ∧ WP dflt {{ Φ }}) -∗
       WP (App (Val (GoInstruction SelectStmt)) (Val (SelectStmtClausesV (some dflt) clauses)))
         {{ Φ }} := by
   iintro Hcases
   iapply wp_SelectStmt_nonblocking
   iintro %clauses' %Hperm
-  wp_apply wp_trySelect_nonblocking clauses' Φ $$ [Hcases] []
+  wp_apply wp_trySelect_nonblocking_nil clauses' Φ $$ [Hcases] []
   · isplit
-    · rw [BigAndL.bigAndL_perm (Φ := fun c => nonblockingClausePre c Φ) Hperm]
+    · rw [BigAndL.bigAndL_perm (Φ := fun c => iprop(nonblockingClausePre c Φ ∨ nilClausePre c)) Hperm]
       icases Hcases with ⟨H, -⟩
       iexact H
     · icases Hcases with ⟨-, H⟩
@@ -482,6 +617,14 @@ theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : v
     iintro %r Hr
     wp_auto
     iexact Hr
+
+theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
+    ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Φ) ∧ WP dflt {{ Φ }}) -∗
+      WP (App (Val (GoInstruction SelectStmt)) (Val (SelectStmtClausesV (some dflt) clauses)))
+        {{ Φ }} := by
+  iintro Hcases
+  iapply wp_select_nonblocking_nil
+  iapply and_mono (BigAndL.bigAndL_mono_of_forall fun _ _ => or_intro_l) .rfl $$ Hcases
 
 /-- Zipping a permutation of `l1` with `l3` is a permutation of `l1.zip l3`. -/
 theorem permutation_zip {A B : Type} {l1 l2 : List A} (h : l1.Perm l2) (l3 : List B)

@@ -176,6 +176,9 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
   rw [isChan_unseal]
   iNamed Hunb
   wp_auto_lc 5
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -419,6 +422,9 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
   rw [isChan_unseal]
   iNamed Hunb
   wp_auto_lc 5
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -567,6 +573,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
   rw [isChan_unseal]
   iNamed Hunb
   wp_auto_lc 5
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -782,6 +791,19 @@ theorem wp_TrySend (ch : Loc) (v : V) (γ : ChanNames) (blocking : Bool) :
     icases HΦ with (HΦ | HΦ)
     · iapply wp_TrySend_nonblocking $$ Hch HΦ
     · iapply wp_TrySend_nonblocking_alt $$ Hch HΦ
+
+omit [Pos.Countable V] in
+/-- `TrySend` on a nil channel is never ready: it returns `false` (Go: a `select` case
+sending on a nil channel never fires). -/
+theorem wp_TrySend_nil (v : V) (blocking : Bool) :
+    ⊢ ∀ Φ : val → IProp GF, Φ #false -∗
+      WP (App (App (Val (chan.nil @!! go.GoType.PointerType (channel.Channel.ty t) @!! go!"TrySend"))
+        (Val #v)) (Val #blocking)) {{ Φ }} := by
+  iintro %Φ HΦ
+  wp_method_call
+  wp_call
+  wp_auto
+  iexact HΦ
 
 set_option maxHeartbeats 400000 in
 theorem wp_Send (ch : Loc) (v : V) (γ : ChanNames) :

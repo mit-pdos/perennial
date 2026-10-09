@@ -44,6 +44,10 @@ func NewChannel[T any](cap int) *Channel[T] {
 // Non-Blocking send operation for select statements. Blocking send and blocking select
 // statements simply call this in a for loop until it returns true.
 func (c *Channel[T]) TrySend(val T, blocking bool) bool {
+	// A nil channel is never ready: a select case on it never fires.
+	if c == nil {
+		return false
+	}
 	c.mu.Lock()
 	switch c.state {
 	case closed:
@@ -119,6 +123,10 @@ func (c *Channel[T]) Send(v T) {
 // with another non-blocking send.
 func (c *Channel[T]) TryReceive(blocking bool) (bool, T, bool) {
 	var local_val T
+	// A nil channel is never ready: a select case on it never fires.
+	if c == nil {
+		return false, local_val, false
+	}
 	// First critical section: determine state and get value if sender is ready
 	c.mu.Lock()
 	switch c.state {

@@ -58,6 +58,9 @@ theorem wp_TryReceive_blocking (ch : Loc) (γ : ChanNames) :
   iNamed Hch
   chan_unfold_consts
   wp_auto_lc 9
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -374,6 +377,9 @@ theorem wp_TryReceive_nonblocking (ch : Loc) (γ : ChanNames) :
   iNamed Hch
   chan_unfold_consts
   wp_auto_lc 9
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -586,6 +592,9 @@ theorem wp_TryReceive_nonblocking_alt (ch : Loc) (γ : ChanNames) :
   iNamed Hch
   chan_unfold_consts
   wp_auto_lc 9
+  -- the nil-channel check at the start of the method: dead, `ch ≠ chan.nil`
+  wp_if_destruct
+  · exact absurd rfl Hnotnull
   rw [isLock_eq_is_Mutex] at *
   wp_apply Mutex.wp_Lock $$ [$lock] as ⟨Hlock, Hchan⟩
   iNamed Hchan
@@ -863,6 +872,19 @@ theorem wp_TryReceive (ch : Loc) (γ : ChanNames) (blocking : Bool) :
     icases HΦ with (HΦ | HΦ)
     · iapply wp_TryReceive_nonblocking $$ Hch HΦ
     · iapply wp_TryReceive_nonblocking_alt $$ Hch HΦ
+
+omit [Pos.Countable V] in
+/-- `TryReceive` on a nil channel is never ready: it returns `(false, zero, false)` (Go: a
+`select` case receiving from a nil channel never fires). -/
+theorem wp_TryReceive_nil (blocking : Bool) :
+    ⊢ ∀ Φ : val → IProp GF, Φ (PairV (PairV #false #(zero_val V)) #false) -∗
+      WP (App (Val (chan.nil @!! go.GoType.PointerType (channel.Channel.ty t) @!! go!"TryReceive"))
+        (Val #blocking)) {{ Φ }} := by
+  iintro %Φ HΦ
+  wp_method_call
+  wp_call
+  wp_auto
+  iexact HΦ
 
 set_option maxHeartbeats 400000 in
 theorem wp_Receive (ch : Loc) (γ : ChanNames) :

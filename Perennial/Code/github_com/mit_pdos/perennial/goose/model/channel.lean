@@ -123,6 +123,7 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (Let "blocking" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "blocking"))
   (Let "val" (App (Val (GoInstruction (GoAlloc T))) (Var "val"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad offerState.ty))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val closed)))
   (App (Val doExecute)
@@ -219,7 +220,12 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #())))))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #())))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel.ty T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel.ty T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (Val #false))
+  (App (Val doExecute)
+  (Val #())))))))))))
 
 /-- c.Send(val)
 
@@ -227,7 +233,7 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
 
     c <- val
 
-    go: channel.go:105:22 -/
+    go: channel.go:109:22 -/
 noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
@@ -262,7 +268,7 @@ noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
     around nonblocking TryReceive. If false, we don't make an offer since we don't need to match
     with another non-blocking send.
 
-    go: channel.go:120:22 -/
+    go: channel.go:124:22 -/
 noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
@@ -270,6 +276,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Channel.ty T))))) (Var "c"))
   (Let "blocking" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "blocking"))
   (Let "local_val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad offerState.ty))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val buffered)))
@@ -393,9 +400,14 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #())))))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel.ty T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel.ty T))))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (Pair (Pair (Val #false) (App (Val (GoInstruction (GoLoad T))) (Var "local_val"))) (Val #false)))
+  (App (Val doExecute)
+  (Val #()))))))))))
 
-/-- go: channel.go:189:22 -/
+/-- go: channel.go:197:22 -/
 noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -445,7 +457,7 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
     may be successful exchanges that need to complete, which is equivalent to the go runtime where
     the closer must still obtain the channel's lock
 
-    go: channel.go:206:22 -/
+    go: channel.go:214:22 -/
 noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -481,7 +493,7 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
 
     close(c)
 
-    go: channel.go:228:22 -/
+    go: channel.go:236:22 -/
 noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -509,7 +521,7 @@ noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
     is equivalent to:
     v := c<-
 
-    go: channel.go:240:22 -/
+    go: channel.go:248:22 -/
 noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -538,7 +550,7 @@ noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T
     This might not be worth specifying since it is hard to make good use of channel length
     semantics.
 
-    go: channel.go:252:22 -/
+    go: channel.go:260:22 -/
 noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -570,7 +582,7 @@ noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
     is equivalent to:
     cap(c)
 
-    go: channel.go:266:22 -/
+    go: channel.go:274:22 -/
 noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -587,7 +599,7 @@ noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
 
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
-    go: channel.go:274:22 -/
+    go: channel.go:282:22 -/
 noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
