@@ -1,9 +1,10 @@
 /-
 Specifications for Go's `context` package.
 
-Proved: `wp_Cause`, `wp_parentCancelCtx`, and `wp_WithDeadline` / `wp_WithTimeout` (from the
-specs of `WithDeadlineCause` / `WithDeadline`). `wp_WithCancel`, `wp_WithDeadlineCause` and
-`wp_propagateCancel` are `sorry` (see the comments in their proofs: `atomic.Value` is
+Proved: `wp_Cause`, `wp_parentCancelCtx`, `wp_Background`, and `wp_WithDeadline` /
+`wp_WithTimeout` (from the specs of `WithDeadlineCause` / `WithDeadline`). `wp_WithCancel`,
+`wp_WithCancel_Background` (`WithCancel(Background())`: `Background()` is not an `isContext`),
+`wp_WithDeadlineCause` and `wp_propagateCancel` are `sorry` (see the comments in their proofs: `atomic.Value` is
 unspecifiable in the model, and `time.Time.Before`, `time.AfterFunc`, `Timer.Stop` have no
 model). There is no spec for the internal `withCancel`.
 
@@ -593,6 +594,36 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : GoInterfaceOk)
   --   iteration over `c.children` (map `range` with interface keys);
   -- * `is_init` must additionally provide the `Canceled` global (a non-nil `error`) and the
   --   broadcast state of `closedchan` (closed, with `Q := True`).
+  sorry -- not proved
+
+/-- The context `Background()` returns: a `backgroundCtx{}` as a `Context`. Its `Done()` is
+`nil` (it is never canceled), so it is not an `isContext`; `wp_WithCancel_Background` derives a
+cancelable context from it. -/
+abbrev backgroundCtxVal : GoInterfaceOk :=
+  interface.mk backgroundCtx.ty #(zero_val backgroundCtx)
+
+/-- `Background()` returns `backgroundCtxVal`. -/
+theorem wp_Background :
+    {{ (True : IProp GF) }}
+      (App (Val (@! context.Background)) (Val #()))
+    {{ RET #(interface.ok backgroundCtxVal); True }} := by
+  wp_start
+  iapply HΦ
+  itrivial
+
+/-- `WithCancel(Background())`: as `wp_WithCancel` for a parent that is never done, with no
+values and no deadline (so the new context's `PDone` is just `PDone'`, which the cancel function
+needs). -/
+theorem wp_WithCancel_Background (PDone' : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok backgroundCtxVal)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (True -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } }} := by
+  -- Unprovable for the same reason as `wp_WithCancel` (the `*cancelCtx`'s `atomic.Value`
+  -- fields); `propagateCancel` returns at once for this parent (its `Done()` is `nil`).
   sorry -- not proved
 
 /-- Fresh ghost names `γ'` for the Done channel (see `wp_WithCancel`), and the deadline is
