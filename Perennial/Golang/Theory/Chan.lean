@@ -93,6 +93,30 @@ theorem wp_make1 :
   iapply HΦ
   iexact H
 
+/-- The `cap` field of a channel (persistent; e.g. to show that a new channel is distinct from
+an existing one with `wp_make1_ne`). -/
+theorem isChan_cap (ch : Loc) (γ : ChanNames) :
+    isChan (GF := GF) ch γ V ⊢ ch.[channel.Channel V, go!"cap"] ↦□ γ.chanCap := by
+  rw [isChan_unseal]
+  iintro H
+  iNamed H
+  iexact cap
+
+include Hunder in
+/-- `wp_make1`, and the new channel is not the existing channel `l` (given its `cap` field). -/
+theorem wp_make1_ne (l : Loc) (x : w64) :
+    {{ (l.[channel.Channel V, go!"cap"] ↦□ x : IProp GF) }}
+      (App (Val #(functions go.make1 [ct])) (Val #()))
+    {{ (ch : Loc) (γ : ChanNames), RET #ch;
+        isChan ch γ V ∗
+        ⌜γ.chanCap = W64 0⌝ ∗
+        ownChan γ V ChanState.Idle ∗ ⌜ch ≠ l⌝ }} := by
+  wp_start as #Hl
+  wp_func_call
+  wp_apply wp_NewChannel_unbuffered_ne (V := V) l x $$ [$Hl] as %ch %γ H
+  iapply HΦ
+  iexact H
+
 theorem wp_send (ch : Loc) (v : V) (γ : ChanNames) :
     ⊢ ∀ Φ : val → IProp GF, isChan ch γ V -∗
       (£ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 -∗ sendAu γ v (Φ #())) -∗

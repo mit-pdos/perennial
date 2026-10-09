@@ -52,24 +52,24 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 			tps = named.TypeParams()
 		}
 
-		typeStr := "go.type"
+		var typeStr glang.Expr = glang.VerbatimExpr("go.type")
 		if tps != nil && tps.Len() > 0 {
 			var params []string
 			for i := 0; i < tps.Len(); i++ {
 				params = append(params, tps.At(i).Obj().Name())
 			}
-			typeStr = fmt.Sprintf("∀ (%s : go.type), go.type", strings.Join(params, " "))
+			typeStr = glang.GenericTypeExpr{Params: params}
 		}
 
 		if _, ok := typ.(*types.Alias); ok {
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
 				DeclName: typeName,
-				Type:     glang.VerbatimExpr(typeStr),
+				Type:     typeStr,
 			})
 		} else if _, ok := typ.(*types.Named); ok {
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
 				DeclName: glang.TypeImpl(glang.ToIdent(typeName)),
-				Type:     glang.VerbatimExpr(typeStr),
+				Type:     typeStr,
 			})
 		}
 		return

@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.ManualProof.strings
 public import Perennial.Golang.Theory
 public import Perennial.Code.strings
 

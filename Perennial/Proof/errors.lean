@@ -29,17 +29,28 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
 
-/-- Proven first because it is used during package initialization (to create
+/-- `errors.New(msg)` returns an error (an `*errorString`) whose `Error()` returns `msg`.
+Proven first because it is used during package initialization (to create
 global error variables). -/
 theorem wp_New (msg : GoString) :
     {{ (True : IProp GF) }}
       (App (Val (@! New)) (Val #msg))
-    {{ (err : GoInterfaceOk), RET #(interface.ok err); True }} := by
+    {{ (err : GoInterfaceOk), RET #(interface.ok err);
+        □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+          WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
   wp_start
   wp_auto
   wp_alloc x as Hx
+  iStructNamed Hx
+  ipersist s
   wp_auto
-  wp_end
+  iapply HΦ
+  imodintro
+  iintro %Φ HΦ
+  dsimp only
+  rw [method_unfold]
+  wp_auto
+  iexact HΦ
 
 theorem wp_errorType_init :
     {{ (True : IProp GF) }}

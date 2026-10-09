@@ -1,5 +1,5 @@
 /-
-Package initialization of `fmt`, `fmt.Errorf` and `fmt.Printf`.
+Package initialization of `fmt`, `fmt.Errorf`, `fmt.Sprintf` and `fmt.Printf`.
 -/
 module
 
@@ -63,17 +63,34 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 
-/-- This is unsound: really need to know that all of the args are
-safe to convert into string. The error's `Error()` returns some string (a `*fmt.wrapError`
-or `*errors.errorString`). -/
+/-- `fmt.Errorf(format, args...)` returns a non-nil error whose `Error()` returns some string.
+The model of `Errorf` (`Perennial/TrustedCode/fmt.lean`) does not format: it is
+`errors.New(format)`, ignoring the arguments, so this follows from `errors.wp_New`. (The
+statement does not give back `args_sl ↦* args`, which the model never reads.) -/
 theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
     {{ (err : GoInterfaceOk), RET #(interface.ok err);
         □ ∀ Φ : val → IProp GF, ▷ (∀ str : GoString, Φ #str) -∗
           WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
-  -- Unprovable: `fmt.Errorf` has no translated body (no `FuncUnfold` in `fmt.Assumptions`).
-  sorry
+  wp_start as _
+  wp_apply errors.wp_New as %err #Herr
+  iapply HΦ
+  imodintro
+  iintro %Φ HΦ
+  iapply Herr
+  inext
+  iapply HΦ
+
+/-- `fmt.Sprintf(format, args...)` returns some string. The model of `Sprintf`
+(`Perennial/TrustedCode/fmt.lean`) does not format, so this says nothing of the string. -/
+theorem wp_Sprintf (format : GoString) (args_sl : GoSlice) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt }}
+      (App (App (Val (@! Sprintf)) (Val #format)) (Val #args_sl))
+    {{ (s : GoString), RET #s; True }} := by
+  wp_start
+  iapply HΦ
+  itrivial
 
 /-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. -/
 theorem wp_Printf (format : GoString) (args_sl : GoSlice) :

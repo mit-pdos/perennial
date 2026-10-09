@@ -106,6 +106,12 @@ type TermIdent string
 // VerbatimExpr is translated literally.
 type VerbatimExpr string
 
+// GenericTypeExpr is the type of an axiomatized generic type with type
+// parameters Params: a function from go.GoType arguments to a go.GoType.
+type GenericTypeExpr struct {
+	Params []string
+}
+
 // A Go qualified identifier, which is translated to a qualified Lean
 // identifier.
 type PackageIdent struct {

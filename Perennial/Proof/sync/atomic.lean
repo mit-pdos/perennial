@@ -1,5 +1,5 @@
 /-
-Specs for `sync/atomic`, as logically
+Specs for `sync/atomic` (including the trusted model of `Value`, see its section), as logically
 atomic updates (`|={⊤,∅}=> ▷ ∃ v, ... ∗ (... ={∅,⊤}=∗ Φ _)`).
 
 The integer sections (Uint64, Int64, Uint32, Int32) follow one template and
@@ -1217,6 +1217,142 @@ theorem Bool.wp_CompareAndSwap (u : Loc) (old new : Bool) :
   wp_auto
   simp only [decide_eq_decide.mpr hiff]
   iexact HΦ
+/-! ### Value
+
+`Value` is a trusted model (`Perennial/TrustedCode/sync/atomic.lean`): an atomic
+cell holding an `any`. `Store`/`Swap`/`CompareAndSwap` may panic (in the model)
+when the cell is non-empty, since the model cannot check Go's "consistently
+typed" requirement; so their specs require the cell to be empty (`nil`) at the
+linearization point. -/
+
+instance : Inhabited GoInterface := ⟨interface.nil⟩
+
+instance atomic_wps_interface : AtomicWps (GF := GF) GoInterface := by solve_atomic_wps
+
+def ownValueDef (u : Loc) (dq : DFrac) (x : GoInterface) : IProp GF :=
+  typedPointsto (GF := GF) u (x : Value) dq
+@[irreducible] def ownValue (u : Loc) (dq : DFrac) (x : GoInterface) : IProp GF :=
+  ownValueDef u dq x
+theorem ownValue_unseal : @ownValue = @ownValueDef := by funext; with_unfolding_all rfl
+
+instance ownValue_timeless (u : Loc) (dq : DFrac) (x : GoInterface) :
+    Timeless (ownValue (GF := GF) u dq x) := by
+  rw [ownValue_unseal]; unfold ownValueDef; infer_instance
+instance ownValue_dfractional (u : Loc) (x : GoInterface) :
+    DFractional (fun dq => ownValue (GF := GF) u dq x) := by
+  rw [ownValue_unseal]; unfold ownValueDef; infer_instance
+instance ownValue_fractional (u : Loc) (x : GoInterface) :
+    Fractional (fun q => ownValue (GF := GF) u (DFrac.own q) x) :=
+  fractional_of_dfractional (fun dq => ownValue (GF := GF) u dq x)
+instance ownValue_as_fractional (u : Loc) (q : Qp) (x : GoInterface) :
+    AsFractional (ownValue (GF := GF) u (DFrac.own q) x) ioΦ
+      (fun q => ownValue u (DFrac.own q) x) ioq q where
+  as_fractional := .rfl
+  as_fractional_fractional := ownValue_fractional u x
+instance ownValue_combines_gives (u : Loc) (x x' : GoInterface) (dq dq' : DFrac) :
+    CombineSepGives (ownValue (GF := GF) u dq x) (ownValue u dq' x') iprop(⌜x = x'⌝) where
+  combine_sep_gives := by
+    rw [ownValue_unseal]; unfold ownValueDef
+    iintro ⟨H1, H2⟩
+    icombine H1 H2 gives %Heq
+    imodintro; ipureintro; exact Heq
+
+/-- A zero `Value` (as in a freshly allocated struct) is an empty cell. -/
+theorem ownValue_zero (u : Loc) (dq : DFrac) :
+    typedPointsto (GF := GF) u (zero_val Value) dq ⊣⊢ ownValue u dq interface.nil := by
+  rw [ownValue_unseal]; exact .rfl
+
+theorem Value.wp_Load (u : Loc) (dq : DFrac) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ ∃ x : GoInterface, ownValue u dq x ∗ (ownValue u dq x ={∅,⊤}=∗ Φ #x)) -∗
+      WP (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
+  wp_start as _
+  imod HΦ with ⟨%x, >Hown, HΦ⟩
+  simp only [ownValue_unseal, ownValueDef]
+  wp_apply_core wp_atomic_load _ _ u dq (x : GoInterface) $$ Hown
+  iintro Hown
+  iapply HΦ $$ Hown
+
+theorem Value.wp_Store (u : Loc) (v : GoInterface) (hv : v ≠ interface.nil) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ (ownValue u (DFrac.own 1) interface.nil ∗
+        (ownValue u (DFrac.own 1) v ={∅,⊤}=∗ Φ #()))) -∗
+      WP (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"Store")) (Val #v)) {{ Φ }} := by
+  wp_start as _
+  cases v with
+  | nil => exact absurd rfl hv
+  | ok ii =>
+  simp only
+  wp_auto
+  wp_bind (AtomicSwap _ _)
+  imod HΦ with ⟨>Hown, HΦ⟩
+  simp only [ownValue_unseal, ownValueDef]
+  wp_apply_core wp_atomic_swap _ _ u (interface.nil : GoInterface) (interface.ok ii) $$ Hown
+  iintro Hown
+  imod HΦ $$ Hown with HΦ
+  imodintro
+  wp_auto
+  iexact HΦ
+
+theorem Value.wp_Swap (u : Loc) (v : GoInterface) (hv : v ≠ interface.nil) :
+    ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
+      (|={⊤,∅}=> ▷ (ownValue u (DFrac.own 1) interface.nil ∗
+        (ownValue u (DFrac.own 1) v ={∅,⊤}=∗ Φ #interface.nil))) -∗
+      WP (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"Swap")) (Val #v)) {{ Φ }} := by
+  wp_start as _
+  cases v with
+  | nil => exact absurd rfl hv
+  | ok ii =>
+  simp only
+  wp_auto
+  wp_bind (AtomicSwap _ _)
+  imod HΦ with ⟨>Hown, HΦ⟩
+  simp only [ownValue_unseal, ownValueDef]
+  wp_apply_core wp_atomic_swap _ _ u (interface.nil : GoInterface) (interface.ok ii) $$ Hown
+  iintro Hown
+  imod HΦ $$ Hown with HΦ
+  imodintro
+  wp_auto
+  iexact HΦ
+
+/-- `CompareAndSwap(nil, new)` on an empty cell owned by the caller; it may fail
+spuriously (see the model). -/
+theorem Value.wp_CompareAndSwap (u : Loc) (new : GoInterface) (hnew : new ≠ interface.nil) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗ ownValue u (DFrac.own 1) interface.nil }}
+      (App (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"CompareAndSwap"))
+        (Val #interface.nil)) (Val #new))
+    {{ (b : Bool), RET #b; ownValue u (DFrac.own 1) (if b then new else interface.nil) }} := by
+  wp_start as Hown
+  cases new with
+  | nil => exact absurd rfl hnew
+  | ok ii =>
+  simp only
+  wp_auto
+  simp only [ownValue_unseal, ownValueDef]
+  wp_bind (Load _)
+  wp_apply_core wp_atomic_load _ _ u (DFrac.own 1) (interface.nil : GoInterface) $$ Hown
+  iintro Hown
+  wp_auto
+  wp_bind ArbitraryInt
+  wp_apply_core wp_ArbitraryInt
+  iintro %x _
+  wp_auto
+  by_cases hx : x = W64 0
+  · subst hx
+    wp_auto
+    wp_bind (CmpXchg _ _ _)
+    wp_apply_core wp_cmpxchg_suc u (interface.nil : GoInterface) interface.nil (interface.ok ii) _ _ rfl $$ Hown
+    iintro Hown
+    wp_auto
+    iapply HΦ
+    simp only [↓reduceIte, Bool.false_eq_true]
+    iexact Hown
+  · simp only [hx, decide_false]
+    wp_auto
+    iapply HΦ
+    simp only [↓reduceIte, Bool.false_eq_true]
+    iexact Hown
+
 end wps
 
 end sync.atomic

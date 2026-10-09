@@ -176,6 +176,49 @@ theorem wp_After (d : time.Duration) :
     itrivial
   wp_end
 
+/-! ### Timers (the trust boundary: `NewTimer`, `Timer.Stop` and `Timer.Reset` are not
+translated; the runtime's timers are not modelled)
+
+A `*Timer` from `NewTimer` is `isTimer t ch γ`: its `C` field holds, for good, a channel `ch` on
+which a receive may yield some time (a bag of times, `isChanBag`, with no logical content). The
+specs say nothing about *when* (or whether) a value arrives: `Stop` and `Reset` return some
+`bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
+timer's channel delivers nothing; the model allows it), which is sound for safety. -/
+
+/-- `t` is a `*Timer` made by `NewTimer`, whose channel `C` is `ch` (persistent). -/
+def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
+  iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
+    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
+
+instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
+    Persistent (isTimer (GF := GF) t ch γ) := by
+  unfold isTimer; infer_instance
+
+/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`). -/
+axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [sem : go.Semantics] [package_sem : time.Assumptions] (d : time.Duration) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.NewTimer)) (Val #d))
+    {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTimer t ch γ }}
+
+/-- Spec of `(*Timer).Stop()` (axiom): some `bool`. -/
+axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames) :
+    {{ isTimer (GF := GF) t ch γ }}
+      (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
+    {{ (b : Bool), RET #b; True }}
+
+/-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`. -/
+axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames)
+    (d : time.Duration) :
+    {{ isTimer (GF := GF) t ch γ }}
+      (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Reset")) (Val #d))
+    {{ (b : Bool), RET #b; True }}
+
 end chan_wps
 
 end time
