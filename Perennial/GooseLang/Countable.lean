@@ -242,9 +242,11 @@ instance GoUnaryOperator.countable : Pos.Countable GoUnaryOperator :=
 def PrimOp0.toTree : PrimOp0 → GenTree
   | .PanicOp x0 => node 0 [of x0]
   | .ArbitraryIntOp => node 1 []
+  | .ThreadExitOp => node 2 []
 def PrimOp0.ofTree : GenTree → PrimOp0
   | node 0 [x0] => .PanicOp (decLeaf x0)
   | node 1 [] => .ArbitraryIntOp
+  | node 2 [] => .ThreadExitOp
   | _ => default
 instance PrimOp0.countable : Pos.Countable PrimOp0 :=
   countableOfLeftInverse PrimOp0.toTree PrimOp0.ofTree

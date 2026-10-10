@@ -505,7 +505,8 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `wp_for`, `wp_for_post_do/continue/break/return` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`) |
 | `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
-| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`, `WaitGroup.Add`'s counter) are listed in `README.md`, "Model assumptions (overflow)" |
+| `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
+| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
 ### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
@@ -518,7 +519,6 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `sync.wp_NewCond`, `Cond.wp_Wait`, `Cond.wp_Signal`, `Cond.wp_Broadcast` | condition variables |
 | `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
 | `sync.wp_RWMutex__*` | `RWMutex` |
-| `sync.init_WaitGroup`, `WaitGroup.wp_Add`, `WaitGroup.wp_Done`, `WaitGroup.wp_Wait` | `WaitGroup`, logically atomic (updates open at `⊤ \ ↑N`); `Add` assumes its counter does not overflow (`waitGroupStateAddAssume`), so its caller bounds the new counter only from below; `sync.join.*` the join idiom |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
 | `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 
@@ -707,18 +707,21 @@ the whole spec.
 
 **Semantics.** The trusted `BaseStep` is unchanged. The registered language
 instance `goose_ectxi_lang` is a layer on top of it whose state is
-`CfgState × Nat`; the number is a *fuel* for *Go instruction* steps
-(`App (Val (GoInstruction op)) (Val v)`: function/method resolution, typed
-loads, stores and allocations, struct operations, ...). With fuel `f + 1` a Go
-instruction takes its real step and leaves fuel `f`; with fuel `0` it
-*stutters* (expression and state unchanged), the paper's "`tick` diverges at
-the limit". All other steps are real steps that leave the fuel alone. The
-adequacy theorems start with fuel `N - 1`, and the state interpretation owns
-`receiptFuel f`, the authoritative receipt counter `receiptAuth (N - (f + 1))`.
-Only Go instructions are counted because a step that can stutter is neither
-pure (`PureExec`) nor atomic (`Language.Atomic`), and the heap primitives must
-stay atomic for invariant opening; Go instructions have a single lifting lemma
-(`wp_GoInstruction`) that handles the stutter by Löb induction.
+`CfgState × Fuel`, with `Fuel = ⟨steps, threads⟩`; `steps` is a *fuel* for
+*Go instruction* steps (`App (Val (GoInstruction op)) (Val v)`: function/method
+resolution, typed loads, stores and allocations, struct operations, ...), and
+`threads` the thread fuel of thread tokens (next section). With step fuel
+`s + 1` a Go instruction takes its real step and leaves step fuel `s`; with
+step fuel `0` it *stutters* (expression and state unchanged), the paper's
+"`tick` diverges at the limit". All other steps (but `Fork` and `ThreadExit`,
+which use the thread fuel) are real steps that leave the fuel alone. The
+adequacy theorems start with step fuel `N - 1`, and the state interpretation
+owns `receiptFuel s`, the authoritative receipt counter
+`receiptAuth (N - (s + 1))`. Only Go instructions are counted because a step
+that can stutter is neither pure (`PureExec`) nor atomic (`Language.Atomic`),
+and the heap primitives must stay atomic for invariant opening; Go instructions
+have a single lifting lemma (`wp_GoInstruction`) that handles the stutter by
+Löb induction.
 
 **Assertions and laws.** `⧗ n` (`receipt n`): `n` exclusive receipts; `⧖ n`
 (`preceipt n`): persistent, "at least `n` counted steps happened". Below,
@@ -757,26 +760,30 @@ produce receipts (they must stay atomic); every Go-level operation reaches them
 through at least one Go instruction (a call or a typed access), whose receipt
 can be used instead.
 
-**Adequacy: picking `N`.** `goose_adequacy` (and
+**Adequacy: picking `N` (and `T`).** `goose_adequacy` (and
 `grove_ffi_single_node_adequacy`, `disk_adequacy`, `goose_invariance`) is
-stated for the real semantics and every bound `N`: the WP premise `Hwp` is
-proved under the hypothesis `receiptBound GF = N`, and the conclusion is about
-executions of fewer than `N` steps:
+stated for the real semantics and every bound `N` (and every thread bound `T`,
+next section): the WP premise `Hwp` is proved under the hypothesis
+`receiptBound GF = N` (and `threadBound GF = T`, with the main thread's token),
+and the conclusion is about executions of fewer than `N` steps (along which
+fewer than `T` threads are live):
 
 ```
-theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N : Nat)
+theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
+      threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
         ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
-        ownGoState σ.goState.packageState ={⊤}=∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List observation) (t2 : List Expr) (σ2 : CfgState)
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) :
+    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2)
 ```
 
@@ -785,8 +792,9 @@ A client chooses `N` and discharges the premises its proof makes about it from
 `N = 2^64` (or anything smaller) works (`TimeReceiptsTest.lean`):
 
 ```
-  goose_adequacy (2 ^ 64) e σ g φ Hinitg Hinit
-    (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+  goose_adequacy (2 ^ 64) T e σ g φ Hinitg Hinit
+    (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+    Hthreads Hlive
 ```
 
 where `Hwp` is the client's WP proof under the premise `receiptBound GF ≤ 2 ^ 64`.
@@ -794,16 +802,122 @@ The result holds for executions of fewer than `2^64` steps. Since there is
 nothing to gain from a smaller `N`, a client takes the largest `N` that all the
 premises allow. `RealNsteps`/`RealNotStuck` are iris-lean's
 `Language.NSteps`/`NotStuck` for `gooseRealEctxiLang`. The proof applies
-iris-lean adequacy to the bounded language started with fuel `N - 1`
-(`goose_adequacy_blang N hN`) and the simulation `bounded_nsteps_of_real` (a
-real execution of at most `f` steps is a bounded one from fuel `f`; no Go
-instruction stutters) and `realNotStuck_of_bounded` (every bounded step is
-backed by a real one).
+iris-lean adequacy to the bounded language started with fuel `⟨N - 1, T - 2⟩`
+(`goose_adequacy_blang N T hN hT`) and the simulation `bounded_nsteps_of_real`
+(a real execution of at most `s` steps whose thread count stays below `T` is a
+bounded one from fuel `⟨s, T - 1 - threads⟩`; no Go instruction and no `Fork`
+stutters) and `realNotStuck_of_bounded` (every bounded step is backed by a
+real one).
 
 **Example.** `TimeReceiptsTest.lean` verifies the paper's clock
 (`wp_clock_incr`, premise `receiptBound GF ≤ 2 ^ 64`): the invariant owns one
 receipt per increment, and `receipt_add_one_lt` gives the bound on the counter
 when the increment opens it.
+
+### Thread tokens
+
+Thread tokens let a proof assume that fewer than `T` threads are live at the
+same time, for a bound `T` that the proof does not fix, e.g. to show that a
+counter of pending goroutines (a `sync.WaitGroup`'s) never reaches `2^31`
+(given the premise `T ≤ 2^31`): a thread token witnesses a live thread, and
+`T` of them are contradictory. The device is that of time receipts, with
+`Fork` in the role of the counted step and thread *exits* returning the fuel.
+Files: `Perennial/GooseLang/Lang.lean` (`GlobalState.threads`, `ThreadExit`),
+`Perennial/GooseLang/BoundedLang.lean` (thread fuel),
+`Perennial/GooseLang/Threads.lean` (ghost state and laws),
+`Perennial/GooseLang/Lifting.lean` (`wp_fork_tok`, `wp_ThreadExit`),
+`Perennial/GooseLang/Adequacy.lean` (adequacy),
+`Perennial/ProgramLogic/ThreadTokensTest.lean` (laws, a counter of live
+threads that cannot overflow).
+
+**The thread count in the semantics.** The real state counts the live threads:
+`GlobalState.threads` is the main thread (counted for the whole execution)
+plus the forked threads that have not exited. `Fork e` spawns the thread
+`e ;; ThreadExit` and increments it; `ThreadExit`, a no-op that is the last
+step of every forked thread, decrements it; no other step changes it
+(`FfiSemantics.ffi_step_threads` for FFI steps). A configuration with only the
+main thread has `threads = 1`. This is the only change to the trusted
+semantics; goose-generated code never contains `ThreadExit` itself.
+
+**The bound `T`.** `T` is the field `threadBound GF : Nat` of the thread ghost
+state (with `threadBound_gt : 1 < threadBound GF`, the main thread being live):
+
+```
+class ThreadGS (GF : BundledGFunctors) where
+  threadAllG : AllG GF
+  threadTokName : GName
+  threadBound : Nat
+  threadBound_gt : 1 < threadBound
+```
+
+`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`; as
+for `N`, a proof that needs `T` to be small states it as a premise
+(`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy
+time.
+
+**Semantics.** The thread fuel `threads` of `Fuel` is the number of threads
+that may still be forked. With thread fuel `t + 1` a `Fork` takes its real
+step and leaves `t`; with thread fuel `0` it stutters (like a Go instruction
+at step fuel `0`; `Fork` is therefore no longer `Atomic`, and `wp_fork_tok`
+absorbs the stutter by Löb induction). A `ThreadExit` with thread fuel `t`
+takes its real step and leaves `t + 1`. The adequacy theorems start with
+thread fuel `T - 2`.
+
+**Assertions and laws.** `threadToks n`: `n` exclusive thread tokens;
+`threadTok = threadToks 1`. There are `T - 1` tokens in total (a `ghost_map`
+of the slots `0, ..., T - 2`, allocated by `thread_init` and never changed
+again; a token is a slot's `k ↪ ()` with `⌜k + 1 < T⌝`, so `n` tokens are `n`
+distinct slots and `n ≤ T - 1` without any authoritative part). One token is
+the main thread's, handed to the program by the adequacy theorem; the others
+are the thread fuel, owned by the state interpretation
+(`threadFuel t = threadToks t`). Below, `T = threadBound GF`.
+
+| law | lemma |
+|-----|-------|
+| `threadToks (m + n) ⊣⊢ threadToks m ∗ threadToks n` | `threadToks_add` |
+| `⊢ threadToks 0` | `threadToks_zero` |
+| `threadToks n ⊢ ⌜n < T⌝` | `threadToks_lt` |
+| `threadToks T ⊢ False` (hence `\|={E}=> False`) | `threadBound_elim`, `threadBound_fupd` |
+| `threadTok ∗ threadToks n ⊢ ⌜n + 1 < T⌝ ∗ threadToks (n + 1)` | `threadToks_add_one_lt` |
+
+**Getting and returning tokens.**
+
+* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ _, threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
+  The forking thread receives a token (out of the thread fuel), and the forked
+  thread must end with one (its `ThreadExit` returns it to the fuel). Whether
+  the token stays with the forking thread, goes to the forked thread, or is
+  deposited in an invariant is up to the proof: every live thread is accounted
+  for by exactly one token, wherever it is.
+* `wp_fork`: the usual rule, `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
+  the forked thread keeps its token to itself.
+* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ _, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
+  the token given to the body (which uses it and ends with it);
+  `wp_fork_tok_self`: `▷ WP e {{ _, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
+  the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
+* `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
+  `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).
+
+**The `WaitGroup` argument.** `WaitGroup.wp_Add` asks its caller to bound the
+new counter by `2^31` (Go's `Add` panics past it). A loop that `Add(1)`s and
+spawns a goroutine with a deferred `Done` per iteration cannot bound its counter
+by induction: the scheduler may delay every `Done`. With thread tokens, the
+thread that calls `Add(1)` deposits its own token in the wait group's invariant
+and receives a fresh one at the `go` statement (`wp_fork_tok_self`); the
+goroutine takes the deposited token back at its `Done` and exits with it. The
+invariant then owns one token per pending `Done`, so `threadToks_add_one_lt`
+bounds the counter by `T` when `Add` opens it, and `T ≤ 2^31` keeps the 32-bit
+counter from overflowing: the informal argument that `2^31` goroutines cannot be
+live at once, made in the logic. `ThreadTokensTest.lean` (`wp_counter_register`)
+is this argument for a counter of live threads in miniature; etcd-grove's cache
+(`cacheWgInv`) uses it for `sync.WaitGroup` itself.
+
+**Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `g.threads = 1`
+of the initial configuration and `RealThreadsBelow T n ([e], (σ, g))`: every
+configuration reachable in at most `n` real steps has `threads < T`. The WP
+premise may assume `threadBound GF = T` and receives `threadTok`. A client
+that assumed `threadBound GF ≤ 2 ^ 31` takes `T = 2 ^ 31`
+(`ThreadTokensTest.lean`); as for `N`, there is nothing to gain from a smaller
+`T`.
 
 ### Package initialization
 

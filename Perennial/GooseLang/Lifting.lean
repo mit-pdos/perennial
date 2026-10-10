@@ -11,16 +11,19 @@ Notes:
   `allG` ghost state.
 * `numLatersPerStep` is `0`. Every step still yields one
   later credit (`£ 1`).
-* The language instance is the step-bounded layer of
-  `BoundedLang.lean`, whose state is `BcfgState = CfgState × Nat` (the `Nat`
-  is the fuel `f`); the state interpretation (`gooseBstateInterp`) adds the
-  authoritative counter of time receipts for that fuel (`receiptFuel f`, i.e.
-  `receiptAuth (N - (f + 1))` for the bound `N = receiptBound GF` of the
-  receipt ghost state, `Receipts.lean`) to `gooseStateInterp`. The
-  lifting lemmas `goose_wp_lift_*` restate iris-lean's for the real `base_step`
-  and `gooseStateInterp` (as `gooseCfgInterp`); Go instructions, the only
-  counted steps, have their own lemma `wp_GoInstruction_receipt`, which handles
-  the stutter by Löb induction and hands out a time receipt.
+* The language instance is the bounded layer of `BoundedLang.lean`, whose
+  state is `BcfgState = CfgState × Fuel` (the fuel `⟨s, t⟩`: step fuel and
+  thread fuel); the state interpretation (`gooseBstateInterp`) adds to
+  `gooseStateInterp` the authoritative counter of time receipts for the step
+  fuel (`receiptFuel s`, i.e. `receiptAuth (N - (s + 1))` for the bound
+  `N = receiptBound GF` of the receipt ghost state, `Receipts.lean`) and the
+  thread tokens of the thread fuel (`threadFuel t = threadToks t`,
+  `Threads.lean`). The lifting lemmas `goose_wp_lift_*` restate iris-lean's for
+  the real `base_step` and `gooseStateInterp` (as `gooseCfgInterp`), for the
+  plain redexes; Go instructions, the only counted steps, have their own lemma
+  `wp_GoInstruction_receipt`, which handles the stutter by Löb induction and
+  hands out a time receipt; `Fork` (`wp_fork_tok`, likewise by Löb induction)
+  hands out a thread token and `ThreadExit` (`wp_ThreadExit`) takes one back.
 * The state interpretation consists of a local part (`naHeapCtx`,
   `ffiLocalCtx`, `ownGoStateCtx`, `goLctx` equality) plus the global part
   (`ffiGlobalCtx`, iris-lean's prophecy map `prophMapInterp`).
@@ -39,6 +42,7 @@ public import Perennial.Algebra.NaHeap
 public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Receipts
+public import Perennial.GooseLang.Threads
 
 @[expose] public section
 
@@ -310,6 +314,9 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   /-- Time receipts, tied to the step fuel of the bounded semantics;
   carries the time-receipt bound `receiptBound GF` -/
   goose_receiptGS : ReceiptGS GF
+  /-- Thread tokens, tied to the thread fuel of the bounded semantics;
+  carries the thread bound `threadBound GF` -/
+  goose_threadGS : ThreadGS GF
 
 /-- Per-generation ("local") ghost state. -/
 class GooseLocalGS (GF : BundledGFunctors) where
@@ -319,6 +326,7 @@ class GooseLocalGS (GF : BundledGFunctors) where
   goose_go_stateGS : GoStateGS GF
 
 attribute [reducible, instance] GooseGlobalGS.goose_prophGS GooseGlobalGS.goose_receiptGS
+  GooseGlobalGS.goose_threadGS
   GooseLocalGS.goose_go_local_context
   GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS
 
@@ -355,10 +363,11 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     prophMapInterp κs σ.2.usedProphId)
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
-the real configuration and the authoritative receipt counter for the fuel. -/
+the real configuration, the authoritative receipt counter for the step fuel and
+the thread tokens of the thread fuel. -/
 def gooseBstateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : BcfgState) (κs : List Observation) : IProp GF :=
-  iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2)
+  iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2.steps ∗ threadFuel σ.2.threads)
 
 instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
@@ -387,11 +396,11 @@ stutter in the bounded semantics and are not atomic, hence `hnc`. -/
 theorem goose_atomic {e : Expr} (a : Language.Atomicity)
     (h : ∀ σ κ e' σ' efs, BaseStep e σ κ e' σ' efs → (toVal e').isSome)
     (hsub : ∀ Ki e', e = fillItem Ki e' → (toVal e').isSome)
-    (hnc : isCounted e = false := by rfl) :
+    (hnc : redexKind e = .plain := by rfl) :
     Language.Atomic a e :=
   Language.stronglyAtomic_atomic
     (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => by
-        obtain ⟨_, _, hs⟩ := (boundedBaseStep_uncounted (σ := σ.1) (f := σ.2) hnc).1 hs
+        obtain ⟨_, _, hs⟩ := (boundedBaseStep_plain (σ := σ.1) (f := σ.2) hnc).1 hs
         exact h _ obs e' _ efs hs)
       (EctxItemLanguage.subredexes_are_values hsub))
 
@@ -435,9 +444,6 @@ instance finish_read_atomic (a : Language.Atomicity) (v : val) :
     Language.Atomic a (FinishRead (Val v)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
-instance fork_atomic (a : Language.Atomicity) (e : Expr) : Language.Atomic a (Fork e) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
-
 instance resolve_atomic (a : Language.Atomicity) (p w : val) :
     Language.Atomic a (ResolveProph (Val p) (Val w)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
@@ -453,19 +459,19 @@ section pure
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
-/-- A one-step `PureExec` from the real base step relation (for an uncounted
+/-- A one-step `PureExec` from the real base step relation (for a plain
 redex, which steps in the bounded semantics exactly as in the real one). -/
 theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : Expr}
     (Hsafe : φ → ∀ σ, BaseStep e₁ σ [] e₂ σ [])
     (Hdet : φ → ∀ σ κ e' σ' efs, BaseStep e₁ σ κ e' σ' efs →
       κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = [])
-    (hnc : isCounted e₁ = false := by rfl) :
+    (hnc : redexKind e₁ = .plain := by rfl) :
     Language.PureExec φ 1 e₁ e₂ where
   pureExec hφ := by
     refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep
       ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
     intro σ₁ σ₂ obs e₂' eₜ h
-    obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_uncounted (σ := σ₁.1) (f := σ₁.2) hnc).1 h
+    obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_plain (σ := σ₁.1) (f := σ₁.2) hnc).1 h
     obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h'
     subst h2
     exact ⟨h1, rfl, h3.symm, h4⟩
@@ -536,7 +542,12 @@ theorem baseStep_ArbitraryInt_inv (h : BaseStep ArbitraryInt σ κ e' σ' efs) :
   cases h; exact ⟨_, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_Fork_inv {e : Expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
-    κ = [] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [e] := by
+    κ = [] ∧ e' = Val #() ∧ σ' = (σ.1, { σ.2 with threads := σ.2.threads + 1 }) ∧
+      efs = [Seq e ThreadExit] := by
+  cases h; exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem baseStep_ThreadExit_inv (h : BaseStep ThreadExit σ κ e' σ' efs) :
+    κ = [] ∧ e' = Val #() ∧ σ' = (σ.1, { σ.2 with threads := σ.2.threads - 1 }) ∧ efs = [] := by
   cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_Alloc_inv {v : val} (h : BaseStep (Alloc (Val v)) σ κ e' σ' efs) :
@@ -641,20 +652,20 @@ theorem goose_stateInterp_eq (σ : CfgState) (ns : Nat) (κs : List Observation)
         ffiGlobalCtx G.gooseFfiGlobalGS σ.2.globalWorld ∗
         prophMapInterp κs σ.2.usedProphId) := .rfl
 
-theorem goose_bstateInterp_eq (σ : CfgState) (c : Nat) (ns : Nat) (κs : List Observation)
+theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List Observation)
     (nt : Nat) :
     stateInterp (GF := GF) ((σ, c) : BcfgState) ns κs nt ⊣⊢
-      iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c) := .rfl
+      iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c.steps ∗ threadFuel c.threads) := .rfl
 
-theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Nat} (hnc : isCounted e = false)
+theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Fuel} (hnc : redexKind e = .plain)
     (h : GooseBaseReducible e σ) : BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
   obtain ⟨κ, e', σ', efs, h⟩ := h
   exact ⟨κ, e', (σ', c), efs, .step hnc h⟩
 
-/-- iris-lean's `wp_lift_base_step` for an uncounted redex, in terms of the real
+/-- iris-lean's `wp_lift_base_step` for a plain redex, in terms of the real
 `base_step` and `gooseStateInterp`. -/
 theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : isCounted e₁ = false) :
+    (hnc : redexKind e₁ = .plain) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E,∅}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={∅,E}=∗
@@ -666,23 +677,23 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
   iapply wp_lift_base_step h
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, c⟩
-  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
   · ipureintro; exact goose_baseReducible_of hnc Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
-  obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_uncounted hnc).1 Hstep
+  obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, Hwp, Hefs⟩
   imodintro
   iframe Hwp Hefs
   iapply (goose_bstateInterp_eq σ₂ c _ _ _).2
   iframe
 
-/-- iris-lean's `wp_lift_atomic_base_step` for an uncounted redex. -/
+/-- iris-lean's `wp_lift_atomic_base_step` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : isCounted e₁ = false) :
+    (hnc : redexKind e₁ = .plain) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
@@ -694,23 +705,23 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
   iapply wp_lift_atomic_base_step h
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, c⟩
-  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
   · ipureintro; exact goose_baseReducible_of hnc Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
-  obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_uncounted hnc).1 Hstep
+  obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, HΦ, Hefs⟩
   imodintro
   iframe HΦ Hefs
   iapply (goose_bstateInterp_eq σ₂ c _ _ _).2
   iframe
 
-/-- iris-lean's `wp_lift_atomic_base_step_no_fork` for an uncounted redex. -/
+/-- iris-lean's `wp_lift_atomic_base_step_no_fork` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp GF}
-    (h : toVal e₁ = none) (hnc : isCounted e₁ = false) :
+    (h : toVal e₁ = none) (hnc : redexKind e₁ = .plain) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
@@ -735,7 +746,7 @@ theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp
 
 /-- A lifting lemma for atomic steps that only change the heap. -/
 theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : isCounted e₁ = false) :
+    (hnc : redexKind e₁ = .plain) :
     (∀ σ₁ : CfgState, naHeapCtx tls σ₁.1.heap ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ κ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ κ e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
@@ -1171,31 +1182,184 @@ theorem wp_alloc_untyped (v : val) :
   rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
   iexact Hl
 
-/-! ### Fork -/
+/-! ### Threads: `Fork` and `ThreadExit`
 
+`Fork e` spawns the thread `e ;; ThreadExit`. In the bounded semantics it takes
+one thread token out of the thread fuel (or stutters when the fuel is exhausted,
+which `wp_fork_tok` absorbs by Löb induction as `wp_GoInstruction_preceipt`
+does), and the forked thread's `ThreadExit` puts one back. `wp_fork_tok` is the
+primitive rule: the forking thread receives the token and the forked thread
+must end with one; `wp_fork` is the token-free form (the forked thread keeps its
+token to itself). -/
+
+/-- `ThreadExit`, the last step of a forked thread: it returns a thread token to
+the thread fuel. -/
+theorem wp_ThreadExit (Φ : val → IProp GF) :
+    ⊢ threadTok -∗ ▷ Φ #() -∗ WP ThreadExit @ s; E {{ Φ }} := by
+  iintro Htok HΦ
+  iapply wp_lift_atomic_base_step rfl
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
+  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨[], _, _, _, .exit (BaseStep.ThreadExitS σ)⟩
+  inext
+  iintro %e₂ %s₂ %eₜ %Hstep _
+  cases Hstep with
+  | step hp _ => cases hp
+  | tick hc _ => cases hc
+  | stutter hc _ => cases hc
+  | exit Hb =>
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_ThreadExit_inv Hb
+    imodintro
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht Htok]
+    · iapply (goose_bstateInterp_eq _ _ _ _ _).2
+      isplitl [Hheap Hffi Hgs Hgffi Hproph]
+      · iapply (goose_stateInterp_eq _ _ _ _).mpr
+        dsimp only [List.nil_append]
+        iframe
+        ipureintro; exact Hlctx
+      · iframe Hc
+        iapply (threadFuel_exit (GF := GF) t)
+        iframe
+    isplitl [HΦ]
+    · iexists #()
+      isplit
+      · ipureintro; rfl
+      · iexact HΦ
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+
+/-- The forked thread `e ;; ThreadExit` runs `e`, which must end with a thread
+token, and returns the token at its `ThreadExit`. -/
+theorem wp_seq_ThreadExit (e : Expr) :
+    WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢ WP (Seq e ThreadExit) @ s; ⊤ {{ _v, True }} := by
+  refine .trans (wp_mono fun v => ?_)
+    (wp_bind (fill [EctxItem.AppRCtx (Rec BAnon BAnon ThreadExit)]))
+  refine (?_ : (threadTok : IProp GF) ⊢
+    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ _v, True }})
+  refine .trans ?_ (wp_bind (fill [EctxItem.AppLCtx v]))
+  refine .trans ?_ (wp_pure_step_later (Hexec := pure_recc BAnon BAnon ThreadExit) trivial)
+  refine (?_ : (threadTok : IProp GF) ⊢ ▷ (£ 1 -∗ WP (Val (RecV BAnon BAnon ThreadExit)) @ s; ⊤
+    {{ w, WP (App (Val w) (Val v)) @ s; ⊤ {{ _v, True }} }}))
+  iintro Htok
+  inext
+  iintro _
+  iapply wp_value'
+  iapply wp_pure_step_later (e₂ := ThreadExit) (Hexec := pure_beta BAnon BAnon ThreadExit v) trivial
+  inext
+  iintro _
+  iapply wp_ThreadExit $$ Htok
+  inext
+  itrivial
+
+/-- `Fork e`: the forking thread receives a thread token (out of the thread fuel)
+and the forked thread must end with one (it is returned at its `ThreadExit`).
+Whether the token is kept by the forking thread, given to the forked thread or
+deposited in an invariant is up to the proof. -/
+theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }} ∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+  iloeb as IH
+  iintro H
+  iapply wp_lift_step rfl
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
+  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+  have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
+    cases t with
+    | zero => exact ⟨[], _, _, [], .forkStutter⟩
+    | succ t => exact ⟨[], _, _, _, .fork (BaseStep.ForkS e σ)⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hclose
+  isplitr
+  · ipureintro
+    cases s <;> simp only [Stuckness.MaybeReducible]
+    exact primStep_reducible_fill_of_baseStep_reducible (K := []) Hred
+  inext
+  iintro %e₂ %σ₂ %eₜ %Hstep Hcred
+  obtain ⟨e₂', rfl, Hbs⟩ :=
+    exists_baseStep_of_primStep_fill_of_redex_baseStep_reducible (K := []) Hred Hstep
+  cases Hbs with
+  | step hp _ => cases hp
+  | tick hc _ => cases hc
+  | stutter hc _ => cases hc
+  | fork Hb =>
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv Hb
+    rename_i t
+    icases threadFuel_fork t $$ Ht with ⟨Ht, Htok⟩
+    icases H $$ Htok with ⟨He, HΦ⟩
+    imod Hclose
+    imodintro
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    · iapply (goose_bstateInterp_eq _ _ _ _ _).2
+      iframe Hc Ht
+      iapply (goose_stateInterp_eq _ _ _ _).mpr
+      dsimp only [List.nil_append]
+      iframe
+      ipureintro; exact Hlctx
+    isplitl [HΦ]
+    · iapply wp_value'
+      iexact HΦ
+    iapply BigSepL.bigSepL_singleton.2
+    iapply wp_seq_ThreadExit $$ He
+  | forkStutter =>
+    imod Hclose
+    imodintro
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    · iapply (goose_bstateInterp_eq _ _ _ _ _).2
+      iframe Hc Ht
+      iapply (goose_stateInterp_eq _ _ _ _).mpr
+      dsimp only [List.nil_append]
+      iframe
+      ipureintro; exact Hlctx
+    isplitl [IH H]
+    · iapply IH
+      inext
+      iexact H
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+
+/-- `Fork e` without thread tokens: the forked thread's token stays with it. -/
 theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
     ⊢ ▷ WP e @ s; ⊤ {{ _v, True }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
-  iapply goose_wp_lift_atomic_base_step rfl rfl
-  iintro %σ₁ %ns %obs %obs' %nt Hσ
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨[], _, _, _, BaseStep.ForkS e σ₁⟩
+  iapply wp_fork_tok
   inext
-  iintro %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv Hstep
-  simp only [List.nil_append]
-  imodintro
-  isplitl [Hσ]
-  · iapply (goose_stateInterp_eq _ _ _ _).2
-    iapply (goose_stateInterp_eq _ _ _ _).1 $$ Hσ
-  isplitl [HΦ]
-  · iexists #()
-    isplit
-    · ipureintro; rfl
-    · iexact HΦ
-  iapply BigSepL.bigSepL_singleton.2
-  iexact He
+  iintro Htok
+  iframe HΦ
+  iapply (wp_wand (Φ := fun _ => iprop(threadTok ∗ True))) $$ [He Htok]
+  · iapply (wp_frame_r (Φ := fun _ => iprop(True)))
+    iframe
+  iintro %_ ⟨Htok, -⟩
+  iexact Htok
+
+/-- `Fork e`, the fresh thread token going to the forked thread: its body receives the token and
+must end with one. (`wp_fork` is this with the token framed through the body.) -/
+theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+  iintro He HΦ
+  iapply wp_fork_tok
+  inext
+  iintro Htok
+  iframe HΦ
+  iapply He $$ Htok
+
+/-- `Fork e`, the fresh thread token staying with the forking thread: the forked thread must end
+with a token of its own, e.g. one it takes back out of an invariant at its `Done`, where the
+forking thread deposited its own before the `go` statement. -/
+theorem wp_fork_tok_self (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ WP e @ s; ⊤ {{ _v, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+  iintro He HΦ
+  iapply wp_fork_tok
+  inext
+  iintro Htok
+  iframe He
+  iapply HΦ $$ Htok
 
 /-! ### Go instructions -/
 
@@ -1214,16 +1378,17 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   iintro ⟨#Hm, HΦ⟩
   iapply wp_lift_step (EctxLanguage.fill_not_val K _ rfl)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
-  rcases σ₁ with ⟨σ₁, c⟩
-  icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  rcases σ₁ with ⟨σ₁, ⟨c, t⟩⟩
+  icases (goose_bstateInterp_eq σ₁ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
   have Hreal := BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)
-  have Hred : BaseStep.Reducible (App (Val (GoInstruction op)) (Val arg), ((σ₁, c) : BcfgState)) := by
+  have Hred : BaseStep.Reducible
+      (App (Val (GoInstruction op)) (Val arg), ((σ₁, ⟨c, t⟩) : BcfgState)) := by
     cases c with
-    | zero => exact ⟨[], _, (σ₁, 0), [], .stutter rfl Hreal⟩
-    | succ c => exact ⟨[], e', (_, c), [], .tick rfl Hreal⟩
+    | zero => exact ⟨[], _, (σ₁, ⟨0, t⟩), [], .stutter rfl Hreal⟩
+    | succ c => exact ⟨[], e', (_, ⟨c, t⟩), [], .tick rfl Hreal⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1244,9 +1409,9 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
     · iframe Hc; iexact Hm
     imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc
+      iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -1257,9 +1422,9 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   | stutter _ _ =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc
+      iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
