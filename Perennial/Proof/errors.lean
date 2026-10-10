@@ -453,6 +453,43 @@ theorem wp_AsType (S : GoError → Prop) (err : GoError) {T' : Type} [ZeroVal T'
     · iframe; iframe #; iframe %; ileft; ipureintro; rfl
     wp_end
 
+/-- A leaf of an error tree: an error without an `As(any) bool` or `Unwrap` method (an
+`errors.New` error, a gRPC status error, ...), so that `AsType` and `As` only check its type. -/
+def isLeafError [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
+  methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
+  methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.error]) ∧
+  methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.GoType.SliceType go.error])
+
+/-- A leaf error (whose value has the Lean type of the target's Go type when its own type is the
+target's, `AsTypeTyped`) is a one-error tree. -/
+theorem isErrorTree_leaf (ii : GoInterfaceOk) {T' : Type} [ZeroVal T']
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} (hleaf : isLeafError ii)
+    (htyped : AsTypeTyped T' T ii) :
+    ⊢ isErrorTree (GF := GF) (· = interface.ok ii) T' T := by
+  obtain ⟨hAs, hU1, hU2⟩ := hleaf
+  iintro !> %ii' %h
+  cases h
+  unfold asTypeNode
+  simp only [hAs, hU1, hU2, ↓reduceIte]
+  iframe %
+  isplitr <;> itrivial
+
+/-- Spec of `errors.As(err, target)` for a target `*T`, `l` (axiom). `As` walks the error tree of
+`err` as `AsType[T]` does (its precondition is `wp_AsType`'s), calling the `As` methods with
+`target` itself, and stores a matching error in `*l`; it finds the target's type by reflection
+(`internal/reflectlite`, not translated). Go's `As` panics if `T` is neither an interface type
+nor implements `error`; the model has no method sets of types to state it (`methodSet` is
+uninterpreted), so a caller must only use this spec for such `T` (`go vet` checks it). -/
+axiom wp_As [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [sem : go.Semantics] [package_sem : errors.Assumptions]
+    (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T') :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
+        l ↦ v }}
+      (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
+    {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}
+
 end wps
 
 end errors
