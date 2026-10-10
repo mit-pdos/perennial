@@ -106,7 +106,7 @@ theorem wp_counter_register (Hbound : threadBound GF ≤ 2 ^ 31) (l : Loc) :
 given one by its own proof, e.g. out of an invariant). Two tokens are then at
 hand, so `2 < threadBound GF`. -/
 example (e : Expr) (s : Stuckness) (E : CoPset) :
-    threadTok ∗ ▷ WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢
+    threadTok ∗ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF) }} ⊢
       WP (Fork e) @ s; E {{ _v, threadToks 2 ∗ ⌜2 < threadBound GF⌝ }} := by
   iintro ⟨Htok, He⟩
   iapply wp_fork_tok

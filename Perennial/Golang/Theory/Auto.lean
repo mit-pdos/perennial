@@ -1186,11 +1186,12 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
     {{ (l : Loc), RET #l; l ↦ v }} := by
   iintro %Φ _ HΦ
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((#v : val).isPanic = false)
+      (App (Val (GoInstruction (GoAlloc t))) (Val #v))
       (allocStructRaw fds #v fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
   rw [allocStructRaw_eq]
   wp_bind (GoPrealloc #())
@@ -1351,11 +1352,12 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v dq).1 $$ Hl
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoLoad t))) (Val #l))
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((#l : val).isPanic = false)
+      (App (Val (GoInstruction (GoLoad t))) (Val #l))
       (loadStructRaw fds #l fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
   rw [loadStructRaw_eq]
   have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1530,12 +1532,12 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   unfold typedPointstoWrap
   icases Hl with ⟨Hl, %Hnn⟩
   ihave Hl := (hdef l v _).1 $$ Hl
-  have hpw : PureWp (hlc := hlc) (GF := GF) True
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((PairV #l #w).isPanic = false)
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w)))
       (storeStructRaw fds #l #w fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
   rw [storeStructRaw_eq]
   iapply (struct_store_fields' v w l s E fds_unsealed fs hfs Φ)

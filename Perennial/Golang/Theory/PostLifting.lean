@@ -43,7 +43,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance wp_call_go_func (v2 : val) (f x : Binder) (e : Expr) :
-    PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
+    PureWp (G := G) (L := L) (v2.isPanic = false) (App (Val #(func.mk f x e)) (Val v2))
       (subst' x v2 (subst' f #(func.mk f x e) e)) := by
   have h : (#(func.mk f x e) : val) = RecV f x e := by
     rw [go.intoVal_unfold GoFunc]
@@ -289,12 +289,12 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_wp_go_step_det (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] :
-    PureWp (G := G) (L := L) True (App (Val (GoInstruction i)) (Val v)) e where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v.isPanic = false) (App (Val (GoInstruction i)) (Val v)) e where
+  pure_wp_wp s E Φ K hv := by
     have hdet := h.isGoStep_det
     have hpure := h.isGoStep_pure_det
     iintro HΦ
-    iapply wp_GoInstruction K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+    iapply wp_GoInstruction K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
     inext
     iintro %e' %gs %gs' %Hstep Hlc Hctx
     obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
@@ -309,13 +309,13 @@ that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).
 Use it with `wp_bind` on the instruction, before `wp_auto` takes the step. -/
 theorem wp_go_step_receipt (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List EctxItem) :
+    (K : List EctxItem) (hv : v.isPanic = false) :
     ▷ (⧗ 1 -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
   have hdet := h.isGoStep_det
   have hpure := h.isGoStep_pure_det
   iintro HΦ
-  iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr Hctx
   obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
@@ -327,21 +327,22 @@ theorem wp_go_step_receipt (i : GoInstruction) (v : val) (e : Expr)
 
 /-- `wp_go_step_receipt` with an empty evaluation context (use after `wp_bind`). -/
 theorem wp_go_step_receipt' (i : GoInstruction) (v : val) (e : Expr)
-    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF) :
+    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
+    (hv : v.isPanic = false) :
     ▷ (⧗ 1 -∗ £ 1 -∗ WP e @ s; E {{ Φ }})
     ⊢ WP (App (Val (GoInstruction i)) (Val v)) @ s; E {{ Φ }} :=
-  wp_go_step_receipt i v e Φ []
+  wp_go_step_receipt i v e Φ [] hv
 
 /-- `wp_go_step_receipt` that also increments a persistent time receipt. -/
 theorem wp_go_step_preceipt (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List EctxItem) (m : Nat) :
+    (K : List EctxItem) (m : Nat) (hv : v.isPanic = false) :
     ⧖ m ∗ ▷ (⧗ 1 -∗ ⧖ (m + 1) -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
   have hdet := h.isGoStep_det
   have hpure := h.isGoStep_pure_det
   iintro ⟨Hm, HΦ⟩
-  iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
   iframe Hm
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr Hm' Hctx
@@ -483,7 +484,7 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable {s : Stuckness} {E : CoPset}
 
-theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) :
+theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) (Hv : v.isPanic = false) :
     {{ ▷ heapPointsto (GF := GF) l dq v }} (App (Val Read) (Val #l)) @ s; E
     {{ RET v; heapPointsto l dq v }} := by
   iintro %Φ Hl HΦ
@@ -497,7 +498,7 @@ theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) :
   wp_pures
   iapply HΦ $$ Hl
 
-theorem _internal_wp_untyped_store (l : Loc) (v v' : val) :
+theorem _internal_wp_untyped_store (l : Loc) (v v' : val) (Hv' : v'.isPanic = false) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v }} (App (App (Val Store) (Val #l)) (Val v')) @ s; E
     {{ RET #(); heapPointsto l (.own 1) v' }} := by
   iintro %Φ Hl HΦ
@@ -505,7 +506,7 @@ theorem _internal_wp_untyped_store (l : Loc) (v v' : val) :
   wp_apply_core wp_prepare_write l v $$ Hl
   iintro ⟨Hl, Hl'⟩
   wp_pures
-  wp_apply_core wp_finish_store l v' v $$ [Hl Hl']
+  wp_apply_core wp_finish_store l v' v Hv' $$ [Hl Hl']
   · iframe
   iintro Hl
   iapply HΦ $$ Hl
@@ -610,7 +611,7 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
   · intro s E t _ v
     iintro %Φ _ HΦ
     wp_pures
-    wp_apply_core wp_alloc_untyped _
+    wp_apply_core wp_alloc_untyped _ (isPanic_intoVal _)
     iintro %l Hl
     icases heapPointsto_non_null_dup l _ _ $$ Hl with ⟨Hl, %Hnn⟩
     iapply HΦ
@@ -620,7 +621,7 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
     wp_pures
-    wp_apply_core _internal_wp_untyped_read l dq _ $$ Hl
+    wp_apply_core _internal_wp_untyped_read l dq _ (isPanic_intoVal _) $$ Hl
     iintro Hl
     iapply HΦ
     iframe Hl
@@ -629,7 +630,7 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
     wp_pures
-    wp_apply_core _internal_wp_untyped_store l _ _ $$ Hl
+    wp_apply_core _internal_wp_untyped_store l _ _ (isPanic_intoVal _) $$ Hl
     iintro Hl
     iapply HΦ
     iframe Hl

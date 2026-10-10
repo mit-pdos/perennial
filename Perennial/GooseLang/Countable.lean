@@ -165,12 +165,14 @@ def PrimOp1.toNat : PrimOp1 → Nat
   | .FinishReadOp => 2
   | .LoadOp => 3
   | .AllocOp => 4
+  | .RaiseOp => 5
 def PrimOp1.fromNat : Nat → PrimOp1
   | 0 => .PrepareWriteOp
   | 1 => .StartReadOp
   | 2 => .FinishReadOp
   | 3 => .LoadOp
   | 4 => .AllocOp
+  | 5 => .RaiseOp
   | _ => .PrepareWriteOp
 instance PrimOp1.countable : Pos.Countable PrimOp1 :=
   countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
@@ -382,7 +384,7 @@ local macro "inj_ex " b:ident : tactic => `(tactic| inj_cases $b:ident [
     Expr.Pair.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Fork.injEq, Expr.Primitive0.injEq,
     Expr.Primitive1.injEq, Expr.Primitive2.injEq, Expr.CmpXchg.injEq, Expr.ExternalOp.injEq,
     Expr.ResolveProph.injEq, Expr.LiteralValue.injEq, Expr.SelectStmtClauses.injEq,
-    val.LitV.injEq, val.RecV.injEq, val.PairV.injEq, val.InjLV.injEq, val.InjRV.injEq,
+    Expr.Catch.injEq, val.PanicV.injEq, val.LitV.injEq, val.RecV.injEq, val.PairV.injEq, val.InjLV.injEq, val.InjRV.injEq,
     val.ExtV.injEq, val.GoInstruction.injEq, val.ArrayV.injEq, val.InterfaceV.injEq,
     val.LiteralValueV.injEq, val.SelectStmtClausesV.injEq,
     keyed_element.KeyedElement.injEq, key.KeyField.injEq, key.KeyInteger.injEq,
@@ -410,6 +412,7 @@ def Expr.toTree : Expr → GenTree
   | .ResolveProph e1 e2 => node 15 [e1.toTree, e2.toTree]
   | .LiteralValue l => node 16 [kesToTree l]
   | .SelectStmtClauses d l => node 17 [optexprToTree d, clausesToTree l]
+  | .Catch e h k => node 18 [e.toTree, h.toTree, k.toTree]
 def val.toTree : val → GenTree
   | .LitV l => node 0 [of l]
   | .RecV f x e => node 1 [of f, of x, e.toTree]
@@ -423,6 +426,7 @@ def val.toTree : val → GenTree
   | .LiteralValueV l => node 9 [kesToTree l]
   | .SelectStmtClausesV d l => node 10 [optexprToTree d, clausesToTree l]
   | .UntypedNil => node 11 []
+  | .PanicV p => node 12 [p.toTree]
 def keyed_element.toTree : keyed_element → GenTree
   | .KeyedElement k v => node 0 [optkeyToTree k, v.toTree]
 def key.toTree : key → GenTree
@@ -484,6 +488,8 @@ theorem Expr.toTree_inj : ∀ {a b : Expr}, a.toTree = b.toTree → a = b
   | .LiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h
   | .SelectStmtClauses .., b, h => by
     inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
+  | .Catch .., b, h => by
+    inj_ex b; exact ⟨Expr.toTree_inj h.1, Expr.toTree_inj h.2.1, Expr.toTree_inj h.2.2⟩
 termination_by structural a _ _ => a
 theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .LitV _, b, h => by inj_ex b; exact h
@@ -499,6 +505,7 @@ theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .SelectStmtClausesV .., b, h => by
     inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
   | .UntypedNil, b, h => by inj_ex b
+  | .PanicV _, b, h => by inj_ex b; exact val.toTree_inj h
 termination_by structural a _ _ => a
 theorem keyed_element.toTree_inj : ∀ {a b : keyed_element}, a.toTree = b.toTree → a = b
   | .KeyedElement .., b, h => by

@@ -162,7 +162,7 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
     with ⟨%hG, %HinvEq, Hσ, Hwp⟩
   imodintro
   iexists (fun σ κs => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
-  iexists (fun _ => iprop(True))
+  iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
   obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
   cases HinvEq
@@ -205,6 +205,88 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
   · intro e2 he2
     exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
 
+/-- No thread of the bounded semantics ends in a panic: the main thread's
+postcondition `φ` excludes panics (`hφ`; the convention for the main thread is
+`φ (PanicV _) = False`), and a forked thread's final value satisfies `forkPost`
+(`goose_irisGS`), which excludes panics (`wp_fork`). -/
+theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
+    (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
+        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : BcfgState}
+    (Hsteps : Language.NSteps n ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) κs (t2, σ2))
+    (v : val) (Hv : Val v ∈ t2) : v.isPanic = false := by
+  refine wp_strong_adequacy (GF := GF) Stuckness.NotStuck [e]
+    (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) n κs t2 σ2 (v.isPanic = false) (fun _ => 0) ?_ Hsteps
+  intro Hinv
+  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
+    (fun (_ : HeapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}))
+    (@fun hG HinvEq HN HT Hlctx => by subst HinvEq; exact Hwp (hG := hG) HN HT Hlctx)
+    with ⟨%hG, %HinvEq, Hσ, Hwp⟩
+  imodintro
+  iexists (fun σ _ κs _ => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
+  iexists [fun v => iprop(⌜φ v⌝)]
+  iexists (fun v => iprop(⌜val.isPanic v = false⌝))
+  iexists (fun _ _ _ _ => fupd_intro)
+  iframe Hσ
+  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
+  cases HinvEq
+  isplitl [Hwp]
+  · iapply BigSepL2.bigSepL2_singleton.2
+    iexact Hwp
+  iintro %es' %t2' %Heq %Hlen %_ _ Hes Hforks
+  iapply fupd_mask_intro_discard Std.LawfulSet.empty_subset
+  subst Heq
+  obtain ⟨e', rfl⟩ : ∃ e', es' = [e'] := by
+    match es', Hlen with
+    | [e'], _ => exact ⟨e', rfl⟩
+  rcases List.mem_append.1 Hv with Hv | Hv
+  · obtain rfl : e' = Val v := (List.mem_singleton.1 Hv).symm
+    icases BigSepL2.bigSepL2_singleton.1 $$ Hes with Hes
+    simp only [ProgramLogic.ToVal.toVal, toVal, Option.elim_some]
+    icases Hes with %Hφv
+    ipureintro
+    cases v <;> first | rfl | exact absurd Hφv (hφ _)
+  · have Hmem : v ∈ List.filterMap toVal t2' := List.mem_filterMap.2 ⟨Val v, Hv, rfl⟩
+    iapply (BigSepL.bigSepL_mem (Φ := fun v => iprop(⌜val.isPanic v = false⌝)) Hmem) $$ Hforks
+
+/-- Adequacy of GooseLang without unrecovered panics: `goose_adequacy`, and moreover
+no thread of a real execution of fewer than `N` steps ends in a panic, given that
+the main thread's postcondition `φ` excludes panics (`hφ`, the convention
+`φ (PanicV _) = False`); forked threads cannot end in a panic by `wp_fork`. -/
+theorem goose_adequacy_nopanic [hPre : GooseGpreS ffi GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
+        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ v, Val v ∈ t2 → v.isPanic = false) := by
+  refine ⟨(goose_adequacy N T e σ g φ Hinitg Hinit Hwp n κs t2 σ2 Hsteps Hbound Hthreads
+    Hlive).1, (goose_adequacy N T e σ g φ Hinitg Hinit Hwp n κs t2 σ2 Hsteps Hbound Hthreads
+    Hlive).2, ?_⟩
+  have hT : 1 < T := by have := Hlive.start; simp only at this; omega
+  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
+    (by simp only; omega)
+  exact goose_adequacy_nopanic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
+
 /-- Invariance for the bounded language: under the same hypotheses as
 `goose_adequacy`, a state property that follows from the FFI's global
 interpretation holds in every reachable configuration of the bounded semantics. -/
@@ -233,7 +315,7 @@ theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < 
     with ⟨%hG, %HinvEq, Hσ, Hwp, Hφ⟩
   imodintro
   iexists (fun σ κs _ => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
-  iexists (fun _ => iprop(True))
+  iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
   obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
   cases HinvEq

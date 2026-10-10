@@ -32,6 +32,10 @@ def max.impl (t : go.GoType) (n : Nat) : val :=
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
   | _ => LitV LitPoison
 
+/-- `panic(v)` starts a panic with the value `v` (`Raise`), which unwinds the
+evaluation context up to a `Catch` (a function with `defer`s, `wrapDefer`). -/
+def panic.impl : val := λ: "v", Raise "v"
+
 end helpers
 
 namespace «unsafe»
@@ -946,6 +950,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
 
   min_unfold (n : Nat) (t : go.GoType) : FuncUnfold min (List.replicate n t) (min.impl t n)
   max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) (max.impl t n)
+  panic_unfold : FuncUnfold panic [] panic.impl
 
   [unsafe_sem : unsafe.Semantics]
 
@@ -996,7 +1001,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
 
 attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics.load_predeclared
   PredeclaredSemantics.store_predeclared PredeclaredSemantics.min_unfold
-  PredeclaredSemantics.max_unfold PredeclaredSemantics.unsafe_sem
+  PredeclaredSemantics.max_unfold PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
   PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untypedInt_semantics
@@ -1017,7 +1022,7 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.type_repr_empty_struct
 export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclared
   predeclared_underlying len_underlying cap_underlying clear_underlying copy_underlying
-  delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold
+  delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold panic_unfold
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
   untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics

@@ -39,7 +39,7 @@ variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 panic (see the comment in `Perennial/Golang/Defn/Map.lean`). -/
 class SafeMapKey {K : Type} (key_type : go.GoType) (k : K) : Prop where
   wp_go_eq_safe_map_key : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF),
-    (∀ v, Φ v) ⊢
+    (∀ b : Bool, Φ #b) ⊢
       WP (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #k))) @ s; E {{ Φ }}
 
 export SafeMapKey (wp_go_eq_safe_map_key)
@@ -102,10 +102,13 @@ theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v 
   rw [ownMap_unseal]
   iintro %Φ Hm HΦ
   iNamed Hm
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
   wp_call
   wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
-  wp_apply _internal_wp_untyped_store $$ Hown with Hown
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
+    with Hown
+  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _
+    (go.is_map_pure_map_insert _ _ _ _ His_map))) $$ Hown with Hown
   iapply HΦ
   unfold ownMapDef
   simp only [named]
@@ -133,9 +136,12 @@ theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.G
   wp_start as Hm
   rw [ownMap_unseal]
   iNamed Hm
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
   wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
-  wp_apply _internal_wp_untyped_store $$ Hown with Hown
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
+    with Hown
+  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _
+    (go.is_map_pure_map_delete _ _ _ His_map))) $$ Hown with Hown
   iapply HΦ
   unfold ownMapDef
   simp only [named]
@@ -163,12 +169,14 @@ theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K
   rw [ownMap_unseal]
   iintro %Φ Hm HΦ
   iNamed Hm
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
   ihave %Hnn := heapPointsto_non_null _ _ _ $$ Hown
   wp_call
   wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
   rw [decide_eq_false (show ¬ mref = map.nil from Hnn)]
   wp_pures
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
+    with Hown
   rw [go.mapLookup_pure #k mv mp His_map, Hagree k]
   cases hk : m !! k <;>
   · simp only [Option.getD_none, Option.getD_some, Option.isSome_none, Option.isSome_some,
@@ -224,7 +232,8 @@ theorem wp_map_make2 (len : w64) (key_type elem_type : go.GoType)
       (App (Val #(functions go.make2 [go.MapType key_type elem_type])) (Val #len)) @ s; E
     {{ (mref : Loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
   wp_start
-  wp_apply wp_alloc_untyped with %l Hl
+  wp_apply (wp_alloc_untyped _ (go.is_map_pure_not_panic _ _ (go.is_map_pure_map_empty _)))
+    with %l Hl
   iapply HΦ
   rw [ownMap_unseal]; unfold ownMapDef; simp only [named]
   iexists _
@@ -254,9 +263,13 @@ theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType
   rw [ownMap_unseal]
   unfold ownMapDef
   iNamed Hm
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
   icases Hm' with ⟨%mv', %mp', Hown', %His_map', %Hagree', %Hdom', %Hdefault'⟩
-  wp_apply _internal_wp_untyped_read $$ Hown' with Hown'
-  wp_apply _internal_wp_untyped_store $$ Hown with Hown
+  have Hmv' := go.is_map_pure_not_panic _ _ His_map'
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map')) $$ Hown'
+    with Hown'
+  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _ His_map')) $$ Hown
+    with Hown
   iapply HΦ
   simp only [named]
   iexists mv'
@@ -387,7 +400,9 @@ theorem wp_ownMap_read (mref : Loc) (dq : DFrac) (m : GMap K V) (Φ : val → IP
   iintro Hm HΦ
   rw [ownMap_unseal]
   iNamed Hm
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
+    with Hown
   iapply HΦ $$ %mv %mp %(⟨His_map, Hagree, Hdom⟩)
   unfold ownMapDef
   simp only [named]
@@ -428,6 +443,7 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
   iapply wp_ownMap_read $$ Hm
   iintro %mv %mp %Hmv Hm
   obtain ⟨His_map, Hagree, Hdom⟩ := Hmv
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
   wp_pures
   wp_bind (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) _)
   iapply wp_InternalMapForRange mv mp _ key_type elem_type _ $$ %His_map
@@ -455,6 +471,8 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
   iloeb as IH generalizing %i %hile
   by_cases hlt : i < keys.length
   · have hkey : keys[i]? = some keys[i] := List.getElem?_eq_getElem hlt
+    have Hval : (mp #(keys[i])).2.isPanic = false := by
+      rw [Hagree]; cases m !! keys[i] <;> simp
     rw [List.drop_eq_getElem_cons hlt, List.map_cons, List.foldr_cons]
     icases Hinv with ⟨%m', Hm', HP⟩
     wp_auto
@@ -462,6 +480,7 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
     iapply wp_ownMap_read $$ Hm'
     iintro %mv' %mp' %Hmv' Hm'
     obtain ⟨His_map', Hagree', -⟩ := Hmv'
+    have Hmv'' := go.is_map_pure_not_panic _ _ His_map'
     wp_pures
     rw [go.mapLookup_pure _ mv' mp' His_map', Hagree' keys[i]]
     cases hk : m' !! keys[i] with
@@ -684,7 +703,9 @@ theorem wp_map_len_lt {t key_type elem_type : go.GoType} [t ↓u go.MapType key_
   wp_pures
   rw [ownMap_unseal]
   iNamed Hm
-  wp_apply _internal_wp_untyped_read $$ Hown with Hown
+  have Hmv := go.is_map_pure_not_panic _ _ His_map
+  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
+    with Hown
   obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv mp His_map
   obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
   obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (intoVal (V := K)) ks

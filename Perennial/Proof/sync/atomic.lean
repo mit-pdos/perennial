@@ -115,6 +115,7 @@ theorem wp_AddUint64_receipt (addr : Loc) (v : w64) :
   iintro %Φ #Hpkg HΦ
   wp_bind (App (Val (GoInstruction _)) (Val _))
   iapply wp_go_step_receipt'
+  case hv => exact isPanic_intoVal ()
   inext
   iintro Hr _
   iapply wp_value'

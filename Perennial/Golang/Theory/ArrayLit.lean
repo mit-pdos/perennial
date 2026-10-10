@@ -91,7 +91,7 @@ theorem pure_wp_array_lit (n : Int) (t : go.GoType) {V : Type} {zv : ZeroVal V} 
       (Val #(array.mk n (xs ++ List.replicate m (zero_val V)))) := by
   subst hkvs
   refine pure_wp_val _ _ _ fun s E Φ _ => ?_
-  refine .trans ?_ ((pure_wp_go_step_det (G := G) (L := L) _ _ _).pure_wp_wp s E Φ [] trivial)
+  refine .trans ?_ ((pure_wp_go_step_det (G := G) (L := L) _ _ _).pure_wp_wp s E Φ [] rfl)
   have he0 : ∀ Ψ : val → IProp GF,
       Ψ #(array.mk n (List.replicate n.toNat (zero_val V))) ⊢
         WP (GoZeroVal (go.ArrayType n t) #() : Expr) @ s; E {{ Ψ }} := by

@@ -132,6 +132,9 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     is_map_pure (mapDelete mv k)
       (fun k' => if k' = k then (false, mapDefault mv) else m k')
   is_map_pure_map_empty (dv : val) : is_map_pure (mapEmpty dv) (fun _ => (false, dv))
+  /-- A map value is not a panic. -/
+  is_map_pure_not_panic (mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
+    mv.isPanic = false
 
   mapDefault_map_empty (dv : val) : mapDefault (mapEmpty dv) = dv
   mapDefault_map_insert (m k v : val) : mapDefault (mapInsert m k v) = mapDefault m
@@ -211,7 +214,8 @@ export MapSemantics (internal_map_lookup_step_pure internal_map_insert_step_pure
   internal_map_domain_literal_step_pure internal_map_make_step_pure internal_map_check_key_step
   is_go_op_go_equals_map_nil_l is_go_op_go_equals_map_nil_r internal_map_lookup_step
   internal_map_insert_step internal_map_delete_step internal_map_make_step mapLookup_pure
-  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty mapDefault_map_empty
+  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty is_map_pure_not_panic
+  mapDefault_map_empty
   mapDefault_map_insert mapDefault_map_delete is_map_domain_exists is_map_domain_map_empty
   is_map_domain_pure clear_map delete_map make2_map make1_map len_map composite_literal_map)
 

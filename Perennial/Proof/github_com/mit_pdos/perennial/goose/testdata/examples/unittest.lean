@@ -145,11 +145,14 @@ theorem wp_basicTypeSwitch (x : GoInterface) :
     obtain ⟨ty, v⟩ := i
     by_cases h : ty = go.int
     · subst h
+      -- (the asserted value is bound by a `let:`, so it must not be a panic)
+      obtain ⟨v', rfl⟩ := Htype.1 rfl
       wp_auto
       wp_end
     · wp_auto_neg h
       by_cases h' : ty = go.string
       · subst h'
+        obtain ⟨v', rfl⟩ := Htype.2 rfl
         wp_auto
         wp_end
       · wp_auto_neg h'

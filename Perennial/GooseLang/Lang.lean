@@ -7,12 +7,15 @@ a customizable FFI (foreign-function interface) for new primitive operations.
 * There is no crash semantics (`ffi_crash_step`, `goose_crash`).
 * The base step is an inductive relation (`base_step`), and FFI steps (`FfiSemantics.ffi_step`) are a
   plain relation.
+* Panics: a panic outcome is a value, `PanicV p`, which unwinds every evaluation
+  frame but that of `Catch e h k` (`Unwinds`); the head step relation `HeadStep`
+  is the unwinding together with `base_step` on the redexes that do not unwind.
 * The real semantics is `gooseRealEctxiLang`, an iris-lean
   `EctxItemLanguage` whose state is the pair `state × GlobalState`
-  (`CfgState`). It is a `def`, not an instance: the registered language
+  (`CfgState`) and whose head step is `HeadStep`. It is a `def`, not an instance: the registered language
   instance (used by the program logic) is the step-bounded layer
   `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
-  step fuel on top of `base_step` for time receipts. The adequacy theorems
+  step fuel on top of `HeadStep` for time receipts. The adequacy theorems
   are transferred back to `gooseRealEctxiLang` (`goose_adequacy`).
 * Equality on the syntax is decided classically; nothing downstream computes with it.
 -/
@@ -112,6 +115,8 @@ inductive PrimOp1 where
   | LoadOp
   /-- allocation (initial value) -/
   | AllocOp
+  /-- start a panic with the given value (the body of `go.panic`) -/
+  | RaiseOp
 deriving DecidableEq
 
 inductive PrimOp2 where
@@ -213,6 +218,10 @@ inductive Expr where
   | ResolveProph (e1 e2 : Expr)
   | LiteralValue (l : List keyed_element)
   | SelectStmtClauses (default_handler : Option Expr) (l : List comm_clause)
+  /-- Panic handling: `Catch e h k` evaluates `e`; a panic `PanicV p` that
+  reaches it continues as `h p`, a value `v` as `k v`. The only evaluation frame
+  that a panic does not unwind (see `Unwinds`). -/
+  | Catch (e h k : Expr)
 
 inductive val where
   | LitV (l : BaseLit)
@@ -229,6 +238,9 @@ inductive val where
   | LiteralValueV (l : List keyed_element)
   | SelectStmtClausesV (default_handler : Option Expr) (l : List comm_clause)
   | UntypedNil
+  /-- The outcome of a panic with value `p`: it unwinds every evaluation frame
+  but `Catch`'s. Not the value of any Go type (`GoGlobalContext.intoVal_not_panic`). -/
+  | PanicV (p : val)
 
 /-- https://go.dev/ref/spec#Composite_literals -/
 inductive keyed_element where
@@ -266,12 +278,22 @@ noncomputable instance : DecidableEq CommCase := fun a b => Classical.propDecida
 instance : Inhabited val := ⟨.LitV .LitUnit⟩
 instance : Inhabited Expr := ⟨.Val default⟩
 
+/-- Is `v` a panic outcome `PanicV p`? -/
+def val.isPanic : val → Bool
+  | .PanicV _ => true
+  | _ => false
+
+attribute [simp] val.isPanic.eq_1 val.isPanic.eq_2
+
+theorem val.isPanic_eq_true {v : val} (h : v.isPanic = true) : ∃ p, v = .PanicV p := by
+  cases v <;> simp_all
+
 end goose_syntax
 
 export Expr (Val Var Rec App If Pair Fst Snd Fork Primitive0 Primitive1 Primitive2 CmpXchg
-  ExternalOp NewProph ResolveProph LiteralValue SelectStmtClauses)
+  ExternalOp NewProph ResolveProph LiteralValue SelectStmtClauses Catch)
 export val (LitV RecV PairV InjLV InjRV ExtV GoInstruction ArrayV InterfaceV LiteralValueV
-  SelectStmtClausesV UntypedNil)
+  SelectStmtClausesV UntypedNil PanicV)
 export keyed_element (KeyedElement)
 export key (KeyField KeyInteger KeyExpression KeyLiteralValue)
 export Element (ElementExpression ElementLiteralValue)
@@ -298,6 +320,8 @@ instance : Coe String Expr := ⟨Var⟩
 instance : CoeFun Expr (fun _ => Expr → Expr) := ⟨App⟩
 
 abbrev Panic (s : String) : Expr := Primitive0 (.PanicOp s)
+/-- `Raise e`: a panic with the value of `e` (it steps to `PanicV v`). -/
+abbrev Raise (e : Expr) : Expr := Primitive1 .RaiseOp e
 abbrev ArbitraryInt : Expr := Primitive0 .ArbitraryIntOp
 /-- The last step of a forked thread (`ForkS` spawns `Seq e ThreadExit`): a no-op
 that decrements the thread count `GlobalState.threads`. -/
@@ -348,11 +372,25 @@ class GoGlobalContext [FfiSyntax] where
   intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
   intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
   intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
+  /-- No Go value is a panic outcome. -/
+  intoVal_not_panic : ∀ {V : Type} (x : V), (intoVal x).isPanic = false
 
 export GoGlobalContext (intoVal)
 
 /-- `# x` is `intoVal x`. -/
 scoped prefix:max "#" => intoVal
+
+theorem isPanic_ite [FfiSyntax] {c : Prop} [Decidable c] {a b : val} (ha : a.isPanic = false)
+    (hb : b.isPanic = false) : (if c then a else b).isPanic = false := by
+  split <;> assumption
+
+@[simp] theorem isPanic_intoVal [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) :
+    (#x : val).isPanic = false :=
+  GoGlobalContext.intoVal_not_panic x
+
+@[simp] theorem intoVal_ne_PanicV [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) (p : val) :
+    (#x : val) ≠ PanicV p := by
+  intro h; have := isPanic_intoVal x; rw [h] at this; cases this
 
 /-- `GoLocalContext` contains several low-level Go functions for typed memory
 access, map updates, etc. -/
@@ -497,43 +535,53 @@ def toVal : Expr → Option val
 theorem of_to_val {e : Expr} {v : val} : toVal e = some v → Val v = e := by
   cases e <;> simp [toVal]; exact Eq.symm
 
+/-- Evaluation frames. A frame whose already evaluated operand is a value holds a
+proof that the value is not a panic: once an operand has panicked, nothing else
+around it is evaluated (the panic unwinds the frame, `Unwinds`). -/
 inductive EctxItem where
-  | AppLCtx (v2 : val)
+  | AppLCtx (v2 : val) (h2 : v2.isPanic = false)
   | AppRCtx (e1 : Expr)
   | IfCtx (e1 e2 : Expr)
   | PairLCtx (e2 : Expr)
-  | PairRCtx (v1 : val)
+  | PairRCtx (v1 : val) (h1 : v1.isPanic = false)
   | FstCtx
   | SndCtx
   | Primitive1Ctx (op : PrimOp1)
   | Primitive2LCtx (op : PrimOp2) (e2 : Expr)
-  | Primitive2RCtx (op : PrimOp2) (v1 : val)
+  | Primitive2RCtx (op : PrimOp2) (v1 : val) (h1 : v1.isPanic = false)
   | ExternalOpCtx (op : ffi_opcode)
   | CmpXchgLCtx (e1 e2 : Expr)
-  | CmpXchgMCtx (v1 : val) (e2 : Expr)
-  | CmpXchgRCtx (v1 v2 : val)
-  | ResolveProphLCtx (v2 : val)
+  | CmpXchgMCtx (v1 : val) (e2 : Expr) (h1 : v1.isPanic = false)
+  | CmpXchgRCtx (v1 v2 : val) (h1 : v1.isPanic = false) (h2 : v2.isPanic = false)
+  | ResolveProphLCtx (v2 : val) (h2 : v2.isPanic = false)
   | ResolveProphRCtx (e1 : Expr)
+  | CatchCtx (h k : Expr)
 
 open EctxItem in
 def fillItem (Ki : EctxItem) (e : Expr) : Expr :=
   match Ki with
-  | AppLCtx v2 => App e (Val v2)
+  | AppLCtx v2 _ => App e (Val v2)
   | AppRCtx e1 => App e1 e
   | IfCtx e1 e2 => If e e1 e2
   | PairLCtx e2 => Pair e e2
-  | PairRCtx v1 => Pair (Val v1) e
+  | PairRCtx v1 _ => Pair (Val v1) e
   | FstCtx => Fst e
   | SndCtx => Snd e
   | Primitive1Ctx op => Primitive1 op e
   | Primitive2LCtx op e2 => Primitive2 op e e2
-  | Primitive2RCtx op v1 => Primitive2 op (Val v1) e
+  | Primitive2RCtx op v1 _ => Primitive2 op (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
-  | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
-  | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | ResolveProphLCtx v2 => ResolveProph e (Val v2)
+  | CmpXchgMCtx v0 e2 _ => CmpXchg (Val v0) e e2
+  | CmpXchgRCtx v0 v1 _ _ => CmpXchg (Val v0) (Val v1) e
+  | ResolveProphLCtx v2 _ => ResolveProph e (Val v2)
   | ResolveProphRCtx e1 => ResolveProph e1 e
+  | CatchCtx h k => Catch e h k
+
+/-- The frames a panic unwinds: all but `Catch`'s. -/
+def EctxItem.unwinds : EctxItem → Bool
+  | .CatchCtx .. => false
+  | _ => true
 
 mutual
 def subst (x : String) (v : val) : Expr → Expr
@@ -555,6 +603,7 @@ def subst (x : String) (v : val) : Expr → Expr
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
   | LiteralValue l => LiteralValue (substKeyedElements x v l)
   | SelectStmtClauses d l => SelectStmtClauses (substOpt x v d) (substCommClauses x v l)
+  | Catch e h k => Catch (subst x v e) (subst x v h) (subst x v k)
 
 def substOpt (x : String) (v : val) : Option Expr → Option Expr
   | none => none
@@ -695,6 +744,13 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | LiteralValueS l σg : BaseStep (LiteralValue l) σg [] (Val (LiteralValueV l)) σg []
   | SelectStmtClausesS d cs σg :
       BaseStep (SelectStmtClauses d cs) σg [] (Val (SelectStmtClausesV d cs)) σg []
+  /-- `Raise v` starts a panic with value `v`. -/
+  | RaiseS v σg : BaseStep (Raise (Val v)) σg [] (Val (PanicV v)) σg []
+  /-- A panic reaching a `Catch` continues with the handler. -/
+  | CatchPanicS p h k σg : BaseStep (Catch (Val (PanicV p)) h k) σg [] (App h (Val p)) σg []
+  /-- A value reaching a `Catch` continues with the normal continuation. -/
+  | CatchValS v h k σg :
+      v.isPanic = false → BaseStep (Catch (Val v) h k) σg [] (App k (Val v)) σg []
 
 theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl
@@ -712,7 +768,7 @@ theorem fillItem_no_val_inj (Ki1 Ki2 : EctxItem) {e1 e2 : Expr} :
   cases Ki1 <;> cases Ki2 <;> simp only [fillItem, reduceCtorEq] at h <;>
     (try simp only [Expr.App.injEq, Expr.Pair.injEq,
     Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
-    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq] at h) <;>
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq] at h) <;>
     (try subst_eqs) <;> (first | (obtain ⟨_, _, _⟩ := h) | (obtain ⟨_, _⟩ := h) | skip) <;>
     subst_vars <;> simp_all [toVal]
 
@@ -720,6 +776,56 @@ theorem base_ctx_step_val (Ki : EctxItem) {e σ κ e2 σ2 efs} :
     BaseStep (fillItem Ki e) σ κ e2 σ2 efs → (toVal e).isSome := by
   intro h
   cases Ki <;> simp only [fillItem] at h <;> cases h <;> simp [toVal]
+
+/-! ### Panics
+
+A panic `PanicV p` in the hole of any frame but `Catch`'s *unwinds* it: the frame
+steps to `PanicV p` (`HeadStep.unwind`). This is a head step whose hole holds a
+value, as the evaluation-context language requires. A redex that unwinds takes no
+other step (`HeadStep.base` excludes it), and a frame whose evaluated operand is
+a panic is not an evaluation frame (`EctxItem`), so the unwinding is the only step
+of an expression in which a panic sits in an evaluation position. -/
+
+/-- `e` is a frame other than `Catch`'s around the panic `PanicV p`. -/
+def Unwinds (e : Expr) (p : val) : Prop :=
+  ∃ Ki : EctxItem, Ki.unwinds = true ∧ e = fillItem Ki (Val (PanicV p))
+
+/-- The head step relation of GooseLang (the trusted semantics): unwinding, or a
+base step of a redex that does not unwind. -/
+inductive HeadStep : Expr → CfgState → List Observation → Expr → CfgState → List Expr → Prop
+  | unwind {e p σg} : Unwinds e p → HeadStep e σg [] (Val (PanicV p)) σg []
+  | base {e σg κ e' σg' efs} :
+      (∀ p, ¬ Unwinds e p) → BaseStep e σg κ e' σg' efs → HeadStep e σg κ e' σg' efs
+
+theorem toVal_fillItem (Ki : EctxItem) (e : Expr) : toVal (fillItem Ki e) = none := by
+  cases Ki <;> rfl
+
+theorem val_head_stuck {e σ κ e' σ' efs} : HeadStep e σ κ e' σ' efs → toVal e = none := by
+  intro h
+  cases h with
+  | unwind hu => obtain ⟨Ki, _, rfl⟩ := hu; exact toVal_fillItem _ _
+  | base _ hb => exact val_base_stuck hb
+
+/-- Two decompositions of the same expression, one with a panic in the hole: the
+other hole holds a value too (a frame holding a panic is not a frame). -/
+theorem fillItem_panic_val {Ki Ki' : EctxItem} {e : Expr} {p : val}
+    (h : fillItem Ki e = fillItem Ki' (Val (PanicV p))) : (toVal e).isSome := by
+  cases Ki <;> cases Ki' <;> simp only [fillItem, reduceCtorEq, Expr.App.injEq, Expr.Pair.injEq,
+    Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq,
+    Expr.Val.injEq] at h <;> simp_all [toVal, val.isPanic]
+
+/-- Proves `∀ p, ¬ Unwinds e p` for an expression `e` none of whose evaluated
+operands is a panic (with the hypotheses in context). -/
+macro "not_unwinds" : tactic =>
+  `(tactic| (intro p ⟨Ki, _, h⟩; cases Ki <;> simp_all [fillItem, val.isPanic, EctxItem.unwinds]))
+
+theorem head_ctx_step_val (Ki : EctxItem) {e σ κ e2 σ2 efs} :
+    HeadStep (fillItem Ki e) σ κ e2 σ2 efs → (toVal e).isSome := by
+  intro h
+  cases h with
+  | unwind hu => obtain ⟨Ki', _, h⟩ := hu; exact fillItem_panic_val h
+  | base _ hb => exact base_ctx_step_val Ki hb
 
 end step
 
@@ -742,13 +848,13 @@ model). Not an instance: the program logic uses the bounded layer
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
   toVal_coe _ := rfl
-  baseStep := fun (e, σ) κ (e', σ', efs) => BaseStep e σ κ e' σ' efs
+  baseStep := fun (e, σ) κ (e', σ', efs) => HeadStep e σ κ e' σ' efs
   fillItem := fillItem
   fillItem_inj {Ki} := fillItem_inj Ki
   fillItem_val e Ki := fillItem_val Ki e
   fillItem_no_val_inj Ki1 Ki2 := fillItem_no_val_inj Ki1 Ki2
-  val_stuck := val_base_stuck
-  base_ctx_step_val {Ki} _ _ _ _ _ _ := base_ctx_step_val Ki
+  val_stuck := val_head_stuck
+  base_ctx_step_val {Ki} _ _ _ _ _ _ := head_ctx_step_val Ki
 
 end language
 

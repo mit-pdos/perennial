@@ -58,8 +58,9 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-/-- A pure computation: `wp_pures` steps through `let:` and `if:`. -/
-example (Φ : val → IProp GF) (v w : val) :
+/-- A pure computation: `wp_pures` steps through `let:` and `if:` (binding a value
+needs it not to be a panic, which would unwind the `let:` instead). -/
+example (Φ : val → IProp GF) (v w : val) (hv : v.isPanic = false) (hw : w.isPanic = false) :
     Φ v ⊢ WP gl(let: "x" := v in let: "y" := w in if: #true then "x" else "y") {{ Φ }} := by
   iintro H
   wp_pures

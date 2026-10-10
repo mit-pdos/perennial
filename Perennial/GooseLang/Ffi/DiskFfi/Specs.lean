@@ -228,7 +228,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
     {{ ▷ diskPointsto (gooseDiskGS (L := L)) (uint.Z a) q b }} (ExternalOp DiskOp.ReadOp (Val (#a))) @ s; E
     {{ (l : Loc), RET #l; uint.Z a d↦{q} b ∗ pointstoBlock l (.own 1) b }} := by
   iintro %Φ >Ha HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -286,7 +286,7 @@ theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
       (ExternalOp DiskOp.WriteOp (Val (PairV (#a) (#l)))) @ s; E
     {{ RET #(); uint.Z a d↦ b ∗ pointstoBlock l q b }} := by
   iintro %Φ >⟨⟨%b0, Ha⟩, Hl⟩ HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩

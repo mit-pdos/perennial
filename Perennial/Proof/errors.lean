@@ -260,6 +260,12 @@ theorem wp_asType (S : GoError → Prop) (err : GoError) (ppe pe : Loc)
     dsimp only
     obtain ⟨x, hx⟩ := asTypeTyped_val Htyped
     rw [hx]
+    -- (the value bound by the type assertion is `#x` only after `hx`)
+    wp_pures
+    wp_alloc ok_ptr as ok
+    wp_pures
+    wp_alloc e_ptr as e
+    wp_pures
     generalize (if go.isInterfaceType (underlying T) = true then go.typeSetContains ii.ty T
       else decide (ii.ty = T)) = b
     cases b

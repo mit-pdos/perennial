@@ -378,7 +378,7 @@ variable [FfiSemantics ext ffi] [GoGlobalContext]
 instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc Expr GF where
   invGS := G.gooseInvGS
   numLatersPerStep _ := 0
-  forkPost _ := iprop(True)
+  forkPost v := iprop(⌜v.isPanic = false⌝)
   stateInterp_mono σ ns obs nt := by
     let := G.gooseInvGS
     iintro $
@@ -391,8 +391,9 @@ section atomic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
-/-- Atomicity from the real base step. Counted redexes (Go instructions) may
-stutter in the bounded semantics and are not atomic, hence `hnc`. -/
+/-- Atomicity from the real base step (an unwinding step ends in a value too).
+Counted redexes (Go instructions) may stutter in the bounded semantics and are
+not atomic, hence `hnc`. -/
 theorem goose_atomic {e : Expr} (a : Language.Atomicity)
     (h : ∀ σ κ e' σ' efs, BaseStep e σ κ e' σ' efs → (toVal e').isSome)
     (hsub : ∀ Ki e', e = fillItem Ki e' → (toVal e').isSome)
@@ -401,7 +402,9 @@ theorem goose_atomic {e : Expr} (a : Language.Atomicity)
   Language.stronglyAtomic_atomic
     (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => by
         obtain ⟨_, _, hs⟩ := (boundedBaseStep_plain (σ := σ.1) (f := σ.2) hnc).1 hs
-        exact h _ obs e' _ efs hs)
+        cases hs with
+        | unwind => rfl
+        | base _ hs => exact h _ obs e' _ efs hs)
       (EctxItemLanguage.subredexes_are_values hsub))
 
 /-- Discharges the `hsub` side condition of `goose_atomic`. -/
@@ -460,18 +463,23 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalCont
 
 open EctxLanguage in
 /-- A one-step `PureExec` from the real base step relation (for a plain
-redex, which steps in the bounded semantics exactly as in the real one). -/
+redex that does not unwind, which steps in the bounded semantics exactly as in
+the real one). -/
 theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : Expr}
     (Hsafe : φ → ∀ σ, BaseStep e₁ σ [] e₂ σ [])
     (Hdet : φ → ∀ σ κ e' σ' efs, BaseStep e₁ σ κ e' σ' efs →
       κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = [])
-    (hnc : redexKind e₁ = .plain := by rfl) :
+    (hnc : redexKind e₁ = .plain := by rfl)
+    (Hnu : φ → ∀ p, ¬ Unwinds e₁ p := by intro _; not_unwinds) :
     Language.PureExec φ 1 e₁ e₂ where
   pureExec hφ := by
     refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep
-      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
+      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (.base (Hnu hφ) (Hsafe hφ σ.1))⟩,
+        ?_⟩)
     intro σ₁ σ₂ obs e₂' eₜ h
     obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_plain (σ := σ₁.1) (f := σ₁.2) hnc).1 h
+    rcases h' with ⟨hu⟩ | ⟨_, h'⟩
+    · exact absurd hu (Hnu hφ _)
     obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h'
     subst h2
     exact ⟨h1, rfl, h3.symm, h4⟩
@@ -482,12 +490,13 @@ instance pure_recc (f x : Binder) (e : Expr) :
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
 instance pure_pairc (v1 v2 : val) :
-    Language.PureExec True 1 (Pair (Val v1) (Val v2)) (Val (PairV v1 v2)) :=
+    Language.PureExec (v1.isPanic = false ∧ v2.isPanic = false) 1 (Pair (Val v1) (Val v2))
+      (Val (PairV v1 v2)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.PairS v1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
 instance pure_beta (f x : Binder) (e1 : Expr) (v2 : val) :
-    Language.PureExec True 1 (App (Val (RecV f x e1)) (Val v2))
+    Language.PureExec (v2.isPanic = false) 1 (App (Val (RecV f x e1)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e1) e1)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.BetaS f x e1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
@@ -528,6 +537,21 @@ instance pure_select_stmt_clauses (d : Option Expr) (cs : List comm_clause) :
     Language.PureExec True 1 (SelectStmtClauses d cs) (Val (SelectStmtClausesV d cs)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.SelectStmtClausesS d cs σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
+
+instance pure_raise (v : val) :
+    Language.PureExec (v.isPanic = false) 1 (Raise (Val v)) (Val (PanicV v)) :=
+  pureExec_of_base_step (fun _ σ => BaseStep.RaiseS v σ)
+    (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
+
+instance pure_catch_panic (p : val) (h k : Expr) :
+    Language.PureExec True 1 (Catch (Val (PanicV p)) h k) (App h (Val p)) :=
+  pureExec_of_base_step (fun _ σ => BaseStep.CatchPanicS p h k σ)
+    (fun _ _ _ _ _ _ hs => by cases hs <;> first | exact ⟨rfl, rfl, rfl, rfl⟩ | simp_all)
+
+instance pure_catch_val (v : val) (h k : Expr) :
+    Language.PureExec (v.isPanic = false) 1 (Catch (Val v) h k) (App k (Val v)) :=
+  pureExec_of_base_step (fun hv σ => BaseStep.CatchValS v h k σ hv)
+    (fun hv _ _ _ _ _ hs => by cases hs <;> first | exact ⟨rfl, rfl, rfl, rfl⟩ | simp_all)
 
 end pure
 
@@ -658,20 +682,29 @@ theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List 
       iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c.steps ∗ threadFuel c.threads) := .rfl
 
 theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Fuel} (hnc : redexKind e = .plain)
-    (h : GooseBaseReducible e σ) : BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
+    (hnu : ∀ p, ¬ Unwinds e p) (h : GooseBaseReducible e σ) :
+    BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
   obtain ⟨κ, e', σ', efs, h⟩ := h
-  exact ⟨κ, e', (σ', c), efs, .step hnc h⟩
+  exact ⟨κ, e', (σ', c), efs, .step hnc (.base hnu h)⟩
+
+/-- A head step of a redex that does not unwind is a base step. -/
+theorem baseStep_of_headStep {e : Expr} {σ : CfgState} {κ : List Observation} {e' : Expr}
+    {σ' : CfgState} {efs : List Expr} (hnu : ∀ p, ¬ Unwinds e p)
+    (h : HeadStep e σ κ e' σ' efs) : BaseStep e σ κ e' σ' efs := by
+  rcases h with ⟨hu⟩ | ⟨_, h⟩
+  · exact absurd hu (hnu _)
+  · exact h
 
 /-- iris-lean's `wp_lift_base_step` for a plain redex, in terms of the real
 `base_step` and `gooseStateInterp`. -/
 theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E,∅}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={∅,E}=∗
         gooseCfgInterp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
         WP e₂ @ s; E {{ Φ }} ∗
-        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
   iapply wp_lift_base_step h
@@ -681,10 +714,11 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
-  · ipureintro; exact goose_baseReducible_of hnc Hred
+  · ipureintro; exact goose_baseReducible_of hnc hnu Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
   obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
+  replace Hstep' := baseStep_of_headStep hnu Hstep'
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, Hwp, Hefs⟩
   imodintro
   iframe Hwp Hefs
@@ -693,13 +727,13 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
 
 /-- iris-lean's `wp_lift_atomic_base_step` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
         gooseCfgInterp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
         (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v) ∗
-        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
   iapply wp_lift_atomic_base_step h
@@ -709,10 +743,11 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
-  · ipureintro; exact goose_baseReducible_of hnc Hred
+  · ipureintro; exact goose_baseReducible_of hnc hnu Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
   obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
+  replace Hstep' := baseStep_of_headStep hnu Hstep'
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, HΦ, Hefs⟩
   imodintro
   iframe HΦ Hefs
@@ -721,14 +756,14 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
 
 /-- iris-lean's `wp_lift_atomic_base_step_no_fork` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp GF}
-    (h : toVal e₁ = none) (hnc : redexKind e₁ = .plain) :
+    (h : toVal e₁ = none) (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
         ⌜eₜ = []⌝ ∗ gooseCfgInterp σ₂ (ns + 1) obs' nt ∗ (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v))
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
-  iapply goose_wp_lift_atomic_base_step h hnc
+  iapply goose_wp_lift_atomic_base_step h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   imod H $$ %σ₁ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
@@ -746,7 +781,7 @@ theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp
 
 /-- A lifting lemma for atomic steps that only change the heap. -/
 theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ : CfgState, naHeapCtx tls σ₁.1.heap ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ κ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ κ e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
@@ -755,7 +790,7 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
         (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v))
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
-  iapply goose_wp_lift_atomic_base_step_no_fork h hnc
+  iapply goose_wp_lift_atomic_base_step_no_fork h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -775,7 +810,10 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   iframe
   ipureintro; exact Hlctx
 
-theorem wp_panic (msg : String) (Φ : val → IProp GF) :
+/-- `Panic msg` (a run-time panic of a builtin: an index out of range, a failed
+type assertion, ...) is stuck: proofs show that it is unreachable. A panic that
+unwinds is `go.panic`'s (`Raise`, `wp_panic`). -/
+theorem wp_PanicOp (msg : String) (Φ : val → IProp GF) :
     ▷ False ⊢ WP (Panic msg) @ s; E {{ Φ }} := by
   iintro >%H
   exact H.elim
@@ -783,7 +821,7 @@ theorem wp_panic (msg : String) (Φ : val → IProp GF) :
 theorem wp_ArbitraryInt :
     {{ (True : IProp GF) }} ArbitraryInt @ s; E {{ (x : w64), RET #x; True }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -807,7 +845,7 @@ theorem wp_load (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l q v }} (Load (Val #l)) @ s; E
     {{ RET v; heapPointsto l q v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v $$ Hσ Hl with %⟨lk, n, Heq, Hlock⟩
@@ -838,7 +876,7 @@ theorem wp_prepare_write (l : Loc) (v : val) :
     {{ RET #(); naHeapPointstoSt WSt l (.own 1) v ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_write_prepare tls σ₁.1.heap l v Writing rfl $$ Hσ Hl
@@ -866,13 +904,13 @@ theorem wp_prepare_write (l : Loc) (v : val) :
   iapply HΦ
   iframe
 
-theorem wp_finish_store (l : Loc) (v v' : val) :
+theorem wp_finish_store (l : Loc) (v v' : val) (Hv : v.isPanic = false := by simp) :
     {{ ▷ naHeapPointstoSt (GF := GF) WSt l (.own 1) v' ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }}
       (FinishStore (Val #l) (Val v)) @ s; E
     {{ RET #(); heapPointsto l (.own 1) v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imod na_heap_write_finish_vs tls l v' v (Reading 0) rfl $$ Hl %σ₁.1.heap Hσ
     with ⟨%lkw, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -921,7 +959,7 @@ theorem wp_start_read (l : Loc) (q : DFrac) (v : val) :
     {{ RET v; naHeapPointstoSt (RSt 1) l q v ∗
         (∀ v', naHeapPointsto l q v' -∗ heapPointsto l q v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_read_prepare tls naModeRl σ₁.1.heap l q v naModeRl_is_read_lock $$ Hσ Hl
@@ -954,7 +992,7 @@ theorem wp_finish_read (l : Loc) (q : DFrac) (v : val) :
       (FinishRead (Val #l)) @ s; E
     {{ RET #(); heapPointsto l q v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imod na_heap_read_finish_vs tls naModeUrl l q v naModeUrl_is_read_unlock $$ Hl %σ₁.1.heap Hσ
     with ⟨%lk1, %n1, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -981,11 +1019,11 @@ theorem wp_finish_read (l : Loc) (q : DFrac) (v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_atomic_swap (l : Loc) (v0 v : val) :
+theorem wp_atomic_swap (l : Loc) (v0 v : val) (Hv : v.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicSwap (Val #l) (Val v)) @ s; E
     {{ RET v0; heapPointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1013,11 +1051,16 @@ theorem wp_atomic_swap (l : Loc) (v0 v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
+theorem atomicAddEval_not_panic {v0 v1 v : val} (Hev : atomicAddEval v0 v1 = some v) :
+    v1.isPanic = false := by
+  unfold atomicAddEval at Hev; split at Hev <;> simp_all [val.isPanic]
+
 theorem wp_atomic_add (l : Loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = some v) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicAdd (Val #l) (Val v1)) @ s; E
     {{ RET v; heapPointsto l (.own 1) v }} := by
+  have Hv1 := atomicAddEval_not_panic Hev
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1046,11 +1089,12 @@ theorem wp_atomic_add (l : Loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = som
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1) :
+theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
+    (Hv1 : v1.isPanic = false := by simp) (Hv2 : v2.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l q v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #false); heapPointsto l q v' }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v' $$ Hσ Hl with %⟨lk, n, Hlookup, Hlock⟩
@@ -1080,11 +1124,12 @@ theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
     rw [Hlookup] at Heq'; cases Heq'
     exact (Hne Hvl).elim
 
-theorem wp_cmpxchg_suc (l : Loc) (v1 v2 v' : val) (Heq : v' = v1) :
+theorem wp_cmpxchg_suc (l : Loc) (v1 v2 v' : val) (Heq : v' = v1)
+    (Hv1 : v1.isPanic = false := by simp) (Hv2 : v2.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #true); heapPointsto l (.own 1) v2 }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v' $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1136,11 +1181,11 @@ theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
-theorem wp_allocN_seq (v : val) :
+theorem wp_allocN_seq (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; pointstoVals l (.own 1) [v] }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -1168,11 +1213,11 @@ theorem wp_allocN_seq (v : val) :
   rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
   iapply na_pointsto_to_heap l _ v Hnn $$ Hl
 
-theorem wp_alloc_untyped (v : val) :
+theorem wp_alloc_untyped (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; heapPointsto l (.own 1) v }} := by
   iintro %Φ _ HΦ
-  iapply wp_allocN_seq v
+  iapply wp_allocN_seq v Hv
   · itrivial
   inext
   iintro %l Hl
@@ -1205,7 +1250,7 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   imodintro
   isplitr
-  · ipureintro; exact ⟨[], _, _, _, .exit (BaseStep.ThreadExitS σ)⟩
+  · ipureintro; exact ⟨[], _, _, _, .exit (.base not_unwinds_ThreadExit (BaseStep.ThreadExitS σ))⟩
   inext
   iintro %e₂ %s₂ %eₜ %Hstep _
   cases Hstep with
@@ -1213,7 +1258,8 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
   | tick hc _ => cases hc
   | stutter hc _ => cases hc
   | exit Hb =>
-    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_ThreadExit_inv Hb
+    obtain ⟨rfl, rfl, rfl, rfl⟩ :=
+      baseStep_ThreadExit_inv (baseStep_of_headStep not_unwinds_ThreadExit Hb)
     imodintro
     isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht Htok]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
@@ -1233,35 +1279,38 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     iapply BigSepL.bigSepL_nil.2
     itrivial
 
-/-- The forked thread `e ;; ThreadExit` runs `e`, which must end with a thread
-token, and returns the token at its `ThreadExit`. -/
+/-- The forked thread `e ;; ThreadExit` runs `e`, which must not panic and must
+end with a thread token, and returns the token at its `ThreadExit`. -/
 theorem wp_seq_ThreadExit (e : Expr) :
-    WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢ WP (Seq e ThreadExit) @ s; ⊤ {{ _v, True }} := by
+    WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF) }} ⊢
+      WP (Seq e ThreadExit) @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }} := by
   refine .trans (wp_mono fun v => ?_)
     (wp_bind (fill [EctxItem.AppRCtx (Rec BAnon BAnon ThreadExit)]))
-  refine (?_ : (threadTok : IProp GF) ⊢
-    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ _v, True }})
-  refine .trans ?_ (wp_bind (fill [EctxItem.AppLCtx v]))
-  refine .trans ?_ (wp_pure_step_later (Hexec := pure_recc BAnon BAnon ThreadExit) trivial)
-  refine (?_ : (threadTok : IProp GF) ⊢ ▷ (£ 1 -∗ WP (Val (RecV BAnon BAnon ThreadExit)) @ s; ⊤
-    {{ w, WP (App (Val w) (Val v)) @ s; ⊤ {{ _v, True }} }}))
-  iintro Htok
+  refine (?_ : iprop(⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF)) ⊢
+    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
+  iintro ⟨%hv, Htok⟩
+  iapply (wp_bind (fill [EctxItem.AppLCtx v hv]) : WP (Rec BAnon BAnon ThreadExit) @ s; ⊤
+    {{ w, WP (App (Val w) (Val v)) @ s; ⊤ {{ w, ⌜val.isPanic w = false⌝ }} }} ⊢
+    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ w, ⌜val.isPanic w = false⌝ }})
+  iapply (wp_pure_step_later (Hexec := pure_recc BAnon BAnon ThreadExit) trivial)
   inext
   iintro _
   iapply wp_value'
-  iapply wp_pure_step_later (e₂ := ThreadExit) (Hexec := pure_beta BAnon BAnon ThreadExit v) trivial
+  iapply wp_pure_step_later (e₂ := ThreadExit) (Hexec := pure_beta BAnon BAnon ThreadExit v) hv
   inext
   iintro _
   iapply wp_ThreadExit $$ Htok
   inext
-  itrivial
+  ipureintro
+  exact isPanic_intoVal ()
 
 /-- `Fork e`: the forking thread receives a thread token (out of the thread fuel)
 and the forked thread must end with one (it is returned at its `ThreadExit`).
 Whether the token is kept by the forking thread, given to the forked thread or
 deposited in an invariant is up to the proof. -/
 theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }} ∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro H
   iapply wp_lift_step rfl
@@ -1273,7 +1322,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
     cases t with
     | zero => exact ⟨[], _, _, [], .forkStutter⟩
-    | succ t => exact ⟨[], _, _, _, .fork (BaseStep.ForkS e σ)⟩
+    | succ t => exact ⟨[], _, _, _, .fork (.base (not_unwinds_Fork e) (BaseStep.ForkS e σ))⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1289,7 +1338,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   | tick hc _ => cases hc
   | stutter hc _ => cases hc
   | fork Hb =>
-    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv Hb
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv (baseStep_of_headStep (not_unwinds_Fork e) Hb)
     rename_i t
     icases threadFuel_fork t $$ Ht with ⟨Ht, Htok⟩
     icases H $$ Htok with ⟨He, HΦ⟩
@@ -1324,24 +1373,28 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
     iapply BigSepL.bigSepL_nil.2
     itrivial
 
-/-- `Fork e` without thread tokens: the forked thread's token stays with it. -/
+/-- `Fork e` without thread tokens: the forked thread's token stays with it. The
+forked thread must not panic (a panic that unwinds a goroutine kills the
+program). -/
 theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ WP e @ s; ⊤ {{ _v, True }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
   iintro Htok
   iframe HΦ
-  iapply (wp_wand (Φ := fun _ => iprop(threadTok ∗ True))) $$ [He Htok]
-  · iapply (wp_frame_r (Φ := fun _ => iprop(True)))
+  iapply (wp_wand (Φ := fun (v : val) => iprop(threadTok ∗ ⌜v.isPanic = false⌝))) $$ [He Htok]
+  · iapply (wp_frame_l (Φ := fun (v : val) => iprop(⌜v.isPanic = false⌝)))
     iframe
-  iintro %_ ⟨Htok, -⟩
-  iexact Htok
+  iintro %_ ⟨Htok, %Hv⟩
+  iframe Htok
+  ipureintro; exact Hv
 
 /-- `Fork e`, the fresh thread token going to the forked thread: its body receives the token and
 must end with one. (`wp_fork` is this with the token framed through the body.) -/
 theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }}) -∗ ▷ Φ #() -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
@@ -1353,7 +1406,8 @@ theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
 with a token of its own, e.g. one it takes back out of an invariant at its `Done`, where the
 forking thread deposited its own before the `go` statement. -/
 theorem wp_fork_tok_self (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ WP e @ s; ⊤ {{ _v, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
@@ -1369,7 +1423,8 @@ an exclusive receipt `⧗ 1` and increments a persistent receipt `⧖ m` (the
 paper's `{⧖ m} tick v {⧗ 1 ∗ ⧖ (m + 1)}`); at the bound the step stutters,
 which is handled by Löb induction. -/
 theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ⧖ m ∗ ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ⧖ (m + 1) -∗ ownGoStateCtx gs ={E}=∗
           ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
@@ -1383,12 +1438,13 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
-  have Hreal := BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)
+  have Hreal := HeadStep.base (not_unwinds_GoInstruction Harg)
+    (BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h))
   have Hred : BaseStep.Reducible
       (App (Val (GoInstruction op)) (Val arg), ((σ₁, ⟨c, t⟩) : BcfgState)) := by
     cases c with
-    | zero => exact ⟨[], _, (σ₁, ⟨0, t⟩), [], .stutter rfl Hreal⟩
-    | succ c => exact ⟨[], e', (_, ⟨c, t⟩), [], .tick rfl Hreal⟩
+    | zero => exact ⟨[], _, (σ₁, ⟨0, t⟩), [], .stutter (redexKind_GoInstruction Harg) Hreal⟩
+    | succ c => exact ⟨[], e', (_, ⟨c, t⟩), [], .tick (redexKind_GoInstruction Harg) Hreal⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1400,9 +1456,10 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   obtain ⟨e₂', rfl, Hbs⟩ :=
     exists_baseStep_of_primStep_fill_of_redex_baseStep_reducible Hred Hstep
   cases Hbs with
-  | step hnc _ => cases hnc
+  | step hnc _ => rw [redexKind_GoInstruction Harg] at hnc; cases hnc
   | tick _ Hbs =>
-    obtain ⟨s', Hgo, rfl, rfl, rfl⟩ := baseStep_GoInstruction_inv Hbs
+    obtain ⟨s', Hgo, rfl, rfl, rfl⟩ :=
+      baseStep_GoInstruction_inv (baseStep_of_headStep (not_unwinds_GoInstruction Harg) Hbs)
     rw [Hlctx] at Hgo
     imod Hclose
     imod receiptFuel_tick _ m $$ [Hc] with ⟨Hc, Hr, Hm'⟩
@@ -1440,13 +1497,14 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
 /-- `wp_GoInstruction_preceipt` without persistent receipts: a Go instruction
 step yields an exclusive time receipt `⧗ 1`. -/
 theorem wp_GoInstruction_receipt (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
     ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
   iintro HΦ
   imod preceipt_zero (GF := GF) with #H0
-  iapply wp_GoInstruction_preceipt K op arg Φ 0 Hok
+  iapply wp_GoInstruction_preceipt K op arg Φ 0 Hok Harg
   iframe H0
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr _ Hgs
@@ -1454,23 +1512,25 @@ theorem wp_GoInstruction_receipt (K : List EctxItem) (op : GoInstruction) (arg :
 
 /-- WP for go instructions. -/
 theorem wp_GoInstruction (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
     ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
   iintro HΦ
-  iapply wp_GoInstruction_receipt K op arg Φ Hok
+  iapply wp_GoInstruction_receipt K op arg Φ Hok Harg
   inext
   iintro %e' %gs %gs' %Hstep Hlc _ Hgs
   iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hgs
 
 /-- `wp_GoInstruction` with an empty evaluation context. -/
 theorem wp_GoInstruction' (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false := by simp) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP e' @ s; E {{ Φ }}))
     ⊢ WP (App (Val (GoInstruction op)) (Val arg)) @ s; E {{ Φ }} :=
-  wp_GoInstruction [] op arg Φ Hok
+  wp_GoInstruction [] op arg Φ Hok Harg
 
 /-! ### Prophecy variables -/
 
@@ -1484,7 +1544,7 @@ theorem wp_new_proph :
     {{ (True : IProp GF) }} NewProph @ s; E
     {{ (pvs : List val) (p : proph_id), RET #p; proph p pvs }} := by
   iintro %Φ _ HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -1511,11 +1571,12 @@ theorem wp_new_proph :
   · ipureintro; rfl
   iapply HΦ $$ %_ %p Htok
 
-theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val) :
+theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
+    (Hv : v.isPanic = false := by simp) :
     {{ proph (GF := GF) p pvs }} (ResolveProph (Val #p) (Val v)) @ s; E
     {{ (pvs' : List val), RET #(); ⌜pvs = v :: pvs'⌝ ∗ proph p pvs' }} := by
   iintro %Φ Hp HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -1545,5 +1606,99 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val) :
   ipureintro; exact Hpvs
 
 end lifting
+
+/-! ## Panics
+
+A panic outcome `PanicV p` unwinds every evaluation frame but `Catch`'s
+(`HeadStep.unwind`), so a postcondition `Φ` also receives panics: `wp_unwind`
+takes `Φ (PanicV p)` through a `Catch`-free evaluation context, and `wp_catch`
+splits on the outcome of the expression under a `Catch`. A spec
+`{{ P }} e {{ RET v; Q }}` names a normal value (no Go value is a panic,
+`isPanic_intoVal`), so it excludes panics. -/
+
+section panic
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable {s : Stuckness} {E : CoPset}
+
+open EctxLanguage
+
+/-- The panic in an unwinding redex is unique. -/
+theorem unwinds_det {Ki Ki' : EctxItem} {p p' : val}
+    (h : fillItem Ki (Val (PanicV p)) = fillItem Ki' (Val (PanicV p'))) : p = p' := by
+  cases Ki <;> cases Ki' <;> simp only [fillItem, reduceCtorEq, Expr.App.injEq, Expr.Pair.injEq,
+    Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq,
+    Expr.Val.injEq, val.PanicV.injEq] at h <;>
+    (repeat (obtain ⟨h₁, h⟩ := h; try subst h₁)) <;> (try subst h) <;> simp_all [val.isPanic]
+
+theorem redexKind_unwind (Ki : EctxItem) (p : val) :
+    redexKind (fillItem Ki (Val (PanicV p))) = .plain := by
+  cases Ki <;> try rfl
+  rename_i e1
+  cases e1 <;> try rfl
+  rename_i v
+  cases v <;> rfl
+
+/-- The unwinding step: a frame other than `Catch`'s around a panic steps to the panic. -/
+theorem pure_unwind (Ki : EctxItem) (p : val) (hK : Ki.unwinds = true) :
+    Language.PureExec True 1 (fillItem Ki (Val (PanicV p))) (Val (PanicV p)) where
+  pureExec _ := by
+    have hnc := redexKind_unwind Ki p
+    refine .tail _ (.rfl _) (purePrimStep_of_pureBaseStep
+      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (.unwind ⟨Ki, hK, rfl⟩)⟩, ?_⟩)
+    intro σ₁ σ₂ obs e₂' eₜ h
+    obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_plain (σ := σ₁.1) (f := σ₁.2) hnc).1 h
+    rcases h' with ⟨⟨Ki', _, hu⟩⟩ | ⟨hnu, _⟩
+    · cases unwinds_det hu; exact ⟨rfl, rfl, rfl, rfl⟩
+    · exact absurd ⟨Ki, hK, rfl⟩ (hnu p)
+
+/-- `Raise v` panics with `v`. -/
+theorem wp_raise (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    Φ (PanicV v) ⊢ WP (Raise (Val v)) @ s; E {{ Φ }} := by
+  iintro HΦ
+  iapply (wp_pure_step_later (Hexec := pure_raise v) hv)
+  inext
+  iintro _
+  iapply wp_value'
+  iexact HΦ
+
+/-- A panic unwinds an evaluation context without a `Catch` frame. -/
+theorem wp_unwind (K : List EctxItem) (hK : ∀ Ki ∈ K, Ki.unwinds = true) (p : val)
+    (Φ : val → IProp GF) :
+    Φ (PanicV p) ⊢ WP (fill K (Val (PanicV p))) @ s; E {{ Φ }} := by
+  induction K generalizing Φ with
+  | nil => exact wp_value'
+  | cons Ki K ih =>
+    rw [EctxItemLanguage.fill_cons]
+    refine .trans ?_ (wp_bind (fill K))
+    refine .trans (ih (fun Ki h => hK Ki (List.mem_cons_of_mem _ h)) _) ?_
+    refine (?_ : WP (fill K (Val (PanicV p))) @ s; E {{ Φ }} ⊢ _)
+    iintro H
+    iapply (wp_pure_step_later (Hexec := pure_unwind Ki p (hK Ki List.mem_cons_self)) trivial)
+    inext
+    iintro _
+    iapply wp_value'
+    iexact H
+
+/-- `Catch e h k`: evaluate `e` first (`wp_catch_panic`, `wp_catch_val` take the
+`Catch` step on its outcome). -/
+theorem wp_catch (e h k : Expr) (Φ : val → IProp GF) :
+    WP e @ s; E {{ v, WP (Catch (Val v) h k) @ s; E {{ Φ }} }} ⊢
+      WP (Catch e h k) @ s; E {{ Φ }} :=
+  wp_bind (fill [EctxItem.CatchCtx h k])
+
+/-- A panic reaching a `Catch` continues with the handler. -/
+theorem wp_catch_panic (p : val) (h k : Expr) (Φ : val → IProp GF) :
+    ▷ (£ 1 -∗ WP (App h (Val p)) @ s; E {{ Φ }}) ⊢ WP (Catch (Val (PanicV p)) h k) @ s; E {{ Φ }} :=
+  wp_pure_step_later (Hexec := pure_catch_panic p h k) trivial
+
+/-- A value reaching a `Catch` continues with the normal continuation. -/
+theorem wp_catch_val (v : val) (h k : Expr) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    ▷ (£ 1 -∗ WP (App k (Val v)) @ s; E {{ Φ }}) ⊢ WP (Catch (Val v) h k) @ s; E {{ Φ }} :=
+  wp_pure_step_later (Hexec := pure_catch_val v h k) hv
+
+end panic
 
 end Perennial

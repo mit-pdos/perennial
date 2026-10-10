@@ -105,10 +105,16 @@ inductive RedexKind where
 deriving DecidableEq
 
 def redexKind : Expr → RedexKind
+  -- a Go instruction applied to a panic unwinds (`Unwinds`): a plain step
+  | .App (.Val (.GoInstruction _)) (.Val (.PanicV _)) => .plain
   | .App (.Val (.GoInstruction _)) (.Val _) => .counted
   | .Fork _ => .fork
   | .Primitive0 .ThreadExitOp => .exit
   | _ => .plain
+
+theorem redexKind_GoInstruction {op : GoInstruction} {v : val} (hv : v.isPanic = false) :
+    redexKind (.App (.Val (.GoInstruction op)) (.Val v)) = .counted := by
+  cases v <;> simp_all [redexKind, val.isPanic]
 
 theorem redexKind_eq_fork {e : Expr} (h : redexKind e = .fork) : ∃ e', e = Fork e' := by
   unfold redexKind at h
@@ -122,36 +128,43 @@ theorem redexKind_eq_exit {e : Expr} (h : redexKind e = .exit) : e = ThreadExit 
 inductive BoundedBaseStep :
     Expr → BcfgState → List Observation → Expr → BcfgState → List Expr → Prop
   | step {e σ f κ e' σ' efs} :
-      redexKind e = .plain → BaseStep e σ κ e' σ' efs →
+      redexKind e = .plain → HeadStep e σ κ e' σ' efs →
       BoundedBaseStep e (σ, f) κ e' (σ', f) efs
   | tick {e σ s t κ e' σ' efs} :
-      redexKind e = .counted → BaseStep e σ κ e' σ' efs →
+      redexKind e = .counted → HeadStep e σ κ e' σ' efs →
       BoundedBaseStep e (σ, ⟨s + 1, t⟩) κ e' (σ', ⟨s, t⟩) efs
   | stutter {e σ t κ e' σ' efs} :
-      redexKind e = .counted → BaseStep e σ κ e' σ' efs →
+      redexKind e = .counted → HeadStep e σ κ e' σ' efs →
       BoundedBaseStep e (σ, ⟨0, t⟩) [] e (σ, ⟨0, t⟩) []
   | fork {e σ s t κ e' σ' efs} :
-      BaseStep (Fork e) σ κ e' σ' efs →
+      HeadStep (Fork e) σ κ e' σ' efs →
       BoundedBaseStep (Fork e) (σ, ⟨s, t + 1⟩) κ e' (σ', ⟨s, t⟩) efs
   | forkStutter {e σ s} :
       BoundedBaseStep (Fork e) (σ, ⟨s, 0⟩) [] (Fork e) (σ, ⟨s, 0⟩) []
   | exit {σ s t κ e' σ' efs} :
-      BaseStep ThreadExit σ κ e' σ' efs →
+      HeadStep ThreadExit σ κ e' σ' efs →
       BoundedBaseStep ThreadExit (σ, ⟨s, t⟩) κ e' (σ', ⟨s, t + 1⟩) efs
 
+theorem not_unwinds_Fork (e : Expr) : ∀ p, ¬ Unwinds (Fork e) p := by not_unwinds
+
+theorem not_unwinds_ThreadExit : ∀ p, ¬ Unwinds ThreadExit p := by not_unwinds
+
+theorem not_unwinds_GoInstruction {op : GoInstruction} {v : val} (hv : v.isPanic = false) :
+    ∀ p, ¬ Unwinds (App (Val (GoInstruction op)) (Val v)) p := by not_unwinds
+
 theorem BoundedBaseStep.real {e s κ e' s' efs} (h : BoundedBaseStep e s κ e' s' efs) :
-    ∃ κ' e'' σ'' efs', BaseStep e s.1 κ' e'' σ'' efs' := by
+    ∃ κ' e'' σ'' efs', HeadStep e s.1 κ' e'' σ'' efs' := by
   cases h with
   | step _ h => exact ⟨_, _, _, _, h⟩
   | tick _ h => exact ⟨_, _, _, _, h⟩
   | stutter _ h => exact ⟨_, _, _, _, h⟩
   | fork h => exact ⟨_, _, _, _, h⟩
-  | forkStutter => exact ⟨_, _, _, _, BaseStep.ForkS _ _⟩
+  | forkStutter => exact ⟨_, _, _, _, .base (not_unwinds_Fork _) (BaseStep.ForkS _ _)⟩
   | exit h => exact ⟨_, _, _, _, h⟩
 
 /-- For a plain redex, bounded and real base steps agree. -/
 theorem boundedBaseStep_plain {e σ f κ e' s' efs} (hp : redexKind e = .plain) :
-    BoundedBaseStep e (σ, f) κ e' s' efs ↔ ∃ σ', s' = (σ', f) ∧ BaseStep e σ κ e' σ' efs := by
+    BoundedBaseStep e (σ, f) κ e' s' efs ↔ ∃ σ', s' = (σ', f) ∧ HeadStep e σ κ e' σ' efs := by
   constructor
   · intro h
     cases h with
@@ -178,10 +191,10 @@ instance goose_ectxi_lang : EctxItemLanguage Expr EctxItem BcfgState Observation
   fillItem_no_val_inj Ki1 Ki2 := fillItem_no_val_inj Ki1 Ki2
   val_stuck h := by
     obtain ⟨_, _, _, _, h⟩ := BoundedBaseStep.real h
-    exact val_base_stuck h
+    exact val_head_stuck h
   base_ctx_step_val {Ki} _ _ _ _ _ _ h := by
     obtain ⟨_, _, _, _, h⟩ := BoundedBaseStep.real h
-    exact base_ctx_step_val Ki h
+    exact head_ctx_step_val Ki h
 
 end bounded
 
@@ -235,15 +248,18 @@ theorem RealThreadsBelow.step {T n : Nat} {ρ ρ' : List Expr × CfgState} {κ :
   exact h (k + 1) (κ ++ κs) ρ'' (by omega)
     (@Language.NSteps.cons _ _ _ _ gooseRealLang _ _ _ _ _ _ hstep hsteps)
 
-/-- A base step that is neither a fork nor an exit does not change the thread count. -/
+/-- A head step that is neither a fork nor an exit does not change the thread count. -/
 theorem baseStep_threads {e : Expr} {σ : CfgState} {κ : List Observation} {e' : Expr}
-    {σ' : CfgState} {efs : List Expr} (h : BaseStep e σ κ e' σ' efs)
+    {σ' : CfgState} {efs : List Expr} (h : HeadStep e σ κ e' σ' efs)
     (hf : redexKind e ≠ .fork) (hx : redexKind e ≠ .exit) : σ'.2.threads = σ.2.threads := by
   cases h with
-  | ForkS => exact absurd rfl hf
-  | ThreadExitS => exact absurd rfl hx
-  | ExternalOpS _ _ _ _ _ h => exact ffi_step_threads h
-  | _ => rfl
+  | unwind => rfl
+  | base _ h =>
+    cases h with
+    | ForkS => exact absurd rfl hf
+    | ThreadExitS => exact absurd rfl hx
+    | ExternalOpS _ _ _ _ _ h => exact ffi_step_threads h
+    | _ => rfl
 
 /-- A real thread-pool step from a state with step fuel `s > 0` and thread fuel
 `t` with `T - 1 ≤ t + threads`, to a configuration with fewer than `T` threads,
@@ -267,17 +283,23 @@ theorem bounded_step_of_real {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Ob
       (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.tick hk hb)) t₁ t₂⟩
   · -- fork
     obtain ⟨e₀, rfl⟩ := redexKind_eq_fork hk
+    rcases hb with ⟨hu⟩ | ⟨_, hb⟩
+    · exact absurd hu (not_unwinds_Fork _ _)
     cases hb
     simp only at h₂
     obtain ⟨t', rfl⟩ : ∃ t', t = t' + 1 := ⟨t - 1, by omega⟩
     exact ⟨s, t', by omega, by simp; omega, Language.Step.atomic
-      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.fork (BaseStep.ForkS e₀ σ))) t₁ t₂⟩
+      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.fork
+        (.base (not_unwinds_Fork _) (BaseStep.ForkS e₀ σ)))) t₁ t₂⟩
   · -- exit
     have := redexKind_eq_exit hk
     subst this
+    rcases hb with ⟨hu⟩ | ⟨_, hb⟩
+    · exact absurd hu (not_unwinds_ThreadExit _)
     cases hb
     exact ⟨s, t + 1, by omega, by simp; omega, Language.Step.atomic
-      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.exit (BaseStep.ThreadExitS σ))) t₁ t₂⟩
+      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.exit
+        (.base not_unwinds_ThreadExit (BaseStep.ThreadExitS σ)))) t₁ t₂⟩
   · -- plain
     have hth := baseStep_threads hb (by simp [hk]) (by simp [hk])
     exact ⟨s, t, by omega, by omega, Language.Step.atomic

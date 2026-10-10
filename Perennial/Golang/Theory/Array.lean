@@ -431,9 +431,9 @@ is not constant, e.g. `len(f())`. The operand is evaluated and discarded, which
 is what Go does in that case. -/
 instance pure_wp_array_len {st : go.GoType} {n : Int} {elem : go.GoType}
     [st ↓u go.ArrayType n elem] (v : val) :
-    PureWp (G := G) (L := L) (0 ≤ n ∧ n < 2^63)
+    PureWp (G := G) (L := L) ((0 ≤ n ∧ n < 2^63) ∧ v.isPanic = false)
       (App (Val #(functions go.len [st])) (Val v)) (Val #(W64 n)) :=
-  pure_wp_val _ (App (Val #(functions go.len [st])) (Val v)) #(W64 n) fun s E Φ hn => by
+  pure_wp_val _ (App (Val #(functions go.len [st])) (Val v)) #(W64 n) fun s E Φ ⟨hn, hv⟩ => by
     rw [func_unfold]
     iintro HΦ
     wp_auto_lc 1
@@ -444,9 +444,9 @@ instance pure_wp_array_len {st : go.GoType} {n : Int} {elem : go.GoType}
 /-- `cap` of an array; see `pure_wp_array_len`. -/
 instance pure_wp_array_cap {st : go.GoType} {n : Int} {elem : go.GoType}
     [st ↓u go.ArrayType n elem] (v : val) :
-    PureWp (G := G) (L := L) (0 ≤ n ∧ n < 2^63)
+    PureWp (G := G) (L := L) ((0 ≤ n ∧ n < 2^63) ∧ v.isPanic = false)
       (App (Val #(functions go.cap [st])) (Val v)) (Val #(W64 n)) :=
-  pure_wp_val _ (App (Val #(functions go.cap [st])) (Val v)) #(W64 n) fun s E Φ hn => by
+  pure_wp_val _ (App (Val #(functions go.cap [st])) (Val v)) #(W64 n) fun s E Φ ⟨hn, hv⟩ => by
     rw [func_unfold]
     iintro HΦ
     wp_auto_lc 1
@@ -469,37 +469,41 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_wp_array_for_range_index (n : Int) (body : val) :
-    PureWp (G := G) (L := L) True (App (Val (array.forRangeIndex n)) (Val body))
+    PureWp (G := G) (L := L) (body.isPanic = false) (App (Val (array.forRangeIndex n)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
           (λ: <>, body (![go.int] "i"))) where
-  pure_wp_wp s E Φ K _ := by
+  pure_wp_wp s E Φ K hv := by
     unfold array.forRangeIndex
     iintro H
     wp_call_lc Hlc
     iapply H $$ Hlc
 
 instance pure_wp_array_for_range (n : Int) (t : go.GoType) (a body : val) :
-    PureWp (G := G) (L := L) True (App (App (Val (array.forRange n t)) (Val a)) (Val body))
+    PureWp (G := G) (L := L) (a.isPanic = false ∧ body.isPanic = false)
+      (App (App (Val (array.forRange n t)) (Val a)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
           (λ: <>, glv(λ: "k", body "k" (Index (go.ArrayType n t) (a, "k"))) (![go.int] "i"))) where
-  pure_wp_wp s E Φ K _ := by
+  pure_wp_wp s E Φ K hab := by
+    obtain ⟨ha, hb⟩ := hab
     unfold array.forRange
     iintro H
     wp_call_lc Hlc
     iapply H $$ Hlc
 
 instance pure_wp_array_for_range_ptr (n : Int) (t : go.GoType) (p body : val) :
-    PureWp (G := G) (L := L) True (App (App (Val (array.forRangePtr n t)) (Val p)) (Val body))
+    PureWp (G := G) (L := L) (p.isPanic = false ∧ body.isPanic = false)
+      (App (App (Val (array.forRangePtr n t)) (Val p)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 n)) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
           (λ: <>, glv(λ: "k", body "k" (![t] (IndexRef (go.ArrayType n t) (p, "k"))))
             (![go.int] "i"))) where
-  pure_wp_wp s E Φ K _ := by
+  pure_wp_wp s E Φ K hpb := by
+    obtain ⟨hp, hb⟩ := hpb
     unfold array.forRangePtr
     iintro H
     wp_call_lc Hlc
