@@ -825,6 +825,66 @@ noncomputable def Time.unixSec.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #())) (Val internalToUnix))))))))
 
+/-- Add returns the time t+d.
+
+    go: time.go:1170:15 -/
+noncomputable def Time.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam "d"
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 1000000000))))
+  (Let "dsec" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (Val (GoInstruction (Convert Duration.ty go.int32))) (App (Val (GoInstruction (GoOp GoRemainder Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 1000000000)))))))
+  (Let "nsec" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoBitClear go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask)))) (App (Val (GoInstruction (Convert go.int32 go.uint64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))))
+  (Let "te" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoOp GoLt Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "te")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))))) (Val #false)) (Val #true) (If (App (Val (GoInstruction (GoOp GoGt Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "te")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))))) (Val #false))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"stripMono"))) (Var "t")) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "te"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "te") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"addSec"))) (Var "t")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t")) (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")) (Val #(W32 1000000000)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "nsec") (App (Val (GoInstruction (GoOp GoSub go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")) (Val #(W32 1000000000)))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "dsec") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec")) (Val #(W64 1))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")) (Val #(W32 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "nsec") (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")) (Val #(W32 1000000000)))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "dsec") (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec")) (Val #(W64 1))))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "nsec") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "dsec") (Var "$r0"))))))))))))
+
 /-- UnixNano returns t as a Unix time, the number of nanoseconds elapsed
     since January 1, 1970 UTC. The result is undefined if the Unix time
     in nanoseconds cannot be represented by an int64 (a date before the year
@@ -1100,7 +1160,10 @@ class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_ext : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"ext") (PairV #x #y) (Val #(({ x with ext' := y } : Time)))
   get_loc : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"loc") #x (Val #(x.loc'))
   set_loc : ∀ (x : Time) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"loc") (PairV #x #y) (Val #(({ x with loc' := y } : Time)))
+  Add_unfold : MethodUnfold Time.ty go!"Add" Time.Add.impl
   UnixNano_unfold : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
+  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Add" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Time.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_UnixNano_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"UnixNano" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"UnixNano"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_nsec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"nsec" Time.nsec.impl
@@ -1115,7 +1178,9 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.set_ext
   Time.TypeAssumptions.get_loc
   Time.TypeAssumptions.set_loc
+  Time.TypeAssumptions.Add_unfold
   Time.TypeAssumptions.UnixNano_unfold
+  Time.TypeAssumptions.ptr_Add_unfold
   Time.TypeAssumptions.ptr_UnixNano_unfold
   Time.TypeAssumptions.ptr_nsec_unfold
   Time.TypeAssumptions.ptr_sec_unfold

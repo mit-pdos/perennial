@@ -24,6 +24,9 @@ translate = [
   "Time.nsec",
   "Time.unixSec",
   "Time.sec",
+  # for `ptr_Add_unfold` (`(*Time).Add`); `Time.wp_Add` stays an axiom: the body uses `&^`,
+  # which Go's semantics here does not define, and calls the untranslated `addSec`, `stripMono`
+  "Time.Add",
   "wallToInternal",
   "nsecMask",
   "hasMonotonic",
