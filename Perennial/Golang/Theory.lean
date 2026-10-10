@@ -31,6 +31,7 @@ module
 
 public import Perennial.Golang.Defn
 public import Perennial.Golang.Theory.Pre
+public import Perennial.Golang.Theory.Bytes
 public import Perennial.Golang.Theory.String
 public import Perennial.Golang.Theory.Join
 public import Perennial.Ghost
