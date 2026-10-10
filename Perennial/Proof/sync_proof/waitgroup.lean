@@ -361,189 +361,36 @@ theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) :
   iframe
   iframe #
 
-/-- The model's counter update (`waitGroupStateAddAssume`, `TrustedCode/sync.lean`): a
-compare-and-swap loop adding `x` to the `atomic.Uint64` at `u`, assuming the counter (high 32
-bits, as an `int32`) does not overflow. `Hload` gives (repeatedly) access to the value for the
-loads; `Hcas`, given the loop's resource `P` and a value `s` for which the assumption holds, is
-the compare-and-swap's atomic update: on success (`v = s`) it must give `Ψ` of the new state,
-on failure `P` back for the next round. -/
-theorem wp_waitGroupStateAddAssume (u : Loc) (dqL : DFrac) (x : w64) (P : IProp GF) :
-    ⊢ ∀ Ψ : val → IProp GF,
-      iprop(isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗
-        □ (|={⊤,∅}=> ▷ ∃ v : w64, sync.atomic.ownUint64 u dqL v ∗
-            (sync.atomic.ownUint64 u dqL v ={∅,⊤}=∗ True)) ∗
-        □ (P -∗ ∀ s : w64,
-            ⌜sint.Z (W32 (uint.Z (s >>> W64 32))) + sint.Z (W32 (uint.Z (x >>> W64 32))) < 2 ^ 31⌝ -∗
-            |={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), sync.atomic.ownUint64 u dq v ∗
-              ⌜dq = if v = s then DFrac.own 1 else dq⌝ ∗
-              (sync.atomic.ownUint64 u dq (if v = s then s + x else v) ={∅,⊤}=∗
-                if v = s then Ψ #(s + x) else P)) ∗ P) -∗
-      WP (App (App (Val waitGroupStateAddAssume) (Val #u)) (Val #x)) {{ Ψ }} := by
-  iloeb as IH
-  iintro %Ψ ⟨#Hpkg, #Hload, #Hcas, HP⟩
-  unfold waitGroupStateAddAssume
-  wp_call
-  wp_apply_core sync.atomic.Uint64.wp_Load u dqL $$ [] [-]
-  · iPkgInit
-  ihave H0 := Hload
-  imod H0 with H
-  imodintro
-  inext
-  icases H with ⟨%v, Hv, Hcl⟩
-  iexists v
-  iframe Hv
-  iintro Hv
-  imod Hcl $$ Hv with -
-  imodintro
-  wp_auto
-  wp_apply_core wp_assume
-  iintro %Hb
-  have hb : sint.Z (W32 (uint.Z (v >>> W64 32))) + sint.Z (W32 (uint.Z (x >>> W64 32))) < 2 ^ 31 := by
-    simp only [decide_eq_true_eq] at Hb
-    have h1 := (W32 (uint.Z (v >>> W64 32))).toInt_le
-    have h2 := (W32 (uint.Z (v >>> W64 32))).le_toInt
-    have h3 := (W32 (uint.Z (x >>> W64 32))).toInt_le
-    have h4 := (W32 (uint.Z (x >>> W64 32))).le_toInt
-    simp only [sint.Z] at *
-    word
-  wp_auto
-  wp_apply_core sync.atomic.Uint64.wp_CompareAndSwap u v (v + x) $$ [] [-]
-  · iPkgInit
-  imod Hcas $$ HP %v %hb with H
-  imodintro
-  inext
-  icases H with ⟨%v', %dq, Hown, %Hdq, Hcl⟩
-  iexists v', dq
-  iframe Hown
-  isplitr
-  · ipureintro; exact Hdq
-  iintro Hown
-  imod Hcl $$ Hown with H
-  imodintro
-  by_cases hv : v' = v
-  · subst hv
-    simp only [↓reduceIte, decide_true]
-    wp_auto
-    iexact H
-  · simp only [hv, ↓reduceIte, decide_false]
-    wp_pure
-    iapply IH $$ %Ψ
-    iframe H
-    iframe #
-
-theorem WaitGroup.Add.impl_eq :
-    WaitGroup.Add.impl = WaitGroup.Add.implWith WaitGroup.ty waitGroupBubbleFlag runtime_Semrelease
-      fatal := by
-  with_unfolding_all rfl
-
-theorem shl32_shr32 (delta : w64) :
-    W32 (uint.Z ((delta <<< W64 32) >>> W64 32)) = W32 (sint.Z delta) := by
-  simp only [W32_uint_Z, W32_sint_Z]
-  apply BitVec.eq_of_toNat_eq
-  have := delta.isLt
-  simp only [BitVec.toNat_setWidth, BitVec.ushiftRight_eq', BitVec.shiftLeft_eq',
-    show (W64 32).toNat = 32 from rfl, BitVec.toNat_ushiftRight, BitVec.toNat_shiftLeft,
-    Nat.shiftRight_eq_div_pow, Nat.shiftLeft_eq]
-  omega
-
-/-- `wg.Add(delta)`, logically atomic. The caller's atomic update opens at `⊤ \ ↑N` (the
-model's compare-and-swap reads the state in the wait group's invariant before deciding to
-commit) and needs the new counter not to be negative; that it does not overflow (`2 ^ 31`) is
-the model's assumption (`waitGroupStateAddAssume`, `TrustedCode/sync.lean`), which the commit
-passes on to the caller. -/
 theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isWaitGroup wg γ N) -∗
-      (|={⊤ \ ↑N, ∅}=> ▷ ∃ oldc : w32,
+      (|={⊤,↑N}=> ▷ ∃ oldc : w32,
         "Hwg" ∷ ownWaitGroup γ oldc ∗
-        "%Hbounds" ∷ ⌜0 ≤ sint.Z oldc + sint.Z (W32 (sint.Z delta))⌝ ∗
-        "HΦ" ∷ ((⌜oldc ≠ W32 0⌝ ∗ (⌜sint.Z oldc + sint.Z (W32 (sint.Z delta)) < 2 ^ 31⌝ -∗
-              ownWaitGroup γ (oldc + W32 (sint.Z delta)) ={∅, ⊤ \ ↑N}=∗ Φ #())) ∨
+        "%Hbounds" ∷ ⌜0 ≤ sint.Z oldc + sint.Z (W32 (sint.Z delta)) ∧
+          sint.Z oldc + sint.Z (W32 (sint.Z delta)) < 2 ^ 31⌝ ∗
+        "HΦ" ∷ ((⌜oldc ≠ W32 0⌝ ∗ (ownWaitGroup γ (oldc + W32 (sint.Z delta)) ={↑N,⊤}=∗ Φ #())) ∨
           (ownWaitGroupWaiters γ 0 ∗
-            (⌜sint.Z oldc + sint.Z (W32 (sint.Z delta)) < 2 ^ 31⌝ -∗ ownWaitGroupWaiters γ 0 -∗
-              ownWaitGroup γ (oldc + W32 (sint.Z delta)) ={∅, ⊤ \ ↑N}=∗ Φ #())))) -∗
+            (ownWaitGroupWaiters γ 0 -∗ ownWaitGroup γ (oldc + W32 (sint.Z delta)) ={↑N,⊤}=∗
+              Φ #())))) -∗
       WP (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Add")) (Val #delta)) {{ Φ }} := by
-  wp_start_folded as #His
-  wp_method_call
-  rw [WaitGroup.Add.impl_eq]
-  unfold WaitGroup.Add.implWith
-  wp_call
+  wp_start as #His
   iapply wp_with_defer
   iintro %defer Hdefer
   wp_auto
   wp_apply internal.synctest.wp_IsInBubble
+  wp_apply_core sync.atomic.Uint64.wp_Add $$ [] [-]
+  · iPkgInit
+  imod HΦ with HΦ
   simp only [isWaitGroup_unseal, isWaitGroupDef, ownWaitGroup_unseal, ownWaitGroupDef]
   iNamed His
-  icombine Hdefer wg as HP
-  icombine HP delta as HP
-  icombine HP bubbled as HP
-  icombine HP HΦ as HP
-  wp_apply_core (wp_waitGroupStateAddAssume (wgState wg) (DFrac.own (1 : Qp).half) _ _) $$ [HP]
-  iframe HP
-  isplitr
-  · iPkgInit
-  isplitr
-  · -- the loads
-    imodintro
-    iinv Hinv with >Hi Hclose
-    iapply fupd_mask_intro Std.LawfulSet.empty_subset
-    iintro Hmask
-    inext
-    iNamedSuffix Hi "_wg"
-    iexists _
-    iframe Hptsto_wg
-    iintro Hptsto_wg
-    imod Hmask with -
-    imod Hclose $$ [-] with -
-    · inext
-      iexists counter, wait, sema, unfinished_waiters, possible_waiters
-      iframe
-      ipureintro
-      exact ⟨Hpossible_waiters_bound_wg, Hunfinished_zero_wg, Hunfinished_bound_wg,
-        Hwaiter_notbubbled_wg⟩
-    imodintro
-    itrivial
-  -- the compare-and-swap
-  imodintro
-  iintro HP %s %Hs
-  iinv Hinv with >Hi Hclose
-  iNamedSuffix Hi "_wg"
-  by_cases hvs : enc wait counter = s
-  rotate_left
-  · -- it fails: the state changed since the load
-    iapply fupd_mask_intro Std.LawfulSet.empty_subset
-    iintro Hmask
-    inext
-    iexists (enc wait counter), DFrac.own (1 : Qp).half
-    iframe Hptsto_wg
-    simp only [hvs, ↓reduceIte]
-    isplitr
-    · ipureintro; trivial
-    iintro Hptsto_wg
-    imod Hmask with -
-    imod Hclose $$ [-HP] with -
-    · inext
-      iexists counter, wait, sema, unfinished_waiters, possible_waiters
-      iframe
-      ipureintro
-      exact ⟨Hpossible_waiters_bound_wg, Hunfinished_zero_wg, Hunfinished_bound_wg,
-        Hwaiter_notbubbled_wg⟩
-    imodintro
-    iexact HP
-  -- it succeeds: the linearization point, where the caller's update commits
-  subst hvs
-  icases HP with ⟨⟨⟨⟨Hdefer, wg⟩, delta⟩, bubbled⟩, HΦ⟩
-  imod fupd_mask_subseteq (wg_mask_diff_ndot N "wg") with Hcl1
-  imod HΦ with HΦ
-  imodintro
+  iinv Hinv with >Hi Hclose <;> try exact ⟨mask_ndot_sub N "wg", trivial⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
   inext
+  iNamedSuffix Hi "_wg"
   iNamed HΦ
   icombine Hctr_wg Hwg gives % ⟨_, Heq⟩
   subst Heq
-  have hup : sint.Z counter + sint.Z (W32 (sint.Z delta)) < 2 ^ 31 := by
-    rw [enc_get_counter, shl32_shr32] at Hs; exact Hs
-  have Hbounds : 0 ≤ sint.Z counter + sint.Z (W32 (sint.Z delta)) ∧
-      sint.Z counter + sint.Z (W32 (sint.Z delta)) < 2 ^ 31 := ⟨Hbounds, hup⟩
   by_cases Hw : counter = W32 0 ∧ wait ≠ W32 0
   · iexfalso
     obtain ⟨rfl, Hw⟩ := Hw
@@ -557,11 +404,8 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
   rw [wgPtsto2_false _ _ _ Hw]
   ihave Hptsto := (ownUint64_halves (wgState wg) _).2 $$ [Hptsto_wg Hptsto2_wg]
   · iframe
-  iexists (enc wait counter), DFrac.own 1
+  iexists _
   iframe Hptsto
-  simp only [↓reduceIte]
-  isplitr
-  · ipureintro; trivial
   rw [enc_add_counter]
   imod ghostVar_update_halves (counter + W32 (sint.Z delta)) γ.counterGn counter counter $$
     Hctr_wg Hwg with ⟨Hctr_wg, Hwg⟩
@@ -577,16 +421,15 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
     icombine HnoWaiter Hunfinished_wait_toks_wg gives %Hbad
     simp at Hbad
   | zero =>
-  ihave HΦ : (|={∅, ⊤ \ ↑N}=> Φ #()) $$ [HΦ Hwg]
+  ihave HΦ : (|={↑N,⊤}=> Φ #()) $$ [HΦ Hwg]
   · icases HΦ with (⟨_, HΦ⟩ | ⟨Hw0, HΦ⟩)
-    · iapply HΦ $$ %hup Hwg
-    · iapply HΦ $$ %hup Hw0 Hwg
+    · iapply HΦ $$ Hwg
+    · iapply HΦ $$ Hw0 Hwg
   generalize hc' : counter + W32 (sint.Z delta) = c'
   by_cases Hwake : c' = W32 0 ∧ wait ≠ W32 0
   · -- will have to wake the waiters
     obtain ⟨rfl, Hwne⟩ := Hwake
-    imod HΦ with HΦ
-    imod Hcl1 with -
+    imod Hmask with -
     imod Hclose $$ [Hsema_wg Hsema_zerotoks_wg Hptsto_wg Hctr_wg Hwait_toks_wg
       Hunfinished_wait_toks_wg Hzeroauth_wg Hwaiters_bounded_wg] with -
     · inext
@@ -595,6 +438,7 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
       iframe
       ipureintro
       exact ⟨Hpossible_waiters_bound_wg, by simp, by decide, Hwaiter_notbubbled_wg⟩
+    imod HΦ with HΦ
     imodintro
     simp only [internal.race.Enabled]
     wp_auto
@@ -724,8 +568,7 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
       ipureintro
       have : sint.Z wrem ≠ 0 := fun h => hw0 (BitVec.eq_of_toInt_eq (by simpa [sint.Z] using h))
       simp only [sint.Z] at *; word)
-  imod HΦ with HΦ
-  imod Hcl1 with -
+  imod Hmask with -
   imod Hclose $$ [Hsema_wg Hsema_zerotoks_wg Hptsto_wg Hptsto2_wg Hctr_wg Hwait_toks_wg
     Hunfinished_wait_toks_wg Hzeroauth_wg Hwaiters_bounded_wg] with -
   · inext
@@ -734,6 +577,7 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
     iframe
     ipureintro
     exact ⟨Hpossible_waiters_bound_wg, by simp, by decide, Hwaiter_notbubbled_wg⟩
+  imod HΦ with HΦ
   imodintro
   simp only [internal.race.Enabled]
   wp_auto
@@ -766,10 +610,10 @@ theorem WaitGroup.wp_Add (wg : Loc) (delta : w64) (γ : WaitGroupNames) (N : Nam
 theorem WaitGroup.wp_Done (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     ⊢ ∀ Φ : val → IProp GF,
       iprop(isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isWaitGroup wg γ N) -∗
-      (|={⊤ \ ↑N, ∅}=> ▷ ∃ oldc : w32,
+      (|={⊤,↑N}=> ▷ ∃ oldc : w32,
         "Hwg" ∷ ownWaitGroup γ oldc ∗
-        "%Hbounds" ∷ ⌜0 ≤ sint.Z oldc - 1⌝ ∗
-        "HΦ" ∷ (ownWaitGroup γ (oldc - W32 1) ={∅, ⊤ \ ↑N}=∗ Φ #())) -∗
+        "%Hbounds" ∷ ⌜0 ≤ sint.Z oldc - 1 ∧ sint.Z oldc - 1 < 2 ^ 31⌝ ∗
+        "HΦ" ∷ (ownWaitGroup γ (oldc - W32 1) ={↑N,⊤}=∗ Φ #())) -∗
       WP (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Done")) (Val #())) {{ Φ }} := by
   wp_start as #His
   wp_auto
@@ -790,7 +634,7 @@ theorem WaitGroup.wp_Done (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
   isplitr
   · ipureintro
     intro h; subst h; simp at Hbounds
-  iintro %_ Hctr
+  iintro Hctr
   imod HΦ $$ [Hctr] with HΦ
   · rw [show oldc - W32 1 = oldc + W32 (-1) by bv_omega]; iexact Hctr
   imodintro

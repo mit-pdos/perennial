@@ -8,6 +8,7 @@ public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.Countable
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Receipts
+public import Perennial.GooseLang.Threads
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Adequacy

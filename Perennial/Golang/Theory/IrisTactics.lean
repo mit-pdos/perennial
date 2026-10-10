@@ -240,9 +240,16 @@ meta partial def goalAtoms (e : Lean.Expr) (acc : Array Lean.Expr := #[]) : Meta
   if e.hasLooseBVars then return acc
   return acc.push e
 
+meta register_option goose.iframe.maxHeartbeats : Nat := {
+  defValue := 100000
+  descr := "the heartbeat budget (in thousands, as `maxHeartbeats`) of each comparison by \
+    computation of `iframe`'s prepass (`matchesByDefEq`); a comparison that runs out of it \
+    counts as no match"
+}
+
 /-- Does `P` match `Q` by computation (default transparency, no metavariable
 assignment), e.g. `P [v]` and `P ([] ++ [v])`, `ghost_var γ q a` under a `let`?
-Bounded; errors count as no match. -/
+Bounded (`goose.iframe.maxHeartbeats`); errors count as no match. -/
 meta def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
   if Q.hasMVar || P.hasMVar then return false
   if P.getAppFn != Q.getAppFn then return false
@@ -256,8 +263,9 @@ meta def matchesByDefEq (P Q : Lean.Expr) : MetaM Bool := do
   -- distinct variables (e.g. the locations of different points-to facts) never match
   if diff.any fun (a, b) => a.isFVar && b.isFVar then return false
   -- compare only the differing arguments (not the unfoldings of the head)
+  let budget := goose.iframe.maxHeartbeats.get (← getOptions) * 1000
   tryCatchRuntimeEx (Core.withCurrHeartbeats <|
-    withTheReader Core.Context (fun c => { c with maxHeartbeats := 20000 * 1000 }) <|
+    withTheReader Core.Context (fun c => { c with maxHeartbeats := budget }) <|
     withNewMCtxDepth <| withTransparency .default <|
       diff.allM fun (a, b) => isDefEq a b) fun _ => return false
 
