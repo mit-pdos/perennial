@@ -36,6 +36,11 @@ end helpers
 
 namespace «unsafe»
 def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
+/-- `unsafe.Add(ptr, len)`: `ptr` moved `len` bytes (Goose also emits it for
+`unsafe.Pointer(uintptr(ptr) + len)`, the same thing when it stays in `ptr`'s allocation). -/
+def Add : GoString := go!"unsafe.Add"
+/-- `unsafe.Slice(ptr, len)`: the slice of `len` elements from `ptr`. -/
+def Slice : GoString := go!"unsafe.Slice"
 
 class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
@@ -962,6 +967,37 @@ attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.compa
 export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float32 go_eq_float32
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32)
 
+/-- The rest of package `unsafe`: `uintptr(p)`, `unsafe.Add`, `unsafe.Slice`. -/
+class UnsafeSemantics [GoSemanticsFunctions] : Prop where
+  /-- `uintptr(p)`: the address of `p` (`ptrAddr`); the other direction is not modeled
+  (Goose emits `unsafe.Add` for `unsafe.Pointer(uintptr(p) + n)`). -/
+  convert_pointer_to_uintptr (l : Loc) :
+    ⟦Convert «unsafe».Pointer go.uintptr, #l⟧ ⤳[under] #(ptrAddr l)
+  ptrAddr_null : ptrAddr null = 0
+  /-- The addresses of a block are consecutive (a cell is a byte). -/
+  ptrAddr_add (l : Loc) (k : Int) (h : l.locCar ≠ 0) :
+    ptrAddr (l +ₗ k) = ptrAddr l + BitVec.ofInt 64 k
+  add_unfold : FuncUnfold «unsafe».Add [] (λ: "p" "n", GoOp GoPlus (go.PointerType go.uint8) ("p", "n"))
+  /-- `unsafe.Slice(ptr, len)` (`len` an `int`): Go panics if `len` is negative, or if `ptr` is
+  `nil` and `len` is not zero. Go also panics if the slice would pass the end of the address
+  space; as for allocation (`alloc_array`), a slice of `2^63` bytes or more is not considered
+  (`AngelicExit`), and a smaller one does not pass the end (user addresses are below `2^63`
+  on the 64-bit targets). -/
+  slice_unfold (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] :
+    FuncUnfold «unsafe».Slice [t] (λ: "p" "n",
+      if: "n" <⟨go.int⟩ #(W64 0) then Panic "unsafe.Slice: len out of range"
+      else if: "p" =⟨go.PointerType t⟩ #null then
+        (if: "n" =⟨go.int⟩ #(W64 0) then InternalMakeSlice ("p", "n", "n")
+         else Panic "unsafe.Slice: ptr is nil and len is not zero")
+      else if: "n" >⟨go.int⟩ #(W64 (if 0 < typeSize V then (2 ^ 63 - 1) / typeSize V else 2 ^ 63 - 1))
+        then AngelicExit #()
+      else InternalMakeSlice ("p", "n", "n"))
+
+attribute [instance] UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.add_unfold
+  UnsafeSemantics.slice_unfold
+export UnsafeSemantics (convert_pointer_to_uintptr ptrAddr_null ptrAddr_add add_unfold
+  slice_unfold)
+
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   alloc_predeclared (u : go.GoType) [H : IsCellPredeclared u] (v : val) :
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
@@ -995,6 +1031,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) (max.impl t n)
 
   [unsafe_sem : unsafe.Semantics]
+  [unsafe_ext_sem : UnsafeSemantics]
 
   comparable_bool : ⟦CheckComparable go.bool, #()⟧ ⤳[under] #()
   go_eq_bool : IsStrictlyComparable go.bool Bool
@@ -1045,6 +1082,7 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.store_predeclared PredeclaredSemantics.alloc_word
   PredeclaredSemantics.load_word PredeclaredSemantics.store_word PredeclaredSemantics.min_unfold
   PredeclaredSemantics.max_unfold PredeclaredSemantics.unsafe_sem
+  PredeclaredSemantics.unsafe_ext_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
   PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untypedInt_semantics

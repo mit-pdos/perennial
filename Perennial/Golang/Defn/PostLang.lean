@@ -98,6 +98,9 @@ class GoSemanticsFunctions [FfiSyntax] where
   typeSize : Type → Int
   /-- The alignment of a value of Lean representation type `V` (`Golang/Defn/Layout.lean`). -/
   typeAlign : Type → Int
+  /-- The address of a location (`uintptr(p)`): unspecified, but consecutive within a block
+  (`unsafe.Semantics.ptrAddr_add`). -/
+  ptrAddr : Loc → w64
 
   mapEmpty : val → val
   mapLookup : val → val → Bool × val
@@ -112,7 +115,7 @@ class GoSemanticsFunctions [FfiSyntax] where
 attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  typeSize typeAlign mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+  typeSize typeAlign ptrAddr mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
 /-- The address of element `i` of an array of `V`s at `l`: `i` strides of `typeSize V`
 bytes on, within `l`'s block. A location outside any block (`locCar = 0`, which no
