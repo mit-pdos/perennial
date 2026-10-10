@@ -417,6 +417,9 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		if t.NumFields() == 0 {
 			return "Unit"
 		}
+		if name, ok := ctx.anonStructName(t); ok {
+			return glang.LeanIdent(name)
+		}
 		ctx.unsupported(l, "Anonymous structs with fields are not supported %s", t.String())
 	}
 	ctx.unsupported(l, "Unknown type %s (of type %T)", t, t)

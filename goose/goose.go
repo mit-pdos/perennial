@@ -85,6 +85,13 @@ type Ctx struct {
 	namedTypeSpecs []*ast.TypeSpec
 	localTypes     map[string]bool // names of the types declared in functions
 
+	// The anonymous struct types with fields, by the name of their synthetic
+	// declaration (util.AnonStructSpecs), and the structs of the package's named
+	// types (which are not anonymous).
+	pkg             *types.Package
+	anonStructs     map[string]*ast.TypeSpec
+	namedUnderlying map[*types.Struct]bool
+
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
 	// Full Go import path -> Assumptions class field name. For colliding
@@ -111,7 +118,20 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importAssumptions: make(map[string]string),
 		filter:            filter,
 		localTypes:        make(map[string]bool),
+		anonStructs:       make(map[string]*ast.TypeSpec),
+		namedUnderlying:   make(map[*types.Struct]bool),
 	}
+}
+
+// anonStructName is the synthetic declaration's name of an anonymous struct type
+// with fields (not the struct of a named type).
+func (ctx *Ctx) anonStructName(t *types.Struct) (string, bool) {
+	if t.NumFields() == 0 || ctx.namedUnderlying[t] {
+		return "", false
+	}
+	name := util.AnonStructName(ctx.pkgPath, t)
+	_, ok := ctx.anonStructs[name]
+	return name, ok
 }
 
 func (ctx *Ctx) paramList(fs *ast.FieldList) (names []glang.Binder, types []glang.Expr) {
@@ -568,7 +588,7 @@ func (ctx *Ctx) fieldAddrSelection(n locatable, index []int, curType *types.Type
 		v := info.structType.Field(i)
 
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldRef"),
-			ctx.glangType(n, info.namedType), glang.StringLiteral{Value: v.Name()}, *expr)
+			ctx.structInfoGoType(n, info), glang.StringLiteral{Value: v.Name()}, *expr)
 		*curType = v.Type()
 	}
 }
@@ -1873,12 +1893,16 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 	switch t := ctx.typeOf(stmt.X).Underlying().(type) {
 	case *types.Basic:
 		switch t.Kind() {
-		case types.Uint64, types.Int64, types.Int, types.Uint:
+		case types.Uint64, types.Int64, types.Int, types.Uint, types.Uintptr:
 			y = glang.Int64Val{Value: one}
 		case types.Uint32, types.Int32:
 			y = glang.Int32Val{Value: one}
+		case types.Uint16, types.Int16:
+			y = glang.Int16Val{Value: one}
 		case types.Uint8, types.Int8:
 			y = glang.Int8Val{Value: one}
+		default:
+			ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))
 		}
 	default:
 		ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))

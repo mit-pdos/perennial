@@ -244,6 +244,12 @@ func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	switch t := t.(type) {
 	case *types.Struct:
+		// an anonymous struct type with fields: its synthetic declaration's type
+		// (declared, like every named type's, before the code that uses it; its
+		// TypeAssumptions relate it to its go.StructType)
+		if name, ok := ctx.anonStructName(t); ok {
+			return glang.TypeIdent(name)
+		}
 		return ctx.structType(t)
 	case *types.TypeParam:
 		return glang.TermIdent(t.Obj().Name())
@@ -349,10 +355,20 @@ type structTypeInfo struct {
 	namedType      *types.Named
 	structType     *types.Struct
 	typeArgs       *types.TypeList
+	// an anonymous struct type (name is its synthetic declaration's)
+	anon bool
 }
 
 func (ctx *Ctx) structInfoToGlangType(info structTypeInfo) glang.Expr {
 	return glang.TypeIdent(info.name)
+}
+
+// structInfoGoType is the Go type of the struct (for StructFieldRef).
+func (ctx *Ctx) structInfoGoType(n locatable, info structTypeInfo) glang.Expr {
+	if info.anon {
+		return glang.TypeIdent(info.name)
+	}
+	return ctx.glangType(n, info.namedType)
 }
 
 func (ctx *Ctx) getStructInfo(t types.Type) (structTypeInfo, bool) {
@@ -370,6 +386,16 @@ func (ctx *Ctx) getStructInfo(t types.Type) (structTypeInfo, bool) {
 				namedType:      t,
 				throughPointer: throughPointer,
 				structType:     structType,
+			}, true
+		}
+	}
+	if st, ok := t.(*types.Struct); ok {
+		if name, ok := ctx.anonStructName(st); ok {
+			return structTypeInfo{
+				name:           name,
+				throughPointer: throughPointer,
+				structType:     st,
+				anon:           true,
 			}, true
 		}
 	}

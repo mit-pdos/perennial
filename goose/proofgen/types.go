@@ -25,6 +25,11 @@ type typesTranslator struct {
 	specs          []*ast.TypeSpec
 	nameToTypeSpec map[string]*ast.TypeSpec
 
+	// the synthetic declarations of the anonymous struct types with fields
+	// (util.AnonStructSpecs), and the structs of the package's named types
+	anonStructs     map[string]bool
+	namedUnderlying map[*types.Struct]bool
+
 	filter declfilter.DeclFilter
 }
 
@@ -128,9 +133,28 @@ func translateTypes(pkg *packages.Package, filter declfilter.DeclFilter) []tmpl.
 
 func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []translatedType {
 	tr := &typesTranslator{
-		pkg:            pkg,
-		filter:         filter,
-		nameToTypeSpec: make(map[string]*ast.TypeSpec),
+		pkg:             pkg,
+		filter:          filter,
+		nameToTypeSpec:  make(map[string]*ast.TypeSpec),
+		anonStructs:     make(map[string]bool),
+		namedUnderlying: make(map[*types.Struct]bool),
+	}
+	for _, obj := range pkg.TypesInfo.Defs {
+		if tn, ok := obj.(*types.TypeName); ok && tn.Pkg() == pkg.Types {
+			if named, ok := tn.Type().(*types.Named); ok {
+				if st, ok := named.Underlying().(*types.Struct); ok {
+					tr.namedUnderlying[st] = true
+				}
+			}
+		}
+	}
+	for _, spec := range util.AnonStructSpecs(pkg.Types, pkg.TypesInfo) {
+		tr.anonStructs[spec.Name.Name] = true
+		switch tr.filter.GetAction(spec.Name.Name) {
+		case declfilter.Translate, declfilter.Axiomatize:
+			tr.specs = append(tr.specs, spec)
+			tr.nameToTypeSpec[spec.Name.Name] = spec
+		}
 	}
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
@@ -252,6 +276,11 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Struct:
 		if t.NumFields() == 0 {
 			return "Unit"
+		}
+		if !tr.namedUnderlying[t] {
+			if name := util.AnonStructName(tr.pkg.PkgPath, t); tr.anonStructs[name] {
+				return glang.LeanNamespace(tr.pkg.PkgPath) + "." + glang.LeanQuote(glang.ToIdent(name))
+			}
 		}
 	}
 	log.Fatalf("unsupported type %s in struct field", t)

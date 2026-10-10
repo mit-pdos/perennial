@@ -29,6 +29,16 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
+def anonStruct_185bb3b548659d52.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.anonStruct_185bb3b548659d52" [])
+
+attribute [irreducible] anonStruct_185bb3b548659d52.ty
+
+def withHooks.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.withHooks" [])
+
+attribute [irreducible] withHooks.ty
+
 def Foo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Foo" [])
 
@@ -391,6 +401,12 @@ noncomputable def mapLiteral [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def mapLiteralWithConversion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mapLiteralWithConversion"
+
+noncomputable def useHooks [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useHooks"
+
+noncomputable def setHooks [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.setHooks"
 
 noncomputable def takesArray [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.takesArray"
@@ -1009,6 +1025,36 @@ noncomputable def LocalVars [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def LocalConsts [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.LocalConsts"
+
+/-- go: anon_struct.go:12:6 -/
+noncomputable def useHooks.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "w"
+  (Lam "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType withHooks.ty)))) (Var "w"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"write"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w"))))) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"count"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"count"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"count"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w"))))) (Val #(W64 1)))))))))))))
+
+/-- go: anon_struct.go:17:6 -/
+noncomputable def setHooks.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "w"
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType withHooks.ty)))) (Var "w"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Lam "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Pair (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"write"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w")))) (Var "$r0")))))))))
 
 /-- go: array.go:5:6 -/
 noncomputable def takesArray.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5102,6 +5148,84 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mapLiteralWithConversion (go.GoType.MapType go.any go.any))) (Val #()))))))))
 
+structure anonStruct_185bb3b548659d52 [FfiSyntax] where
+  mk ::
+  write' : GoFunc
+  count' : w64
+
+instance anonStruct_185bb3b548659d52.zero_val [FfiSyntax] : ZeroVal anonStruct_185bb3b548659d52 :=
+  ⟨anonStruct_185bb3b548659d52.mk zeroValDef zeroValDef⟩
+
+@[reducible] def anonStruct_185bb3b548659d52.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"write" (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))),
+(go.field_decl.FieldDecl go!"count" go.uint64)]
+
+@[irreducible] def anonStruct_185bb3b548659d52.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  anonStruct_185bb3b548659d52.fieldsUnsealed
+
+instance equals_unfold_anonStruct_185bb3b548659d52 [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold anonStruct_185bb3b548659d52.fields anonStruct_185bb3b548659d52.fieldsUnsealed :=
+  ⟨by unfold anonStruct_185bb3b548659d52.fields; rfl⟩
+
+@[reducible] def anonStruct_185bb3b548659d52.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType anonStruct_185bb3b548659d52.fields)
+
+class anonStruct_185bb3b548659d52.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_185bb3b548659d52.underlying anonStruct_185bb3b548659d52
+  underlying : go.UnderlyingDirectedEq anonStruct_185bb3b548659d52.ty anonStruct_185bb3b548659d52.underlying
+  layout : go.StructLayout anonStruct_185bb3b548659d52 [(go!"write", typeSize GoFunc, typeAlign GoFunc), (go!"count", typeSize w64, typeAlign w64)]
+  get_write : ∀ (x : anonStruct_185bb3b548659d52), go.IsGoStepPureDetTagged under (StructFieldGet anonStruct_185bb3b548659d52.underlying go!"write") #x (Val #(x.write'))
+  set_write : ∀ (x : anonStruct_185bb3b548659d52) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet anonStruct_185bb3b548659d52.underlying go!"write") (PairV #x #y) (Val #(({ x with write' := y } : anonStruct_185bb3b548659d52)))
+  get_count : ∀ (x : anonStruct_185bb3b548659d52), go.IsGoStepPureDetTagged under (StructFieldGet anonStruct_185bb3b548659d52.underlying go!"count") #x (Val #(x.count'))
+  set_count : ∀ (x : anonStruct_185bb3b548659d52) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet anonStruct_185bb3b548659d52.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : anonStruct_185bb3b548659d52)))
+
+attribute [instance] anonStruct_185bb3b548659d52.TypeAssumptions.type_repr
+  anonStruct_185bb3b548659d52.TypeAssumptions.underlying
+  anonStruct_185bb3b548659d52.TypeAssumptions.layout
+  anonStruct_185bb3b548659d52.TypeAssumptions.get_write
+  anonStruct_185bb3b548659d52.TypeAssumptions.set_write
+  anonStruct_185bb3b548659d52.TypeAssumptions.get_count
+  anonStruct_185bb3b548659d52.TypeAssumptions.set_count
+
+structure withHooks [FfiSyntax] where
+  mk ::
+  hooks' : anonStruct_185bb3b548659d52
+  name' : GoString
+
+instance withHooks.zero_val [FfiSyntax] : ZeroVal withHooks :=
+  ⟨withHooks.mk zeroValDef zeroValDef⟩
+
+@[reducible] def withHooks.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"hooks" anonStruct_185bb3b548659d52.ty),
+(go.field_decl.FieldDecl go!"name" go.string)]
+
+@[irreducible] def withHooks.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  withHooks.fieldsUnsealed
+
+instance equals_unfold_withHooks [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold withHooks.fields withHooks.fieldsUnsealed :=
+  ⟨by unfold withHooks.fields; rfl⟩
+
+@[reducible] def withHooks.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType withHooks.fields)
+
+class withHooks.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying withHooks.underlying withHooks
+  underlying : go.UnderlyingDirectedEq withHooks.ty withHooks.underlying
+  layout : go.StructLayout withHooks [(go!"hooks", typeSize anonStruct_185bb3b548659d52, typeAlign anonStruct_185bb3b548659d52), (go!"name", typeSize GoString, typeAlign GoString)]
+  get_hooks : ∀ (x : withHooks), go.IsGoStepPureDetTagged under (StructFieldGet withHooks.underlying go!"hooks") #x (Val #(x.hooks'))
+  set_hooks : ∀ (x : withHooks) (y : anonStruct_185bb3b548659d52), go.IsGoStepPureDetTagged under (StructFieldSet withHooks.underlying go!"hooks") (PairV #x #y) (Val #(({ x with hooks' := y } : withHooks)))
+  get_name : ∀ (x : withHooks), go.IsGoStepPureDetTagged under (StructFieldGet withHooks.underlying go!"name") #x (Val #(x.name'))
+  set_name : ∀ (x : withHooks) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet withHooks.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : withHooks)))
+
+attribute [instance] withHooks.TypeAssumptions.type_repr
+  withHooks.TypeAssumptions.underlying
+  withHooks.TypeAssumptions.layout
+  withHooks.TypeAssumptions.get_hooks
+  withHooks.TypeAssumptions.set_hooks
+  withHooks.TypeAssumptions.get_name
+  withHooks.TypeAssumptions.set_name
+
 abbrev Foo [FfiSyntax] : Type := (GoArray w64 10)
 
 @[reducible] def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -6374,6 +6498,8 @@ class UseNamedType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 attribute [instance] UseNamedType.TypeAssumptions.underlying
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_185bb3b548659d52_instance : anonStruct_185bb3b548659d52.TypeAssumptions
+  withHooks_instance : withHooks.TypeAssumptions
   Foo_instance : Foo.TypeAssumptions
   importantStruct_instance : importantStruct.TypeAssumptions
   sizedStruct_instance : sizedStruct.TypeAssumptions
@@ -6419,6 +6545,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   Timestamp_instance : Timestamp.TypeAssumptions
   UseTypeAbbrev_instance : UseTypeAbbrev.TypeAssumptions
   UseNamedType_instance : UseNamedType.TypeAssumptions
+  useHooks_unfold : FuncUnfold useHooks [] useHooks.impl
+  setHooks_unfold : FuncUnfold setHooks [] setHooks.impl
   takesArray_unfold : FuncUnfold takesArray [] takesArray.impl
   takesPtr_unfold : FuncUnfold takesPtr [] takesPtr.impl
   usesArrayElemRef_unfold : FuncUnfold usesArrayElemRef [] usesArrayElemRef.impl
@@ -6633,7 +6761,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   import_log_Assumption : _root_.Perennial.log.Assumptions
   import_std_Assumption : _root_.Perennial.github_com.goose_lang.std.Assumptions
 
-attribute [instance] Assumptions.Foo_instance
+attribute [instance] Assumptions.anonStruct_185bb3b548659d52_instance
+  Assumptions.withHooks_instance
+  Assumptions.Foo_instance
   Assumptions.importantStruct_instance
   Assumptions.sizedStruct_instance
   Assumptions.stringWrapper_instance
@@ -6678,6 +6808,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Timestamp_instance
   Assumptions.UseTypeAbbrev_instance
   Assumptions.UseNamedType_instance
+  Assumptions.useHooks_unfold
+  Assumptions.setHooks_unfold
   Assumptions.takesArray_unfold
   Assumptions.takesPtr_unfold
   Assumptions.usesArrayElemRef_unfold

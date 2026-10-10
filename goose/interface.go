@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strings"
 	"sync"
 
@@ -48,6 +49,25 @@ func (ctx *Ctx) files(fs []*ast.File) (preDecls []glang.Decl, sortedDecls []glan
 		}
 	}
 	e.do(func() { ctx.finalizeImports() })
+	// the structs of named types are not anonymous
+	for _, obj := range ctx.info.Defs {
+		if tn, ok := obj.(*types.TypeName); ok && tn.Pkg() != nil && tn.Pkg().Path() == ctx.pkgPath {
+			if st, ok := tn.Type().Underlying().(*types.Struct); ok {
+				if _, isNamed := tn.Type().(*types.Named); isNamed {
+					ctx.namedUnderlying[st] = true
+				}
+			}
+		}
+	}
+	// a synthetic declaration for each anonymous struct type with fields
+	if ctx.pkg != nil {
+		for _, spec := range util.AnonStructSpecs(ctx.pkg, ctx.info) {
+			ctx.anonStructs[spec.Name.Name] = spec
+		}
+		for _, spec := range util.SortedSpecs(ctx.anonStructs) {
+			e.do(func() { ctx.typeDecl(spec) })
+		}
+	}
 	for _, f := range fs {
 		for _, d := range f.Decls {
 			e.do(func() { ctx.decl(d) })
@@ -89,6 +109,7 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 			pkgErrors(pkg.Errors))
 	}
 	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
+	ctx.pkg = pkg.Types
 	f := ctx.initFile(pkg, config)
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 

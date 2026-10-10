@@ -33,6 +33,13 @@ func TypeGetDependencies(pkgPath string, ty types.Type) iter.Seq[string] {
 				}
 
 			case *types.Struct:
+				// an anonymous struct type with fields has a synthetic declaration
+				// (AnonStructSpecs), except at the top (the struct of a named type)
+				if current != ty && t.NumFields() > 0 {
+					if !yield(AnonStructName(pkgPath, t)) {
+						return
+					}
+				}
 				for i := 0; i < t.NumFields(); i++ {
 					q = append(q, t.Field(i).Type())
 				}

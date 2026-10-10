@@ -24,6 +24,122 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
+namespace anonStruct_185bb3b548659d52
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance anonStruct_185bb3b548659d52_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 where
+  typedPointstoDef l v dq := iprop(
+    "write" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"write" l) v.write' dq ∗
+    "count" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"count" l) v.count' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance anonStruct_185bb3b548659d52_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52.underlying := by
+  solve_into_val_typed_struct
+
+instance anonStruct_185bb3b548659d52_access_load_write (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"write" l) v.write' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"write" l) v.write' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance anonStruct_185bb3b548659d52_access_store_write (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (write' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"write" l) v.write' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"write" l) write' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with write' := write' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance anonStruct_185bb3b548659d52_access_load_count (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"count" l) v.count' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"count" l) v.count' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance anonStruct_185bb3b548659d52_access_store_count (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (count' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"count" l) v.count' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52 go!"count" l) count' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end anonStruct_185bb3b548659d52
+
+namespace withHooks
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance withHooks_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks where
+  typedPointstoDef l v dq := iprop(
+    "hooks" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"hooks" l) v.hooks' dq ∗
+    "name" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"name" l) v.name' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance withHooks_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks.underlying := by
+  solve_into_val_typed_struct
+
+instance withHooks_access_load_hooks (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"hooks" l) v.hooks' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"hooks" l) v.hooks' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance withHooks_access_store_hooks (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (hooks' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.anonStruct_185bb3b548659d52) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"hooks" l) v.hooks' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"hooks" l) hooks' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hooks' := hooks' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance withHooks_access_load_name (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"name" l) v.name' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"name" l) v.name' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance withHooks_access_store_name (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (name' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"name" l) v.name' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks go!"name" l) name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.withHooks) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end withHooks
+
 namespace importantStruct
 section def_
 
