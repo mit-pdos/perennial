@@ -546,7 +546,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
       [TypeRepr (go.StructType fds) V] :
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
       (if typeSize V < 2^63 then
-        (Let "l" (AllocN (Val (LitV (LitInt (W64 (typeSize V))))) (Val #()))
+        (Let "l" (AllocN (Val (LitV (LitInt (W64 (typeSize V))))) (Val (LitV (LitByte 0))))
           gl(GoStore (go.StructType fds) ("l", v) ;; "l") : Expr)
        else gl(AngelicExit #()))
 

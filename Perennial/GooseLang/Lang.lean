@@ -608,12 +608,74 @@ def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
   | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
 
 /-- The `n` little-endian bytes of `z` (mod `2^(8n)`). -/
-def leBytes (n : Nat) (z : Int) : List w8 :=
-  (List.range n).map fun i => BitVec.ofInt 8 (z / 2 ^ (8 * i))
+def leBytes : Nat → Int → List w8
+  | 0, _ => []
+  | n + 1, z => BitVec.ofInt 8 z :: leBytes n (z / 256)
 
 /-- The value of little-endian bytes. -/
 def leInt (bs : List w8) : Int :=
   bs.foldr (fun b acc => (b.toNat : Int) + 256 * acc) 0
+
+theorem leBytes_length (n : Nat) (z : Int) : (leBytes n z).length = n := by
+  induction n generalizing z with
+  | zero => rfl
+  | succ n ih => simp [leBytes, ih]
+
+theorem emod_256_mul (z m : Int) :
+    z % (256 * m) = z % 256 + 256 * ((z / 256) % m) := by
+  have e1 := Int.emod_def z (256 * m)
+  have e2 := Int.emod_def z 256
+  have e3 := Int.emod_def (z / 256) m
+  rw [← Int.ediv_ediv_of_nonneg (by decide : (0 : Int) ≤ 256)] at e1
+  rw [e1, e2, e3]
+  generalize z / 256 = q
+  generalize q / m = r
+  rw [Int.mul_assoc]
+  generalize m * r = t
+  omega
+
+theorem ofInt8_emod_256_mul (z m : Int) :
+    BitVec.ofInt 8 (z % (256 * m)) = BitVec.ofInt 8 z := by
+  apply BitVec.eq_of_toNat_eq
+  simp only [BitVec.toNat_ofInt]
+  congr 1
+  rw [emod_256_mul]
+  have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+  have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
+  show (z % 256 + 256 * (z / 256 % m)) % (2 ^ 8 : Nat) = z % (2 ^ 8 : Nat)
+  rw [show ((2 ^ 8 : Nat) : Int) = 256 by decide, Int.add_mul_emod_self_left, Int.emod_emod_of_dvd _ (by decide)]
+
+/-- The bytes of `z` depend only on `z` modulo `2^(8n)`. -/
+theorem leBytes_emod (n : Nat) (z : Int) : leBytes n (z % 2 ^ (8 * n)) = leBytes n z := by
+  induction n generalizing z with
+  | zero => rfl
+  | succ n ih =>
+    rw [show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add, show (2 : Int) ^ 8 = 256 by decide]
+    simp only [leBytes, ofInt8_emod_256_mul]
+    congr 1
+    rw [emod_256_mul]
+    have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+    have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
+    rw [show (z % 256 + 256 * (z / 256 % 2 ^ (8 * n))) / 256 = z / 256 % 2 ^ (8 * n) by
+      rw [Int.add_mul_ediv_left _ _ (by decide)]
+      rw [Int.ediv_eq_zero_of_lt h0 h1, Int.zero_add]]
+    exact ih (z / 256)
+
+/-- Decoding the bytes of `z` gives `z` modulo `2^(8n)`. -/
+theorem leInt_leBytes (n : Nat) (z : Int) : leInt (leBytes n z) = z % 2 ^ (8 * n) := by
+  induction n generalizing z with
+  | zero => simp [leBytes, leInt, Int.emod_one]
+  | succ n ih =>
+    have ih' := ih (z / 256)
+    simp only [leBytes, leInt, List.foldr_cons] at *
+    rw [ih']
+    have h8 : ((BitVec.ofInt 8 z).toNat : Int) = z % 256 := by
+      rw [BitVec.toNat_ofInt]
+      have := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+      simp only [Int.toNat_of_nonneg (by omega : 0 ≤ z % (2 ^ 8 : Nat))]
+      rfl
+    rw [h8, show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add,
+      show (2 : Int) ^ 8 = 256 by decide, emod_256_mul]
 
 /-- A word of `n` bytes as a value: a `w16`, `w32` or `w64`. -/
 def wordLit (n : Nat) (z : Int) : val :=

@@ -408,8 +408,9 @@ theorem wp_AngelicExit (Φ : val → IProp GF) :
   iframe Hctx
   iexact IH
 
-theorem rawCells_of_pointstoVals (l : Loc) (k : Nat) (v : val) :
-    pointstoVals l (DFrac.own 1) (List.replicate k v) ⊢ (rawCells l (k : Int) : IProp GF) := by
+theorem rawCells_of_pointstoVals (l : Loc) (k : Nat) (b : w8) :
+    pointstoVals l (DFrac.own 1) (List.replicate k (LitV (LitByte b))) ⊢
+      (rawCells l (k : Int) : IProp GF) := by
   unfold pointstoVals rawCells
   rw [show ((k : Int)).toNat = k by omega]
   induction k generalizing l with
@@ -434,7 +435,7 @@ theorem wp_alloc_raw (t : go.GoType) (sz : Int) (hsz : 0 ≤ sz ∧ sz < 2^63) (
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #l v))) @ s; E
       {{ RET #(); P l }}) :
     {{ (True : IProp GF) }}
-      (Let "l" (AllocN (Val (LitV (LitInt (W64 sz)))) (Val #()))
+      (Let "l" (AllocN (Val (LitV (LitInt (W64 sz)))) (Val (LitV (LitByte 0))))
         gl(GoStore t ("l", v) ;; "l")) @ s; E
     {{ (l : Loc), RET #l; P l }} := by
   iintro %Φ _ HΦ
@@ -602,14 +603,85 @@ theorem typedPointstoDef_heap (V : Type) (hinj : Function.Injective (intoVal (V 
     (l : Loc) (v : V) (dq : DFrac) :
     @typedPointstoDef GF V (heapTypedPointsto V hinj) l v dq = heapPointsto l dq #v := rfl
 
+theorem pointstoVals_agree (l : Loc) (dq1 dq2 : DFrac) (vs1 vs2 : List val)
+    (hlen : vs1.length = vs2.length) :
+    pointstoVals (GF := GF) l dq1 vs1 ∗ pointstoVals l dq2 vs2 ⊢ ⌜vs1 = vs2⌝ := by
+  induction vs1 generalizing l vs2 with
+  | nil => cases vs2 with
+    | nil => iintro _; ipureintro; rfl
+    | cons => simp at hlen
+  | cons v vs1 ih =>
+    cases vs2 with
+    | nil => simp at hlen
+    | cons w vs2 =>
+      simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
+      unfold pointstoVals
+      iintro ⟨H1, H2⟩
+      icases BigSepL.bigSepL_cons.1 $$ H1 with ⟨Hv, H1⟩
+      icases BigSepL.bigSepL_cons.1 $$ H2 with ⟨Hw, H2⟩
+      icases heapPointsto_agree _ _ _ _ _ $$ [Hv Hw] with %Hvw
+      · iframe
+      have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+        intro k; rw [loc_add_assoc]; congr 1; omega
+      simp only [Hk]
+      icases ih (l +ₗ 1) vs2 hlen $$ [H1 H2] with %Hrest
+      · unfold pointstoVals; iframe
+      ipureintro; rw [Hvw, Hrest]
+
+theorem byteVals_inj (bs1 bs2 : List w8) (h : byteVals bs1 = byteVals bs2) : bs1 = bs2 := by
+  unfold byteVals at h
+  induction bs1 generalizing bs2 with
+  | nil => cases bs2 with
+    | nil => rfl
+    | cons => simp at h
+  | cons b bs1 ih =>
+    cases bs2 with
+    | nil => simp at h
+    | cons c bs2 =>
+      simp only [List.map_cons, List.cons.injEq] at h
+      obtain ⟨h1, h2⟩ := h
+      injection h1 with h1; injection h1 with h1
+      rw [h1, ih bs2 h2]
+
+/-- The typed points-to of an `n`-byte word: its cells hold the little-endian bytes of
+`toZ v`, which determine `v`. -/
+def wordTypedPointsto (V : Type) (n : Nat) (toZ : V → Int)
+    (hinj : ∀ x y, toZ x % 2 ^ (8 * n) = toZ y % 2 ^ (8 * n) → x = y) :
+    TypedPointsto (GF := GF) V where
+  typedPointstoDef l v dq := pointstoVals l dq (byteVals (leBytes n (toZ v)))
+  typedPointstoDef_dfractional l v := by unfold pointstoVals; infer_instance
+  typedPointstoDef_timeless l v dq := inferInstance
+  typedPointsto_agree l dq1 dq2 v1 v2 := by
+    iintro H1 H2
+    icases pointstoVals_agree l dq1 dq2 (byteVals (leBytes n (toZ v1))) (byteVals (leBytes n (toZ v2)))
+      (by simp only [byteVals, List.length_map, leBytes_length]) $$ [H1 H2] with %h
+    · iframe
+    ipureintro
+    apply hinj
+    have := congrArg leInt (byteVals_inj _ _ h)
+    rwa [leInt_leBytes, leInt_leBytes] at this
+
+theorem bitvec_toNat_emod_inj {m : Nat} (x y : BitVec m)
+    (h : (x.toNat : Int) % 2 ^ m = (y.toNat : Int) % 2 ^ m) : x = y := by
+  apply BitVec.eq_of_toNat_eq
+  have hx := x.isLt
+  have hy := y.isLt
+  have e1 : (x.toNat : Int) % 2 ^ m = x.toNat :=
+    Int.emod_eq_of_lt (by omega) (by exact_mod_cast hx)
+  have e2 : (y.toNat : Int) % 2 ^ m = y.toNat :=
+    Int.emod_eq_of_lt (by omega) (by exact_mod_cast hy)
+  rw [e1, e2] at h
+  exact_mod_cast h
+
 instance typedPointsto_loc : TypedPointsto (GF := GF) Loc :=
   heapTypedPointsto Loc go.intoVal_inj
+/-- A 64-bit integer is 8 little-endian byte cells. -/
 instance typedPointsto_w64 : TypedPointsto (GF := GF) w64 :=
-  heapTypedPointsto w64 go.intoVal_inj
+  wordTypedPointsto w64 8 (fun x => x.toNat) (fun x y h => bitvec_toNat_emod_inj x y h)
 instance typedPointsto_w32 : TypedPointsto (GF := GF) w32 :=
-  heapTypedPointsto w32 go.intoVal_inj
+  wordTypedPointsto w32 4 (fun x => x.toNat) (fun x y h => bitvec_toNat_emod_inj x y h)
 instance typedPointsto_w16 : TypedPointsto (GF := GF) w16 :=
-  heapTypedPointsto w16 go.intoVal_inj
+  wordTypedPointsto w16 2 (fun x => x.toNat) (fun x y h => bitvec_toNat_emod_inj x y h)
 instance typedPointsto_w8 : TypedPointsto (GF := GF) w8 :=
   heapTypedPointsto w8 go.intoVal_inj
 instance typedPointsto_bool : TypedPointsto (GF := GF) Bool :=

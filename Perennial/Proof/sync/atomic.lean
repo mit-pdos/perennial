@@ -57,7 +57,7 @@ theorem wp_LoadUint64 (addr : Loc) (dq : DFrac) :
       WP (App (Val (@! LoadUint64)) (Val #addr)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core wp_word_load addr dq v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -67,7 +67,7 @@ theorem wp_SwapUint64 (addr : Loc) (v : w64) :
       WP (App (App (Val (@! SwapUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -76,9 +76,9 @@ theorem wp_StoreUint64 (addr : Loc) (v : w64) :
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  wp_bind (AtomicSwap _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   imod HΦ $$ Haddr with HΦ
   imodintro
@@ -91,15 +91,10 @@ theorem wp_AddUint64 (addr : Loc) (v : w64) :
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddUint64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap,
-    TypedPointsto.typedPointstoDef]
-  icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
+  imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
+  wp_apply_core wp_word_add addr oldv v (oldv + v) (toZ_add_w64 oldv v) $$ Haddr
   iintro Haddr
-  iapply HΦ
-  iframe
-  ipureintro; exact Hnn
+  iapply HΦ $$ Haddr
 
 /-- (Time receipts) `wp_AddUint64` for the call
 `atomic.AddUint64(addr, v)` before the function is resolved, i.e. in the form
@@ -128,20 +123,20 @@ theorem wp_CompareAndSwapUint64 (addr : Loc) (old new : w64) :
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (App (Val (@! CompareAndSwapUint64)) (Val #addr)) (Val #old)) (Val #new)) {{ Φ }} := by
   wp_start as _
-  wp_bind (CmpXchg _ _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%v, %dq, >Haddr, >%Hdq, HΦ⟩
   by_cases h : v = old
   · subst h
     simp only [↓reduceIte, decide_true] at Hdq ⊢
     subst Hdq
-    wp_apply_core wp_cmpxchg_suc addr v v new _ _ rfl $$ Haddr
+    wp_apply_core wp_word_cmpxchg_suc addr v v new rfl $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
     wp_pures
     iexact HΦ
   · simp only [h, ↓reduceIte, decide_false]
-    wp_apply_core wp_cmpxchg_fail addr v old new dq _ _ h $$ Haddr
+    wp_apply_core wp_word_cmpxchg_fail addr dq v old new h $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
@@ -286,7 +281,7 @@ theorem wp_LoadInt64 (addr : Loc) (dq : DFrac) :
       WP (App (Val (@! LoadInt64)) (Val #addr)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core wp_word_load addr dq v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -296,7 +291,7 @@ theorem wp_SwapInt64 (addr : Loc) (v : w64) :
       WP (App (App (Val (@! SwapInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -305,9 +300,9 @@ theorem wp_StoreInt64 (addr : Loc) (v : w64) :
       (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  wp_bind (AtomicSwap _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   imod HΦ $$ Haddr with HΦ
   imodintro
@@ -320,15 +315,10 @@ theorem wp_AddInt64 (addr : Loc) (v : w64) :
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddInt64)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap,
-    TypedPointsto.typedPointstoDef]
-  icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
+  imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
+  wp_apply_core wp_word_add addr oldv v (oldv + v) (toZ_add_w64 oldv v) $$ Haddr
   iintro Haddr
-  iapply HΦ
-  iframe
-  ipureintro; exact Hnn
+  iapply HΦ $$ Haddr
 
 theorem wp_CompareAndSwapInt64 (addr : Loc) (old new : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
@@ -337,20 +327,20 @@ theorem wp_CompareAndSwapInt64 (addr : Loc) (old new : w64) :
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (App (Val (@! CompareAndSwapInt64)) (Val #addr)) (Val #old)) (Val #new)) {{ Φ }} := by
   wp_start as _
-  wp_bind (CmpXchg _ _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%v, %dq, >Haddr, >%Hdq, HΦ⟩
   by_cases h : v = old
   · subst h
     simp only [↓reduceIte, decide_true] at Hdq ⊢
     subst Hdq
-    wp_apply_core wp_cmpxchg_suc addr v v new _ _ rfl $$ Haddr
+    wp_apply_core wp_word_cmpxchg_suc addr v v new rfl $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
     wp_pures
     iexact HΦ
   · simp only [h, ↓reduceIte, decide_false]
-    wp_apply_core wp_cmpxchg_fail addr v old new dq _ _ h $$ Haddr
+    wp_apply_core wp_word_cmpxchg_fail addr dq v old new h $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
@@ -495,7 +485,7 @@ theorem wp_LoadUint32 (addr : Loc) (dq : DFrac) :
       WP (App (Val (@! LoadUint32)) (Val #addr)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core wp_word_load addr dq v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -505,7 +495,7 @@ theorem wp_SwapUint32 (addr : Loc) (v : w32) :
       WP (App (App (Val (@! SwapUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -514,9 +504,9 @@ theorem wp_StoreUint32 (addr : Loc) (v : w32) :
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  wp_bind (AtomicSwap _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   imod HΦ $$ Haddr with HΦ
   imodintro
@@ -529,15 +519,10 @@ theorem wp_AddUint32 (addr : Loc) (v : w32) :
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddUint32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap,
-    TypedPointsto.typedPointstoDef]
-  icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
+  imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
+  wp_apply_core wp_word_add addr oldv v (oldv + v) (toZ_add_w32 oldv v) $$ Haddr
   iintro Haddr
-  iapply HΦ
-  iframe
-  ipureintro; exact Hnn
+  iapply HΦ $$ Haddr
 
 theorem wp_CompareAndSwapUint32 (addr : Loc) (old new : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
@@ -546,20 +531,20 @@ theorem wp_CompareAndSwapUint32 (addr : Loc) (old new : w32) :
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (App (Val (@! CompareAndSwapUint32)) (Val #addr)) (Val #old)) (Val #new)) {{ Φ }} := by
   wp_start as _
-  wp_bind (CmpXchg _ _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%v, %dq, >Haddr, >%Hdq, HΦ⟩
   by_cases h : v = old
   · subst h
     simp only [↓reduceIte, decide_true] at Hdq ⊢
     subst Hdq
-    wp_apply_core wp_cmpxchg_suc addr v v new _ _ rfl $$ Haddr
+    wp_apply_core wp_word_cmpxchg_suc addr v v new rfl $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
     wp_pures
     iexact HΦ
   · simp only [h, ↓reduceIte, decide_false]
-    wp_apply_core wp_cmpxchg_fail addr v old new dq _ _ h $$ Haddr
+    wp_apply_core wp_word_cmpxchg_fail addr dq v old new h $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
@@ -704,7 +689,7 @@ theorem wp_LoadInt32 (addr : Loc) (dq : DFrac) :
       WP (App (Val (@! LoadInt32)) (Val #addr)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core wp_word_load addr dq v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -714,7 +699,7 @@ theorem wp_SwapInt32 (addr : Loc) (v : w32) :
       WP (App (App (Val (@! SwapInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
@@ -723,9 +708,9 @@ theorem wp_StoreInt32 (addr : Loc) (v : w32) :
       (|={⊤,∅}=> ▷ ∃ oldv : w32, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
       WP (App (App (Val (@! StoreInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  wp_bind (AtomicSwap _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_word_swap addr oldv v $$ Haddr
   iintro Haddr
   imod HΦ $$ Haddr with HΦ
   imodintro
@@ -738,15 +723,10 @@ theorem wp_AddInt32 (addr : Loc) (v : w32) :
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
       WP (App (App (Val (@! AddInt32)) (Val #addr)) (Val #v)) {{ Φ }} := by
   wp_start as _
-  imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap,
-    TypedPointsto.typedPointstoDef]
-  icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
+  imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
+  wp_apply_core wp_word_add addr oldv v (oldv + v) (toZ_add_w32 oldv v) $$ Haddr
   iintro Haddr
-  iapply HΦ
-  iframe
-  ipureintro; exact Hnn
+  iapply HΦ $$ Haddr
 
 theorem wp_CompareAndSwapInt32 (addr : Loc) (old new : w32) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
@@ -755,20 +735,20 @@ theorem wp_CompareAndSwapInt32 (addr : Loc) (old new : w32) :
         (addr ↦{dq} (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
       WP (App (App (App (Val (@! CompareAndSwapInt32)) (Val #addr)) (Val #old)) (Val #new)) {{ Φ }} := by
   wp_start as _
-  wp_bind (CmpXchg _ _ _)
+  wp_bind (AtomicWord _ _ _ _)
   imod HΦ with ⟨%v, %dq, >Haddr, >%Hdq, HΦ⟩
   by_cases h : v = old
   · subst h
     simp only [↓reduceIte, decide_true] at Hdq ⊢
     subst Hdq
-    wp_apply_core wp_cmpxchg_suc addr v v new _ _ rfl $$ Haddr
+    wp_apply_core wp_word_cmpxchg_suc addr v v new rfl $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
     wp_pures
     iexact HΦ
   · simp only [h, ↓reduceIte, decide_false]
-    wp_apply_core wp_cmpxchg_fail addr v old new dq _ _ h $$ Haddr
+    wp_apply_core wp_word_cmpxchg_fail addr dq v old new h $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro

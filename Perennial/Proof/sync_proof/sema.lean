@@ -66,9 +66,9 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
   wp_start as #Hsem
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   wp_for
-  wp_bind (Primitive1 _ _)
+  wp_bind (AtomicWord _ _ _ _)
   iinv Hsem with ⟨%v, >Hs, Hv⟩
-  wp_apply_core wp_atomic_load _ _ sema _ v $$ Hs
+  wp_apply_core wp_word_load sema _ v $$ Hs
   iintro Hs
   imodintro
   isplitl [Hs Hv]
@@ -79,7 +79,7 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
     wp_for_post
     iframe
   · -- try to acquire
-    wp_bind (CmpXchg _ _ _)
+    wp_bind (AtomicWord _ _ _ _)
     iinv Hsem with ⟨%v0, >Hs, >Hv⟩
     by_cases hv : v0 = v
     · subst hv
@@ -87,7 +87,7 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
       icombine Hv Hv2 gives % ⟨_, Heq⟩
       subst Heq
       imod ghostVar_update_halves (v0 - W32 1) γ v0 v0 $$ Hv Hv2 with ⟨Hv, Hv2⟩
-      wp_apply_core wp_cmpxchg_suc sema v0 v0 (v0 - W32 1) _ _ rfl $$ Hs
+      wp_apply_core wp_word_cmpxchg_suc sema v0 v0 (v0 - W32 1) rfl $$ Hs
       iintro Hs
       imod HΦ $$ [] Hv2 with HΦ
       · ipureintro
@@ -101,7 +101,7 @@ theorem wp_runtime_Semacquire (sema : Loc) (γ : GName) (N : Namespace) :
       wp_auto
       wp_for_post
       iexact HΦ
-    · wp_apply_core wp_cmpxchg_fail sema v0 v _ _ _ _ hv $$ Hs
+    · wp_apply_core wp_word_cmpxchg_fail sema _ v0 v _ hv $$ Hs
       iintro Hs
       imodintro
       isplitl [Hs Hv]
@@ -151,15 +151,12 @@ theorem wp_runtime_Semrelease (sema : Loc) (γ : GName) (N : Namespace) (_u1 : B
       WP (App (App (App (Val (@! runtime_Semrelease)) (Val #sema)) (Val #_u1)) (Val #_u2)) {{ Φ }} := by
   wp_start as #Hsem
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
-  wp_bind (AtomicAdd _ _)
+  wp_bind (AtomicWord _ _ _ _)
   iinv Hsem with ⟨%v, >Hs, >Hv⟩
   imod HΦ with ⟨%v1, Hv2, HΦ⟩
   icombine Hv Hv2 gives % ⟨_, Heq⟩
   subst Heq
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
-  icases Hs with ⟨Hs, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add sema #v #(W32 1) #(v + W32 1)
-    (by simp [go.intoVal_unfold, atomicAddEval]) $$ Hs
+  wp_apply_core wp_word_add sema v (W32 1) (v + W32 1) (toZ_add_w32 v (W32 1)) $$ Hs
   iintro Hs
   imod ghostVar_update_halves (v + W32 1) γ v v $$ Hv Hv2 with ⟨Hv, Hv2⟩
   imod HΦ $$ Hv2 with HΦ
@@ -167,8 +164,7 @@ theorem wp_runtime_Semrelease (sema : Loc) (γ : GName) (N : Namespace) (_u1 : B
   imodintro
   isplitl [Hs Hv]
   · inext; iexists _
-    simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
-    iframe; ipureintro; exact Hnn
+    iframe
   wp_auto
   iexact HΦ
 

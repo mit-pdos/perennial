@@ -73,9 +73,8 @@ macro "solve_atomic_wps" : tactic => `(tactic| (
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn))
 
-instance atomic_wps_uint64 : AtomicWps (GF := GF) w64 := by solve_atomic_wps
-instance atomic_wps_uint32 : AtomicWps (GF := GF) w32 := by solve_atomic_wps
-instance atomic_wps_uint16 : AtomicWps (GF := GF) w16 := by solve_atomic_wps
+-- (16-, 32- and 64-bit integers are words of bytes: their atomic operations are `AtomicWord`,
+-- `wp_word_load` etc. in `Theory/Predeclared.lean`.)
 instance atomic_wps_uint8 : AtomicWps (GF := GF) w8 := by solve_atomic_wps
 instance atomic_wps_bool : AtomicWps (GF := GF) Bool := by solve_atomic_wps
 instance atomic_wps_loc : AtomicWps (GF := GF) Loc := by solve_atomic_wps

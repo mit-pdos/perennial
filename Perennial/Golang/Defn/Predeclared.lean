@@ -127,6 +127,43 @@ def prophId : go.GoType := go.Named go!"proph id" []
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
+/-- The predeclared types whose values are one heap cell: bytes, booleans, strings,
+`unsafe.Pointer` (and prophecy ids). -/
+class inductive IsCellPredeclared : go.GoType → Prop
+  | isCellPredeclared_uint8 : IsCellPredeclared go.uint8
+  | isCellPredeclared_int8 : IsCellPredeclared go.int8
+  | isCellPredeclared_string : IsCellPredeclared go.string
+  | isCellPredeclared_bool : IsCellPredeclared go.bool
+  | isCellPredeclared_Pointer : IsCellPredeclared unsafe.Pointer
+  | isCellPredeclared_proph_id : IsCellPredeclared go.prophId
+
+attribute [instance] IsCellPredeclared.isCellPredeclared_uint8
+  IsCellPredeclared.isCellPredeclared_int8 IsCellPredeclared.isCellPredeclared_string
+  IsCellPredeclared.isCellPredeclared_bool IsCellPredeclared.isCellPredeclared_Pointer
+  IsCellPredeclared.isCellPredeclared_proph_id
+
+/-- The predeclared types whose values are `n`-byte little-endian words of byte cells (the
+integers of 16, 32 and 64 bits, and the floats, by their bits); loaded and stored by
+`AtomicWord` (Go's memory model lets a racy access of at most a machine word observe some
+written value). -/
+class inductive IsWordType : go.GoType → outParam Nat → Prop
+  | isWordType_uint16 : IsWordType go.uint16 2
+  | isWordType_int16 : IsWordType go.int16 2
+  | isWordType_uint32 : IsWordType go.uint32 4
+  | isWordType_int32 : IsWordType go.int32 4
+  | isWordType_float32 : IsWordType go.float32 4
+  | isWordType_uint64 : IsWordType go.uint64 8
+  | isWordType_int64 : IsWordType go.int64 8
+  | isWordType_uint : IsWordType go.uint 8
+  | isWordType_int : IsWordType go.int 8
+  | isWordType_uintptr : IsWordType go.uintptr 8
+  | isWordType_float64 : IsWordType go.float64 8
+
+attribute [instance] IsWordType.isWordType_uint16 IsWordType.isWordType_int16
+  IsWordType.isWordType_uint32 IsWordType.isWordType_int32 IsWordType.isWordType_float32
+  IsWordType.isWordType_uint64 IsWordType.isWordType_int64 IsWordType.isWordType_uint
+  IsWordType.isWordType_int IsWordType.isWordType_uintptr IsWordType.isWordType_float64
+
 /-- These are the predeclareds that are modeled as taking up a single heap
 location. A `class` so that the `[IsPredeclared u]`
 premises below are found by typeclass search. -/
@@ -926,12 +963,22 @@ export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
-  alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :
+  alloc_predeclared (u : go.GoType) [H : IsCellPredeclared u] (v : val) :
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
-  load_predeclared (u : go.GoType) [H : IsPredeclared u] (l : val) :
+  load_predeclared (u : go.GoType) [H : IsCellPredeclared u] (l : val) :
     ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
-  store_predeclared (u : go.GoType) [H : IsPredeclared u] (l v : val) :
+  store_predeclared (u : go.GoType) [H : IsCellPredeclared u] (l v : val) :
     ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
+  /-- A word is allocated as `n` byte cells (zero), into which the value is stored. -/
+  alloc_word (u : go.GoType) {n : Nat} [H : IsWordType u n] (v : val) :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder]
+      (Let "l" (AllocN (Val (LitV (LitInt (BitVec.ofInt 64 n)))) (Val (LitV (LitByte 0))))
+        (Seq (App (Val (GoInstruction (GoStore u))) (Pair (Var "l") (Val v))) (Var "l")))
+  load_word (u : go.GoType) {n : Nat} [H : IsWordType u n] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] AtomicWord n .load (Val l) (Val #())
+  store_word (u : go.GoType) {n : Nat} [H : IsWordType u n] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder]
+      Seq (AtomicWord n .swap (Val l) (Val v)) (Val #())
 
   predeclared_underlying (t : go.GoType) (H : IsPredeclared t) : underlying t = t
 
@@ -995,7 +1042,8 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   type_repr_empty_struct : TypeReprUnderlying (go.StructType []) Unit
 
 attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics.load_predeclared
-  PredeclaredSemantics.store_predeclared PredeclaredSemantics.min_unfold
+  PredeclaredSemantics.store_predeclared PredeclaredSemantics.alloc_word
+  PredeclaredSemantics.load_word PredeclaredSemantics.store_word PredeclaredSemantics.min_unfold
   PredeclaredSemantics.max_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool

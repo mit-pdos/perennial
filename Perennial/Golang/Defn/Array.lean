@@ -35,7 +35,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   alloc_array (n : Int) (elem : go.GoType) (v : val) {V : Type} [ZeroVal V] [TypeRepr elem V] :
     ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder]
       (if 0 ≤ n ∧ n * typeSize V < 2^63 then
-        (Let "l" (AllocN (Val (LitV (LitInt (W64 (n * typeSize V))))) (Val #()))
+        (Let "l" (AllocN (Val (LitV (LitInt (W64 (n * typeSize V))))) (Val (LitV (LitByte 0))))
           gl(GoStore (go.ArrayType n elem) ("l", v) ;; "l") : Expr)
        else gl(AngelicExit #()))
 

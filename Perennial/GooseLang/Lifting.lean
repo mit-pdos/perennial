@@ -1454,9 +1454,6 @@ theorem wp_allocN (n : w64) (v : val) :
 
 /-! ### Atomic operations on words -/
 
-theorem leBytes_length (n : Nat) (z : Int) : (leBytes n z).length = n := by
-  simp [leBytes]
-
 /-- An atomic operation that does not write (`load`, a failing `cmpxchg`), on the `n` bytes
 `bs` at `l`. -/
 theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : List w8)
