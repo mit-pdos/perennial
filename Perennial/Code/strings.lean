@@ -736,6 +736,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   stringFinder_instance : stringFinder.TypeAssumptions
   asciiSet_instance : asciiSet.TypeAssumptions
   Join_unfold : FuncUnfold Join [] Join.impl
+  HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
 
 attribute [instance] Assumptions.Builder_instance
   Assumptions.Reader_instance
@@ -751,6 +752,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.stringFinder_instance
   Assumptions.asciiSet_instance
   Assumptions.Join_unfold
+  Assumptions.HasPrefix_unfold
 
 end strings
 

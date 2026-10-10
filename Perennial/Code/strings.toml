@@ -1,6 +1,6 @@
 translate = ["Builder", "asciiSpace"]
 imports = ["!*"]
-trusted = ["Join"]
+trusted = ["Join", "HasPrefix"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
