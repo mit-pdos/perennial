@@ -92,7 +92,10 @@ class GoSemanticsFunctions [FfiSyntax] where
   TypeRepr : go.GoType → (V : Type) → [ZeroVal V] → Prop
   structFieldRef : Type → GoString → Loc → Loc
 
-  arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
+  /-- The size in bytes (heap cells) of a value of Lean representation type `V` in memory:
+  the stride of an array of them (`arrayIndexRef`). Like `structFieldRef`, indexed by the
+  Lean representation, which determines it. -/
+  typeSize : Type → Int
 
   mapEmpty : val → val
   mapLookup : val → val → Bool × val
@@ -107,7 +110,22 @@ class GoSemanticsFunctions [FfiSyntax] where
 attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+  typeSize mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+
+/-- The address of element `i` of an array of `V`s at `l`: `i` strides of `typeSize V`
+bytes on, within `l`'s block. A location outside any block (`locCar = 0`, which no
+allocation returns: `IsFresh`) has no elements, and stays where it is, so an index never
+reaches `null` from a non-null array. -/
+def arrayIndexRef [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) : Loc :=
+  if l.locCar = 0 then l else l +ₗ i * typeSize V
+
+theorem arrayIndexRef_of_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc)
+    (h : l.locCar ≠ 0) : arrayIndexRef V i l = l +ₗ i * typeSize V := by
+  simp [arrayIndexRef, h]
+
+@[simp] theorem arrayIndexRef_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) :
+    (arrayIndexRef V i l).locCar = l.locCar := by
+  unfold arrayIndexRef; split <;> rfl
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :

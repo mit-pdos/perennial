@@ -104,9 +104,10 @@ attribute [local instance] GSet.lawfulSet
 section definitions
 variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- A non-null location with a non-atomic points-to. -/
+/-- A location in an allocated block (`locCar ≠ 0`, so non-null, and so is every location
+of its block) with a non-atomic points-to. -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
-  iprop(⌜l ≠ null⌝ ∗ naHeapPointsto l dq v)
+  iprop(⌜l.locCar ≠ 0⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
 
@@ -186,7 +187,7 @@ theorem heapPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
   icombine H1 H2 gives %⟨_, H⟩
   ipureintro; exact H
 
-theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l ≠ null) :
+theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l.locCar ≠ 0) :
     naHeapPointsto (hG := hG) l dq v ⊢ heapPointsto l dq v := by
   unfold heapPointsto
   iintro Hl
@@ -213,11 +214,18 @@ theorem heapPointsto_frac_valid (l : Loc) (q : Qp) (v : val) :
     heapPointsto (hG := hG) l (.own q) v ⊢ ⌜q.val ≤ 1⌝ :=
   heapPointsto_valid l (.own q) v
 
+theorem heapPointsto_car (l : Loc) (dq : DFrac) (v : val) :
+    heapPointsto (hG := hG) l dq v ⊢ ⌜l.locCar ≠ 0⌝ := by
+  unfold heapPointsto
+  iintro ⟨%Hl, _⟩
+  ipureintro; exact Hl
+
 theorem heapPointsto_non_null (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜l ≠ null⌝ := by
   unfold heapPointsto
   iintro ⟨%Hl, _⟩
-  ipureintro; exact Hl
+  ipureintro
+  intro h; subst h; exact Hl rfl
 
 end heapPointsto
 
@@ -1181,6 +1189,13 @@ theorem gmap_singleton_union_eq_insert {K V : Type} [DecidableEq K] (m : GMap K 
   rw [show ({[k := v]} : GMap K V).lookup k' = _ from GMap.lookup_singleton_iff k k' v]
   split <;> simp
 
+/-- A fresh block is a real one (`locCar ≠ 0`): its start is non-null at offset `0`. -/
+theorem IsFresh.car {σ : CfgState} {l : Loc} (h : IsFresh σ l) : l.locCar ≠ 0 := by
+  intro hc
+  apply (h.1 0).1
+  have ho : l.locOff = 0 := h.2
+  cases l; simp only [Loc.add, null] at *; congr <;> omega
+
 theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
   refine ⟨freshLocs σ.1.heap.domList, fun i => ⟨freshLocs_non_null _ i, ?_⟩, freshLocs_off_0 _⟩
   cases h : σ.1.heap !! (freshLocs σ.1.heap.domList +ₗ i) with
@@ -1206,7 +1221,7 @@ theorem wp_allocN_seq (v : val) :
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
   obtain ⟨l, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_Alloc_inv Hstep
   have Hnone : σ₁.1.heap !! l = none := by simpa using (Hfresh.1 0).2
-  have Hnn : l ≠ null := by simpa using (Hfresh.1 0).1
+  have Hnn : l.locCar ≠ 0 := Hfresh.car
   imod na_heap_alloc tls σ₁.1.heap l v (Reading 0) Hnone rfl $$ Hσ with ⟨Hσ, Hl⟩
   imodintro
   isplitr
@@ -1241,7 +1256,7 @@ theorem wp_alloc_untyped (v : val) :
 block, so the cells of `l` are exactly `l +ₗ i` for `0 ≤ i < n`. -/
 theorem wp_allocN (n : w64) (v : val) :
     {{ (True : IProp GF) }} (AllocN (Val (LitV (LitInt n))) (Val v)) @ s; E
-    {{ l, RET #l; ⌜l ≠ null ∧ l.addrOffset = 0⌝ ∗
+    {{ l, RET #l; ⌜l.locCar ≠ 0 ∧ l.addrOffset = 0⌝ ∗
         pointstoVals l (.own 1) (List.replicate (uint.nat n) v) }} := by
   iintro %Φ _ HΦ
   iapply wp_lift_atomic_heap_step rfl rfl
@@ -1255,7 +1270,7 @@ theorem wp_allocN (n : w64) (v : val) :
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
   obtain ⟨k, l, Hk, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_AllocN_inv Hstep
   cases Hk
-  have Hnn : l ≠ null := by simpa using (Hfresh.1 0).1
+  have Hnn : l.locCar ≠ 0 := Hfresh.car
   imod na_heap_alloc_list σ₁.1.heap l (List.replicate (uint.nat n) v) (fun i => (Hfresh.1 i).2)
     $$ Hσ with ⟨Hσ, Hl⟩
   imodintro
@@ -1272,7 +1287,7 @@ theorem wp_allocN (n : w64) (v : val) :
   · ipureintro; exact ⟨Hnn, Hfresh.2⟩
   unfold pointstoVals
   iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x (Hfresh.1 i).1)) $$ Hl
+    na_pointsto_to_heap (l +ₗ (i : Int)) _ x Hnn)) $$ Hl
 
 /-! ### Fork -/
 

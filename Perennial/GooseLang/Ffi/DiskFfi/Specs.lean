@@ -222,7 +222,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
   unfold pointstoBlock
   iapply BigSepL.bigSepL_mono ?_ $$ Hpts
   intro k x _
-  exact na_pointsto_to_heap _ _ _ (Hfresh.1 _).1
+  exact na_pointsto_to_heap _ _ _ Hfresh.car
 
 theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
     {{ ▷ ((∃ b0, diskPointsto (gooseDiskGS (L := L)) (uint.Z a) (.own 1) b0) ∗

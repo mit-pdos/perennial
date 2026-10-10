@@ -83,12 +83,19 @@ theorem arrayElems_w8 (l : Loc) (vs : List w8) (dq : DFrac) :
   constructor
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
-    iintro ⟨H, _⟩; iexact H
+    rw [typedPointsto_unseal_eq, typedPointstoDef_heap]
+    iintro ⟨H, _⟩
+    ihave %Hc := heapPointsto_car _ _ _ $$ H
+    rw [arrayIndexRef_car] at Hc
+    rw [go.arrayIndexRef_add_loc_add _ _ Hc]
+    iexact H
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
+    rw [typedPointsto_unseal_eq, typedPointstoDef_heap]
     iintro H
+    ihave %Hc := heapPointsto_car _ _ _ $$ H
+    have Hc' : l.locCar ≠ 0 := Hc
+    rw [go.arrayIndexRef_add_loc_add _ _ Hc']
     ihave %Hnn := heapPointsto_non_null _ _ _ $$ H
     iframe H; ipureintro; exact Hnn
 
