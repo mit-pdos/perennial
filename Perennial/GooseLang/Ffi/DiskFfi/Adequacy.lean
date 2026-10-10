@@ -42,26 +42,31 @@ instance disk_interp_adequacy : FfiInterpAdequacy disk_model where
     iexact H2
 
 open disk_ffi in
-/-- Adequacy for GooseLang with the disk FFI: if the WP is proved for an
-arbitrary time-receipt bound `N` (`receiptBound GF = N`), then in every real
-execution of fewer than `N` steps, no thread is stuck and a final value of the
-main thread satisfies `φ` (see `goose_adequacy`). -/
+/-- Adequacy for GooseLang with the disk FFI: if the WP is proved for arbitrary
+time-receipt and thread bounds `N` and `T` (`receiptBound GF = N`,
+`threadBound GF = T`; the proof gets the main thread's token), then in every
+real execution of fewer than `N` steps along which fewer than `T` threads are
+live, no thread is stuck and a final value of the main thread satisfies `φ`
+(see `goose_adequacy`). -/
 theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
-    [hPre : GooseGpreS disk_model GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState)
+    [hPre : GooseGpreS disk_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
     (φ : val → Prop)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
+      threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ ([∗map] a ↦ b ∈ diskWorld σ, diskPointsto (gooseDiskGS (GF := GF)) a (.own 1) b) -∗
-        ownGoState σ.goState.packageState ={⊤}=∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) :
+    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) := by
-  refine goose_adequacy (GF := GF) N e σ g φ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
-  intro hG HN Hlctx
-  iintro _ Hd Hgs
-  iapply Hwp HN Hlctx $$ Hd Hgs
+  refine goose_adequacy (GF := GF) N T e σ g φ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
+    Hthreads Hlive
+  intro hG HN HT Hlctx
+  iintro _ Hd Hgs Htok
+  iapply Hwp HN HT Hlctx $$ Hd Hgs Htok
 
 end Perennial

@@ -108,26 +108,29 @@ end clock
 
 A client whose WP proof assumes `receiptBound GF ≤ 2 ^ 64` (e.g. through
 `wp_clock_incr`) instantiates `goose_adequacy` with `N = 2 ^ 64` and gets
-safety for executions of fewer than `2 ^ 64` steps. -/
+safety for executions of fewer than `2 ^ 64` steps (and, here, fewer than `T`
+live threads for an arbitrary `T`, which this client does not use). -/
 
 section adequacy
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
 variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 
-example [GooseGpreS ffi GF] (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF ≤ 2 ^ 64 →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
         ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
-        ownGoState σ.goState.packageState ={⊤}=∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
-    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < 2 ^ 64) :
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < 2 ^ 64)
+    (Hthreads : g.threads = 1) (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
-  goose_adequacy (2 ^ 64) e σ g φ Hinitg Hinit
-    (@fun hG HN Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+  goose_adequacy (2 ^ 64) T e σ g φ Hinitg Hinit
+    (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
+    Hthreads Hlive
 
 end adequacy
 

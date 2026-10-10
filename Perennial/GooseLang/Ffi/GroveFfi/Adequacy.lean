@@ -52,23 +52,27 @@ instance grove_interp_adequacy : FfiInterpAdequacy grove_model where
 
 open grove_ffi in
 /-- Adequacy for a single Grove node (fail-stop). The proof gets ownership of the
-initial network and of the node's initial files. As for `goose_adequacy`, the
-WP is proved for an arbitrary time-receipt bound `N` (`receiptBound GF = N`)
-and the conclusion is about real executions of fewer than `N` steps. -/
+initial network and of the node's initial files, and the main thread's token. As
+for `goose_adequacy`, the WP is proved for arbitrary time-receipt and thread
+bounds `N` and `T` (`receiptBound GF = N`, `threadBound GF = T`) and the
+conclusion is about real executions of fewer than `N` steps along which fewer
+than `T` threads are live. -/
 theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
-    [hPre : GooseGpreS grove_model GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState)
+    [hPre : GooseGpreS grove_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
     (φ : val → Prop)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
+      threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ ([∗map] e ↦ ms ∈ g.globalWorld.groveNet, (e c↦ ms : IProp GF)) -∗
         ([∗map] f ↦ c ∈ σ.world.groveNodeFiles, (f f↦ c : IProp GF)) -∗
-        ownGoState σ.goState.packageState ={⊤}=∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) :
+    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
-  goose_adequacy N e σ g φ trivial trivial Hwp n κs t2 σ2 Hsteps Hbound
+  goose_adequacy N T e σ g φ trivial trivial Hwp n κs t2 σ2 Hsteps Hbound Hthreads Hlive
 
 end Perennial

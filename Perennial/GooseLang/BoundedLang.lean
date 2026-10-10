@@ -87,6 +87,7 @@ may still be forked (thread tokens). -/
 structure Fuel where
   steps : Nat
   threads : Nat
+deriving Inhabited
 
 /-- The state of the bounded language: the real configuration and the fuel. -/
 abbrev BcfgState := CfgState × Fuel
