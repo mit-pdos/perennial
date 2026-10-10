@@ -59,11 +59,6 @@ theorem length_Block_to_vals [FfiSyntax] [GoGlobalContext] (b : Block) :
     (BlockToVals b).length = blockBytes := by
   simp [BlockToVals]
 
-/-- The heap containing `vs` at `l, l +ₗ 1, ...`. -/
-def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
-  | [] => ∅
-  | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
-
 section disk
 attribute [local instance] disk_op disk_model
 

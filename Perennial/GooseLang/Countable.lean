@@ -179,10 +179,12 @@ def PrimOp2.toNat : PrimOp2 → Nat
   | .FinishStoreOp => 0
   | .AtomicSwapOp => 1
   | .AtomicAddOp => 2
+  | .AllocNOp => 3
 def PrimOp2.fromNat : Nat → PrimOp2
   | 0 => .FinishStoreOp
   | 1 => .AtomicSwapOp
   | 2 => .AtomicAddOp
+  | 3 => .AllocNOp
   | _ => .FinishStoreOp
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
   countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)

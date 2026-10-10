@@ -118,6 +118,8 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
+  /-- allocation of a contiguous block (number of cells, initial value of each) -/
+  | AllocNOp
 deriving DecidableEq
 
 inductive GoOperator where
@@ -304,6 +306,8 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
+/-- `AllocN n v`: a fresh block of `n` cells `l, l +ₗ 1, …`, each holding `v`. -/
+abbrev AllocN (e1 e2 : Expr) : Expr := Primitive2 .AllocNOp e1 e2
 
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
@@ -585,6 +589,15 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalCont
 def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
 
+/-- The heap containing `vs` at `l, l +ₗ 1, ...`. -/
+def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
+  | [] => ∅
+  | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
+
+/-- `stateInitHeap` for a block: `n` copies of `v` from `l` on. -/
+def stateInitHeapN (l : Loc) (n : Nat) (v : val) (σ : state) : state :=
+  { σ with heap := heapArray l ((List.replicate n v).map Free) ∪ σ.heap }
+
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- `l` is the start of a fresh block in `σg`. -/
@@ -621,6 +634,9 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
+  | AllocNS (n : w64) v l σg :
+      IsFresh σg l →
+      BaseStep (AllocN (Val (LitV (LitInt n))) (Val v)) σg [] (Val #l) (stateInitHeapN l (uint.nat n) v σg.1, σg.2) []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →

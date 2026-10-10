@@ -378,6 +378,63 @@ end goose_lang
 
 /-! ## Atomicity -/
 
+/-! ## `heap_array` -/
+
+section heap_array
+variable {V : Type}
+
+theorem heapArray_lookup_lt (l : Loc) (vs : List V) (i : Int) (h : i < 0) :
+    heapArray l vs !! (l +ₗ i) = none := by
+  induction vs generalizing l i with
+  | nil => rfl
+  | cons v vs ih =>
+    show (<[l := v]> (heapArray (l +ₗ 1) vs)) !! (l +ₗ i) = none
+    rw [GMap.lookup_insert_ne _ _ (fun e => by have := loc_add_eq_inv l i e.symm; omega)]
+    have := ih (l +ₗ 1) (i - 1) (by omega)
+    rwa [loc_add_assoc, show 1 + (i - 1) = i by omega] at this
+
+end heap_array
+
+section na_heap_alloc
+variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
+
+theorem na_heap_alloc_list (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val)
+    (Hfresh : ∀ i : Int, σ !! (l +ₗ i) = none) :
+    ⊢@{IProp GF} naHeapCtx tls σ ==∗ naHeapCtx tls (heapArray l (vs.map Free) ∪ σ) ∗
+      [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
+  induction vs generalizing l with
+  | nil =>
+    iintro H
+    imodintro
+    have : heapArray l (([] : List val).map Free) ∪ σ = σ := by
+      apply GMap.ext; intro k; rfl
+    rw [this]
+    iframe H
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+  | cons v vs ih =>
+    iintro H
+    imod ih (l +ₗ 1) (fun i => by rw [loc_add_assoc]; exact Hfresh _) $$ H with ⟨H, Hpts⟩
+    have Hnone : (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) !! l = none := by
+      refine (GMap.lookup_union_None _ _ _).mpr ⟨?_, ?_⟩
+      · have := heapArray_lookup_lt (l +ₗ 1) (vs.map Free) (-1) (by omega)
+        rwa [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
+      · have := Hfresh 0; rwa [loc_add_0] at this
+    imod na_heap_alloc tls _ l v (Reading 0) Hnone rfl $$ H with ⟨H, Hl⟩
+    imodintro
+    have Heq : heapArray l ((v :: vs).map Free) ∪ σ =
+        <[l := (Reading 0, v)]> (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) :=
+      (GMap.insert_union_l _ _ _ _).symm
+    rw [Heq]
+    iframe H
+    iapply BigSepL.bigSepL_cons.2
+    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+      intro k; rw [loc_add_assoc]; congr 1; omega
+    simp only [Int.natCast_zero, loc_add_0, Hk]
+    iframe
+
+end na_heap_alloc
+
 section atomic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
@@ -400,6 +457,10 @@ local macro "solve_sub_redexes" : tactic =>
   `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
 
 instance alloc_atomic (a : Language.Atomicity) (v : val) : Language.Atomic a (Alloc (Val v)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance allocN_atomic (a : Language.Atomicity) (n v : val) :
+    Language.Atomic a (AllocN (Val n) (Val v)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 /-- `PrepareWrite` and `FinishStore` are individually atomic, but the two need to
@@ -542,6 +603,11 @@ theorem baseStep_Fork_inv {e : Expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
 theorem baseStep_Alloc_inv {v : val} (h : BaseStep (Alloc (Val v)) σ κ e' σ' efs) :
     ∃ l, IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧ σ' = (stateInitHeap l v σ.1, σ.2) ∧ efs = [] := by
   cases h; exact ⟨_, ‹_›, rfl, rfl, rfl, rfl⟩
+
+theorem baseStep_AllocN_inv {n v : val} (h : BaseStep (AllocN (Val n) (Val v)) σ κ e' σ' efs) :
+    ∃ (k : w64) (l : Loc), n = LitV (LitInt k) ∧ IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧
+      σ' = (stateInitHeapN l (uint.nat k) v σ.1, σ.2) ∧ efs = [] := by
+  cases h; exact ⟨_, _, rfl, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_StartRead_inv {v : val} (h : BaseStep (StartRead (Val v)) σ κ e' σ' efs) :
     ∃ l n w, v = #l ∧ σ.1.heap !! l = some (Reading n, w) ∧ κ = [] ∧ e' = Val w ∧
@@ -1170,6 +1236,43 @@ theorem wp_alloc_untyped (v : val) :
   icases BigSepL.bigSepL_singleton.1 $$ Hl with Hl
   rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
   iexact Hl
+
+/-- `AllocN n v`: a fresh block of `n` cells holding `v`, owned. `l` is the start of a
+block, so the cells of `l` are exactly `l +ₗ i` for `0 ≤ i < n`. -/
+theorem wp_allocN (n : w64) (v : val) :
+    {{ (True : IProp GF) }} (AllocN (Val (LitV (LitInt n))) (Val v)) @ s; E
+    {{ l, RET #l; ⌜l ≠ null ∧ l.addrOffset = 0⌝ ∗
+        pointstoVals l (.own 1) (List.replicate (uint.nat n) v) }} := by
+  iintro %Φ _ HΦ
+  iapply wp_lift_atomic_heap_step rfl rfl
+  iintro %σ₁ Hσ
+  imodintro
+  isplitr
+  · ipureintro
+    obtain ⟨l, hl⟩ := exists_isFresh σ₁
+    exact ⟨[], _, _, [], BaseStep.AllocNS n v l σ₁ hl⟩
+  inext
+  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
+  obtain ⟨k, l, Hk, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_AllocN_inv Hstep
+  cases Hk
+  have Hnn : l ≠ null := by simpa using (Hfresh.1 0).1
+  imod na_heap_alloc_list σ₁.1.heap l (List.replicate (uint.nat n) v) (fun i => (Hfresh.1 i).2)
+    $$ Hσ with ⟨Hσ, Hl⟩
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨rfl, rfl⟩
+  isplitl [Hσ]
+  · iexists _; iframe Hσ; ipureintro
+    simp only [setHeap, stateInitHeapN]
+  iexists #l
+  isplit
+  · ipureintro; rfl
+  iapply HΦ
+  isplitl []
+  · ipureintro; exact ⟨Hnn, Hfresh.2⟩
+  unfold pointstoVals
+  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
+    na_pointsto_to_heap (l +ₗ (i : Int)) _ x (Hfresh.1 i).1)) $$ Hl
 
 /-! ### Fork -/
 
