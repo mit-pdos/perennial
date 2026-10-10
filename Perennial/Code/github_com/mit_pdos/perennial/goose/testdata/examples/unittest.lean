@@ -455,6 +455,9 @@ noncomputable def ifStmtInitialization [FfiSyntax] [GoGlobalContext] : GoString 
 noncomputable def loopLocalCopy [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.loopLocalCopy"
 
+noncomputable def rangeInt [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.rangeInt"
+
 noncomputable def typedLiteral [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typedLiteral"
 
@@ -1570,6 +1573,32 @@ noncomputable def loopLocalCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Var "$key")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$value")))))))))))))))
+
+/-- go: control_flow.go:93:6 -/
+noncomputable def rangeInt.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "n"
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s")))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$key"))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i")) (Val #(W64 1))))))))))))))))))
 
 /-- go: conversions.go:5:6 -/
 noncomputable def typedLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -6225,6 +6254,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   elseIf_unfold : FuncUnfold elseIf [] elseIf.impl
   ifStmtInitialization_unfold : FuncUnfold ifStmtInitialization [] ifStmtInitialization.impl
   loopLocalCopy_unfold : FuncUnfold loopLocalCopy [] loopLocalCopy.impl
+  rangeInt_unfold : FuncUnfold rangeInt [] rangeInt.impl
   typedLiteral_unfold : FuncUnfold typedLiteral [] typedLiteral.impl
   literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
   castInt_unfold : FuncUnfold castInt [] castInt.impl
@@ -6476,6 +6506,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.elseIf_unfold
   Assumptions.ifStmtInitialization_unfold
   Assumptions.loopLocalCopy_unfold
+  Assumptions.rangeInt_unfold
   Assumptions.typedLiteral_unfold
   Assumptions.literalCast_unfold
   Assumptions.castInt_unfold

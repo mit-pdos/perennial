@@ -1460,8 +1460,56 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			})
 		}
 		e = arr
+	case *types.Basic:
+		// `for i := range n` (Go 1.22): `n`, of an integer type (an untyped
+		// constant counts as an `int`), is evaluated once (`$range`), and the
+		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
+		// counted in a cell `$range_i` of that type: the three-clause loop
+		// `for $range_i := 0; $range_i < $range; $range_i++`.
+		if isPtr || t.Info()&types.IsInteger == 0 {
+			ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
+			return nil
+		}
+		nT := ctx.typeOf(s.X)
+		if t.Info()&types.IsUntyped != 0 {
+			nT = types.Typ[types.Int]
+		}
+		ty := ctx.glangType(s.X, nT)
+		var one glang.Expr
+		switch nT.Underlying().(*types.Basic).Kind() {
+		case types.Uint64, types.Int64, types.Int, types.Uint:
+			one = glang.Int64Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		case types.Uint32, types.Int32:
+			one = glang.Int32Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		case types.Uint8, types.Int8:
+			one = glang.Int8Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		default:
+			ctx.unsupported(s, "range over %v", t)
+			return nil
+		}
+		cell := glang.IdentExpr("$range_i")
+		load := glang.DerefExpr{X: cell, Ty: ty}
+		e = glang.LetExpr{
+			Names: []string{"$range_i"},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), ty, glang.Tt)),
+			Cont: glang.ForLoopExpr{
+				Cond: glang.BinaryExpr{X: load,
+					Op: glang.BinOp{OpId: glang.OpLessThan, Type: ty}, Y: glang.IdentExpr("$range")},
+				Post: glang.NewDoSeq(glang.StoreStmt{Dst: cell, Ty: ty,
+					X: glang.BinaryExpr{X: load, Op: glang.BinOp{OpId: glang.OpPlus, Type: ty}, Y: one}},
+					glang.Tt),
+				Body: glang.LetExpr{Names: []string{"$key"}, ValExpr: load, Cont: body},
+			},
+		}
+		if t.Info()&types.IsUntyped != 0 {
+			// bind `$range` to the constant as an `int`
+			evalRange = false
+			e = glang.LetExpr{Names: []string{"$range"},
+				ValExpr: ctx.handleImplicitConversion(s.X, ctx.typeOf(s.X), nT, ctx.expr(s.X)), Cont: e}
+		}
 	default:
-		ctx.unsupported(s, "range over %v (only maps, slices, channels and arrays are supported)", t)
+		ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
 		return nil
 	}
 

@@ -89,3 +89,11 @@ func loopLocalCopy(xs []uint64) uint64 {
 	}
 	return s
 }
+
+func rangeInt(n uint64) uint64 {
+	var s uint64
+	for i := range n {
+		s += i
+	}
+	return s
+}

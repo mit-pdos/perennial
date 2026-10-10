@@ -160,3 +160,23 @@ func testNestedGoStyleLoopsNoComparison() bool {
 	}
 	return ok
 }
+
+func testRangeInt() bool {
+	var sum uint64
+	for i := range uint64(5) {
+		sum += i
+	}
+	n := 0
+	for range 3 {
+		n++
+	}
+	var k int64
+	for i := range int64(-2) {
+		k += i
+	}
+	var m uint32
+	for i := range uint32(4) {
+		m += i
+	}
+	return sum == 10 && n == 3 && k == 0 && m == 6
+}

@@ -288,6 +288,10 @@ func (suite *GoTestSuite) TestNestedGoStyleLoopsNoComparison() {
 	suite.Equal(true, testNestedGoStyleLoopsNoComparison())
 }
 
+func (suite *GoTestSuite) TestRangeInt() {
+	suite.Equal(true, testRangeInt())
+}
+
 func (suite *GoTestSuite) TestLoopVarClosures() {
 	suite.Equal(true, testLoopVarClosures())
 }
