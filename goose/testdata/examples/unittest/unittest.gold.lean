@@ -3,6 +3,7 @@ module
 
 public import Perennial.Code.fmt
 public import Perennial.Code.sync
+public import Perennial.Code.«unsafe»
 public import Perennial.Code.github_com.goose_lang.primitive
 public import Perennial.Code.github_com.goose_lang.primitive.disk
 public import Perennial.Code.log
@@ -37,6 +38,11 @@ def importantStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.importantStruct" [])
 
 attribute [irreducible] importantStruct.ty
+
+def sizedStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sizedStruct" [])
+
+attribute [irreducible] sizedStruct.ty
 
 def stringWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.stringWrapper" [])
@@ -311,6 +317,12 @@ attribute [irreducible] UseNamedType.ty
 @[reducible] noncomputable def ComplicatedThird [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 7)
 
+@[reducible] noncomputable def SizeofSized [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 16)
+
+@[reducible] noncomputable def OffsetofC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 12)
+
 @[reducible] noncomputable def Enum1A [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 0)
 
@@ -430,6 +442,9 @@ noncomputable def useUntypedInt [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def useUntypedString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useUntypedString"
+
+noncomputable def sizeofLocal [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sizeofLocal"
 
 noncomputable def conditionalReturn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.conditionalReturn"
@@ -721,6 +736,9 @@ noncomputable def intSliceLoop [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def breakFromLoop [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.breakFromLoop"
+
+noncomputable def labeledLoop [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.labeledLoop"
 
 noncomputable def IterateMapKeys [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.IterateMapKeys"
@@ -1350,19 +1368,26 @@ noncomputable def condvarWrapping.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "mu") (Var "$r0"))))))))))
 
-/-- go: const.go:37:6 -/
+/-- go: const.go:39:6 -/
 noncomputable def useUntypedInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val UntypedInt)) (Val TypedInt))))))
 
-/-- go: const.go:41:6 -/
+/-- go: const.go:43:6 -/
 noncomputable def useUntypedString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (App (Val (GoInstruction (Convert go.untypedString go.string))) (Val UntypedStringConstant)))))
+
+/-- go: const.go:59:6 -/
+noncomputable def sizeofLocal.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (Convert go.uintptr go.int))) (Val #(W64 4))) (App (Val (GoInstruction (Convert go.uintptr go.int))) (Val #(W64 8))))))))
 
 /-- go: control_flow.go:3:6 -/
 noncomputable def conditionalReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3223,6 +3248,43 @@ noncomputable def breakFromLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (Val #()))))))
 
+/-- A label on a loop, targeted directly by `continue` and `break` (a `switch`
+    in between is fine for `continue`).
+
+    go: loops.go:141:6 -/
+noncomputable def labeledLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "xs"
+  (App (Val exceptionDo)
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "xs"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val (slice.forRange go.uint64)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 100)))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$value")))))))))))))))
+
 /-- go: maps.go:3:6 -/
 noncomputable def IterateMapKeys.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "m"
@@ -4898,12 +4960,13 @@ noncomputable def LocalConsts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c))))))))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest where
-  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.primitive.disk, pkg_id.log, pkg_id.github_com.goose_lang.std]
+  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.«unsafe», pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.primitive.disk, pkg_id.log, pkg_id.github_com.goose_lang.std]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -4965,6 +5028,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
+  (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
+  (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))
@@ -5020,6 +5085,49 @@ class importantStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] importantStruct.TypeAssumptions.type_repr
   importantStruct.TypeAssumptions.underlying
+
+structure sizedStruct [FfiSyntax] where
+  mk ::
+  a' : w64
+  b' : w32
+  c' : w16
+
+instance sizedStruct.zero_val [FfiSyntax] : ZeroVal sizedStruct :=
+  ⟨sizedStruct.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] def sizedStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"a" go.uint64),
+(go.field_decl.FieldDecl go!"b" go.uint32),
+(go.field_decl.FieldDecl go!"c" go.uint16)]
+
+@[irreducible] def sizedStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  sizedStruct.fieldsUnsealed
+
+instance equals_unfold_sizedStruct [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold sizedStruct.fields sizedStruct.fieldsUnsealed :=
+  ⟨by unfold sizedStruct.fields; rfl⟩
+
+@[reducible] def sizedStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType sizedStruct.fields)
+
+class sizedStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying sizedStruct.underlying sizedStruct
+  underlying : go.UnderlyingDirectedEq sizedStruct.ty sizedStruct.underlying
+  get_a : ∀ (x : sizedStruct), go.IsGoStepPureDetTagged under (StructFieldGet sizedStruct.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : sizedStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sizedStruct.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : sizedStruct)))
+  get_b : ∀ (x : sizedStruct), go.IsGoStepPureDetTagged under (StructFieldGet sizedStruct.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : sizedStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sizedStruct.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : sizedStruct)))
+  get_c : ∀ (x : sizedStruct), go.IsGoStepPureDetTagged under (StructFieldGet sizedStruct.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : sizedStruct) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet sizedStruct.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : sizedStruct)))
+
+attribute [instance] sizedStruct.TypeAssumptions.type_repr
+  sizedStruct.TypeAssumptions.underlying
+  sizedStruct.TypeAssumptions.get_a
+  sizedStruct.TypeAssumptions.set_a
+  sizedStruct.TypeAssumptions.get_b
+  sizedStruct.TypeAssumptions.set_b
+  sizedStruct.TypeAssumptions.get_c
+  sizedStruct.TypeAssumptions.set_c
 
 abbrev stringWrapper [FfiSyntax] : Type := GoString
 
@@ -6158,6 +6266,7 @@ attribute [instance] UseNamedType.TypeAssumptions.underlying
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions
   importantStruct_instance : importantStruct.TypeAssumptions
+  sizedStruct_instance : sizedStruct.TypeAssumptions
   stringWrapper_instance : stringWrapper.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
   numWrapper_instance : numWrapper.TypeAssumptions
@@ -6217,6 +6326,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   condvarWrapping_unfold : FuncUnfold condvarWrapping [] condvarWrapping.impl
   useUntypedInt_unfold : FuncUnfold useUntypedInt [] useUntypedInt.impl
   useUntypedString_unfold : FuncUnfold useUntypedString [] useUntypedString.impl
+  sizeofLocal_unfold : FuncUnfold sizeofLocal [] sizeofLocal.impl
   conditionalReturn_unfold : FuncUnfold conditionalReturn [] conditionalReturn.impl
   alwaysReturn_unfold : FuncUnfold alwaysReturn [] alwaysReturn.impl
   alwaysReturnInNestedBranches_unfold : FuncUnfold alwaysReturnInNestedBranches [] alwaysReturnInNestedBranches.impl
@@ -6314,6 +6424,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   sumSlice_unfold : FuncUnfold sumSlice [] sumSlice.impl
   intSliceLoop_unfold : FuncUnfold intSliceLoop [] intSliceLoop.impl
   breakFromLoop_unfold : FuncUnfold breakFromLoop [] breakFromLoop.impl
+  labeledLoop_unfold : FuncUnfold labeledLoop [] labeledLoop.impl
   IterateMapKeys_unfold : FuncUnfold IterateMapKeys [] IterateMapKeys.impl
   CopyMap_unfold : FuncUnfold CopyMap [] CopyMap.impl
   MapSize_unfold : FuncUnfold MapSize [] MapSize.impl
@@ -6402,6 +6513,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   LocalConsts_unfold : FuncUnfold LocalConsts [] LocalConsts.impl
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
   import_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.disk.Assumptions
   import_log_Assumption : _root_.Perennial.log.Assumptions
@@ -6409,6 +6521,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
 
 attribute [instance] Assumptions.Foo_instance
   Assumptions.importantStruct_instance
+  Assumptions.sizedStruct_instance
   Assumptions.stringWrapper_instance
   Assumptions.Uint32_instance
   Assumptions.numWrapper_instance
@@ -6468,6 +6581,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.condvarWrapping_unfold
   Assumptions.useUntypedInt_unfold
   Assumptions.useUntypedString_unfold
+  Assumptions.sizeofLocal_unfold
   Assumptions.conditionalReturn_unfold
   Assumptions.alwaysReturn_unfold
   Assumptions.alwaysReturnInNestedBranches_unfold
@@ -6565,6 +6679,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.sumSlice_unfold
   Assumptions.intSliceLoop_unfold
   Assumptions.breakFromLoop_unfold
+  Assumptions.labeledLoop_unfold
   Assumptions.IterateMapKeys_unfold
   Assumptions.CopyMap_unfold
   Assumptions.MapSize_unfold
@@ -6653,6 +6768,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.LocalConsts_unfold
   Assumptions.import_fmt_Assumption
   Assumptions.import_sync_Assumption
+  Assumptions.import_unsafe_Assumption
   Assumptions.import_primitive_Assumption
   Assumptions.import_disk_Assumption
   Assumptions.import_log_Assumption

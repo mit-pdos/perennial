@@ -305,6 +305,12 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 
 	f, ok := s.Fun.(*ast.Ident)
 	if !ok {
+		// A package-qualified builtin: `unsafe.Sizeof`, `unsafe.Offsetof` and
+		// `unsafe.Alignof` are constants, which go/types has computed for the
+		// target (gc's layout); emit their value.
+		if ctx.info.Types[s].Value != nil {
+			return ctx.constantLiteral(s), true
+		}
 		ctx.unsupported(s.Fun, "builtin that isn't an ident")
 	}
 
@@ -1799,6 +1805,76 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 	}, cont)
 }
 
+// labeledStmt handles a label on a `for` or `range` loop whose labeled branches
+// (`break L`, `continue L`) all target that loop directly: no loop or function
+// literal lies between the branch and the loop, nor, for `break L`, a switch or
+// select. Each such branch then means what the unlabeled one does (branchStmt
+// ignores the label). Other labels (on other statements, or targeted from a
+// nested loop) are unsupported.
+func (ctx *Ctx) labeledStmt(s *ast.LabeledStmt, cont glang.Expr) glang.Expr {
+	var body *ast.BlockStmt
+	switch loop := s.Stmt.(type) {
+	case *ast.ForStmt:
+		body = loop.Body
+	case *ast.RangeStmt:
+		body = loop.Body
+	default:
+		ctx.unsupported(s, "label on a %T (only loops may be labeled)", s.Stmt)
+		return nil
+	}
+	label := s.Label.Name
+	// depth: nested loops/function literals (for continue and break), and
+	// nested switches/selects (for break only)
+	var check func(n ast.Node, loops, switches int)
+	check = func(n ast.Node, loops, switches int) {
+		ast.Inspect(n, func(m ast.Node) bool {
+			switch m := m.(type) {
+			case *ast.ForStmt, *ast.RangeStmt, *ast.FuncLit:
+				for _, c := range childStmts(m) {
+					check(c, loops+1, switches)
+				}
+				return false
+			case *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt:
+				for _, c := range childStmts(m) {
+					check(c, loops, switches+1)
+				}
+				return false
+			case *ast.BranchStmt:
+				if m.Label != nil && m.Label.Name == label {
+					if m.Tok != token.BREAK && m.Tok != token.CONTINUE {
+						ctx.unsupported(m, "%v to a label", m.Tok)
+					} else if loops > 0 || (m.Tok == token.BREAK && switches > 0) {
+						ctx.unsupported(m, "%v %s from inside a nested statement", m.Tok, label)
+					}
+				}
+			}
+			return true
+		})
+	}
+	check(body, 0, 0)
+	return ctx.stmt(s.Stmt, cont)
+}
+
+// childStmts are the parts of a loop, switch, select or function literal that
+// can contain branch statements.
+func childStmts(n ast.Node) []ast.Node {
+	switch n := n.(type) {
+	case *ast.ForStmt:
+		return []ast.Node{n.Body}
+	case *ast.RangeStmt:
+		return []ast.Node{n.Body}
+	case *ast.FuncLit:
+		return []ast.Node{n.Body}
+	case *ast.SwitchStmt:
+		return []ast.Node{n.Body}
+	case *ast.TypeSwitchStmt:
+		return []ast.Node{n.Body}
+	case *ast.SelectStmt:
+		return []ast.Node{n.Body}
+	}
+	return nil
+}
+
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
 	if s.Tok == token.CONTINUE {
 		return glang.SeqExpr{Expr: glang.ContinueExpr{}, Cont: cont}
@@ -2284,6 +2360,8 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 		return ctx.selectStmt(s, cont)
 	case *ast.SendStmt:
 		return ctx.sendStmt(s, cont)
+	case *ast.LabeledStmt:
+		return ctx.labeledStmt(s, cont)
 	default:
 		ctx.unsupported(s, "statement %T", s)
 	}
@@ -2512,7 +2590,7 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 		switch t.Kind() {
 		case types.Bool, types.UntypedBool:
 			return glang.GooseBoolLiteral(v.(bool))
-		case types.Uint64, types.Int64, types.Int, types.Uint:
+		case types.Uint64, types.Int64, types.Int, types.Uint, types.Uintptr:
 			return constInt("W64")
 		case types.Uint32, types.Int32:
 			return constInt("W32")

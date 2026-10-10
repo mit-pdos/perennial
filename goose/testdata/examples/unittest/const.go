@@ -1,5 +1,7 @@
 package unittest
 
+import "unsafe"
+
 const GlobalConstant string = "foo"
 
 const UntypedStringConstant = "bar" // an untyped string
@@ -40,4 +42,20 @@ func useUntypedInt() uint64 {
 
 func useUntypedString() string {
 	return UntypedStringConstant
+}
+
+type sizedStruct struct {
+	a uint64
+	b uint32
+	c uint16
+}
+
+// unsafe.Sizeof, Offsetof and Alignof are constants (gc's layout); a uintptr
+// constant is a 64-bit word.
+const SizeofSized = unsafe.Sizeof(sizedStruct{})
+
+const OffsetofC uintptr = unsafe.Offsetof(sizedStruct{}.c)
+
+func sizeofLocal() int {
+	return int(unsafe.Sizeof(uint32(0))) + int(unsafe.Alignof(sizedStruct{}))
 }

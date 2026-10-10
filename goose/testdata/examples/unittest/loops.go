@@ -135,3 +135,21 @@ func breakFromLoop() {
 		continue
 	}
 }
+
+// A label on a loop, targeted directly by `continue` and `break` (a `switch`
+// in between is fine for `continue`).
+func labeledLoop(xs []uint64) uint64 {
+	var sum uint64
+outer:
+	for _, x := range xs {
+		switch x {
+		case 0:
+			continue outer
+		}
+		if x > 100 {
+			break outer
+		}
+		sum += x
+	}
+	return sum
+}
