@@ -607,6 +607,7 @@ instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
+  layout : go.StructLayout Log [(go!"d", typeSize _root_.Perennial.github_com.goose_lang.primitive.disk.Disk, typeAlign _root_.Perennial.github_com.goose_lang.primitive.disk.Disk), (go!"l", typeSize Loc, typeAlign Loc), (go!"cache", typeSize GoMap, typeAlign GoMap), (go!"length", typeSize Loc, typeAlign Loc)]
   get_d : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"d") #x (Val #(x.d'))
   set_d : ∀ (x : Log) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : Log)))
   get_l : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"l") #x (Val #(x.l'))
@@ -642,6 +643,7 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.underlying
+  Log.TypeAssumptions.layout
   Log.TypeAssumptions.get_d
   Log.TypeAssumptions.set_d
   Log.TypeAssumptions.get_l

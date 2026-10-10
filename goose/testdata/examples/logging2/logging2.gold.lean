@@ -638,6 +638,7 @@ instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
+  layout : go.StructLayout Log [(go!"logLock", typeSize Loc, typeAlign Loc), (go!"memLock", typeSize Loc, typeAlign Loc), (go!"logSz", typeSize w64, typeAlign w64), (go!"memLog", typeSize Loc, typeAlign Loc), (go!"memLen", typeSize Loc, typeAlign Loc), (go!"memTxnNxt", typeSize Loc, typeAlign Loc), (go!"logTxnNxt", typeSize Loc, typeAlign Loc)]
   get_logLock : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"logLock") #x (Val #(x.logLock'))
   set_logLock : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"logLock") (PairV #x #y) (Val #(({ x with logLock' := y } : Log)))
   get_memLock : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"memLock") #x (Val #(x.memLock'))
@@ -691,6 +692,7 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.underlying
+  Log.TypeAssumptions.layout
   Log.TypeAssumptions.get_logLock
   Log.TypeAssumptions.set_logLock
   Log.TypeAssumptions.get_memLock
@@ -755,6 +757,7 @@ instance equals_unfold_Txn [FfiSyntax] [GoGlobalContext] :
 class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Txn.underlying Txn
   underlying : go.UnderlyingDirectedEq Txn.ty Txn.underlying
+  layout : go.StructLayout Txn [(go!"log", typeSize Loc, typeAlign Loc), (go!"blks", typeSize GoMap, typeAlign GoMap)]
   get_log : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"log") #x (Val #(x.log'))
   set_log : ∀ (x : Txn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Txn.underlying go!"log") (PairV #x #y) (Val #(({ x with log' := y } : Txn)))
   get_blks : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"blks") #x (Val #(x.blks'))
@@ -771,6 +774,7 @@ class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Txn.TypeAssumptions.type_repr
   Txn.TypeAssumptions.underlying
+  Txn.TypeAssumptions.layout
   Txn.TypeAssumptions.get_log
   Txn.TypeAssumptions.set_log
   Txn.TypeAssumptions.get_blks

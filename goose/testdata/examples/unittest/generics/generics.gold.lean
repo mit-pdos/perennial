@@ -325,6 +325,7 @@ instance equals_unfold_Box [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Box.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Box.underlying T) (Box T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Box.ty T) (Box.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (Box T') [(go!"Value", typeSize T', typeAlign T')]
   get_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T) go!"Value") #x (Val #(x.Value'))
   set_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T) go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : (Box T'))))
   Get_unfold : ∀ (T : go.GoType), MethodUnfold (Box.ty T) go!"Get" (Box.Get.impl T)
@@ -333,6 +334,7 @@ class Box.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Box.TypeAssumptions.type_repr
   Box.TypeAssumptions.underlying
+  Box.TypeAssumptions.layout
   Box.TypeAssumptions.get_Value
   Box.TypeAssumptions.set_Value
   Box.TypeAssumptions.Get_unfold
@@ -367,6 +369,7 @@ instance equals_unfold_Container [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Container.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Container.underlying T) (Container T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Container.ty T) (Container.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (Container T') [(go!"X", typeSize T', typeAlign T'), (go!"Y", typeSize GoMap, typeAlign GoMap), (go!"Z", typeSize Loc, typeAlign Loc), (go!"W", typeSize w64, typeAlign w64)]
   get_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"X") #x (Val #(x.X'))
   set_X : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (Container T'))))
   get_Y : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"Y") #x (Val #(x.Y'))
@@ -378,6 +381,7 @@ class Container.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] Container.TypeAssumptions.type_repr
   Container.TypeAssumptions.underlying
+  Container.TypeAssumptions.layout
   Container.TypeAssumptions.get_X
   Container.TypeAssumptions.set_X
   Container.TypeAssumptions.get_Y
@@ -410,11 +414,13 @@ instance equals_unfold_UseContainer [FfiSyntax] [GoGlobalContext] :
 class UseContainer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying UseContainer.underlying UseContainer
   underlying : go.UnderlyingDirectedEq UseContainer.ty UseContainer.underlying
+  layout : go.StructLayout UseContainer [(go!"X", typeSize (Container w64), typeAlign (Container w64))]
   get_X : ∀ (x : UseContainer), go.IsGoStepPureDetTagged under (StructFieldGet UseContainer.underlying go!"X") #x (Val #(x.X'))
   set_X : ∀ (x : UseContainer) (y : (Container w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer)))
 
 attribute [instance] UseContainer.TypeAssumptions.type_repr
   UseContainer.TypeAssumptions.underlying
+  UseContainer.TypeAssumptions.layout
   UseContainer.TypeAssumptions.get_X
   UseContainer.TypeAssumptions.set_X
 
@@ -443,6 +449,7 @@ instance equals_unfold_OnlyIndirect [FfiSyntax] [GoGlobalContext] (T : go.GoType
 class OnlyIndirect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (OnlyIndirect.underlying T) (OnlyIndirect T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (OnlyIndirect.ty T) (OnlyIndirect.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (OnlyIndirect T') [(go!"X", typeSize GoSlice, typeAlign GoSlice), (go!"Y", typeSize Loc, typeAlign Loc)]
   get_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"X") #x (Val #(x.X'))
   set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect T'))))
   get_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"Y") #x (Val #(x.Y'))
@@ -450,6 +457,7 @@ class OnlyIndirect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] OnlyIndirect.TypeAssumptions.type_repr
   OnlyIndirect.TypeAssumptions.underlying
+  OnlyIndirect.TypeAssumptions.layout
   OnlyIndirect.TypeAssumptions.get_X
   OnlyIndirect.TypeAssumptions.set_X
   OnlyIndirect.TypeAssumptions.get_Y
@@ -480,6 +488,7 @@ instance equals_unfold_MultiParam [FfiSyntax] [GoGlobalContext] (A B : go.GoType
 class MultiParam.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (A B : go.GoType) (A' B' : Type) [ZeroVal A'] [TypeRepr A A'] [ZeroVal B'] [TypeRepr B B'], go.TypeReprUnderlying (MultiParam.underlying A B) (MultiParam A' B')
   underlying : ∀ (A B : go.GoType), go.UnderlyingDirectedEq (MultiParam.ty A B) (MultiParam.underlying A B)
+  layout : ∀ (A' B' : Type), go.StructLayout (MultiParam A' B') [(go!"Y", typeSize B', typeAlign B'), (go!"X", typeSize A', typeAlign A')]
   get_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"Y") #x (Val #(x.Y'))
   set_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')) (y : B'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (MultiParam A' B'))))
   get_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"X") #x (Val #(x.X'))
@@ -487,6 +496,7 @@ class MultiParam.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] MultiParam.TypeAssumptions.type_repr
   MultiParam.TypeAssumptions.underlying
+  MultiParam.TypeAssumptions.layout
   MultiParam.TypeAssumptions.get_Y
   MultiParam.TypeAssumptions.set_Y
   MultiParam.TypeAssumptions.get_X
@@ -517,6 +527,7 @@ instance equals_unfold_TypeParamCollision [FfiSyntax] [GoGlobalContext] (T C : g
 class TypeParamCollision.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T C : go.GoType) (T' C' : Type) [ZeroVal T'] [TypeRepr T T'] [ZeroVal C'] [TypeRepr C C'], go.TypeReprUnderlying (TypeParamCollision.underlying T C) (TypeParamCollision T' C')
   underlying : ∀ (T C : go.GoType), go.UnderlyingDirectedEq (TypeParamCollision.ty T C) (TypeParamCollision.underlying T C)
+  layout : ∀ (T' C' : Type), go.StructLayout (TypeParamCollision T' C') [(go!"X", typeSize T', typeAlign T'), (go!"Y", typeSize C', typeAlign C')]
   get_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"X") #x (Val #(x.X'))
   set_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (TypeParamCollision T' C'))))
   get_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"Y") #x (Val #(x.Y'))
@@ -524,6 +535,7 @@ class TypeParamCollision.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.underlying
+  TypeParamCollision.TypeAssumptions.layout
   TypeParamCollision.TypeAssumptions.get_X
   TypeParamCollision.TypeAssumptions.set_X
   TypeParamCollision.TypeAssumptions.get_Y
@@ -562,11 +574,13 @@ instance equals_unfold_useNonStructGeneric [FfiSyntax] [GoGlobalContext] (T : go
 class useNonStructGeneric.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (useNonStructGeneric.underlying T) (useNonStructGeneric T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (useNonStructGeneric.ty T) (useNonStructGeneric.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (useNonStructGeneric T') [(go!"x", typeSize (nonStructGeneric T'), typeAlign (nonStructGeneric T'))]
   get_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (useNonStructGeneric.underlying T) go!"x") #x (Val #(x.x'))
   set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')) (y : (nonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric T'))))
 
 attribute [instance] useNonStructGeneric.TypeAssumptions.type_repr
   useNonStructGeneric.TypeAssumptions.underlying
+  useNonStructGeneric.TypeAssumptions.layout
   useNonStructGeneric.TypeAssumptions.get_x
   useNonStructGeneric.TypeAssumptions.set_x
 

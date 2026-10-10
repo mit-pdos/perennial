@@ -1612,6 +1612,7 @@ instance equals_unfold_Table [FfiSyntax] [GoGlobalContext] :
 class Table.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Table.underlying Table
   underlying : go.UnderlyingDirectedEq Table.ty Table.underlying
+  layout : go.StructLayout Table [(go!"Index", typeSize GoMap, typeAlign GoMap), (go!"File", typeSize _root_.Perennial.github_com.goose_lang.primitive.filesys.File, typeAlign _root_.Perennial.github_com.goose_lang.primitive.filesys.File)]
   get_Index : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"Index") #x (Val #(x.Index'))
   set_Index : ∀ (x : Table) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Table)))
   get_File : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"File") #x (Val #(x.File'))
@@ -1619,6 +1620,7 @@ class Table.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Table.TypeAssumptions.type_repr
   Table.TypeAssumptions.underlying
+  Table.TypeAssumptions.layout
   Table.TypeAssumptions.get_Index
   Table.TypeAssumptions.set_Index
   Table.TypeAssumptions.get_File
@@ -1649,6 +1651,7 @@ instance equals_unfold_Entry [FfiSyntax] [GoGlobalContext] :
 class Entry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Entry.underlying Entry
   underlying : go.UnderlyingDirectedEq Entry.ty Entry.underlying
+  layout : go.StructLayout Entry [(go!"Key", typeSize w64, typeAlign w64), (go!"Value", typeSize GoSlice, typeAlign GoSlice)]
   get_Key : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Key") #x (Val #(x.Key'))
   set_Key : ∀ (x : Entry) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Entry)))
   get_Value : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Value") #x (Val #(x.Value'))
@@ -1656,6 +1659,7 @@ class Entry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.underlying
+  Entry.TypeAssumptions.layout
   Entry.TypeAssumptions.get_Key
   Entry.TypeAssumptions.set_Key
   Entry.TypeAssumptions.get_Value
@@ -1686,6 +1690,7 @@ instance equals_unfold_lazyFileBuf [FfiSyntax] [GoGlobalContext] :
 class lazyFileBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lazyFileBuf.underlying lazyFileBuf
   underlying : go.UnderlyingDirectedEq lazyFileBuf.ty lazyFileBuf.underlying
+  layout : go.StructLayout lazyFileBuf [(go!"offset", typeSize w64, typeAlign w64), (go!"next", typeSize GoSlice, typeAlign GoSlice)]
   get_offset : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : lazyFileBuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : lazyFileBuf)))
   get_next : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"next") #x (Val #(x.next'))
@@ -1693,6 +1698,7 @@ class lazyFileBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] lazyFileBuf.TypeAssumptions.type_repr
   lazyFileBuf.TypeAssumptions.underlying
+  lazyFileBuf.TypeAssumptions.layout
   lazyFileBuf.TypeAssumptions.get_offset
   lazyFileBuf.TypeAssumptions.set_offset
   lazyFileBuf.TypeAssumptions.get_next
@@ -1723,6 +1729,7 @@ instance equals_unfold_bufFile [FfiSyntax] [GoGlobalContext] :
 class bufFile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bufFile.underlying bufFile
   underlying : go.UnderlyingDirectedEq bufFile.ty bufFile.underlying
+  layout : go.StructLayout bufFile [(go!"file", typeSize _root_.Perennial.github_com.goose_lang.primitive.filesys.File, typeAlign _root_.Perennial.github_com.goose_lang.primitive.filesys.File), (go!"buf", typeSize Loc, typeAlign Loc)]
   get_file : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"file") #x (Val #(x.file'))
   set_file : ∀ (x : bufFile) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : bufFile)))
   get_buf : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"buf") #x (Val #(x.buf'))
@@ -1730,6 +1737,7 @@ class bufFile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] bufFile.TypeAssumptions.type_repr
   bufFile.TypeAssumptions.underlying
+  bufFile.TypeAssumptions.layout
   bufFile.TypeAssumptions.get_file
   bufFile.TypeAssumptions.set_file
   bufFile.TypeAssumptions.get_buf
@@ -1764,6 +1772,7 @@ instance equals_unfold_tableWriter [FfiSyntax] [GoGlobalContext] :
 class tableWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying tableWriter.underlying tableWriter
   underlying : go.UnderlyingDirectedEq tableWriter.ty tableWriter.underlying
+  layout : go.StructLayout tableWriter [(go!"index", typeSize GoMap, typeAlign GoMap), (go!"name", typeSize GoString, typeAlign GoString), (go!"file", typeSize bufFile, typeAlign bufFile), (go!"offset", typeSize Loc, typeAlign Loc)]
   get_index : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"index") #x (Val #(x.index'))
   set_index : ∀ (x : tableWriter) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : tableWriter)))
   get_name : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"name") #x (Val #(x.name'))
@@ -1775,6 +1784,7 @@ class tableWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] tableWriter.TypeAssumptions.type_repr
   tableWriter.TypeAssumptions.underlying
+  tableWriter.TypeAssumptions.layout
   tableWriter.TypeAssumptions.get_index
   tableWriter.TypeAssumptions.set_index
   tableWriter.TypeAssumptions.get_name
@@ -1819,6 +1829,7 @@ instance equals_unfold_Database [FfiSyntax] [GoGlobalContext] :
 class Database.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Database.underlying Database
   underlying : go.UnderlyingDirectedEq Database.ty Database.underlying
+  layout : go.StructLayout Database [(go!"wbuffer", typeSize Loc, typeAlign Loc), (go!"rbuffer", typeSize Loc, typeAlign Loc), (go!"bufferL", typeSize Loc, typeAlign Loc), (go!"table", typeSize Loc, typeAlign Loc), (go!"tableName", typeSize Loc, typeAlign Loc), (go!"tableL", typeSize Loc, typeAlign Loc), (go!"compactionL", typeSize Loc, typeAlign Loc)]
   get_wbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"wbuffer") #x (Val #(x.wbuffer'))
   set_wbuffer : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"wbuffer") (PairV #x #y) (Val #(({ x with wbuffer' := y } : Database)))
   get_rbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"rbuffer") #x (Val #(x.rbuffer'))
@@ -1836,6 +1847,7 @@ class Database.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] Database.TypeAssumptions.type_repr
   Database.TypeAssumptions.underlying
+  Database.TypeAssumptions.layout
   Database.TypeAssumptions.get_wbuffer
   Database.TypeAssumptions.set_wbuffer
   Database.TypeAssumptions.get_rbuffer

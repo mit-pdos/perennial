@@ -980,6 +980,18 @@ noncomputable def fancyTypeSwitch [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def multiTypeSwitch [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.multiTypeSwitch"
 
+noncomputable def unsafeAddPattern [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeAddPattern"
+
+noncomputable def unsafeAddCall [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeAddCall"
+
+noncomputable def unsafeSliceCall [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeSliceCall"
+
+noncomputable def unsafeAddr [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeAddr"
+
 noncomputable def variadicFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.variadicFunc"
 
@@ -4861,6 +4873,46 @@ noncomputable def multiTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))))))
 
+/-- unsafe.Pointer(uintptr(p) + offset) is unsafe.Add(p, offset).
+
+    go: unsafe_ops.go:6:6 -/
+noncomputable def unsafeAddPattern.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "n"
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uintptr))) (Var "n"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (Var "p"))
+  (App (Val doReturn)
+  (App (App (App (Val (GoInstruction (FuncResolve «unsafe».Add []))) (Val #())) (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p"))) (App (Val (GoInstruction (Convert go.uintptr go.int))) (App (Val (GoInstruction (GoOp GoPlus go.uintptr))) (Pair (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "n")) (Val #(W64 8))))))))))))
+
+/-- go: unsafe_ops.go:10:6 -/
+noncomputable def unsafeAddCall.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "n"
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (Var "p"))
+  (App (Val doReturn)
+  (App (App (App (Val (GoInstruction (FuncResolve «unsafe».Add []))) (Val #())) (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))))
+
+/-- go: unsafe_ops.go:14:6 -/
+noncomputable def unsafeSliceCall.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "n"
+  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "p"))
+  (App (Val doReturn)
+  (App (App (App (Val (GoInstruction (FuncResolve «unsafe».Slice [go.uint64]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "p"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))))
+
+/-- go: unsafe_ops.go:18:6 -/
+noncomputable def unsafeAddr.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (Var "p"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert «unsafe».Pointer go.uintptr))) (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p")))))))
+
 /-- go: varargs.go:3:6 -/
 noncomputable def variadicFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
@@ -6563,6 +6615,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   basicTypeSwitch_unfold : FuncUnfold basicTypeSwitch [] basicTypeSwitch.impl
   fancyTypeSwitch_unfold : FuncUnfold fancyTypeSwitch [] fancyTypeSwitch.impl
   multiTypeSwitch_unfold : FuncUnfold multiTypeSwitch [] multiTypeSwitch.impl
+  unsafeAddPattern_unfold : FuncUnfold unsafeAddPattern [] unsafeAddPattern.impl
+  unsafeAddCall_unfold : FuncUnfold unsafeAddCall [] unsafeAddCall.impl
+  unsafeSliceCall_unfold : FuncUnfold unsafeSliceCall [] unsafeSliceCall.impl
+  unsafeAddr_unfold : FuncUnfold unsafeAddr [] unsafeAddr.impl
   variadicFunc_unfold : FuncUnfold variadicFunc [] variadicFunc.impl
   testVariadicCall_unfold : FuncUnfold testVariadicCall [] testVariadicCall.impl
   returnMultiple_unfold : FuncUnfold returnMultiple [] returnMultiple.impl
@@ -6818,6 +6874,10 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.basicTypeSwitch_unfold
   Assumptions.fancyTypeSwitch_unfold
   Assumptions.multiTypeSwitch_unfold
+  Assumptions.unsafeAddPattern_unfold
+  Assumptions.unsafeAddCall_unfold
+  Assumptions.unsafeSliceCall_unfold
+  Assumptions.unsafeAddr_unfold
   Assumptions.variadicFunc_unfold
   Assumptions.testVariadicCall_unfold
   Assumptions.returnMultiple_unfold

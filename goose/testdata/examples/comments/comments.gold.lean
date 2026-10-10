@@ -65,11 +65,13 @@ instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
 class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Foo.underlying Foo
   underlying : go.UnderlyingDirectedEq Foo.ty Foo.underlying
+  layout : go.StructLayout Foo [(go!"a", typeSize Bool, typeAlign Bool)]
   get_a : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : Foo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Foo)))
 
 attribute [instance] Foo.TypeAssumptions.type_repr
   Foo.TypeAssumptions.underlying
+  Foo.TypeAssumptions.layout
   Foo.TypeAssumptions.get_a
   Foo.TypeAssumptions.set_a
 

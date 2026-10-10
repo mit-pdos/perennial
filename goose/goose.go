@@ -292,7 +292,87 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	}
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
+	if isUnsafePointer(toType) && isUintptr(fromType) {
+		return ctx.uintptrToPointer(s, s.Args[0])
+	}
 	return ctx.handleImplicitConversion(s, fromType, toType, ctx.expr(s.Args[0]))
+}
+
+func isUnsafePointer(t types.Type) bool {
+	b, ok := t.Underlying().(*types.Basic)
+	return ok && b.Kind() == types.UnsafePointer
+}
+
+func isUintptr(t types.Type) bool {
+	b, ok := t.Underlying().(*types.Basic)
+	return ok && b.Kind() == types.Uintptr
+}
+
+// callUnsafe is a call of the model of a function of package unsafe (unsafe.Add,
+// unsafe.Slice; see Golang/Defn/Predeclared.lean).
+func callUnsafe(name string, tyArgs glang.ListExpr, args ...glang.Expr) glang.Expr {
+	return glang.NewCallExpr(
+		glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
+			glang.VerbatimExpr("«unsafe»."+name), tyArgs, glang.Tt),
+		args...)
+}
+
+// unsafeBuiltin translates unsafe.Add and unsafe.Slice (the other functions of
+// package unsafe are constants, or not supported).
+func (ctx *Ctx) unsafeBuiltin(s *ast.CallExpr, name string) (glang.Expr, bool) {
+	intTy := types.Typ[types.Int]
+	switch name {
+	case "Add":
+		n := ctx.handleImplicitConversion(s.Args[1], ctx.typeOf(s.Args[1]), intTy, ctx.expr(s.Args[1]))
+		return callUnsafe("Add", glang.ListExpr{}, ctx.expr(s.Args[0]), n), true
+	case "Slice":
+		ptrTy, ok := ctx.typeOf(s.Args[0]).Underlying().(*types.Pointer)
+		if !ok {
+			ctx.unsupported(s, "unsafe.Slice of a non-pointer")
+		}
+		n := ctx.handleImplicitConversion(s.Args[1], ctx.typeOf(s.Args[1]), intTy, ctx.expr(s.Args[1]))
+		return callUnsafe("Slice", glang.ListExpr{ctx.glangType(s, ptrTy.Elem())},
+			ctx.expr(s.Args[0]), n), true
+	}
+	return nil, false
+}
+
+// uintptrToPointer translates unsafe.Pointer(e) for e a uintptr: only the form
+// unsafe.Pointer(uintptr(p) + a + b + ...), with p an unsafe.Pointer, which is
+// unsafe.Add(p, a + b + ...) (Go's rules for unsafe.Pointer allow it only when the
+// result points into p's allocation, as unsafe.Add's).
+func (ctx *Ctx) uintptrToPointer(n locatable, e ast.Expr) glang.Expr {
+	// the terms of the sum, along its left spine
+	var terms []ast.Expr
+	cur := ast.Unparen(e)
+	for {
+		b, ok := cur.(*ast.BinaryExpr)
+		if !ok || b.Op != token.ADD {
+			break
+		}
+		terms = append([]ast.Expr{b.Y}, terms...)
+		cur = ast.Unparen(b.X)
+	}
+	call, ok := cur.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !isUintptr(ctx.typeOf(call)) ||
+		!isUnsafePointer(ctx.typeOf(call.Args[0])) || !ctx.info.Types[call.Fun].IsType() {
+		ctx.unsupported(n, "conversion of a uintptr to unsafe.Pointer other than unsafe.Pointer(uintptr(p) + offset)")
+		return nil
+	}
+	uintptrTy := types.Typ[types.Uintptr]
+	var offset glang.Expr = glang.ToVal{Value: glang.NewCallExpr(glang.VerbatimExpr("W64"), glang.ZLiteral{Value: big.NewInt(0)})}
+	for i, t := range terms {
+		te := ctx.handleImplicitConversion(t, ctx.typeOf(t), uintptrTy, ctx.expr(t))
+		if i == 0 {
+			offset = te
+		} else {
+			offset = glang.BinaryExpr{X: offset, Op: glang.BinOp{OpId: glang.OpPlus,
+				Type: ctx.glangType(n, uintptrTy)}, Y: te}
+		}
+	}
+	offsetInt := glang.NewCallExpr(glang.VerbatimExpr("Convert"),
+		ctx.glangType(n, uintptrTy), ctx.glangType(n, types.Typ[types.Int]), offset)
+	return callUnsafe("Add", glang.ListExpr{}, ctx.expr(call.Args[0]), offsetInt)
 }
 
 // This handles:
@@ -310,6 +390,11 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 		// target (gc's layout); emit their value.
 		if ctx.info.Types[s].Value != nil {
 			return ctx.constantLiteral(s), true
+		}
+		if sel, ok := s.Fun.(*ast.SelectorExpr); ok {
+			if e, ok := ctx.unsafeBuiltin(s, sel.Sel.Name); ok {
+				return e, true
+			}
 		}
 		ctx.unsupported(s.Fun, "builtin that isn't an ident")
 	}
