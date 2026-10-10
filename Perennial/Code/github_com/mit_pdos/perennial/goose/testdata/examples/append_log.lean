@@ -348,6 +348,7 @@ instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
+  layout : go.StructLayout Log [(go!"m", typeSize Loc, typeAlign Loc), (go!"sz", typeSize w64, typeAlign w64), (go!"diskSz", typeSize w64, typeAlign w64)]
   get_m : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log)))
   get_sz : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"sz") #x (Val #(x.sz'))
@@ -365,6 +366,7 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.underlying
+  Log.TypeAssumptions.layout
   Log.TypeAssumptions.get_m
   Log.TypeAssumptions.set_m
   Log.TypeAssumptions.get_sz

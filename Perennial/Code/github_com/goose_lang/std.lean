@@ -530,6 +530,7 @@ instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
 class JoinHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying JoinHandle.underlying JoinHandle
   underlying : go.UnderlyingDirectedEq JoinHandle.ty JoinHandle.underlying
+  layout : go.StructLayout JoinHandle [(go!"mu", typeSize Loc, typeAlign Loc), (go!"done", typeSize Bool, typeAlign Bool), (go!"cond", typeSize Loc, typeAlign Loc)]
   get_mu : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle)))
   get_done : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"done") #x (Val #(x.done'))
@@ -541,6 +542,7 @@ class JoinHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] JoinHandle.TypeAssumptions.type_repr
   JoinHandle.TypeAssumptions.underlying
+  JoinHandle.TypeAssumptions.layout
   JoinHandle.TypeAssumptions.get_mu
   JoinHandle.TypeAssumptions.set_mu
   JoinHandle.TypeAssumptions.get_done

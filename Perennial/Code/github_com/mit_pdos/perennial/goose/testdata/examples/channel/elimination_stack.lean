@@ -219,6 +219,7 @@ instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
 class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack
   underlying : go.UnderlyingDirectedEq LockedStack.ty LockedStack.underlying
+  layout : go.StructLayout LockedStack [(go!"mu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"stack", typeSize GoSlice, typeAlign GoSlice)]
   get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
   get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
@@ -228,6 +229,7 @@ class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.underlying
+  LockedStack.TypeAssumptions.layout
   LockedStack.TypeAssumptions.get_mu
   LockedStack.TypeAssumptions.set_mu
   LockedStack.TypeAssumptions.get_stack
@@ -260,6 +262,7 @@ instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
 class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack
   underlying : go.UnderlyingDirectedEq EliminationStack.ty EliminationStack.underlying
+  layout : go.StructLayout EliminationStack [(go!"base", typeSize Loc, typeAlign Loc), (go!"exchanger", typeSize GoChan, typeAlign GoChan)]
   get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
   set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
   get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
@@ -269,6 +272,7 @@ class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
 
 attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.underlying
+  EliminationStack.TypeAssumptions.layout
   EliminationStack.TypeAssumptions.get_base
   EliminationStack.TypeAssumptions.set_base
   EliminationStack.TypeAssumptions.get_exchanger

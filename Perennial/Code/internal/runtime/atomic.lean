@@ -274,9 +274,11 @@ instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
 class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
+  layout : go.StructLayout noCopy []
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
+  noCopy.TypeAssumptions.layout
 
 structure Int32 [FfiSyntax] where
   mk ::
@@ -303,6 +305,7 @@ instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
 class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
+  layout : go.StructLayout Int32 [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"value", typeSize w32, typeAlign w32)]
   get_noCopy : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int32)))
   get_value : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"value") #x (Val #(x.value'))
@@ -310,6 +313,7 @@ class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.underlying
+  Int32.TypeAssumptions.layout
   Int32.TypeAssumptions.get_noCopy
   Int32.TypeAssumptions.set_noCopy
   Int32.TypeAssumptions.get_value
@@ -337,9 +341,11 @@ instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
 class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying align64.underlying align64
   underlying : go.UnderlyingDirectedEq align64.ty align64.underlying
+  layout : go.StructLayout align64 []
 
 attribute [instance] align64.TypeAssumptions.type_repr
   align64.TypeAssumptions.underlying
+  align64.TypeAssumptions.layout
 
 structure Int64 [FfiSyntax] where
   mk ::
@@ -368,6 +374,7 @@ instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
 class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
+  layout : go.StructLayout Int64 [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"_1", typeSize align64, typeAlign align64), (go!"value", typeSize w64, typeAlign w64)]
   get_noCopy : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int64)))
   get__1 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_1") #x (Val #(x._1'))
@@ -377,6 +384,7 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
+  Int64.TypeAssumptions.layout
   Int64.TypeAssumptions.get_noCopy
   Int64.TypeAssumptions.set_noCopy
   Int64.TypeAssumptions.get__1
@@ -409,6 +417,7 @@ instance equals_unfold_Uint8 [FfiSyntax] [GoGlobalContext] :
 class Uint8.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint8.underlying Uint8
   underlying : go.UnderlyingDirectedEq Uint8.ty Uint8.underlying
+  layout : go.StructLayout Uint8 [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"value", typeSize w8, typeAlign w8)]
   get_noCopy : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Uint8) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint8)))
   get_value : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"value") #x (Val #(x.value'))
@@ -416,6 +425,7 @@ class Uint8.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Uint8.TypeAssumptions.type_repr
   Uint8.TypeAssumptions.underlying
+  Uint8.TypeAssumptions.layout
   Uint8.TypeAssumptions.get_noCopy
   Uint8.TypeAssumptions.set_noCopy
   Uint8.TypeAssumptions.get_value
@@ -444,11 +454,13 @@ instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
 class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
   underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
+  layout : go.StructLayout Bool' [(go!"u", typeSize Uint8, typeAlign Uint8)]
   get_u : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"u") #x (Val #(x.u'))
   set_u : ∀ (x : Bool') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool')))
 
 attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.underlying
+  Bool.TypeAssumptions.layout
   Bool.TypeAssumptions.get_u
   Bool.TypeAssumptions.set_u
 
@@ -477,6 +489,7 @@ instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
+  layout : go.StructLayout Uint32 [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"value", typeSize w32, typeAlign w32)]
   get_noCopy : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint32)))
   get_value : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"value") #x (Val #(x.value'))
@@ -484,6 +497,7 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.underlying
+  Uint32.TypeAssumptions.layout
   Uint32.TypeAssumptions.get_noCopy
   Uint32.TypeAssumptions.set_noCopy
   Uint32.TypeAssumptions.get_value
@@ -516,6 +530,7 @@ instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
 class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
+  layout : go.StructLayout Uint64 [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"_1", typeSize align64, typeAlign align64), (go!"value", typeSize w64, typeAlign w64)]
   get_noCopy : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint64)))
   get__1 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_1") #x (Val #(x._1'))
@@ -525,6 +540,7 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
+  Uint64.TypeAssumptions.layout
   Uint64.TypeAssumptions.get_noCopy
   Uint64.TypeAssumptions.set_noCopy
   Uint64.TypeAssumptions.get__1
@@ -557,6 +573,7 @@ instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
 class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
+  layout : go.StructLayout Uintptr [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"value", typeSize w64, typeAlign w64)]
   get_noCopy : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uintptr)))
   get_value : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"value") #x (Val #(x.value'))
@@ -564,6 +581,7 @@ class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
+  Uintptr.TypeAssumptions.layout
   Uintptr.TypeAssumptions.get_noCopy
   Uintptr.TypeAssumptions.set_noCopy
   Uintptr.TypeAssumptions.get_value
@@ -592,11 +610,13 @@ instance equals_unfold_Float64 [FfiSyntax] [GoGlobalContext] :
 class Float64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Float64.underlying Float64
   underlying : go.UnderlyingDirectedEq Float64.ty Float64.underlying
+  layout : go.StructLayout Float64 [(go!"u", typeSize Uint64, typeAlign Uint64)]
   get_u : ∀ (x : Float64), go.IsGoStepPureDetTagged under (StructFieldGet Float64.underlying go!"u") #x (Val #(x.u'))
   set_u : ∀ (x : Float64) (y : Uint64), go.IsGoStepPureDetTagged under (StructFieldSet Float64.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Float64)))
 
 attribute [instance] Float64.TypeAssumptions.type_repr
   Float64.TypeAssumptions.underlying
+  Float64.TypeAssumptions.layout
   Float64.TypeAssumptions.get_u
   Float64.TypeAssumptions.set_u
 
@@ -625,6 +645,7 @@ instance equals_unfold_UnsafePointer [FfiSyntax] [GoGlobalContext] :
 class UnsafePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying UnsafePointer.underlying UnsafePointer
   underlying : go.UnderlyingDirectedEq UnsafePointer.ty UnsafePointer.underlying
+  layout : go.StructLayout UnsafePointer [(go!"noCopy", typeSize noCopy, typeAlign noCopy), (go!"value", typeSize Loc, typeAlign Loc)]
   get_noCopy : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : UnsafePointer) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : UnsafePointer)))
   get_value : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"value") #x (Val #(x.value'))
@@ -632,6 +653,7 @@ class UnsafePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] UnsafePointer.TypeAssumptions.type_repr
   UnsafePointer.TypeAssumptions.underlying
+  UnsafePointer.TypeAssumptions.layout
   UnsafePointer.TypeAssumptions.get_noCopy
   UnsafePointer.TypeAssumptions.set_noCopy
   UnsafePointer.TypeAssumptions.get_value
@@ -660,11 +682,13 @@ instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (Pointer T') [(go!"u", typeSize UnsafePointer, typeAlign UnsafePointer)]
   get_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"u") #x (Val #(x.u'))
   set_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer T'))))
 
 attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.underlying
+  Pointer.TypeAssumptions.layout
   Pointer.TypeAssumptions.get_u
   Pointer.TypeAssumptions.set_u
 

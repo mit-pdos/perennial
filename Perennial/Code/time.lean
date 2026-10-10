@@ -932,6 +932,7 @@ instance equals_unfold_ParseError [FfiSyntax] [GoGlobalContext] :
 class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ParseError.underlying ParseError
   underlying : go.UnderlyingDirectedEq ParseError.ty ParseError.underlying
+  layout : go.StructLayout ParseError [(go!"Layout", typeSize GoString, typeAlign GoString), (go!"Value", typeSize GoString, typeAlign GoString), (go!"LayoutElem", typeSize GoString, typeAlign GoString), (go!"ValueElem", typeSize GoString, typeAlign GoString), (go!"Message", typeSize GoString, typeAlign GoString)]
   get_Layout : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Layout") #x (Val #(x.Layout'))
   set_Layout : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Layout") (PairV #x #y) (Val #(({ x with Layout' := y } : ParseError)))
   get_Value : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Value") #x (Val #(x.Value'))
@@ -945,6 +946,7 @@ class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.underlying
+  ParseError.TypeAssumptions.layout
   ParseError.TypeAssumptions.get_Layout
   ParseError.TypeAssumptions.set_Layout
   ParseError.TypeAssumptions.get_Value
@@ -981,6 +983,7 @@ instance equals_unfold_parseDurationError [FfiSyntax] [GoGlobalContext] :
 class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying parseDurationError.underlying parseDurationError
   underlying : go.UnderlyingDirectedEq parseDurationError.ty parseDurationError.underlying
+  layout : go.StructLayout parseDurationError [(go!"message", typeSize GoString, typeAlign GoString), (go!"value", typeSize GoString, typeAlign GoString)]
   get_message : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"message") #x (Val #(x.message'))
   set_message : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"message") (PairV #x #y) (Val #(({ x with message' := y } : parseDurationError)))
   get_value : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"value") #x (Val #(x.value'))
@@ -988,6 +991,7 @@ class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.underlying
+  parseDurationError.TypeAssumptions.layout
   parseDurationError.TypeAssumptions.get_message
   parseDurationError.TypeAssumptions.set_message
   parseDurationError.TypeAssumptions.get_value
@@ -1018,6 +1022,7 @@ instance equals_unfold_Timer [FfiSyntax] [GoGlobalContext] :
 class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Timer.underlying Timer
   underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
+  layout : go.StructLayout Timer [(go!"C", typeSize GoChan, typeAlign GoChan), (go!"initTimer", typeSize Bool, typeAlign Bool)]
   get_C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
   set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
@@ -1025,6 +1030,7 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
+  Timer.TypeAssumptions.layout
   Timer.TypeAssumptions.get_C
   Timer.TypeAssumptions.set_C
   Timer.TypeAssumptions.get_initTimer
@@ -1055,6 +1061,7 @@ instance equals_unfold_Ticker [FfiSyntax] [GoGlobalContext] :
 class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Ticker.underlying Ticker
   underlying : go.UnderlyingDirectedEq Ticker.ty Ticker.underlying
+  layout : go.StructLayout Ticker [(go!"C", typeSize GoChan, typeAlign GoChan), (go!"initTicker", typeSize Bool, typeAlign Bool)]
   get_C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
   set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
   get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
@@ -1062,6 +1069,7 @@ class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
+  Ticker.TypeAssumptions.layout
   Ticker.TypeAssumptions.get_C
   Ticker.TypeAssumptions.set_C
   Ticker.TypeAssumptions.get_initTicker
@@ -1094,6 +1102,7 @@ instance equals_unfold_Time [FfiSyntax] [GoGlobalContext] :
 class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Time.underlying Time
   underlying : go.UnderlyingDirectedEq Time.ty Time.underlying
+  layout : go.StructLayout Time [(go!"wall", typeSize w64, typeAlign w64), (go!"ext", typeSize w64, typeAlign w64), (go!"loc", typeSize Loc, typeAlign Loc)]
   get_wall : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"wall") #x (Val #(x.wall'))
   set_wall : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"wall") (PairV #x #y) (Val #(({ x with wall' := y } : Time)))
   get_ext : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"ext") #x (Val #(x.ext'))
@@ -1109,6 +1118,7 @@ class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.underlying
+  Time.TypeAssumptions.layout
   Time.TypeAssumptions.get_wall
   Time.TypeAssumptions.set_wall
   Time.TypeAssumptions.get_ext
@@ -1266,6 +1276,7 @@ instance equals_unfold_Location [FfiSyntax] [GoGlobalContext] :
 class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Location.underlying Location
   underlying : go.UnderlyingDirectedEq Location.ty Location.underlying
+  layout : go.StructLayout Location [(go!"name", typeSize GoString, typeAlign GoString), (go!"zone", typeSize GoSlice, typeAlign GoSlice), (go!"tx", typeSize GoSlice, typeAlign GoSlice), (go!"extend", typeSize GoString, typeAlign GoString), (go!"cacheStart", typeSize w64, typeAlign w64), (go!"cacheEnd", typeSize w64, typeAlign w64), (go!"cacheZone", typeSize Loc, typeAlign Loc)]
   get_name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Location)))
   get_zone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"zone") #x (Val #(x.zone'))
@@ -1283,6 +1294,7 @@ class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.underlying
+  Location.TypeAssumptions.layout
   Location.TypeAssumptions.get_name
   Location.TypeAssumptions.set_name
   Location.TypeAssumptions.get_zone
@@ -1325,6 +1337,7 @@ instance equals_unfold_zone [FfiSyntax] [GoGlobalContext] :
 class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zone.underlying zone
   underlying : go.UnderlyingDirectedEq zone.ty zone.underlying
+  layout : go.StructLayout zone [(go!"name", typeSize GoString, typeAlign GoString), (go!"offset", typeSize w64, typeAlign w64), (go!"isDST", typeSize Bool, typeAlign Bool)]
   get_name : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : zone) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : zone)))
   get_offset : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"offset") #x (Val #(x.offset'))
@@ -1334,6 +1347,7 @@ class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.underlying
+  zone.TypeAssumptions.layout
   zone.TypeAssumptions.get_name
   zone.TypeAssumptions.set_name
   zone.TypeAssumptions.get_offset
@@ -1370,6 +1384,7 @@ instance equals_unfold_zoneTrans [FfiSyntax] [GoGlobalContext] :
 class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zoneTrans.underlying zoneTrans
   underlying : go.UnderlyingDirectedEq zoneTrans.ty zoneTrans.underlying
+  layout : go.StructLayout zoneTrans [(go!"when", typeSize w64, typeAlign w64), (go!"index", typeSize w8, typeAlign w8), (go!"isstd", typeSize Bool, typeAlign Bool), (go!"isutc", typeSize Bool, typeAlign Bool)]
   get_when : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"when") #x (Val #(x.when'))
   set_when : ∀ (x : zoneTrans) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"when") (PairV #x #y) (Val #(({ x with when' := y } : zoneTrans)))
   get_index : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"index") #x (Val #(x.index'))
@@ -1381,6 +1396,7 @@ class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.underlying
+  zoneTrans.TypeAssumptions.layout
   zoneTrans.TypeAssumptions.get_when
   zoneTrans.TypeAssumptions.set_when
   zoneTrans.TypeAssumptions.get_index
@@ -1431,6 +1447,7 @@ instance equals_unfold_rule [FfiSyntax] [GoGlobalContext] :
 class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rule.underlying rule
   underlying : go.UnderlyingDirectedEq rule.ty rule.underlying
+  layout : go.StructLayout rule [(go!"kind", typeSize ruleKind, typeAlign ruleKind), (go!"day", typeSize w64, typeAlign w64), (go!"week", typeSize w64, typeAlign w64), (go!"mon", typeSize w64, typeAlign w64), (go!"time", typeSize w64, typeAlign w64)]
   get_kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
   set_kind : ∀ (x : rule) (y : ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
   get_day : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"day") #x (Val #(x.day'))
@@ -1444,6 +1461,7 @@ class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.underlying
+  rule.TypeAssumptions.layout
   rule.TypeAssumptions.get_kind
   rule.TypeAssumptions.set_kind
   rule.TypeAssumptions.get_day
@@ -1490,6 +1508,7 @@ instance equals_unfold_dataIO [FfiSyntax] [GoGlobalContext] :
 class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dataIO.underlying dataIO
   underlying : go.UnderlyingDirectedEq dataIO.ty dataIO.underlying
+  layout : go.StructLayout dataIO [(go!"p", typeSize GoSlice, typeAlign GoSlice), (go!"error", typeSize Bool, typeAlign Bool)]
   get_p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
   get_error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
@@ -1497,6 +1516,7 @@ class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.underlying
+  dataIO.TypeAssumptions.layout
   dataIO.TypeAssumptions.get_p
   dataIO.TypeAssumptions.set_p
   dataIO.TypeAssumptions.get_error

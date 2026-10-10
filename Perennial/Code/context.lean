@@ -1561,6 +1561,7 @@ instance equals_unfold_deadlineExceededError [FfiSyntax] [GoGlobalContext] :
 class deadlineExceededError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying deadlineExceededError.underlying deadlineExceededError
   underlying : go.UnderlyingDirectedEq deadlineExceededError.ty deadlineExceededError.underlying
+  layout : go.StructLayout deadlineExceededError []
   Error_unfold : MethodUnfold deadlineExceededError.ty go!"Error" deadlineExceededError.Error.impl
   Temporary_unfold : MethodUnfold deadlineExceededError.ty go!"Temporary" deadlineExceededError.Temporary.impl
   Timeout_unfold : MethodUnfold deadlineExceededError.ty go!"Timeout" deadlineExceededError.Timeout.impl
@@ -1573,6 +1574,7 @@ class deadlineExceededError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
 
 attribute [instance] deadlineExceededError.TypeAssumptions.type_repr
   deadlineExceededError.TypeAssumptions.underlying
+  deadlineExceededError.TypeAssumptions.layout
   deadlineExceededError.TypeAssumptions.Error_unfold
   deadlineExceededError.TypeAssumptions.Temporary_unfold
   deadlineExceededError.TypeAssumptions.Timeout_unfold
@@ -1602,6 +1604,7 @@ instance equals_unfold_emptyCtx [FfiSyntax] [GoGlobalContext] :
 class emptyCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying emptyCtx.underlying emptyCtx
   underlying : go.UnderlyingDirectedEq emptyCtx.ty emptyCtx.underlying
+  layout : go.StructLayout emptyCtx []
   Deadline_unfold : MethodUnfold emptyCtx.ty go!"Deadline" emptyCtx.Deadline.impl
   Done_unfold : MethodUnfold emptyCtx.ty go!"Done" emptyCtx.Done.impl
   Err_unfold : MethodUnfold emptyCtx.ty go!"Err" emptyCtx.Err.impl
@@ -1617,6 +1620,7 @@ class emptyCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] emptyCtx.TypeAssumptions.type_repr
   emptyCtx.TypeAssumptions.underlying
+  emptyCtx.TypeAssumptions.layout
   emptyCtx.TypeAssumptions.Deadline_unfold
   emptyCtx.TypeAssumptions.Done_unfold
   emptyCtx.TypeAssumptions.Err_unfold
@@ -1649,6 +1653,7 @@ instance equals_unfold_backgroundCtx [FfiSyntax] [GoGlobalContext] :
 class backgroundCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying backgroundCtx.underlying backgroundCtx
   underlying : go.UnderlyingDirectedEq backgroundCtx.ty backgroundCtx.underlying
+  layout : go.StructLayout backgroundCtx [(go!"emptyCtx", typeSize emptyCtx, typeAlign emptyCtx)]
   get_emptyCtx : ∀ (x : backgroundCtx), go.IsGoStepPureDetTagged under (StructFieldGet backgroundCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
   set_emptyCtx : ∀ (x : backgroundCtx) (y : emptyCtx), go.IsGoStepPureDetTagged under (StructFieldSet backgroundCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : backgroundCtx)))
   Deadline_unfold : MethodUnfold backgroundCtx.ty go!"Deadline" (LamV "$r"
@@ -1673,6 +1678,7 @@ class backgroundCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] backgroundCtx.TypeAssumptions.type_repr
   backgroundCtx.TypeAssumptions.underlying
+  backgroundCtx.TypeAssumptions.layout
   backgroundCtx.TypeAssumptions.get_emptyCtx
   backgroundCtx.TypeAssumptions.set_emptyCtx
   backgroundCtx.TypeAssumptions.Deadline_unfold
@@ -1709,6 +1715,7 @@ instance equals_unfold_todoCtx [FfiSyntax] [GoGlobalContext] :
 class todoCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying todoCtx.underlying todoCtx
   underlying : go.UnderlyingDirectedEq todoCtx.ty todoCtx.underlying
+  layout : go.StructLayout todoCtx [(go!"emptyCtx", typeSize emptyCtx, typeAlign emptyCtx)]
   get_emptyCtx : ∀ (x : todoCtx), go.IsGoStepPureDetTagged under (StructFieldGet todoCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
   set_emptyCtx : ∀ (x : todoCtx) (y : emptyCtx), go.IsGoStepPureDetTagged under (StructFieldSet todoCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : todoCtx)))
   Deadline_unfold : MethodUnfold todoCtx.ty go!"Deadline" (LamV "$r"
@@ -1733,6 +1740,7 @@ class todoCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] todoCtx.TypeAssumptions.type_repr
   todoCtx.TypeAssumptions.underlying
+  todoCtx.TypeAssumptions.layout
   todoCtx.TypeAssumptions.get_emptyCtx
   todoCtx.TypeAssumptions.set_emptyCtx
   todoCtx.TypeAssumptions.Deadline_unfold
@@ -1809,6 +1817,7 @@ instance equals_unfold_cancelCtx [FfiSyntax] [GoGlobalContext] :
 class cancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying cancelCtx.underlying cancelCtx
   underlying : go.UnderlyingDirectedEq cancelCtx.ty cancelCtx.underlying
+  layout : go.StructLayout cancelCtx [(go!"Context", typeSize Context, typeAlign Context), (go!"mu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"done", typeSize _root_.Perennial.sync.atomic.Value, typeAlign _root_.Perennial.sync.atomic.Value), (go!"children", typeSize GoMap, typeAlign GoMap), (go!"err", typeSize _root_.Perennial.sync.atomic.Value, typeAlign _root_.Perennial.sync.atomic.Value), (go!"cause", typeSize GoError, typeAlign GoError)]
   get_Context : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"Context") #x (Val #(x.Context'))
   set_Context : ∀ (x : cancelCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : cancelCtx)))
   get_mu : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"mu") #x (Val #(x.mu'))
@@ -1834,6 +1843,7 @@ class cancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] cancelCtx.TypeAssumptions.type_repr
   cancelCtx.TypeAssumptions.underlying
+  cancelCtx.TypeAssumptions.layout
   cancelCtx.TypeAssumptions.get_Context
   cancelCtx.TypeAssumptions.set_Context
   cancelCtx.TypeAssumptions.get_mu
@@ -1882,6 +1892,7 @@ instance equals_unfold_afterFuncCtx [FfiSyntax] [GoGlobalContext] :
 class afterFuncCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying afterFuncCtx.underlying afterFuncCtx
   underlying : go.UnderlyingDirectedEq afterFuncCtx.ty afterFuncCtx.underlying
+  layout : go.StructLayout afterFuncCtx [(go!"cancelCtx", typeSize cancelCtx, typeAlign cancelCtx), (go!"once", typeSize _root_.Perennial.sync.Once, typeAlign _root_.Perennial.sync.Once), (go!"f", typeSize GoFunc, typeAlign GoFunc)]
   get_cancelCtx : ∀ (x : afterFuncCtx), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
   set_cancelCtx : ∀ (x : afterFuncCtx) (y : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : afterFuncCtx)))
   get_once : ∀ (x : afterFuncCtx), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"once") #x (Val #(x.once'))
@@ -1906,6 +1917,7 @@ class afterFuncCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] afterFuncCtx.TypeAssumptions.type_repr
   afterFuncCtx.TypeAssumptions.underlying
+  afterFuncCtx.TypeAssumptions.layout
   afterFuncCtx.TypeAssumptions.get_cancelCtx
   afterFuncCtx.TypeAssumptions.set_cancelCtx
   afterFuncCtx.TypeAssumptions.get_once
@@ -1946,6 +1958,7 @@ instance equals_unfold_stopCtx [FfiSyntax] [GoGlobalContext] :
 class stopCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stopCtx.underlying stopCtx
   underlying : go.UnderlyingDirectedEq stopCtx.ty stopCtx.underlying
+  layout : go.StructLayout stopCtx [(go!"Context", typeSize Context, typeAlign Context), (go!"stop", typeSize GoFunc, typeAlign GoFunc)]
   get_Context : ∀ (x : stopCtx), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"Context") #x (Val #(x.Context'))
   set_Context : ∀ (x : stopCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : stopCtx)))
   get_stop : ∀ (x : stopCtx), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"stop") #x (Val #(x.stop'))
@@ -1969,6 +1982,7 @@ class stopCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] stopCtx.TypeAssumptions.type_repr
   stopCtx.TypeAssumptions.underlying
+  stopCtx.TypeAssumptions.layout
   stopCtx.TypeAssumptions.get_Context
   stopCtx.TypeAssumptions.set_Context
   stopCtx.TypeAssumptions.get_stop
@@ -2025,6 +2039,7 @@ instance equals_unfold_withoutCancelCtx [FfiSyntax] [GoGlobalContext] :
 class withoutCancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying withoutCancelCtx.underlying withoutCancelCtx
   underlying : go.UnderlyingDirectedEq withoutCancelCtx.ty withoutCancelCtx.underlying
+  layout : go.StructLayout withoutCancelCtx [(go!"c", typeSize Context, typeAlign Context)]
   get_c : ∀ (x : withoutCancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet withoutCancelCtx.underlying go!"c") #x (Val #(x.c'))
   set_c : ∀ (x : withoutCancelCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet withoutCancelCtx.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withoutCancelCtx)))
   Deadline_unfold : MethodUnfold withoutCancelCtx.ty go!"Deadline" withoutCancelCtx.Deadline.impl
@@ -2045,6 +2060,7 @@ class withoutCancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
 
 attribute [instance] withoutCancelCtx.TypeAssumptions.type_repr
   withoutCancelCtx.TypeAssumptions.underlying
+  withoutCancelCtx.TypeAssumptions.layout
   withoutCancelCtx.TypeAssumptions.get_c
   withoutCancelCtx.TypeAssumptions.set_c
   withoutCancelCtx.TypeAssumptions.Deadline_unfold
@@ -2085,6 +2101,7 @@ instance equals_unfold_timerCtx [FfiSyntax] [GoGlobalContext] :
 class timerCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying timerCtx.underlying timerCtx
   underlying : go.UnderlyingDirectedEq timerCtx.ty timerCtx.underlying
+  layout : go.StructLayout timerCtx [(go!"cancelCtx", typeSize cancelCtx, typeAlign cancelCtx), (go!"timer", typeSize Loc, typeAlign Loc), (go!"deadline", typeSize _root_.Perennial.time.Time, typeAlign _root_.Perennial.time.Time)]
   get_cancelCtx : ∀ (x : timerCtx), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"cancelCtx") #x (Val #(x.cancelCtx'))
   set_cancelCtx : ∀ (x : timerCtx) (y : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"cancelCtx") (PairV #x #y) (Val #(({ x with cancelCtx' := y } : timerCtx)))
   get_timer : ∀ (x : timerCtx), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"timer") #x (Val #(x.timer'))
@@ -2105,6 +2122,7 @@ class timerCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] timerCtx.TypeAssumptions.type_repr
   timerCtx.TypeAssumptions.underlying
+  timerCtx.TypeAssumptions.layout
   timerCtx.TypeAssumptions.get_cancelCtx
   timerCtx.TypeAssumptions.set_cancelCtx
   timerCtx.TypeAssumptions.get_timer
@@ -2146,6 +2164,7 @@ instance equals_unfold_valueCtx [FfiSyntax] [GoGlobalContext] :
 class valueCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying valueCtx.underlying valueCtx
   underlying : go.UnderlyingDirectedEq valueCtx.ty valueCtx.underlying
+  layout : go.StructLayout valueCtx [(go!"Context", typeSize Context, typeAlign Context), (go!"key", typeSize GoInterface, typeAlign GoInterface), (go!"val", typeSize GoInterface, typeAlign GoInterface)]
   get_Context : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"Context") #x (Val #(x.Context'))
   set_Context : ∀ (x : valueCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : valueCtx)))
   get_key : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"key") #x (Val #(x.key'))
@@ -2169,6 +2188,7 @@ class valueCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] valueCtx.TypeAssumptions.type_repr
   valueCtx.TypeAssumptions.underlying
+  valueCtx.TypeAssumptions.layout
   valueCtx.TypeAssumptions.get_Context
   valueCtx.TypeAssumptions.set_Context
   valueCtx.TypeAssumptions.get_key

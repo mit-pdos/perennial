@@ -462,6 +462,7 @@ instance equals_unfold_littleEndian [FfiSyntax] [GoGlobalContext] :
 class littleEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying littleEndian.underlying littleEndian
   underlying : go.UnderlyingDirectedEq littleEndian.ty littleEndian.underlying
+  layout : go.StructLayout littleEndian []
   AppendUint16_unfold : MethodUnfold littleEndian.ty go!"AppendUint16" littleEndian.AppendUint16.impl
   AppendUint32_unfold : MethodUnfold littleEndian.ty go!"AppendUint32" littleEndian.AppendUint32.impl
   AppendUint64_unfold : MethodUnfold littleEndian.ty go!"AppendUint64" littleEndian.AppendUint64.impl
@@ -498,6 +499,7 @@ class littleEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] littleEndian.TypeAssumptions.type_repr
   littleEndian.TypeAssumptions.underlying
+  littleEndian.TypeAssumptions.layout
   littleEndian.TypeAssumptions.AppendUint16_unfold
   littleEndian.TypeAssumptions.AppendUint32_unfold
   littleEndian.TypeAssumptions.AppendUint64_unfold
@@ -543,9 +545,11 @@ instance equals_unfold_bigEndian [FfiSyntax] [GoGlobalContext] :
 class bigEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bigEndian.underlying bigEndian
   underlying : go.UnderlyingDirectedEq bigEndian.ty bigEndian.underlying
+  layout : go.StructLayout bigEndian []
 
 attribute [instance] bigEndian.TypeAssumptions.type_repr
   bigEndian.TypeAssumptions.underlying
+  bigEndian.TypeAssumptions.layout
 
 structure coder [FfiSyntax] where
   mk ::
@@ -574,6 +578,7 @@ instance equals_unfold_coder [FfiSyntax] [GoGlobalContext] :
 class coder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying coder.underlying coder
   underlying : go.UnderlyingDirectedEq coder.ty coder.underlying
+  layout : go.StructLayout coder [(go!"order", typeSize ByteOrder, typeAlign ByteOrder), (go!"buf", typeSize GoSlice, typeAlign GoSlice), (go!"offset", typeSize w64, typeAlign w64)]
   get_order : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"order") #x (Val #(x.order'))
   set_order : ∀ (x : coder) (y : ByteOrder), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"order") (PairV #x #y) (Val #(({ x with order' := y } : coder)))
   get_buf : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"buf") #x (Val #(x.buf'))
@@ -583,6 +588,7 @@ class coder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] coder.TypeAssumptions.type_repr
   coder.TypeAssumptions.underlying
+  coder.TypeAssumptions.layout
   coder.TypeAssumptions.get_order
   coder.TypeAssumptions.set_order
   coder.TypeAssumptions.get_buf
@@ -633,11 +639,13 @@ instance equals_unfold_nativeEndian [FfiSyntax] [GoGlobalContext] :
 class nativeEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nativeEndian.underlying nativeEndian
   underlying : go.UnderlyingDirectedEq nativeEndian.ty nativeEndian.underlying
+  layout : go.StructLayout nativeEndian [(go!"littleEndian", typeSize littleEndian, typeAlign littleEndian)]
   get_littleEndian : ∀ (x : nativeEndian), go.IsGoStepPureDetTagged under (StructFieldGet nativeEndian.underlying go!"littleEndian") #x (Val #(x.littleEndian'))
   set_littleEndian : ∀ (x : nativeEndian) (y : littleEndian), go.IsGoStepPureDetTagged under (StructFieldSet nativeEndian.underlying go!"littleEndian") (PairV #x #y) (Val #(({ x with littleEndian' := y } : nativeEndian)))
 
 attribute [instance] nativeEndian.TypeAssumptions.type_repr
   nativeEndian.TypeAssumptions.underlying
+  nativeEndian.TypeAssumptions.layout
   nativeEndian.TypeAssumptions.get_littleEndian
   nativeEndian.TypeAssumptions.set_littleEndian
 

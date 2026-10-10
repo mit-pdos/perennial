@@ -494,6 +494,7 @@ instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
 class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap
   underlying : go.UnderlyingDirectedEq lessSwap.ty lessSwap.underlying
+  layout : go.StructLayout lessSwap [(go!"Less", typeSize GoFunc, typeAlign GoFunc), (go!"Swap", typeSize GoFunc, typeAlign GoFunc)]
   get_Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
   set_Less : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
   get_Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
@@ -501,6 +502,7 @@ class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.underlying
+  lessSwap.TypeAssumptions.layout
   lessSwap.TypeAssumptions.get_Less
   lessSwap.TypeAssumptions.set_Less
   lessSwap.TypeAssumptions.get_Swap
@@ -529,11 +531,13 @@ instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
 class reverse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying reverse.underlying reverse
   underlying : go.UnderlyingDirectedEq reverse.ty reverse.underlying
+  layout : go.StructLayout reverse [(go!"Interface", typeSize Interface, typeAlign Interface)]
   get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
   set_Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
 
 attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.underlying
+  reverse.TypeAssumptions.layout
   reverse.TypeAssumptions.get_Interface
   reverse.TypeAssumptions.set_Interface
 

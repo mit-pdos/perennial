@@ -11,6 +11,7 @@ public import Perennial.Proof.DiskPrelude
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Proof.fmt
+public import Perennial.Proof.unsafe
 public import Perennial.Proof.log
 public import Perennial.Proof.sync_proof.base
 public import Perennial.Proof.github_com.goose_lang.primitive

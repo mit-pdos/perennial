@@ -1293,6 +1293,7 @@ instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Channel.underlying T) (Channel T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel.ty T) (Channel.underlying T)
+  layout : ∀ (T' : Type), go.StructLayout (Channel T') [(go!"cap", typeSize w64, typeAlign w64), (go!"mu", typeSize Loc, typeAlign Loc), (go!"state", typeSize offerState, typeAlign offerState), (go!"buffer", typeSize GoSlice, typeAlign GoSlice), (go!"v", typeSize T', typeAlign T')]
   get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"cap") #x (Val #(x.cap'))
   set_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel T'))))
   get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"mu") #x (Val #(x.mu'))
@@ -1316,6 +1317,7 @@ class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Channel.TypeAssumptions.type_repr
   Channel.TypeAssumptions.underlying
+  Channel.TypeAssumptions.layout
   Channel.TypeAssumptions.get_cap
   Channel.TypeAssumptions.set_cap
   Channel.TypeAssumptions.get_mu

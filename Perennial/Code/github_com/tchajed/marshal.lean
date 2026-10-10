@@ -608,6 +608,7 @@ instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
 class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Enc.underlying Enc
   underlying : go.UnderlyingDirectedEq Enc.ty Enc.underlying
+  layout : go.StructLayout Enc [(go!"b", typeSize GoSlice, typeAlign GoSlice), (go!"off", typeSize Loc, typeAlign Loc)]
   get_b : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : Enc) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc)))
   get_off : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
@@ -615,6 +616,7 @@ class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.underlying
+  Enc.TypeAssumptions.layout
   Enc.TypeAssumptions.get_b
   Enc.TypeAssumptions.set_b
   Enc.TypeAssumptions.get_off
@@ -645,6 +647,7 @@ instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
 class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Dec.underlying Dec
   underlying : go.UnderlyingDirectedEq Dec.ty Dec.underlying
+  layout : go.StructLayout Dec [(go!"b", typeSize GoSlice, typeAlign GoSlice), (go!"off", typeSize Loc, typeAlign Loc)]
   get_b : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : Dec) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec)))
   get_off : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
@@ -652,6 +655,7 @@ class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Dec.TypeAssumptions.type_repr
   Dec.TypeAssumptions.underlying
+  Dec.TypeAssumptions.layout
   Dec.TypeAssumptions.get_b
   Dec.TypeAssumptions.set_b
   Dec.TypeAssumptions.get_off

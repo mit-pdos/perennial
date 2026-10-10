@@ -1889,6 +1889,7 @@ instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
 class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Cond.underlying Cond
   underlying : go.UnderlyingDirectedEq Cond.ty Cond.underlying
+  layout : go.StructLayout Cond [(go!"L", typeSize _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock, typeAlign _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), (go!"waiters", typeSize GoSlice, typeAlign GoSlice)]
   get_L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
   set_L : ∀ (x : Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
   get_waiters : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
@@ -1901,6 +1902,7 @@ class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.underlying
+  Cond.TypeAssumptions.layout
   Cond.TypeAssumptions.get_L
   Cond.TypeAssumptions.set_L
   Cond.TypeAssumptions.get_waiters
@@ -1936,6 +1938,7 @@ instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
 class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Result.underlying Result
   underlying : go.UnderlyingDirectedEq Result.ty Result.underlying
+  layout : go.StructLayout Result [(go!"value", typeSize GoString, typeAlign GoString), (go!"primary_won", typeSize Bool, typeAlign Bool)]
   get_value : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Result) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result)))
   get_primary_won : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"primary_won") #x (Val #(x.primary_won'))
@@ -1943,6 +1946,7 @@ class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Result.TypeAssumptions.type_repr
   Result.TypeAssumptions.underlying
+  Result.TypeAssumptions.layout
   Result.TypeAssumptions.get_value
   Result.TypeAssumptions.set_value
   Result.TypeAssumptions.get_primary_won
@@ -1973,6 +1977,7 @@ instance equals_unfold_request [FfiSyntax] [GoGlobalContext] :
 class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying request.underlying request
   underlying : go.UnderlyingDirectedEq request.ty request.underlying
+  layout : go.StructLayout request [(go!"f", typeSize GoFunc, typeAlign GoFunc), (go!"result", typeSize GoChan, typeAlign GoChan)]
   get_f : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
   set_f : ∀ (x : request) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
   get_result : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
@@ -1980,6 +1985,7 @@ class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.underlying
+  request.TypeAssumptions.layout
   request.TypeAssumptions.get_f
   request.TypeAssumptions.set_f
   request.TypeAssumptions.get_result
@@ -2010,6 +2016,7 @@ instance equals_unfold_stream [FfiSyntax] [GoGlobalContext] :
 class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stream.underlying stream
   underlying : go.UnderlyingDirectedEq stream.ty stream.underlying
+  layout : go.StructLayout stream [(go!"req", typeSize GoChan, typeAlign GoChan), (go!"res", typeSize GoChan, typeAlign GoChan)]
   get_req : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
   set_req : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
   get_res : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
@@ -2017,6 +2024,7 @@ class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.underlying
+  stream.TypeAssumptions.layout
   stream.TypeAssumptions.get_req
   stream.TypeAssumptions.set_req
   stream.TypeAssumptions.get_res
@@ -2049,6 +2057,7 @@ instance equals_unfold_streamold [FfiSyntax] [GoGlobalContext] :
 class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying streamold.underlying streamold
   underlying : go.UnderlyingDirectedEq streamold.ty streamold.underlying
+  layout : go.StructLayout streamold [(go!"req", typeSize GoChan, typeAlign GoChan), (go!"res", typeSize GoChan, typeAlign GoChan), (go!"f", typeSize GoFunc, typeAlign GoFunc)]
   get_req : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
   set_req : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold)))
   get_res : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"res") #x (Val #(x.res'))
@@ -2058,6 +2067,7 @@ class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.underlying
+  streamold.TypeAssumptions.layout
   streamold.TypeAssumptions.get_req
   streamold.TypeAssumptions.set_req
   streamold.TypeAssumptions.get_res

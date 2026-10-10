@@ -122,11 +122,13 @@ instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
 class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bubble.underlying Bubble
   underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
+  layout : go.StructLayout Bubble [(go!"b", typeSize GoInterface, typeAlign GoInterface)]
   get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : Bubble) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
 
 attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.underlying
+  Bubble.TypeAssumptions.layout
   Bubble.TypeAssumptions.get_b
   Bubble.TypeAssumptions.set_b
 

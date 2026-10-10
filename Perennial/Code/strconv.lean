@@ -274,6 +274,7 @@ instance equals_unfold_NumError [FfiSyntax] [GoGlobalContext] :
 class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying NumError.underlying NumError
   underlying : go.UnderlyingDirectedEq NumError.ty NumError.underlying
+  layout : go.StructLayout NumError [(go!"Func", typeSize GoString, typeAlign GoString), (go!"Num", typeSize GoString, typeAlign GoString), (go!"Err", typeSize GoError, typeAlign GoError)]
   get_Func : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Func") #x (Val #(x.Func'))
   set_Func : ∀ (x : NumError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Func") (PairV #x #y) (Val #(({ x with Func' := y } : NumError)))
   get_Num : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Num") #x (Val #(x.Num'))
@@ -283,6 +284,7 @@ class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.underlying
+  NumError.TypeAssumptions.layout
   NumError.TypeAssumptions.get_Func
   NumError.TypeAssumptions.set_Func
   NumError.TypeAssumptions.get_Num

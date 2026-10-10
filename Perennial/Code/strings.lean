@@ -382,6 +382,7 @@ instance equals_unfold_Builder [FfiSyntax] [GoGlobalContext] :
 class Builder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Builder.underlying Builder
   underlying : go.UnderlyingDirectedEq Builder.ty Builder.underlying
+  layout : go.StructLayout Builder [(go!"addr", typeSize Loc, typeAlign Loc), (go!"buf", typeSize GoSlice, typeAlign GoSlice)]
   get_addr : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"addr") #x (Val #(x.addr'))
   set_addr : ∀ (x : Builder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"addr") (PairV #x #y) (Val #(({ x with addr' := y } : Builder)))
   get_buf : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"buf") #x (Val #(x.buf'))
@@ -389,6 +390,7 @@ class Builder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Builder.TypeAssumptions.type_repr
   Builder.TypeAssumptions.underlying
+  Builder.TypeAssumptions.layout
   Builder.TypeAssumptions.get_addr
   Builder.TypeAssumptions.set_addr
   Builder.TypeAssumptions.get_buf
@@ -421,6 +423,7 @@ instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
 class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Reader.underlying Reader
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
+  layout : go.StructLayout Reader [(go!"s", typeSize GoString, typeAlign GoString), (go!"i", typeSize w64, typeAlign w64), (go!"prevRune", typeSize w64, typeAlign w64)]
   get_s : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : Reader) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
   get_i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
@@ -430,6 +433,7 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
+  Reader.TypeAssumptions.layout
   Reader.TypeAssumptions.get_s
   Reader.TypeAssumptions.set_s
   Reader.TypeAssumptions.get_i
@@ -494,6 +498,7 @@ instance equals_unfold_trieNode [FfiSyntax] [GoGlobalContext] :
 class trieNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying trieNode.underlying trieNode
   underlying : go.UnderlyingDirectedEq trieNode.ty trieNode.underlying
+  layout : go.StructLayout trieNode [(go!"value", typeSize GoString, typeAlign GoString), (go!"priority", typeSize w64, typeAlign w64), (go!"prefix", typeSize GoString, typeAlign GoString), (go!"next", typeSize Loc, typeAlign Loc), (go!"table", typeSize GoSlice, typeAlign GoSlice)]
   get_value : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : trieNode)))
   get_priority : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"priority") #x (Val #(x.priority'))
@@ -507,6 +512,7 @@ class trieNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] trieNode.TypeAssumptions.type_repr
   trieNode.TypeAssumptions.underlying
+  trieNode.TypeAssumptions.layout
   trieNode.TypeAssumptions.get_value
   trieNode.TypeAssumptions.set_value
   trieNode.TypeAssumptions.get_priority
@@ -545,6 +551,7 @@ instance equals_unfold_genericReplacer [FfiSyntax] [GoGlobalContext] :
 class genericReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying genericReplacer.underlying genericReplacer
   underlying : go.UnderlyingDirectedEq genericReplacer.ty genericReplacer.underlying
+  layout : go.StructLayout genericReplacer [(go!"root", typeSize trieNode, typeAlign trieNode), (go!"tableSize", typeSize w64, typeAlign w64), (go!"mapping", typeSize (GoArray w8 256), typeAlign (GoArray w8 256))]
   get_root : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : genericReplacer) (y : trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
   get_tableSize : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"tableSize") #x (Val #(x.tableSize'))
@@ -554,6 +561,7 @@ class genericReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] genericReplacer.TypeAssumptions.type_repr
   genericReplacer.TypeAssumptions.underlying
+  genericReplacer.TypeAssumptions.layout
   genericReplacer.TypeAssumptions.get_root
   genericReplacer.TypeAssumptions.set_root
   genericReplacer.TypeAssumptions.get_tableSize
@@ -609,6 +617,7 @@ instance equals_unfold_singleStringReplacer [FfiSyntax] [GoGlobalContext] :
 class singleStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying singleStringReplacer.underlying singleStringReplacer
   underlying : go.UnderlyingDirectedEq singleStringReplacer.ty singleStringReplacer.underlying
+  layout : go.StructLayout singleStringReplacer [(go!"finder", typeSize Loc, typeAlign Loc), (go!"value", typeSize GoString, typeAlign GoString)]
   get_finder : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"finder") #x (Val #(x.finder'))
   set_finder : ∀ (x : singleStringReplacer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"finder") (PairV #x #y) (Val #(({ x with finder' := y } : singleStringReplacer)))
   get_value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
@@ -616,6 +625,7 @@ class singleStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoca
 
 attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
   singleStringReplacer.TypeAssumptions.underlying
+  singleStringReplacer.TypeAssumptions.layout
   singleStringReplacer.TypeAssumptions.get_finder
   singleStringReplacer.TypeAssumptions.set_finder
   singleStringReplacer.TypeAssumptions.get_value
@@ -656,6 +666,7 @@ instance equals_unfold_byteStringReplacer [FfiSyntax] [GoGlobalContext] :
 class byteStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying byteStringReplacer.underlying byteStringReplacer
   underlying : go.UnderlyingDirectedEq byteStringReplacer.ty byteStringReplacer.underlying
+  layout : go.StructLayout byteStringReplacer [(go!"replacements", typeSize (GoArray GoSlice 256), typeAlign (GoArray GoSlice 256)), (go!"toReplace", typeSize GoSlice, typeAlign GoSlice)]
   get_replacements : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"replacements") #x (Val #(x.replacements'))
   set_replacements : ∀ (x : byteStringReplacer) (y : (GoArray GoSlice 256)), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"replacements") (PairV #x #y) (Val #(({ x with replacements' := y } : byteStringReplacer)))
   get_toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
@@ -663,6 +674,7 @@ class byteStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] byteStringReplacer.TypeAssumptions.type_repr
   byteStringReplacer.TypeAssumptions.underlying
+  byteStringReplacer.TypeAssumptions.layout
   byteStringReplacer.TypeAssumptions.get_replacements
   byteStringReplacer.TypeAssumptions.set_replacements
   byteStringReplacer.TypeAssumptions.get_toReplace
@@ -695,6 +707,7 @@ instance equals_unfold_stringFinder [FfiSyntax] [GoGlobalContext] :
 class stringFinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stringFinder.underlying stringFinder
   underlying : go.UnderlyingDirectedEq stringFinder.ty stringFinder.underlying
+  layout : go.StructLayout stringFinder [(go!"pattern", typeSize GoString, typeAlign GoString), (go!"badCharSkip", typeSize (GoArray w64 256), typeAlign (GoArray w64 256)), (go!"goodSuffixSkip", typeSize GoSlice, typeAlign GoSlice)]
   get_pattern : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"pattern") #x (Val #(x.pattern'))
   set_pattern : ∀ (x : stringFinder) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"pattern") (PairV #x #y) (Val #(({ x with pattern' := y } : stringFinder)))
   get_badCharSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"badCharSkip") #x (Val #(x.badCharSkip'))
@@ -704,6 +717,7 @@ class stringFinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] stringFinder.TypeAssumptions.type_repr
   stringFinder.TypeAssumptions.underlying
+  stringFinder.TypeAssumptions.layout
   stringFinder.TypeAssumptions.get_pattern
   stringFinder.TypeAssumptions.set_pattern
   stringFinder.TypeAssumptions.get_badCharSkip

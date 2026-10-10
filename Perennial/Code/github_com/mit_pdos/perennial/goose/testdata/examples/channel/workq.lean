@@ -278,6 +278,7 @@ instance equals_unfold_Worker [FfiSyntax] [GoGlobalContext] :
 class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Worker.underlying Worker
   underlying : go.UnderlyingDirectedEq Worker.ty Worker.underlying
+  layout : go.StructLayout Worker [(go!"queue", typeSize GoChan, typeAlign GoChan), (go!"steal", typeSize GoChan, typeAlign GoChan)]
   get_queue : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"queue") #x (Val #(x.queue'))
   set_queue : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
   get_steal : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
@@ -287,6 +288,7 @@ class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Worker.TypeAssumptions.type_repr
   Worker.TypeAssumptions.underlying
+  Worker.TypeAssumptions.layout
   Worker.TypeAssumptions.get_queue
   Worker.TypeAssumptions.set_queue
   Worker.TypeAssumptions.get_steal
@@ -321,6 +323,7 @@ instance equals_unfold_shared [FfiSyntax] [GoGlobalContext] :
 class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying shared.underlying shared
   underlying : go.UnderlyingDirectedEq shared.ty shared.underlying
+  layout : go.StructLayout shared [(go!"remaining", typeSize Loc, typeAlign Loc), (go!"total", typeSize Loc, typeAlign Loc), (go!"done", typeSize GoChan, typeAlign GoChan)]
   get_remaining : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"remaining") #x (Val #(x.remaining'))
   set_remaining : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"remaining") (PairV #x #y) (Val #(({ x with remaining' := y } : shared)))
   get_total : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"total") #x (Val #(x.total'))
@@ -330,6 +333,7 @@ class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] shared.TypeAssumptions.type_repr
   shared.TypeAssumptions.underlying
+  shared.TypeAssumptions.layout
   shared.TypeAssumptions.get_remaining
   shared.TypeAssumptions.set_remaining
   shared.TypeAssumptions.get_total

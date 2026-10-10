@@ -24,6 +24,7 @@ public import Perennial.Golang.Theory.Display
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Helpers.NamedProps
 public import Perennial.IrisLib.DFractional
+public import Perennial.Golang.Theory.RawCells
 
 @[expose] public section
 
@@ -246,6 +247,13 @@ class IntoValTypedUnderlying (V : outParam Type) (t_under : go.GoType) [ZeroVal 
       (v w : V),
     {{ (l ↦ v : IProp GF) }} (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
     {{ RET #(); l ↦ w }}
+  /-- A store into the `typeSize V` cells at `l`, whatever they hold, makes `l ↦ w`: how a
+  fresh allocation (`AllocN`) is initialized. -/
+  wp_store_raw_def : ∀ {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u t_under] (l : Loc)
+      (w : V),
+    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize V) : IProp GF) }}
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
+    {{ RET #(); l ↦ w }}
   type_repr_def : go.TypeReprUnderlying t_under V
 
 /-- `IntoValTyped V t`: allocating, loading and storing at Go type `t` respects
@@ -261,10 +269,14 @@ class IntoValTyped (V : outParam Type) (t : go.GoType) [ZeroVal V] [TypedPointst
   wp_store : ∀ {s : Stuckness} {E : CoPset} (l : Loc) (v w : V),
     {{ (l ↦ v : IProp GF) }} (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
     {{ RET #(); l ↦ w }}
+  wp_store_raw : ∀ {s : Stuckness} {E : CoPset} (l : Loc) (w : V),
+    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize V) : IProp GF) }}
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
+    {{ RET #(); l ↦ w }}
   [type_repr : TypeRepr t V]
 
 attribute [instance] IntoValTyped.type_repr
-export IntoValTyped (wp_alloc wp_store)
+export IntoValTyped (wp_alloc wp_store wp_store_raw)
 
 instance underlying_to_into_val_typed {V : Type} {t_under : go.GoType} {zv : ZeroVal V}
     {tp : TypedPointsto (GF := GF) V} [GoSemanticsFunctions] [go.PreSemantics] {t : go.GoType}
@@ -273,6 +285,7 @@ instance underlying_to_into_val_typed {V : Type} {t_under : go.GoType} {zv : Zer
   wp_alloc v := h.wp_alloc_def v
   wp_load l dq v := h.wp_load_def l dq v
   wp_store l v w := h.wp_store_def l v w
+  wp_store_raw l w := h.wp_store_raw_def l w
   type_repr := by
     have := h.type_repr_def
     infer_instance
@@ -636,6 +649,15 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
     iapply HΦ
     iframe Hl
     ipureintro; exact Hnn
+  · intro s E t _ l w
+    iintro %Φ ⟨%Hc, Hraw⟩ HΦ
+    icases rawCells_first l _ (by simp) $$ Hraw with ⟨%v0, Hl⟩
+    wp_pures
+    wp_apply_core _internal_wp_untyped_store l _ _ $$ Hl
+    iintro Hl
+    iapply HΦ
+    iframe Hl
+    ipureintro; intro h; subst h; exact Hc rfl
   · infer_instance))
 
 instance intoVal_typed_loc (t : go.GoType) :

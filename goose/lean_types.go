@@ -233,6 +233,15 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	// maybe emit StructFieldSet and StructFieldGet instances
 	if ctx.filter.GetAction(t.Obj().Name()) == declfilter.Translate {
 		if st, ok := tunder.(*types.Struct); ok {
+			// the layout: gc's, from the fields' sizes and alignments (go.StructLayout)
+			var entries []string
+			for i := range st.NumFields() {
+				fieldTy := lparenS(ctx.toLeanTypeP(spec, st.Field(i).Type(), true))
+				entries = append(entries, fmt.Sprintf("(%s, typeSize %s, typeAlign %s)",
+					glang.LeanStringLit(fieldName(i, st.Field(i).Name())), fieldTy, fieldTy))
+			}
+			add("layout", leanForall(valBinders, fmt.Sprintf("go.StructLayout %s [%s]",
+				valTy, strings.Join(entries, ", "))))
 			for i := range st.NumFields() {
 				fieldName := fieldName(i, st.Field(i).Name())
 				projName := glang.LeanQuoteComponent(recordProjection(i, st.Field(i).Name()))

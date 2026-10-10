@@ -323,12 +323,14 @@ instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
 class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying errorString.underlying errorString
   underlying : go.UnderlyingDirectedEq errorString.ty errorString.underlying
+  layout : go.StructLayout errorString [(go!"s", typeSize GoString, typeAlign GoString)]
   get_s : ∀ (x : errorString), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : errorString) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorString.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString)))
   ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString.ty) go!"Error" errorString.Error.impl
 
 attribute [instance] errorString.TypeAssumptions.type_repr
   errorString.TypeAssumptions.underlying
+  errorString.TypeAssumptions.layout
   errorString.TypeAssumptions.get_s
   errorString.TypeAssumptions.set_s
   errorString.TypeAssumptions.ptr_Error_unfold
@@ -356,11 +358,13 @@ instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
 class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying joinError.underlying joinError
   underlying : go.UnderlyingDirectedEq joinError.ty joinError.underlying
+  layout : go.StructLayout joinError [(go!"errs", typeSize GoSlice, typeAlign GoSlice)]
   get_errs : ∀ (x : joinError), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
   set_errs : ∀ (x : joinError) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError)))
 
 attribute [instance] joinError.TypeAssumptions.type_repr
   joinError.TypeAssumptions.underlying
+  joinError.TypeAssumptions.layout
   joinError.TypeAssumptions.get_errs
   joinError.TypeAssumptions.set_errs
 

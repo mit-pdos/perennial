@@ -421,6 +421,7 @@ instance equals_unfold_Buffer [FfiSyntax] [GoGlobalContext] :
 class Buffer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Buffer.underlying Buffer
   underlying : go.UnderlyingDirectedEq Buffer.ty Buffer.underlying
+  layout : go.StructLayout Buffer [(go!"buf", typeSize GoSlice, typeAlign GoSlice), (go!"off", typeSize w64, typeAlign w64), (go!"lastRead", typeSize readOp, typeAlign readOp)]
   get_buf : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : Buffer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : Buffer)))
   get_off : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"off") #x (Val #(x.off'))
@@ -430,6 +431,7 @@ class Buffer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.underlying
+  Buffer.TypeAssumptions.layout
   Buffer.TypeAssumptions.get_buf
   Buffer.TypeAssumptions.set_buf
   Buffer.TypeAssumptions.get_off
@@ -474,6 +476,7 @@ instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
 class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Reader.underlying Reader
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
+  layout : go.StructLayout Reader [(go!"s", typeSize GoSlice, typeAlign GoSlice), (go!"i", typeSize w64, typeAlign w64), (go!"prevRune", typeSize w64, typeAlign w64)]
   get_s : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : Reader) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
   get_i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
@@ -483,6 +486,7 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
+  Reader.TypeAssumptions.layout
   Reader.TypeAssumptions.get_s
   Reader.TypeAssumptions.set_s
   Reader.TypeAssumptions.get_i

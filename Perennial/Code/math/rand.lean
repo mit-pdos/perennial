@@ -282,6 +282,7 @@ instance equals_unfold_Rand [FfiSyntax] [GoGlobalContext] :
 class Rand.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Rand.underlying Rand
   underlying : go.UnderlyingDirectedEq Rand.ty Rand.underlying
+  layout : go.StructLayout Rand [(go!"src", typeSize Source, typeAlign Source), (go!"s64", typeSize Source64, typeAlign Source64), (go!"readVal", typeSize w64, typeAlign w64), (go!"readPos", typeSize w8, typeAlign w8)]
   get_src : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"src") #x (Val #(x.src'))
   set_src : ∀ (x : Rand) (y : Source), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"src") (PairV #x #y) (Val #(({ x with src' := y } : Rand)))
   get_s64 : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"s64") #x (Val #(x.s64'))
@@ -293,6 +294,7 @@ class Rand.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.underlying
+  Rand.TypeAssumptions.layout
   Rand.TypeAssumptions.get_src
   Rand.TypeAssumptions.set_src
   Rand.TypeAssumptions.get_s64
@@ -325,11 +327,13 @@ instance equals_unfold_runtimeSource [FfiSyntax] [GoGlobalContext] :
 class runtimeSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying runtimeSource.underlying runtimeSource
   underlying : go.UnderlyingDirectedEq runtimeSource.ty runtimeSource.underlying
+  layout : go.StructLayout runtimeSource [(go!"mu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex)]
   get_mu : ∀ (x : runtimeSource), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSource.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : runtimeSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSource.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : runtimeSource)))
 
 attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.underlying
+  runtimeSource.TypeAssumptions.layout
   runtimeSource.TypeAssumptions.get_mu
   runtimeSource.TypeAssumptions.set_mu
 
@@ -358,6 +362,7 @@ instance equals_unfold_lockedSource [FfiSyntax] [GoGlobalContext] :
 class lockedSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lockedSource.underlying lockedSource
   underlying : go.UnderlyingDirectedEq lockedSource.ty lockedSource.underlying
+  layout : go.StructLayout lockedSource [(go!"lk", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"s", typeSize Loc, typeAlign Loc)]
   get_lk : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"lk") #x (Val #(x.lk'))
   set_lk : ∀ (x : lockedSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"lk") (PairV #x #y) (Val #(({ x with lk' := y } : lockedSource)))
   get_s : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"s") #x (Val #(x.s'))
@@ -365,6 +370,7 @@ class lockedSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] lockedSource.TypeAssumptions.type_repr
   lockedSource.TypeAssumptions.underlying
+  lockedSource.TypeAssumptions.layout
   lockedSource.TypeAssumptions.get_lk
   lockedSource.TypeAssumptions.set_lk
   lockedSource.TypeAssumptions.get_s
@@ -397,6 +403,7 @@ instance equals_unfold_rngSource [FfiSyntax] [GoGlobalContext] :
 class rngSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rngSource.underlying rngSource
   underlying : go.UnderlyingDirectedEq rngSource.ty rngSource.underlying
+  layout : go.StructLayout rngSource [(go!"tap", typeSize w64, typeAlign w64), (go!"feed", typeSize w64, typeAlign w64), (go!"vec", typeSize (GoArray w64 607), typeAlign (GoArray w64 607))]
   get_tap : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"tap") #x (Val #(x.tap'))
   set_tap : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"tap") (PairV #x #y) (Val #(({ x with tap' := y } : rngSource)))
   get_feed : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"feed") #x (Val #(x.feed'))
@@ -406,6 +413,7 @@ class rngSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.underlying
+  rngSource.TypeAssumptions.layout
   rngSource.TypeAssumptions.get_tap
   rngSource.TypeAssumptions.set_tap
   rngSource.TypeAssumptions.get_feed
@@ -452,6 +460,7 @@ instance equals_unfold_Zipf [FfiSyntax] [GoGlobalContext] :
 class Zipf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Zipf.underlying Zipf
   underlying : go.UnderlyingDirectedEq Zipf.ty Zipf.underlying
+  layout : go.StructLayout Zipf [(go!"r", typeSize Loc, typeAlign Loc), (go!"imax", typeSize w64, typeAlign w64), (go!"v", typeSize w64, typeAlign w64), (go!"q", typeSize w64, typeAlign w64), (go!"s", typeSize w64, typeAlign w64), (go!"oneminusQ", typeSize w64, typeAlign w64), (go!"oneminusQinv", typeSize w64, typeAlign w64), (go!"hxm", typeSize w64, typeAlign w64), (go!"hx0minusHxm", typeSize w64, typeAlign w64)]
   get_r : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"r") #x (Val #(x.r'))
   set_r : ∀ (x : Zipf) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Zipf)))
   get_imax : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"imax") #x (Val #(x.imax'))
@@ -473,6 +482,7 @@ class Zipf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Zipf.TypeAssumptions.type_repr
   Zipf.TypeAssumptions.underlying
+  Zipf.TypeAssumptions.layout
   Zipf.TypeAssumptions.get_r
   Zipf.TypeAssumptions.set_r
   Zipf.TypeAssumptions.get_imax

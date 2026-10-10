@@ -292,6 +292,91 @@ abbrev storeArrayStep (n : Int) (elem_type : go.GoType) (l v : val) (str_so_far 
      let elem_val := gl(Index (go.ArrayType n elem_type) (v, #(W64 j)))
      gl(GoStore elem_type (elem_addr, elem_val))))
 
+/-- The raw cells of elements `k, …, k + m - 1` of an array of `V`s at `l`. -/
+noncomputable abbrev rawElems (l : Loc) (k m : Nat) : IProp GF :=
+  iprop([∗list] _j ↦ i ∈ List.range' k m,
+    rawCells (arrayIndexRef V ((i : Nat) : Int) l) (typeSize V))
+
+theorem arrayIndexRef_zero' (l : Loc) : arrayIndexRef V 0 l = l := by
+  unfold arrayIndexRef; split <;> simp
+
+/-- An array's raw cells are its elements' (`l` in a block). -/
+theorem rawCells_rawElems (l : Loc) (hc : l.locCar ≠ 0) (n : Nat) :
+    rawCells l ((n : Int) * typeSize V) ⊢ rawElems (GF := GF) (V := V) l 0 n := by
+  have hs := go.typeSize_nonneg V
+  induction n with
+  | zero =>
+    iintro _
+    unfold rawElems
+    rw [show List.range' 0 0 = [] from rfl]
+    iapply BigSepL.bigSepL_nil.2; itrivial
+  | succ n ih =>
+    have e := rawCells_add (GF := GF) l ((n : Int) * typeSize V) (typeSize V)
+      (Int.mul_nonneg (by omega) hs) hs
+    rw [show (n : Int) * typeSize V + typeSize V = ((n + 1 : Nat) : Int) * typeSize V by
+      push_cast; rw [Int.add_mul, Int.one_mul]] at e
+    iintro H
+    icases e.1 $$ H with ⟨H1, H2⟩
+    unfold rawElems
+    rw [List.range'_concat]
+    iapply BigSepL.bigSepL_append.2
+    isplitl [H1]
+    · iapply ih $$ H1
+    · iapply BigSepL.bigSepL_singleton.2
+      rw [arrayIndexRef_of_car _ _ _ hc, show (0 : Nat) + 1 * n = n by omega]
+      iexact H2
+
+theorem wp_store_array_loop_raw (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : Loc) (hc : l.locCar ≠ 0) (w : GoArray V n)
+    (hwlen : (w.arr.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
+    ⊢ ∀ Φ, rawElems (GF := GF) (V := V) l 0 n.toNat -∗
+      (arrayElems l (w.arr.take k) (DFrac.own 1) ∗ rawElems (V := V) l k (n.toNat - k) -∗ Φ #()) -∗
+      WP (List.foldl (storeArrayStep n t #l #w) (#() : Expr)
+        ((List.range k).map (fun (i : Nat) => (i : Int)))) @ s; E {{ Φ }} := by
+  induction k with
+  | zero =>
+    iintro %Φ Hl HΦ
+    simp only [List.range_zero, List.map_nil, List.foldl_nil, List.take_zero]
+    wp_pures
+    iapply HΦ
+    isplitl []
+    · unfold arrayElems; iapply BigSepL.bigSepL_nil.2; itrivial
+    · simp only [Nat.sub_zero]; iexact Hl
+  | succ k ih =>
+    iintro %Φ Hl HΦ
+    simp only [List.range_succ, List.map_append, List.map_cons, List.map_nil, List.foldl_append,
+      List.foldl_cons, List.foldl_nil]
+    wp_apply_core ih (by omega) $$ Hl
+    iintro ⟨Hdone, Hrest⟩
+    wp_pures
+    have hk' : sint.Z (W64 (k : Int)) = (k : Int) := by word
+    have hk'' : sint.nat (W64 (k : Int)) = k := by word
+    simp only [hk', show ((k : Int) < n) = True from eq_true (by omega), ↓reduceIte]
+    obtain ⟨we, hwe⟩ : ∃ we, w.arr[k]? = some we :=
+      ⟨w.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    unfold rawElems
+    rw [show n.toNat - k = (n.toNat - (k + 1)) + 1 by omega, List.range'_succ]
+    icases BigSepL.bigSepL_cons.1 $$ Hrest with ⟨Hk, Hrest⟩
+    wp_pures
+    simp only [hk'', hwe]
+    wp_pures
+    wp_apply_core wp_store_raw (V := V) (t := t) _ we $$ [Hk]
+    · isplitl []
+      · ipureintro; rw [arrayIndexRef_car]; exact hc
+      · iexact Hk
+    iintro Hx
+    iapply HΦ
+    isplitl [Hdone Hx]
+    · rw [List.take_add_one, hwe, Option.toList_some]
+      iapply (arrayElems_app l _ [we] _).2
+      isplitl [Hdone]
+      · iexact Hdone
+      · unfold arrayElems
+        iapply BigSepL.bigSepL_singleton.2
+        rw [List.length_take, Nat.min_eq_left (by omega), Int.natCast_zero, arrayIndexRef_zero']
+        iexact Hx
+    · iexact Hrest
+
 theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : GoArray V n)
     (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
@@ -404,6 +489,37 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     rw [hws]
     iapply HΦ
     iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
+    isplit
+    · ipureintro; exact hwlen
+    · iexact Hl
+  · intro s E t' _ l w
+    iintro %Φ ⟨%Hc, Hraw⟩ HΦ
+    have _tagged := @go.tagged_internal_inst
+    wp_pure
+    clear _tagged
+    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+        eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
+      iapply wp_AngelicExit
+    by_cases hwlen : (w.arr.length : Int) = n
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+        eq_true (fun h => hwlen h.2.2), ↓reduceIte]
+      iapply wp_AngelicExit
+    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+        eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
+    have e : n * typeSize V = ((n.toNat : Nat) : Int) * typeSize V := by
+      rw [Int.toNat_of_nonneg hn.1]
+    rw [go.typeSize_array V n hn.1, e]
+    ihave Hraw := rawCells_rawElems (V := V) l Hc n.toNat $$ Hraw
+    iapply wp_store_array_loop_raw t n l Hc w hwlen hn n.toNat (by omega) $$ Hraw
+    iintro ⟨Hl, -⟩
+    have hws : w.arr.take n.toNat = w.arr := List.take_of_length_le (by omega)
+    rw [hws]
+    iapply HΦ
+    iapply typedPointsto_combine _ _ _ (fun h => by subst h; exact Hc rfl)
     simp only [TypedPointsto.typedPointstoDef]
     isplit
     · ipureintro; exact hwlen

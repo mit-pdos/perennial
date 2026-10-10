@@ -1057,6 +1057,19 @@ def structFieldsPointsto {V : Type} {T : go.GoType} :
     iprop(@typedPointsto GF f.F f.tpt (structFieldRef V f.name l) (f.proj v) dq ∗
       structFieldsPointsto fs l v dq)
 
+/-- The raw cells of the fields `fs` of a struct of representation `V` at `l`. -/
+noncomputable def structFieldsRaw {V : Type} {T : go.GoType} :
+    List (StructFieldDesc (GF := GF) V T) → Loc → IProp GF
+  | [], _ => iprop(emp)
+  | f :: fs, l =>
+    iprop((⌜(structFieldRef V f.name l).locCar ≠ 0⌝ ∗
+      rawCells (structFieldRef V f.name l) (typeSize f.F)) ∗ structFieldsRaw fs l)
+
+/-- A field's `(name, size, alignment)`, as in `go.StructLayout`. -/
+def StructFieldDesc.layout {V : Type} {T : go.GoType} (f : StructFieldDesc (GF := GF) V T) :
+    GoString × Int × Int :=
+  (f.name, typeSize f.F, typeAlign f.F)
+
 /-- The expansion of `GoAlloc (go.StructType fds) v` (`go.alloc_struct`). -/
 def allocStructRaw (fds : List go.field_decl) (v : val) (fds_unsealed : List go.field_decl) : Expr :=
   gl(let: "l" := GoPrealloc #() in
@@ -1481,6 +1494,73 @@ theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
         iapply H
         iframe
 
+theorem struct_store_fields_raw {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
+    (E : CoPset) :
+    ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
+    FieldsMatch fds fs → ∀ (e0 : Expr) (Pin Pout : IProp GF),
+    (∀ (K : List EctxItem) (Ψ : val → IProp GF),
+      iprop(Pin ∗ (Pout -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K e0) @ s; E {{ Ψ }}) →
+    ∀ (K : List EctxItem) (Φ : val → IProp GF),
+    iprop(Pin ∗ structFieldsRaw fs l ∗
+      ((Pout ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗
+        WP (fill K (Val #())) @ s; E {{ Φ }})) ⊢
+      WP (fill K (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) e0 fds)) @ s; E {{ Φ }} := by
+  intro fds
+  induction fds with
+  | nil =>
+    intro fs hm e0 Pin Pout he0 K Φ
+    cases fs with
+    | nil =>
+      simp only [List.foldl_nil, structFieldsPointsto, structFieldsRaw]
+      iintro ⟨HP, Ht, H⟩
+      iapply (he0 K Φ)
+      iframe HP
+      iintro HP
+      iapply H
+      iframe
+    | cons => exact absurd hm id
+  | cons fd fds ih =>
+    intro fs hm e0 Pin Pout he0 K Φ
+    cases fs with
+    | nil => exact absurd hm id
+    | cons f fs =>
+      obtain ⟨hn, ht, hm'⟩ := hm
+      simp only [List.foldl_cons, structFieldsPointsto, structFieldsRaw]
+      iintro ⟨HP, ⟨Hf, Hfs⟩, H⟩
+      iapply (ih fs hm' (storeFieldExpr (go.StructType fdsT) #l #y e0 fd)
+        iprop(Pin ∗ (⌜(structFieldRef V f.name l).locCar ≠ 0⌝ ∗
+          rawCells (structFieldRef V f.name l) (typeSize f.F)))
+        iprop(Pout ∗ @typedPointsto GF f.F f.tpt (structFieldRef V f.name l) (f.proj y) (DFrac.own 1))
+        ?_ K Φ)
+      · intro K' Ψ
+        simp only [storeFieldExpr, hn, ht]
+        iintro ⟨⟨HP, Hf⟩, H⟩
+        have h2 : iprop(Pin ∗ (Pout -∗ WP (fill K' gl(#() ;; GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) @ s; E {{ Ψ }})) ⊢
+            WP (fill K' gl(e0 ;; GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) @ s; E {{ Ψ }} :=
+          he0 (EctxItem.AppRCtx (Rec BAnon BAnon gl(GoStore f.ty
+              (StructFieldRef (go.StructType fdsT) f.name #l,
+                StructFieldGet (go.StructType fdsT) f.name #y))) :: K') Ψ
+        iapply h2
+        iframe HP
+        iintro HP
+        have _zv := f.zv
+        have _tpt := f.tpt
+        have _ivt := f.ivt
+        have _get := f.get
+        wp_pures
+        wp_apply +noauto (wp_store_raw (V := f.F) (t := f.ty) _ (f.proj y)) $$ Hf as Hf
+        iapply H
+        iframe
+      · iframe HP Hf Hfs
+        iintro ⟨⟨HP, Hf⟩, Hfs⟩
+        iapply H
+        iframe
+
 theorem struct_store_fields_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
     (E : CoPset) (fds : List go.field_decl)
@@ -1548,6 +1628,113 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     iexact Hl
   · ipureintro; exact Hnn
 
+theorem struct_store_fields_raw_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (y : V) (l : Loc) (s : Stuckness)
+    (E : CoPset) (fds : List go.field_decl)
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
+    (he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
+      iprop(emp ∗ (emp -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢ WP (fill K (Val #())) @ s; E {{ Ψ }})
+    (Φ : val → IProp GF) :
+    iprop(emp ∗ structFieldsRaw fs l ∗
+      ((emp ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗ WP (Val #()) @ s; E {{ Φ }})) ⊢
+      WP (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) (Val #()) fds) @ s; E {{ Φ }} :=
+  struct_store_fields_raw y y l s E fds fs hm (Val #()) emp emp he0 [] Φ
+
+theorem struct_wp_store_raw {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typedPointstoDef l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    (hraw : ∀ l, l.locCar ≠ 0 → rawCells l (typeSize V) ⊢ structFieldsRaw fs l)
+    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (l : Loc) (w : V) :
+    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize V) : IProp GF) }}
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
+    {{ RET #(); l ↦ w }} := by
+  iintro %Φ ⟨%Hc, Hraw⟩ HΦ
+  rw [typedPointsto_unseal]
+  unfold typedPointstoWrap
+  ihave Hraw := hraw l Hc $$ Hraw
+  have hpw : PureWp (hlc := hlc) (GF := GF) True
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w)))
+      (storeStructRaw fds #l #w fds_unsealed) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  inext
+  rw [storeStructRaw_eq]
+  have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
+      iprop(emp ∗ (emp -∗ WP (fill K (Val #())) @ s; E {{ Ψ }})) ⊢
+        WP (fill K (Val #())) @ s; E {{ Ψ }} := by
+    intro K Ψ
+    iintro ⟨-, H⟩
+    iapply H
+    itrivial
+  iapply (struct_store_fields_raw_nil w l s E fds_unsealed fs hfs he0 Φ)
+  iframe Hraw
+  iintro ⟨-, Hl⟩
+  wp_pures
+  iapply HΦ
+  isplitl [Hl]
+  · iapply (hdef l w _).2
+    iexact Hl
+  · ipureintro; intro h; subst h; exact Hc rfl
+
+theorem structFieldsRaw_eq {V : Type} {T : go.GoType}
+    (fs : List (StructFieldDesc (GF := GF) V T)) (l : Loc) :
+    structFieldsRaw fs l ⊣⊢ ([∗list] f ∈ fs, iprop(⌜(structFieldRef V f.name l).locCar ≠ 0⌝ ∗
+      rawCells (structFieldRef V f.name l) (typeSize f.F)) : IProp GF) := by
+  induction fs with
+  | nil =>
+    simp only [structFieldsRaw]
+    exact ⟨BigSepL.bigSepL_nil.2, BigSepL.bigSepL_nil.1⟩
+  | cons f fs ih =>
+    simp only [structFieldsRaw]
+    exact (sep_congr .rfl ih).trans (BigSepL.bigSepL_cons (Φ := fun _ (f : StructFieldDesc (GF := GF) V T) =>
+      iprop(⌜(structFieldRef V f.name l).locCar ≠ 0⌝ ∗
+        rawCells (structFieldRef V f.name l) (typeSize f.F)))).symm
+
+/-- A struct laid out as gc does (`go.StructLayout`): its raw cells are its fields'. -/
+theorem structFieldsRaw_of_layout {V : Type} {T : go.GoType}
+    (fs : List (StructFieldDesc (GF := GF) V T)) (lay : List (GoString × Int × Int))
+    [hlay : go.StructLayout V lay] (hlayfs : lay = fs.map StructFieldDesc.layout)
+    (hnodup : (lay.map Prod.fst).Nodup) (l : Loc) (hc : l.locCar ≠ 0) :
+    rawCells l (typeSize V) ⊢ structFieldsRaw fs l := by
+  have hsz : ∀ e ∈ lay, 0 ≤ e.2.1 := by
+    subst hlayfs; intro e he
+    obtain ⟨f, _, rfl⟩ := List.mem_map.mp he
+    exact go.typeSize_nonneg _
+  have hal : ∀ e ∈ lay, 1 ≤ e.2.2 := by
+    subst hlayfs; intro e he
+    obtain ⟨f, _, rfl⟩ := List.mem_map.mp he
+    exact go.typeAlign_pos _
+  rw [hlay.size]
+  iintro H
+  ihave H := rawCells_struct l lay hsz hal $$ H
+  ihave H := rawFieldsFrom_split l 0 1 lay hnodup $$ H
+  iapply (structFieldsRaw_eq fs l).2
+  have hoff : ∀ f ∈ fs, ∃ o, go.structFieldOffset lay f.name = some o ∧
+      ((go.structLayoutAux 0 1 lay).1.lookup f.name).getD 0 = o := by
+    intro f hf
+    have hmem : f.name ∈ (go.structLayoutAux 0 1 lay).1.map Prod.fst := by
+      rw [go.structLayoutAux_names, hlayfs, List.map_map]
+      exact List.mem_map_of_mem hf
+    have hsome := lookup_isSome_of_mem _ _ hmem
+    cases ho : ((go.structLayoutAux 0 1 lay).1.lookup f.name) with
+    | none => rw [ho] at hsome; exact absurd hsome (by decide)
+    | some o =>
+      refine ⟨o, ?_, by rw [Option.getD_some]⟩
+      simp only [go.structFieldOffset, go.structLayout, ho]
+  subst hlayfs
+  rw [BigSepL.bigSepL_map]
+  iapply (BigSepL.bigSepL_mono (fun {k f} hk => ?_)) $$ H
+  obtain ⟨o, ho, hget⟩ := hoff f (List.mem_of_getElem? hk)
+  have href := hlay.field_ref f.name o l ho hc
+  simp only [StructFieldDesc.layout, hget, href]
+  iintro H
+  iframe H
+  ipureintro; exact hc
+
 /-! ### The instance -/
 
 theorem struct_into_val_typed {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
@@ -1556,11 +1743,13 @@ theorem struct_into_val_typed {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
     (hfs : FieldsMatch fds_unsealed fs)
     (hdef : ∀ l v dq, typedPointstoDef l v dq ⊣⊢ structFieldsPointsto fs l v dq)
-    (hrebuild : ∀ x, structRebuild fs (zero_val V) x = x) :
+    (hrebuild : ∀ x, structRebuild fs (zero_val V) x = x)
+    (hraw : ∀ l, l.locCar ≠ 0 → rawCells l (typeSize V) ⊢ structFieldsRaw fs l) :
     IntoValTypedUnderlying (GF := GF) V (go.StructType fds) where
   wp_alloc_def v := struct_wp_alloc fs hfs hdef v
   wp_load_def l dq v := struct_wp_load fs hfs hdef hrebuild l dq v
   wp_store_def l v w := struct_wp_store fs hfs hdef l v w
+  wp_store_raw_def l w := struct_wp_store_raw fs hfs hdef hraw l w
   type_repr_def := hrepr
 
 end struct_generic
@@ -1581,8 +1770,8 @@ the generic lemma `struct_into_val_typed`: the field descriptions are built from
 the field list, their projections and updates are determined by the
 `StructFieldGet`/`StructFieldSet` step instances. -/
 elab "solve_into_val_typed_struct_gen" : tactic => withMainContext do
-  evalTactic (← `(tactic| refine struct_into_val_typed ?fs ?hfs ?hdef ?hrebuild))
-  let [gfs, ghfs, ghdef, ghreb] ← getGoals
+  evalTactic (← `(tactic| refine struct_into_val_typed ?fs ?hfs ?hdef ?hrebuild ?hraw))
+  let [gfs, ghfs, ghdef, ghreb, ghraw] ← getGoals
     | throwError "solve_into_val_typed_struct_gen: unexpected goals"
   -- the field list `fds_unsealed`, from `FieldsMatch fds_unsealed ?fs`
   let hfsTy ← instantiateMVars (← ghfs.getType)
@@ -1610,6 +1799,8 @@ elab "solve_into_val_typed_struct_gen" : tactic => withMainContext do
   evalTactic (← `(tactic| (intro _ _ _; exact .rfl)))
   setGoals [ghreb]
   evalTactic (← `(tactic| (intro x; cases x; rfl)))
+  setGoals [ghraw]
+  evalTactic (← `(tactic| (intro l hc; refine structFieldsRaw_of_layout _ _ rfl ?_ l hc; simp only [List.map_cons, List.map_nil, StructFieldDesc.layout]; decide)))
 
 end struct_tac
 
@@ -1734,6 +1925,18 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     try simp only [TypedPointsto.typedPointstoDef, named]
     (try iframe_exact); (try iframe)
     ipureintro; (try simp only [and_self]); exact Hnn
+  · intro s E t _ l w
+    iintro %Φ ⟨%Hc, Hraw⟩ HΦ
+    have _tagged := @go.tagged_internal_inst
+    wp_pure
+    clear _tagged
+    try wp_auto
+    cases w
+    iapply HΦ
+    try simp only [TypedPointsto.typedPointstoDef, named]
+    have Hnn : l ≠ null := fun h => by subst h; exact Hc rfl
+    (try iframe_exact); (try iframe)
+    ipureintro; (try simp only [and_self]); exact Hnn
   · infer_instance))
 
 /-- `solve_into_val_typed_struct`: prove `IntoValTypedUnderlying V T` for
@@ -1747,6 +1950,13 @@ macro "solve_into_val_typed_struct" : tactic =>
 
 instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A) := ⟨rfl⟩
 
+/-- The empty struct: size 0, alignment 1. -/
+instance structLayout_unit [FfiSyntax] [GoSemanticsFunctions] [go.LayoutSemantics] :
+    go.StructLayout Unit [] where
+  size := by rw [go.typeSize_unit]; decide
+  align := by rw [go.typeAlign_unit]; decide
+  field_ref _ _ _ h _ := by simp [go.structFieldOffset, go.structLayout, go.structLayoutAux] at h
+
 section intoVal_typed_unit
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
@@ -1754,7 +1964,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance intoVal_typed_unit : IntoValTypedUnderlying (GF := GF) Unit (go.StructType []) := by
-  solve_into_val_typed_struct
+  solve_into_val_typed_struct_steps
 
 end intoVal_typed_unit
 
