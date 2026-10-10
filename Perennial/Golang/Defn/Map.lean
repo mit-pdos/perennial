@@ -23,6 +23,7 @@ at named map types.
 module
 
 public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Assume
 public import Perennial.Golang.Defn.Predeclared
 
 @[expose] public section
@@ -81,9 +82,14 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_delete_step_pure (m k : val) :
     ⟦InternalMapDelete, (m, k)⟧ ⤳ (mapDelete m k)
   /-- Not an instance in Lean: `ks` and `H` cannot be found by typeclass
-  search. -/
+  search.
+
+  A map has fewer than `2^63` keys (its length is a non-negative `int`): the
+  model assumes it, as `append` assumes its length does not overflow
+  (`sumAssumeNoOverflowSigned`): `len` of a larger map does not return. -/
   internal_map_length_step_pure (m : val) (ks : List val) (H : is_map_domain m ks) :
-    ⟦InternalMapLength, m⟧ ⤳ #(W64 ks.length)
+    ⟦InternalMapLength, m⟧ ⤳
+      (if ks.length < 2 ^ 63 then Val #(W64 ks.length) else App (Val assume) (Val #false))
   internal_map_domain_literal_step_pure (mv : val) (m : val → Bool × val) (body : val)
     (key_type elem_type : go.GoType) (Hm : is_map_pure mv m) :
     is_go_step_pure (InternalMapForRange key_type elem_type) glv((mv, body)) =

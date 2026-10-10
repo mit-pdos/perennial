@@ -669,13 +669,15 @@ theorem wp_map_for_range_mut (P : Nat → GMap K V → IProp GF) (body : GoFunc)
     $$ Hm H
 
 
-/-- `len(m)` of a map the caller owns. `t` is any type whose underlying type is
-a map (`len_map` takes `[t ↓u go.MapType ..]`). The nil map is `pure_wp_map_nil_len`. -/
-theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+/-- `len(m)` of a map the caller owns, and the model's bound on its size (fewer
+than `2^63` keys: `internal_map_length_step_pure`). `t` is any type whose
+underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). The nil map
+is `pure_wp_map_nil_len`. -/
+theorem wp_map_len_lt {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
     (mref : Loc) (m : GMap K V) (dq : DFrac) :
     {{ (mref ↦${dq} m : IProp GF) }}
       (App (Val #(functions go.len [t])) (Val #mref)) @ s; E
-    {{ RET #(W64 (GMap.size m)); mref ↦${dq} m }} := by
+    {{ RET #(W64 (GMap.size m)); mref ↦${dq} m ∗ ⌜GMap.size m < 2 ^ 63⌝ }} := by
   wp_start as Hm
   ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
   rw [decide_eq_false Hnn]
@@ -696,13 +698,35 @@ theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_typ
   haveI := go.internal_map_length_step_pure mv _ hks
   wp_pures
   rw [List.length_map, Hsize]
-  iapply HΦ
-  unfold ownMapDef
-  simp only [named]
-  iexists mv, mp
-  iframe Hown
-  ipureintro
-  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+  by_cases hb : GMap.size m < 2 ^ 63
+  · rw [if_pos hb]
+    wp_pures
+    iapply HΦ
+    isplitl
+    · unfold ownMapDef
+      simp only [named]
+      iexists mv, mp
+      iframe Hown
+      ipureintro
+      exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+    · ipureintro; exact hb
+  · rw [if_neg hb]
+    iapply wp_assume
+    iintro %h
+    cases h
+
+/-- `len(m)` of a map the caller owns (see `wp_map_len_lt`, which also gives the
+model's bound on the map's size). -/
+theorem wp_map_len {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+    (mref : Loc) (m : GMap K V) (dq : DFrac) :
+    {{ (mref ↦${dq} m : IProp GF) }}
+      (App (Val #(functions go.len [t])) (Val #mref)) @ s; E
+    {{ RET #(W64 (GMap.size m)); mref ↦${dq} m }} := by
+  iintro %Φ Hm HΦ
+  iapply wp_map_len_lt $$ Hm
+  inext
+  iintro ⟨Hm, -⟩
+  iapply HΦ $$ Hm
 
 
 instance wp_map_nil_for_range (body : GoFunc) (key_type elem_type : go.GoType) :
