@@ -180,14 +180,27 @@ def PrimOp2.toNat : PrimOp2 → Nat
   | .AtomicSwapOp => 1
   | .AtomicAddOp => 2
   | .AllocNOp => 3
+  | .AtomicWordOp n op => 4 * n + (match op with | .load => 0 | .swap => 1 | .add => 2 | .cmpxchg => 3) + 4
 def PrimOp2.fromNat : Nat → PrimOp2
   | 0 => .FinishStoreOp
   | 1 => .AtomicSwapOp
   | 2 => .AtomicAddOp
   | 3 => .AllocNOp
-  | _ => .FinishStoreOp
+  | k + 4 => .AtomicWordOp (k / 4)
+      (match k % 4 with | 0 => .load | 1 => .swap | 2 => .add | _ => .cmpxchg)
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
-  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by
+    intro x
+    cases x with
+    | AtomicWordOp n op =>
+      cases op <;> simp only [PrimOp2.toNat, PrimOp2.fromNat] <;>
+        simp only [show ∀ c, c < 4 → (4 * n + c) / 4 = n from fun c h => by omega,
+          show ∀ c, c < 4 → (4 * n + c) % 4 = c from fun c h => by omega, Nat.add_zero,
+          show (4 * n) / 4 = n by omega, show (4 * n) % 4 = 0 by omega,
+          show (4 * n + 1) / 4 = n by omega, show (4 * n + 1) % 4 = 1 by omega,
+          show (4 * n + 2) / 4 = n by omega, show (4 * n + 2) % 4 = 2 by omega,
+          show (4 * n + 3) / 4 = n by omega, show (4 * n + 3) % 4 = 3 by omega]
+    | _ => rfl)
 
 def GoOperator.toNat : GoOperator → Nat
   | .GoEquals => 0

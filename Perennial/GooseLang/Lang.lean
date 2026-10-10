@@ -111,6 +111,11 @@ inductive PrimOp1 where
   | AllocOp
 deriving DecidableEq
 
+/-- The atomic operations on a little-endian word of bytes (`AtomicWord`). -/
+inductive WordOp where
+  | load | swap | add | cmpxchg
+deriving DecidableEq
+
 inductive PrimOp2 where
   /-- pointer, value -/
   | FinishStoreOp
@@ -120,6 +125,8 @@ inductive PrimOp2 where
   | AtomicAddOp
   /-- allocation of a contiguous block (number of cells, initial value of each) -/
   | AllocNOp
+  /-- an atomic operation on the `n`-byte little-endian word at a location (`AtomicWord`) -/
+  | AtomicWordOp (n : Nat) (op : WordOp)
 deriving DecidableEq
 
 inductive GoOperator where
@@ -306,6 +313,12 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
+/-- `AtomicWord n op l arg`: in one step, read the `n`-byte little-endian word at `l` (the
+cells `l, …, l +ₗ (n - 1)`, each a byte), and by `op` return it (`load`), replace it by `arg`
+returning the old word (`swap`), add `arg` returning the sum (`add`), or, for `arg` the pair
+`(old, new)`, replace it by `new` if it is `old` returning the old word and whether it did
+(`cmpxchg`); see `wordOpEval`. A word of 2, 4 or 8 bytes is a `w16`, `w32` or `w64`. -/
+abbrev AtomicWord (n : Nat) (op : WordOp) (e1 e2 : Expr) : Expr := Primitive2 (.AtomicWordOp n op) e1 e2
 /-- `AllocN n v`: a fresh block of `n` cells `l, l +ₗ 1, …`, each holding `v`. -/
 abbrev AllocN (e1 e2 : Expr) : Expr := Primitive2 .AllocNOp e1 e2
 
@@ -594,6 +607,43 @@ def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
   | [] => ∅
   | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
 
+/-- The `n` little-endian bytes of `z` (mod `2^(8n)`). -/
+def leBytes (n : Nat) (z : Int) : List w8 :=
+  (List.range n).map fun i => BitVec.ofInt 8 (z / 2 ^ (8 * i))
+
+/-- The value of little-endian bytes. -/
+def leInt (bs : List w8) : Int :=
+  bs.foldr (fun b acc => (b.toNat : Int) + 256 * acc) 0
+
+/-- A word of `n` bytes as a value: a `w16`, `w32` or `w64`. -/
+def wordLit (n : Nat) (z : Int) : val :=
+  match n with
+  | 2 => LitV (LitInt16 (BitVec.ofInt 16 z))
+  | 4 => LitV (LitInt32 (BitVec.ofInt 32 z))
+  | _ => LitV (LitInt (BitVec.ofInt 64 z))
+
+/-- The (unsigned) value of a word value of `n` bytes. -/
+def wordLitZ? (n : Nat) (v : val) : Option Int :=
+  match n, v with
+  | 2, LitV (LitInt16 x) => some x.toNat
+  | 4, LitV (LitInt32 x) => some x.toNat
+  | 8, LitV (LitInt x) => some x.toNat
+  | _, _ => none
+
+/-- `op` on the word `old` (of `n` bytes) with argument `arg`: the result, and the new word
+if it writes one. -/
+def wordOpEval (n : Nat) : WordOp → Int → val → Option (val × Option Int)
+  | .load, old, _ => some (wordLit n old, none)
+  | .swap, old, v => (wordLitZ? n v).map fun z => (wordLit n old, some z)
+  | .add, old, v => (wordLitZ? n v).map fun z => (wordLit n (old + z), some (old + z))
+  | .cmpxchg, old, PairV o w =>
+    match wordLitZ? n o, wordLitZ? n w with
+    | some zo, some zw =>
+      if old = zo then some (PairV (wordLit n old) (LitV (LitBool true)), some zw)
+      else some (PairV (wordLit n old) (LitV (LitBool false)), none)
+    | _, _ => none
+  | .cmpxchg, _, _ => none
+
 /-- `stateInitHeap` for a block: `n` copies of `v` from `l` on. -/
 def stateInitHeapN (l : Loc) (n : Nat) (v : val) (σ : state) : state :=
   { σ with heap := heapArray l ((List.replicate n v).map Free) ∪ σ.heap }
@@ -634,6 +684,18 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
+  | AtomicWordS (n : Nat) (op : WordOp) (l : Loc) (arg : val) (bs : List w8) (ks : List Nat)
+      (r : val) (w : Option Int) σg :
+      bs.length = n → ks.length = n →
+      (∀ i (hb : i < bs.length) (hk : i < ks.length),
+        σg.1.heap !! (l +ₗ (i : Int)) = some (Reading (ks[i]'hk), LitV (LitByte (bs[i]'hb)))) →
+      wordOpEval n op (leInt bs) arg = some (r, w) →
+      (w.isSome → ∀ k ∈ ks, k = 0) →
+      BaseStep (AtomicWord n op (Val #l) (Val arg)) σg [] (Val r)
+        (match w with
+         | none => σg
+         | some z => setHeap (fun h =>
+             heapArray l ((leBytes n z).map fun b => Free (LitV (LitByte b))) ∪ h) σg) []
   | AllocNS (n : w64) v l σg :
       IsFresh σg l →
       BaseStep (AllocN (Val (LitV (LitInt n))) (Val v)) σg [] (Val #l) (stateInitHeapN l (uint.nat n) v σg.1, σg.2) []

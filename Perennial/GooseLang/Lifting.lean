@@ -441,6 +441,115 @@ theorem na_heap_alloc_list (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List 
     simp only [Int.natCast_zero, loc_add_0, Hk]
     iframe
 
+/-- The cells `l, l +ₗ 1, …` of a list of points-tos are in the heap, readable. -/
+theorem na_heap_read_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (dq : DFrac) (vs : List val) :
+    ⊢@{IProp GF} naHeapCtx tls σ -∗
+      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) dq v) -∗
+      ⌜∀ i (h : i < vs.length), ∃ k, σ !! (l +ₗ (i : Int)) = some (Reading k, vs[i])⌝ := by
+  induction vs generalizing l with
+  | nil => iintro _ _; ipureintro; intro i h; simp at h
+  | cons v vs ih =>
+    iintro Hσ Hl
+    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
+    rw [Int.natCast_zero, loc_add_0]
+    icases na_heap_read tls σ l dq v $$ Hσ H0 with %⟨lk, n, H1, H2⟩
+    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+      intro k; rw [loc_add_assoc]; congr 1; omega
+    simp only [Hk]
+    icases ih (l +ₗ 1) $$ Hσ Hl with %Hrest
+    ipureintro
+    intro i h
+    cases i with
+    | zero =>
+      cases lk with
+      | Reading k => exact ⟨k, by simpa using H1⟩
+      | Writing => simp at H2
+    | succ i =>
+      obtain ⟨k, hk⟩ := Hrest i (by simp at h; omega)
+      exact ⟨k, by rw [Hk]; simpa using hk⟩
+
+/-- With full ownership, the cells are readable by no one else (`Reading 0`). -/
+theorem na_heap_read_cells_1 (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val) :
+    ⊢@{IProp GF} naHeapCtx tls σ -∗
+      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) -∗
+      ⌜∀ i (h : i < vs.length), σ !! (l +ₗ (i : Int)) = some (Reading 0, vs[i])⌝ := by
+  induction vs generalizing l with
+  | nil => iintro _ _; ipureintro; intro i h; simp at h
+  | cons v vs ih =>
+    iintro Hσ Hl
+    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
+    rw [Int.natCast_zero, loc_add_0]
+    icases na_heap_read_1 tls σ l v $$ Hσ H0 with %⟨lk, H1, H2⟩
+    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+      intro k; rw [loc_add_assoc]; congr 1; omega
+    simp only [Hk]
+    icases ih (l +ₗ 1) $$ Hσ Hl with %Hrest
+    ipureintro
+    intro i h
+    cases i with
+    | zero =>
+      cases lk with
+      | Reading k => simp at H2; subst H2; simpa using H1
+      | Writing => simp at H2
+    | succ i =>
+      have hk := Hrest i (by simp at h; omega)
+      rw [Hk]; simpa using hk
+
+/-- Writing all the cells `l, l +ₗ 1, …` (each readable by no one, `Reading 0`). -/
+theorem na_heap_write_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs vs' : List val)
+    (hlen : vs'.length = vs.length)
+    (Hfree : ∀ i (h : i < vs.length), σ !! (l +ₗ (i : Int)) = some (Reading 0, vs[i])) :
+    ⊢@{IProp GF} naHeapCtx tls σ -∗
+      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) ==∗
+      naHeapCtx tls (heapArray l (vs'.map Free) ∪ σ) ∗
+      [∗list] i ↦ v ∈ vs', naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
+  induction vs generalizing l vs' with
+  | nil =>
+    cases vs' with
+    | cons => simp at hlen
+    | nil =>
+      iintro Hσ _
+      imodintro
+      have : heapArray l (([] : List val).map Free) ∪ σ = σ := by
+        apply GMap.ext; intro k; rfl
+      rw [this]
+      iframe Hσ
+      iapply BigSepL.bigSepL_nil.2
+      itrivial
+  | cons v vs ih =>
+    cases vs' with
+    | nil => simp at hlen
+    | cons v' vs' =>
+    simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
+    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+      intro k; rw [loc_add_assoc]; congr 1; omega
+    iintro Hσ Hl
+    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
+    simp only [Hk]
+    imod ih (l +ₗ 1) vs' hlen (fun i h => by
+      have := Hfree (i + 1) (by simp; omega)
+      rw [Hk] at this; simpa using this) $$ Hσ Hl with ⟨Hσ, Hl⟩
+    have Hl0 : (heapArray (l +ₗ 1) (vs'.map Free) ∪ σ) !! l = some (Reading 0, v) := by
+      rw [GMap.lookup_union]
+      have := heapArray_lookup_lt (l +ₗ 1) (vs'.map Free) (-1) (by omega)
+      rw [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
+      rw [this]
+      have := Hfree 0 (by simp)
+      simpa using this
+    rw [Int.natCast_zero, loc_add_0]
+    imod na_heap_write tls _ l (Reading 0) v v' rfl $$ Hσ H0 with ⟨Hσ, H0⟩
+    imodintro
+    have Heq : heapArray l ((v' :: vs').map Free) ∪ σ =
+        <[l := (Reading 0, v')]> (heapArray (l +ₗ 1) (vs'.map Free) ∪ σ) :=
+      (GMap.insert_union_l _ _ _ _).symm
+    rw [Heq]
+    iframe Hσ
+    iapply BigSepL.bigSepL_cons.2
+    rw [Int.natCast_zero, loc_add_0]
+    iframe
+    simp only [Hk]
+    iexact Hl
+
 end na_heap_alloc
 
 section atomic
@@ -465,6 +574,10 @@ local macro "solve_sub_redexes" : tactic =>
   `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
 
 instance alloc_atomic (a : Language.Atomicity) (v : val) : Language.Atomic a (Alloc (Val v)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance atomicWord_atomic (a : Language.Atomicity) (n : Nat) (op : WordOp) (v1 v2 : val) :
+    Language.Atomic a (AtomicWord n op (Val v1) (Val v2)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 instance allocN_atomic (a : Language.Atomicity) (n v : val) :
@@ -611,6 +724,21 @@ theorem baseStep_Fork_inv {e : Expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
 theorem baseStep_Alloc_inv {v : val} (h : BaseStep (Alloc (Val v)) σ κ e' σ' efs) :
     ∃ l, IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧ σ' = (stateInitHeap l v σ.1, σ.2) ∧ efs = [] := by
   cases h; exact ⟨_, ‹_›, rfl, rfl, rfl, rfl⟩
+
+theorem baseStep_AtomicWord_inv {n : Nat} {op : WordOp} {v1 v2 : val}
+    (h : BaseStep (AtomicWord n op (Val v1) (Val v2)) σ κ e' σ' efs) :
+    ∃ (l : Loc) (bs : List w8) (ks : List Nat) (r : val) (w : Option Int), v1 = #l ∧
+      bs.length = n ∧ ks.length = n ∧
+      (∀ i (hb : i < bs.length) (hk : i < ks.length),
+        σ.1.heap !! (l +ₗ (i : Int)) = some (Reading (ks[i]'hk), LitV (LitByte (bs[i]'hb)))) ∧
+      wordOpEval n op (leInt bs) v2 = some (r, w) ∧ (w.isSome → ∀ k ∈ ks, k = 0) ∧
+      κ = [] ∧ e' = Val r ∧
+      σ' = (match w with
+            | none => σ
+            | some z => setHeap (fun h =>
+                heapArray l ((leBytes n z).map fun b => Free (LitV (LitByte b))) ∪ h) σ) ∧
+      efs = [] := by
+  cases h; exact ⟨_, _, _, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_AllocN_inv {n v : val} (h : BaseStep (AllocN (Val n) (Val v)) σ κ e' σ' efs) :
     ∃ (k : w64) (l : Loc), n = LitV (LitInt k) ∧ IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧
@@ -1206,6 +1334,41 @@ theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
+instance pointstoVals_timeless (l : Loc) (q : DFrac) (vs : List val) :
+    Timeless (pointstoVals (GF := GF) l q vs) := by
+  unfold pointstoVals; infer_instance
+
+/-- The bytes `bs` as values. -/
+def byteVals (bs : List w8) : List val := bs.map fun b => LitV (LitByte b)
+
+theorem pointstoVals_to_na (l : Loc) (q : DFrac) (vs : List val) :
+    pointstoVals l q vs ⊢ ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) := by
+  unfold pointstoVals
+  apply BigSepL.bigSepL_mono
+  intro k x _
+  unfold heapPointsto
+  iintro ⟨-, H⟩
+  iexact H
+
+theorem pointstoVals_of_na (l : Loc) (q : DFrac) (vs : List val) (hc : l.locCar ≠ 0) :
+    ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) ⊢ pointstoVals l q vs := by
+  unfold pointstoVals
+  apply BigSepL.bigSepL_mono
+  intro k x _
+  exact na_pointsto_to_heap _ _ _ hc
+
+theorem pointstoVals_car (l : Loc) (q : DFrac) (vs : List val) (h : vs ≠ []) :
+    pointstoVals l q vs ⊢ (⌜l.locCar ≠ 0⌝ : IProp GF) := by
+  cases vs with
+  | nil => exact absurd rfl h
+  | cons v vs =>
+    unfold pointstoVals
+    iintro H
+    icases BigSepL.bigSepL_cons.1 $$ H with ⟨H0, -⟩
+    unfold heapPointsto
+    icases H0 with ⟨%hc, -⟩
+    ipureintro; simpa using hc
+
 theorem wp_allocN_seq (v : val) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; pointstoVals l (.own 1) [v] }} := by
@@ -1288,6 +1451,139 @@ theorem wp_allocN (n : w64) (v : val) :
   unfold pointstoVals
   iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
     na_pointsto_to_heap (l +ₗ (i : Int)) _ x Hnn)) $$ Hl
+
+/-! ### Atomic operations on words -/
+
+theorem leBytes_length (n : Nat) (z : Int) : (leBytes n z).length = n := by
+  simp [leBytes]
+
+/-- An atomic operation that does not write (`load`, a failing `cmpxchg`), on the `n` bytes
+`bs` at `l`. -/
+theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : List w8)
+    (arg r : val) (hn : 0 < n) (hlen : bs.length = n)
+    (hev : wordOpEval n op (leInt bs) arg = some (r, none)) :
+    {{ ▷ pointstoVals (GF := GF) l q (byteVals bs) }} (AtomicWord n op (Val #l) (Val arg)) @ s; E
+    {{ RET r; pointstoVals l q (byteVals bs) }} := by
+  iintro %Φ >Hl HΦ
+  have hne : byteVals bs ≠ [] := by
+    intro h; simp [byteVals] at h; subst h; simp at hlen; omega
+  icases pointstoVals_car l q _ hne $$ Hl with %hc
+  ihave Hl := pointstoVals_to_na l q _ $$ Hl
+  iapply wp_lift_atomic_heap_step rfl rfl
+  iintro %σ₁ Hσ
+  icases na_heap_read_cells σ₁.1.heap l q (byteVals bs) $$ Hσ Hl with %Hcells
+  have Hcells' : ∀ i (h : i < bs.length), ∃ k,
+      σ₁.1.heap !! (l +ₗ (i : Int)) = some (Reading k, LitV (LitByte (bs[i]'h))) := by
+    intro i h
+    obtain ⟨k, hk⟩ := Hcells i (by simp [byteVals, h])
+    exact ⟨k, by simpa [byteVals] using hk⟩
+  let ks : List Nat := (List.range bs.length).map fun i =>
+    if h : i < bs.length then Classical.choose (Hcells' i h) else 0
+  have hks : ks.length = bs.length := by simp [ks]
+  have Hlook : ∀ i (hb : i < bs.length) (hk : i < ks.length),
+      σ₁.1.heap !! (l +ₗ (i : Int)) = some (Reading (ks[i]'hk), LitV (LitByte (bs[i]'hb))) := by
+    intro i hb hk
+    simp only [ks, List.getElem_map, List.getElem_range, dif_pos hb]
+    exact Classical.choose_spec (Hcells' i hb)
+  imodintro
+  isplitr
+  · ipureintro
+    exact ⟨[], _, _, [], BaseStep.AtomicWordS n op l arg bs ks r none σ₁ hlen (hks.trans hlen)
+      Hlook hev (by simp)⟩
+  inext
+  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
+  obtain ⟨l', bs', ks', r', w', Hl', hlen', hks', Hlook', hev', -, rfl, rfl, Hσ₂, rfl⟩ :=
+    baseStep_AtomicWord_inv Hstep
+  cases GoGlobalContext.intoVal_inj_loc Hl'
+  have hbs : bs' = bs := by
+    apply List.ext_getElem (by omega)
+    intro i h1 h2
+    have e1 := Hlook' i h1 (by omega)
+    obtain ⟨k, e2⟩ := Hcells' i h2
+    rw [e2] at e1
+    simp at e1
+    first | exact e1.2.symm | exact e1.2 | exact e1.symm | exact e1
+  subst hbs
+  rw [hev] at hev'
+  cases hev'
+  subst Hσ₂
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨rfl, rfl⟩
+  isplitl [Hσ]
+  · iexists _; iframe Hσ; ipureintro; rfl
+  iexists r
+  isplit
+  · ipureintro; rfl
+  iapply HΦ
+  iapply pointstoVals_of_na l q _ hc $$ Hl
+
+/-- An atomic operation that writes (`swap`, `add`, a succeeding `cmpxchg`) the word `z`, on
+the `n` bytes `bs` at `l`. -/
+theorem wp_atomic_word_write (n : Nat) (op : WordOp) (l : Loc) (bs : List w8)
+    (arg r : val) (z : Int) (hn : 0 < n) (hlen : bs.length = n)
+    (hev : wordOpEval n op (leInt bs) arg = some (r, some z)) :
+    {{ ▷ pointstoVals (GF := GF) l (.own 1) (byteVals bs) }}
+      (AtomicWord n op (Val #l) (Val arg)) @ s; E
+    {{ RET r; pointstoVals l (.own 1) (byteVals (leBytes n z)) }} := by
+  iintro %Φ >Hl HΦ
+  have hne : byteVals bs ≠ [] := by
+    intro h; simp [byteVals] at h; subst h; simp at hlen; omega
+  icases pointstoVals_car l _ _ hne $$ Hl with %hc
+  ihave Hl := pointstoVals_to_na l _ _ $$ Hl
+  iapply wp_lift_atomic_heap_step rfl rfl
+  iintro %σ₁ Hσ
+  icases na_heap_read_cells_1 σ₁.1.heap l (byteVals bs) $$ Hσ Hl with %Hcells
+  have Hcells' : ∀ i (h : i < bs.length),
+      σ₁.1.heap !! (l +ₗ (i : Int)) = some (Reading 0, LitV (LitByte (bs[i]'h))) := by
+    intro i h
+    simpa [byteVals] using Hcells i (by simp [byteVals, h])
+  let ks : List Nat := List.replicate bs.length 0
+  have hks : ks.length = bs.length := by simp [ks]
+  have Hlook : ∀ i (hb : i < bs.length) (hk : i < ks.length),
+      σ₁.1.heap !! (l +ₗ (i : Int)) = some (Reading (ks[i]'hk), LitV (LitByte (bs[i]'hb))) := by
+    intro i hb hk
+    simp only [ks, List.getElem_replicate]
+    exact Hcells' i hb
+  imod na_heap_write_cells σ₁.1.heap l (byteVals bs) (byteVals (leBytes n z))
+    (by simp [byteVals, leBytes_length, hlen])
+    (fun i h => by simpa [byteVals] using Hcells' i (by simpa [byteVals] using h)) $$ Hσ Hl
+    with ⟨Hσ, Hl⟩
+  imodintro
+  isplitr
+  · ipureintro
+    exact ⟨[], _, _, [], BaseStep.AtomicWordS n op l arg bs ks r (some z) σ₁ hlen (hks.trans hlen)
+      Hlook hev (by intro _ k hk; simp [ks] at hk; exact hk.2)⟩
+  inext
+  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
+  obtain ⟨l', bs', ks', r', w', Hl', hlen', hks', Hlook', hev', -, rfl, rfl, Hσ₂, rfl⟩ :=
+    baseStep_AtomicWord_inv Hstep
+  cases GoGlobalContext.intoVal_inj_loc Hl'
+  have hbs : bs' = bs := by
+    apply List.ext_getElem (by omega)
+    intro i h1 h2
+    have e1 := Hlook' i h1 (by omega)
+    rw [Hcells' i h2] at e1
+    simp at e1
+    first | exact e1.2.symm | exact e1.2 | exact e1.symm | exact e1
+  subst hbs
+  rw [hev] at hev'
+  cases hev'
+  subst Hσ₂
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨rfl, rfl⟩
+  isplitl [Hσ]
+  · iexists _
+    iframe Hσ
+    ipureintro
+    simp only [setHeap, byteVals, List.map_map]
+    rfl
+  iexists r
+  isplit
+  · ipureintro; rfl
+  iapply HΦ
+  iapply pointstoVals_of_na l _ _ hc $$ Hl
 
 /-! ### Fork -/
 
