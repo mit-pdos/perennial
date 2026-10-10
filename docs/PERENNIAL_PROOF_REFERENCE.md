@@ -890,20 +890,26 @@ are the thread fuel, owned by the state interpretation
   for by exactly one token, wherever it is.
 * `wp_fork`: the usual rule, `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
   the forked thread keeps its token to itself.
+* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ _, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
+  the token given to the body (which uses it and ends with it);
+  `wp_fork_tok_self`: `▷ WP e {{ _, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
+  the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
 * `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
   `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).
 
-**The `WaitGroup` argument.** A loop that `Add(1)`s and spawns a goroutine
-with a deferred `Done` per iteration cannot bound its counter by induction: the
-scheduler may delay every `Done`. With thread tokens, the thread that calls
-`Add(1)` deposits a token in the wait group's invariant (its own, or the one it
-is about to receive at the `go` statement), and the goroutine takes a token
-back at `Done` and returns it at its exit. The invariant then owns one token per
-pending `Done`, so `threadToks_add_one_lt` bounds the counter by `T` when
-`Add` opens it, and `T ≤ 2^31` keeps the 32-bit counter from overflowing: the
-informal argument that `2^31` goroutines cannot be live at once, made in the
-logic. `ThreadTokensTest.lean` (`wp_counter_register`) is this argument for a
-counter of live threads in miniature.
+**The `WaitGroup` argument.** `WaitGroup.wp_Add` asks its caller to bound the
+new counter by `2^31` (Go's `Add` panics past it). A loop that `Add(1)`s and
+spawns a goroutine with a deferred `Done` per iteration cannot bound its counter
+by induction: the scheduler may delay every `Done`. With thread tokens, the
+thread that calls `Add(1)` deposits its own token in the wait group's invariant
+and receives a fresh one at the `go` statement (`wp_fork_tok_self`); the
+goroutine takes the deposited token back at its `Done` and exits with it. The
+invariant then owns one token per pending `Done`, so `threadToks_add_one_lt`
+bounds the counter by `T` when `Add` opens it, and `T ≤ 2^31` keeps the 32-bit
+counter from overflowing: the informal argument that `2^31` goroutines cannot be
+live at once, made in the logic. `ThreadTokensTest.lean` (`wp_counter_register`)
+is this argument for a counter of live threads in miniature; etcd-grove's cache
+(`cacheWgInv`) uses it for `sync.WaitGroup` itself.
 
 **Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `g.threads = 1`
 of the initial configuration and `RealThreadsBelow T n ([e], (σ, g))`: every

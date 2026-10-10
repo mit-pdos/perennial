@@ -1338,6 +1338,29 @@ theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
   iintro %_ ⟨Htok, -⟩
   iexact Htok
 
+/-- `Fork e`, the fresh thread token going to the forked thread: its body receives the token and
+must end with one. (`wp_fork` is this with the token framed through the body.) -/
+theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+  iintro He HΦ
+  iapply wp_fork_tok
+  inext
+  iintro Htok
+  iframe HΦ
+  iapply He $$ Htok
+
+/-- `Fork e`, the fresh thread token staying with the forking thread: the forked thread must end
+with a token of its own, e.g. one it takes back out of an invariant at its `Done`, where the
+forking thread deposited its own before the `go` statement. -/
+theorem wp_fork_tok_self (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ WP e @ s; ⊤ {{ _v, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+  iintro He HΦ
+  iapply wp_fork_tok
+  inext
+  iintro Htok
+  iframe He
+  iapply HΦ $$ Htok
+
 /-! ### Go instructions -/
 
 /-- WP for go instructions, with time receipts. Go instructions
