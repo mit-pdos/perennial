@@ -2629,7 +2629,8 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 	body := ctx.blockStmt(d.Body, cont)
 
-	if d.Name.Name == "init" {
+	if d.Recv == nil && d.Name.Name == "init" {
+		// a package initializer (a method may also be named init)
 		if ctx.usesDefer {
 			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
 		} else {

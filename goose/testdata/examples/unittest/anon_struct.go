@@ -17,3 +17,8 @@ func useHooks(w *withHooks, x uint64) uint64 {
 func setHooks(w *withHooks) {
 	w.hooks.write = func(x uint64) uint64 { return x }
 }
+
+// A method named init is not a package initializer (bbolt's DB.init).
+func (w *withHooks) init() {
+	w.name = "init"
+}

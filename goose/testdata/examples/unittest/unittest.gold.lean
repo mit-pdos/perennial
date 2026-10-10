@@ -1056,6 +1056,21 @@ noncomputable def setHooks.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))))) (Pair (App (Val (GoInstruction (StructFieldRef anonStruct_185bb3b548659d52.ty go!"write"))) (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"hooks"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w")))) (Var "$r0")))))))))
 
+/-- A method named init is not a package initializer (bbolt's DB.init).
+
+    go: anon_struct.go:22:21 -/
+noncomputable def withHooks.init.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "w"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType withHooks.ty)))) (Var "w"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Val #(go!"init"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef withHooks.ty go!"name"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType withHooks.ty)))) (Var "w"))) (Var "$r0"))))))))))
+
 /-- go: array.go:5:6 -/
 noncomputable def takesArray.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
@@ -5217,6 +5232,7 @@ class withHooks.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_hooks : ∀ (x : withHooks) (y : anonStruct_185bb3b548659d52), go.IsGoStepPureDetTagged under (StructFieldSet withHooks.underlying go!"hooks") (PairV #x #y) (Val #(({ x with hooks' := y } : withHooks)))
   get_name : ∀ (x : withHooks), go.IsGoStepPureDetTagged under (StructFieldGet withHooks.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : withHooks) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet withHooks.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : withHooks)))
+  ptr_init_unfold : MethodUnfold (go.GoType.PointerType withHooks.ty) go!"init" withHooks.init.impl
 
 attribute [instance] withHooks.TypeAssumptions.type_repr
   withHooks.TypeAssumptions.underlying
@@ -5225,6 +5241,7 @@ attribute [instance] withHooks.TypeAssumptions.type_repr
   withHooks.TypeAssumptions.set_hooks
   withHooks.TypeAssumptions.get_name
   withHooks.TypeAssumptions.set_name
+  withHooks.TypeAssumptions.ptr_init_unfold
 
 abbrev Foo [FfiSyntax] : Type := (GoArray w64 10)
 
