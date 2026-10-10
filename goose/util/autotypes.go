@@ -177,6 +177,9 @@ func TypeDecls(n ast.Node) []*ast.GenDecl {
 }
 
 func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df declfilter.DeclFilter) declfilter.DeclFilter {
+	if config.TranslateConsts {
+		df = declfilter.WithTranslated(df, packageConsts(pkg))
+	}
 	logFile := os.Getenv("GOOSE_TYPES_LOG")
 	if !config.TranslateTypes && logFile == "" {
 		return df
@@ -356,4 +359,25 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 		}
 	}
 	return declfilter.WithTranslated(df, names)
+}
+
+// packageConsts is the names of the package-level constants of pkg.
+func packageConsts(pkg *packages.Package) map[string]bool {
+	names := make(map[string]bool)
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			gd, ok := d.(*ast.GenDecl)
+			if !ok || gd.Tok != token.CONST {
+				continue
+			}
+			for _, spec := range gd.Specs {
+				for _, n := range spec.(*ast.ValueSpec).Names {
+					if n.Name != "_" {
+						names[n.Name] = true
+					}
+				}
+			}
+		}
+	}
+	return names
 }

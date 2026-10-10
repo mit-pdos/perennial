@@ -450,3827 +450,5765 @@ axiom anonStruct_b055a820c08747a0.underlying [FfiSyntax] [GoGlobalContext] : go.
 
 axiom mmapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom CLONE_VM [FfiSyntax] [GoGlobalContext] : val
+/-- set if VM shared between processes -/
+@[reducible] noncomputable def CLONE_VM [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
+
+/-- set if fs info shared between processes -/
+@[reducible] noncomputable def CLONE_FS [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
+
+/-- set if open files shared between processes -/
+@[reducible] noncomputable def CLONE_FILES [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom CLONE_FS [FfiSyntax] [GoGlobalContext] : val
+/-- set if signal handlers and blocked signals shared -/
+@[reducible] noncomputable def CLONE_SIGHAND [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom CLONE_FILES [FfiSyntax] [GoGlobalContext] : val
+/-- set if a pidfd should be placed in parent -/
+@[reducible] noncomputable def CLONE_PIDFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom CLONE_SIGHAND [FfiSyntax] [GoGlobalContext] : val
+/-- set if we want to let tracing continue on the child too -/
+@[reducible] noncomputable def CLONE_PTRACE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom CLONE_PIDFD [FfiSyntax] [GoGlobalContext] : val
+/-- set if the parent wants the child to wake it up on mm_release -/
+@[reducible] noncomputable def CLONE_VFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom CLONE_PTRACE [FfiSyntax] [GoGlobalContext] : val
+/-- set if we want to have the same parent as the cloner -/
+@[reducible] noncomputable def CLONE_PARENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom CLONE_VFORK [FfiSyntax] [GoGlobalContext] : val
+/-- Same thread group? -/
+@[reducible] noncomputable def CLONE_THREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom CLONE_PARENT [FfiSyntax] [GoGlobalContext] : val
+/-- New mount namespace group -/
+@[reducible] noncomputable def CLONE_NEWNS [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom CLONE_THREAD [FfiSyntax] [GoGlobalContext] : val
+/-- share system V SEM_UNDO semantics -/
+@[reducible] noncomputable def CLONE_SYSVSEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom CLONE_NEWNS [FfiSyntax] [GoGlobalContext] : val
+/-- create a new TLS for the child -/
+@[reducible] noncomputable def CLONE_SETTLS [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom CLONE_SYSVSEM [FfiSyntax] [GoGlobalContext] : val
+/-- set the TID in the parent -/
+@[reducible] noncomputable def CLONE_PARENT_SETTID [FfiSyntax] [GoGlobalContext] : val :=
+  #(1048576 : Int)
 
-axiom CLONE_SETTLS [FfiSyntax] [GoGlobalContext] : val
+/-- clear the TID in the child -/
+@[reducible] noncomputable def CLONE_CHILD_CLEARTID [FfiSyntax] [GoGlobalContext] : val :=
+  #(2097152 : Int)
 
-axiom CLONE_PARENT_SETTID [FfiSyntax] [GoGlobalContext] : val
+/-- Unused, ignored -/
+@[reducible] noncomputable def CLONE_DETACHED [FfiSyntax] [GoGlobalContext] : val :=
+  #(4194304 : Int)
 
-axiom CLONE_CHILD_CLEARTID [FfiSyntax] [GoGlobalContext] : val
+/-- set if the tracing process can't force CLONE_PTRACE on this clone -/
+@[reducible] noncomputable def CLONE_UNTRACED [FfiSyntax] [GoGlobalContext] : val :=
+  #(8388608 : Int)
 
-axiom CLONE_DETACHED [FfiSyntax] [GoGlobalContext] : val
+/-- set the TID in the child -/
+@[reducible] noncomputable def CLONE_CHILD_SETTID [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom CLONE_UNTRACED [FfiSyntax] [GoGlobalContext] : val
+/-- New cgroup namespace -/
+@[reducible] noncomputable def CLONE_NEWCGROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(33554432 : Int)
 
-axiom CLONE_CHILD_SETTID [FfiSyntax] [GoGlobalContext] : val
+/-- New utsname namespace -/
+@[reducible] noncomputable def CLONE_NEWUTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(67108864 : Int)
 
-axiom CLONE_NEWCGROUP [FfiSyntax] [GoGlobalContext] : val
+/-- New ipc namespace -/
+@[reducible] noncomputable def CLONE_NEWIPC [FfiSyntax] [GoGlobalContext] : val :=
+  #(134217728 : Int)
 
-axiom CLONE_NEWUTS [FfiSyntax] [GoGlobalContext] : val
+/-- New user namespace -/
+@[reducible] noncomputable def CLONE_NEWUSER [FfiSyntax] [GoGlobalContext] : val :=
+  #(268435456 : Int)
 
-axiom CLONE_NEWIPC [FfiSyntax] [GoGlobalContext] : val
+/-- New pid namespace -/
+@[reducible] noncomputable def CLONE_NEWPID [FfiSyntax] [GoGlobalContext] : val :=
+  #(536870912 : Int)
 
-axiom CLONE_NEWUSER [FfiSyntax] [GoGlobalContext] : val
+/-- New network namespace -/
+@[reducible] noncomputable def CLONE_NEWNET [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom CLONE_NEWPID [FfiSyntax] [GoGlobalContext] : val
+/-- Clone io context -/
+@[reducible] noncomputable def CLONE_IO [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147483648 : Int)
 
-axiom CLONE_NEWNET [FfiSyntax] [GoGlobalContext] : val
+/-- Clear any signal handler and reset to SIG_DFL. -/
+@[reducible] noncomputable def CLONE_CLEAR_SIGHAND [FfiSyntax] [GoGlobalContext] : val :=
+  #(4294967296 : Int)
 
-axiom CLONE_IO [FfiSyntax] [GoGlobalContext] : val
+/-- Clone into a specific cgroup given the right permissions. -/
+@[reducible] noncomputable def CLONE_INTO_CGROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(8589934592 : Int)
 
-axiom CLONE_CLEAR_SIGHAND [FfiSyntax] [GoGlobalContext] : val
+/-- New time namespace -/
+@[reducible] noncomputable def CLONE_NEWTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom CLONE_INTO_CGROUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _LINUX_CAPABILITY_VERSION_3 [FfiSyntax] [GoGlobalContext] : val :=
+  #(537396514 : Int)
 
-axiom CLONE_NEWTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_GETEUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(107 : Int)
 
-axiom _LINUX_CAPABILITY_VERSION_3 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(106 : Int)
 
-axiom sys_GETEUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(105 : Int)
 
-axiom sys_SETGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETREGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(114 : Int)
 
-axiom sys_SETUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETREUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(113 : Int)
 
-axiom sys_SETREGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETRESGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(119 : Int)
 
-axiom sys_SETREUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sys_SETRESUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(117 : Int)
 
-axiom sys_SETRESGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ImplementsGetwd [FfiSyntax] [GoGlobalContext] : val :=
+  #true
 
-axiom sys_SETRESUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def mask [FfiSyntax] [GoGlobalContext] : val :=
+  #(127 : Int)
 
-axiom ImplementsGetwd [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def core [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom mask [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def exited [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom core [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def stopped [FfiSyntax] [GoGlobalContext] : val :=
+  #(127 : Int)
 
-axiom exited [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def shift [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom stopped [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _NT_PRSTATUS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom shift [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def minus1 [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 18446744073709551615)
 
-axiom _NT_PRSTATUS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _SYS_setgroups [FfiSyntax] [GoGlobalContext] : val :=
+  #(116 : Int)
 
-axiom minus1 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _SYS_clone3 [FfiSyntax] [GoGlobalContext] : val :=
+  #(435 : Int)
 
-axiom _SYS_setgroups [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _SYS_faccessat2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(439 : Int)
 
-axiom _SYS_clone3 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _SYS_fchmodat2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(452 : Int)
 
-axiom _SYS_faccessat2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def darwin64Bit [FfiSyntax] [GoGlobalContext] : val :=
+  #false
 
-axiom _SYS_fchmodat2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def netbsd32Bit [FfiSyntax] [GoGlobalContext] : val :=
+  #false
 
-axiom darwin64Bit [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def faketime [FfiSyntax] [GoGlobalContext] : val :=
+  #false
 
-axiom netbsd32Bit [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ALG [FfiSyntax] [GoGlobalContext] : val :=
+  #(38 : Int)
 
-axiom faketime [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_APPLETALK [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom AF_ALG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ASH [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom AF_APPLETALK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ATMPVC [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom AF_ASH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ATMSVC [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom AF_ATMPVC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_AX25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom AF_ATMSVC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_BLUETOOTH [FfiSyntax] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-axiom AF_AX25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_BRIDGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom AF_BLUETOOTH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_CAIF [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom AF_BRIDGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_CAN [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom AF_CAIF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_DECnet [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom AF_CAN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ECONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom AF_DECnet [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_FILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom AF_ECONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_IEEE802154 [FfiSyntax] [GoGlobalContext] : val :=
+  #(36 : Int)
 
-axiom AF_FILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_INET [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom AF_IEEE802154 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_INET6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom AF_INET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_IPX [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom AF_INET6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_IRDA [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom AF_IPX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ISDN [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom AF_IRDA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_IUCV [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom AF_ISDN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_KEY [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom AF_IUCV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_LLC [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom AF_KEY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom AF_LLC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(39 : Int)
 
-axiom AF_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_NETBEUI [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom AF_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_NETLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom AF_NETBEUI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_NETROM [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom AF_NETLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_PACKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom AF_NETROM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_PHONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom AF_PACKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_PPPOX [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom AF_PHONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_RDS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom AF_PPPOX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ROSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom AF_RDS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_ROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom AF_ROSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_RXRPC [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom AF_ROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_SECURITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom AF_RXRPC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_SNA [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom AF_SECURITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_TIPC [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom AF_SNA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_UNIX [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom AF_TIPC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom AF_UNIX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_WANPIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom AF_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def AF_X25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom AF_WANPIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ADAPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(264 : Int)
 
-axiom AF_X25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_APPLETLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom ARPHRD_ADAPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ARCNET [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom ARPHRD_APPLETLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ASH [FfiSyntax] [GoGlobalContext] : val :=
+  #(781 : Int)
 
-axiom ARPHRD_ARCNET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ATM [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom ARPHRD_ASH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_AX25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom ARPHRD_ATM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_BIF [FfiSyntax] [GoGlobalContext] : val :=
+  #(775 : Int)
 
-axiom ARPHRD_AX25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_CHAOS [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom ARPHRD_BIF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_CISCO [FfiSyntax] [GoGlobalContext] : val :=
+  #(513 : Int)
 
-axiom ARPHRD_CHAOS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_CSLIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(257 : Int)
 
-axiom ARPHRD_CISCO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_CSLIP6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(259 : Int)
 
-axiom ARPHRD_CSLIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_DDCMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(517 : Int)
 
-axiom ARPHRD_CSLIP6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_DLCI [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom ARPHRD_DDCMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ECONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(782 : Int)
 
-axiom ARPHRD_DLCI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_EETHER [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom ARPHRD_ECONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ETHER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom ARPHRD_EETHER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_EUI64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom ARPHRD_ETHER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(785 : Int)
 
-axiom ARPHRD_EUI64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FCFABRIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(787 : Int)
 
-axiom ARPHRD_FCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FCPL [FfiSyntax] [GoGlobalContext] : val :=
+  #(786 : Int)
 
-axiom ARPHRD_FCFABRIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FCPP [FfiSyntax] [GoGlobalContext] : val :=
+  #(784 : Int)
 
-axiom ARPHRD_FCPL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FDDI [FfiSyntax] [GoGlobalContext] : val :=
+  #(774 : Int)
 
-axiom ARPHRD_FCPP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_FRAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(770 : Int)
 
-axiom ARPHRD_FDDI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_HDLC [FfiSyntax] [GoGlobalContext] : val :=
+  #(513 : Int)
 
-axiom ARPHRD_FRAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_HIPPI [FfiSyntax] [GoGlobalContext] : val :=
+  #(780 : Int)
 
-axiom ARPHRD_HDLC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_HWX25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(272 : Int)
 
-axiom ARPHRD_HIPPI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE1394 [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom ARPHRD_HWX25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE802 [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom ARPHRD_IEEE1394 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE80211 [FfiSyntax] [GoGlobalContext] : val :=
+  #(801 : Int)
 
-axiom ARPHRD_IEEE802 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE80211_PRISM [FfiSyntax] [GoGlobalContext] : val :=
+  #(802 : Int)
 
-axiom ARPHRD_IEEE80211 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE80211_RADIOTAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(803 : Int)
 
-axiom ARPHRD_IEEE80211_PRISM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE802154 [FfiSyntax] [GoGlobalContext] : val :=
+  #(804 : Int)
 
-axiom ARPHRD_IEEE80211_RADIOTAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE802154_PHY [FfiSyntax] [GoGlobalContext] : val :=
+  #(805 : Int)
 
-axiom ARPHRD_IEEE802154 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IEEE802_TR [FfiSyntax] [GoGlobalContext] : val :=
+  #(800 : Int)
 
-axiom ARPHRD_IEEE802154_PHY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_INFINIBAND [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom ARPHRD_IEEE802_TR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IPDDP [FfiSyntax] [GoGlobalContext] : val :=
+  #(777 : Int)
 
-axiom ARPHRD_INFINIBAND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IPGRE [FfiSyntax] [GoGlobalContext] : val :=
+  #(778 : Int)
 
-axiom ARPHRD_IPDDP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_IRDA [FfiSyntax] [GoGlobalContext] : val :=
+  #(783 : Int)
 
-axiom ARPHRD_IPGRE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_LAPB [FfiSyntax] [GoGlobalContext] : val :=
+  #(516 : Int)
 
-axiom ARPHRD_IRDA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_LOCALTLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(773 : Int)
 
-axiom ARPHRD_LAPB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_LOOPBACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(772 : Int)
 
-axiom ARPHRD_LOCALTLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_METRICOM [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom ARPHRD_LOOPBACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_NETROM [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom ARPHRD_METRICOM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_NONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(65534 : Int)
 
-axiom ARPHRD_NETROM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_PIMREG [FfiSyntax] [GoGlobalContext] : val :=
+  #(779 : Int)
 
-axiom ARPHRD_NONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_PPP [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom ARPHRD_PIMREG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_PRONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom ARPHRD_PPP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_RAWHDLC [FfiSyntax] [GoGlobalContext] : val :=
+  #(518 : Int)
 
-axiom ARPHRD_PRONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_ROSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(270 : Int)
 
-axiom ARPHRD_RAWHDLC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_RSRVD [FfiSyntax] [GoGlobalContext] : val :=
+  #(260 : Int)
 
-axiom ARPHRD_ROSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_SIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(776 : Int)
 
-axiom ARPHRD_RSRVD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_SKIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(771 : Int)
 
-axiom ARPHRD_SIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_SLIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom ARPHRD_SKIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_SLIP6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(258 : Int)
 
-axiom ARPHRD_SLIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_TUNNEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(768 : Int)
 
-axiom ARPHRD_SLIP6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_TUNNEL6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(769 : Int)
 
-axiom ARPHRD_TUNNEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_VOID [FfiSyntax] [GoGlobalContext] : val :=
+  #(65535 : Int)
 
-axiom ARPHRD_TUNNEL6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ARPHRD_X25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(271 : Int)
 
-axiom ARPHRD_VOID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_A [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom ARPHRD_X25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_ABS [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom BPF_A [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_ADD [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_ABS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_ALU [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom BPF_ADD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_AND [FfiSyntax] [GoGlobalContext] : val :=
+  #(80 : Int)
 
-axiom BPF_ALU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_B [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom BPF_AND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_DIV [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom BPF_B [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_H [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom BPF_DIV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_IMM [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_H [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_IND [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom BPF_IMM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JA [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_IND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JEQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom BPF_JA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom BPF_JEQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JGT [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom BPF_JGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom BPF_JGT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_JSET [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom BPF_JMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_K [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_JSET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_LD [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_K [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_LDX [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom BPF_LD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_LEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom BPF_LDX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_LSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(96 : Int)
 
-axiom BPF_LEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MAJOR_VERSION [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom BPF_LSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MAXINSNS [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom BPF_MAJOR_VERSION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(96 : Int)
 
-axiom BPF_MAXINSNS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MEMWORDS [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom BPF_MEM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MINOR_VERSION [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom BPF_MEMWORDS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom BPF_MINOR_VERSION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(160 : Int)
 
-axiom BPF_MISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_MUL [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom BPF_MSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_NEG [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom BPF_MUL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_OR [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom BPF_NEG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_RET [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom BPF_OR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_RSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(112 : Int)
 
-axiom BPF_RET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_ST [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom BPF_RSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_STX [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom BPF_ST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_SUB [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom BPF_STX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_TAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_SUB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_TXA [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom BPF_TAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_W [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom BPF_TXA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BPF_X [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom BPF_W [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_BLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom BPF_X [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_CHR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom DT_BLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_DIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom DT_CHR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_FIFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom DT_DIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_LNK [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom DT_FIFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_REG [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom DT_LNK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_SOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom DT_REG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_UNKNOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom DT_SOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DT_WHT [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom DT_UNKNOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLERR [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom DT_WHT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLET [FfiSyntax] [GoGlobalContext] : val :=
+  #(-2147483648 : Int)
 
-axiom EPOLLERR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLHUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom EPOLLET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom EPOLLHUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom EPOLLIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLONESHOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom EPOLLMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLOUT [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom EPOLLONESHOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLPRI [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom EPOLLOUT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLRDBAND [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom EPOLLPRI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLRDHUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom EPOLLRDBAND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLRDNORM [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom EPOLLRDHUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLWRBAND [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom EPOLLRDNORM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLLWRNORM [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom EPOLLWRBAND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLL_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom EPOLLWRNORM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLL_CTL_ADD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom EPOLL_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLL_CTL_DEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom EPOLL_CTL_ADD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLL_CTL_MOD [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom EPOLL_CTL_DEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPOLL_NONBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom EPOLL_CTL_MOD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_1588 [FfiSyntax] [GoGlobalContext] : val :=
+  #(35063 : Int)
 
-axiom EPOLL_NONBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_8021Q [FfiSyntax] [GoGlobalContext] : val :=
+  #(33024 : Int)
 
-axiom ETH_P_1588 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_802_2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom ETH_P_8021Q [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_802_3 [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom ETH_P_802_2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_AARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(33011 : Int)
 
-axiom ETH_P_802_3 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom ETH_P_AARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_AOE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34978 : Int)
 
-axiom ETH_P_ALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ARCNET [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom ETH_P_AOE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2054 : Int)
 
-axiom ETH_P_ARCNET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ATALK [FfiSyntax] [GoGlobalContext] : val :=
+  #(32923 : Int)
 
-axiom ETH_P_ARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ATMFATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34948 : Int)
 
-axiom ETH_P_ATALK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ATMMPOA [FfiSyntax] [GoGlobalContext] : val :=
+  #(34892 : Int)
 
-axiom ETH_P_ATMFATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_AX25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom ETH_P_ATMMPOA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_BPQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(2303 : Int)
 
-axiom ETH_P_AX25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_CAIF [FfiSyntax] [GoGlobalContext] : val :=
+  #(247 : Int)
 
-axiom ETH_P_BPQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_CAN [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom ETH_P_CAIF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_CONTROL [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom ETH_P_CAN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_CUST [FfiSyntax] [GoGlobalContext] : val :=
+  #(24582 : Int)
 
-axiom ETH_P_CONTROL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DDCMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom ETH_P_CUST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(24576 : Int)
 
-axiom ETH_P_DDCMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DIAG [FfiSyntax] [GoGlobalContext] : val :=
+  #(24581 : Int)
 
-axiom ETH_P_DEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DNA_DL [FfiSyntax] [GoGlobalContext] : val :=
+  #(24577 : Int)
 
-axiom ETH_P_DIAG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DNA_RC [FfiSyntax] [GoGlobalContext] : val :=
+  #(24578 : Int)
 
-axiom ETH_P_DNA_DL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DNA_RT [FfiSyntax] [GoGlobalContext] : val :=
+  #(24579 : Int)
 
-axiom ETH_P_DNA_RC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_DSA [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom ETH_P_DNA_RT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_ECONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom ETH_P_DSA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_EDSA [FfiSyntax] [GoGlobalContext] : val :=
+  #(56026 : Int)
 
-axiom ETH_P_ECONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_FCOE [FfiSyntax] [GoGlobalContext] : val :=
+  #(35078 : Int)
 
-axiom ETH_P_EDSA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_FIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35092 : Int)
 
-axiom ETH_P_FCOE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_HDLC [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom ETH_P_FIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IEEE802154 [FfiSyntax] [GoGlobalContext] : val :=
+  #(246 : Int)
 
-axiom ETH_P_HDLC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IEEEPUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2560 : Int)
 
-axiom ETH_P_IEEE802154 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IEEEPUPAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(2561 : Int)
 
-axiom ETH_P_IEEEPUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom ETH_P_IEEEPUPAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IPV6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(34525 : Int)
 
-axiom ETH_P_IP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IPX [FfiSyntax] [GoGlobalContext] : val :=
+  #(33079 : Int)
 
-axiom ETH_P_IPV6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_IRDA [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom ETH_P_IPX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_LAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(24580 : Int)
 
-axiom ETH_P_IRDA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_LINK_CTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(34924 : Int)
 
-axiom ETH_P_LAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_LOCALTALK [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom ETH_P_LINK_CTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_LOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(96 : Int)
 
-axiom ETH_P_LOCALTALK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_MOBITEX [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom ETH_P_LOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_MPLS_MC [FfiSyntax] [GoGlobalContext] : val :=
+  #(34888 : Int)
 
-axiom ETH_P_MOBITEX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_MPLS_UC [FfiSyntax] [GoGlobalContext] : val :=
+  #(34887 : Int)
 
-axiom ETH_P_MPLS_MC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PAE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34958 : Int)
 
-axiom ETH_P_MPLS_UC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PAUSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34824 : Int)
 
-axiom ETH_P_PAE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PHONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(245 : Int)
 
-axiom ETH_P_PAUSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PPPTALK [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom ETH_P_PHONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PPP_DISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(34915 : Int)
 
-axiom ETH_P_PPPTALK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PPP_MP [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom ETH_P_PPP_DISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PPP_SES [FfiSyntax] [GoGlobalContext] : val :=
+  #(34916 : Int)
 
-axiom ETH_P_PPP_MP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom ETH_P_PPP_SES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_PUPAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(513 : Int)
 
-axiom ETH_P_PUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_RARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32821 : Int)
 
-axiom ETH_P_PUPAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_SCA [FfiSyntax] [GoGlobalContext] : val :=
+  #(24583 : Int)
 
-axiom ETH_P_RARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_SLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(34825 : Int)
 
-axiom ETH_P_SCA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_SNAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom ETH_P_SLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_TEB [FfiSyntax] [GoGlobalContext] : val :=
+  #(25944 : Int)
 
-axiom ETH_P_SNAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_TIPC [FfiSyntax] [GoGlobalContext] : val :=
+  #(35018 : Int)
 
-axiom ETH_P_TEB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_TRAILER [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom ETH_P_TIPC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_TR_802_2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom ETH_P_TRAILER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_WAN_PPP [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom ETH_P_TR_802_2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_WCCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(34878 : Int)
 
-axiom ETH_P_WAN_PPP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETH_P_X25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(2053 : Int)
 
-axiom ETH_P_WCCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def FD_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom ETH_P_X25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def FD_SETSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom FD_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_DUPFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom FD_SETSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_DUPFD_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1030 : Int)
 
-axiom F_DUPFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_EXLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom F_DUPFD_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom F_EXLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETFL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom F_GETFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETLEASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1025 : Int)
 
-axiom F_GETFL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom F_GETLEASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETLK64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom F_GETLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom F_GETLK64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETOWN_EX [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom F_GETOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETPIPE_SZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(1032 : Int)
 
-axiom F_GETOWN_EX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_GETSIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom F_GETPIPE_SZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_LOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom F_GETSIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_NOTIFY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1026 : Int)
 
-axiom F_LOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_OK [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom F_NOTIFY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_RDLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom F_OK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom F_RDLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETFL [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom F_SETFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETLEASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom F_SETFL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom F_SETLEASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETLK64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom F_SETLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETLKW [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom F_SETLK64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETLKW64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom F_SETLKW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom F_SETLKW64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETOWN_EX [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom F_SETOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETPIPE_SZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(1031 : Int)
 
-axiom F_SETOWN_EX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SETSIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom F_SETPIPE_SZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_SHLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom F_SETSIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_TEST [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom F_SHLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_TLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom F_TEST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_ULOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom F_TLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_UNLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom F_ULOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def F_WRLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom F_UNLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ICMPV6_FILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom F_WRLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_DADFAILED [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom ICMPV6_FILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_DEPRECATED [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom IFA_F_DADFAILED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_HOMEADDRESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IFA_F_DEPRECATED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_NODAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IFA_F_HOMEADDRESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_OPTIMISTIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IFA_F_NODAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_PERMANENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom IFA_F_OPTIMISTIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_SECONDARY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFA_F_PERMANENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_TEMPORARY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFA_F_SECONDARY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_F_TENTATIVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom IFA_F_TEMPORARY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IFA_F_TENTATIVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_ALLMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom IFA_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_AUTOMEDIA [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom IFF_ALLMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IFF_AUTOMEDIA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_DEBUG [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IFF_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_DYNAMIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom IFF_DEBUG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_LOOPBACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IFF_DYNAMIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_MASTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom IFF_LOOPBACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom IFF_MASTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_NOARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom IFF_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_NOTRAILERS [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom IFF_NOARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_NO_PI [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom IFF_NOTRAILERS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_ONE_QUEUE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom IFF_NO_PI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_POINTOPOINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IFF_ONE_QUEUE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_PORTSEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom IFF_POINTOPOINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_PROMISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom IFF_PORTSEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_RUNNING [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom IFF_PROMISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_SLAVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom IFF_RUNNING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_TAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IFF_SLAVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_TUN [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFF_TAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_TUN_EXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom IFF_TUN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_UP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFF_TUN_EXCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFF_VNET_HDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom IFF_UP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFNAMSIZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IFF_VNET_HDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ACCESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFNAMSIZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ALL_EVENTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(4095 : Int)
 
-axiom IN_ACCESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ATTRIB [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IN_ALL_EVENTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSA_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777215 : Int)
 
-axiom IN_ATTRIB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSA_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom IN_CLASSA_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSA_NET [FfiSyntax] [GoGlobalContext] : val :=
+  #(4278190080 : Int)
 
-axiom IN_CLASSA_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSA_NSHIFT [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom IN_CLASSA_NET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSB_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(65535 : Int)
 
-axiom IN_CLASSA_NSHIFT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSB_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom IN_CLASSB_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSB_NET [FfiSyntax] [GoGlobalContext] : val :=
+  #(4294901760 : Int)
 
-axiom IN_CLASSB_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSB_NSHIFT [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IN_CLASSB_NET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSC_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom IN_CLASSB_NSHIFT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSC_NET [FfiSyntax] [GoGlobalContext] : val :=
+  #(4294967040 : Int)
 
-axiom IN_CLASSC_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLASSC_NSHIFT [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IN_CLASSC_NET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom IN_CLASSC_NSHIFT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLOSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom IN_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLOSE_NOWRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IN_CLOSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CLOSE_WRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IN_CLOSE_NOWRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom IN_CLOSE_WRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_DELETE [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom IN_CREATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_DELETE_SELF [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom IN_DELETE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_DONT_FOLLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(33554432 : Int)
 
-axiom IN_DELETE_SELF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_EXCL_UNLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(67108864 : Int)
 
-axiom IN_DONT_FOLLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_IGNORED [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom IN_EXCL_UNLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ISDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom IN_IGNORED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_LOOPBACKNET [FfiSyntax] [GoGlobalContext] : val :=
+  #(127 : Int)
 
-axiom IN_ISDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MASK_ADD [FfiSyntax] [GoGlobalContext] : val :=
+  #(536870912 : Int)
 
-axiom IN_LOOPBACKNET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MODIFY [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IN_MASK_ADD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MOVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(192 : Int)
 
-axiom IN_MODIFY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MOVED_FROM [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom IN_MOVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MOVED_TO [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom IN_MOVED_FROM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_MOVE_SELF [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom IN_MOVED_TO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_NONBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom IN_MOVE_SELF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ONESHOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147483648 : Int)
 
-axiom IN_NONBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_ONLYDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom IN_ONESHOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_OPEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom IN_ONLYDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_Q_OVERFLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom IN_OPEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IN_UNMOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom IN_Q_OVERFLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_AH [FfiSyntax] [GoGlobalContext] : val :=
+  #(51 : Int)
 
-axiom IN_UNMOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_COMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(108 : Int)
 
-axiom IPPROTO_AH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_DCCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom IPPROTO_COMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_DSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(60 : Int)
 
-axiom IPPROTO_DCCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_EGP [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IPPROTO_DSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_ENCAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(98 : Int)
 
-axiom IPPROTO_EGP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_ESP [FfiSyntax] [GoGlobalContext] : val :=
+  #(50 : Int)
 
-axiom IPPROTO_ENCAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_FRAGMENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(44 : Int)
 
-axiom IPPROTO_ESP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_GRE [FfiSyntax] [GoGlobalContext] : val :=
+  #(47 : Int)
 
-axiom IPPROTO_FRAGMENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_HOPOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IPPROTO_GRE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_ICMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IPPROTO_HOPOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_ICMPV6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom IPPROTO_ICMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_IDP [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom IPPROTO_ICMPV6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_IGMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IPPROTO_IDP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_IP [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IPPROTO_IGMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_IPIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IPPROTO_IP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_IPV6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(41 : Int)
 
-axiom IPPROTO_IPIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_MTP [FfiSyntax] [GoGlobalContext] : val :=
+  #(92 : Int)
 
-axiom IPPROTO_IPV6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_NONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(59 : Int)
 
-axiom IPPROTO_MTP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_PIM [FfiSyntax] [GoGlobalContext] : val :=
+  #(103 : Int)
 
-axiom IPPROTO_NONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_PUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom IPPROTO_PIM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_RAW [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom IPPROTO_PUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_ROUTING [FfiSyntax] [GoGlobalContext] : val :=
+  #(43 : Int)
 
-axiom IPPROTO_RAW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_RSVP [FfiSyntax] [GoGlobalContext] : val :=
+  #(46 : Int)
 
-axiom IPPROTO_ROUTING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_SCTP [FfiSyntax] [GoGlobalContext] : val :=
+  #(132 : Int)
 
-axiom IPPROTO_RSVP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_TCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom IPPROTO_SCTP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_TP [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom IPPROTO_TCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_UDP [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom IPPROTO_TP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPPROTO_UDPLITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(136 : Int)
 
-axiom IPPROTO_UDP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292DSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IPPROTO_UDPLITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292HOPLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IPV6_2292DSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292HOPOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IPV6_2292HOPLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292PKTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IPV6_2292HOPOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292PKTOPTIONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom IPV6_2292PKTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_2292RTHDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom IPV6_2292PKTOPTIONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_ADDRFORM [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IPV6_2292RTHDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IPV6_ADDRFORM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_AUTHHDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom IPV6_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_CHECKSUM [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IPV6_AUTHHDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom IPV6_CHECKSUM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_DSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(59 : Int)
 
-axiom IPV6_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_HOPLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(52 : Int)
 
-axiom IPV6_DSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_HOPOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(54 : Int)
 
-axiom IPV6_HOPLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_IPSEC_POLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom IPV6_HOPOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_JOIN_ANYCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom IPV6_IPSEC_POLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_JOIN_GROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IPV6_JOIN_ANYCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_LEAVE_ANYCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom IPV6_JOIN_GROUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_LEAVE_GROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom IPV6_LEAVE_ANYCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_MTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom IPV6_LEAVE_GROUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_MTU_DISCOVER [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom IPV6_MTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_MULTICAST_HOPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom IPV6_MTU_DISCOVER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_MULTICAST_IF [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom IPV6_MULTICAST_HOPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom IPV6_MULTICAST_IF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_NEXTHOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom IPV6_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_PKTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(50 : Int)
 
-axiom IPV6_NEXTHOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_PMTUDISC_DO [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IPV6_PKTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_PMTUDISC_DONT [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IPV6_PMTUDISC_DO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_PMTUDISC_PROBE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IPV6_PMTUDISC_DONT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_PMTUDISC_WANT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IPV6_PMTUDISC_PROBE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVDSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom IPV6_PMTUDISC_WANT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVERR [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom IPV6_RECVDSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVHOPLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(51 : Int)
 
-axiom IPV6_RECVERR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVHOPOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(53 : Int)
 
-axiom IPV6_RECVHOPLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVPKTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(49 : Int)
 
-axiom IPV6_RECVHOPOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVRTHDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(56 : Int)
 
-axiom IPV6_RECVPKTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RECVTCLASS [FfiSyntax] [GoGlobalContext] : val :=
+  #(66 : Int)
 
-axiom IPV6_RECVRTHDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_ROUTER_ALERT [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom IPV6_RECVTCLASS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RTHDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(57 : Int)
 
-axiom IPV6_ROUTER_ALERT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RTHDRDSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(55 : Int)
 
-axiom IPV6_RTHDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RTHDR_LOOSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IPV6_RTHDRDSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RTHDR_STRICT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IPV6_RTHDR_LOOSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RTHDR_TYPE_0 [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IPV6_RTHDR_STRICT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RXDSTOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(59 : Int)
 
-axiom IPV6_RTHDR_TYPE_0 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_RXHOPOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(54 : Int)
 
-axiom IPV6_RXDSTOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_TCLASS [FfiSyntax] [GoGlobalContext] : val :=
+  #(67 : Int)
 
-axiom IPV6_RXHOPOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_UNICAST_HOPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IPV6_TCLASS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_V6ONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom IPV6_UNICAST_HOPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IPV6_XFRM_POLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom IPV6_V6ONLY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom IPV6_XFRM_POLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_ADD_SOURCE_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(39 : Int)
 
-axiom IP_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_BLOCK_SOURCE [FfiSyntax] [GoGlobalContext] : val :=
+  #(38 : Int)
 
-axiom IP_ADD_SOURCE_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_DEFAULT_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IP_BLOCK_SOURCE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_DEFAULT_MULTICAST_TTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IP_DEFAULT_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_DF [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom IP_DEFAULT_MULTICAST_TTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(36 : Int)
 
-axiom IP_DF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_DROP_SOURCE_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(40 : Int)
 
-axiom IP_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_FREEBIND [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom IP_DROP_SOURCE_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_HDRINCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IP_FREEBIND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_IPSEC_POLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IP_HDRINCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MAXPACKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(65535 : Int)
 
-axiom IP_IPSEC_POLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MAX_MEMBERSHIPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IP_MAXPACKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MF [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom IP_MAX_MEMBERSHIPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MINTTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom IP_MF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MSFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(41 : Int)
 
-axiom IP_MINTTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MSS [FfiSyntax] [GoGlobalContext] : val :=
+  #(576 : Int)
 
-axiom IP_MSFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom IP_MSS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MTU_DISCOVER [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom IP_MTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MULTICAST_IF [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom IP_MTU_DISCOVER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom IP_MULTICAST_IF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_MULTICAST_TTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom IP_MULTICAST_LOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_OFFMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8191 : Int)
 
-axiom IP_MULTICAST_TTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_OPTIONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IP_OFFMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_ORIGDSTADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IP_OPTIONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PASSSEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom IP_ORIGDSTADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PKTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IP_PASSSEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PKTOPTIONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom IP_PKTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PMTUDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom IP_PKTOPTIONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PMTUDISC_DO [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IP_PMTUDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PMTUDISC_DONT [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IP_PMTUDISC_DO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PMTUDISC_PROBE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IP_PMTUDISC_DONT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_PMTUDISC_WANT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IP_PMTUDISC_PROBE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVERR [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom IP_PMTUDISC_WANT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom IP_RECVERR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVORIGDSTADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IP_RECVOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVRETOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IP_RECVORIGDSTADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVTOS [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom IP_RECVRETOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RECVTTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom IP_RECVTOS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RETOPTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IP_RECVTTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_RF [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom IP_RETOPTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_ROUTER_ALERT [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom IP_RF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_TOS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IP_ROUTER_ALERT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_TRANSPARENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom IP_TOS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_TTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IP_TRANSPARENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_UNBLOCK_SOURCE [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom IP_TTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IP_XFRM_POLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom IP_UNBLOCK_SOURCE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_CAD_OFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IP_XFRM_POLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_CAD_ON [FfiSyntax] [GoGlobalContext] : val :=
+  #(2309737967 : Int)
 
-axiom LINUX_REBOOT_CMD_CAD_OFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_HALT [FfiSyntax] [GoGlobalContext] : val :=
+  #(3454992675 : Int)
 
-axiom LINUX_REBOOT_CMD_CAD_ON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_KEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1163412803 : Int)
 
-axiom LINUX_REBOOT_CMD_HALT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_POWER_OFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(1126301404 : Int)
 
-axiom LINUX_REBOOT_CMD_KEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_RESTART [FfiSyntax] [GoGlobalContext] : val :=
+  #(19088743 : Int)
 
-axiom LINUX_REBOOT_CMD_POWER_OFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_RESTART2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(2712847316 : Int)
 
-axiom LINUX_REBOOT_CMD_RESTART [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_CMD_SW_SUSPEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(3489725666 : Int)
 
-axiom LINUX_REBOOT_CMD_RESTART2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_MAGIC1 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4276215469 : Int)
 
-axiom LINUX_REBOOT_CMD_SW_SUSPEND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LINUX_REBOOT_MAGIC2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(672274793 : Int)
 
-axiom LINUX_REBOOT_MAGIC1 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LOCK_EX [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom LINUX_REBOOT_MAGIC2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LOCK_NB [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom LOCK_EX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LOCK_SH [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom LOCK_NB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def LOCK_UN [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom LOCK_SH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_DOFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom LOCK_UN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_DONTFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom MADV_DOFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_DONTNEED [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MADV_DONTFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_HUGEPAGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom MADV_DONTNEED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_HWPOISON [FfiSyntax] [GoGlobalContext] : val :=
+  #(100 : Int)
 
-axiom MADV_HUGEPAGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_MERGEABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom MADV_HWPOISON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_NOHUGEPAGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom MADV_MERGEABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_NORMAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom MADV_NOHUGEPAGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_RANDOM [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MADV_NORMAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_REMOVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom MADV_RANDOM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_SEQUENTIAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MADV_REMOVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_UNMERGEABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom MADV_SEQUENTIAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MADV_WILLNEED [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom MADV_UNMERGEABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_32BIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom MADV_WILLNEED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_ANON [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom MAP_32BIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_ANONYMOUS [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom MAP_ANON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_DENYWRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom MAP_ANONYMOUS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_EXECUTABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom MAP_DENYWRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_FILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom MAP_EXECUTABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_FIXED [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom MAP_FILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_GROWSDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom MAP_FIXED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_HUGETLB [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom MAP_GROWSDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_LOCKED [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom MAP_HUGETLB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_NONBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom MAP_LOCKED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_NORESERVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom MAP_NONBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_POPULATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom MAP_NORESERVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_PRIVATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MAP_POPULATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_SHARED [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MAP_PRIVATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_STACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom MAP_SHARED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MAP_TYPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom MAP_STACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MCL_CURRENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MAP_TYPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MCL_FUTURE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MCL_CURRENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MNT_DETACH [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MCL_FUTURE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MNT_EXPIRE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MNT_DETACH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MNT_FORCE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MNT_EXPIRE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_CMSG_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom MNT_FORCE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_CONFIRM [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom MSG_CMSG_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_CTRUNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom MSG_CONFIRM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_DONTROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MSG_CTRUNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_DONTWAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom MSG_DONTROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_EOR [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom MSG_DONTWAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_ERRQUEUE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom MSG_EOR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_FASTOPEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(536870912 : Int)
 
-axiom MSG_ERRQUEUE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_FIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom MSG_FASTOPEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_MORE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom MSG_FIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_NOSIGNAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom MSG_MORE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_OOB [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MSG_NOSIGNAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_PEEK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MSG_OOB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_PROXY [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom MSG_PEEK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_RST [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom MSG_PROXY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_SYN [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom MSG_RST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_TRUNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom MSG_SYN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_TRYHARD [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MSG_TRUNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_WAITALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom MSG_TRYHARD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MSG_WAITFORONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom MSG_WAITALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_ACTIVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom MSG_WAITFORONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_ASYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MS_ACTIVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_BIND [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom MS_ASYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_DIRSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom MS_BIND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_INVALIDATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MS_DIRSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_I_VERSION [FfiSyntax] [GoGlobalContext] : val :=
+  #(8388608 : Int)
 
-axiom MS_INVALIDATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_KERNMOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(4194304 : Int)
 
-axiom MS_I_VERSION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_MANDLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom MS_KERNMOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_MGC_MSK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4294901760 : Int)
 
-axiom MS_MANDLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_MGC_VAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3236757504 : Int)
 
-axiom MS_MGC_MSK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_MOVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom MS_MGC_VAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NOATIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom MS_MOVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NODEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MS_NOATIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NODIRATIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom MS_NODEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom MS_NODIRATIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NOSUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom MS_NOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_NOUSER [FfiSyntax] [GoGlobalContext] : val :=
+  #(-2147483648 : Int)
 
-axiom MS_NOSUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_POSIXACL [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom MS_NOUSER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_PRIVATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom MS_POSIXACL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_RDONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom MS_PRIVATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_REC [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom MS_RDONLY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_RELATIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(2097152 : Int)
 
-axiom MS_REC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_REMOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom MS_RELATIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_RMT_MASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8388689 : Int)
 
-axiom MS_REMOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_SHARED [FfiSyntax] [GoGlobalContext] : val :=
+  #(1048576 : Int)
 
-axiom MS_RMT_MASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_SILENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom MS_SHARED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_SLAVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom MS_SILENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_STRICTATIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom MS_SLAVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_SYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom MS_STRICTATIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_SYNCHRONOUS [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom MS_SYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def MS_UNBINDABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom MS_SYNCHRONOUS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NAME_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom MS_UNBINDABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom NAME_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_AUDIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom NETLINK_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_BROADCAST_ERROR [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NETLINK_AUDIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_CONNECTOR [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom NETLINK_BROADCAST_ERROR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_DNRTMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom NETLINK_CONNECTOR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom NETLINK_DNRTMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_ECRYPTFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom NETLINK_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_FIB_LOOKUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom NETLINK_ECRYPTFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_FIREWALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom NETLINK_FIB_LOOKUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_GENERIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom NETLINK_FIREWALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_INET_DIAG [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NETLINK_GENERIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_IP6_FW [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom NETLINK_INET_DIAG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_ISCSI [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom NETLINK_IP6_FW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_KOBJECT_UEVENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom NETLINK_ISCSI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_NETFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom NETLINK_KOBJECT_UEVENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_NFLOG [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom NETLINK_NETFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_NO_ENOBUFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom NETLINK_NFLOG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_PKTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom NETLINK_NO_ENOBUFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_ROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom NETLINK_PKTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_SCSITRANSPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom NETLINK_ROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_SELINUX [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom NETLINK_SCSITRANSPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_UNUSED [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom NETLINK_SELINUX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_USERSOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom NETLINK_UNUSED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NETLINK_XFRM [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom NETLINK_USERSOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLA_ALIGNTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NETLINK_XFRM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLA_F_NESTED [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom NLA_ALIGNTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLA_F_NET_BYTEORDER [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom NLA_F_NESTED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLA_HDRLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NLA_F_NET_BYTEORDER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_ALIGNTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NLA_HDRLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_DONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom NLMSG_ALIGNTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_ERROR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom NLMSG_DONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_HDRLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom NLMSG_ERROR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_MIN_TYPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom NLMSG_HDRLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_NOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom NLMSG_MIN_TYPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLMSG_OVERRUN [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NLMSG_NOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_ACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom NLMSG_OVERRUN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_APPEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom NLM_F_ACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_ATOMIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom NLM_F_APPEND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom NLM_F_ATOMIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_DUMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(768 : Int)
 
-axiom NLM_F_CREATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_ECHO [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom NLM_F_DUMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_EXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom NLM_F_ECHO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_MATCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom NLM_F_EXCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_MULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom NLM_F_MATCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_REPLACE [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom NLM_F_MULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_REQUEST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom NLM_F_REPLACE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NLM_F_ROOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom NLM_F_REQUEST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_ACCMODE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom NLM_F_ROOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_APPEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom O_ACCMODE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_ASYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom O_APPEND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom O_ASYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_CREAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom O_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_DIRECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom O_CREAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_DIRECTORY [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom O_DIRECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_DSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom O_DIRECTORY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_EXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom O_DSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_FSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1052672 : Int)
 
-axiom O_EXCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_LARGEFILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom O_FSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_NDELAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom O_LARGEFILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_NOATIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom O_NDELAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_NOCTTY [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom O_NOATIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_NOFOLLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom O_NOCTTY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_NONBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom O_NOFOLLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_RDONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom O_NONBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_RDWR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom O_RDONLY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_RSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1052672 : Int)
 
-axiom O_RDWR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_SYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1052672 : Int)
 
-axiom O_RSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_TRUNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom O_SYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def O_WRONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom O_TRUNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom O_WRONLY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PACKET_ADD_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PACKET_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_FASTROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom PACKET_DROP_MEMBERSHIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PACKET_FASTROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_LOOPBACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom PACKET_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_MR_ALLMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PACKET_LOOPBACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_MR_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PACKET_MR_ALLMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_MR_PROMISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PACKET_MR_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PACKET_MR_PROMISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_OTHERHOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PACKET_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_OUTGOING [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PACKET_OTHERHOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_RECV_OUTPUT [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PACKET_OUTGOING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_RX_RING [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom PACKET_RECV_OUTPUT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PACKET_STATISTICS [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom PACKET_RX_RING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PRIO_PGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PACKET_STATISTICS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PRIO_PROCESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PRIO_PGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PRIO_USER [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PRIO_PROCESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_EXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PRIO_USER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_GROWSDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom PROT_EXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_GROWSUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(33554432 : Int)
 
-axiom PROT_GROWSDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_NONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PROT_GROWSUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_READ [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PROT_NONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PROT_WRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PROT_READ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_CAPBSET_DROP [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom PROT_WRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_CAPBSET_READ [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom PR_CAPBSET_DROP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_ENDIAN_BIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PR_CAPBSET_READ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_ENDIAN_LITTLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_ENDIAN_BIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_ENDIAN_PPC_LITTLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_ENDIAN_LITTLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FPEMU_NOPRINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_ENDIAN_PPC_LITTLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FPEMU_SIGFPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_FPEMU_NOPRINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_ASYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_FPEMU_SIGFPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_DISABLED [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PR_FP_EXC_ASYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_DIV [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom PR_FP_EXC_DISABLED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_INV [FfiSyntax] [GoGlobalContext] : val :=
+  #(1048576 : Int)
 
-axiom PR_FP_EXC_DIV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_NONRECOV [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_FP_EXC_INV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_OVF [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom PR_FP_EXC_NONRECOV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_PRECISE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PR_FP_EXC_OVF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_RES [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom PR_FP_EXC_PRECISE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_SW_ENABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom PR_FP_EXC_RES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_FP_EXC_UND [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom PR_FP_EXC_SW_ENABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_DUMPABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PR_FP_EXC_UND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_ENDIAN [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom PR_GET_DUMPABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_FPEMU [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom PR_GET_ENDIAN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_FPEXC [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom PR_GET_FPEMU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_KEEPCAPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom PR_GET_FPEXC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_NAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom PR_GET_KEEPCAPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_PDEATHSIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_GET_NAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_SECCOMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom PR_GET_PDEATHSIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_SECUREBITS [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom PR_GET_SECCOMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_TIMERSLACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom PR_GET_SECUREBITS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_TIMING [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom PR_GET_TIMERSLACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_TSC [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom PR_GET_TIMING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_GET_UNALIGN [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom PR_GET_TSC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom PR_GET_UNALIGN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_CLEAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PR_MCE_KILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_DEFAULT [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_MCE_KILL_CLEAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_EARLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_MCE_KILL_DEFAULT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_GET [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom PR_MCE_KILL_EARLY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_LATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PR_MCE_KILL_GET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_MCE_KILL_SET [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_MCE_KILL_LATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_DUMPABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PR_MCE_KILL_SET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_ENDIAN [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom PR_SET_DUMPABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_FPEMU [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom PR_SET_ENDIAN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_FPEXC [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom PR_SET_FPEMU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_KEEPCAPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom PR_SET_FPEXC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_NAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom PR_SET_KEEPCAPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_PDEATHSIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_SET_NAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_PTRACER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1499557217 : Int)
 
-axiom PR_SET_PDEATHSIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_SECCOMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom PR_SET_PTRACER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_SECUREBITS [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom PR_SET_SECCOMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_TIMERSLACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom PR_SET_SECUREBITS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_TIMING [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom PR_SET_TIMERSLACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_TSC [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom PR_SET_TIMING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_SET_UNALIGN [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom PR_SET_TSC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TASK_PERF_EVENTS_DISABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-axiom PR_SET_UNALIGN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TASK_PERF_EVENTS_ENABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom PR_TASK_PERF_EVENTS_DISABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TIMING_STATISTICAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PR_TASK_PERF_EVENTS_ENABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TIMING_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_TIMING_STATISTICAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TSC_ENABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_TIMING_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_TSC_SIGSEGV [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_TSC_ENABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_UNALIGN_NOPRINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PR_TSC_SIGSEGV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PR_UNALIGN_SIGBUS [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PR_UNALIGN_NOPRINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_ARCH_PRCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom PR_UNALIGN_SIGBUS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_ATTACH [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom PTRACE_ARCH_PRCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_CONT [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom PTRACE_ATTACH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_DETACH [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom PTRACE_CONT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_CLONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PTRACE_DETACH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_EXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PTRACE_EVENT_CLONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_EXIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom PTRACE_EVENT_EXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_FORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PTRACE_EVENT_EXIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_VFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PTRACE_EVENT_FORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_EVENT_VFORK_DONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom PTRACE_EVENT_VFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETEVENTMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(16897 : Int)
 
-axiom PTRACE_EVENT_VFORK_DONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETFPREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom PTRACE_GETEVENTMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETFPXREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom PTRACE_GETFPREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom PTRACE_GETFPXREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETREGSET [FfiSyntax] [GoGlobalContext] : val :=
+  #(16900 : Int)
 
-axiom PTRACE_GETREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GETSIGINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(16898 : Int)
 
-axiom PTRACE_GETREGSET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_GET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom PTRACE_GETSIGINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_KILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom PTRACE_GET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_OLDSETOPTIONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom PTRACE_KILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_MASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(127 : Int)
 
-axiom PTRACE_OLDSETOPTIONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACECLONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom PTRACE_O_MASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACEEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom PTRACE_O_TRACECLONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACEEXIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom PTRACE_O_TRACEEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACEFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PTRACE_O_TRACEEXIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACESYSGOOD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PTRACE_O_TRACEFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACEVFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PTRACE_O_TRACESYSGOOD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_O_TRACEVFORKDONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom PTRACE_O_TRACEVFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_PEEKDATA [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom PTRACE_O_TRACEVFORKDONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_PEEKTEXT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom PTRACE_PEEKDATA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_PEEKUSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom PTRACE_PEEKTEXT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_POKEDATA [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom PTRACE_PEEKUSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_POKETEXT [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom PTRACE_POKEDATA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_POKEUSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom PTRACE_POKETEXT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETFPREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom PTRACE_POKEUSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETFPXREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom PTRACE_SETFPREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETOPTIONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(16896 : Int)
 
-axiom PTRACE_SETFPXREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETREGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom PTRACE_SETOPTIONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETREGSET [FfiSyntax] [GoGlobalContext] : val :=
+  #(16901 : Int)
 
-axiom PTRACE_SETREGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SETSIGINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(16899 : Int)
 
-axiom PTRACE_SETREGSET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom PTRACE_SETSIGINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SINGLEBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom PTRACE_SET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SINGLESTEP [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom PTRACE_SINGLEBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SYSCALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom PTRACE_SINGLESTEP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SYSEMU [FfiSyntax] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-axiom PTRACE_SYSCALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_SYSEMU_SINGLESTEP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom PTRACE_SYSEMU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PTRACE_TRACEME [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom PTRACE_SYSEMU_SINGLESTEP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_AS [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom PTRACE_TRACEME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_CORE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RLIMIT_AS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_CPU [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RLIMIT_CORE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_DATA [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RLIMIT_CPU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_FSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RLIMIT_DATA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_NOFILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom RLIMIT_FSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_STACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RLIMIT_NOFILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIM_INFINITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(-1 : Int)
 
-axiom RLIMIT_STACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_ADVMSS [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RLIM_INFINITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_CWND [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom RTAX_ADVMSS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_FEATURES [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom RTAX_CWND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_FEATURE_ALLFRAG [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTAX_FEATURES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_FEATURE_ECN [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTAX_FEATURE_ALLFRAG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_FEATURE_SACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTAX_FEATURE_ECN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_FEATURE_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTAX_FEATURE_SACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_HOPLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom RTAX_FEATURE_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_INITCWND [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTAX_HOPLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_INITRWND [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom RTAX_INITCWND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_LOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTAX_INITRWND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom RTAX_LOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_MTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTAX_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_REORDERING [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom RTAX_MTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_RTO_MIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom RTAX_REORDERING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_RTT [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTAX_RTO_MIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_RTTVAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom RTAX_RTT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_SSTHRESH [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom RTAX_RTTVAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RTAX_SSTHRESH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTAX_WINDOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RTAX_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_ALIGNTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTAX_WINDOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTA_ALIGNTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_DIRECTSRC [FfiSyntax] [GoGlobalContext] : val :=
+  #(67108864 : Int)
 
-axiom RTA_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_DOREDIRECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom RTCF_DIRECTSRC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_LOG [FfiSyntax] [GoGlobalContext] : val :=
+  #(33554432 : Int)
 
-axiom RTCF_DOREDIRECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_MASQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(4194304 : Int)
 
-axiom RTCF_LOG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_NAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(8388608 : Int)
 
-axiom RTCF_MASQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTCF_VALVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2097152 : Int)
 
-axiom RTCF_NAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_ADDRCLASSMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4160749568 : Int)
 
-axiom RTCF_VALVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_ADDRCONF [FfiSyntax] [GoGlobalContext] : val :=
+  #(262144 : Int)
 
-axiom RTF_ADDRCLASSMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_ALLONLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(131072 : Int)
 
-axiom RTF_ADDRCONF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(268435456 : Int)
 
-axiom RTF_ALLONLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_CACHE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom RTF_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_DEFAULT [FfiSyntax] [GoGlobalContext] : val :=
+  #(65536 : Int)
 
-axiom RTF_CACHE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_DYNAMIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTF_DEFAULT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_FLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(33554432 : Int)
 
-axiom RTF_DYNAMIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_GATEWAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTF_FLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTF_GATEWAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_INTERFACE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom RTF_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_IRTT [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom RTF_INTERFACE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_LINKRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1048576 : Int)
 
-axiom RTF_IRTT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147483648 : Int)
 
-axiom RTF_LINKRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_MODIFIED [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom RTF_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_MSS [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom RTF_MODIFIED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_MTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom RTF_MSS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(536870912 : Int)
 
-axiom RTF_MTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_NAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(134217728 : Int)
 
-axiom RTF_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_NOFORWARD [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom RTF_NAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_NONEXTHOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(2097152 : Int)
 
-axiom RTF_NOFORWARD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_NOPMTUDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom RTF_NONEXTHOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_POLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(67108864 : Int)
 
-axiom RTF_NOPMTUDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_REINSTATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTF_POLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_REJECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom RTF_REINSTATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_STATIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom RTF_REJECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_THROW [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom RTF_STATIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_UP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTF_THROW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_WINDOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom RTF_UP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTF_XRESOLVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom RTF_WINDOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_BASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTF_XRESOLVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELACTION [FfiSyntax] [GoGlobalContext] : val :=
+  #(49 : Int)
 
-axiom RTM_BASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom RTM_DELACTION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELADDRLABEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(73 : Int)
 
-axiom RTM_DELADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom RTM_DELADDRLABEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELNEIGH [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom RTM_DELLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELQDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom RTM_DELNEIGH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom RTM_DELQDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELRULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom RTM_DELROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELTCLASS [FfiSyntax] [GoGlobalContext] : val :=
+  #(41 : Int)
 
-axiom RTM_DELRULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_DELTFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(45 : Int)
 
-axiom RTM_DELTCLASS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_F_CLONED [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom RTM_DELTFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_F_EQUALIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom RTM_F_CLONED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_F_NOTIFY [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom RTM_F_EQUALIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_F_PREFIX [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom RTM_F_NOTIFY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETACTION [FfiSyntax] [GoGlobalContext] : val :=
+  #(50 : Int)
 
-axiom RTM_F_PREFIX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom RTM_GETACTION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETADDRLABEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(74 : Int)
 
-axiom RTM_GETADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETANYCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(62 : Int)
 
-axiom RTM_GETADDRLABEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETDCB [FfiSyntax] [GoGlobalContext] : val :=
+  #(78 : Int)
 
-axiom RTM_GETANYCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom RTM_GETDCB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETMULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom RTM_GETLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETNEIGH [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom RTM_GETMULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETNEIGHTBL [FfiSyntax] [GoGlobalContext] : val :=
+  #(66 : Int)
 
-axiom RTM_GETNEIGH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETQDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(38 : Int)
 
-axiom RTM_GETNEIGHTBL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom RTM_GETQDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETRULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom RTM_GETROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETTCLASS [FfiSyntax] [GoGlobalContext] : val :=
+  #(42 : Int)
 
-axiom RTM_GETRULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_GETTFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(46 : Int)
 
-axiom RTM_GETTCLASS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(79 : Int)
 
-axiom RTM_GETTFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWACTION [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom RTM_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom RTM_NEWACTION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWADDRLABEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(72 : Int)
 
-axiom RTM_NEWADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTM_NEWADDRLABEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWNDUSEROPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(68 : Int)
 
-axiom RTM_NEWLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWNEIGH [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom RTM_NEWNDUSEROPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWNEIGHTBL [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom RTM_NEWNEIGH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWPREFIX [FfiSyntax] [GoGlobalContext] : val :=
+  #(52 : Int)
 
-axiom RTM_NEWNEIGHTBL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWQDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(36 : Int)
 
-axiom RTM_NEWPREFIX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom RTM_NEWQDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWRULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom RTM_NEWROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWTCLASS [FfiSyntax] [GoGlobalContext] : val :=
+  #(40 : Int)
 
-axiom RTM_NEWRULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NEWTFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(44 : Int)
 
-axiom RTM_NEWTCLASS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NR_FAMILIES [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTM_NEWTFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_NR_MSGTYPES [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom RTM_NR_FAMILIES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_SETDCB [FfiSyntax] [GoGlobalContext] : val :=
+  #(79 : Int)
 
-axiom RTM_NR_MSGTYPES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_SETLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom RTM_SETDCB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTM_SETNEIGHTBL [FfiSyntax] [GoGlobalContext] : val :=
+  #(67 : Int)
 
-axiom RTM_SETLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNH_ALIGNTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTM_SETNEIGHTBL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNH_F_DEAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTNH_ALIGNTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNH_F_ONLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTNH_F_DEAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNH_F_PERVASIVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTNH_F_ONLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTNH_F_PERVASIVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_BIRD [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom RTN_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_BOOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RTPROT_BIRD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_DHCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTPROT_BOOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_DNROUTED [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom RTPROT_DHCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_GATED [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTPROT_DNROUTED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_KERNEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTPROT_GATED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_MRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom RTPROT_KERNEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_NTK [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom RTPROT_MRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_RA [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom RTPROT_NTK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_REDIRECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTPROT_RA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_STATIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTPROT_REDIRECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RTPROT_STATIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_XORP [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom RTPROT_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTPROT_ZEBRA [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTPROT_XORP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_CLASS_DEFAULT [FfiSyntax] [GoGlobalContext] : val :=
+  #(253 : Int)
 
-axiom RTPROT_ZEBRA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_CLASS_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom RT_CLASS_DEFAULT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_CLASS_MAIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(254 : Int)
 
-axiom RT_CLASS_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_CLASS_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom RT_CLASS_MAIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_CLASS_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RT_CLASS_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RUSAGE_CHILDREN [FfiSyntax] [GoGlobalContext] : val :=
+  #(-1 : Int)
 
-axiom RT_CLASS_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RUSAGE_SELF [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RUSAGE_CHILDREN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RUSAGE_THREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RUSAGE_SELF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SCM_CREDENTIALS [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RUSAGE_THREAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SCM_RIGHTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SCM_CREDENTIALS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SCM_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom SCM_RIGHTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SCM_TIMESTAMPING [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom SCM_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SCM_TIMESTAMPNS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom SCM_TIMESTAMPING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SHUT_RD [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom SCM_TIMESTAMPNS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SHUT_RDWR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom SHUT_RD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SHUT_WR [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SHUT_RDWR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCADDDLCI [FfiSyntax] [GoGlobalContext] : val :=
+  #(35200 : Int)
 
-axiom SHUT_WR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCADDMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(35121 : Int)
 
-axiom SIOCADDDLCI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCADDRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(35083 : Int)
 
-axiom SIOCADDMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCATMARK [FfiSyntax] [GoGlobalContext] : val :=
+  #(35077 : Int)
 
-axiom SIOCADDRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35155 : Int)
 
-axiom SIOCATMARK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDELDLCI [FfiSyntax] [GoGlobalContext] : val :=
+  #(35201 : Int)
 
-axiom SIOCDARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDELMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(35122 : Int)
 
-axiom SIOCDELDLCI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDELRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(35084 : Int)
 
-axiom SIOCDELMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDEVPRIVATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(35312 : Int)
 
-axiom SIOCDELRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDIFADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35126 : Int)
 
-axiom SIOCDEVPRIVATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCDRARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35168 : Int)
 
-axiom SIOCDIFADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35156 : Int)
 
-axiom SIOCDRARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35093 : Int)
 
-axiom SIOCGARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFBR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35136 : Int)
 
-axiom SIOCGIFADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFBRDADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35097 : Int)
 
-axiom SIOCGIFBR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFCONF [FfiSyntax] [GoGlobalContext] : val :=
+  #(35090 : Int)
 
-axiom SIOCGIFBRDADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFCOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(35128 : Int)
 
-axiom SIOCGIFCONF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFDSTADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35095 : Int)
 
-axiom SIOCGIFCOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFENCAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35109 : Int)
 
-axiom SIOCGIFDSTADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFFLAGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35091 : Int)
 
-axiom SIOCGIFENCAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFHWADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35111 : Int)
 
-axiom SIOCGIFFLAGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFINDEX [FfiSyntax] [GoGlobalContext] : val :=
+  #(35123 : Int)
 
-axiom SIOCGIFHWADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFMAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35184 : Int)
 
-axiom SIOCGIFINDEX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFMEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(35103 : Int)
 
-axiom SIOCGIFMAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFMETRIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(35101 : Int)
 
-axiom SIOCGIFMEM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFMTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(35105 : Int)
 
-axiom SIOCGIFMETRIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(35088 : Int)
 
-axiom SIOCGIFMTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFNETMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(35099 : Int)
 
-axiom SIOCGIFNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFPFLAGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35125 : Int)
 
-axiom SIOCGIFNETMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFSLAVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(35113 : Int)
 
-axiom SIOCGIFPFLAGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGIFTXQLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(35138 : Int)
 
-axiom SIOCGIFSLAVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGPGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35076 : Int)
 
-axiom SIOCGIFTXQLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGRARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35169 : Int)
 
-axiom SIOCGPGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGSTAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35078 : Int)
 
-axiom SIOCGRARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCGSTAMPNS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35079 : Int)
 
-axiom SIOCGSTAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCPROTOPRIVATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(35296 : Int)
 
-axiom SIOCGSTAMPNS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCRTMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(35085 : Int)
 
-axiom SIOCPROTOPRIVATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35157 : Int)
 
-axiom SIOCRTMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35094 : Int)
 
-axiom SIOCSARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFBR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35137 : Int)
 
-axiom SIOCSIFADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFBRDADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35098 : Int)
 
-axiom SIOCSIFBR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFDSTADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35096 : Int)
 
-axiom SIOCSIFBRDADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFENCAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35110 : Int)
 
-axiom SIOCSIFDSTADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFFLAGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35092 : Int)
 
-axiom SIOCSIFENCAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFHWADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(35108 : Int)
 
-axiom SIOCSIFFLAGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFHWBROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(35127 : Int)
 
-axiom SIOCSIFHWADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(35089 : Int)
 
-axiom SIOCSIFHWBROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFMAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35185 : Int)
 
-axiom SIOCSIFLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFMEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(35104 : Int)
 
-axiom SIOCSIFMAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFMETRIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(35102 : Int)
 
-axiom SIOCSIFMEM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFMTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(35106 : Int)
 
-axiom SIOCSIFMETRIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(35107 : Int)
 
-axiom SIOCSIFMTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFNETMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(35100 : Int)
 
-axiom SIOCSIFNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFPFLAGS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35124 : Int)
 
-axiom SIOCSIFNETMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFSLAVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(35120 : Int)
 
-axiom SIOCSIFPFLAGS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSIFTXQLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(35139 : Int)
 
-axiom SIOCSIFSLAVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSPGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35074 : Int)
 
-axiom SIOCSIFTXQLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIOCSRARP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35170 : Int)
 
-axiom SIOCSPGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_CLOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(524288 : Int)
 
-axiom SIOCSRARP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_DCCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom SOCK_CLOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_DGRAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom SOCK_DCCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_NONBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom SOCK_DGRAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_PACKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom SOCK_NONBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_RAW [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom SOCK_PACKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_RDM [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom SOCK_RAW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_SEQPACKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom SOCK_RDM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOCK_STREAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SOCK_SEQPACKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_AAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(265 : Int)
 
-axiom SOCK_STREAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_ATM [FfiSyntax] [GoGlobalContext] : val :=
+  #(264 : Int)
 
-axiom SOL_AAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_DECNET [FfiSyntax] [GoGlobalContext] : val :=
+  #(261 : Int)
 
-axiom SOL_ATM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_ICMPV6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom SOL_DECNET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_IP [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom SOL_ICMPV6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_IPV6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(41 : Int)
 
-axiom SOL_IP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_IRDA [FfiSyntax] [GoGlobalContext] : val :=
+  #(266 : Int)
 
-axiom SOL_IPV6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_PACKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(263 : Int)
 
-axiom SOL_IRDA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_RAW [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom SOL_PACKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_SOCKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SOL_RAW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_TCP [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom SOL_SOCKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOL_X25 [FfiSyntax] [GoGlobalContext] : val :=
+  #(262 : Int)
 
-axiom SOL_TCP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SOMAXCONN [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom SOL_X25 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_ACCEPTCONN [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom SOMAXCONN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_ATTACH_FILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom SO_ACCEPTCONN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_BINDTODEVICE [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom SO_ATTACH_FILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom SO_BINDTODEVICE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_BSDCOMPAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom SO_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_DEBUG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SO_BSDCOMPAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_DETACH_FILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom SO_DEBUG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_DOMAIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(39 : Int)
 
-axiom SO_DETACH_FILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_DONTROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom SO_DOMAIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_ERROR [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom SO_DONTROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_KEEPALIVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom SO_ERROR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_LINGER [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom SO_KEEPALIVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_MARK [FfiSyntax] [GoGlobalContext] : val :=
+  #(36 : Int)
 
-axiom SO_LINGER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_NO_CHECK [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom SO_MARK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_OOBINLINE [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom SO_NO_CHECK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PASSCRED [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SO_OOBINLINE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PASSSEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom SO_PASSCRED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PEERCRED [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom SO_PASSSEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PEERNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom SO_PEERCRED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PEERSEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-axiom SO_PEERNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PRIORITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SO_PEERSEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_PROTOCOL [FfiSyntax] [GoGlobalContext] : val :=
+  #(38 : Int)
 
-axiom SO_PRIORITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_RCVBUF [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SO_PROTOCOL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_RCVBUFFORCE [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom SO_RCVBUF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_RCVLOWAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom SO_RCVBUFFORCE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_RCVTIMEO [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SO_RCVLOWAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_REUSEADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom SO_RCVTIMEO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_RXQ_OVFL [FfiSyntax] [GoGlobalContext] : val :=
+  #(40 : Int)
 
-axiom SO_REUSEADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SECURITY_AUTHENTICATION [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom SO_RXQ_OVFL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SECURITY_ENCRYPTION_NETWORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom SO_SECURITY_AUTHENTICATION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SECURITY_ENCRYPTION_TRANSPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom SO_SECURITY_ENCRYPTION_NETWORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SNDBUF [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom SO_SECURITY_ENCRYPTION_TRANSPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SNDBUFFORCE [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom SO_SNDBUF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SNDLOWAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom SO_SNDBUFFORCE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_SNDTIMEO [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom SO_SNDLOWAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom SO_SNDTIMEO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_TIMESTAMPING [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom SO_TIMESTAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_TIMESTAMPNS [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom SO_TIMESTAMPING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SO_TYPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom SO_TIMESTAMPNS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_BLKSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom SO_TYPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom S_BLKSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFBLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(24576 : Int)
 
-axiom S_IEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFCHR [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom S_IFBLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom S_IFCHR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFIFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom S_IFDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFLNK [FfiSyntax] [GoGlobalContext] : val :=
+  #(40960 : Int)
 
-axiom S_IFIFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFMT [FfiSyntax] [GoGlobalContext] : val :=
+  #(61440 : Int)
 
-axiom S_IFLNK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFREG [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom S_IFMT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IFSOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(49152 : Int)
 
-axiom S_IFREG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom S_IFSOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IRGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom S_IREAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IROTH [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom S_IRGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IRUSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom S_IROTH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IRWXG [FfiSyntax] [GoGlobalContext] : val :=
+  #(56 : Int)
 
-axiom S_IRUSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IRWXO [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom S_IRWXG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IRWXU [FfiSyntax] [GoGlobalContext] : val :=
+  #(448 : Int)
 
-axiom S_IRWXO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_ISGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom S_IRWXU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_ISUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom S_ISGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_ISVTX [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom S_ISUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IWGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom S_ISVTX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IWOTH [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom S_IWGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IWRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom S_IWOTH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IWUSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom S_IWRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IXGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom S_IWUSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IXOTH [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom S_IXGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def S_IXUSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom S_IXOTH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCIFLUSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom S_IXUSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCIOFLUSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom TCIFLUSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCOFLUSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom TCIOFLUSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_CONGESTION [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom TCOFLUSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_CORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom TCP_CONGESTION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_DEFER_ACCEPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom TCP_CORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_INFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom TCP_DEFER_ACCEPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_KEEPCNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom TCP_INFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_KEEPIDLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom TCP_KEEPCNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_KEEPINTVL [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom TCP_KEEPIDLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_LINGER2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom TCP_KEEPINTVL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MAXSEG [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom TCP_LINGER2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MAXWIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(65535 : Int)
 
-axiom TCP_MAXSEG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MAX_WINSHIFT [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom TCP_MAXWIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MD5SIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom TCP_MAX_WINSHIFT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MD5SIG_MAXKEYLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(80 : Int)
 
-axiom TCP_MD5SIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_MSS [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom TCP_MD5SIG_MAXKEYLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_NODELAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom TCP_MSS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_QUICKACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom TCP_NODELAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_SYNCNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom TCP_QUICKACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCP_WINDOW_CLAMP [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom TCP_SYNCNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCCBRK [FfiSyntax] [GoGlobalContext] : val :=
+  #(21544 : Int)
 
-axiom TCP_WINDOW_CLAMP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCCONS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21533 : Int)
 
-axiom TIOCCBRK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCEXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(21516 : Int)
 
-axiom TIOCCONS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGDEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767346 : Int)
 
-axiom TIOCEXCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGETD [FfiSyntax] [GoGlobalContext] : val :=
+  #(21540 : Int)
 
-axiom TIOCGDEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGICOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(21597 : Int)
 
-axiom TIOCGETD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGLCKTRMIOS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21590 : Int)
 
-axiom TIOCGICOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGPGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(21519 : Int)
 
-axiom TIOCGLCKTRMIOS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGPTN [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767344 : Int)
 
-axiom TIOCGPGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGRS485 [FfiSyntax] [GoGlobalContext] : val :=
+  #(21550 : Int)
 
-axiom TIOCGPTN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGSERIAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(21534 : Int)
 
-axiom TIOCGRS485 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGSID [FfiSyntax] [GoGlobalContext] : val :=
+  #(21545 : Int)
 
-axiom TIOCGSERIAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGSOFTCAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(21529 : Int)
 
-axiom TIOCGSID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCGWINSZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(21523 : Int)
 
-axiom TIOCGSOFTCAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCINQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(21531 : Int)
 
-axiom TIOCGWINSZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCLINUX [FfiSyntax] [GoGlobalContext] : val :=
+  #(21532 : Int)
 
-axiom TIOCINQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCMBIC [FfiSyntax] [GoGlobalContext] : val :=
+  #(21527 : Int)
 
-axiom TIOCLINUX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCMBIS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21526 : Int)
 
-axiom TIOCMBIC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCMGET [FfiSyntax] [GoGlobalContext] : val :=
+  #(21525 : Int)
 
-axiom TIOCMBIS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCMIWAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(21596 : Int)
 
-axiom TIOCMGET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCMSET [FfiSyntax] [GoGlobalContext] : val :=
+  #(21528 : Int)
 
-axiom TIOCMIWAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_CAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom TIOCMSET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_CD [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom TIOCM_CAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_CTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom TIOCM_CD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_DSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom TIOCM_CTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_DTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom TIOCM_DSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_LE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom TIOCM_DTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_RI [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom TIOCM_LE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_RNG [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom TIOCM_RI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_RTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom TIOCM_RNG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_SR [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom TIOCM_RTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCM_ST [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom TIOCM_SR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCNOTTY [FfiSyntax] [GoGlobalContext] : val :=
+  #(21538 : Int)
 
-axiom TIOCM_ST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCNXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(21517 : Int)
 
-axiom TIOCNOTTY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCOUTQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(21521 : Int)
 
-axiom TIOCNXCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT [FfiSyntax] [GoGlobalContext] : val :=
+  #(21536 : Int)
 
-axiom TIOCOUTQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_DATA [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom TIOCPKT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_DOSTOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom TIOCPKT_DATA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_FLUSHREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom TIOCPKT_DOSTOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_FLUSHWRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom TIOCPKT_FLUSHREAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_IOCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom TIOCPKT_FLUSHWRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_NOSTOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom TIOCPKT_IOCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_START [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom TIOCPKT_NOSTOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCPKT_STOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom TIOCPKT_START [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSBRK [FfiSyntax] [GoGlobalContext] : val :=
+  #(21543 : Int)
 
-axiom TIOCPKT_STOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSCTTY [FfiSyntax] [GoGlobalContext] : val :=
+  #(21518 : Int)
 
-axiom TIOCSBRK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERCONFIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(21587 : Int)
 
-axiom TIOCSCTTY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERGETLSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(21593 : Int)
 
-axiom TIOCSERCONFIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERGETMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(21594 : Int)
 
-axiom TIOCSERGETLSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERGSTRUCT [FfiSyntax] [GoGlobalContext] : val :=
+  #(21592 : Int)
 
-axiom TIOCSERGETMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERGWILD [FfiSyntax] [GoGlobalContext] : val :=
+  #(21588 : Int)
 
-axiom TIOCSERGSTRUCT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERSETMULTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(21595 : Int)
 
-axiom TIOCSERGWILD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSERSWILD [FfiSyntax] [GoGlobalContext] : val :=
+  #(21589 : Int)
 
-axiom TIOCSERSETMULTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSER_TEMT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom TIOCSERSWILD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSETD [FfiSyntax] [GoGlobalContext] : val :=
+  #(21539 : Int)
 
-axiom TIOCSER_TEMT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025526 : Int)
 
-axiom TIOCSETD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSLCKTRMIOS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21591 : Int)
 
-axiom TIOCSIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSPGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(21520 : Int)
 
-axiom TIOCSLCKTRMIOS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSPTLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025521 : Int)
 
-axiom TIOCSPGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSRS485 [FfiSyntax] [GoGlobalContext] : val :=
+  #(21551 : Int)
 
-axiom TIOCSPTLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSSERIAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(21535 : Int)
 
-axiom TIOCSRS485 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSSOFTCAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(21530 : Int)
 
-axiom TIOCSSERIAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSTI [FfiSyntax] [GoGlobalContext] : val :=
+  #(21522 : Int)
 
-axiom TIOCSSOFTCAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TIOCSWINSZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(21524 : Int)
 
-axiom TIOCSTI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNATTACHFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074812117 : Int)
 
-axiom TIOCSWINSZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNDETACHFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074812118 : Int)
 
-axiom TUNATTACHFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNGETFEATURES [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767503 : Int)
 
-axiom TUNDETACHFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNGETIFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767506 : Int)
 
-axiom TUNGETFEATURES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNGETSNDBUF [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767507 : Int)
 
-axiom TUNGETIFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNGETVNETHDRSZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147767511 : Int)
 
-axiom TUNGETSNDBUF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETDEBUG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025673 : Int)
 
-axiom TUNGETVNETHDRSZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETGROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025678 : Int)
 
-axiom TUNSETDEBUG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETIFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025674 : Int)
 
-axiom TUNSETGROUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025677 : Int)
 
-axiom TUNSETIFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETNOCSUM [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025672 : Int)
 
-axiom TUNSETLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETOFFLOAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025680 : Int)
 
-axiom TUNSETNOCSUM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETOWNER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025676 : Int)
 
-axiom TUNSETOFFLOAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETPERSIST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025675 : Int)
 
-axiom TUNSETOWNER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETSNDBUF [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025684 : Int)
 
-axiom TUNSETPERSIST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETTXFILTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025681 : Int)
 
-axiom TUNSETSNDBUF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TUNSETVNETHDRSZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(1074025688 : Int)
 
-axiom TUNSETTXFILTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741824 : Int)
 
-axiom TUNSETVNETHDRSZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WCLONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2147483648 : Int)
 
-axiom WALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WCONTINUED [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom WCLONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WEXITED [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom WCONTINUED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WNOHANG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom WEXITED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WNOTHREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(536870912 : Int)
 
-axiom WNOHANG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WNOWAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(16777216 : Int)
 
-axiom WNOTHREAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WORDSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom WNOWAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WSTOPPED [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom WORDSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def WUNTRACED [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom WSTOPPED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def E2BIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 7)
 
-axiom WUNTRACED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EACCES [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 13)
 
-axiom E2BIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EADDRINUSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 98)
 
-axiom EACCES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EADDRNOTAVAIL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 99)
 
-axiom EADDRINUSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EADV [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 68)
 
-axiom EADDRNOTAVAIL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EAFNOSUPPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 97)
 
-axiom EADV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EAGAIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 11)
 
-axiom EAFNOSUPPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EALREADY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 114)
 
-axiom EAGAIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 52)
 
-axiom EALREADY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADF [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 9)
 
-axiom EBADE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 77)
 
-axiom EBADF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 74)
 
-axiom EBADFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 53)
 
-axiom EBADMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADRQC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 56)
 
-axiom EBADR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBADSLT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 57)
 
-axiom EBADRQC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBFONT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 59)
 
-axiom EBADSLT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EBUSY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 16)
 
-axiom EBFONT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECANCELED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 125)
 
-axiom EBUSY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHILD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 10)
 
-axiom ECANCELED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHRNG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 44)
 
-axiom ECHILD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECOMM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 70)
 
-axiom ECHRNG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECONNABORTED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 103)
 
-axiom ECOMM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECONNREFUSED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 111)
 
-axiom ECONNABORTED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECONNRESET [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 104)
 
-axiom ECONNREFUSED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDEADLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 35)
 
-axiom ECONNRESET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDEADLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 35)
 
-axiom EDEADLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDESTADDRREQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 89)
 
-axiom EDEADLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDOM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 33)
 
-axiom EDESTADDRREQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDOTDOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 73)
 
-axiom EDOM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EDQUOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 122)
 
-axiom EDOTDOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EEXIST [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 17)
 
-axiom EDQUOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EFAULT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 14)
 
-axiom EEXIST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EFBIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 27)
 
-axiom EFAULT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EHOSTDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 112)
 
-axiom EFBIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EHOSTUNREACH [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 113)
 
-axiom EHOSTDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EIDRM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 43)
 
-axiom EHOSTUNREACH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EILSEQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 84)
 
-axiom EIDRM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EINPROGRESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 115)
 
-axiom EILSEQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EINTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 4)
 
-axiom EINPROGRESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EINVAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 22)
 
-axiom EINTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EIO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 5)
 
-axiom EINVAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EISCONN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 106)
 
-axiom EIO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EISDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 21)
 
-axiom EISCONN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EISNAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 120)
 
-axiom EISDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EKEYEXPIRED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 127)
 
-axiom EISNAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EKEYREJECTED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 129)
 
-axiom EKEYEXPIRED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EKEYREVOKED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 128)
 
-axiom EKEYREJECTED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EL2HLT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 51)
 
-axiom EKEYREVOKED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EL2NSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 45)
 
-axiom EL2HLT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EL3HLT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 46)
 
-axiom EL2NSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EL3RST [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 47)
 
-axiom EL3HLT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELIBACC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 79)
 
-axiom EL3RST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELIBBAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 80)
 
-axiom ELIBACC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELIBEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 83)
 
-axiom ELIBBAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELIBMAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 82)
 
-axiom ELIBEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELIBSCN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 81)
 
-axiom ELIBMAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELNRNG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 48)
 
-axiom ELIBSCN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ELOOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 40)
 
-axiom ELNRNG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EMEDIUMTYPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 124)
 
-axiom ELOOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EMFILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 24)
 
-axiom EMEDIUMTYPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EMLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 31)
 
-axiom EMFILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EMSGSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 90)
 
-axiom EMLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EMULTIHOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 72)
 
-axiom EMSGSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENAMETOOLONG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 36)
 
-axiom EMULTIHOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENAVAIL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 119)
 
-axiom ENAMETOOLONG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENETDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 100)
 
-axiom ENAVAIL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENETRESET [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 102)
 
-axiom ENETDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENETUNREACH [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 101)
 
-axiom ENETRESET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENFILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 23)
 
-axiom ENETUNREACH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOANO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 55)
 
-axiom ENFILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOBUFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 105)
 
-axiom ENOANO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOCSI [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 50)
 
-axiom ENOBUFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENODATA [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 61)
 
-axiom ENOCSI [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENODEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 19)
 
-axiom ENODATA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOENT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom ENODEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOEXEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 8)
 
-axiom ENOENT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOKEY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 126)
 
-axiom ENOEXEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOLCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 37)
 
-axiom ENOKEY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 67)
 
-axiom ENOLCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOMEDIUM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 123)
 
-axiom ENOLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOMEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 12)
 
-axiom ENOMEDIUM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 42)
 
-axiom ENOMEM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENONET [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 64)
 
-axiom ENOMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOPKG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 65)
 
-axiom ENONET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOPROTOOPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 92)
 
-axiom ENOPKG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOSPC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 28)
 
-axiom ENOPROTOOPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOSR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 63)
 
-axiom ENOSPC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOSTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 60)
 
-axiom ENOSR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOSYS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 38)
 
-axiom ENOSTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTBLK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 15)
 
-axiom ENOSYS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTCONN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 107)
 
-axiom ENOTBLK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 20)
 
-axiom ENOTCONN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTEMPTY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 39)
 
-axiom ENOTDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTNAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 118)
 
-axiom ENOTEMPTY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTRECOVERABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 131)
 
-axiom ENOTNAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTSOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 88)
 
-axiom ENOTRECOVERABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTSUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 95)
 
-axiom ENOTSOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTTY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 25)
 
-axiom ENOTSUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENOTUNIQ [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 76)
 
-axiom ENOTTY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ENXIO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 6)
 
-axiom ENOTUNIQ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EOPNOTSUPP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 95)
 
-axiom ENXIO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EOVERFLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 75)
 
-axiom EOPNOTSUPP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EOWNERDEAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 130)
 
-axiom EOVERFLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPERM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom EOWNERDEAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPFNOSUPPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 96)
 
-axiom EPERM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 32)
 
-axiom EPFNOSUPPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPROTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 71)
 
-axiom EPIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPROTONOSUPPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 93)
 
-axiom EPROTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EPROTOTYPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 91)
 
-axiom EPROTONOSUPPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ERANGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 34)
 
-axiom EPROTOTYPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EREMCHG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 78)
 
-axiom ERANGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EREMOTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 66)
 
-axiom EREMCHG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EREMOTEIO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 121)
 
-axiom EREMOTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ERESTART [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 85)
 
-axiom EREMOTEIO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ERFKILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 132)
 
-axiom ERESTART [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EROFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 30)
 
-axiom ERFKILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESHUTDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 108)
 
-axiom EROFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESOCKTNOSUPPORT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 94)
 
-axiom ESHUTDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESPIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 29)
 
-axiom ESOCKTNOSUPPORT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESRCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 3)
 
-axiom ESPIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESRMNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 69)
 
-axiom ESRCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESTALE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 116)
 
-axiom ESRMNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ESTRPIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 86)
 
-axiom ESTALE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 62)
 
-axiom ESTRPIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETIMEDOUT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 110)
 
-axiom ETIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETOOMANYREFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 109)
 
-axiom ETIMEDOUT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ETXTBSY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 26)
 
-axiom ETOOMANYREFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EUCLEAN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 117)
 
-axiom ETXTBSY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EUNATCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 49)
 
-axiom EUCLEAN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EUSERS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 87)
 
-axiom EUNATCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EWOULDBLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 11)
 
-axiom EUSERS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EXDEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 18)
 
-axiom EWOULDBLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def EXFULL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 54)
 
-axiom EXDEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGABRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 6)
 
-axiom EXFULL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGALRM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 14)
 
-axiom SIGABRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGBUS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 7)
 
-axiom SIGALRM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGCHLD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 17)
 
-axiom SIGBUS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGCLD [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 17)
 
-axiom SIGCHLD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGCONT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 18)
 
-axiom SIGCLD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGFPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 8)
 
-axiom SIGCONT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGHUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom SIGFPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 4)
 
-axiom SIGHUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom SIGILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGIO [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 29)
 
-axiom SIGINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGIOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 6)
 
-axiom SIGIO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGKILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 9)
 
-axiom SIGIOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGPIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 13)
 
-axiom SIGKILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGPOLL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 29)
 
-axiom SIGPIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGPROF [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 27)
 
-axiom SIGPOLL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGPWR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 30)
 
-axiom SIGPROF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGQUIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 3)
 
-axiom SIGPWR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGSEGV [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 11)
 
-axiom SIGQUIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGSTKFLT [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 16)
 
-axiom SIGSEGV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGSTOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 19)
 
-axiom SIGSTKFLT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGSYS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 31)
 
-axiom SIGSTOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGTERM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 15)
 
-axiom SIGSYS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGTRAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 5)
 
-axiom SIGTERM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGTSTP [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 20)
 
-axiom SIGTRAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGTTIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 21)
 
-axiom SIGTSTP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGTTOU [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 22)
 
-axiom SIGTTIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGUNUSED [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 31)
 
-axiom SIGTTOU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGURG [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 23)
 
-axiom SIGUNUSED [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGUSR1 [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 10)
 
-axiom SIGURG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGUSR2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 12)
 
-axiom SIGUSR1 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGVTALRM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 26)
 
-axiom SIGUSR2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGWINCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 28)
 
-axiom SIGVTALRM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGXCPU [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 24)
 
-axiom SIGWINCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SIGXFSZ [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 25)
 
-axiom SIGXCPU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_READ [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom SIGXFSZ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_WRITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SYS_READ [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_OPEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom SYS_WRITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLOSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom SYS_OPEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_STAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom SYS_CLOSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FSTAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom SYS_STAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LSTAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom SYS_FSTAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_POLL [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom SYS_LSTAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LSEEK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SYS_POLL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MMAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom SYS_LSEEK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MPROTECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom SYS_MMAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MUNMAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom SYS_MPROTECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_BRK [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SYS_MUNMAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGACTION [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom SYS_BRK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGPROCMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom SYS_RT_SIGACTION [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGRETURN [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom SYS_RT_SIGPROCMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IOCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SYS_RT_SIGRETURN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PREAD64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom SYS_IOCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PWRITE64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom SYS_PREAD64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_READV [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom SYS_PWRITE64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_WRITEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SYS_READV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ACCESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21 : Int)
 
-axiom SYS_WRITEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PIPE [FfiSyntax] [GoGlobalContext] : val :=
+  #(22 : Int)
 
-axiom SYS_ACCESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SELECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(23 : Int)
 
-axiom SYS_PIPE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_YIELD [FfiSyntax] [GoGlobalContext] : val :=
+  #(24 : Int)
 
-axiom SYS_SELECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MREMAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(25 : Int)
 
-axiom SYS_SCHED_YIELD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(26 : Int)
 
-axiom SYS_MREMAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MINCORE [FfiSyntax] [GoGlobalContext] : val :=
+  #(27 : Int)
 
-axiom SYS_MSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MADVISE [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom SYS_MINCORE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SHMGET [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom SYS_MADVISE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SHMAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(30 : Int)
 
-axiom SYS_SHMGET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SHMCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-axiom SYS_SHMAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_DUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom SYS_SHMCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_DUP2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(33 : Int)
 
-axiom SYS_DUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PAUSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(34 : Int)
 
-axiom SYS_DUP2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_NANOSLEEP [FfiSyntax] [GoGlobalContext] : val :=
+  #(35 : Int)
 
-axiom SYS_PAUSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETITIMER [FfiSyntax] [GoGlobalContext] : val :=
+  #(36 : Int)
 
-axiom SYS_NANOSLEEP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ALARM [FfiSyntax] [GoGlobalContext] : val :=
+  #(37 : Int)
 
-axiom SYS_GETITIMER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETITIMER [FfiSyntax] [GoGlobalContext] : val :=
+  #(38 : Int)
 
-axiom SYS_ALARM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPID [FfiSyntax] [GoGlobalContext] : val :=
+  #(39 : Int)
 
-axiom SYS_SETITIMER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SENDFILE [FfiSyntax] [GoGlobalContext] : val :=
+  #(40 : Int)
 
-axiom SYS_GETPID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SOCKET [FfiSyntax] [GoGlobalContext] : val :=
+  #(41 : Int)
 
-axiom SYS_SENDFILE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CONNECT [FfiSyntax] [GoGlobalContext] : val :=
+  #(42 : Int)
 
-axiom SYS_SOCKET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ACCEPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(43 : Int)
 
-axiom SYS_CONNECT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SENDTO [FfiSyntax] [GoGlobalContext] : val :=
+  #(44 : Int)
 
-axiom SYS_ACCEPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RECVFROM [FfiSyntax] [GoGlobalContext] : val :=
+  #(45 : Int)
 
-axiom SYS_SENDTO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SENDMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(46 : Int)
 
-axiom SYS_RECVFROM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RECVMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(47 : Int)
 
-axiom SYS_SENDMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SHUTDOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom SYS_RECVMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_BIND [FfiSyntax] [GoGlobalContext] : val :=
+  #(49 : Int)
 
-axiom SYS_SHUTDOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LISTEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(50 : Int)
 
-axiom SYS_BIND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETSOCKNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(51 : Int)
 
-axiom SYS_LISTEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPEERNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(52 : Int)
 
-axiom SYS_GETSOCKNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SOCKETPAIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(53 : Int)
 
-axiom SYS_GETPEERNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETSOCKOPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(54 : Int)
 
-axiom SYS_SOCKETPAIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETSOCKOPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(55 : Int)
 
-axiom SYS_SETSOCKOPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(56 : Int)
 
-axiom SYS_GETSOCKOPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(57 : Int)
 
-axiom SYS_CLONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_VFORK [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom SYS_FORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EXECVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(59 : Int)
 
-axiom SYS_VFORK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EXIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(60 : Int)
 
-axiom SYS_EXECVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_WAIT4 [FfiSyntax] [GoGlobalContext] : val :=
+  #(61 : Int)
 
-axiom SYS_EXIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_KILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(62 : Int)
 
-axiom SYS_WAIT4 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(63 : Int)
 
-axiom SYS_KILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SEMGET [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom SYS_UNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SEMOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(65 : Int)
 
-axiom SYS_SEMGET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SEMCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(66 : Int)
 
-axiom SYS_SEMOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SHMDT [FfiSyntax] [GoGlobalContext] : val :=
+  #(67 : Int)
 
-axiom SYS_SEMCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MSGGET [FfiSyntax] [GoGlobalContext] : val :=
+  #(68 : Int)
 
-axiom SYS_SHMDT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MSGSND [FfiSyntax] [GoGlobalContext] : val :=
+  #(69 : Int)
 
-axiom SYS_MSGGET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MSGRCV [FfiSyntax] [GoGlobalContext] : val :=
+  #(70 : Int)
 
-axiom SYS_MSGSND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MSGCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(71 : Int)
 
-axiom SYS_MSGRCV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCNTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(72 : Int)
 
-axiom SYS_MSGCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(73 : Int)
 
-axiom SYS_FCNTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FSYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(74 : Int)
 
-axiom SYS_FLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FDATASYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(75 : Int)
 
-axiom SYS_FSYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TRUNCATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(76 : Int)
 
-axiom SYS_FDATASYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FTRUNCATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(77 : Int)
 
-axiom SYS_TRUNCATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETDENTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(78 : Int)
 
-axiom SYS_FTRUNCATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETCWD [FfiSyntax] [GoGlobalContext] : val :=
+  #(79 : Int)
 
-axiom SYS_GETDENTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CHDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(80 : Int)
 
-axiom SYS_GETCWD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCHDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(81 : Int)
 
-axiom SYS_CHDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RENAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(82 : Int)
 
-axiom SYS_FCHDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MKDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(83 : Int)
 
-axiom SYS_RENAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RMDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(84 : Int)
 
-axiom SYS_MKDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CREAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(85 : Int)
 
-axiom SYS_RMDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(86 : Int)
 
-axiom SYS_CREAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UNLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(87 : Int)
 
-axiom SYS_LINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYMLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(88 : Int)
 
-axiom SYS_UNLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_READLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(89 : Int)
 
-axiom SYS_SYMLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CHMOD [FfiSyntax] [GoGlobalContext] : val :=
+  #(90 : Int)
 
-axiom SYS_READLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCHMOD [FfiSyntax] [GoGlobalContext] : val :=
+  #(91 : Int)
 
-axiom SYS_CHMOD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CHOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(92 : Int)
 
-axiom SYS_FCHMOD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCHOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(93 : Int)
 
-axiom SYS_CHOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LCHOWN [FfiSyntax] [GoGlobalContext] : val :=
+  #(94 : Int)
 
-axiom SYS_FCHOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UMASK [FfiSyntax] [GoGlobalContext] : val :=
+  #(95 : Int)
 
-axiom SYS_LCHOWN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETTIMEOFDAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(96 : Int)
 
-axiom SYS_UMASK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETRLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(97 : Int)
 
-axiom SYS_GETTIMEOFDAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETRUSAGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(98 : Int)
 
-axiom SYS_GETRLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYSINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(99 : Int)
 
-axiom SYS_GETRUSAGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMES [FfiSyntax] [GoGlobalContext] : val :=
+  #(100 : Int)
 
-axiom SYS_SYSINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PTRACE [FfiSyntax] [GoGlobalContext] : val :=
+  #(101 : Int)
 
-axiom SYS_TIMES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(102 : Int)
 
-axiom SYS_PTRACE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYSLOG [FfiSyntax] [GoGlobalContext] : val :=
+  #(103 : Int)
 
-axiom SYS_GETUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(104 : Int)
 
-axiom SYS_SYSLOG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(105 : Int)
 
-axiom SYS_GETGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(106 : Int)
 
-axiom SYS_SETUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETEUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(107 : Int)
 
-axiom SYS_SETGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETEGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(108 : Int)
 
-axiom SYS_GETEUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETPGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(109 : Int)
 
-axiom SYS_GETEGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPPID [FfiSyntax] [GoGlobalContext] : val :=
+  #(110 : Int)
 
-axiom SYS_SETPGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPGRP [FfiSyntax] [GoGlobalContext] : val :=
+  #(111 : Int)
 
-axiom SYS_GETPPID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETSID [FfiSyntax] [GoGlobalContext] : val :=
+  #(112 : Int)
 
-axiom SYS_GETPGRP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETREUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(113 : Int)
 
-axiom SYS_SETSID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETREGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(114 : Int)
 
-axiom SYS_SETREUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETGROUPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(115 : Int)
 
-axiom SYS_SETREGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETGROUPS [FfiSyntax] [GoGlobalContext] : val :=
+  #(116 : Int)
 
-axiom SYS_GETGROUPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETRESUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(117 : Int)
 
-axiom SYS_SETGROUPS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETRESUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(118 : Int)
 
-axiom SYS_SETRESUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETRESGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(119 : Int)
 
-axiom SYS_GETRESUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETRESGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(120 : Int)
 
-axiom SYS_SETRESGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(121 : Int)
 
-axiom SYS_GETRESGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETFSUID [FfiSyntax] [GoGlobalContext] : val :=
+  #(122 : Int)
 
-axiom SYS_GETPGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETFSGID [FfiSyntax] [GoGlobalContext] : val :=
+  #(123 : Int)
 
-axiom SYS_SETFSUID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETSID [FfiSyntax] [GoGlobalContext] : val :=
+  #(124 : Int)
 
-axiom SYS_SETFSGID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CAPGET [FfiSyntax] [GoGlobalContext] : val :=
+  #(125 : Int)
 
-axiom SYS_GETSID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CAPSET [FfiSyntax] [GoGlobalContext] : val :=
+  #(126 : Int)
 
-axiom SYS_CAPGET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGPENDING [FfiSyntax] [GoGlobalContext] : val :=
+  #(127 : Int)
 
-axiom SYS_CAPSET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGTIMEDWAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom SYS_RT_SIGPENDING [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGQUEUEINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(129 : Int)
 
-axiom SYS_RT_SIGTIMEDWAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_SIGSUSPEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(130 : Int)
 
-axiom SYS_RT_SIGQUEUEINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SIGALTSTACK [FfiSyntax] [GoGlobalContext] : val :=
+  #(131 : Int)
 
-axiom SYS_RT_SIGSUSPEND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(132 : Int)
 
-axiom SYS_SIGALTSTACK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MKNOD [FfiSyntax] [GoGlobalContext] : val :=
+  #(133 : Int)
 
-axiom SYS_UTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_USELIB [FfiSyntax] [GoGlobalContext] : val :=
+  #(134 : Int)
 
-axiom SYS_MKNOD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PERSONALITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(135 : Int)
 
-axiom SYS_USELIB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_USTAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(136 : Int)
 
-axiom SYS_PERSONALITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_STATFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(137 : Int)
 
-axiom SYS_USTAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FSTATFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(138 : Int)
 
-axiom SYS_STATFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYSFS [FfiSyntax] [GoGlobalContext] : val :=
+  #(139 : Int)
 
-axiom SYS_FSTATFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPRIORITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(140 : Int)
 
-axiom SYS_SYSFS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETPRIORITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(141 : Int)
 
-axiom SYS_GETPRIORITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_SETPARAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(142 : Int)
 
-axiom SYS_SETPRIORITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_GETPARAM [FfiSyntax] [GoGlobalContext] : val :=
+  #(143 : Int)
 
-axiom SYS_SCHED_SETPARAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_SETSCHEDULER [FfiSyntax] [GoGlobalContext] : val :=
+  #(144 : Int)
 
-axiom SYS_SCHED_GETPARAM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_GETSCHEDULER [FfiSyntax] [GoGlobalContext] : val :=
+  #(145 : Int)
 
-axiom SYS_SCHED_SETSCHEDULER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_GET_PRIORITY_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(146 : Int)
 
-axiom SYS_SCHED_GETSCHEDULER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_GET_PRIORITY_MIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(147 : Int)
 
-axiom SYS_SCHED_GET_PRIORITY_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_RR_GET_INTERVAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(148 : Int)
 
-axiom SYS_SCHED_GET_PRIORITY_MIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(149 : Int)
 
-axiom SYS_SCHED_RR_GET_INTERVAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MUNLOCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(150 : Int)
 
-axiom SYS_MLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MLOCKALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(151 : Int)
 
-axiom SYS_MUNLOCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MUNLOCKALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(152 : Int)
 
-axiom SYS_MLOCKALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_VHANGUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(153 : Int)
 
-axiom SYS_MUNLOCKALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MODIFY_LDT [FfiSyntax] [GoGlobalContext] : val :=
+  #(154 : Int)
 
-axiom SYS_VHANGUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PIVOT_ROOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(155 : Int)
 
-axiom SYS_MODIFY_LDT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS__SYSCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(156 : Int)
 
-axiom SYS_PIVOT_ROOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PRCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(157 : Int)
 
-axiom SYS__SYSCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ARCH_PRCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(158 : Int)
 
-axiom SYS_PRCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ADJTIMEX [FfiSyntax] [GoGlobalContext] : val :=
+  #(159 : Int)
 
-axiom SYS_ARCH_PRCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETRLIMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(160 : Int)
 
-axiom SYS_ADJTIMEX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CHROOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(161 : Int)
 
-axiom SYS_SETRLIMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(162 : Int)
 
-axiom SYS_CHROOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ACCT [FfiSyntax] [GoGlobalContext] : val :=
+  #(163 : Int)
 
-axiom SYS_SYNC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETTIMEOFDAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(164 : Int)
 
-axiom SYS_ACCT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MOUNT [FfiSyntax] [GoGlobalContext] : val :=
+  #(165 : Int)
 
-axiom SYS_SETTIMEOFDAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UMOUNT2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(166 : Int)
 
-axiom SYS_MOUNT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SWAPON [FfiSyntax] [GoGlobalContext] : val :=
+  #(167 : Int)
 
-axiom SYS_UMOUNT2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SWAPOFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(168 : Int)
 
-axiom SYS_SWAPON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_REBOOT [FfiSyntax] [GoGlobalContext] : val :=
+  #(169 : Int)
 
-axiom SYS_SWAPOFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETHOSTNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(170 : Int)
 
-axiom SYS_REBOOT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETDOMAINNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(171 : Int)
 
-axiom SYS_SETHOSTNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IOPL [FfiSyntax] [GoGlobalContext] : val :=
+  #(172 : Int)
 
-axiom SYS_SETDOMAINNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IOPERM [FfiSyntax] [GoGlobalContext] : val :=
+  #(173 : Int)
 
-axiom SYS_IOPL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CREATE_MODULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(174 : Int)
 
-axiom SYS_IOPERM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_INIT_MODULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(175 : Int)
 
-axiom SYS_CREATE_MODULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_DELETE_MODULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(176 : Int)
 
-axiom SYS_INIT_MODULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GET_KERNEL_SYMS [FfiSyntax] [GoGlobalContext] : val :=
+  #(177 : Int)
 
-axiom SYS_DELETE_MODULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_QUERY_MODULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(178 : Int)
 
-axiom SYS_GET_KERNEL_SYMS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_QUOTACTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(179 : Int)
 
-axiom SYS_QUERY_MODULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_NFSSERVCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(180 : Int)
 
-axiom SYS_QUOTACTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETPMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(181 : Int)
 
-axiom SYS_NFSSERVCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PUTPMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(182 : Int)
 
-axiom SYS_GETPMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_AFS_SYSCALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(183 : Int)
 
-axiom SYS_PUTPMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TUXCALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(184 : Int)
 
-axiom SYS_AFS_SYSCALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SECURITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(185 : Int)
 
-axiom SYS_TUXCALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETTID [FfiSyntax] [GoGlobalContext] : val :=
+  #(186 : Int)
 
-axiom SYS_SECURITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_READAHEAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(187 : Int)
 
-axiom SYS_GETTID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(188 : Int)
 
-axiom SYS_READAHEAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LSETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(189 : Int)
 
-axiom SYS_SETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FSETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(190 : Int)
 
-axiom SYS_LSETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(191 : Int)
 
-axiom SYS_FSETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LGETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(192 : Int)
 
-axiom SYS_GETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FGETXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(193 : Int)
 
-axiom SYS_LGETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LISTXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(194 : Int)
 
-axiom SYS_FGETXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LLISTXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(195 : Int)
 
-axiom SYS_LISTXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FLISTXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(196 : Int)
 
-axiom SYS_LLISTXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_REMOVEXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(197 : Int)
 
-axiom SYS_FLISTXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LREMOVEXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(198 : Int)
 
-axiom SYS_REMOVEXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FREMOVEXATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(199 : Int)
 
-axiom SYS_LREMOVEXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TKILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(200 : Int)
 
-axiom SYS_FREMOVEXATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(201 : Int)
 
-axiom SYS_TKILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FUTEX [FfiSyntax] [GoGlobalContext] : val :=
+  #(202 : Int)
 
-axiom SYS_TIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_SETAFFINITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(203 : Int)
 
-axiom SYS_FUTEX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SCHED_GETAFFINITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(204 : Int)
 
-axiom SYS_SCHED_SETAFFINITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val :=
+  #(205 : Int)
 
-axiom SYS_SCHED_GETAFFINITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IO_SETUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(206 : Int)
 
-axiom SYS_SET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IO_DESTROY [FfiSyntax] [GoGlobalContext] : val :=
+  #(207 : Int)
 
-axiom SYS_IO_SETUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IO_GETEVENTS [FfiSyntax] [GoGlobalContext] : val :=
+  #(208 : Int)
 
-axiom SYS_IO_DESTROY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IO_SUBMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(209 : Int)
 
-axiom SYS_IO_GETEVENTS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IO_CANCEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(210 : Int)
 
-axiom SYS_IO_SUBMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val :=
+  #(211 : Int)
 
-axiom SYS_IO_CANCEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LOOKUP_DCOOKIE [FfiSyntax] [GoGlobalContext] : val :=
+  #(212 : Int)
 
-axiom SYS_GET_THREAD_AREA [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(213 : Int)
 
-axiom SYS_LOOKUP_DCOOKIE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_CTL_OLD [FfiSyntax] [GoGlobalContext] : val :=
+  #(214 : Int)
 
-axiom SYS_EPOLL_CREATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_WAIT_OLD [FfiSyntax] [GoGlobalContext] : val :=
+  #(215 : Int)
 
-axiom SYS_EPOLL_CTL_OLD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_REMAP_FILE_PAGES [FfiSyntax] [GoGlobalContext] : val :=
+  #(216 : Int)
 
-axiom SYS_EPOLL_WAIT_OLD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GETDENTS64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(217 : Int)
 
-axiom SYS_REMAP_FILE_PAGES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SET_TID_ADDRESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(218 : Int)
 
-axiom SYS_GETDENTS64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RESTART_SYSCALL [FfiSyntax] [GoGlobalContext] : val :=
+  #(219 : Int)
 
-axiom SYS_SET_TID_ADDRESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SEMTIMEDOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(220 : Int)
 
-axiom SYS_RESTART_SYSCALL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FADVISE64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(221 : Int)
 
-axiom SYS_SEMTIMEDOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMER_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(222 : Int)
 
-axiom SYS_FADVISE64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMER_SETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(223 : Int)
 
-axiom SYS_TIMER_CREATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMER_GETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(224 : Int)
 
-axiom SYS_TIMER_SETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMER_GETOVERRUN [FfiSyntax] [GoGlobalContext] : val :=
+  #(225 : Int)
 
-axiom SYS_TIMER_GETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMER_DELETE [FfiSyntax] [GoGlobalContext] : val :=
+  #(226 : Int)
 
-axiom SYS_TIMER_GETOVERRUN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLOCK_SETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(227 : Int)
 
-axiom SYS_TIMER_DELETE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLOCK_GETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(228 : Int)
 
-axiom SYS_CLOCK_SETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLOCK_GETRES [FfiSyntax] [GoGlobalContext] : val :=
+  #(229 : Int)
 
-axiom SYS_CLOCK_GETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_CLOCK_NANOSLEEP [FfiSyntax] [GoGlobalContext] : val :=
+  #(230 : Int)
 
-axiom SYS_CLOCK_GETRES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EXIT_GROUP [FfiSyntax] [GoGlobalContext] : val :=
+  #(231 : Int)
 
-axiom SYS_CLOCK_NANOSLEEP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_WAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(232 : Int)
 
-axiom SYS_EXIT_GROUP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_CTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(233 : Int)
 
-axiom SYS_EPOLL_WAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TGKILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(234 : Int)
 
-axiom SYS_EPOLL_CTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UTIMES [FfiSyntax] [GoGlobalContext] : val :=
+  #(235 : Int)
 
-axiom SYS_TGKILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_VSERVER [FfiSyntax] [GoGlobalContext] : val :=
+  #(236 : Int)
 
-axiom SYS_UTIMES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MBIND [FfiSyntax] [GoGlobalContext] : val :=
+  #(237 : Int)
 
-axiom SYS_VSERVER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SET_MEMPOLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(238 : Int)
 
-axiom SYS_MBIND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GET_MEMPOLICY [FfiSyntax] [GoGlobalContext] : val :=
+  #(239 : Int)
 
-axiom SYS_SET_MEMPOLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_OPEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(240 : Int)
 
-axiom SYS_GET_MEMPOLICY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_UNLINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(241 : Int)
 
-axiom SYS_MQ_OPEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_TIMEDSEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(242 : Int)
 
-axiom SYS_MQ_UNLINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_TIMEDRECEIVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(243 : Int)
 
-axiom SYS_MQ_TIMEDSEND [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_NOTIFY [FfiSyntax] [GoGlobalContext] : val :=
+  #(244 : Int)
 
-axiom SYS_MQ_TIMEDRECEIVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MQ_GETSETATTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(245 : Int)
 
-axiom SYS_MQ_NOTIFY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_KEXEC_LOAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(246 : Int)
 
-axiom SYS_MQ_GETSETATTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_WAITID [FfiSyntax] [GoGlobalContext] : val :=
+  #(247 : Int)
 
-axiom SYS_KEXEC_LOAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ADD_KEY [FfiSyntax] [GoGlobalContext] : val :=
+  #(248 : Int)
 
-axiom SYS_WAITID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_REQUEST_KEY [FfiSyntax] [GoGlobalContext] : val :=
+  #(249 : Int)
 
-axiom SYS_ADD_KEY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_KEYCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(250 : Int)
 
-axiom SYS_REQUEST_KEY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IOPRIO_SET [FfiSyntax] [GoGlobalContext] : val :=
+  #(251 : Int)
 
-axiom SYS_KEYCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_IOPRIO_GET [FfiSyntax] [GoGlobalContext] : val :=
+  #(252 : Int)
 
-axiom SYS_IOPRIO_SET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_INOTIFY_INIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(253 : Int)
 
-axiom SYS_IOPRIO_GET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_INOTIFY_ADD_WATCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(254 : Int)
 
-axiom SYS_INOTIFY_INIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_INOTIFY_RM_WATCH [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom SYS_INOTIFY_ADD_WATCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MIGRATE_PAGES [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom SYS_INOTIFY_RM_WATCH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_OPENAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(257 : Int)
 
-axiom SYS_MIGRATE_PAGES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MKDIRAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(258 : Int)
 
-axiom SYS_OPENAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MKNODAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(259 : Int)
 
-axiom SYS_MKDIRAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCHOWNAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(260 : Int)
 
-axiom SYS_MKNODAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FUTIMESAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(261 : Int)
 
-axiom SYS_FCHOWNAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_NEWFSTATAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(262 : Int)
 
-axiom SYS_FUTIMESAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UNLINKAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(263 : Int)
 
-axiom SYS_NEWFSTATAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RENAMEAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(264 : Int)
 
-axiom SYS_UNLINKAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_LINKAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(265 : Int)
 
-axiom SYS_RENAMEAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYMLINKAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(266 : Int)
 
-axiom SYS_LINKAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_READLINKAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(267 : Int)
 
-axiom SYS_SYMLINKAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FCHMODAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(268 : Int)
 
-axiom SYS_READLINKAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FACCESSAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(269 : Int)
 
-axiom SYS_FCHMODAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PSELECT6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(270 : Int)
 
-axiom SYS_FACCESSAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PPOLL [FfiSyntax] [GoGlobalContext] : val :=
+  #(271 : Int)
 
-axiom SYS_PSELECT6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UNSHARE [FfiSyntax] [GoGlobalContext] : val :=
+  #(272 : Int)
 
-axiom SYS_PPOLL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SET_ROBUST_LIST [FfiSyntax] [GoGlobalContext] : val :=
+  #(273 : Int)
 
-axiom SYS_UNSHARE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_GET_ROBUST_LIST [FfiSyntax] [GoGlobalContext] : val :=
+  #(274 : Int)
 
-axiom SYS_SET_ROBUST_LIST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SPLICE [FfiSyntax] [GoGlobalContext] : val :=
+  #(275 : Int)
 
-axiom SYS_GET_ROBUST_LIST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TEE [FfiSyntax] [GoGlobalContext] : val :=
+  #(276 : Int)
 
-axiom SYS_SPLICE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SYNC_FILE_RANGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(277 : Int)
 
-axiom SYS_TEE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_VMSPLICE [FfiSyntax] [GoGlobalContext] : val :=
+  #(278 : Int)
 
-axiom SYS_SYNC_FILE_RANGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_MOVE_PAGES [FfiSyntax] [GoGlobalContext] : val :=
+  #(279 : Int)
 
-axiom SYS_VMSPLICE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_UTIMENSAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(280 : Int)
 
-axiom SYS_MOVE_PAGES [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_PWAIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(281 : Int)
 
-axiom SYS_UTIMENSAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SIGNALFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(282 : Int)
 
-axiom SYS_EPOLL_PWAIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMERFD_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(283 : Int)
 
-axiom SYS_SIGNALFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EVENTFD [FfiSyntax] [GoGlobalContext] : val :=
+  #(284 : Int)
 
-axiom SYS_TIMERFD_CREATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FALLOCATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(285 : Int)
 
-axiom SYS_EVENTFD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMERFD_SETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(286 : Int)
 
-axiom SYS_FALLOCATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_TIMERFD_GETTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(287 : Int)
 
-axiom SYS_TIMERFD_SETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_ACCEPT4 [FfiSyntax] [GoGlobalContext] : val :=
+  #(288 : Int)
 
-axiom SYS_TIMERFD_GETTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_SIGNALFD4 [FfiSyntax] [GoGlobalContext] : val :=
+  #(289 : Int)
 
-axiom SYS_ACCEPT4 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EVENTFD2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(290 : Int)
 
-axiom SYS_SIGNALFD4 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_EPOLL_CREATE1 [FfiSyntax] [GoGlobalContext] : val :=
+  #(291 : Int)
 
-axiom SYS_EVENTFD2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_DUP3 [FfiSyntax] [GoGlobalContext] : val :=
+  #(292 : Int)
 
-axiom SYS_EPOLL_CREATE1 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PIPE2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(293 : Int)
 
-axiom SYS_DUP3 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_INOTIFY_INIT1 [FfiSyntax] [GoGlobalContext] : val :=
+  #(294 : Int)
 
-axiom SYS_PIPE2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PREADV [FfiSyntax] [GoGlobalContext] : val :=
+  #(295 : Int)
 
-axiom SYS_INOTIFY_INIT1 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PWRITEV [FfiSyntax] [GoGlobalContext] : val :=
+  #(296 : Int)
 
-axiom SYS_PREADV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RT_TGSIGQUEUEINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(297 : Int)
 
-axiom SYS_PWRITEV [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PERF_EVENT_OPEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(298 : Int)
 
-axiom SYS_RT_TGSIGQUEUEINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_RECVMMSG [FfiSyntax] [GoGlobalContext] : val :=
+  #(299 : Int)
 
-axiom SYS_PERF_EVENT_OPEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FANOTIFY_INIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(300 : Int)
 
-axiom SYS_RECVMMSG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_FANOTIFY_MARK [FfiSyntax] [GoGlobalContext] : val :=
+  #(301 : Int)
 
-axiom SYS_FANOTIFY_INIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SYS_PRLIMIT64 [FfiSyntax] [GoGlobalContext] : val :=
+  #(302 : Int)
 
-axiom SYS_FANOTIFY_MARK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sizeofPtr [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SYS_PRLIMIT64 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sizeofShort [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom sizeofPtr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sizeofInt [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom sizeofShort [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sizeofLong [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom sizeofInt [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def sizeofLongLong [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom sizeofLong [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PathMax [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom sizeofLongLong [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrInet4 [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom PathMax [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrInet6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(28 : Int)
 
-axiom SizeofSockaddrInet4 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrAny [FfiSyntax] [GoGlobalContext] : val :=
+  #(112 : Int)
 
-axiom SizeofSockaddrInet6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrUnix [FfiSyntax] [GoGlobalContext] : val :=
+  #(110 : Int)
 
-axiom SizeofSockaddrAny [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrLinklayer [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SizeofSockaddrUnix [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockaddrNetlink [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SizeofSockaddrLinklayer [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofLinger [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SizeofSockaddrNetlink [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIPMreq [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SizeofLinger [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIPMreqn [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SizeofIPMreq [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIPv6Mreq [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SizeofIPMreqn [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofMsghdr [FfiSyntax] [GoGlobalContext] : val :=
+  #(56 : Int)
 
-axiom SizeofIPv6Mreq [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofCmsghdr [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SizeofMsghdr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofInet4Pktinfo [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SizeofCmsghdr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofInet6Pktinfo [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SizeofInet4Pktinfo [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIPv6MTUInfo [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom SizeofInet6Pktinfo [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofICMPv6Filter [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom SizeofIPv6MTUInfo [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofUcred [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SizeofICMPv6Filter [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofTCPInfo [FfiSyntax] [GoGlobalContext] : val :=
+  #(104 : Int)
 
-axiom SizeofUcred [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom SizeofTCPInfo [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_ADDRESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFA_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IFA_ADDRESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_LABEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IFA_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IFA_LABEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_ANYCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom IFA_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_CACHEINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom IFA_ANYCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFA_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IFA_CACHEINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IFA_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_ADDRESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IFLA_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IFLA_ADDRESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_IFNAME [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom IFLA_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_MTU [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom IFLA_IFNAME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_LINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom IFLA_MTU [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_QDISC [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom IFLA_LINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_STATS [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom IFLA_QDISC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_COST [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IFLA_STATS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_PRIORITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom IFLA_COST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_MASTER [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom IFLA_PRIORITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_WIRELESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom IFLA_MASTER [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_PROTINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom IFLA_WIRELESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_TXQLEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom IFLA_PROTINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_MAP [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom IFLA_TXQLEN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_WEIGHT [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom IFLA_MAP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_OPERSTATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom IFLA_WEIGHT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_LINKMODE [FfiSyntax] [GoGlobalContext] : val :=
+  #(17 : Int)
 
-axiom IFLA_OPERSTATE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_LINKINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom IFLA_LINKMODE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_NET_NS_PID [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom IFLA_LINKINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_IFALIAS [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom IFLA_NET_NS_PID [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IFLA_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(29 : Int)
 
-axiom IFLA_IFALIAS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_SCOPE_UNIVERSE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom IFLA_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_SCOPE_SITE [FfiSyntax] [GoGlobalContext] : val :=
+  #(200 : Int)
 
-axiom RT_SCOPE_UNIVERSE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_SCOPE_LINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(253 : Int)
 
-axiom RT_SCOPE_SITE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_SCOPE_HOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(254 : Int)
 
-axiom RT_SCOPE_LINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_SCOPE_NOWHERE [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom RT_SCOPE_HOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RT_SCOPE_NOWHERE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_COMPAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(252 : Int)
 
-axiom RT_TABLE_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_DEFAULT [FfiSyntax] [GoGlobalContext] : val :=
+  #(253 : Int)
 
-axiom RT_TABLE_COMPAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_MAIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(254 : Int)
 
-axiom RT_TABLE_DEFAULT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(255 : Int)
 
-axiom RT_TABLE_MAIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RT_TABLE_MAX [FfiSyntax] [GoGlobalContext] : val :=
+  #(4294967295 : Int)
 
-axiom RT_TABLE_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RT_TABLE_MAX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_DST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTA_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_SRC [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTA_DST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_IIF [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RTA_SRC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_OIF [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTA_IIF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_GATEWAY [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom RTA_OIF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_PRIORITY [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom RTA_GATEWAY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_PREFSRC [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom RTA_PRIORITY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_METRICS [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTA_PREFSRC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_MULTIPATH [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom RTA_METRICS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_FLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTA_MULTIPATH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_CACHEINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom RTA_FLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTA_TABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom RTA_CACHEINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_UNSPEC [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RTA_TABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_UNICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTN_UNSPEC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_LOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTN_UNICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_BROADCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RTN_LOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_ANYCAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTN_BROADCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_MULTICAST [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom RTN_ANYCAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_BLACKHOLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom RTN_MULTICAST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_UNREACHABLE [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom RTN_BLACKHOLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_PROHIBIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTN_UNREACHABLE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_THROW [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom RTN_PROHIBIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_NAT [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom RTN_THROW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTN_XRESOLVE [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTN_NAT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_NONE [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom RTN_XRESOLVE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_LINK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom RTNLGRP_NONE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_NOTIFY [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom RTNLGRP_LINK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_NEIGH [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom RTNLGRP_NOTIFY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_TC [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom RTNLGRP_NEIGH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV4_IFADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom RTNLGRP_TC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV4_MROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom RTNLGRP_IPV4_IFADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV4_ROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom RTNLGRP_IPV4_MROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV4_RULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom RTNLGRP_IPV4_ROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_IFADDR [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom RTNLGRP_IPV4_RULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_MROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom RTNLGRP_IPV6_IFADDR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_ROUTE [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom RTNLGRP_IPV6_MROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_IFINFO [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom RTNLGRP_IPV6_ROUTE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_PREFIX [FfiSyntax] [GoGlobalContext] : val :=
+  #(18 : Int)
 
-axiom RTNLGRP_IPV6_IFINFO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_IPV6_RULE [FfiSyntax] [GoGlobalContext] : val :=
+  #(19 : Int)
 
-axiom RTNLGRP_IPV6_PREFIX [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def RTNLGRP_ND_USEROPT [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom RTNLGRP_IPV6_RULE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofNlMsghdr [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom RTNLGRP_ND_USEROPT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofNlMsgerr [FfiSyntax] [GoGlobalContext] : val :=
+  #(20 : Int)
 
-axiom SizeofNlMsghdr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofRtGenmsg [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom SizeofNlMsgerr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofNlAttr [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom SizeofRtGenmsg [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofRtAttr [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom SizeofNlAttr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIfInfomsg [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SizeofRtAttr [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofIfAddrmsg [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SizeofIfInfomsg [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofRtMsg [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom SizeofIfAddrmsg [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofRtNexthop [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SizeofRtMsg [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockFilter [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom SizeofRtNexthop [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofSockFprog [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SizeofSockFilter [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def SizeofInotifyEvent [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom SizeofSockFprog [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _AT_FDCWD [FfiSyntax] [GoGlobalContext] : val :=
+  #(-100 : Int)
 
-axiom SizeofInotifyEvent [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _AT_REMOVEDIR [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom _AT_FDCWD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _AT_SYMLINK_NOFOLLOW [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom _AT_REMOVEDIR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _AT_EACCESS [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom _AT_SYMLINK_NOFOLLOW [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _AT_EMPTY_PATH [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom _AT_EACCESS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VINTR [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom _AT_EMPTY_PATH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VQUIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom VINTR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VERASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom VQUIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VKILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom VERASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VEOF [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom VKILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VTIME [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom VEOF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VMIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom VTIME [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VSWTC [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom VMIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VSTART [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom VSWTC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VSTOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom VSTART [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VSUSP [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom VSTOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VEOL [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom VSUSP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VREPRINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom VEOL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VDISCARD [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom VREPRINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VWERASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom VDISCARD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VLNEXT [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom VWERASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def VEOL2 [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom VLNEXT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IGNBRK [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom VEOL2 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def BRKINT [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom IGNBRK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IGNPAR [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom BRKINT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PARMRK [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom IGNPAR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def INPCK [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom PARMRK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ISTRIP [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom INPCK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def INLCR [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom ISTRIP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IGNCR [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom INLCR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ICRNL [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom IGNCR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IUCLC [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom ICRNL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IXON [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom IUCLC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IXANY [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom IXON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IXOFF [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom IXANY [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IMAXBEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom IXOFF [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IUTF8 [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom IMAXBEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def OPOST [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom IUTF8 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def OLCUC [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom OPOST [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ONLCR [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom OLCUC [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def OCRNL [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom ONLCR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ONOCR [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom OCRNL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ONLRET [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom ONOCR [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def OFILL [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom ONLRET [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def OFDEL [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom OFILL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B0 [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom OFDEL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B50 [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom B0 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B75 [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom B50 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B110 [FfiSyntax] [GoGlobalContext] : val :=
+  #(3 : Int)
 
-axiom B75 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B134 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom B110 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B150 [FfiSyntax] [GoGlobalContext] : val :=
+  #(5 : Int)
 
-axiom B134 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B200 [FfiSyntax] [GoGlobalContext] : val :=
+  #(6 : Int)
 
-axiom B150 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B300 [FfiSyntax] [GoGlobalContext] : val :=
+  #(7 : Int)
 
-axiom B200 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B600 [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom B300 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B1200 [FfiSyntax] [GoGlobalContext] : val :=
+  #(9 : Int)
 
-axiom B600 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B1800 [FfiSyntax] [GoGlobalContext] : val :=
+  #(10 : Int)
 
-axiom B1200 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B2400 [FfiSyntax] [GoGlobalContext] : val :=
+  #(11 : Int)
 
-axiom B1800 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B4800 [FfiSyntax] [GoGlobalContext] : val :=
+  #(12 : Int)
 
-axiom B2400 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B9600 [FfiSyntax] [GoGlobalContext] : val :=
+  #(13 : Int)
 
-axiom B4800 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B19200 [FfiSyntax] [GoGlobalContext] : val :=
+  #(14 : Int)
 
-axiom B9600 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B38400 [FfiSyntax] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-axiom B19200 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CSIZE [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom B38400 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CS5 [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom CSIZE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CS6 [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom CS5 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CS7 [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom CS6 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CS8 [FfiSyntax] [GoGlobalContext] : val :=
+  #(48 : Int)
 
-axiom CS7 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CSTOPB [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom CS8 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CREAD [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom CSTOPB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PARENB [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom CREAD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PARODD [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom PARENB [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def HUPCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom PARODD [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def CLOCAL [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom HUPCL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B57600 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4097 : Int)
 
-axiom CLOCAL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B115200 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4098 : Int)
 
-axiom B57600 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B230400 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4099 : Int)
 
-axiom B115200 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B460800 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4100 : Int)
 
-axiom B230400 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B500000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4101 : Int)
 
-axiom B460800 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B576000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4102 : Int)
 
-axiom B500000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B921600 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4103 : Int)
 
-axiom B576000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B1000000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4104 : Int)
 
-axiom B921600 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B1152000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4105 : Int)
 
-axiom B1000000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B1500000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4106 : Int)
 
-axiom B1152000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B2000000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4107 : Int)
 
-axiom B1500000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B2500000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4108 : Int)
 
-axiom B2000000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B3000000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4109 : Int)
 
-axiom B2500000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B3500000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4110 : Int)
 
-axiom B3000000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def B4000000 [FfiSyntax] [GoGlobalContext] : val :=
+  #(4111 : Int)
 
-axiom B3500000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ISIG [FfiSyntax] [GoGlobalContext] : val :=
+  #(1 : Int)
 
-axiom B4000000 [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ICANON [FfiSyntax] [GoGlobalContext] : val :=
+  #(2 : Int)
 
-axiom ISIG [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def XCASE [FfiSyntax] [GoGlobalContext] : val :=
+  #(4 : Int)
 
-axiom ICANON [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHO [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom XCASE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHOE [FfiSyntax] [GoGlobalContext] : val :=
+  #(16 : Int)
 
-axiom ECHO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHOK [FfiSyntax] [GoGlobalContext] : val :=
+  #(32 : Int)
 
-axiom ECHOE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHONL [FfiSyntax] [GoGlobalContext] : val :=
+  #(64 : Int)
 
-axiom ECHOK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def NOFLSH [FfiSyntax] [GoGlobalContext] : val :=
+  #(128 : Int)
 
-axiom ECHONL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TOSTOP [FfiSyntax] [GoGlobalContext] : val :=
+  #(256 : Int)
 
-axiom NOFLSH [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHOCTL [FfiSyntax] [GoGlobalContext] : val :=
+  #(512 : Int)
 
-axiom TOSTOP [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHOPRT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1024 : Int)
 
-axiom ECHOCTL [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ECHOKE [FfiSyntax] [GoGlobalContext] : val :=
+  #(2048 : Int)
 
-axiom ECHOPRT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def FLUSHO [FfiSyntax] [GoGlobalContext] : val :=
+  #(4096 : Int)
 
-axiom ECHOKE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def PENDIN [FfiSyntax] [GoGlobalContext] : val :=
+  #(16384 : Int)
 
-axiom FLUSHO [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def IEXTEN [FfiSyntax] [GoGlobalContext] : val :=
+  #(32768 : Int)
 
-axiom PENDIN [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCGETS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21505 : Int)
 
-axiom IEXTEN [FfiSyntax] [GoGlobalContext] : val
-
-axiom TCGETS [FfiSyntax] [GoGlobalContext] : val
-
-axiom TCSETS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def TCSETS [FfiSyntax] [GoGlobalContext] : val :=
+  #(21506 : Int)
 
 noncomputable def envLock [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"syscall.envLock"

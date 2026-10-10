@@ -3,3 +3,6 @@ imports = ["!*"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# the values of its constants (O_RDWR, O_CREATE, ...)
+translate_consts = true

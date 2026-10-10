@@ -189,105 +189,182 @@ axiom FileMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom fileStat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom readdirName [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def readdirName [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 0)
 
-axiom readdirDirEntry [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def readdirDirEntry [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom readdirFileInfo [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def readdirFileInfo [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom blockSize [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def blockSize [FfiSyntax] [GoGlobalContext] : val :=
+  #(8192 : Int)
 
-axiom errENOSYS [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def errENOSYS [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 38)
 
-axiom errERANGE [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def errERANGE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 34)
 
-axiom errENOMEM [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def errENOMEM [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 12)
 
-axiom statusOK [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def statusOK [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 0)
 
-axiom statusDone [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def statusDone [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 1)
 
-axiom statusReleased [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def statusReleased [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 2)
 
-axiom pidUnset [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def pidUnset [FfiSyntax] [GoGlobalContext] : val :=
+  #(0 : Int)
 
-axiom pidReleased [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def pidReleased [FfiSyntax] [GoGlobalContext] : val :=
+  #(-1 : Int)
 
-axiom O_RDONLY [FfiSyntax] [GoGlobalContext] : val
+/-- open the file read-only. -/
+@[reducible] noncomputable def O_RDONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 0)
 
-axiom O_WRONLY [FfiSyntax] [GoGlobalContext] : val
+/-- open the file write-only. -/
+@[reducible] noncomputable def O_WRONLY [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom O_RDWR [FfiSyntax] [GoGlobalContext] : val
+/-- open the file read-write. -/
+@[reducible] noncomputable def O_RDWR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom O_APPEND [FfiSyntax] [GoGlobalContext] : val
+/-- append data to the file when writing. -/
+@[reducible] noncomputable def O_APPEND [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1024)
 
-axiom O_CREATE [FfiSyntax] [GoGlobalContext] : val
+/-- create a new file if none exists. -/
+@[reducible] noncomputable def O_CREATE [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 64)
 
-axiom O_EXCL [FfiSyntax] [GoGlobalContext] : val
+/-- used with O_CREATE, file must not exist. -/
+@[reducible] noncomputable def O_EXCL [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 128)
 
-axiom O_SYNC [FfiSyntax] [GoGlobalContext] : val
+/-- open for synchronous I/O. -/
+@[reducible] noncomputable def O_SYNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1052672)
 
-axiom O_TRUNC [FfiSyntax] [GoGlobalContext] : val
+/-- truncate regular writable file when opened. -/
+@[reducible] noncomputable def O_TRUNC [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 512)
 
-axiom SEEK_SET [FfiSyntax] [GoGlobalContext] : val
+/-- seek relative to the origin of the file -/
+@[reducible] noncomputable def SEEK_SET [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 0)
 
-axiom SEEK_CUR [FfiSyntax] [GoGlobalContext] : val
+/-- seek relative to the current offset -/
+@[reducible] noncomputable def SEEK_CUR [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom SEEK_END [FfiSyntax] [GoGlobalContext] : val
+/-- seek relative to the end -/
+@[reducible] noncomputable def SEEK_END [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom _UTIME_OMIT [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def _UTIME_OMIT [FfiSyntax] [GoGlobalContext] : val :=
+  #(1073741822 : Int)
 
-axiom kindNewFile [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def kindNewFile [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 0)
 
-axiom kindOpenFile [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def kindOpenFile [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 1)
 
-axiom kindPipe [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def kindPipe [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 2)
 
-axiom kindSock [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def kindSock [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 3)
 
-axiom kindNoPoll [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def kindNoPoll [FfiSyntax] [GoGlobalContext] : val :=
+  #(W64 4)
 
-axiom DevNull [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def DevNull [FfiSyntax] [GoGlobalContext] : val :=
+  #(go!"/dev/null")
 
-axiom PathSeparator [FfiSyntax] [GoGlobalContext] : val
+/-- OS-specific path separator -/
+@[reducible] noncomputable def PathSeparator [FfiSyntax] [GoGlobalContext] : val :=
+  #(47 : Int)
 
-axiom PathListSeparator [FfiSyntax] [GoGlobalContext] : val
+/-- OS-specific path list separator -/
+@[reducible] noncomputable def PathListSeparator [FfiSyntax] [GoGlobalContext] : val :=
+  #(58 : Int)
 
-axiom rootMaxSymlinks [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def rootMaxSymlinks [FfiSyntax] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-axiom supportsCreateWithStickyBit [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def supportsCreateWithStickyBit [FfiSyntax] [GoGlobalContext] : val :=
+  #true
 
-axiom supportsCloseOnExec [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def supportsCloseOnExec [FfiSyntax] [GoGlobalContext] : val :=
+  #true
 
-axiom ModeDir [FfiSyntax] [GoGlobalContext] : val
+/-- d: is a directory -/
+@[reducible] noncomputable def ModeDir [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 2147483648)
 
-axiom ModeAppend [FfiSyntax] [GoGlobalContext] : val
+/-- a: append-only -/
+@[reducible] noncomputable def ModeAppend [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 1073741824)
 
-axiom ModeExclusive [FfiSyntax] [GoGlobalContext] : val
+/-- l: exclusive use -/
+@[reducible] noncomputable def ModeExclusive [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 536870912)
 
-axiom ModeTemporary [FfiSyntax] [GoGlobalContext] : val
+/-- T: temporary file; Plan 9 only -/
+@[reducible] noncomputable def ModeTemporary [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 268435456)
 
-axiom ModeSymlink [FfiSyntax] [GoGlobalContext] : val
+/-- L: symbolic link -/
+@[reducible] noncomputable def ModeSymlink [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 134217728)
 
-axiom ModeDevice [FfiSyntax] [GoGlobalContext] : val
+/-- D: device file -/
+@[reducible] noncomputable def ModeDevice [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 67108864)
 
-axiom ModeNamedPipe [FfiSyntax] [GoGlobalContext] : val
+/-- p: named pipe (FIFO) -/
+@[reducible] noncomputable def ModeNamedPipe [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 33554432)
 
-axiom ModeSocket [FfiSyntax] [GoGlobalContext] : val
+/-- S: Unix domain socket -/
+@[reducible] noncomputable def ModeSocket [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 16777216)
 
-axiom ModeSetuid [FfiSyntax] [GoGlobalContext] : val
+/-- u: setuid -/
+@[reducible] noncomputable def ModeSetuid [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 8388608)
 
-axiom ModeSetgid [FfiSyntax] [GoGlobalContext] : val
+/-- g: setgid -/
+@[reducible] noncomputable def ModeSetgid [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 4194304)
 
-axiom ModeCharDevice [FfiSyntax] [GoGlobalContext] : val
+/-- c: Unix character device, when ModeDevice is set -/
+@[reducible] noncomputable def ModeCharDevice [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 2097152)
 
-axiom ModeSticky [FfiSyntax] [GoGlobalContext] : val
+/-- t: sticky -/
+@[reducible] noncomputable def ModeSticky [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 1048576)
 
-axiom ModeIrregular [FfiSyntax] [GoGlobalContext] : val
+/-- ?: non-regular file; nothing else is known about this file -/
+@[reducible] noncomputable def ModeIrregular [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 524288)
 
-axiom ModeType [FfiSyntax] [GoGlobalContext] : val
+@[reducible] noncomputable def ModeType [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 2401763328)
 
-axiom ModePerm [FfiSyntax] [GoGlobalContext] : val
+/-- Unix permission bits, 0o777 -/
+@[reducible] noncomputable def ModePerm [FfiSyntax] [GoGlobalContext] : val :=
+  #(W32 511)
 
 noncomputable def dirBufPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.dirBufPool"

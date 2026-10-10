@@ -3,3 +3,6 @@ imports = ["!*"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# the values of its constants (PROT_READ, MAP_SHARED, LOCK_EX, ...)
+translate_consts = true

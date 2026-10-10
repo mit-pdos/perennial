@@ -39,6 +39,10 @@ type FilterConfig struct {
 	// With translate_types, keep struct types axiomatized (their generated
 	// proofs are by far the most expensive part of translating types).
 	TranslateTypesExceptStructs bool `toml:"translate_types_except_structs"`
+	// Set to true to also translate every package-level constant that would
+	// otherwise be axiomatized, with its value (a constant is no code: a
+	// names-only translation of syscall still has PROT_READ = 1).
+	TranslateConsts bool `toml:"translate_consts"`
 }
 
 type Bootstrap struct {
