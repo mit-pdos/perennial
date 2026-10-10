@@ -226,6 +226,68 @@ theorem wp_HasPrefix (s pfx : GoString) :
     rw [Heq]
     exact List.take_prefix _ _
 
+/-- What `strings.Compare(a, b)` returns: `-1`, `0` or `+1` as `a` is lexicographically less
+than, equal to or greater than `b` (Go's `<` on strings, `GoStringLt`), as `bytes.compareResult`. -/
+def compareResult (a b : GoString) : w64 :=
+  if go.GoStringLt a b then W64 (-1) else if a = b then W64 0 else W64 1
+
+/-- `strings.Compare(a, b)`: `compareResult a b`. Proved from the model of `Compare`
+(`Perennial/TrustedCode/strings.lean`). -/
+theorem wp_Compare (a b : GoString) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! Compare)) (Val #a)) (Val #b))
+    {{ RET #(compareResult a b); True }} := by
+  wp_start
+  unfold compareResult
+  by_cases hlt : go.GoStringLt a b
+  · simp only [hlt, decide_true, ↓reduceIte]
+    wp_auto
+    iapply HΦ; itrivial
+  · simp only [hlt, decide_false, ↓reduceIte]
+    wp_auto
+    by_cases heq : a = b
+    · simp only [heq, decide_true, ↓reduceIte]
+      wp_auto
+      iapply HΦ; itrivial
+    · simp only [heq, decide_false, ↓reduceIte]
+      wp_auto
+      iapply HΦ; itrivial
+
+/-- What `strings.TrimPrefix(s, pfx)` returns: `s` without the prefix `pfx` if it has it,
+else `s`. -/
+def trimPrefix (s pfx : GoString) : GoString :=
+  if pfx <+: s then s.drop pfx.length else s
+
+/-- `strings.TrimPrefix(s, pfx)`: `trimPrefix s pfx`. Proved from the model of `TrimPrefix`
+(`Perennial/TrustedCode/strings.lean`). -/
+theorem wp_TrimPrefix (s pfx : GoString) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! TrimPrefix)) (Val #s)) (Val #pfx))
+    {{ RET #(trimPrefix s pfx); True }} := by
+  wp_start as #Hinit
+  wp_auto
+  -- the model calls `HasPrefix` by its name (the trusted code is below `Code.strings`)
+  rw [show (go!"strings.HasPrefix" : GoString) = HasPrefix from rfl]
+  wp_apply wp_HasPrefix
+  unfold trimPrefix
+  by_cases h : pfx <+: s
+  · simp only [h, decide_true, ↓reduceIte]
+    wp_auto
+    wp_apply wp_string_to_bytes as %sl ⟨Hsl, Hcap⟩
+    ihave %Hlen := ownSlice_len $$ Hsl
+    ihave %Hwf := ownSlice_wf $$ Hsl
+    have Hp : pfx.length ≤ s.length := h.length_le
+    wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hp'
+    have Hk : 0 ≤ sint.Z (W64 pfx.length) ∧ sint.Z (W64 pfx.length) ≤ sint.Z sl.len := by word
+    rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
+    icases (ownSlice_split_all (W64 pfx.length) sl _ s Hk).1 $$ Hsl with ⟨-, Hsl⟩
+    rw [show sint.nat (W64 pfx.length) = pfx.length by word]
+    wp_apply wp_bytes_to_string $$ Hsl as -
+    iapply HΦ; itrivial
+  · simp only [h, decide_false, ↓reduceIte]
+    wp_auto
+    iapply HΦ; itrivial
+
 /-- FIXME: this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be
 all ASCII. -/
