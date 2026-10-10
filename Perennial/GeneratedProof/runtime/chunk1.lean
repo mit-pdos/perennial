@@ -20,6 +20,861 @@ open Iris Iris.BI
 noncomputable section
 namespace runtime
 
+namespace anonStruct_0458a381bfaa3a39
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_0458a381bfaa3a39_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_0458a381bfaa3a39 :=
+  sorry -- axiomatized type
+
+instance anonStruct_0458a381bfaa3a39_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_0458a381bfaa3a39 runtime.anonStruct_0458a381bfaa3a39.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_0458a381bfaa3a39
+
+namespace anonStruct_0e6989d34d311a96
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_0e6989d34d311a96_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_0e6989d34d311a96 :=
+  sorry -- axiomatized type
+
+instance anonStruct_0e6989d34d311a96_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_0e6989d34d311a96 runtime.anonStruct_0e6989d34d311a96.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_0e6989d34d311a96
+
+namespace anonStruct_0f08ddbc4072577a
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_0f08ddbc4072577a_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_0f08ddbc4072577a :=
+  sorry -- axiomatized type
+
+instance anonStruct_0f08ddbc4072577a_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_0f08ddbc4072577a runtime.anonStruct_0f08ddbc4072577a.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_0f08ddbc4072577a
+
+namespace anonStruct_10779d5c4171514e
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_10779d5c4171514e_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_10779d5c4171514e :=
+  sorry -- axiomatized type
+
+instance anonStruct_10779d5c4171514e_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_10779d5c4171514e runtime.anonStruct_10779d5c4171514e.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_10779d5c4171514e
+
+namespace anonStruct_10d75d42a37c8a52
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_10d75d42a37c8a52_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_10d75d42a37c8a52 :=
+  sorry -- axiomatized type
+
+instance anonStruct_10d75d42a37c8a52_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_10d75d42a37c8a52 runtime.anonStruct_10d75d42a37c8a52.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_10d75d42a37c8a52
+
+namespace anonStruct_119a15749eefd6fa
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_119a15749eefd6fa_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_119a15749eefd6fa :=
+  sorry -- axiomatized type
+
+instance anonStruct_119a15749eefd6fa_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_119a15749eefd6fa runtime.anonStruct_119a15749eefd6fa.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_119a15749eefd6fa
+
+namespace anonStruct_1ce4aa1cabbd8e63
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_1ce4aa1cabbd8e63_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_1ce4aa1cabbd8e63 :=
+  sorry -- axiomatized type
+
+instance anonStruct_1ce4aa1cabbd8e63_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_1ce4aa1cabbd8e63 runtime.anonStruct_1ce4aa1cabbd8e63.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_1ce4aa1cabbd8e63
+
+namespace anonStruct_218daef774f04bea
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_218daef774f04bea_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_218daef774f04bea :=
+  sorry -- axiomatized type
+
+instance anonStruct_218daef774f04bea_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_218daef774f04bea runtime.anonStruct_218daef774f04bea.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_218daef774f04bea
+
+namespace anonStruct_244e3301bc9ea36c
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_244e3301bc9ea36c_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_244e3301bc9ea36c :=
+  sorry -- axiomatized type
+
+instance anonStruct_244e3301bc9ea36c_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_244e3301bc9ea36c runtime.anonStruct_244e3301bc9ea36c.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_244e3301bc9ea36c
+
+namespace anonStruct_2d149b3b26fb970c
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_2d149b3b26fb970c_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_2d149b3b26fb970c :=
+  sorry -- axiomatized type
+
+instance anonStruct_2d149b3b26fb970c_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_2d149b3b26fb970c runtime.anonStruct_2d149b3b26fb970c.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_2d149b3b26fb970c
+
+namespace anonStruct_2d496b2e43e042cd
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_2d496b2e43e042cd_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_2d496b2e43e042cd :=
+  sorry -- axiomatized type
+
+instance anonStruct_2d496b2e43e042cd_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_2d496b2e43e042cd runtime.anonStruct_2d496b2e43e042cd.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_2d496b2e43e042cd
+
+namespace anonStruct_2dec134c2242ef62
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_2dec134c2242ef62_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_2dec134c2242ef62 :=
+  sorry -- axiomatized type
+
+instance anonStruct_2dec134c2242ef62_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_2dec134c2242ef62 runtime.anonStruct_2dec134c2242ef62.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_2dec134c2242ef62
+
+namespace anonStruct_3652c32646349673
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_3652c32646349673_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_3652c32646349673 :=
+  sorry -- axiomatized type
+
+instance anonStruct_3652c32646349673_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_3652c32646349673 runtime.anonStruct_3652c32646349673.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_3652c32646349673
+
+namespace anonStruct_374f961fabe5ffca
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_374f961fabe5ffca_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_374f961fabe5ffca :=
+  sorry -- axiomatized type
+
+instance anonStruct_374f961fabe5ffca_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_374f961fabe5ffca runtime.anonStruct_374f961fabe5ffca.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_374f961fabe5ffca
+
+namespace anonStruct_3a7a71cded516edb
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_3a7a71cded516edb_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_3a7a71cded516edb :=
+  sorry -- axiomatized type
+
+instance anonStruct_3a7a71cded516edb_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_3a7a71cded516edb runtime.anonStruct_3a7a71cded516edb.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_3a7a71cded516edb
+
+namespace anonStruct_3fdda1359cee7b53
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_3fdda1359cee7b53_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_3fdda1359cee7b53 :=
+  sorry -- axiomatized type
+
+instance anonStruct_3fdda1359cee7b53_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_3fdda1359cee7b53 runtime.anonStruct_3fdda1359cee7b53.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_3fdda1359cee7b53
+
+namespace anonStruct_4489bd9736fa5894
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_4489bd9736fa5894_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_4489bd9736fa5894 :=
+  sorry -- axiomatized type
+
+instance anonStruct_4489bd9736fa5894_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_4489bd9736fa5894 runtime.anonStruct_4489bd9736fa5894.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_4489bd9736fa5894
+
+namespace anonStruct_48418dfcba7332e4
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_48418dfcba7332e4_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_48418dfcba7332e4 :=
+  sorry -- axiomatized type
+
+instance anonStruct_48418dfcba7332e4_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_48418dfcba7332e4 runtime.anonStruct_48418dfcba7332e4.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_48418dfcba7332e4
+
+namespace anonStruct_4aed607135c50a78
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_4aed607135c50a78_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_4aed607135c50a78 :=
+  sorry -- axiomatized type
+
+instance anonStruct_4aed607135c50a78_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_4aed607135c50a78 runtime.anonStruct_4aed607135c50a78.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_4aed607135c50a78
+
+namespace anonStruct_540f359950f49a9c
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_540f359950f49a9c_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_540f359950f49a9c :=
+  sorry -- axiomatized type
+
+instance anonStruct_540f359950f49a9c_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_540f359950f49a9c runtime.anonStruct_540f359950f49a9c.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_540f359950f49a9c
+
+namespace anonStruct_561b00711680a134
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_561b00711680a134_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_561b00711680a134 :=
+  sorry -- axiomatized type
+
+instance anonStruct_561b00711680a134_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_561b00711680a134 runtime.anonStruct_561b00711680a134.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_561b00711680a134
+
+namespace anonStruct_5b77a784ca43f290
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_5b77a784ca43f290_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_5b77a784ca43f290 :=
+  sorry -- axiomatized type
+
+instance anonStruct_5b77a784ca43f290_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_5b77a784ca43f290 runtime.anonStruct_5b77a784ca43f290.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_5b77a784ca43f290
+
+namespace anonStruct_5cd25929fee99aa5
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_5cd25929fee99aa5_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_5cd25929fee99aa5 :=
+  sorry -- axiomatized type
+
+instance anonStruct_5cd25929fee99aa5_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_5cd25929fee99aa5 runtime.anonStruct_5cd25929fee99aa5.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_5cd25929fee99aa5
+
+namespace anonStruct_70e634a79249966f
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_70e634a79249966f_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_70e634a79249966f :=
+  sorry -- axiomatized type
+
+instance anonStruct_70e634a79249966f_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_70e634a79249966f runtime.anonStruct_70e634a79249966f.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_70e634a79249966f
+
+namespace anonStruct_73df745dde493395
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_73df745dde493395_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_73df745dde493395 :=
+  sorry -- axiomatized type
+
+instance anonStruct_73df745dde493395_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_73df745dde493395 runtime.anonStruct_73df745dde493395.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_73df745dde493395
+
+namespace anonStruct_74ec1b21f96f3299
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_74ec1b21f96f3299_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_74ec1b21f96f3299 :=
+  sorry -- axiomatized type
+
+instance anonStruct_74ec1b21f96f3299_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_74ec1b21f96f3299 runtime.anonStruct_74ec1b21f96f3299.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_74ec1b21f96f3299
+
+namespace anonStruct_7ffa01d9039fb845
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_7ffa01d9039fb845_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_7ffa01d9039fb845 :=
+  sorry -- axiomatized type
+
+instance anonStruct_7ffa01d9039fb845_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_7ffa01d9039fb845 runtime.anonStruct_7ffa01d9039fb845.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_7ffa01d9039fb845
+
+namespace anonStruct_87c38452f6ca2ed9
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_87c38452f6ca2ed9_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_87c38452f6ca2ed9 :=
+  sorry -- axiomatized type
+
+instance anonStruct_87c38452f6ca2ed9_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_87c38452f6ca2ed9 runtime.anonStruct_87c38452f6ca2ed9.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_87c38452f6ca2ed9
+
+namespace anonStruct_920184a08b527b64
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_920184a08b527b64_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_920184a08b527b64 :=
+  sorry -- axiomatized type
+
+instance anonStruct_920184a08b527b64_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_920184a08b527b64 runtime.anonStruct_920184a08b527b64.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_920184a08b527b64
+
+namespace anonStruct_9976fccc2b47c068
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_9976fccc2b47c068_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_9976fccc2b47c068 :=
+  sorry -- axiomatized type
+
+instance anonStruct_9976fccc2b47c068_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_9976fccc2b47c068 runtime.anonStruct_9976fccc2b47c068.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_9976fccc2b47c068
+
+namespace anonStruct_a3d9c971f5a6103a
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_a3d9c971f5a6103a_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_a3d9c971f5a6103a :=
+  sorry -- axiomatized type
+
+instance anonStruct_a3d9c971f5a6103a_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_a3d9c971f5a6103a runtime.anonStruct_a3d9c971f5a6103a.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_a3d9c971f5a6103a
+
+namespace anonStruct_a3f9e156beee465e
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_a3f9e156beee465e_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_a3f9e156beee465e :=
+  sorry -- axiomatized type
+
+instance anonStruct_a3f9e156beee465e_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_a3f9e156beee465e runtime.anonStruct_a3f9e156beee465e.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_a3f9e156beee465e
+
+namespace anonStruct_b04177485b34dced
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_b04177485b34dced_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_b04177485b34dced :=
+  sorry -- axiomatized type
+
+instance anonStruct_b04177485b34dced_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_b04177485b34dced runtime.anonStruct_b04177485b34dced.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_b04177485b34dced
+
+namespace anonStruct_b80f6cc7eefc09c8
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_b80f6cc7eefc09c8_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_b80f6cc7eefc09c8 :=
+  sorry -- axiomatized type
+
+instance anonStruct_b80f6cc7eefc09c8_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_b80f6cc7eefc09c8 runtime.anonStruct_b80f6cc7eefc09c8.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_b80f6cc7eefc09c8
+
+namespace anonStruct_bde5c6c6aaa7ab26
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_bde5c6c6aaa7ab26_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_bde5c6c6aaa7ab26 :=
+  sorry -- axiomatized type
+
+instance anonStruct_bde5c6c6aaa7ab26_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_bde5c6c6aaa7ab26 runtime.anonStruct_bde5c6c6aaa7ab26.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_bde5c6c6aaa7ab26
+
+namespace anonStruct_c387a2ab2a4a4b56
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_c387a2ab2a4a4b56_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_c387a2ab2a4a4b56 :=
+  sorry -- axiomatized type
+
+instance anonStruct_c387a2ab2a4a4b56_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_c387a2ab2a4a4b56 runtime.anonStruct_c387a2ab2a4a4b56.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_c387a2ab2a4a4b56
+
+namespace anonStruct_c443b45f9e161e1d
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_c443b45f9e161e1d_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_c443b45f9e161e1d :=
+  sorry -- axiomatized type
+
+instance anonStruct_c443b45f9e161e1d_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_c443b45f9e161e1d runtime.anonStruct_c443b45f9e161e1d.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_c443b45f9e161e1d
+
+namespace anonStruct_ce316d42f7834b6b
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_ce316d42f7834b6b_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_ce316d42f7834b6b :=
+  sorry -- axiomatized type
+
+instance anonStruct_ce316d42f7834b6b_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_ce316d42f7834b6b runtime.anonStruct_ce316d42f7834b6b.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_ce316d42f7834b6b
+
+namespace anonStruct_d18fd3853c6f7ee0
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_d18fd3853c6f7ee0_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_d18fd3853c6f7ee0 :=
+  sorry -- axiomatized type
+
+instance anonStruct_d18fd3853c6f7ee0_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_d18fd3853c6f7ee0 runtime.anonStruct_d18fd3853c6f7ee0.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_d18fd3853c6f7ee0
+
+namespace anonStruct_d39adf6480b9c51f
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_d39adf6480b9c51f_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_d39adf6480b9c51f :=
+  sorry -- axiomatized type
+
+instance anonStruct_d39adf6480b9c51f_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_d39adf6480b9c51f runtime.anonStruct_d39adf6480b9c51f.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_d39adf6480b9c51f
+
+namespace anonStruct_dbecbc4e45d3626a
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_dbecbc4e45d3626a_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_dbecbc4e45d3626a :=
+  sorry -- axiomatized type
+
+instance anonStruct_dbecbc4e45d3626a_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_dbecbc4e45d3626a runtime.anonStruct_dbecbc4e45d3626a.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_dbecbc4e45d3626a
+
+namespace anonStruct_df9a9aa9b7f5ede3
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_df9a9aa9b7f5ede3_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_df9a9aa9b7f5ede3 :=
+  sorry -- axiomatized type
+
+instance anonStruct_df9a9aa9b7f5ede3_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_df9a9aa9b7f5ede3 runtime.anonStruct_df9a9aa9b7f5ede3.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_df9a9aa9b7f5ede3
+
+namespace anonStruct_f244a3170bf00875
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_f244a3170bf00875_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_f244a3170bf00875 :=
+  sorry -- axiomatized type
+
+instance anonStruct_f244a3170bf00875_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_f244a3170bf00875 runtime.anonStruct_f244a3170bf00875.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_f244a3170bf00875
+
+namespace anonStruct_f3de5e04cfb5d0bb
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_f3de5e04cfb5d0bb_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_f3de5e04cfb5d0bb :=
+  sorry -- axiomatized type
+
+instance anonStruct_f3de5e04cfb5d0bb_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_f3de5e04cfb5d0bb runtime.anonStruct_f3de5e04cfb5d0bb.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_f3de5e04cfb5d0bb
+
+namespace anonStruct_fb7ac333ce2fdac6
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance anonStruct_fb7ac333ce2fdac6_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.anonStruct_fb7ac333ce2fdac6 :=
+  sorry -- axiomatized type
+
+instance anonStruct_fb7ac333ce2fdac6_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.anonStruct_fb7ac333ce2fdac6 runtime.anonStruct_fb7ac333ce2fdac6.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_fb7ac333ce2fdac6
+
 namespace userArena
 section def_
 
@@ -1559,733 +2414,6 @@ instance mcontext_access_store___reserved1 (l : Loc) (v : runtime.mcontext) (__r
 
 end def_
 end mcontext
-
-namespace sigcontext
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sigcontext_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sigcontext where
-  typedPointstoDef l v dq := iprop(
-    "r8" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r8" l) v.r8' dq ∗
-    "r9" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r9" l) v.r9' dq ∗
-    "r10" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r10" l) v.r10' dq ∗
-    "r11" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r11" l) v.r11' dq ∗
-    "r12" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r12" l) v.r12' dq ∗
-    "r13" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r13" l) v.r13' dq ∗
-    "r14" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r14" l) v.r14' dq ∗
-    "r15" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"r15" l) v.r15' dq ∗
-    "rdi" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rdi" l) v.rdi' dq ∗
-    "rsi" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rsi" l) v.rsi' dq ∗
-    "rbp" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rbp" l) v.rbp' dq ∗
-    "rbx" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rbx" l) v.rbx' dq ∗
-    "rdx" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rdx" l) v.rdx' dq ∗
-    "rax" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rax" l) v.rax' dq ∗
-    "rcx" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rcx" l) v.rcx' dq ∗
-    "rsp" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rsp" l) v.rsp' dq ∗
-    "rip" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"rip" l) v.rip' dq ∗
-    "eflags" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"eflags" l) v.eflags' dq ∗
-    "cs" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"cs" l) v.cs' dq ∗
-    "gs" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"gs" l) v.gs' dq ∗
-    "fs" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"fs" l) v.fs' dq ∗
-    "__pad0" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"__pad0" l) v.__pad0' dq ∗
-    "err" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"err" l) v.err' dq ∗
-    "trapno" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"trapno" l) v.trapno' dq ∗
-    "oldmask" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"oldmask" l) v.oldmask' dq ∗
-    "cr2" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"cr2" l) v.cr2' dq ∗
-    "fpstate" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"fpstate" l) v.fpstate' dq ∗
-    "__reserved1" ∷ typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) v.__reserved1' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance sigcontext_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigcontext runtime.sigcontext.underlying := by
-  solve_into_val_typed_struct
-
-instance sigcontext_access_load_r8 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r8" l) v.r8' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r8" l) v.r8' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r8 (l : Loc) (v : runtime.sigcontext) (r8' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r8" l) v.r8' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r8" l) r8' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r8' := r8' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r9 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r9" l) v.r9' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r9" l) v.r9' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r9 (l : Loc) (v : runtime.sigcontext) (r9' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r9" l) v.r9' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r9" l) r9' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r9' := r9' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r10 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r10" l) v.r10' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r10" l) v.r10' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r10 (l : Loc) (v : runtime.sigcontext) (r10' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r10" l) v.r10' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r10" l) r10' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r10' := r10' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r11 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r11" l) v.r11' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r11" l) v.r11' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r11 (l : Loc) (v : runtime.sigcontext) (r11' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r11" l) v.r11' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r11" l) r11' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r11' := r11' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r12 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r12" l) v.r12' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r12" l) v.r12' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r12 (l : Loc) (v : runtime.sigcontext) (r12' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r12" l) v.r12' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r12" l) r12' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r12' := r12' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r13 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r13" l) v.r13' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r13" l) v.r13' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r13 (l : Loc) (v : runtime.sigcontext) (r13' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r13" l) v.r13' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r13" l) r13' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r13' := r13' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r14 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r14" l) v.r14' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r14" l) v.r14' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r14 (l : Loc) (v : runtime.sigcontext) (r14' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r14" l) v.r14' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r14" l) r14' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r14' := r14' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_r15 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r15" l) v.r15' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r15" l) v.r15' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_r15 (l : Loc) (v : runtime.sigcontext) (r15' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r15" l) v.r15' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"r15" l) r15' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r15' := r15' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rdi (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdi" l) v.rdi' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdi" l) v.rdi' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rdi (l : Loc) (v : runtime.sigcontext) (rdi' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdi" l) v.rdi' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdi" l) rdi' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdi' := rdi' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rsi (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsi" l) v.rsi' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsi" l) v.rsi' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rsi (l : Loc) (v : runtime.sigcontext) (rsi' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsi" l) v.rsi' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsi" l) rsi' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rsi' := rsi' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rbp (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbp" l) v.rbp' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbp" l) v.rbp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rbp (l : Loc) (v : runtime.sigcontext) (rbp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbp" l) v.rbp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbp" l) rbp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rbp' := rbp' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rbx (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbx" l) v.rbx' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbx" l) v.rbx' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rbx (l : Loc) (v : runtime.sigcontext) (rbx' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbx" l) v.rbx' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rbx" l) rbx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rbx' := rbx' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rdx (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdx" l) v.rdx' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdx" l) v.rdx' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rdx (l : Loc) (v : runtime.sigcontext) (rdx' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdx" l) v.rdx' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rdx" l) rdx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdx' := rdx' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rax (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rax" l) v.rax' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rax" l) v.rax' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rax (l : Loc) (v : runtime.sigcontext) (rax' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rax" l) v.rax' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rax" l) rax' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rax' := rax' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rcx (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rcx" l) v.rcx' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rcx" l) v.rcx' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rcx (l : Loc) (v : runtime.sigcontext) (rcx' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rcx" l) v.rcx' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rcx" l) rcx' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rcx' := rcx' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rsp (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsp" l) v.rsp' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsp" l) v.rsp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rsp (l : Loc) (v : runtime.sigcontext) (rsp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsp" l) v.rsp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rsp" l) rsp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rsp' := rsp' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_rip (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rip" l) v.rip' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rip" l) v.rip' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_rip (l : Loc) (v : runtime.sigcontext) (rip' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rip" l) v.rip' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"rip" l) rip' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rip' := rip' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_eflags (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"eflags" l) v.eflags' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"eflags" l) v.eflags' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_eflags (l : Loc) (v : runtime.sigcontext) (eflags' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"eflags" l) v.eflags' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"eflags" l) eflags' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with eflags' := eflags' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_cs (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cs" l) v.cs' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cs" l) v.cs' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_cs (l : Loc) (v : runtime.sigcontext) (cs' : w16) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cs" l) v.cs' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cs" l) cs' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cs' := cs' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_gs (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"gs" l) v.gs' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"gs" l) v.gs' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_gs (l : Loc) (v : runtime.sigcontext) (gs' : w16) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"gs" l) v.gs' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"gs" l) gs' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gs' := gs' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_fs (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fs" l) v.fs' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fs" l) v.fs' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_fs (l : Loc) (v : runtime.sigcontext) (fs' : w16) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fs" l) v.fs' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fs" l) fs' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fs' := fs' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load___pad0 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__pad0" l) v.__pad0' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__pad0" l) v.__pad0' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store___pad0 (l : Loc) (v : runtime.sigcontext) (__pad0' : w16) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__pad0" l) v.__pad0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__pad0" l) __pad0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with __pad0' := __pad0' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_err (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"err" l) v.err' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"err" l) v.err' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_err (l : Loc) (v : runtime.sigcontext) (err' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"err" l) err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_trapno (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"trapno" l) v.trapno' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"trapno" l) v.trapno' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_trapno (l : Loc) (v : runtime.sigcontext) (trapno' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"trapno" l) v.trapno' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"trapno" l) trapno' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with trapno' := trapno' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_oldmask (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"oldmask" l) v.oldmask' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"oldmask" l) v.oldmask' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_oldmask (l : Loc) (v : runtime.sigcontext) (oldmask' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"oldmask" l) v.oldmask' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"oldmask" l) oldmask' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with oldmask' := oldmask' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_cr2 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cr2" l) v.cr2' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cr2" l) v.cr2' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_cr2 (l : Loc) (v : runtime.sigcontext) (cr2' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cr2" l) v.cr2' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"cr2" l) cr2' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cr2' := cr2' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load_fpstate (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fpstate" l) v.fpstate' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fpstate" l) v.fpstate' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store_fpstate (l : Loc) (v : runtime.sigcontext) (fpstate' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fpstate" l) v.fpstate' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"fpstate" l) fpstate' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fpstate' := fpstate' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_load___reserved1 (l : Loc) (v : runtime.sigcontext) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) v.__reserved1' dq)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) v.__reserved1' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sigcontext_access_store___reserved1 (l : Loc) (v : runtime.sigcontext) (__reserved1' : (GoArray w64 8)) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) v.__reserved1' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sigcontext go!"__reserved1" l) __reserved1' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with __reserved1' := __reserved1' } : runtime.sigcontext) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end sigcontext
-
-namespace sockaddr_un
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sockaddr_un_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sockaddr_un where
-  typedPointstoDef l v dq := iprop(
-    "family" ∷ typedPointsto (structFieldRef runtime.sockaddr_un go!"family" l) v.family' dq ∗
-    "path" ∷ typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) v.path' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance sockaddr_un_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sockaddr_un runtime.sockaddr_un.underlying := by
-  solve_into_val_typed_struct
-
-instance sockaddr_un_access_load_family (l : Loc) (v : runtime.sockaddr_un) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"family" l) v.family' dq)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"family" l) v.family' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sockaddr_un_access_store_family (l : Loc) (v : runtime.sockaddr_un) (family' : w16) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"family" l) v.family' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"family" l) family' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with family' := family' } : runtime.sockaddr_un) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance sockaddr_un_access_load_path (l : Loc) (v : runtime.sockaddr_un) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) v.path' dq)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) v.path' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance sockaddr_un_access_store_path (l : Loc) (v : runtime.sockaddr_un) (path' : (GoArray w8 108)) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) v.path' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.sockaddr_un go!"path" l) path' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with path' := path' } : runtime.sockaddr_un) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end sockaddr_un
-
-namespace TypeAssertionError
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance TypeAssertionError_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.TypeAssertionError :=
-  sorry -- axiomatized type
-
-instance TypeAssertionError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError runtime.TypeAssertionError.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end TypeAssertionError
-
-namespace errorAddressString
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance errorAddressString_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.errorAddressString where
-  typedPointstoDef l v dq := iprop(
-    "msg" ∷ typedPointsto (structFieldRef runtime.errorAddressString go!"msg" l) v.msg' dq ∗
-    "addr" ∷ typedPointsto (structFieldRef runtime.errorAddressString go!"addr" l) v.addr' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance errorAddressString_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.errorAddressString runtime.errorAddressString.underlying := by
-  solve_into_val_typed_struct
-
-instance errorAddressString_access_load_msg (l : Loc) (v : runtime.errorAddressString) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"msg" l) v.msg' dq)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"msg" l) v.msg' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance errorAddressString_access_store_msg (l : Loc) (v : runtime.errorAddressString) (msg' : GoString) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"msg" l) v.msg' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"msg" l) msg' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msg' := msg' } : runtime.errorAddressString) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance errorAddressString_access_load_addr (l : Loc) (v : runtime.errorAddressString) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"addr" l) v.addr' dq)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"addr" l) v.addr' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance errorAddressString_access_store_addr (l : Loc) (v : runtime.errorAddressString) (addr' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"addr" l) v.addr' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.errorAddressString go!"addr" l) addr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with addr' := addr' } : runtime.errorAddressString) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end errorAddressString
-
-namespace boundsError
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance boundsError_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.boundsError :=
-  sorry -- axiomatized type
-
-instance boundsError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.boundsError runtime.boundsError.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end boundsError
-
-namespace typeCacheBucket
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance typeCacheBucket_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.typeCacheBucket :=
-  sorry -- axiomatized type
-
-instance typeCacheBucket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end typeCacheBucket
-
-namespace bitvector
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance bitvector_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.bitvector where
-  typedPointstoDef l v dq := iprop(
-    "n" ∷ typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq ∗
-    "bytedata" ∷ typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance bitvector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.bitvector runtime.bitvector.underlying := by
-  solve_into_val_typed_struct
-
-instance bitvector_access_load_n (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
-      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance bitvector_access_store_n (l : Loc) (v : runtime.bitvector) (n' : w32) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) n' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : runtime.bitvector) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance bitvector_access_load_bytedata (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
-      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance bitvector_access_store_bytedata (l : Loc) (v : runtime.bitvector) (bytedata' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) bytedata' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytedata' := bytedata' } : runtime.bitvector) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end bitvector
 
 end runtime
 end

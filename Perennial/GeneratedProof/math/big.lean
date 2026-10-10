@@ -18,6 +18,63 @@ open Iris Iris.BI
 noncomputable section
 namespace math.big
 
+namespace anonStruct_4c7c33e9ae3d999f
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : math.big.Assumptions]
+
+instance anonStruct_4c7c33e9ae3d999f_typed_pointsto :
+    TypedPointsto (GF := GF) math.big.anonStruct_4c7c33e9ae3d999f :=
+  sorry -- axiomatized type
+
+instance anonStruct_4c7c33e9ae3d999f_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) math.big.anonStruct_4c7c33e9ae3d999f math.big.anonStruct_4c7c33e9ae3d999f.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_4c7c33e9ae3d999f
+
+namespace anonStruct_9375352b564cdd97
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : math.big.Assumptions]
+
+instance anonStruct_9375352b564cdd97_typed_pointsto :
+    TypedPointsto (GF := GF) math.big.anonStruct_9375352b564cdd97 :=
+  sorry -- axiomatized type
+
+instance anonStruct_9375352b564cdd97_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) math.big.anonStruct_9375352b564cdd97 math.big.anonStruct_9375352b564cdd97.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_9375352b564cdd97
+
+namespace anonStruct_c443b45f9e161e1d
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : math.big.Assumptions]
+
+instance anonStruct_c443b45f9e161e1d_typed_pointsto :
+    TypedPointsto (GF := GF) math.big.anonStruct_c443b45f9e161e1d :=
+  sorry -- axiomatized type
+
+instance anonStruct_c443b45f9e161e1d_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) math.big.anonStruct_c443b45f9e161e1d math.big.anonStruct_c443b45f9e161e1d.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_c443b45f9e161e1d
+
 namespace decimal
 section def_
 

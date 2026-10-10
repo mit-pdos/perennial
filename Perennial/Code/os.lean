@@ -21,6 +21,11 @@ end pkg_id
 
 namespace os
 
+def anonStruct_f8f8bfb82606ff67.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"os.anonStruct_f8f8bfb82606ff67" [])
+
+attribute [irreducible] anonStruct_f8f8bfb82606ff67.ty
+
 def readdirMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.readdirMode" [])
 
@@ -150,6 +155,8 @@ def fileStat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.fileStat" [])
 
 attribute [irreducible] fileStat.ty
+
+axiom anonStruct_f8f8bfb82606ff67.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom DirEntry [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -1038,6 +1045,19 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val dirBufPool.init) (Val #()))))))))
 
+axiom anonStruct_f8f8bfb82606ff67 : Type
+axiom anonStruct_f8f8bfb82606ff67.zero_val : ZeroVal anonStruct_f8f8bfb82606ff67
+attribute [instance] anonStruct_f8f8bfb82606ff67.zero_val
+
+class anonStruct_f8f8bfb82606ff67.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_f8f8bfb82606ff67.underlying anonStruct_f8f8bfb82606ff67
+  underlying : go.UnderlyingDirectedEq anonStruct_f8f8bfb82606ff67.ty anonStruct_f8f8bfb82606ff67.underlying
+  isUnderlying : go.IsUnderlying anonStruct_f8f8bfb82606ff67.underlying anonStruct_f8f8bfb82606ff67.underlying
+
+attribute [instance] anonStruct_f8f8bfb82606ff67.TypeAssumptions.type_repr
+  anonStruct_f8f8bfb82606ff67.TypeAssumptions.underlying
+  anonStruct_f8f8bfb82606ff67.TypeAssumptions.isUnderlying
+
 abbrev readdirMode [FfiSyntax] : Type := w64
 
 @[reducible] def readdirMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -1559,6 +1579,7 @@ attribute [instance] fileStat.TypeAssumptions.type_repr
   fileStat.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_f8f8bfb82606ff67_instance : anonStruct_f8f8bfb82606ff67.TypeAssumptions
   readdirMode_instance : readdirMode.TypeAssumptions
   dirInfo_instance : dirInfo.TypeAssumptions
   timeout_instance : timeout.TypeAssumptions
@@ -1586,7 +1607,8 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   File_instance : File.TypeAssumptions
   fileStat_instance : fileStat.TypeAssumptions
 
-attribute [instance] Assumptions.readdirMode_instance
+attribute [instance] Assumptions.anonStruct_f8f8bfb82606ff67_instance
+  Assumptions.readdirMode_instance
   Assumptions.dirInfo_instance
   Assumptions.timeout_instance
   Assumptions.SyscallError_instance

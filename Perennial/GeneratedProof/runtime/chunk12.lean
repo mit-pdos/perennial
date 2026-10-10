@@ -9,9 +9,9 @@ public import Perennial.Golang.Theory
 public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime.chunk1
 public import Perennial.GeneratedProof.runtime.chunk3
-public import Perennial.GeneratedProof.runtime.chunk4
 public import Perennial.GeneratedProof.runtime.chunk5
 public import Perennial.GeneratedProof.runtime.chunk8
+public import Perennial.GeneratedProof.runtime.chunk9
 public import Perennial.GeneratedProof.runtime.chunk10
 
 @[expose] public section
@@ -2145,6 +2145,97 @@ instance stackpoolItem_access_store_span (l : Loc) (v : runtime.stackpoolItem) (
 
 end def_
 end stackpoolItem
+
+namespace Frames
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance Frames_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.Frames where
+  typedPointstoDef l v dq := iprop(
+    "callers" ∷ typedPointsto (structFieldRef runtime.Frames go!"callers" l) v.callers' dq ∗
+    "nextPC" ∷ typedPointsto (structFieldRef runtime.Frames go!"nextPC" l) v.nextPC' dq ∗
+    "frames" ∷ typedPointsto (structFieldRef runtime.Frames go!"frames" l) v.frames' dq ∗
+    "frameStore" ∷ typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance Frames_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.Frames runtime.Frames.underlying := by
+  solve_into_val_typed_struct
+
+instance Frames_access_load_callers (l : Loc) (v : runtime.Frames) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"callers" l) v.callers' dq)
+      (typedPointsto (structFieldRef runtime.Frames go!"callers" l) v.callers' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_store_callers (l : Loc) (v : runtime.Frames) (callers' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"callers" l) v.callers' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.Frames go!"callers" l) callers' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with callers' := callers' } : runtime.Frames) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_load_nextPC (l : Loc) (v : runtime.Frames) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"nextPC" l) v.nextPC' dq)
+      (typedPointsto (structFieldRef runtime.Frames go!"nextPC" l) v.nextPC' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_store_nextPC (l : Loc) (v : runtime.Frames) (nextPC' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"nextPC" l) v.nextPC' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.Frames go!"nextPC" l) nextPC' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nextPC' := nextPC' } : runtime.Frames) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_load_frames (l : Loc) (v : runtime.Frames) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"frames" l) v.frames' dq)
+      (typedPointsto (structFieldRef runtime.Frames go!"frames" l) v.frames' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_store_frames (l : Loc) (v : runtime.Frames) (frames' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"frames" l) v.frames' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.Frames go!"frames" l) frames' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with frames' := frames' } : runtime.Frames) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_load_frameStore (l : Loc) (v : runtime.Frames) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' dq)
+      (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Frames_access_store_frameStore (l : Loc) (v : runtime.Frames) (frameStore' : (GoArray runtime.Frame 2)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) frameStore' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with frameStore' := frameStore' } : runtime.Frames) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end Frames
 
 end runtime
 end

@@ -24,6 +24,231 @@ end pkg_id
 
 namespace runtime
 
+def anonStruct_0458a381bfaa3a39.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_0458a381bfaa3a39" [])
+
+attribute [irreducible] anonStruct_0458a381bfaa3a39.ty
+
+def anonStruct_0e6989d34d311a96.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_0e6989d34d311a96" [])
+
+attribute [irreducible] anonStruct_0e6989d34d311a96.ty
+
+def anonStruct_0f08ddbc4072577a.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_0f08ddbc4072577a" [])
+
+attribute [irreducible] anonStruct_0f08ddbc4072577a.ty
+
+def anonStruct_10779d5c4171514e.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_10779d5c4171514e" [])
+
+attribute [irreducible] anonStruct_10779d5c4171514e.ty
+
+def anonStruct_10d75d42a37c8a52.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_10d75d42a37c8a52" [])
+
+attribute [irreducible] anonStruct_10d75d42a37c8a52.ty
+
+def anonStruct_119a15749eefd6fa.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_119a15749eefd6fa" [])
+
+attribute [irreducible] anonStruct_119a15749eefd6fa.ty
+
+def anonStruct_1ce4aa1cabbd8e63.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_1ce4aa1cabbd8e63" [])
+
+attribute [irreducible] anonStruct_1ce4aa1cabbd8e63.ty
+
+def anonStruct_218daef774f04bea.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_218daef774f04bea" [])
+
+attribute [irreducible] anonStruct_218daef774f04bea.ty
+
+def anonStruct_244e3301bc9ea36c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_244e3301bc9ea36c" [])
+
+attribute [irreducible] anonStruct_244e3301bc9ea36c.ty
+
+def anonStruct_2d149b3b26fb970c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_2d149b3b26fb970c" [])
+
+attribute [irreducible] anonStruct_2d149b3b26fb970c.ty
+
+def anonStruct_2d496b2e43e042cd.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_2d496b2e43e042cd" [])
+
+attribute [irreducible] anonStruct_2d496b2e43e042cd.ty
+
+def anonStruct_2dec134c2242ef62.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_2dec134c2242ef62" [])
+
+attribute [irreducible] anonStruct_2dec134c2242ef62.ty
+
+def anonStruct_3652c32646349673.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_3652c32646349673" [])
+
+attribute [irreducible] anonStruct_3652c32646349673.ty
+
+def anonStruct_374f961fabe5ffca.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_374f961fabe5ffca" [])
+
+attribute [irreducible] anonStruct_374f961fabe5ffca.ty
+
+def anonStruct_3a7a71cded516edb.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_3a7a71cded516edb" [])
+
+attribute [irreducible] anonStruct_3a7a71cded516edb.ty
+
+def anonStruct_3fdda1359cee7b53.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_3fdda1359cee7b53" [])
+
+attribute [irreducible] anonStruct_3fdda1359cee7b53.ty
+
+def anonStruct_4489bd9736fa5894.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_4489bd9736fa5894" [])
+
+attribute [irreducible] anonStruct_4489bd9736fa5894.ty
+
+def anonStruct_48418dfcba7332e4.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_48418dfcba7332e4" [])
+
+attribute [irreducible] anonStruct_48418dfcba7332e4.ty
+
+def anonStruct_4aed607135c50a78.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_4aed607135c50a78" [])
+
+attribute [irreducible] anonStruct_4aed607135c50a78.ty
+
+def anonStruct_540f359950f49a9c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_540f359950f49a9c" [])
+
+attribute [irreducible] anonStruct_540f359950f49a9c.ty
+
+def anonStruct_561b00711680a134.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_561b00711680a134" [])
+
+attribute [irreducible] anonStruct_561b00711680a134.ty
+
+def anonStruct_5b77a784ca43f290.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_5b77a784ca43f290" [])
+
+attribute [irreducible] anonStruct_5b77a784ca43f290.ty
+
+def anonStruct_5cd25929fee99aa5.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_5cd25929fee99aa5" [])
+
+attribute [irreducible] anonStruct_5cd25929fee99aa5.ty
+
+def anonStruct_70e634a79249966f.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_70e634a79249966f" [])
+
+attribute [irreducible] anonStruct_70e634a79249966f.ty
+
+def anonStruct_73df745dde493395.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_73df745dde493395" [])
+
+attribute [irreducible] anonStruct_73df745dde493395.ty
+
+def anonStruct_74ec1b21f96f3299.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_74ec1b21f96f3299" [])
+
+attribute [irreducible] anonStruct_74ec1b21f96f3299.ty
+
+def anonStruct_7ffa01d9039fb845.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_7ffa01d9039fb845" [])
+
+attribute [irreducible] anonStruct_7ffa01d9039fb845.ty
+
+def anonStruct_87c38452f6ca2ed9.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_87c38452f6ca2ed9" [])
+
+attribute [irreducible] anonStruct_87c38452f6ca2ed9.ty
+
+def anonStruct_920184a08b527b64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_920184a08b527b64" [])
+
+attribute [irreducible] anonStruct_920184a08b527b64.ty
+
+def anonStruct_9976fccc2b47c068.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_9976fccc2b47c068" [])
+
+attribute [irreducible] anonStruct_9976fccc2b47c068.ty
+
+def anonStruct_a3d9c971f5a6103a.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_a3d9c971f5a6103a" [])
+
+attribute [irreducible] anonStruct_a3d9c971f5a6103a.ty
+
+def anonStruct_a3f9e156beee465e.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_a3f9e156beee465e" [])
+
+attribute [irreducible] anonStruct_a3f9e156beee465e.ty
+
+def anonStruct_b04177485b34dced.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_b04177485b34dced" [])
+
+attribute [irreducible] anonStruct_b04177485b34dced.ty
+
+def anonStruct_b80f6cc7eefc09c8.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_b80f6cc7eefc09c8" [])
+
+attribute [irreducible] anonStruct_b80f6cc7eefc09c8.ty
+
+def anonStruct_bde5c6c6aaa7ab26.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_bde5c6c6aaa7ab26" [])
+
+attribute [irreducible] anonStruct_bde5c6c6aaa7ab26.ty
+
+def anonStruct_c387a2ab2a4a4b56.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_c387a2ab2a4a4b56" [])
+
+attribute [irreducible] anonStruct_c387a2ab2a4a4b56.ty
+
+def anonStruct_c443b45f9e161e1d.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_c443b45f9e161e1d" [])
+
+attribute [irreducible] anonStruct_c443b45f9e161e1d.ty
+
+def anonStruct_ce316d42f7834b6b.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_ce316d42f7834b6b" [])
+
+attribute [irreducible] anonStruct_ce316d42f7834b6b.ty
+
+def anonStruct_d18fd3853c6f7ee0.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_d18fd3853c6f7ee0" [])
+
+attribute [irreducible] anonStruct_d18fd3853c6f7ee0.ty
+
+def anonStruct_d39adf6480b9c51f.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_d39adf6480b9c51f" [])
+
+attribute [irreducible] anonStruct_d39adf6480b9c51f.ty
+
+def anonStruct_dbecbc4e45d3626a.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_dbecbc4e45d3626a" [])
+
+attribute [irreducible] anonStruct_dbecbc4e45d3626a.ty
+
+def anonStruct_df9a9aa9b7f5ede3.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_df9a9aa9b7f5ede3" [])
+
+attribute [irreducible] anonStruct_df9a9aa9b7f5ede3.ty
+
+def anonStruct_f244a3170bf00875.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_f244a3170bf00875" [])
+
+attribute [irreducible] anonStruct_f244a3170bf00875.ty
+
+def anonStruct_f3de5e04cfb5d0bb.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_f3de5e04cfb5d0bb" [])
+
+attribute [irreducible] anonStruct_f3de5e04cfb5d0bb.ty
+
+def anonStruct_fb7ac333ce2fdac6.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.anonStruct_fb7ac333ce2fdac6" [])
+
+attribute [irreducible] anonStruct_fb7ac333ce2fdac6.ty
+
 def userArena.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"runtime.userArena" [])
 
@@ -1878,6 +2103,96 @@ def vdsoInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"runtime.vdsoInfo" [])
 
 attribute [irreducible] vdsoInfo.ty
+
+axiom anonStruct_0458a381bfaa3a39.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_0e6989d34d311a96.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_0f08ddbc4072577a.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_10779d5c4171514e.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_10d75d42a37c8a52.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_119a15749eefd6fa.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_1ce4aa1cabbd8e63.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_218daef774f04bea.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_244e3301bc9ea36c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_2d149b3b26fb970c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_2d496b2e43e042cd.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_2dec134c2242ef62.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_3652c32646349673.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_374f961fabe5ffca.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_3a7a71cded516edb.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_3fdda1359cee7b53.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_4489bd9736fa5894.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_48418dfcba7332e4.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_4aed607135c50a78.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_540f359950f49a9c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_561b00711680a134.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_5b77a784ca43f290.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_5cd25929fee99aa5.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_70e634a79249966f.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_73df745dde493395.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_74ec1b21f96f3299.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_7ffa01d9039fb845.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_87c38452f6ca2ed9.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_920184a08b527b64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_9976fccc2b47c068.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_a3d9c971f5a6103a.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_a3f9e156beee465e.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_b04177485b34dced.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_b80f6cc7eefc09c8.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_bde5c6c6aaa7ab26.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_c387a2ab2a4a4b56.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_c443b45f9e161e1d.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_ce316d42f7834b6b.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_d18fd3853c6f7ee0.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_d39adf6480b9c51f.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_dbecbc4e45d3626a.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_df9a9aa9b7f5ede3.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_f244a3170bf00875.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_f3de5e04cfb5d0bb.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_fb7ac333ce2fdac6.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom hchan.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -10680,6 +10995,591 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.internal.runtime.sys.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))))
+
+axiom anonStruct_0458a381bfaa3a39 : Type
+axiom anonStruct_0458a381bfaa3a39.zero_val : ZeroVal anonStruct_0458a381bfaa3a39
+attribute [instance] anonStruct_0458a381bfaa3a39.zero_val
+
+class anonStruct_0458a381bfaa3a39.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_0458a381bfaa3a39.underlying anonStruct_0458a381bfaa3a39
+  underlying : go.UnderlyingDirectedEq anonStruct_0458a381bfaa3a39.ty anonStruct_0458a381bfaa3a39.underlying
+  isUnderlying : go.IsUnderlying anonStruct_0458a381bfaa3a39.underlying anonStruct_0458a381bfaa3a39.underlying
+
+attribute [instance] anonStruct_0458a381bfaa3a39.TypeAssumptions.type_repr
+  anonStruct_0458a381bfaa3a39.TypeAssumptions.underlying
+  anonStruct_0458a381bfaa3a39.TypeAssumptions.isUnderlying
+
+axiom anonStruct_0e6989d34d311a96 : Type
+axiom anonStruct_0e6989d34d311a96.zero_val : ZeroVal anonStruct_0e6989d34d311a96
+attribute [instance] anonStruct_0e6989d34d311a96.zero_val
+
+class anonStruct_0e6989d34d311a96.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_0e6989d34d311a96.underlying anonStruct_0e6989d34d311a96
+  underlying : go.UnderlyingDirectedEq anonStruct_0e6989d34d311a96.ty anonStruct_0e6989d34d311a96.underlying
+  isUnderlying : go.IsUnderlying anonStruct_0e6989d34d311a96.underlying anonStruct_0e6989d34d311a96.underlying
+
+attribute [instance] anonStruct_0e6989d34d311a96.TypeAssumptions.type_repr
+  anonStruct_0e6989d34d311a96.TypeAssumptions.underlying
+  anonStruct_0e6989d34d311a96.TypeAssumptions.isUnderlying
+
+axiom anonStruct_0f08ddbc4072577a : Type
+axiom anonStruct_0f08ddbc4072577a.zero_val : ZeroVal anonStruct_0f08ddbc4072577a
+attribute [instance] anonStruct_0f08ddbc4072577a.zero_val
+
+class anonStruct_0f08ddbc4072577a.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_0f08ddbc4072577a.underlying anonStruct_0f08ddbc4072577a
+  underlying : go.UnderlyingDirectedEq anonStruct_0f08ddbc4072577a.ty anonStruct_0f08ddbc4072577a.underlying
+  isUnderlying : go.IsUnderlying anonStruct_0f08ddbc4072577a.underlying anonStruct_0f08ddbc4072577a.underlying
+
+attribute [instance] anonStruct_0f08ddbc4072577a.TypeAssumptions.type_repr
+  anonStruct_0f08ddbc4072577a.TypeAssumptions.underlying
+  anonStruct_0f08ddbc4072577a.TypeAssumptions.isUnderlying
+
+axiom anonStruct_10779d5c4171514e : Type
+axiom anonStruct_10779d5c4171514e.zero_val : ZeroVal anonStruct_10779d5c4171514e
+attribute [instance] anonStruct_10779d5c4171514e.zero_val
+
+class anonStruct_10779d5c4171514e.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_10779d5c4171514e.underlying anonStruct_10779d5c4171514e
+  underlying : go.UnderlyingDirectedEq anonStruct_10779d5c4171514e.ty anonStruct_10779d5c4171514e.underlying
+  isUnderlying : go.IsUnderlying anonStruct_10779d5c4171514e.underlying anonStruct_10779d5c4171514e.underlying
+
+attribute [instance] anonStruct_10779d5c4171514e.TypeAssumptions.type_repr
+  anonStruct_10779d5c4171514e.TypeAssumptions.underlying
+  anonStruct_10779d5c4171514e.TypeAssumptions.isUnderlying
+
+axiom anonStruct_10d75d42a37c8a52 : Type
+axiom anonStruct_10d75d42a37c8a52.zero_val : ZeroVal anonStruct_10d75d42a37c8a52
+attribute [instance] anonStruct_10d75d42a37c8a52.zero_val
+
+class anonStruct_10d75d42a37c8a52.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_10d75d42a37c8a52.underlying anonStruct_10d75d42a37c8a52
+  underlying : go.UnderlyingDirectedEq anonStruct_10d75d42a37c8a52.ty anonStruct_10d75d42a37c8a52.underlying
+  isUnderlying : go.IsUnderlying anonStruct_10d75d42a37c8a52.underlying anonStruct_10d75d42a37c8a52.underlying
+
+attribute [instance] anonStruct_10d75d42a37c8a52.TypeAssumptions.type_repr
+  anonStruct_10d75d42a37c8a52.TypeAssumptions.underlying
+  anonStruct_10d75d42a37c8a52.TypeAssumptions.isUnderlying
+
+axiom anonStruct_119a15749eefd6fa : Type
+axiom anonStruct_119a15749eefd6fa.zero_val : ZeroVal anonStruct_119a15749eefd6fa
+attribute [instance] anonStruct_119a15749eefd6fa.zero_val
+
+class anonStruct_119a15749eefd6fa.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_119a15749eefd6fa.underlying anonStruct_119a15749eefd6fa
+  underlying : go.UnderlyingDirectedEq anonStruct_119a15749eefd6fa.ty anonStruct_119a15749eefd6fa.underlying
+  isUnderlying : go.IsUnderlying anonStruct_119a15749eefd6fa.underlying anonStruct_119a15749eefd6fa.underlying
+
+attribute [instance] anonStruct_119a15749eefd6fa.TypeAssumptions.type_repr
+  anonStruct_119a15749eefd6fa.TypeAssumptions.underlying
+  anonStruct_119a15749eefd6fa.TypeAssumptions.isUnderlying
+
+axiom anonStruct_1ce4aa1cabbd8e63 : Type
+axiom anonStruct_1ce4aa1cabbd8e63.zero_val : ZeroVal anonStruct_1ce4aa1cabbd8e63
+attribute [instance] anonStruct_1ce4aa1cabbd8e63.zero_val
+
+class anonStruct_1ce4aa1cabbd8e63.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_1ce4aa1cabbd8e63.underlying anonStruct_1ce4aa1cabbd8e63
+  underlying : go.UnderlyingDirectedEq anonStruct_1ce4aa1cabbd8e63.ty anonStruct_1ce4aa1cabbd8e63.underlying
+  isUnderlying : go.IsUnderlying anonStruct_1ce4aa1cabbd8e63.underlying anonStruct_1ce4aa1cabbd8e63.underlying
+
+attribute [instance] anonStruct_1ce4aa1cabbd8e63.TypeAssumptions.type_repr
+  anonStruct_1ce4aa1cabbd8e63.TypeAssumptions.underlying
+  anonStruct_1ce4aa1cabbd8e63.TypeAssumptions.isUnderlying
+
+axiom anonStruct_218daef774f04bea : Type
+axiom anonStruct_218daef774f04bea.zero_val : ZeroVal anonStruct_218daef774f04bea
+attribute [instance] anonStruct_218daef774f04bea.zero_val
+
+class anonStruct_218daef774f04bea.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_218daef774f04bea.underlying anonStruct_218daef774f04bea
+  underlying : go.UnderlyingDirectedEq anonStruct_218daef774f04bea.ty anonStruct_218daef774f04bea.underlying
+  isUnderlying : go.IsUnderlying anonStruct_218daef774f04bea.underlying anonStruct_218daef774f04bea.underlying
+
+attribute [instance] anonStruct_218daef774f04bea.TypeAssumptions.type_repr
+  anonStruct_218daef774f04bea.TypeAssumptions.underlying
+  anonStruct_218daef774f04bea.TypeAssumptions.isUnderlying
+
+axiom anonStruct_244e3301bc9ea36c : Type
+axiom anonStruct_244e3301bc9ea36c.zero_val : ZeroVal anonStruct_244e3301bc9ea36c
+attribute [instance] anonStruct_244e3301bc9ea36c.zero_val
+
+class anonStruct_244e3301bc9ea36c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_244e3301bc9ea36c.underlying anonStruct_244e3301bc9ea36c
+  underlying : go.UnderlyingDirectedEq anonStruct_244e3301bc9ea36c.ty anonStruct_244e3301bc9ea36c.underlying
+  isUnderlying : go.IsUnderlying anonStruct_244e3301bc9ea36c.underlying anonStruct_244e3301bc9ea36c.underlying
+
+attribute [instance] anonStruct_244e3301bc9ea36c.TypeAssumptions.type_repr
+  anonStruct_244e3301bc9ea36c.TypeAssumptions.underlying
+  anonStruct_244e3301bc9ea36c.TypeAssumptions.isUnderlying
+
+axiom anonStruct_2d149b3b26fb970c : Type
+axiom anonStruct_2d149b3b26fb970c.zero_val : ZeroVal anonStruct_2d149b3b26fb970c
+attribute [instance] anonStruct_2d149b3b26fb970c.zero_val
+
+class anonStruct_2d149b3b26fb970c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_2d149b3b26fb970c.underlying anonStruct_2d149b3b26fb970c
+  underlying : go.UnderlyingDirectedEq anonStruct_2d149b3b26fb970c.ty anonStruct_2d149b3b26fb970c.underlying
+  isUnderlying : go.IsUnderlying anonStruct_2d149b3b26fb970c.underlying anonStruct_2d149b3b26fb970c.underlying
+
+attribute [instance] anonStruct_2d149b3b26fb970c.TypeAssumptions.type_repr
+  anonStruct_2d149b3b26fb970c.TypeAssumptions.underlying
+  anonStruct_2d149b3b26fb970c.TypeAssumptions.isUnderlying
+
+axiom anonStruct_2d496b2e43e042cd : Type
+axiom anonStruct_2d496b2e43e042cd.zero_val : ZeroVal anonStruct_2d496b2e43e042cd
+attribute [instance] anonStruct_2d496b2e43e042cd.zero_val
+
+class anonStruct_2d496b2e43e042cd.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_2d496b2e43e042cd.underlying anonStruct_2d496b2e43e042cd
+  underlying : go.UnderlyingDirectedEq anonStruct_2d496b2e43e042cd.ty anonStruct_2d496b2e43e042cd.underlying
+  isUnderlying : go.IsUnderlying anonStruct_2d496b2e43e042cd.underlying anonStruct_2d496b2e43e042cd.underlying
+
+attribute [instance] anonStruct_2d496b2e43e042cd.TypeAssumptions.type_repr
+  anonStruct_2d496b2e43e042cd.TypeAssumptions.underlying
+  anonStruct_2d496b2e43e042cd.TypeAssumptions.isUnderlying
+
+axiom anonStruct_2dec134c2242ef62 : Type
+axiom anonStruct_2dec134c2242ef62.zero_val : ZeroVal anonStruct_2dec134c2242ef62
+attribute [instance] anonStruct_2dec134c2242ef62.zero_val
+
+class anonStruct_2dec134c2242ef62.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_2dec134c2242ef62.underlying anonStruct_2dec134c2242ef62
+  underlying : go.UnderlyingDirectedEq anonStruct_2dec134c2242ef62.ty anonStruct_2dec134c2242ef62.underlying
+  isUnderlying : go.IsUnderlying anonStruct_2dec134c2242ef62.underlying anonStruct_2dec134c2242ef62.underlying
+
+attribute [instance] anonStruct_2dec134c2242ef62.TypeAssumptions.type_repr
+  anonStruct_2dec134c2242ef62.TypeAssumptions.underlying
+  anonStruct_2dec134c2242ef62.TypeAssumptions.isUnderlying
+
+axiom anonStruct_3652c32646349673 : Type
+axiom anonStruct_3652c32646349673.zero_val : ZeroVal anonStruct_3652c32646349673
+attribute [instance] anonStruct_3652c32646349673.zero_val
+
+class anonStruct_3652c32646349673.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_3652c32646349673.underlying anonStruct_3652c32646349673
+  underlying : go.UnderlyingDirectedEq anonStruct_3652c32646349673.ty anonStruct_3652c32646349673.underlying
+  isUnderlying : go.IsUnderlying anonStruct_3652c32646349673.underlying anonStruct_3652c32646349673.underlying
+
+attribute [instance] anonStruct_3652c32646349673.TypeAssumptions.type_repr
+  anonStruct_3652c32646349673.TypeAssumptions.underlying
+  anonStruct_3652c32646349673.TypeAssumptions.isUnderlying
+
+axiom anonStruct_374f961fabe5ffca : Type
+axiom anonStruct_374f961fabe5ffca.zero_val : ZeroVal anonStruct_374f961fabe5ffca
+attribute [instance] anonStruct_374f961fabe5ffca.zero_val
+
+class anonStruct_374f961fabe5ffca.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_374f961fabe5ffca.underlying anonStruct_374f961fabe5ffca
+  underlying : go.UnderlyingDirectedEq anonStruct_374f961fabe5ffca.ty anonStruct_374f961fabe5ffca.underlying
+  isUnderlying : go.IsUnderlying anonStruct_374f961fabe5ffca.underlying anonStruct_374f961fabe5ffca.underlying
+
+attribute [instance] anonStruct_374f961fabe5ffca.TypeAssumptions.type_repr
+  anonStruct_374f961fabe5ffca.TypeAssumptions.underlying
+  anonStruct_374f961fabe5ffca.TypeAssumptions.isUnderlying
+
+axiom anonStruct_3a7a71cded516edb : Type
+axiom anonStruct_3a7a71cded516edb.zero_val : ZeroVal anonStruct_3a7a71cded516edb
+attribute [instance] anonStruct_3a7a71cded516edb.zero_val
+
+class anonStruct_3a7a71cded516edb.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_3a7a71cded516edb.underlying anonStruct_3a7a71cded516edb
+  underlying : go.UnderlyingDirectedEq anonStruct_3a7a71cded516edb.ty anonStruct_3a7a71cded516edb.underlying
+  isUnderlying : go.IsUnderlying anonStruct_3a7a71cded516edb.underlying anonStruct_3a7a71cded516edb.underlying
+
+attribute [instance] anonStruct_3a7a71cded516edb.TypeAssumptions.type_repr
+  anonStruct_3a7a71cded516edb.TypeAssumptions.underlying
+  anonStruct_3a7a71cded516edb.TypeAssumptions.isUnderlying
+
+axiom anonStruct_3fdda1359cee7b53 : Type
+axiom anonStruct_3fdda1359cee7b53.zero_val : ZeroVal anonStruct_3fdda1359cee7b53
+attribute [instance] anonStruct_3fdda1359cee7b53.zero_val
+
+class anonStruct_3fdda1359cee7b53.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_3fdda1359cee7b53.underlying anonStruct_3fdda1359cee7b53
+  underlying : go.UnderlyingDirectedEq anonStruct_3fdda1359cee7b53.ty anonStruct_3fdda1359cee7b53.underlying
+  isUnderlying : go.IsUnderlying anonStruct_3fdda1359cee7b53.underlying anonStruct_3fdda1359cee7b53.underlying
+
+attribute [instance] anonStruct_3fdda1359cee7b53.TypeAssumptions.type_repr
+  anonStruct_3fdda1359cee7b53.TypeAssumptions.underlying
+  anonStruct_3fdda1359cee7b53.TypeAssumptions.isUnderlying
+
+axiom anonStruct_4489bd9736fa5894 : Type
+axiom anonStruct_4489bd9736fa5894.zero_val : ZeroVal anonStruct_4489bd9736fa5894
+attribute [instance] anonStruct_4489bd9736fa5894.zero_val
+
+class anonStruct_4489bd9736fa5894.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_4489bd9736fa5894.underlying anonStruct_4489bd9736fa5894
+  underlying : go.UnderlyingDirectedEq anonStruct_4489bd9736fa5894.ty anonStruct_4489bd9736fa5894.underlying
+  isUnderlying : go.IsUnderlying anonStruct_4489bd9736fa5894.underlying anonStruct_4489bd9736fa5894.underlying
+
+attribute [instance] anonStruct_4489bd9736fa5894.TypeAssumptions.type_repr
+  anonStruct_4489bd9736fa5894.TypeAssumptions.underlying
+  anonStruct_4489bd9736fa5894.TypeAssumptions.isUnderlying
+
+axiom anonStruct_48418dfcba7332e4 : Type
+axiom anonStruct_48418dfcba7332e4.zero_val : ZeroVal anonStruct_48418dfcba7332e4
+attribute [instance] anonStruct_48418dfcba7332e4.zero_val
+
+class anonStruct_48418dfcba7332e4.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_48418dfcba7332e4.underlying anonStruct_48418dfcba7332e4
+  underlying : go.UnderlyingDirectedEq anonStruct_48418dfcba7332e4.ty anonStruct_48418dfcba7332e4.underlying
+  isUnderlying : go.IsUnderlying anonStruct_48418dfcba7332e4.underlying anonStruct_48418dfcba7332e4.underlying
+
+attribute [instance] anonStruct_48418dfcba7332e4.TypeAssumptions.type_repr
+  anonStruct_48418dfcba7332e4.TypeAssumptions.underlying
+  anonStruct_48418dfcba7332e4.TypeAssumptions.isUnderlying
+
+axiom anonStruct_4aed607135c50a78 : Type
+axiom anonStruct_4aed607135c50a78.zero_val : ZeroVal anonStruct_4aed607135c50a78
+attribute [instance] anonStruct_4aed607135c50a78.zero_val
+
+class anonStruct_4aed607135c50a78.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_4aed607135c50a78.underlying anonStruct_4aed607135c50a78
+  underlying : go.UnderlyingDirectedEq anonStruct_4aed607135c50a78.ty anonStruct_4aed607135c50a78.underlying
+  isUnderlying : go.IsUnderlying anonStruct_4aed607135c50a78.underlying anonStruct_4aed607135c50a78.underlying
+
+attribute [instance] anonStruct_4aed607135c50a78.TypeAssumptions.type_repr
+  anonStruct_4aed607135c50a78.TypeAssumptions.underlying
+  anonStruct_4aed607135c50a78.TypeAssumptions.isUnderlying
+
+axiom anonStruct_540f359950f49a9c : Type
+axiom anonStruct_540f359950f49a9c.zero_val : ZeroVal anonStruct_540f359950f49a9c
+attribute [instance] anonStruct_540f359950f49a9c.zero_val
+
+class anonStruct_540f359950f49a9c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_540f359950f49a9c.underlying anonStruct_540f359950f49a9c
+  underlying : go.UnderlyingDirectedEq anonStruct_540f359950f49a9c.ty anonStruct_540f359950f49a9c.underlying
+  isUnderlying : go.IsUnderlying anonStruct_540f359950f49a9c.underlying anonStruct_540f359950f49a9c.underlying
+
+attribute [instance] anonStruct_540f359950f49a9c.TypeAssumptions.type_repr
+  anonStruct_540f359950f49a9c.TypeAssumptions.underlying
+  anonStruct_540f359950f49a9c.TypeAssumptions.isUnderlying
+
+axiom anonStruct_561b00711680a134 : Type
+axiom anonStruct_561b00711680a134.zero_val : ZeroVal anonStruct_561b00711680a134
+attribute [instance] anonStruct_561b00711680a134.zero_val
+
+class anonStruct_561b00711680a134.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_561b00711680a134.underlying anonStruct_561b00711680a134
+  underlying : go.UnderlyingDirectedEq anonStruct_561b00711680a134.ty anonStruct_561b00711680a134.underlying
+  isUnderlying : go.IsUnderlying anonStruct_561b00711680a134.underlying anonStruct_561b00711680a134.underlying
+
+attribute [instance] anonStruct_561b00711680a134.TypeAssumptions.type_repr
+  anonStruct_561b00711680a134.TypeAssumptions.underlying
+  anonStruct_561b00711680a134.TypeAssumptions.isUnderlying
+
+axiom anonStruct_5b77a784ca43f290 : Type
+axiom anonStruct_5b77a784ca43f290.zero_val : ZeroVal anonStruct_5b77a784ca43f290
+attribute [instance] anonStruct_5b77a784ca43f290.zero_val
+
+class anonStruct_5b77a784ca43f290.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_5b77a784ca43f290.underlying anonStruct_5b77a784ca43f290
+  underlying : go.UnderlyingDirectedEq anonStruct_5b77a784ca43f290.ty anonStruct_5b77a784ca43f290.underlying
+  isUnderlying : go.IsUnderlying anonStruct_5b77a784ca43f290.underlying anonStruct_5b77a784ca43f290.underlying
+
+attribute [instance] anonStruct_5b77a784ca43f290.TypeAssumptions.type_repr
+  anonStruct_5b77a784ca43f290.TypeAssumptions.underlying
+  anonStruct_5b77a784ca43f290.TypeAssumptions.isUnderlying
+
+axiom anonStruct_5cd25929fee99aa5 : Type
+axiom anonStruct_5cd25929fee99aa5.zero_val : ZeroVal anonStruct_5cd25929fee99aa5
+attribute [instance] anonStruct_5cd25929fee99aa5.zero_val
+
+class anonStruct_5cd25929fee99aa5.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_5cd25929fee99aa5.underlying anonStruct_5cd25929fee99aa5
+  underlying : go.UnderlyingDirectedEq anonStruct_5cd25929fee99aa5.ty anonStruct_5cd25929fee99aa5.underlying
+  isUnderlying : go.IsUnderlying anonStruct_5cd25929fee99aa5.underlying anonStruct_5cd25929fee99aa5.underlying
+
+attribute [instance] anonStruct_5cd25929fee99aa5.TypeAssumptions.type_repr
+  anonStruct_5cd25929fee99aa5.TypeAssumptions.underlying
+  anonStruct_5cd25929fee99aa5.TypeAssumptions.isUnderlying
+
+axiom anonStruct_70e634a79249966f : Type
+axiom anonStruct_70e634a79249966f.zero_val : ZeroVal anonStruct_70e634a79249966f
+attribute [instance] anonStruct_70e634a79249966f.zero_val
+
+class anonStruct_70e634a79249966f.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_70e634a79249966f.underlying anonStruct_70e634a79249966f
+  underlying : go.UnderlyingDirectedEq anonStruct_70e634a79249966f.ty anonStruct_70e634a79249966f.underlying
+  isUnderlying : go.IsUnderlying anonStruct_70e634a79249966f.underlying anonStruct_70e634a79249966f.underlying
+
+attribute [instance] anonStruct_70e634a79249966f.TypeAssumptions.type_repr
+  anonStruct_70e634a79249966f.TypeAssumptions.underlying
+  anonStruct_70e634a79249966f.TypeAssumptions.isUnderlying
+
+axiom anonStruct_73df745dde493395 : Type
+axiom anonStruct_73df745dde493395.zero_val : ZeroVal anonStruct_73df745dde493395
+attribute [instance] anonStruct_73df745dde493395.zero_val
+
+class anonStruct_73df745dde493395.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_73df745dde493395.underlying anonStruct_73df745dde493395
+  underlying : go.UnderlyingDirectedEq anonStruct_73df745dde493395.ty anonStruct_73df745dde493395.underlying
+  isUnderlying : go.IsUnderlying anonStruct_73df745dde493395.underlying anonStruct_73df745dde493395.underlying
+
+attribute [instance] anonStruct_73df745dde493395.TypeAssumptions.type_repr
+  anonStruct_73df745dde493395.TypeAssumptions.underlying
+  anonStruct_73df745dde493395.TypeAssumptions.isUnderlying
+
+axiom anonStruct_74ec1b21f96f3299 : Type
+axiom anonStruct_74ec1b21f96f3299.zero_val : ZeroVal anonStruct_74ec1b21f96f3299
+attribute [instance] anonStruct_74ec1b21f96f3299.zero_val
+
+class anonStruct_74ec1b21f96f3299.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_74ec1b21f96f3299.underlying anonStruct_74ec1b21f96f3299
+  underlying : go.UnderlyingDirectedEq anonStruct_74ec1b21f96f3299.ty anonStruct_74ec1b21f96f3299.underlying
+  isUnderlying : go.IsUnderlying anonStruct_74ec1b21f96f3299.underlying anonStruct_74ec1b21f96f3299.underlying
+
+attribute [instance] anonStruct_74ec1b21f96f3299.TypeAssumptions.type_repr
+  anonStruct_74ec1b21f96f3299.TypeAssumptions.underlying
+  anonStruct_74ec1b21f96f3299.TypeAssumptions.isUnderlying
+
+axiom anonStruct_7ffa01d9039fb845 : Type
+axiom anonStruct_7ffa01d9039fb845.zero_val : ZeroVal anonStruct_7ffa01d9039fb845
+attribute [instance] anonStruct_7ffa01d9039fb845.zero_val
+
+class anonStruct_7ffa01d9039fb845.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_7ffa01d9039fb845.underlying anonStruct_7ffa01d9039fb845
+  underlying : go.UnderlyingDirectedEq anonStruct_7ffa01d9039fb845.ty anonStruct_7ffa01d9039fb845.underlying
+  isUnderlying : go.IsUnderlying anonStruct_7ffa01d9039fb845.underlying anonStruct_7ffa01d9039fb845.underlying
+
+attribute [instance] anonStruct_7ffa01d9039fb845.TypeAssumptions.type_repr
+  anonStruct_7ffa01d9039fb845.TypeAssumptions.underlying
+  anonStruct_7ffa01d9039fb845.TypeAssumptions.isUnderlying
+
+axiom anonStruct_87c38452f6ca2ed9 : Type
+axiom anonStruct_87c38452f6ca2ed9.zero_val : ZeroVal anonStruct_87c38452f6ca2ed9
+attribute [instance] anonStruct_87c38452f6ca2ed9.zero_val
+
+class anonStruct_87c38452f6ca2ed9.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_87c38452f6ca2ed9.underlying anonStruct_87c38452f6ca2ed9
+  underlying : go.UnderlyingDirectedEq anonStruct_87c38452f6ca2ed9.ty anonStruct_87c38452f6ca2ed9.underlying
+  isUnderlying : go.IsUnderlying anonStruct_87c38452f6ca2ed9.underlying anonStruct_87c38452f6ca2ed9.underlying
+
+attribute [instance] anonStruct_87c38452f6ca2ed9.TypeAssumptions.type_repr
+  anonStruct_87c38452f6ca2ed9.TypeAssumptions.underlying
+  anonStruct_87c38452f6ca2ed9.TypeAssumptions.isUnderlying
+
+axiom anonStruct_920184a08b527b64 : Type
+axiom anonStruct_920184a08b527b64.zero_val : ZeroVal anonStruct_920184a08b527b64
+attribute [instance] anonStruct_920184a08b527b64.zero_val
+
+class anonStruct_920184a08b527b64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_920184a08b527b64.underlying anonStruct_920184a08b527b64
+  underlying : go.UnderlyingDirectedEq anonStruct_920184a08b527b64.ty anonStruct_920184a08b527b64.underlying
+  isUnderlying : go.IsUnderlying anonStruct_920184a08b527b64.underlying anonStruct_920184a08b527b64.underlying
+
+attribute [instance] anonStruct_920184a08b527b64.TypeAssumptions.type_repr
+  anonStruct_920184a08b527b64.TypeAssumptions.underlying
+  anonStruct_920184a08b527b64.TypeAssumptions.isUnderlying
+
+axiom anonStruct_9976fccc2b47c068 : Type
+axiom anonStruct_9976fccc2b47c068.zero_val : ZeroVal anonStruct_9976fccc2b47c068
+attribute [instance] anonStruct_9976fccc2b47c068.zero_val
+
+class anonStruct_9976fccc2b47c068.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_9976fccc2b47c068.underlying anonStruct_9976fccc2b47c068
+  underlying : go.UnderlyingDirectedEq anonStruct_9976fccc2b47c068.ty anonStruct_9976fccc2b47c068.underlying
+  isUnderlying : go.IsUnderlying anonStruct_9976fccc2b47c068.underlying anonStruct_9976fccc2b47c068.underlying
+
+attribute [instance] anonStruct_9976fccc2b47c068.TypeAssumptions.type_repr
+  anonStruct_9976fccc2b47c068.TypeAssumptions.underlying
+  anonStruct_9976fccc2b47c068.TypeAssumptions.isUnderlying
+
+axiom anonStruct_a3d9c971f5a6103a : Type
+axiom anonStruct_a3d9c971f5a6103a.zero_val : ZeroVal anonStruct_a3d9c971f5a6103a
+attribute [instance] anonStruct_a3d9c971f5a6103a.zero_val
+
+class anonStruct_a3d9c971f5a6103a.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_a3d9c971f5a6103a.underlying anonStruct_a3d9c971f5a6103a
+  underlying : go.UnderlyingDirectedEq anonStruct_a3d9c971f5a6103a.ty anonStruct_a3d9c971f5a6103a.underlying
+  isUnderlying : go.IsUnderlying anonStruct_a3d9c971f5a6103a.underlying anonStruct_a3d9c971f5a6103a.underlying
+
+attribute [instance] anonStruct_a3d9c971f5a6103a.TypeAssumptions.type_repr
+  anonStruct_a3d9c971f5a6103a.TypeAssumptions.underlying
+  anonStruct_a3d9c971f5a6103a.TypeAssumptions.isUnderlying
+
+axiom anonStruct_a3f9e156beee465e : Type
+axiom anonStruct_a3f9e156beee465e.zero_val : ZeroVal anonStruct_a3f9e156beee465e
+attribute [instance] anonStruct_a3f9e156beee465e.zero_val
+
+class anonStruct_a3f9e156beee465e.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_a3f9e156beee465e.underlying anonStruct_a3f9e156beee465e
+  underlying : go.UnderlyingDirectedEq anonStruct_a3f9e156beee465e.ty anonStruct_a3f9e156beee465e.underlying
+  isUnderlying : go.IsUnderlying anonStruct_a3f9e156beee465e.underlying anonStruct_a3f9e156beee465e.underlying
+
+attribute [instance] anonStruct_a3f9e156beee465e.TypeAssumptions.type_repr
+  anonStruct_a3f9e156beee465e.TypeAssumptions.underlying
+  anonStruct_a3f9e156beee465e.TypeAssumptions.isUnderlying
+
+axiom anonStruct_b04177485b34dced : Type
+axiom anonStruct_b04177485b34dced.zero_val : ZeroVal anonStruct_b04177485b34dced
+attribute [instance] anonStruct_b04177485b34dced.zero_val
+
+class anonStruct_b04177485b34dced.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_b04177485b34dced.underlying anonStruct_b04177485b34dced
+  underlying : go.UnderlyingDirectedEq anonStruct_b04177485b34dced.ty anonStruct_b04177485b34dced.underlying
+  isUnderlying : go.IsUnderlying anonStruct_b04177485b34dced.underlying anonStruct_b04177485b34dced.underlying
+
+attribute [instance] anonStruct_b04177485b34dced.TypeAssumptions.type_repr
+  anonStruct_b04177485b34dced.TypeAssumptions.underlying
+  anonStruct_b04177485b34dced.TypeAssumptions.isUnderlying
+
+axiom anonStruct_b80f6cc7eefc09c8 : Type
+axiom anonStruct_b80f6cc7eefc09c8.zero_val : ZeroVal anonStruct_b80f6cc7eefc09c8
+attribute [instance] anonStruct_b80f6cc7eefc09c8.zero_val
+
+class anonStruct_b80f6cc7eefc09c8.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_b80f6cc7eefc09c8.underlying anonStruct_b80f6cc7eefc09c8
+  underlying : go.UnderlyingDirectedEq anonStruct_b80f6cc7eefc09c8.ty anonStruct_b80f6cc7eefc09c8.underlying
+  isUnderlying : go.IsUnderlying anonStruct_b80f6cc7eefc09c8.underlying anonStruct_b80f6cc7eefc09c8.underlying
+
+attribute [instance] anonStruct_b80f6cc7eefc09c8.TypeAssumptions.type_repr
+  anonStruct_b80f6cc7eefc09c8.TypeAssumptions.underlying
+  anonStruct_b80f6cc7eefc09c8.TypeAssumptions.isUnderlying
+
+axiom anonStruct_bde5c6c6aaa7ab26 : Type
+axiom anonStruct_bde5c6c6aaa7ab26.zero_val : ZeroVal anonStruct_bde5c6c6aaa7ab26
+attribute [instance] anonStruct_bde5c6c6aaa7ab26.zero_val
+
+class anonStruct_bde5c6c6aaa7ab26.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_bde5c6c6aaa7ab26.underlying anonStruct_bde5c6c6aaa7ab26
+  underlying : go.UnderlyingDirectedEq anonStruct_bde5c6c6aaa7ab26.ty anonStruct_bde5c6c6aaa7ab26.underlying
+  isUnderlying : go.IsUnderlying anonStruct_bde5c6c6aaa7ab26.underlying anonStruct_bde5c6c6aaa7ab26.underlying
+
+attribute [instance] anonStruct_bde5c6c6aaa7ab26.TypeAssumptions.type_repr
+  anonStruct_bde5c6c6aaa7ab26.TypeAssumptions.underlying
+  anonStruct_bde5c6c6aaa7ab26.TypeAssumptions.isUnderlying
+
+axiom anonStruct_c387a2ab2a4a4b56 : Type
+axiom anonStruct_c387a2ab2a4a4b56.zero_val : ZeroVal anonStruct_c387a2ab2a4a4b56
+attribute [instance] anonStruct_c387a2ab2a4a4b56.zero_val
+
+class anonStruct_c387a2ab2a4a4b56.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_c387a2ab2a4a4b56.underlying anonStruct_c387a2ab2a4a4b56
+  underlying : go.UnderlyingDirectedEq anonStruct_c387a2ab2a4a4b56.ty anonStruct_c387a2ab2a4a4b56.underlying
+  isUnderlying : go.IsUnderlying anonStruct_c387a2ab2a4a4b56.underlying anonStruct_c387a2ab2a4a4b56.underlying
+
+attribute [instance] anonStruct_c387a2ab2a4a4b56.TypeAssumptions.type_repr
+  anonStruct_c387a2ab2a4a4b56.TypeAssumptions.underlying
+  anonStruct_c387a2ab2a4a4b56.TypeAssumptions.isUnderlying
+
+axiom anonStruct_c443b45f9e161e1d : Type
+axiom anonStruct_c443b45f9e161e1d.zero_val : ZeroVal anonStruct_c443b45f9e161e1d
+attribute [instance] anonStruct_c443b45f9e161e1d.zero_val
+
+class anonStruct_c443b45f9e161e1d.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d
+  underlying : go.UnderlyingDirectedEq anonStruct_c443b45f9e161e1d.ty anonStruct_c443b45f9e161e1d.underlying
+  isUnderlying : go.IsUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d.underlying
+
+attribute [instance] anonStruct_c443b45f9e161e1d.TypeAssumptions.type_repr
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.underlying
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.isUnderlying
+
+axiom anonStruct_ce316d42f7834b6b : Type
+axiom anonStruct_ce316d42f7834b6b.zero_val : ZeroVal anonStruct_ce316d42f7834b6b
+attribute [instance] anonStruct_ce316d42f7834b6b.zero_val
+
+class anonStruct_ce316d42f7834b6b.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_ce316d42f7834b6b.underlying anonStruct_ce316d42f7834b6b
+  underlying : go.UnderlyingDirectedEq anonStruct_ce316d42f7834b6b.ty anonStruct_ce316d42f7834b6b.underlying
+  isUnderlying : go.IsUnderlying anonStruct_ce316d42f7834b6b.underlying anonStruct_ce316d42f7834b6b.underlying
+
+attribute [instance] anonStruct_ce316d42f7834b6b.TypeAssumptions.type_repr
+  anonStruct_ce316d42f7834b6b.TypeAssumptions.underlying
+  anonStruct_ce316d42f7834b6b.TypeAssumptions.isUnderlying
+
+axiom anonStruct_d18fd3853c6f7ee0 : Type
+axiom anonStruct_d18fd3853c6f7ee0.zero_val : ZeroVal anonStruct_d18fd3853c6f7ee0
+attribute [instance] anonStruct_d18fd3853c6f7ee0.zero_val
+
+class anonStruct_d18fd3853c6f7ee0.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_d18fd3853c6f7ee0.underlying anonStruct_d18fd3853c6f7ee0
+  underlying : go.UnderlyingDirectedEq anonStruct_d18fd3853c6f7ee0.ty anonStruct_d18fd3853c6f7ee0.underlying
+  isUnderlying : go.IsUnderlying anonStruct_d18fd3853c6f7ee0.underlying anonStruct_d18fd3853c6f7ee0.underlying
+
+attribute [instance] anonStruct_d18fd3853c6f7ee0.TypeAssumptions.type_repr
+  anonStruct_d18fd3853c6f7ee0.TypeAssumptions.underlying
+  anonStruct_d18fd3853c6f7ee0.TypeAssumptions.isUnderlying
+
+axiom anonStruct_d39adf6480b9c51f : Type
+axiom anonStruct_d39adf6480b9c51f.zero_val : ZeroVal anonStruct_d39adf6480b9c51f
+attribute [instance] anonStruct_d39adf6480b9c51f.zero_val
+
+class anonStruct_d39adf6480b9c51f.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_d39adf6480b9c51f.underlying anonStruct_d39adf6480b9c51f
+  underlying : go.UnderlyingDirectedEq anonStruct_d39adf6480b9c51f.ty anonStruct_d39adf6480b9c51f.underlying
+  isUnderlying : go.IsUnderlying anonStruct_d39adf6480b9c51f.underlying anonStruct_d39adf6480b9c51f.underlying
+
+attribute [instance] anonStruct_d39adf6480b9c51f.TypeAssumptions.type_repr
+  anonStruct_d39adf6480b9c51f.TypeAssumptions.underlying
+  anonStruct_d39adf6480b9c51f.TypeAssumptions.isUnderlying
+
+axiom anonStruct_dbecbc4e45d3626a : Type
+axiom anonStruct_dbecbc4e45d3626a.zero_val : ZeroVal anonStruct_dbecbc4e45d3626a
+attribute [instance] anonStruct_dbecbc4e45d3626a.zero_val
+
+class anonStruct_dbecbc4e45d3626a.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_dbecbc4e45d3626a.underlying anonStruct_dbecbc4e45d3626a
+  underlying : go.UnderlyingDirectedEq anonStruct_dbecbc4e45d3626a.ty anonStruct_dbecbc4e45d3626a.underlying
+  isUnderlying : go.IsUnderlying anonStruct_dbecbc4e45d3626a.underlying anonStruct_dbecbc4e45d3626a.underlying
+
+attribute [instance] anonStruct_dbecbc4e45d3626a.TypeAssumptions.type_repr
+  anonStruct_dbecbc4e45d3626a.TypeAssumptions.underlying
+  anonStruct_dbecbc4e45d3626a.TypeAssumptions.isUnderlying
+
+axiom anonStruct_df9a9aa9b7f5ede3 : Type
+axiom anonStruct_df9a9aa9b7f5ede3.zero_val : ZeroVal anonStruct_df9a9aa9b7f5ede3
+attribute [instance] anonStruct_df9a9aa9b7f5ede3.zero_val
+
+class anonStruct_df9a9aa9b7f5ede3.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_df9a9aa9b7f5ede3.underlying anonStruct_df9a9aa9b7f5ede3
+  underlying : go.UnderlyingDirectedEq anonStruct_df9a9aa9b7f5ede3.ty anonStruct_df9a9aa9b7f5ede3.underlying
+  isUnderlying : go.IsUnderlying anonStruct_df9a9aa9b7f5ede3.underlying anonStruct_df9a9aa9b7f5ede3.underlying
+
+attribute [instance] anonStruct_df9a9aa9b7f5ede3.TypeAssumptions.type_repr
+  anonStruct_df9a9aa9b7f5ede3.TypeAssumptions.underlying
+  anonStruct_df9a9aa9b7f5ede3.TypeAssumptions.isUnderlying
+
+axiom anonStruct_f244a3170bf00875 : Type
+axiom anonStruct_f244a3170bf00875.zero_val : ZeroVal anonStruct_f244a3170bf00875
+attribute [instance] anonStruct_f244a3170bf00875.zero_val
+
+class anonStruct_f244a3170bf00875.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_f244a3170bf00875.underlying anonStruct_f244a3170bf00875
+  underlying : go.UnderlyingDirectedEq anonStruct_f244a3170bf00875.ty anonStruct_f244a3170bf00875.underlying
+  isUnderlying : go.IsUnderlying anonStruct_f244a3170bf00875.underlying anonStruct_f244a3170bf00875.underlying
+
+attribute [instance] anonStruct_f244a3170bf00875.TypeAssumptions.type_repr
+  anonStruct_f244a3170bf00875.TypeAssumptions.underlying
+  anonStruct_f244a3170bf00875.TypeAssumptions.isUnderlying
+
+axiom anonStruct_f3de5e04cfb5d0bb : Type
+axiom anonStruct_f3de5e04cfb5d0bb.zero_val : ZeroVal anonStruct_f3de5e04cfb5d0bb
+attribute [instance] anonStruct_f3de5e04cfb5d0bb.zero_val
+
+class anonStruct_f3de5e04cfb5d0bb.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_f3de5e04cfb5d0bb.underlying anonStruct_f3de5e04cfb5d0bb
+  underlying : go.UnderlyingDirectedEq anonStruct_f3de5e04cfb5d0bb.ty anonStruct_f3de5e04cfb5d0bb.underlying
+  isUnderlying : go.IsUnderlying anonStruct_f3de5e04cfb5d0bb.underlying anonStruct_f3de5e04cfb5d0bb.underlying
+
+attribute [instance] anonStruct_f3de5e04cfb5d0bb.TypeAssumptions.type_repr
+  anonStruct_f3de5e04cfb5d0bb.TypeAssumptions.underlying
+  anonStruct_f3de5e04cfb5d0bb.TypeAssumptions.isUnderlying
+
+axiom anonStruct_fb7ac333ce2fdac6 : Type
+axiom anonStruct_fb7ac333ce2fdac6.zero_val : ZeroVal anonStruct_fb7ac333ce2fdac6
+attribute [instance] anonStruct_fb7ac333ce2fdac6.zero_val
+
+class anonStruct_fb7ac333ce2fdac6.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_fb7ac333ce2fdac6.underlying anonStruct_fb7ac333ce2fdac6
+  underlying : go.UnderlyingDirectedEq anonStruct_fb7ac333ce2fdac6.ty anonStruct_fb7ac333ce2fdac6.underlying
+  isUnderlying : go.IsUnderlying anonStruct_fb7ac333ce2fdac6.underlying anonStruct_fb7ac333ce2fdac6.underlying
+
+attribute [instance] anonStruct_fb7ac333ce2fdac6.TypeAssumptions.type_repr
+  anonStruct_fb7ac333ce2fdac6.TypeAssumptions.underlying
+  anonStruct_fb7ac333ce2fdac6.TypeAssumptions.isUnderlying
 
 structure userArena [FfiSyntax] where
   mk ::
@@ -25969,6 +26869,51 @@ attribute [instance] vdsoInfo.TypeAssumptions.type_repr
   vdsoInfo.TypeAssumptions.set_verdef
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_0458a381bfaa3a39_instance : anonStruct_0458a381bfaa3a39.TypeAssumptions
+  anonStruct_0e6989d34d311a96_instance : anonStruct_0e6989d34d311a96.TypeAssumptions
+  anonStruct_0f08ddbc4072577a_instance : anonStruct_0f08ddbc4072577a.TypeAssumptions
+  anonStruct_10779d5c4171514e_instance : anonStruct_10779d5c4171514e.TypeAssumptions
+  anonStruct_10d75d42a37c8a52_instance : anonStruct_10d75d42a37c8a52.TypeAssumptions
+  anonStruct_119a15749eefd6fa_instance : anonStruct_119a15749eefd6fa.TypeAssumptions
+  anonStruct_1ce4aa1cabbd8e63_instance : anonStruct_1ce4aa1cabbd8e63.TypeAssumptions
+  anonStruct_218daef774f04bea_instance : anonStruct_218daef774f04bea.TypeAssumptions
+  anonStruct_244e3301bc9ea36c_instance : anonStruct_244e3301bc9ea36c.TypeAssumptions
+  anonStruct_2d149b3b26fb970c_instance : anonStruct_2d149b3b26fb970c.TypeAssumptions
+  anonStruct_2d496b2e43e042cd_instance : anonStruct_2d496b2e43e042cd.TypeAssumptions
+  anonStruct_2dec134c2242ef62_instance : anonStruct_2dec134c2242ef62.TypeAssumptions
+  anonStruct_3652c32646349673_instance : anonStruct_3652c32646349673.TypeAssumptions
+  anonStruct_374f961fabe5ffca_instance : anonStruct_374f961fabe5ffca.TypeAssumptions
+  anonStruct_3a7a71cded516edb_instance : anonStruct_3a7a71cded516edb.TypeAssumptions
+  anonStruct_3fdda1359cee7b53_instance : anonStruct_3fdda1359cee7b53.TypeAssumptions
+  anonStruct_4489bd9736fa5894_instance : anonStruct_4489bd9736fa5894.TypeAssumptions
+  anonStruct_48418dfcba7332e4_instance : anonStruct_48418dfcba7332e4.TypeAssumptions
+  anonStruct_4aed607135c50a78_instance : anonStruct_4aed607135c50a78.TypeAssumptions
+  anonStruct_540f359950f49a9c_instance : anonStruct_540f359950f49a9c.TypeAssumptions
+  anonStruct_561b00711680a134_instance : anonStruct_561b00711680a134.TypeAssumptions
+  anonStruct_5b77a784ca43f290_instance : anonStruct_5b77a784ca43f290.TypeAssumptions
+  anonStruct_5cd25929fee99aa5_instance : anonStruct_5cd25929fee99aa5.TypeAssumptions
+  anonStruct_70e634a79249966f_instance : anonStruct_70e634a79249966f.TypeAssumptions
+  anonStruct_73df745dde493395_instance : anonStruct_73df745dde493395.TypeAssumptions
+  anonStruct_74ec1b21f96f3299_instance : anonStruct_74ec1b21f96f3299.TypeAssumptions
+  anonStruct_7ffa01d9039fb845_instance : anonStruct_7ffa01d9039fb845.TypeAssumptions
+  anonStruct_87c38452f6ca2ed9_instance : anonStruct_87c38452f6ca2ed9.TypeAssumptions
+  anonStruct_920184a08b527b64_instance : anonStruct_920184a08b527b64.TypeAssumptions
+  anonStruct_9976fccc2b47c068_instance : anonStruct_9976fccc2b47c068.TypeAssumptions
+  anonStruct_a3d9c971f5a6103a_instance : anonStruct_a3d9c971f5a6103a.TypeAssumptions
+  anonStruct_a3f9e156beee465e_instance : anonStruct_a3f9e156beee465e.TypeAssumptions
+  anonStruct_b04177485b34dced_instance : anonStruct_b04177485b34dced.TypeAssumptions
+  anonStruct_b80f6cc7eefc09c8_instance : anonStruct_b80f6cc7eefc09c8.TypeAssumptions
+  anonStruct_bde5c6c6aaa7ab26_instance : anonStruct_bde5c6c6aaa7ab26.TypeAssumptions
+  anonStruct_c387a2ab2a4a4b56_instance : anonStruct_c387a2ab2a4a4b56.TypeAssumptions
+  anonStruct_c443b45f9e161e1d_instance : anonStruct_c443b45f9e161e1d.TypeAssumptions
+  anonStruct_ce316d42f7834b6b_instance : anonStruct_ce316d42f7834b6b.TypeAssumptions
+  anonStruct_d18fd3853c6f7ee0_instance : anonStruct_d18fd3853c6f7ee0.TypeAssumptions
+  anonStruct_d39adf6480b9c51f_instance : anonStruct_d39adf6480b9c51f.TypeAssumptions
+  anonStruct_dbecbc4e45d3626a_instance : anonStruct_dbecbc4e45d3626a.TypeAssumptions
+  anonStruct_df9a9aa9b7f5ede3_instance : anonStruct_df9a9aa9b7f5ede3.TypeAssumptions
+  anonStruct_f244a3170bf00875_instance : anonStruct_f244a3170bf00875.TypeAssumptions
+  anonStruct_f3de5e04cfb5d0bb_instance : anonStruct_f3de5e04cfb5d0bb.TypeAssumptions
+  anonStruct_fb7ac333ce2fdac6_instance : anonStruct_fb7ac333ce2fdac6.TypeAssumptions
   userArena_instance : userArena.TypeAssumptions
   liveUserArenaChunk_instance : liveUserArenaChunk.TypeAssumptions
   writeUserArenaHeapBits_instance : writeUserArenaHeapBits.TypeAssumptions
@@ -26344,7 +27289,52 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
   import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
 
-attribute [instance] Assumptions.userArena_instance
+attribute [instance] Assumptions.anonStruct_0458a381bfaa3a39_instance
+  Assumptions.anonStruct_0e6989d34d311a96_instance
+  Assumptions.anonStruct_0f08ddbc4072577a_instance
+  Assumptions.anonStruct_10779d5c4171514e_instance
+  Assumptions.anonStruct_10d75d42a37c8a52_instance
+  Assumptions.anonStruct_119a15749eefd6fa_instance
+  Assumptions.anonStruct_1ce4aa1cabbd8e63_instance
+  Assumptions.anonStruct_218daef774f04bea_instance
+  Assumptions.anonStruct_244e3301bc9ea36c_instance
+  Assumptions.anonStruct_2d149b3b26fb970c_instance
+  Assumptions.anonStruct_2d496b2e43e042cd_instance
+  Assumptions.anonStruct_2dec134c2242ef62_instance
+  Assumptions.anonStruct_3652c32646349673_instance
+  Assumptions.anonStruct_374f961fabe5ffca_instance
+  Assumptions.anonStruct_3a7a71cded516edb_instance
+  Assumptions.anonStruct_3fdda1359cee7b53_instance
+  Assumptions.anonStruct_4489bd9736fa5894_instance
+  Assumptions.anonStruct_48418dfcba7332e4_instance
+  Assumptions.anonStruct_4aed607135c50a78_instance
+  Assumptions.anonStruct_540f359950f49a9c_instance
+  Assumptions.anonStruct_561b00711680a134_instance
+  Assumptions.anonStruct_5b77a784ca43f290_instance
+  Assumptions.anonStruct_5cd25929fee99aa5_instance
+  Assumptions.anonStruct_70e634a79249966f_instance
+  Assumptions.anonStruct_73df745dde493395_instance
+  Assumptions.anonStruct_74ec1b21f96f3299_instance
+  Assumptions.anonStruct_7ffa01d9039fb845_instance
+  Assumptions.anonStruct_87c38452f6ca2ed9_instance
+  Assumptions.anonStruct_920184a08b527b64_instance
+  Assumptions.anonStruct_9976fccc2b47c068_instance
+  Assumptions.anonStruct_a3d9c971f5a6103a_instance
+  Assumptions.anonStruct_a3f9e156beee465e_instance
+  Assumptions.anonStruct_b04177485b34dced_instance
+  Assumptions.anonStruct_b80f6cc7eefc09c8_instance
+  Assumptions.anonStruct_bde5c6c6aaa7ab26_instance
+  Assumptions.anonStruct_c387a2ab2a4a4b56_instance
+  Assumptions.anonStruct_c443b45f9e161e1d_instance
+  Assumptions.anonStruct_ce316d42f7834b6b_instance
+  Assumptions.anonStruct_d18fd3853c6f7ee0_instance
+  Assumptions.anonStruct_d39adf6480b9c51f_instance
+  Assumptions.anonStruct_dbecbc4e45d3626a_instance
+  Assumptions.anonStruct_df9a9aa9b7f5ede3_instance
+  Assumptions.anonStruct_f244a3170bf00875_instance
+  Assumptions.anonStruct_f3de5e04cfb5d0bb_instance
+  Assumptions.anonStruct_fb7ac333ce2fdac6_instance
+  Assumptions.userArena_instance
   Assumptions.liveUserArenaChunk_instance
   Assumptions.writeUserArenaHeapBits_instance
   Assumptions.cgoCallers_instance

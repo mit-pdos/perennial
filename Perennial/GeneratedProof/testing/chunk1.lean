@@ -22,6 +22,63 @@ open Iris Iris.BI
 noncomputable section
 namespace testing
 
+namespace anonStruct_bfbc8270b4973ebc
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : testing.Assumptions]
+
+instance anonStruct_bfbc8270b4973ebc_typed_pointsto :
+    TypedPointsto (GF := GF) testing.anonStruct_bfbc8270b4973ebc :=
+  sorry -- axiomatized type
+
+instance anonStruct_bfbc8270b4973ebc_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) testing.anonStruct_bfbc8270b4973ebc testing.anonStruct_bfbc8270b4973ebc.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_bfbc8270b4973ebc
+
+namespace anonStruct_c9b23fb4497fea51
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : testing.Assumptions]
+
+instance anonStruct_c9b23fb4497fea51_typed_pointsto :
+    TypedPointsto (GF := GF) testing.anonStruct_c9b23fb4497fea51 :=
+  sorry -- axiomatized type
+
+instance anonStruct_c9b23fb4497fea51_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) testing.anonStruct_c9b23fb4497fea51 testing.anonStruct_c9b23fb4497fea51.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_c9b23fb4497fea51
+
+namespace anonStruct_e13c65af8c640bb8
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : testing.Assumptions]
+
+instance anonStruct_e13c65af8c640bb8_typed_pointsto :
+    TypedPointsto (GF := GF) testing.anonStruct_e13c65af8c640bb8 :=
+  sorry -- axiomatized type
+
+instance anonStruct_e13c65af8c640bb8_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) testing.anonStruct_e13c65af8c640bb8 testing.anonStruct_e13c65af8c640bb8.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_e13c65af8c640bb8
+
 namespace durationOrCountFlag
 section def_
 

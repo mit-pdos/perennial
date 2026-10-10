@@ -22,6 +22,21 @@ end pkg_id
 
 namespace math.big
 
+def anonStruct_4c7c33e9ae3d999f.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.anonStruct_4c7c33e9ae3d999f" [])
+
+attribute [irreducible] anonStruct_4c7c33e9ae3d999f.ty
+
+def anonStruct_9375352b564cdd97.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.anonStruct_9375352b564cdd97" [])
+
+attribute [irreducible] anonStruct_9375352b564cdd97.ty
+
+def anonStruct_c443b45f9e161e1d.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math/big.anonStruct_c443b45f9e161e1d" [])
+
+attribute [irreducible] anonStruct_c443b45f9e161e1d.ty
+
 def Word.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Word" [])
 
@@ -86,6 +101,12 @@ def Rat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Rat" [])
 
 attribute [irreducible] Rat.ty
+
+axiom anonStruct_4c7c33e9ae3d999f.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_9375352b564cdd97.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_c443b45f9e161e1d.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom _Accuracy_name [FfiSyntax] [GoGlobalContext] : val
 
@@ -621,6 +642,45 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))))
 
+axiom anonStruct_4c7c33e9ae3d999f : Type
+axiom anonStruct_4c7c33e9ae3d999f.zero_val : ZeroVal anonStruct_4c7c33e9ae3d999f
+attribute [instance] anonStruct_4c7c33e9ae3d999f.zero_val
+
+class anonStruct_4c7c33e9ae3d999f.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_4c7c33e9ae3d999f.underlying anonStruct_4c7c33e9ae3d999f
+  underlying : go.UnderlyingDirectedEq anonStruct_4c7c33e9ae3d999f.ty anonStruct_4c7c33e9ae3d999f.underlying
+  isUnderlying : go.IsUnderlying anonStruct_4c7c33e9ae3d999f.underlying anonStruct_4c7c33e9ae3d999f.underlying
+
+attribute [instance] anonStruct_4c7c33e9ae3d999f.TypeAssumptions.type_repr
+  anonStruct_4c7c33e9ae3d999f.TypeAssumptions.underlying
+  anonStruct_4c7c33e9ae3d999f.TypeAssumptions.isUnderlying
+
+axiom anonStruct_9375352b564cdd97 : Type
+axiom anonStruct_9375352b564cdd97.zero_val : ZeroVal anonStruct_9375352b564cdd97
+attribute [instance] anonStruct_9375352b564cdd97.zero_val
+
+class anonStruct_9375352b564cdd97.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_9375352b564cdd97.underlying anonStruct_9375352b564cdd97
+  underlying : go.UnderlyingDirectedEq anonStruct_9375352b564cdd97.ty anonStruct_9375352b564cdd97.underlying
+  isUnderlying : go.IsUnderlying anonStruct_9375352b564cdd97.underlying anonStruct_9375352b564cdd97.underlying
+
+attribute [instance] anonStruct_9375352b564cdd97.TypeAssumptions.type_repr
+  anonStruct_9375352b564cdd97.TypeAssumptions.underlying
+  anonStruct_9375352b564cdd97.TypeAssumptions.isUnderlying
+
+axiom anonStruct_c443b45f9e161e1d : Type
+axiom anonStruct_c443b45f9e161e1d.zero_val : ZeroVal anonStruct_c443b45f9e161e1d
+attribute [instance] anonStruct_c443b45f9e161e1d.zero_val
+
+class anonStruct_c443b45f9e161e1d.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d
+  underlying : go.UnderlyingDirectedEq anonStruct_c443b45f9e161e1d.ty anonStruct_c443b45f9e161e1d.underlying
+  isUnderlying : go.IsUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d.underlying
+
+attribute [instance] anonStruct_c443b45f9e161e1d.TypeAssumptions.type_repr
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.underlying
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.isUnderlying
+
 abbrev Word [FfiSyntax] : Type := w64
 
 @[reducible] def Word.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -1004,6 +1064,9 @@ attribute [instance] Rat.TypeAssumptions.type_repr
   Rat.TypeAssumptions.set_b
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_4c7c33e9ae3d999f_instance : anonStruct_4c7c33e9ae3d999f.TypeAssumptions
+  anonStruct_9375352b564cdd97_instance : anonStruct_9375352b564cdd97.TypeAssumptions
+  anonStruct_c443b45f9e161e1d_instance : anonStruct_c443b45f9e161e1d.TypeAssumptions
   Word_instance : Word.TypeAssumptions
   decimal_instance : decimal.TypeAssumptions
   Float_instance : Float.TypeAssumptions
@@ -1021,7 +1084,10 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   low64_unfold : FuncUnfold low64 [] low64.impl
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
 
-attribute [instance] Assumptions.Word_instance
+attribute [instance] Assumptions.anonStruct_4c7c33e9ae3d999f_instance
+  Assumptions.anonStruct_9375352b564cdd97_instance
+  Assumptions.anonStruct_c443b45f9e161e1d_instance
+  Assumptions.Word_instance
   Assumptions.decimal_instance
   Assumptions.Float_instance
   Assumptions.ErrNaN_instance

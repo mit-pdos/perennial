@@ -26,6 +26,21 @@ end pkg_id
 
 namespace testing
 
+def anonStruct_bfbc8270b4973ebc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"testing.anonStruct_bfbc8270b4973ebc" [])
+
+attribute [irreducible] anonStruct_bfbc8270b4973ebc.ty
+
+def anonStruct_c9b23fb4497fea51.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"testing.anonStruct_c9b23fb4497fea51" [])
+
+attribute [irreducible] anonStruct_c9b23fb4497fea51.ty
+
+def anonStruct_e13c65af8c640bb8.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"testing.anonStruct_e13c65af8c640bb8" [])
+
+attribute [irreducible] anonStruct_e13c65af8c640bb8.ty
+
 def durationOrCountFlag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.durationOrCountFlag" [])
 
@@ -196,15 +211,16 @@ def highPrecisionTime.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] highPrecisionTime.ty
 
+axiom anonStruct_bfbc8270b4973ebc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_c9b23fb4497fea51.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_e13c65af8c640bb8.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
 axiom B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 @[reducible] def corpusEntry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType [(go.field_decl.FieldDecl go!"Parent" go.string),
-  (go.field_decl.FieldDecl go!"Path" go.string),
-  (go.field_decl.FieldDecl go!"Data" (go.GoType.SliceType go.byte)),
-  (go.field_decl.FieldDecl go!"Values" (go.GoType.SliceType go.any)),
-  (go.field_decl.FieldDecl go!"Generation" go.int),
-  (go.field_decl.FieldDecl go!"IsSeed" go.bool)])
+  anonStruct_bfbc8270b4973ebc.ty
 
 axiom testDeps.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -633,6 +649,45 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
+
+axiom anonStruct_bfbc8270b4973ebc : Type
+axiom anonStruct_bfbc8270b4973ebc.zero_val : ZeroVal anonStruct_bfbc8270b4973ebc
+attribute [instance] anonStruct_bfbc8270b4973ebc.zero_val
+
+class anonStruct_bfbc8270b4973ebc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_bfbc8270b4973ebc.underlying anonStruct_bfbc8270b4973ebc
+  underlying : go.UnderlyingDirectedEq anonStruct_bfbc8270b4973ebc.ty anonStruct_bfbc8270b4973ebc.underlying
+  isUnderlying : go.IsUnderlying anonStruct_bfbc8270b4973ebc.underlying anonStruct_bfbc8270b4973ebc.underlying
+
+attribute [instance] anonStruct_bfbc8270b4973ebc.TypeAssumptions.type_repr
+  anonStruct_bfbc8270b4973ebc.TypeAssumptions.underlying
+  anonStruct_bfbc8270b4973ebc.TypeAssumptions.isUnderlying
+
+axiom anonStruct_c9b23fb4497fea51 : Type
+axiom anonStruct_c9b23fb4497fea51.zero_val : ZeroVal anonStruct_c9b23fb4497fea51
+attribute [instance] anonStruct_c9b23fb4497fea51.zero_val
+
+class anonStruct_c9b23fb4497fea51.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_c9b23fb4497fea51.underlying anonStruct_c9b23fb4497fea51
+  underlying : go.UnderlyingDirectedEq anonStruct_c9b23fb4497fea51.ty anonStruct_c9b23fb4497fea51.underlying
+  isUnderlying : go.IsUnderlying anonStruct_c9b23fb4497fea51.underlying anonStruct_c9b23fb4497fea51.underlying
+
+attribute [instance] anonStruct_c9b23fb4497fea51.TypeAssumptions.type_repr
+  anonStruct_c9b23fb4497fea51.TypeAssumptions.underlying
+  anonStruct_c9b23fb4497fea51.TypeAssumptions.isUnderlying
+
+axiom anonStruct_e13c65af8c640bb8 : Type
+axiom anonStruct_e13c65af8c640bb8.zero_val : ZeroVal anonStruct_e13c65af8c640bb8
+attribute [instance] anonStruct_e13c65af8c640bb8.zero_val
+
+class anonStruct_e13c65af8c640bb8.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_e13c65af8c640bb8.underlying anonStruct_e13c65af8c640bb8
+  underlying : go.UnderlyingDirectedEq anonStruct_e13c65af8c640bb8.ty anonStruct_e13c65af8c640bb8.underlying
+  isUnderlying : go.IsUnderlying anonStruct_e13c65af8c640bb8.underlying anonStruct_e13c65af8c640bb8.underlying
+
+attribute [instance] anonStruct_e13c65af8c640bb8.TypeAssumptions.type_repr
+  anonStruct_e13c65af8c640bb8.TypeAssumptions.underlying
+  anonStruct_e13c65af8c640bb8.TypeAssumptions.isUnderlying
 
 structure durationOrCountFlag [FfiSyntax] where
   mk ::
@@ -2146,6 +2201,9 @@ attribute [instance] M.TypeAssumptions.type_repr
   M.TypeAssumptions.set_exitCode
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_bfbc8270b4973ebc_instance : anonStruct_bfbc8270b4973ebc.TypeAssumptions
+  anonStruct_c9b23fb4497fea51_instance : anonStruct_c9b23fb4497fea51.TypeAssumptions
+  anonStruct_e13c65af8c640bb8_instance : anonStruct_e13c65af8c640bb8.TypeAssumptions
   durationOrCountFlag_instance : durationOrCountFlag.TypeAssumptions
   InternalBenchmark_instance : InternalBenchmark.TypeAssumptions
   B_instance : B.TypeAssumptions
@@ -2186,7 +2244,10 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
   import_time_Assumption : _root_.Perennial.time.Assumptions
 
-attribute [instance] Assumptions.durationOrCountFlag_instance
+attribute [instance] Assumptions.anonStruct_bfbc8270b4973ebc_instance
+  Assumptions.anonStruct_c9b23fb4497fea51_instance
+  Assumptions.anonStruct_e13c65af8c640bb8_instance
+  Assumptions.durationOrCountFlag_instance
   Assumptions.InternalBenchmark_instance
   Assumptions.B_instance
   Assumptions.BenchmarkResult_instance

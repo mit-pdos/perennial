@@ -21,6 +21,13 @@ end pkg_id
 
 namespace math
 
+def anonStruct_c443b45f9e161e1d.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"math.anonStruct_c443b45f9e161e1d" [])
+
+attribute [irreducible] anonStruct_c443b45f9e161e1d.ty
+
+axiom anonStruct_c443b45f9e161e1d.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
 axiom uvnan [FfiSyntax] [GoGlobalContext] : val
 
 axiom uvinf [FfiSyntax] [GoGlobalContext] : val
@@ -1291,7 +1298,23 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val useFMA.init) (Val #()))))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+axiom anonStruct_c443b45f9e161e1d : Type
+axiom anonStruct_c443b45f9e161e1d.zero_val : ZeroVal anonStruct_c443b45f9e161e1d
+attribute [instance] anonStruct_c443b45f9e161e1d.zero_val
+
+class anonStruct_c443b45f9e161e1d.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d
+  underlying : go.UnderlyingDirectedEq anonStruct_c443b45f9e161e1d.ty anonStruct_c443b45f9e161e1d.underlying
+  isUnderlying : go.IsUnderlying anonStruct_c443b45f9e161e1d.underlying anonStruct_c443b45f9e161e1d.underlying
+
+attribute [instance] anonStruct_c443b45f9e161e1d.TypeAssumptions.type_repr
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.underlying
+  anonStruct_c443b45f9e161e1d.TypeAssumptions.isUnderlying
+
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_c443b45f9e161e1d_instance : anonStruct_c443b45f9e161e1d.TypeAssumptions
+
+attribute [instance] Assumptions.anonStruct_c443b45f9e161e1d_instance
 
 end math
 

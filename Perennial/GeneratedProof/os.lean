@@ -17,6 +17,25 @@ open Iris Iris.BI
 noncomputable section
 namespace os
 
+namespace anonStruct_f8f8bfb82606ff67
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : os.Assumptions]
+
+instance anonStruct_f8f8bfb82606ff67_typed_pointsto :
+    TypedPointsto (GF := GF) os.anonStruct_f8f8bfb82606ff67 :=
+  sorry -- axiomatized type
+
+instance anonStruct_f8f8bfb82606ff67_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) os.anonStruct_f8f8bfb82606ff67 os.anonStruct_f8f8bfb82606ff67.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_f8f8bfb82606ff67
+
 namespace dirInfo
 section def_
 

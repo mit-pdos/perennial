@@ -25,6 +25,21 @@ end pkg_id
 
 namespace sync
 
+def anonStruct_100afb16a84a9e40.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sync.anonStruct_100afb16a84a9e40" [])
+
+attribute [irreducible] anonStruct_100afb16a84a9e40.ty
+
+def anonStruct_2a7673f9df895a1e.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sync.anonStruct_2a7673f9df895a1e" [])
+
+attribute [irreducible] anonStruct_2a7673f9df895a1e.ty
+
+def anonStruct_bbcd9493b8368a56.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sync.anonStruct_bbcd9493b8368a56" [])
+
+attribute [irreducible] anonStruct_bbcd9493b8368a56.ty
+
 def Cond.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.Cond" [])
 
@@ -119,6 +134,12 @@ def WaitGroup.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.WaitGroup" [])
 
 attribute [irreducible] WaitGroup.ty
+
+axiom anonStruct_100afb16a84a9e40.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_2a7673f9df895a1e.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_bbcd9493b8368a56.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom Map.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -1056,6 +1077,45 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.synctest.initialize') (Val #()))))))))
 
+axiom anonStruct_100afb16a84a9e40 : Type
+axiom anonStruct_100afb16a84a9e40.zero_val : ZeroVal anonStruct_100afb16a84a9e40
+attribute [instance] anonStruct_100afb16a84a9e40.zero_val
+
+class anonStruct_100afb16a84a9e40.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_100afb16a84a9e40.underlying anonStruct_100afb16a84a9e40
+  underlying : go.UnderlyingDirectedEq anonStruct_100afb16a84a9e40.ty anonStruct_100afb16a84a9e40.underlying
+  isUnderlying : go.IsUnderlying anonStruct_100afb16a84a9e40.underlying anonStruct_100afb16a84a9e40.underlying
+
+attribute [instance] anonStruct_100afb16a84a9e40.TypeAssumptions.type_repr
+  anonStruct_100afb16a84a9e40.TypeAssumptions.underlying
+  anonStruct_100afb16a84a9e40.TypeAssumptions.isUnderlying
+
+axiom anonStruct_2a7673f9df895a1e : Type
+axiom anonStruct_2a7673f9df895a1e.zero_val : ZeroVal anonStruct_2a7673f9df895a1e
+attribute [instance] anonStruct_2a7673f9df895a1e.zero_val
+
+class anonStruct_2a7673f9df895a1e.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_2a7673f9df895a1e.underlying anonStruct_2a7673f9df895a1e
+  underlying : go.UnderlyingDirectedEq anonStruct_2a7673f9df895a1e.ty anonStruct_2a7673f9df895a1e.underlying
+  isUnderlying : go.IsUnderlying anonStruct_2a7673f9df895a1e.underlying anonStruct_2a7673f9df895a1e.underlying
+
+attribute [instance] anonStruct_2a7673f9df895a1e.TypeAssumptions.type_repr
+  anonStruct_2a7673f9df895a1e.TypeAssumptions.underlying
+  anonStruct_2a7673f9df895a1e.TypeAssumptions.isUnderlying
+
+axiom anonStruct_bbcd9493b8368a56 : Type
+axiom anonStruct_bbcd9493b8368a56.zero_val : ZeroVal anonStruct_bbcd9493b8368a56
+attribute [instance] anonStruct_bbcd9493b8368a56.zero_val
+
+class anonStruct_bbcd9493b8368a56.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_bbcd9493b8368a56.underlying anonStruct_bbcd9493b8368a56
+  underlying : go.UnderlyingDirectedEq anonStruct_bbcd9493b8368a56.ty anonStruct_bbcd9493b8368a56.underlying
+  isUnderlying : go.IsUnderlying anonStruct_bbcd9493b8368a56.underlying anonStruct_bbcd9493b8368a56.underlying
+
+attribute [instance] anonStruct_bbcd9493b8368a56.TypeAssumptions.type_repr
+  anonStruct_bbcd9493b8368a56.TypeAssumptions.underlying
+  anonStruct_bbcd9493b8368a56.TypeAssumptions.isUnderlying
+
 structure noCopy [FfiSyntax] where
   mk ::
 
@@ -1712,6 +1772,9 @@ attribute [instance] WaitGroup.TypeAssumptions.type_repr
   WaitGroup.TypeAssumptions.ptr_Wait_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_100afb16a84a9e40_instance : anonStruct_100afb16a84a9e40.TypeAssumptions
+  anonStruct_2a7673f9df895a1e_instance : anonStruct_2a7673f9df895a1e.TypeAssumptions
+  anonStruct_bbcd9493b8368a56_instance : anonStruct_bbcd9493b8368a56.TypeAssumptions
   Cond_instance : Cond.TypeAssumptions
   copyChecker_instance : copyChecker.TypeAssumptions
   noCopy_instance : noCopy.TypeAssumptions
@@ -1746,7 +1809,10 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_race_Assumption : _root_.Perennial.internal.race.Assumptions
   import_synctest_Assumption : _root_.Perennial.internal.synctest.Assumptions
 
-attribute [instance] Assumptions.Cond_instance
+attribute [instance] Assumptions.anonStruct_100afb16a84a9e40_instance
+  Assumptions.anonStruct_2a7673f9df895a1e_instance
+  Assumptions.anonStruct_bbcd9493b8368a56_instance
+  Assumptions.Cond_instance
   Assumptions.copyChecker_instance
   Assumptions.noCopy_instance
   Assumptions.Map_instance

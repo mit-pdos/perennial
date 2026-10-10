@@ -21,6 +21,63 @@ open Iris Iris.BI
 noncomputable section
 namespace sync
 
+namespace anonStruct_100afb16a84a9e40
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance anonStruct_100afb16a84a9e40_typed_pointsto :
+    TypedPointsto (GF := GF) sync.anonStruct_100afb16a84a9e40 :=
+  sorry -- axiomatized type
+
+instance anonStruct_100afb16a84a9e40_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.anonStruct_100afb16a84a9e40 sync.anonStruct_100afb16a84a9e40.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_100afb16a84a9e40
+
+namespace anonStruct_2a7673f9df895a1e
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance anonStruct_2a7673f9df895a1e_typed_pointsto :
+    TypedPointsto (GF := GF) sync.anonStruct_2a7673f9df895a1e :=
+  sorry -- axiomatized type
+
+instance anonStruct_2a7673f9df895a1e_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.anonStruct_2a7673f9df895a1e sync.anonStruct_2a7673f9df895a1e.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_2a7673f9df895a1e
+
+namespace anonStruct_bbcd9493b8368a56
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+instance anonStruct_bbcd9493b8368a56_typed_pointsto :
+    TypedPointsto (GF := GF) sync.anonStruct_bbcd9493b8368a56 :=
+  sorry -- axiomatized type
+
+instance anonStruct_bbcd9493b8368a56_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.anonStruct_bbcd9493b8368a56 sync.anonStruct_bbcd9493b8368a56.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_bbcd9493b8368a56
+
 namespace noCopy
 section def_
 

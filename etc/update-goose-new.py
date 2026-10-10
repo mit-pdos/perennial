@@ -256,6 +256,9 @@ def main():
             "fmt",
             "log",
             "encoding/binary",
+            "encoding/hex",
+            "hash/fnv",
+            "syscall",
         )
 
     for proj in projs:

@@ -17,6 +17,44 @@ open Iris Iris.BI
 noncomputable section
 namespace reflect
 
+namespace anonStruct_82973c0402648151
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : reflect.Assumptions]
+
+instance anonStruct_82973c0402648151_typed_pointsto :
+    TypedPointsto (GF := GF) reflect.anonStruct_82973c0402648151 :=
+  sorry -- axiomatized type
+
+instance anonStruct_82973c0402648151_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) reflect.anonStruct_82973c0402648151 reflect.anonStruct_82973c0402648151.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_82973c0402648151
+
+namespace anonStruct_9b7f65da97cfdcb5
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : reflect.Assumptions]
+
+instance anonStruct_9b7f65da97cfdcb5_typed_pointsto :
+    TypedPointsto (GF := GF) reflect.anonStruct_9b7f65da97cfdcb5 :=
+  sorry -- axiomatized type
+
+instance anonStruct_9b7f65da97cfdcb5_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) reflect.anonStruct_9b7f65da97cfdcb5 reflect.anonStruct_9b7f65da97cfdcb5.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end anonStruct_9b7f65da97cfdcb5
+
 namespace abiStep
 section def_
 

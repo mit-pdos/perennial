@@ -21,6 +21,16 @@ end pkg_id
 
 namespace reflect
 
+def anonStruct_82973c0402648151.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"reflect.anonStruct_82973c0402648151" [])
+
+attribute [irreducible] anonStruct_82973c0402648151.ty
+
+def anonStruct_9b7f65da97cfdcb5.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"reflect.anonStruct_9b7f65da97cfdcb5" [])
+
+attribute [irreducible] anonStruct_9b7f65da97cfdcb5.ty
+
 def abiStep.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiStep" [])
 
@@ -205,6 +215,10 @@ def visibleFieldsWalker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.visibleFieldsWalker" [])
 
 attribute [irreducible] visibleFieldsWalker.ty
+
+axiom anonStruct_82973c0402648151.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+
+axiom anonStruct_9b7f65da97cfdcb5.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom abiStep.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -1110,6 +1124,32 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val intArgRegs.init) (Val #()))))))))
 
+axiom anonStruct_82973c0402648151 : Type
+axiom anonStruct_82973c0402648151.zero_val : ZeroVal anonStruct_82973c0402648151
+attribute [instance] anonStruct_82973c0402648151.zero_val
+
+class anonStruct_82973c0402648151.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_82973c0402648151.underlying anonStruct_82973c0402648151
+  underlying : go.UnderlyingDirectedEq anonStruct_82973c0402648151.ty anonStruct_82973c0402648151.underlying
+  isUnderlying : go.IsUnderlying anonStruct_82973c0402648151.underlying anonStruct_82973c0402648151.underlying
+
+attribute [instance] anonStruct_82973c0402648151.TypeAssumptions.type_repr
+  anonStruct_82973c0402648151.TypeAssumptions.underlying
+  anonStruct_82973c0402648151.TypeAssumptions.isUnderlying
+
+axiom anonStruct_9b7f65da97cfdcb5 : Type
+axiom anonStruct_9b7f65da97cfdcb5.zero_val : ZeroVal anonStruct_9b7f65da97cfdcb5
+attribute [instance] anonStruct_9b7f65da97cfdcb5.zero_val
+
+class anonStruct_9b7f65da97cfdcb5.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying anonStruct_9b7f65da97cfdcb5.underlying anonStruct_9b7f65da97cfdcb5
+  underlying : go.UnderlyingDirectedEq anonStruct_9b7f65da97cfdcb5.ty anonStruct_9b7f65da97cfdcb5.underlying
+  isUnderlying : go.IsUnderlying anonStruct_9b7f65da97cfdcb5.underlying anonStruct_9b7f65da97cfdcb5.underlying
+
+attribute [instance] anonStruct_9b7f65da97cfdcb5.TypeAssumptions.type_repr
+  anonStruct_9b7f65da97cfdcb5.TypeAssumptions.underlying
+  anonStruct_9b7f65da97cfdcb5.TypeAssumptions.isUnderlying
+
 axiom abiStep : Type
 axiom abiStep.zero_val : ZeroVal abiStep
 attribute [instance] abiStep.zero_val
@@ -1592,6 +1632,8 @@ attribute [instance] visibleFieldsWalker.TypeAssumptions.type_repr
   visibleFieldsWalker.TypeAssumptions.isUnderlying
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  anonStruct_82973c0402648151_instance : anonStruct_82973c0402648151.TypeAssumptions
+  anonStruct_9b7f65da97cfdcb5_instance : anonStruct_9b7f65da97cfdcb5.TypeAssumptions
   abiStep_instance : abiStep.TypeAssumptions
   abiStepKind_instance : abiStepKind.TypeAssumptions
   abiSeq_instance : abiSeq.TypeAssumptions
@@ -1630,7 +1672,9 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   SelectCase_instance : SelectCase.TypeAssumptions
   visibleFieldsWalker_instance : visibleFieldsWalker.TypeAssumptions
 
-attribute [instance] Assumptions.abiStep_instance
+attribute [instance] Assumptions.anonStruct_82973c0402648151_instance
+  Assumptions.anonStruct_9b7f65da97cfdcb5_instance
+  Assumptions.abiStep_instance
   Assumptions.abiStepKind_instance
   Assumptions.abiSeq_instance
   Assumptions.abiDesc_instance
