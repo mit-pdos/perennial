@@ -20,27 +20,37 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Language`, and proofs use iris-lean's `wp`, which has later credits and
   `numLatersPerStep`. The local and global state (`state × GlobalState`) form
   the single iris-lean `State`, `CfgState`.
-* **Bounded-step layer and time receipts.** The trusted semantics `BaseStep`
-  (and its iris-lean language `gooseRealEctxiLang`, `GooseLang/Lang.lean`)
-  is unchanged, but the language instance used by the program logic is a
-  separate step-bounded layer (`GooseLang/BoundedLang.lean`): its state adds a
-  *fuel* of Go-instruction steps, and once the fuel is exhausted Go
-  instructions stutter instead of stepping. This supports *time receipts*
+* **Bounded layer, time receipts and thread tokens.** The trusted semantics
+  `BaseStep` (and its iris-lean language `gooseRealEctxiLang`,
+  `GooseLang/Lang.lean`) is the model of Go, but the language instance used by
+  the program logic is a separate bounded layer (`GooseLang/BoundedLang.lean`):
+  its state adds a *fuel* `⟨steps, threads⟩`. Once the step fuel is exhausted,
+  Go instructions stutter instead of stepping; this supports *time receipts*
   (Mével, Jourdan, Pottier, ESOP 2019; `GooseLang/Receipts.lean`): `⧗ n`/`⧖ n`,
-  with `⧗ N ⊢ False` for the bound `N = receiptBound GF`.
-  The bound is an *unspecified parameter*, not a constant: it is a field of the
-  receipt ghost state `ReceiptGS GF` (part of `GooseGlobalGS`, hence of
-  `HeapGS`), so downstream files, whose sections already assume `HeapGS`, need
-  no new argument, and the language instance and its `PureExec`/`Atomic`
-  instances do not depend on it. A proof that needs `N` to be small takes a
-  premise (`wp_clock_incr` in `ProgramLogic/TimeReceiptsTest.lean` takes
-  `receiptBound GF ≤ 2 ^ 64`). The
-  adequacy theorems (`goose_adequacy N`, `goose_invariance N`, and the
-  grove/disk ones) hold for every `N`: they allocate the receipt ghost state
-  with `receiptBound GF = N` (a hypothesis of the WP premise `Hwp`, from which
-  the client discharges the proof's premises about `N`) and are about real
-  executions of *fewer than `N` steps*, an explicit hypothesis. See
-  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts".
+  with `⧗ N ⊢ False` for the bound `N = receiptBound GF`. Once the thread fuel
+  is exhausted, `Fork` stutters; a thread's exit returns thread fuel. This
+  supports *thread tokens* (`GooseLang/Threads.lean`): `threadToks n`, one per
+  live thread, with `threadToks T ⊢ False` for the bound `T = threadBound GF`,
+  so that a counter backed by one token per pending goroutine (a
+  `sync.WaitGroup`'s) is below `T`. For this the trusted semantics counts the
+  live threads (`GlobalState.threads`): `Fork e` spawns `e ;; ThreadExit` and
+  increments it, and the no-op `ThreadExit` decrements it.
+  The bounds are *unspecified parameters*, not constants: they are fields of
+  the ghost state `ReceiptGS GF`/`ThreadGS GF` (part of `GooseGlobalGS`, hence
+  of `HeapGS`), so downstream files, whose sections already assume `HeapGS`,
+  need no new argument, and the language instance and its `PureExec`/`Atomic`
+  instances do not depend on them. A proof that needs a bound to be small takes
+  a premise (`wp_clock_incr` in `ProgramLogic/TimeReceiptsTest.lean` takes
+  `receiptBound GF ≤ 2 ^ 64`; `wp_counter_register` in
+  `ProgramLogic/ThreadTokensTest.lean` takes `threadBound GF ≤ 2 ^ 31`). The
+  adequacy theorems (`goose_adequacy N T`, `goose_invariance N T`, and the
+  grove/disk ones) hold for every `N` and `T`: they allocate the ghost state
+  with `receiptBound GF = N` and `threadBound GF = T` (hypotheses of the WP
+  premise `Hwp`, which also receives the main thread's token, and from which
+  the client discharges the proof's premises about the bounds) and are about
+  real executions of *fewer than `N` steps* along which *fewer than `T`
+  threads are live*, explicit hypotheses. See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in
@@ -74,7 +84,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     atomic with the add (an `assume` after Go's atomic add would come too late:
     other goroutines would already see the overflowed counter). So
     `WaitGroup.wp_Add` needs no upper bound on the counter; its commit tells the
-    caller that the new counter did not overflow.
+    caller that the new counter did not overflow. Unlike the other two, this
+    overflow is reachable (two `Add(1 << 30)` calls panic in Go); thread tokens
+    (above) are the device for bounding such a counter honestly, by the number
+    of live goroutines.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.
