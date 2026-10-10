@@ -75,19 +75,16 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `assume` that fails loops forever, so the proofs cover the executions where
   it holds):
   * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`);
-  * `strings.Join`'s total length (`TrustedCode/strings.lean`);
-  * `sync.WaitGroup`'s `int32` counter (`waitGroupStateAddAssume`,
-    `TrustedCode/sync.lean`): `WaitGroup.Add` is a trusted model, Goose's
-    translation of Go's `Add` with its atomic add replaced by a compare-and-swap
-    loop that assumes the counter plus the delta stays at most `2^31 - 1`. The
-    assumption is checked on the value the compare-and-swap replaces, so it is
-    atomic with the add (an `assume` after Go's atomic add would come too late:
-    other goroutines would already see the overflowed counter). So
-    `WaitGroup.wp_Add` needs no upper bound on the counter; its commit tells the
-    caller that the new counter did not overflow. Unlike the other two, this
-    overflow is reachable (two `Add(1 << 30)` calls panic in Go); thread tokens
-    (above) are the device for bounding such a counter honestly, by the number
-    of live goroutines.
+  * `strings.Join`'s total length (`TrustedCode/strings.lean`).
+
+  Overflows that a program *can* reach are not assumed away. `sync.WaitGroup`'s
+  `int32` counter is one (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
+  is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
+  new counter by `2^31`. A caller whose counter is backed by one goroutine per
+  unit discharges the bound with thread tokens (above): `n` tokens give `n <
+  threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
+  time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
+  "Thread tokens").
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

@@ -812,6 +812,169 @@ noncomputable def rlocker.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RWMutex.ty) go!"RUnlock"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType rlocker.ty) (go.GoType.PointerType RWMutex.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rlocker.ty)))) (Var "r")))) (Val #()))))))))
 
+/-- Add adds delta, which may be negative, to the [WaitGroup] task counter.
+    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
+    If the counter goes negative, Add panics.
+
+    Callers should prefer [WaitGroup.Go].
+
+    Note that calls with a positive delta that occur when the counter is zero
+    must happen before a Wait. Calls with a negative delta, or calls with a
+    positive delta that start when the counter is greater than zero, may happen
+    at any time.
+    Typically this means the calls to Add should execute before the statement
+    creating the goroutine or other event to be waited for.
+    If a WaitGroup is reused to wait for several independent sets of events,
+    new Add calls must happen after all previous Wait calls have returned.
+    See the WaitGroup example.
+
+    go: waitgroup.go:77:22 -/
+noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "wg"
+  (Lam "delta"
+  (App (Val wrapDefer)
+  (Lam "$defer"
+  (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (Let "delta" (App (Val (GoInstruction (GoAlloc go.int))) (Var "delta"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (Let "bubbled" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))
+  (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 2147483647)))))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0))))))) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
+  (Let "$a1" (Val #false)
+  (Let "$a2" (Val #(W64 0))
+  (App (App (App (App (Val (GoInstruction (FuncResolve runtime_Semrelease []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "w") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 1)))))))))))
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "bubbled"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Disassociate [WaitGroup.ty]))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(W64 0))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Store"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"sync: WaitGroup misuse: Add called concurrently with Wait")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (Val #(W32 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0))))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0))))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))))) (Val #false)))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"sync: WaitGroup misuse: Add called concurrently with Wait")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (Val #(W32 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"sync: negative WaitGroup counter")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (Val _root_.Perennial.internal.race.Enabled) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))))) (Val #false)))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "w") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "v") (Var "$r0")))))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "bubbled"))) (Val #false))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(go!"sync: WaitGroup.Add called from inside and outside synctest bubble"))
+  (App (App (Val (GoInstruction (FuncResolve fatal []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "state") (Var "$r0")))))))))
+  (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsInBubble []))) (Val #())) (Val #()))
+  (Let "$sw" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Associate [WaitGroup.ty]))) (Val #())) (Var "$a0")))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.Unbubbled)))
+  (App (Val doExecute)
+  (Val #()))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.OtherBubble)))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(go!"sync: WaitGroup.Add called from multiple synctest bubbles"))
+  (App (App (Val (GoInstruction (FuncResolve fatal []))) (Val #())) (Var "$a0"))))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.CurrentBubble)))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Or"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))
+  (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0)))) (Val #false)))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(go!"sync: WaitGroup.Add called from inside and outside synctest bubble"))
+  (App (App (Val (GoInstruction (FuncResolve fatal []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "state") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "bubbled") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "bubbled") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.ReleaseMerge []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Val #())))))))))))
+
 /-- Done decrements the [WaitGroup] task counter by one.
     It is equivalent to Add(-1).
 
