@@ -101,6 +101,7 @@ inductive DiskFfiStep : DiskOp → val → CfgState → Expr → CfgState → Pr
 
 @[reducible] def disk_semantics : FfiSemantics disk_op disk_model where
   ffi_step := DiskFfiStep
+  ffi_step_threads h := by cases h <;> rfl
 
 end disk
 

@@ -1,31 +1,55 @@
 /-
-The step-bounded GooseLang semantics: the proof device behind time receipts
-(Mével, Jourdan, Pottier, "Time credits and time receipts in Iris", ESOP 2019).
+The bounded GooseLang semantics: the proof device behind time receipts (Mével,
+Jourdan, Pottier, "Time credits and time receipts in Iris", ESOP 2019) and
+thread tokens (`Threads.lean`).
 
 The real semantics (`base_step`, `gooseRealEctxiLang` in `Lang.lean`) is the
 trusted model of Go and is unchanged. This file adds a separate layer on top of
 it: the state of the registered iris-lean language `goose_ectxi_lang` is
-`BcfgState = CfgState × Nat`, the real configuration together with a *fuel*
-`f`, the number of counted steps that may still be taken. A base step of the
-bounded language (`BoundedBaseStep`) is
+`BcfgState = CfgState × Fuel`, the real configuration together with a *fuel*
+`⟨s, t⟩`: `s` counted steps and `t` thread forks may still be taken. A base
+step of the bounded language (`BoundedBaseStep`) is, by the kind of the redex
+(`redexKind`):
 
-* for an uncounted redex: a real base step, fuel unchanged;
-* for a counted redex, with fuel `f + 1`: a real base step, fuel `f` (`tick`);
-* for a counted redex that is (really) reducible, with fuel `0`: a *stutter*
-  (expression and state unchanged, no observations, no forks).
+* for a plain redex: a real base step, fuel unchanged;
+* for a counted redex (a Go instruction), with step fuel `s + 1`: a real base
+  step, step fuel `s` (`tick`); with step fuel `0` and (really) reducible: a
+  *stutter* (expression and state unchanged, no observations, no forks);
+* for `Fork e`, with thread fuel `t + 1`: the real fork (it spawns
+  `e ;; ThreadExit` and increments `GlobalState.threads`), thread fuel `t`;
+  with thread fuel `0`: a stutter (`forkStutter`);
+* for `ThreadExit` (the last step of a forked thread), with thread fuel `t`:
+  the real step (it decrements `GlobalState.threads`), thread fuel `t + 1`.
 
-The bound `N` of time receipts is not a parameter of the language: it is the
-*initial* fuel plus one. The adequacy theorems (`Adequacy.lean`) start the
-bounded semantics with fuel `N - 1` for an arbitrary `N > 0` chosen by the
-client, and the receipt ghost state (`receiptGS`, `Receipts.lean`) records `N`
-as `receiptBound`; the state interpretation ties the two together (fuel `f`
-means `N - 1 - f` counted steps so far, `receiptFuel`). This is the paper's
-"`tick` diverges at the limit": at most `N - 1` counted steps succeed, so `N`
-time receipts are contradictory, while NotStuck WPs stay provable (a
-stuttering step is a step). Every bounded step is backed by a real base step,
-so bounded reducibility implies real reducibility, and a real execution of at
-most `f` steps is also an execution of the bounded language started with fuel
-`f` (simulation lemmas below).
+**Time receipts.** The bound `N` of time receipts is not a parameter of the
+language: it is the initial step fuel plus one. The adequacy theorems
+(`Adequacy.lean`) start the bounded semantics with step fuel `N - 1` for an
+arbitrary `N > 0` chosen by the client, and the receipt ghost state
+(`receiptGS`, `Receipts.lean`) records `N` as `receiptBound`; the state
+interpretation ties the two together (step fuel `s` means `N - 1 - s` counted
+steps so far, `receiptFuel`). This is the paper's "`tick` diverges at the
+limit": at most `N - 1` counted steps succeed, so `N` time receipts are
+contradictory, while NotStuck WPs stay provable (a stuttering step is a step).
+
+**Thread tokens.** Likewise the bound `T` on live threads is the initial thread
+fuel plus two: the adequacy theorems start with thread fuel `T - 2` for an
+arbitrary `T > 1` (the main thread is live), and the thread ghost state
+(`ThreadGS`, `Threads.lean`) records `T` as `threadBound`. The state
+interpretation owns the thread fuel as `t` thread tokens (`threadFuel t`); a
+`Fork` takes one out and the forking thread receives it (`wp_fork_tok`), a
+`ThreadExit` puts one back (`wp_ThreadExit`). Together with the main thread's
+token, at most `T - 1` tokens exist, so `T` thread tokens are contradictory
+(`threadBound_elim`): a counter that is backed by one token per live thread,
+such as a `WaitGroup`'s, is below `T`. Along a real execution whose thread
+count `GlobalState.threads` stays below `T` (the hypothesis `RealThreadsBelow`
+of `goose_adequacy`), the thread fuel is at least `T - 1 - threads`
+(`bounded_step_of_real`), so every real `Fork` is a bounded `fork`, not a
+stutter.
+
+Every bounded step is backed by a real base step, so bounded reducibility
+implies real reducibility, and a real execution of at most `s` steps whose
+thread count stays below `T` is also an execution of the bounded language
+started with fuel `⟨s, T - 1 - threads⟩` (simulation lemmas below).
 
 **Which steps are counted.** The counted redexes are the Go instructions
 `App (Val (GoInstruction op)) (Val v)` (function/method resolution, typed
@@ -37,10 +61,10 @@ logic relies on `PureExec` for the pure steps and on `Language.Atomic` for the
 heap primitives (`Load`, `AtomicAdd`, `CmpXchg`, ...) around which invariants
 and atomic updates are opened. Go instructions are neither: their lifting
 lemma (`wp_GoInstruction`) is the only rule for them, so it can absorb the
-stutter (by Löb induction) and hand out a receipt. Since every Go function call
-and typed memory access goes through a Go instruction, receipts are plentiful;
-the adequacy assumption (fewer than `N` steps in total) bounds the number of
-counted steps a fortiori.
+stutter (by Löb induction) and hand out a receipt; the same holds of `Fork`
+(`wp_fork_tok`). Since every Go function call and typed memory access goes
+through a Go instruction, receipts are plentiful; the adequacy assumption
+(fewer than `N` steps in total) bounds the number of counted steps a fortiori.
 -/
 module
 
@@ -57,27 +81,62 @@ open Iris.ProgramLogic
 section bounded
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
-/-- The state of the bounded language: the real configuration and the fuel, the
-number of counted steps that may still be taken. -/
-abbrev BcfgState := CfgState × Nat
+/-- The fuel of the bounded language: `steps`, the number of counted steps that
+may still be taken (time receipts), and `threads`, the number of threads that
+may still be forked (thread tokens). -/
+structure Fuel where
+  steps : Nat
+  threads : Nat
 
-/-- The counted redexes: Go instructions. -/
-def isCounted : Expr → Bool
-  | .App (.Val (.GoInstruction _)) (.Val _) => true
-  | _ => false
+/-- The state of the bounded language: the real configuration and the fuel. -/
+abbrev BcfgState := CfgState × Fuel
+
+/-- How the bounded semantics treats a redex. -/
+inductive RedexKind where
+  /-- a Go instruction: a counted step (time receipts) -/
+  | counted
+  /-- `Fork`: consumes thread fuel -/
+  | fork
+  /-- `ThreadExit`: returns thread fuel -/
+  | exit
+  /-- anything else: a real step with the fuel unchanged -/
+  | plain
+deriving DecidableEq
+
+def redexKind : Expr → RedexKind
+  | .App (.Val (.GoInstruction _)) (.Val _) => .counted
+  | .Fork _ => .fork
+  | .Primitive0 .ThreadExitOp => .exit
+  | _ => .plain
+
+theorem redexKind_eq_fork {e : Expr} (h : redexKind e = .fork) : ∃ e', e = Fork e' := by
+  unfold redexKind at h
+  split at h <;> simp_all
+
+theorem redexKind_eq_exit {e : Expr} (h : redexKind e = .exit) : e = ThreadExit := by
+  unfold redexKind at h
+  split at h <;> simp_all
 
 /-- The base step of the bounded language (see the module docstring). -/
 inductive BoundedBaseStep :
     Expr → BcfgState → List Observation → Expr → BcfgState → List Expr → Prop
   | step {e σ f κ e' σ' efs} :
-      isCounted e = false → BaseStep e σ κ e' σ' efs →
+      redexKind e = .plain → BaseStep e σ κ e' σ' efs →
       BoundedBaseStep e (σ, f) κ e' (σ', f) efs
-  | tick {e σ f κ e' σ' efs} :
-      isCounted e = true → BaseStep e σ κ e' σ' efs →
-      BoundedBaseStep e (σ, f + 1) κ e' (σ', f) efs
-  | stutter {e σ κ e' σ' efs} :
-      isCounted e = true → BaseStep e σ κ e' σ' efs →
-      BoundedBaseStep e (σ, 0) [] e (σ, 0) []
+  | tick {e σ s t κ e' σ' efs} :
+      redexKind e = .counted → BaseStep e σ κ e' σ' efs →
+      BoundedBaseStep e (σ, ⟨s + 1, t⟩) κ e' (σ', ⟨s, t⟩) efs
+  | stutter {e σ t κ e' σ' efs} :
+      redexKind e = .counted → BaseStep e σ κ e' σ' efs →
+      BoundedBaseStep e (σ, ⟨0, t⟩) [] e (σ, ⟨0, t⟩) []
+  | fork {e σ s t κ e' σ' efs} :
+      BaseStep (Fork e) σ κ e' σ' efs →
+      BoundedBaseStep (Fork e) (σ, ⟨s, t + 1⟩) κ e' (σ', ⟨s, t⟩) efs
+  | forkStutter {e σ s} :
+      BoundedBaseStep (Fork e) (σ, ⟨s, 0⟩) [] (Fork e) (σ, ⟨s, 0⟩) []
+  | exit {σ s t κ e' σ' efs} :
+      BaseStep ThreadExit σ κ e' σ' efs →
+      BoundedBaseStep ThreadExit (σ, ⟨s, t⟩) κ e' (σ', ⟨s, t + 1⟩) efs
 
 theorem BoundedBaseStep.real {e s κ e' s' efs} (h : BoundedBaseStep e s κ e' s' efs) :
     ∃ κ' e'' σ'' efs', BaseStep e s.1 κ' e'' σ'' efs' := by
@@ -85,18 +144,24 @@ theorem BoundedBaseStep.real {e s κ e' s' efs} (h : BoundedBaseStep e s κ e' s
   | step _ h => exact ⟨_, _, _, _, h⟩
   | tick _ h => exact ⟨_, _, _, _, h⟩
   | stutter _ h => exact ⟨_, _, _, _, h⟩
+  | fork h => exact ⟨_, _, _, _, h⟩
+  | forkStutter => exact ⟨_, _, _, _, BaseStep.ForkS _ _⟩
+  | exit h => exact ⟨_, _, _, _, h⟩
 
-/-- For an uncounted redex, bounded and real base steps agree. -/
-theorem boundedBaseStep_uncounted {e σ f κ e' s' efs} (hnc : isCounted e = false) :
+/-- For a plain redex, bounded and real base steps agree. -/
+theorem boundedBaseStep_plain {e σ f κ e' s' efs} (hp : redexKind e = .plain) :
     BoundedBaseStep e (σ, f) κ e' s' efs ↔ ∃ σ', s' = (σ', f) ∧ BaseStep e σ κ e' σ' efs := by
   constructor
   · intro h
     cases h with
     | step _ h => exact ⟨_, rfl, h⟩
-    | tick h => rw [hnc] at h; cases h
-    | stutter h => rw [hnc] at h; cases h
+    | tick h => rw [hp] at h; cases h
+    | stutter h => rw [hp] at h; cases h
+    | fork h => simp [redexKind] at hp
+    | forkStutter => simp [redexKind] at hp
+    | exit h => simp [redexKind] at hp
   · rintro ⟨σ', rfl, h⟩
-    exact .step hnc h
+    exact .step hp h
 
 /-- The registered iris-lean language instance of GooseLang: the bounded layer
 over `base_step`. -/
@@ -151,38 +216,92 @@ real primitive step. -/
 def RealNotStuck (e : Expr) (σ : CfgState) : Prop :=
   (toVal e).isSome ∨ ∃ κ e' σ' efs, RealPrimStep e σ κ e' σ' efs
 
-/-- A real thread-pool step from a state with fuel `f > 0` is also a step of the
-bounded semantics, which leaves at least `f - 1` fuel. -/
-theorem bounded_step_of_real {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Observation} (f : Nat)
-    (h : @Language.Step _ _ _ _ gooseRealLang ρ₁ κ ρ₂) (hf : 0 < f) :
-    ∃ f', f ≤ f' + 1 ∧ Language.Step (ρ₁.1, ((ρ₁.2, f) : BcfgState)) κ (ρ₂.1, (ρ₂.2, f')) := by
+/-- The thread bound as a hypothesis on real executions: every configuration
+reachable from `ρ` in at most `n` real steps has fewer than `T` live threads
+(`GlobalState.threads`: the main thread and the forked threads that have not
+reached their `ThreadExit`). -/
+def RealThreadsBelow (T n : Nat) (ρ : List Expr × CfgState) : Prop :=
+  ∀ k κs ρ', k ≤ n → RealNsteps k ρ κs ρ' → ρ'.2.2.threads < T
+
+theorem RealThreadsBelow.start {T n : Nat} {ρ : List Expr × CfgState}
+    (h : RealThreadsBelow T n ρ) : ρ.2.2.threads < T :=
+  h 0 [] ρ (Nat.zero_le _) (@Language.NSteps.refl _ _ _ _ gooseRealLang ρ)
+
+theorem RealThreadsBelow.step {T n : Nat} {ρ ρ' : List Expr × CfgState} {κ : List Observation}
+    (h : RealThreadsBelow T (n + 1) ρ) (hstep : @Language.Step _ _ _ _ gooseRealLang ρ κ ρ') :
+    RealThreadsBelow T n ρ' := by
+  intro k κs ρ'' hk hsteps
+  exact h (k + 1) (κ ++ κs) ρ'' (by omega)
+    (@Language.NSteps.cons _ _ _ _ gooseRealLang _ _ _ _ _ _ hstep hsteps)
+
+/-- A base step that is neither a fork nor an exit does not change the thread count. -/
+theorem baseStep_threads {e : Expr} {σ : CfgState} {κ : List Observation} {e' : Expr}
+    {σ' : CfgState} {efs : List Expr} (h : BaseStep e σ κ e' σ' efs)
+    (hf : redexKind e ≠ .fork) (hx : redexKind e ≠ .exit) : σ'.2.threads = σ.2.threads := by
+  cases h with
+  | ForkS => exact absurd rfl hf
+  | ThreadExitS => exact absurd rfl hx
+  | ExternalOpS _ _ _ _ _ h => exact ffi_step_threads h
+  | _ => rfl
+
+/-- A real thread-pool step from a state with step fuel `s > 0` and thread fuel
+`t` with `T - 1 ≤ t + threads`, to a configuration with fewer than `T` threads,
+is also a step of the bounded semantics, which leaves at least `s - 1` step
+fuel and thread fuel `t'` with `T - 1 ≤ t' + threads'`. -/
+theorem bounded_step_of_real {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Observation}
+    (s t T : Nat) (h : @Language.Step _ _ _ _ gooseRealLang ρ₁ κ ρ₂) (hs : 0 < s)
+    (ht : T - 1 ≤ t + ρ₁.2.2.threads) (h₂ : ρ₂.2.2.threads < T) :
+    ∃ s' t', s ≤ s' + 1 ∧ T - 1 ≤ t' + ρ₂.2.2.threads ∧
+      Language.Step (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κ (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
   obtain ⟨H, t₁, t₂⟩ := h
   rename_i e σ e' σ' eₜ
   obtain ⟨hb⟩ := H
   rename_i e₁ e₂ K
-  cases hk : isCounted e₁
-  · exact ⟨f, by omega, Language.Step.atomic
-      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.step (f := f) hk hb)) t₁ t₂⟩
-  · obtain ⟨f', rfl⟩ : ∃ f', f = f' + 1 := ⟨f - 1, by omega⟩
-    exact ⟨f', by omega, Language.Step.atomic
+  simp only at ht h₂ ⊢
+  rcases hk : redexKind e₁ with _ | _ | _ | _
+  · -- counted
+    obtain ⟨s', rfl⟩ : ∃ s', s = s' + 1 := ⟨s - 1, by omega⟩
+    have hth := baseStep_threads hb (by simp [hk]) (by simp [hk])
+    exact ⟨s', t, by omega, by omega, Language.Step.atomic
       (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.tick hk hb)) t₁ t₂⟩
+  · -- fork
+    obtain ⟨e₀, rfl⟩ := redexKind_eq_fork hk
+    cases hb
+    simp only at h₂
+    obtain ⟨t', rfl⟩ : ∃ t', t = t' + 1 := ⟨t - 1, by omega⟩
+    exact ⟨s, t', by omega, by simp; omega, Language.Step.atomic
+      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.fork (BaseStep.ForkS e₀ σ))) t₁ t₂⟩
+  · -- exit
+    have := redexKind_eq_exit hk
+    subst this
+    cases hb
+    exact ⟨s, t + 1, by omega, by simp; omega, Language.Step.atomic
+      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.exit (BaseStep.ThreadExitS σ))) t₁ t₂⟩
+  · -- plain
+    have hth := baseStep_threads hb (by simp [hk]) (by simp [hk])
+    exact ⟨s, t, by omega, by omega, Language.Step.atomic
+      (BaseStep.ContextStep.intro (K := K) (BoundedBaseStep.step hk hb)) t₁ t₂⟩
 
-/-- Simulation: a real execution of `n` steps is also an execution of the bounded
-semantics started with any fuel `f ≥ n`. -/
+/-- Simulation: a real execution of `n` steps whose thread count stays below `T`
+is also an execution of the bounded semantics started with any step fuel
+`s ≥ n` and any thread fuel `t ≥ T - 1 - threads`. -/
 theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {κs : List Observation}
-    (h : RealNsteps n ρ₁ κs ρ₂) (f : Nat) (hf : n ≤ f) :
-    ∃ f', Language.NSteps n (ρ₁.1, ((ρ₁.2, f) : BcfgState)) κs (ρ₂.1, (ρ₂.2, f')) := by
+    (h : RealNsteps n ρ₁ κs ρ₂) (s : Nat) (hs : n ≤ s) (T t : Nat)
+    (hT : RealThreadsBelow T n ρ₁) (ht : T - 1 ≤ t + ρ₁.2.2.threads) :
+    ∃ s' t', Language.NSteps n (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κs (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
   unfold RealNsteps at h
-  induction h generalizing f with
-  | refl ρ => exact ⟨f, .refl _⟩
-  | cons hstep _ ih =>
-    obtain ⟨f₁, hf₁, hstep'⟩ := bounded_step_of_real f hstep (by omega)
-    obtain ⟨f', hsteps'⟩ := ih f₁ (by omega)
-    exact ⟨f', .cons hstep' hsteps'⟩
+  induction h generalizing s t with
+  | refl ρ => exact ⟨s, t, .refl _⟩
+  | cons hstep hrest ih =>
+    rename_i n ρ₁ ρ₂ ρ₃ obs obs'
+    have h₂ : ρ₂.2.2.threads < T := (hT.step hstep).start
+    obtain ⟨s₁, t₁, hs₁, ht₁, hstep'⟩ := bounded_step_of_real s t T hstep (by omega) ht h₂
+    obtain ⟨s', t', hsteps'⟩ := ih s₁ (by omega) t₁ (hT.step hstep) ht₁
+    exact ⟨s', t', .cons hstep' hsteps'⟩
 
 /-- Bounded reducibility implies real reducibility: every bounded step is backed
 by a real base step. -/
-theorem realNotStuck_of_bounded {e : Expr} {σ : CfgState} {f : Nat}
+theorem realNotStuck_of_bounded {e : Expr} {σ : CfgState} {f : Fuel}
     (h : PrimStep.NotStuck (e, ((σ, f) : BcfgState))) : RealNotStuck e σ := by
   rcases h with h | ⟨κ, e', s', efs, H⟩
   · exact .inl h

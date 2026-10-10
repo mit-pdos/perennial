@@ -187,6 +187,7 @@ def GroveFfiStep (op : GroveOp) (v : val) (σg : CfgState) (e' : Expr) (σg' : C
 
 @[reducible] def grove_semantics : FfiSemantics grove_op grove_model where
   ffi_step := GroveFfiStep
+  ffi_step_threads h := by obtain ⟨_, _, rfl, _⟩ := h; rfl
 
 end grove
 

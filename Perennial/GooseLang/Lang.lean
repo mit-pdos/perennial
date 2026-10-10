@@ -97,6 +97,9 @@ inductive PrimOp0 where
   | PanicOp (s : String)
   /-- non-deterministically pick an integer -/
   | ArbitraryIntOp
+  /-- the end of a forked thread: `Fork e` spawns `e ;; ThreadExit`, and this step
+  decrements the thread count of the global state (see `GlobalState.threads`) -/
+  | ThreadExitOp
 deriving DecidableEq
 
 inductive PrimOp1 where
@@ -296,6 +299,9 @@ instance : CoeFun Expr (fun _ => Expr → Expr) := ⟨App⟩
 
 abbrev Panic (s : String) : Expr := Primitive0 (.PanicOp s)
 abbrev ArbitraryInt : Expr := Primitive0 .ArbitraryIntOp
+/-- The last step of a forked thread (`ForkS` spawns `Seq e ThreadExit`): a no-op
+that decrements the thread count `GlobalState.threads`. -/
+abbrev ThreadExit : Expr := Primitive0 .ThreadExitOp
 abbrev Alloc (e : Expr) : Expr := Primitive1 .AllocOp e
 abbrev PrepareWrite (e : Expr) : Expr := Primitive1 .PrepareWriteOp e
 abbrev StartRead (e : Expr) : Expr := Primitive1 .StartReadOp e
@@ -440,9 +446,17 @@ structure state where
 structure GlobalState where
   globalWorld : ffi_global_state
   usedProphId : GSet proph_id
+  /-- The number of live threads: the main thread (counted for the whole
+  execution) and the forked threads that have not reached their `ThreadExit`.
+  `ForkS` increments it and `ThreadExitS` decrements it; no other step changes
+  it (`FfiSemantics.ffi_step_threads` for the FFI). A configuration whose only
+  thread is the main thread has `threads = 1`. The bounded semantics
+  (`BoundedLang.lean`) and the adequacy theorems bound it: see "thread tokens"
+  in `Threads.lean`. -/
+  threads : Nat
 
 instance : Inhabited state := ⟨⟨∅, default, default⟩⟩
-instance : Inhabited GlobalState := ⟨⟨default, ∅⟩⟩
+instance : Inhabited GlobalState := ⟨⟨default, ∅, 1⟩⟩
 
 /-- The state of the iris-lean language: the local and the global state. -/
 abbrev CfgState := state × GlobalState
@@ -464,8 +478,10 @@ def IsGoStep [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 `op` applied to `v` in state `σg` can produce `e'` and state `σg'`. -/
 class FfiSemantics (ext : FfiSyntax) (ffi : FfiModel) where
   ffi_step : ffi_opcode → val → CfgState → Expr → CfgState → Prop
+  /-- An FFI step does not change the thread count. -/
+  ffi_step_threads : ∀ {op v σg e' σg'}, ffi_step op v σg e' σg' → σg'.2.threads = σg.2.threads
 
-export FfiSemantics (ffi_step)
+export FfiSemantics (ffi_step ffi_step_threads)
 
 /-! ## Evaluation contexts and substitution -/
 
@@ -616,7 +632,13 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | IfFalseS e1 e2 σg : BaseStep (If (Val #false) e1 e2) σg [] e2 σg []
   | FstS v1 v2 σg : BaseStep (Fst (Val (PairV v1 v2))) σg [] (Val v1) σg []
   | SndS v1 v2 σg : BaseStep (Snd (Val (PairV v1 v2))) σg [] (Val v2) σg []
-  | ForkS e σg : BaseStep (Fork e) σg [] (Val #()) σg [e]
+  /-- `Fork e` spawns the thread `e ;; ThreadExit` and counts it. -/
+  | ForkS e σg :
+      BaseStep (Fork e) σg [] (Val #()) (σg.1, { σg.2 with threads := σg.2.threads + 1 })
+        [Seq e ThreadExit]
+  /-- The end of a forked thread: a no-op that uncounts the thread. -/
+  | ThreadExitS σg :
+      BaseStep ThreadExit σg [] (Val #()) (σg.1, { σg.2 with threads := σg.2.threads - 1 }) []
   | ArbitraryIntS (x : w64) σg : BaseStep ArbitraryInt σg [] (Val #x) σg []
   | AllocS v l σg :
       IsFresh σg l →
