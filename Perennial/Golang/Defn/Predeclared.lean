@@ -896,14 +896,30 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Sub v1 v2)
   mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Mul v1 v2)
   div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Div v1 v2)
+  -- `float64(n)` of an integer: an uninterpreted function of the integer (`FloatOps`)
+  convert_int_to_float64 (v : w64) : ⟦Convert go.int go.float64, #v⟧ ⤳[under] #(int64ToFloat64 v)
+  convert_int64_to_float64 (v : w64) :
+    ⟦Convert go.int64 go.float64, #v⟧ ⤳[under] #(int64ToFloat64 v)
+  convert_uint_to_float64 (v : w64) : ⟦Convert go.uint go.float64, #v⟧ ⤳[under] #(uint64ToFloat64 v)
+  convert_uint64_to_float64 (v : w64) :
+    ⟦Convert go.uint64 go.float64, #v⟧ ⤳[under] #(uint64ToFloat64 v)
+  convert_int32_to_float64 (v : w32) :
+    ⟦Convert go.int32 go.float64, #v⟧ ⤳[under] #(int32ToFloat64 v)
+  convert_uint32_to_float64 (v : w32) :
+    ⟦Convert go.uint32 go.float64, #v⟧ ⤳[under] #(uint32ToFloat64 v)
 
 attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.comparable_float64
   Float64Semantics.underlying_float64 Float64Semantics.go_eq_float64 Float64Semantics.le_float64
   Float64Semantics.lt_float64 Float64Semantics.ge_float64 Float64Semantics.gt_float64
   Float64Semantics.plus_float64 Float64Semantics.sub_float64 Float64Semantics.mul_float64
-  Float64Semantics.div_float64
+  Float64Semantics.div_float64 Float64Semantics.convert_int_to_float64
+  Float64Semantics.convert_int64_to_float64 Float64Semantics.convert_uint_to_float64
+  Float64Semantics.convert_uint64_to_float64 Float64Semantics.convert_int32_to_float64
+  Float64Semantics.convert_uint32_to_float64
 export Float64Semantics (go_zero_val_float64 comparable_float64 underlying_float64 go_eq_float64
-  le_float64 lt_float64 ge_float64 gt_float64 plus_float64 sub_float64 mul_float64 div_float64)
+  le_float64 lt_float64 ge_float64 gt_float64 plus_float64 sub_float64 mul_float64 div_float64
+  convert_int_to_float64 convert_int64_to_float64 convert_uint_to_float64
+  convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64)
 
 class Float32Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float32 : TypeReprUnderlying go.float32 w32
