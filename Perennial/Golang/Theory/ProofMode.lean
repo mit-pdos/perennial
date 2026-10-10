@@ -154,7 +154,7 @@ instance wp_raise_pure (v : val) :
     PureWp (G := G) (L := L) (v.isPanic = false) (Raise (Val v)) (Val (PanicV v)) :=
   pure_exec_pure_wp (pure_raise v)
 
-instance wp_catch_panic_pure (p : val) (h k : Expr) :
+instance (priority := high) wp_catch_panic_pure (p : val) (h k : Expr) :
     PureWp (G := G) (L := L) True (Catch (Val (PanicV p)) h k) (App h (Val p)) :=
   pure_exec_pure_wp (pure_catch_panic p h k)
 

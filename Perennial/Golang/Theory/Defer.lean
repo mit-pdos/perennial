@@ -66,11 +66,11 @@ theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
   wp_pures
   iapply Hwp $$ Hdefer Hpnc
 
-/-- `panic(p)` panics with `p`: the postcondition receives `PanicV p`, which a
-caller takes through its evaluation context with `wp_unwind` (or `wp_auto`) up to
-a `Catch`. -/
-theorem wp_panic (p : val) (Φ : val → IProp GF) (hp : p.isPanic = false := by simp) :
-    Φ (PanicV p) ⊢ WP (App (Val (@! go.panic)) (Val p)) {{ Φ }} := by
+/-- `panic(p)` panics with `p` (an `interface{}`, to which Goose converts the
+argument): the postcondition receives `PanicV #p`, which `wp_auto` (or
+`wp_unwind`) takes through the caller's evaluation context up to a `Catch`. -/
+theorem wp_panic (p : GoInterface) (Φ : val → IProp GF) :
+    Φ (PanicV #p) ⊢ WP (App (Val (@! go.panic)) (Val #p)) {{ Φ }} := by
   iintro HΦ
   rw [func_unfold]
   unfold panic.impl
