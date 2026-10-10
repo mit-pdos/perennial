@@ -49,7 +49,9 @@ instance Worker_access_load_queue (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance Worker_access_store_queue (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (queue' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Worker_access_store_queue (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (queue' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"queue" l) v.queue' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"queue" l) queue' (DFrac.own 1))
@@ -65,7 +67,9 @@ instance Worker_access_load_steal (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance Worker_access_store_steal (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (steal' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Worker_access_store_steal (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker) (steal' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"steal" l) v.steal' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker go!"steal" l) steal' (DFrac.own 1))
@@ -107,7 +111,9 @@ instance shared_access_load_remaining (l : Loc) (v : github_com.mit_pdos.perenni
  by
   solve_pointsto_access_struct
 
-instance shared_access_store_remaining (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (remaining' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) shared_access_store_remaining (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (remaining' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"remaining" l) v.remaining' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"remaining" l) remaining' (DFrac.own 1))
@@ -123,7 +129,9 @@ instance shared_access_load_total (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance shared_access_store_total (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (total' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) shared_access_store_total (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (total' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"total" l) v.total' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"total" l) total' (DFrac.own 1))
@@ -139,7 +147,9 @@ instance shared_access_load_done (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance shared_access_store_done (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (done' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) shared_access_store_done (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.shared go!"done" l) done' (DFrac.own 1))

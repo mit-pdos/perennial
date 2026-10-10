@@ -46,7 +46,9 @@ instance errorString_access_load_s (l : Loc) (v : errors.errorString) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance errorString_access_store_s (l : Loc) (v : errors.errorString) (s' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) errorString_access_store_s (l : Loc) (v : errors.errorString) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.errorString go!"s" l) s' (DFrac.own 1))
@@ -86,7 +88,9 @@ instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) errs' (DFrac.own 1))

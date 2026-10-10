@@ -52,7 +52,9 @@ instance Log_access_load_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (m' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (m' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) m' (DFrac.own 1))
@@ -68,7 +70,9 @@ instance Log_access_load_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.t
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (sz' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (sz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) v.sz' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) sz' (DFrac.own 1))
@@ -84,7 +88,9 @@ instance Log_access_load_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (diskSz' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (diskSz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) v.diskSz' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) diskSz' (DFrac.own 1))

@@ -47,7 +47,9 @@ instance Box_access_load_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Lo
  by
   solve_pointsto_access_struct
 
-instance Box_access_store_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T')) (Value' : T') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Box_access_store_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T')) (Value' : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) Value' (DFrac.own 1))
@@ -90,7 +92,9 @@ instance Container_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Container_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (X' : T') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Container_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (X' : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) X' (DFrac.own 1))
@@ -106,7 +110,9 @@ instance Container_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Container_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Y' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Container_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Y' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) Y' (DFrac.own 1))
@@ -122,7 +128,9 @@ instance Container_access_load_Z {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Container_access_store_Z {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Z' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Container_access_store_Z {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (Z' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) v.Z' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) Z' (DFrac.own 1))
@@ -138,7 +146,9 @@ instance Container_access_load_W {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Container_access_store_W {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (W' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Container_access_store_W {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (W' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) v.W' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) W' (DFrac.own 1))
@@ -178,7 +188,9 @@ instance UseContainer_access_load_X (l : Loc) (v : github_com.mit_pdos.perennial
  by
   solve_pointsto_access_struct
 
-instance UseContainer_access_store_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (X' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) UseContainer_access_store_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (X' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) X' (DFrac.own 1))
@@ -219,7 +231,9 @@ instance OnlyIndirect_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l
  by
   solve_pointsto_access_struct
 
-instance OnlyIndirect_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (X' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) OnlyIndirect_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (X' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) X' (DFrac.own 1))
@@ -235,7 +249,9 @@ instance OnlyIndirect_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l
  by
   solve_pointsto_access_struct
 
-instance OnlyIndirect_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (Y' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) OnlyIndirect_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (Y' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) v.Y' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) Y' (DFrac.own 1))
@@ -276,7 +292,9 @@ instance MultiParam_access_load_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' 
  by
   solve_pointsto_access_struct
 
-instance MultiParam_access_store_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (Y' : B') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) MultiParam_access_store_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (Y' : B') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) v.Y' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) Y' (DFrac.own 1))
@@ -292,7 +310,9 @@ instance MultiParam_access_load_X {A' : Type} [TypedPointsto (GF := GF) A'] {B' 
  by
   solve_pointsto_access_struct
 
-instance MultiParam_access_store_X {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (X' : A') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) MultiParam_access_store_X {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (X' : A') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) X' (DFrac.own 1))
@@ -333,7 +353,9 @@ instance TypeParamCollision_access_load_X {T' : Type} [TypedPointsto (GF := GF) 
  by
   solve_pointsto_access_struct
 
-instance TypeParamCollision_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (X' : T') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) TypeParamCollision_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (X' : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) X' (DFrac.own 1))
@@ -349,7 +371,9 @@ instance TypeParamCollision_access_load_Y {T' : Type} [TypedPointsto (GF := GF) 
  by
   solve_pointsto_access_struct
 
-instance TypeParamCollision_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (Y' : C') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) TypeParamCollision_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (Y' : C') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) v.Y' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) Y' (DFrac.own 1))
@@ -389,7 +413,9 @@ instance useNonStructGeneric_access_load_x {T' : Type} [TypedPointsto (GF := GF)
  by
   solve_pointsto_access_struct
 
-instance useNonStructGeneric_access_store_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (x' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) useNonStructGeneric_access_store_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (x' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) x' (DFrac.own 1))

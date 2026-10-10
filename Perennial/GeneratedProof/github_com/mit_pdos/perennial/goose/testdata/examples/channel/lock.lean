@@ -47,7 +47,9 @@ instance Lock_access_load_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.
  by
   solve_pointsto_access_struct
 
-instance Lock_access_store_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (ch' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Lock_access_store_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (ch' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) ch' (DFrac.own 1))

@@ -85,7 +85,9 @@ instance SyscallError_access_load_Syscall (l : Loc) (v : os.SyscallError) (dq : 
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError) (Syscall' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError) (Syscall' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' (DFrac.own 1))
       (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) Syscall' (DFrac.own 1))
@@ -101,7 +103,9 @@ instance SyscallError_access_load_Err (l : Loc) (v : os.SyscallError) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef os.SyscallError go!"Err" l) Err' (DFrac.own 1))
@@ -220,7 +224,9 @@ instance LinkError_access_load_Op (l : Loc) (v : os.LinkError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Op (l : Loc) (v : os.LinkError) (Op' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) LinkError_access_store_Op (l : Loc) (v : os.LinkError) (Op' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' (DFrac.own 1))
       (typedPointsto (structFieldRef os.LinkError go!"Op" l) Op' (DFrac.own 1))
@@ -236,7 +242,9 @@ instance LinkError_access_load_Old (l : Loc) (v : os.LinkError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Old (l : Loc) (v : os.LinkError) (Old' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) LinkError_access_store_Old (l : Loc) (v : os.LinkError) (Old' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' (DFrac.own 1))
       (typedPointsto (structFieldRef os.LinkError go!"Old" l) Old' (DFrac.own 1))
@@ -252,7 +260,9 @@ instance LinkError_access_load_New (l : Loc) (v : os.LinkError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_New (l : Loc) (v : os.LinkError) (New' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) LinkError_access_store_New (l : Loc) (v : os.LinkError) (New' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' (DFrac.own 1))
       (typedPointsto (structFieldRef os.LinkError go!"New" l) New' (DFrac.own 1))
@@ -268,7 +278,9 @@ instance LinkError_access_load_Err (l : Loc) (v : os.LinkError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef os.LinkError go!"Err" l) Err' (DFrac.own 1))
@@ -332,7 +344,9 @@ instance fileWithoutReadFrom_access_load_noReadFrom (l : Loc) (v : os.fileWithou
  by
   solve_pointsto_access_struct
 
-instance fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (noReadFrom' : os.noReadFrom) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (noReadFrom' : os.noReadFrom) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' (DFrac.own 1))
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) noReadFrom' (DFrac.own 1))
@@ -348,7 +362,9 @@ instance fileWithoutReadFrom_access_load_File (l : Loc) (v : os.fileWithoutReadF
  by
   solve_pointsto_access_struct
 
-instance fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom) (File' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom) (File' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' (DFrac.own 1))
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) File' (DFrac.own 1))
@@ -412,7 +428,9 @@ instance fileWithoutWriteTo_access_load_noWriteTo (l : Loc) (v : os.fileWithoutW
  by
   solve_pointsto_access_struct
 
-instance fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (noWriteTo' : os.noWriteTo) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (noWriteTo' : os.noWriteTo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' (DFrac.own 1))
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) noWriteTo' (DFrac.own 1))
@@ -428,7 +446,9 @@ instance fileWithoutWriteTo_access_load_File (l : Loc) (v : os.fileWithoutWriteT
  by
   solve_pointsto_access_struct
 
-instance fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo) (File' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo) (File' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' (DFrac.own 1))
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) File' (DFrac.own 1))
@@ -506,7 +526,9 @@ instance rawConn_access_load_file (l : Loc) (v : os.rawConn) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance rawConn_access_store_file (l : Loc) (v : os.rawConn) (file' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) rawConn_access_store_file (l : Loc) (v : os.rawConn) (file' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' (DFrac.own 1))
       (typedPointsto (structFieldRef os.rawConn go!"file" l) file' (DFrac.own 1))
@@ -546,7 +568,9 @@ instance Root_access_load_root (l : Loc) (v : os.Root) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Root_access_store_root (l : Loc) (v : os.Root) (root' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Root_access_store_root (l : Loc) (v : os.Root) (root' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.Root go!"root" l) v.root' (DFrac.own 1))
       (typedPointsto (structFieldRef os.Root go!"root" l) root' (DFrac.own 1))
@@ -605,7 +629,9 @@ instance File_access_load_file (l : Loc) (v : os.File) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance File_access_store_file (l : Loc) (v : os.File) (file' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) File_access_store_file (l : Loc) (v : os.File) (file' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.File go!"file" l) v.file' (DFrac.own 1))
       (typedPointsto (structFieldRef os.File go!"file" l) file' (DFrac.own 1))

@@ -48,7 +48,9 @@ instance Builder_access_load_addr (l : Loc) (v : strings.Builder) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) addr' (DFrac.own 1))
@@ -64,7 +66,9 @@ instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) buf' (DFrac.own 1))
@@ -106,7 +110,9 @@ instance Reader_access_load_s (l : Loc) (v : strings.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"s" l) s' (DFrac.own 1))
@@ -122,7 +128,9 @@ instance Reader_access_load_i (l : Loc) (v : strings.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"i" l) i' (DFrac.own 1))
@@ -138,7 +146,9 @@ instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : Loc) (v : strings.Reader) (prevRune' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_prevRune (l : Loc) (v : strings.Reader) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) prevRune' (DFrac.own 1))
@@ -220,7 +230,9 @@ instance trieNode_access_load_value (l : Loc) (v : strings.trieNode) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) value' (DFrac.own 1))
@@ -236,7 +248,9 @@ instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priority' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priority' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) priority' (DFrac.own 1))
@@ -252,7 +266,9 @@ instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) prefix' (DFrac.own 1))
@@ -268,7 +284,9 @@ instance trieNode_access_load_next (l : Loc) (v : strings.trieNode) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) next' (DFrac.own 1))
@@ -284,7 +302,9 @@ instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) table' (DFrac.own 1))
@@ -326,7 +346,9 @@ instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) root' (DFrac.own 1))
@@ -342,7 +364,9 @@ instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericRep
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer) (tableSize' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer) (tableSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) tableSize' (DFrac.own 1))
@@ -358,7 +382,9 @@ instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericRepla
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (GoArray w8 256)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (GoArray w8 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) mapping' (DFrac.own 1))
@@ -418,7 +444,9 @@ instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleSt
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer) (finder' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer) (finder' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) finder' (DFrac.own 1))
@@ -434,7 +462,9 @@ instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStr
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer) (value' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) value' (DFrac.own 1))
@@ -475,7 +505,9 @@ instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byte
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (GoArray GoSlice 256)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (GoArray GoSlice 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) replacements' (DFrac.own 1))
@@ -491,7 +523,9 @@ instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStr
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) toReplace' (DFrac.own 1))
@@ -533,7 +567,9 @@ instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder) (
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) (pattern' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) (pattern' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) pattern' (DFrac.own 1))
@@ -549,7 +585,9 @@ instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinde
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (GoArray w64 256)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (GoArray w64 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) badCharSkip' (DFrac.own 1))
@@ -565,7 +603,9 @@ instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFi
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) goodSuffixSkip' (DFrac.own 1))

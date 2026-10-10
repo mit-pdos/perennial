@@ -67,7 +67,9 @@ instance PathError_access_load_Op (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance PathError_access_store_Op (l : Loc) (v : io.fs.PathError) (Op' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) PathError_access_store_Op (l : Loc) (v : io.fs.PathError) (Op' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) Op' (DFrac.own 1))
@@ -83,7 +85,9 @@ instance PathError_access_load_Path (l : Loc) (v : io.fs.PathError) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance PathError_access_store_Path (l : Loc) (v : io.fs.PathError) (Path' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) PathError_access_store_Path (l : Loc) (v : io.fs.PathError) (Path' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) Path' (DFrac.own 1))
@@ -99,7 +103,9 @@ instance PathError_access_load_Err (l : Loc) (v : io.fs.PathError) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance PathError_access_store_Err (l : Loc) (v : io.fs.PathError) (Err' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) PathError_access_store_Err (l : Loc) (v : io.fs.PathError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) Err' (DFrac.own 1))
@@ -139,7 +145,9 @@ instance dirInfo_access_load_fileInfo (l : Loc) (v : io.fs.dirInfo) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance dirInfo_access_store_fileInfo (l : Loc) (v : io.fs.dirInfo) (fileInfo' : io.fs.FileInfo) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) dirInfo_access_store_fileInfo (l : Loc) (v : io.fs.dirInfo) (fileInfo' : io.fs.FileInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) fileInfo' (DFrac.own 1))
@@ -180,7 +188,9 @@ instance subFS_access_load_fsys (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (fsys' : io.fs.FS) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (fsys' : io.fs.FS) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) fsys' (DFrac.own 1))
@@ -196,7 +206,9 @@ instance subFS_access_load_dir (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance subFS_access_store_dir (l : Loc) (v : io.fs.subFS) (dir' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) subFS_access_store_dir (l : Loc) (v : io.fs.subFS) (dir' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) dir' (DFrac.own 1))

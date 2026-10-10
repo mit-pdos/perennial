@@ -75,7 +75,9 @@ instance localPair_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance localPair_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.localPair) (a' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) localPair_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.localPair) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.localPair go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.localPair go!"a" l) a' (DFrac.own 1))
@@ -117,7 +119,9 @@ instance pair_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.t
  by
   solve_pointsto_access_struct
 
-instance pair_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair) (a' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pair_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair go!"a" l) a' (DFrac.own 1))
@@ -133,7 +137,9 @@ instance pair_access_load_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.t
  by
   solve_pointsto_access_struct
 
-instance pair_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair) (b' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pair_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair) (b' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.pair go!"b" l) b' (DFrac.own 1))
@@ -175,7 +181,9 @@ instance Editor_access_load_s (l : Loc) (v : github_com.mit_pdos.perennial.goose
  by
   solve_pointsto_access_struct
 
-instance Editor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (s' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Editor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"s" l) s' (DFrac.own 1))
@@ -191,7 +199,9 @@ instance Editor_access_load_next_val (l : Loc) (v : github_com.mit_pdos.perennia
  by
   solve_pointsto_access_struct
 
-instance Editor_access_store_next_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (next_val' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Editor_access_store_next_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor) (next_val' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"next_val" l) v.next_val' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Editor go!"next_val" l) next_val' (DFrac.own 1))
@@ -233,7 +243,9 @@ instance Pair'_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.
  by
   solve_pointsto_access_struct
 
-instance Pair'_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair') (x' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Pair'_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair') (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair' go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair' go!"x" l) x' (DFrac.own 1))
@@ -249,7 +261,9 @@ instance Pair'_access_load_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.
  by
   solve_pointsto_access_struct
 
-instance Pair'_access_store_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair') (y' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Pair'_access_store_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair') (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair' go!"y" l) v.y' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Pair' go!"y" l) y' (DFrac.own 1))
@@ -290,7 +304,9 @@ instance SquareStruct_access_load_Side (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance SquareStruct_access_store_Side (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct) (Side' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) SquareStruct_access_store_Side (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct) (Side' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct go!"Side" l) v.Side' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.SquareStruct go!"Side" l) Side' (DFrac.own 1))
@@ -331,7 +347,9 @@ instance NumStruct_access_load_Value (l : Loc) (v : github_com.mit_pdos.perennia
  by
   solve_pointsto_access_struct
 
-instance NumStruct_access_store_Value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct) (Value' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) NumStruct_access_store_Value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct) (Value' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.NumStruct go!"Value" l) Value' (DFrac.own 1))
@@ -372,7 +390,9 @@ instance shapeStruct_access_load_Shape (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance shapeStruct_access_store_Shape (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct) (Shape' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) shapeStruct_access_store_Shape (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct) (Shape' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct go!"Shape" l) v.Shape' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shapeStruct go!"Shape" l) Shape' (DFrac.own 1))
@@ -414,7 +434,9 @@ instance polygonStruct_access_load_Shape (l : Loc) (v : github_com.mit_pdos.pere
  by
   solve_pointsto_access_struct
 
-instance polygonStruct_access_store_Shape (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct) (Shape' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) polygonStruct_access_store_Shape (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct) (Shape' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct go!"Shape" l) v.Shape' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct go!"Shape" l) Shape' (DFrac.own 1))
@@ -430,7 +452,9 @@ instance polygonStruct_access_load_Sides (l : Loc) (v : github_com.mit_pdos.pere
  by
   solve_pointsto_access_struct
 
-instance polygonStruct_access_store_Sides (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct) (Sides' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) polygonStruct_access_store_Sides (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct) (Sides' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct go!"Sides" l) v.Sides' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.polygonStruct go!"Sides" l) Sides' (DFrac.own 1))
@@ -471,7 +495,9 @@ instance PaperStruct_access_load_Title (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance PaperStruct_access_store_Title (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct) (Title' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) PaperStruct_access_store_Title (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct) (Title' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct go!"Title" l) v.Title' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.PaperStruct go!"Title" l) Title' (DFrac.own 1))
@@ -584,7 +610,9 @@ instance LoopStruct_access_load_loopNext (l : Loc) (v : github_com.mit_pdos.pere
  by
   solve_pointsto_access_struct
 
-instance LoopStruct_access_store_loopNext (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct) (loopNext' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) LoopStruct_access_store_loopNext (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct) (loopNext' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct go!"loopNext" l) v.loopNext' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.LoopStruct go!"loopNext" l) loopNext' (DFrac.own 1))
@@ -625,7 +653,9 @@ instance loopCounter_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.
  by
   solve_pointsto_access_struct
 
-instance loopCounter_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter) (n' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) loopCounter_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter) (n' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) v.n' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.loopCounter go!"n" l) n' (DFrac.own 1))
@@ -669,7 +699,9 @@ instance BoolTest_access_load_t (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance BoolTest_access_store_t (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (t' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) BoolTest_access_store_t (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (t' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"t" l) v.t' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"t" l) t' (DFrac.own 1))
@@ -685,7 +717,9 @@ instance BoolTest_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance BoolTest_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (f' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) BoolTest_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (f' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"f" l) f' (DFrac.own 1))
@@ -701,7 +735,9 @@ instance BoolTest_access_load_tc (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance BoolTest_access_store_tc (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (tc' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) BoolTest_access_store_tc (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (tc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"tc" l) v.tc' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"tc" l) tc' (DFrac.own 1))
@@ -717,7 +753,9 @@ instance BoolTest_access_load_fc (l : Loc) (v : github_com.mit_pdos.perennial.go
  by
   solve_pointsto_access_struct
 
-instance BoolTest_access_store_fc (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (fc' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) BoolTest_access_store_fc (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest) (fc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"fc" l) v.fc' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.BoolTest go!"fc" l) fc' (DFrac.own 1))
@@ -759,7 +797,9 @@ instance ArrayEditor_access_load_s (l : Loc) (v : github_com.mit_pdos.perennial.
  by
   solve_pointsto_access_struct
 
-instance ArrayEditor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (s' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) ArrayEditor_access_store_s (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"s" l) s' (DFrac.own 1))
@@ -775,7 +815,9 @@ instance ArrayEditor_access_load_next_val (l : Loc) (v : github_com.mit_pdos.per
  by
   solve_pointsto_access_struct
 
-instance ArrayEditor_access_store_next_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (next_val' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) ArrayEditor_access_store_next_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor) (next_val' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"next_val" l) v.next_val' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.ArrayEditor go!"next_val" l) next_val' (DFrac.own 1))
@@ -817,7 +859,9 @@ instance Bar_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Bar_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) (a' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Bar_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar go!"a" l) a' (DFrac.own 1))
@@ -833,7 +877,9 @@ instance Bar_access_load_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Bar_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) (b' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Bar_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) (b' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar go!"b" l) b' (DFrac.own 1))
@@ -874,7 +920,9 @@ instance Foo_access_load_bar (l : Loc) (v : github_com.mit_pdos.perennial.goose.
  by
   solve_pointsto_access_struct
 
-instance Foo_access_store_bar (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo) (bar' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Foo_access_store_bar (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo) (bar' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo go!"bar" l) v.bar' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo go!"bar" l) bar' (DFrac.own 1))
@@ -916,7 +964,9 @@ instance TwoInts_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goos
  by
   solve_pointsto_access_struct
 
-instance TwoInts_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) (x' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) TwoInts_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts go!"x" l) x' (DFrac.own 1))
@@ -932,7 +982,9 @@ instance TwoInts_access_load_y (l : Loc) (v : github_com.mit_pdos.perennial.goos
  by
   solve_pointsto_access_struct
 
-instance TwoInts_access_store_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) (y' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) TwoInts_access_store_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts go!"y" l) v.y' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts go!"y" l) y' (DFrac.own 1))
@@ -975,7 +1027,9 @@ instance S_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.test
  by
   solve_pointsto_access_struct
 
-instance S_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (a' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) S_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (a' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"a" l) a' (DFrac.own 1))
@@ -991,7 +1045,9 @@ instance S_access_load_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.test
  by
   solve_pointsto_access_struct
 
-instance S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"b" l) b' (DFrac.own 1))
@@ -1007,7 +1063,9 @@ instance S_access_load_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.test
  by
   solve_pointsto_access_struct
 
-instance S_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (c' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) S_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (c' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"c" l) v.c' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"c" l) c' (DFrac.own 1))
@@ -1048,7 +1106,9 @@ instance StructWrap_access_load_i (l : Loc) (v : github_com.mit_pdos.perennial.g
  by
   solve_pointsto_access_struct
 
-instance StructWrap_access_store_i (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap) (i' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) StructWrap_access_store_i (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap go!"i" l) v.i' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWrap go!"i" l) i' (DFrac.own 1))
@@ -1089,7 +1149,9 @@ instance StructWithFunc_access_load_fn (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-instance StructWithFunc_access_store_fn (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc) (fn' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) StructWithFunc_access_store_fn (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc) (fn' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc go!"fn" l) v.fn' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.StructWithFunc go!"fn" l) fn' (DFrac.own 1))
@@ -1155,7 +1217,9 @@ instance List'_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc)
  by
   solve_pointsto_access_struct
 
-instance List'_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T')) (X' : T') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) List'_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T')) (X' : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T') go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T') go!"X" l) X' (DFrac.own 1))
@@ -1171,7 +1235,9 @@ instance List'_access_load_Next {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
-instance List'_access_store_Next {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T')) (Next' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) List'_access_store_Next {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T')) (Next' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T') go!"Next" l) v.Next' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.List' T') go!"Next" l) Next' (DFrac.own 1))
@@ -1215,7 +1281,9 @@ instance Log_access_load_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (d' : github_com.goose_lang.primitive.disk.Disk) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (d' : github_com.goose_lang.primitive.disk.Disk) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"d" l) v.d' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"d" l) d' (DFrac.own 1))
@@ -1231,7 +1299,9 @@ instance Log_access_load_l (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_l (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (l' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_l (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (l' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"l" l) v.l' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"l" l) l' (DFrac.own 1))
@@ -1247,7 +1317,9 @@ instance Log_access_load_cache (l : Loc) (v : github_com.mit_pdos.perennial.goos
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_cache (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (cache' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_cache (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (cache' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"cache" l) v.cache' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"cache" l) cache' (DFrac.own 1))
@@ -1263,7 +1335,9 @@ instance Log_access_load_length (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_length (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (length' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Log_access_store_length (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log) (length' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"length" l) v.length' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Log go!"length" l) length' (DFrac.own 1))

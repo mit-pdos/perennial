@@ -50,7 +50,9 @@ instance Rand_access_load_src (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.Source) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.Source) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) src' (DFrac.own 1))
@@ -66,7 +68,9 @@ instance Rand_access_load_s64 (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.Source64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.Source64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) v.s64' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) s64' (DFrac.own 1))
@@ -82,7 +86,9 @@ instance Rand_access_load_readVal (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_readVal (l : Loc) (v : math.rand.Rand) (readVal' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rand_access_store_readVal (l : Loc) (v : math.rand.Rand) (readVal' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) v.readVal' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) readVal' (DFrac.own 1))
@@ -98,7 +104,9 @@ instance Rand_access_load_readPos (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_readPos (l : Loc) (v : math.rand.Rand) (readPos' : w8) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rand_access_store_readPos (l : Loc) (v : math.rand.Rand) (readPos' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) v.readPos' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) readPos' (DFrac.own 1))
@@ -138,7 +146,9 @@ instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.runtimeSource) (d
  by
   solve_pointsto_access_struct
 
-instance runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : sync.Mutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) mu' (DFrac.own 1))
@@ -179,7 +189,9 @@ instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lockedSource) (dq 
  by
   solve_pointsto_access_struct
 
-instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : sync.Mutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) lk' (DFrac.own 1))
@@ -195,7 +207,9 @@ instance lockedSource_access_load_s (l : Loc) (v : math.rand.lockedSource) (dq :
  by
   solve_pointsto_access_struct
 
-instance lockedSource_access_store_s (l : Loc) (v : math.rand.lockedSource) (s' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) lockedSource_access_store_s (l : Loc) (v : math.rand.lockedSource) (s' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) s' (DFrac.own 1))
@@ -237,7 +251,9 @@ instance rngSource_access_load_tap (l : Loc) (v : math.rand.rngSource) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_tap (l : Loc) (v : math.rand.rngSource) (tap' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) rngSource_access_store_tap (l : Loc) (v : math.rand.rngSource) (tap' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) v.tap' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) tap' (DFrac.own 1))
@@ -253,7 +269,9 @@ instance rngSource_access_load_feed (l : Loc) (v : math.rand.rngSource) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_feed (l : Loc) (v : math.rand.rngSource) (feed' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) rngSource_access_store_feed (l : Loc) (v : math.rand.rngSource) (feed' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) v.feed' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) feed' (DFrac.own 1))
@@ -269,7 +287,9 @@ instance rngSource_access_load_vec (l : Loc) (v : math.rand.rngSource) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (GoArray w64 607)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (GoArray w64 607)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) v.vec' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) vec' (DFrac.own 1))
@@ -317,7 +337,9 @@ instance Zipf_access_load_r (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_r (l : Loc) (v : math.rand.Zipf) (r' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_r (l : Loc) (v : math.rand.Zipf) (r' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) r' (DFrac.own 1))
@@ -333,7 +355,9 @@ instance Zipf_access_load_imax (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_imax (l : Loc) (v : math.rand.Zipf) (imax' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_imax (l : Loc) (v : math.rand.Zipf) (imax' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) v.imax' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) imax' (DFrac.own 1))
@@ -349,7 +373,9 @@ instance Zipf_access_load_v (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_v (l : Loc) (v : math.rand.Zipf) (v' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_v (l : Loc) (v : math.rand.Zipf) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v' (DFrac.own 1))
@@ -365,7 +391,9 @@ instance Zipf_access_load_q (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_q (l : Loc) (v : math.rand.Zipf) (q' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_q (l : Loc) (v : math.rand.Zipf) (q' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) v.q' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) q' (DFrac.own 1))
@@ -381,7 +409,9 @@ instance Zipf_access_load_s (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_s (l : Loc) (v : math.rand.Zipf) (s' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_s (l : Loc) (v : math.rand.Zipf) (s' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) s' (DFrac.own 1))
@@ -397,7 +427,9 @@ instance Zipf_access_load_oneminusQ (l : Loc) (v : math.rand.Zipf) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_oneminusQ (l : Loc) (v : math.rand.Zipf) (oneminusQ' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_oneminusQ (l : Loc) (v : math.rand.Zipf) (oneminusQ' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) v.oneminusQ' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) oneminusQ' (DFrac.own 1))
@@ -413,7 +445,9 @@ instance Zipf_access_load_oneminusQinv (l : Loc) (v : math.rand.Zipf) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_oneminusQinv (l : Loc) (v : math.rand.Zipf) (oneminusQinv' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_oneminusQinv (l : Loc) (v : math.rand.Zipf) (oneminusQinv' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) v.oneminusQinv' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) oneminusQinv' (DFrac.own 1))
@@ -429,7 +463,9 @@ instance Zipf_access_load_hxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_hxm (l : Loc) (v : math.rand.Zipf) (hxm' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_hxm (l : Loc) (v : math.rand.Zipf) (hxm' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) v.hxm' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) hxm' (DFrac.own 1))
@@ -445,7 +481,9 @@ instance Zipf_access_load_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (hx0minusHxm' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Zipf_access_store_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (hx0minusHxm' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) v.hx0minusHxm' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) hx0minusHxm' (DFrac.own 1))

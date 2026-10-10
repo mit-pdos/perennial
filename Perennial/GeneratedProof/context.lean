@@ -96,7 +96,9 @@ instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context.backgroundCtx
  by
   solve_pointsto_access_struct
 
-instance backgroundCtx_access_store_emptyCtx (l : Loc) (v : context.backgroundCtx) (emptyCtx' : context.emptyCtx) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) backgroundCtx_access_store_emptyCtx (l : Loc) (v : context.backgroundCtx) (emptyCtx' : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
@@ -136,7 +138,9 @@ instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoCtx) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance todoCtx_access_store_emptyCtx (l : Loc) (v : context.todoCtx) (emptyCtx' : context.emptyCtx) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) todoCtx_access_store_emptyCtx (l : Loc) (v : context.todoCtx) (emptyCtx' : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) emptyCtx' (DFrac.own 1))
@@ -181,7 +185,9 @@ instance cancelCtx_access_load_Context (l : Loc) (v : context.cancelCtx) (dq : D
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_Context (l : Loc) (v : context.cancelCtx) (Context' : context.Context) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_Context (l : Loc) (v : context.cancelCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) Context' (DFrac.own 1))
@@ -197,7 +203,9 @@ instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (mu' : sync.Mutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (mu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) mu' (DFrac.own 1))
@@ -213,7 +221,9 @@ instance cancelCtx_access_load_done (l : Loc) (v : context.cancelCtx) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (done' : sync.atomic.Value) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (done' : sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) done' (DFrac.own 1))
@@ -229,7 +239,9 @@ instance cancelCtx_access_load_children (l : Loc) (v : context.cancelCtx) (dq : 
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (children' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (children' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) children' (DFrac.own 1))
@@ -245,7 +257,9 @@ instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCtx) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (err' : sync.atomic.Value) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (err' : sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) err' (DFrac.own 1))
@@ -261,7 +275,9 @@ instance cancelCtx_access_load_cause (l : Loc) (v : context.cancelCtx) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (cause' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (cause' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) cause' (DFrac.own 1))
@@ -303,7 +319,9 @@ instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context.afterFuncCtx)
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_cancelCtx (l : Loc) (v : context.afterFuncCtx) (cancelCtx' : context.cancelCtx) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) afterFuncCtx_access_store_cancelCtx (l : Loc) (v : context.afterFuncCtx) (cancelCtx' : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
@@ -319,7 +337,9 @@ instance afterFuncCtx_access_load_once (l : Loc) (v : context.afterFuncCtx) (dq 
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (once' : sync.Once) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) once' (DFrac.own 1))
@@ -335,7 +355,9 @@ instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFuncCtx) (dq : D
  by
   solve_pointsto_access_struct
 
-instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (f' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) f' (DFrac.own 1))
@@ -376,7 +398,9 @@ instance stopCtx_access_load_Context (l : Loc) (v : context.stopCtx) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_store_Context (l : Loc) (v : context.stopCtx) (Context' : context.Context) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stopCtx_access_store_Context (l : Loc) (v : context.stopCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) Context' (DFrac.own 1))
@@ -392,7 +416,9 @@ instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (stop' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (stop' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' (DFrac.own 1))
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) stop' (DFrac.own 1))
@@ -432,7 +458,9 @@ instance withoutCancelCtx_access_load_c (l : Loc) (v : context.withoutCancelCtx)
  by
   solve_pointsto_access_struct
 
-instance withoutCancelCtx_access_store_c (l : Loc) (v : context.withoutCancelCtx) (c' : context.Context) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) withoutCancelCtx_access_store_c (l : Loc) (v : context.withoutCancelCtx) (c' : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' (DFrac.own 1))
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) c' (DFrac.own 1))
@@ -474,7 +502,9 @@ instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.timerCtx) (dq : D
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_cancelCtx (l : Loc) (v : context.timerCtx) (cancelCtx' : context.cancelCtx) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) timerCtx_access_store_cancelCtx (l : Loc) (v : context.timerCtx) (cancelCtx' : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
@@ -490,7 +520,9 @@ instance timerCtx_access_load_timer (l : Loc) (v : context.timerCtx) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_timer (l : Loc) (v : context.timerCtx) (timer' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) timerCtx_access_store_timer (l : Loc) (v : context.timerCtx) (timer' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) timer' (DFrac.own 1))
@@ -506,7 +538,9 @@ instance timerCtx_access_load_deadline (l : Loc) (v : context.timerCtx) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (deadline' : time.Time) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (deadline' : time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) deadline' (DFrac.own 1))
@@ -548,7 +582,9 @@ instance valueCtx_access_load_Context (l : Loc) (v : context.valueCtx) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_Context (l : Loc) (v : context.valueCtx) (Context' : context.Context) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) valueCtx_access_store_Context (l : Loc) (v : context.valueCtx) (Context' : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) Context' (DFrac.own 1))
@@ -564,7 +600,9 @@ instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (key' : GoInterface) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (key' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) key' (DFrac.own 1))
@@ -580,7 +618,9 @@ instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (val' : GoInterface) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (val' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) val' (DFrac.own 1))

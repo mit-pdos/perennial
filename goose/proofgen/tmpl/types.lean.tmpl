@@ -71,7 +71,9 @@ instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "Typed
  by
   solve_pointsto_access_struct
 
-instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))

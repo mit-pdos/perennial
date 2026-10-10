@@ -69,7 +69,9 @@ instance NotInHeap_access_load__0 (l : Loc) (v : internal.runtime.sys.NotInHeap)
  by
   solve_pointsto_access_struct
 
-instance NotInHeap_access_store__0 (l : Loc) (v : internal.runtime.sys.NotInHeap) (_0' : internal.runtime.sys.nih) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) NotInHeap_access_store__0 (l : Loc) (v : internal.runtime.sys.NotInHeap) (_0' : internal.runtime.sys.nih) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) _0' (DFrac.own 1))

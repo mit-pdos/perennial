@@ -95,7 +95,9 @@ instance common_access_load_mu (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_mu (l : Loc) (v : testing.common) (mu' : sync.RWMutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_mu (l : Loc) (v : testing.common) (mu' : sync.RWMutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"mu" l) mu' (DFrac.own 1))
@@ -111,7 +113,9 @@ instance common_access_load_output (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_output (l : Loc) (v : testing.common) (output' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_output (l : Loc) (v : testing.common) (output' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"output" l) v.output' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"output" l) output' (DFrac.own 1))
@@ -127,7 +131,9 @@ instance common_access_load_w (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_w (l : Loc) (v : testing.common) (w' : io.Writer) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_w (l : Loc) (v : testing.common) (w' : io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"w" l) w' (DFrac.own 1))
@@ -143,7 +149,9 @@ instance common_access_load_o (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_o (l : Loc) (v : testing.common) (o' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_o (l : Loc) (v : testing.common) (o' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"o" l) v.o' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"o" l) o' (DFrac.own 1))
@@ -159,7 +167,9 @@ instance common_access_load_ran (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_ran (l : Loc) (v : testing.common) (ran' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_ran (l : Loc) (v : testing.common) (ran' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"ran" l) v.ran' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"ran" l) ran' (DFrac.own 1))
@@ -175,7 +185,9 @@ instance common_access_load_failed (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_failed (l : Loc) (v : testing.common) (failed' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_failed (l : Loc) (v : testing.common) (failed' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"failed" l) v.failed' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"failed" l) failed' (DFrac.own 1))
@@ -191,7 +203,9 @@ instance common_access_load_skipped (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_skipped (l : Loc) (v : testing.common) (skipped' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_skipped (l : Loc) (v : testing.common) (skipped' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"skipped" l) v.skipped' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"skipped" l) skipped' (DFrac.own 1))
@@ -207,7 +221,9 @@ instance common_access_load_done (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_done (l : Loc) (v : testing.common) (done' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_done (l : Loc) (v : testing.common) (done' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"done" l) done' (DFrac.own 1))
@@ -223,7 +239,9 @@ instance common_access_load_helperPCs (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_helperPCs (l : Loc) (v : testing.common) (helperPCs' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_helperPCs (l : Loc) (v : testing.common) (helperPCs' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"helperPCs" l) v.helperPCs' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"helperPCs" l) helperPCs' (DFrac.own 1))
@@ -239,7 +257,9 @@ instance common_access_load_helperNames (l : Loc) (v : testing.common) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance common_access_store_helperNames (l : Loc) (v : testing.common) (helperNames' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_helperNames (l : Loc) (v : testing.common) (helperNames' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"helperNames" l) v.helperNames' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"helperNames" l) helperNames' (DFrac.own 1))
@@ -255,7 +275,9 @@ instance common_access_load_cleanups (l : Loc) (v : testing.common) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanups (l : Loc) (v : testing.common) (cleanups' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_cleanups (l : Loc) (v : testing.common) (cleanups' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanups" l) v.cleanups' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanups" l) cleanups' (DFrac.own 1))
@@ -271,7 +293,9 @@ instance common_access_load_cleanupName (l : Loc) (v : testing.common) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanupName (l : Loc) (v : testing.common) (cleanupName' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_cleanupName (l : Loc) (v : testing.common) (cleanupName' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanupName" l) v.cleanupName' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanupName" l) cleanupName' (DFrac.own 1))
@@ -287,7 +311,9 @@ instance common_access_load_cleanupPc (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanupPc (l : Loc) (v : testing.common) (cleanupPc' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_cleanupPc (l : Loc) (v : testing.common) (cleanupPc' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanupPc" l) v.cleanupPc' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanupPc" l) cleanupPc' (DFrac.own 1))
@@ -303,7 +329,9 @@ instance common_access_load_finished (l : Loc) (v : testing.common) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance common_access_store_finished (l : Loc) (v : testing.common) (finished' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_finished (l : Loc) (v : testing.common) (finished' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"finished" l) v.finished' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"finished" l) finished' (DFrac.own 1))
@@ -319,7 +347,9 @@ instance common_access_load_inFuzzFn (l : Loc) (v : testing.common) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance common_access_store_inFuzzFn (l : Loc) (v : testing.common) (inFuzzFn' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_inFuzzFn (l : Loc) (v : testing.common) (inFuzzFn' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"inFuzzFn" l) v.inFuzzFn' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"inFuzzFn" l) inFuzzFn' (DFrac.own 1))
@@ -335,7 +365,9 @@ instance common_access_load_isSynctest (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_isSynctest (l : Loc) (v : testing.common) (isSynctest' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_isSynctest (l : Loc) (v : testing.common) (isSynctest' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"isSynctest" l) v.isSynctest' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"isSynctest" l) isSynctest' (DFrac.own 1))
@@ -351,7 +383,9 @@ instance common_access_load_chatty (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_chatty (l : Loc) (v : testing.common) (chatty' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_chatty (l : Loc) (v : testing.common) (chatty' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"chatty" l) v.chatty' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"chatty" l) chatty' (DFrac.own 1))
@@ -367,7 +401,9 @@ instance common_access_load_bench (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_bench (l : Loc) (v : testing.common) (bench' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_bench (l : Loc) (v : testing.common) (bench' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"bench" l) v.bench' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"bench" l) bench' (DFrac.own 1))
@@ -383,7 +419,9 @@ instance common_access_load_hasSub (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_hasSub (l : Loc) (v : testing.common) (hasSub' : sync.atomic.Bool') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_hasSub (l : Loc) (v : testing.common) (hasSub' : sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"hasSub" l) v.hasSub' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"hasSub" l) hasSub' (DFrac.own 1))
@@ -399,7 +437,9 @@ instance common_access_load_cleanupStarted (l : Loc) (v : testing.common) (dq : 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cleanupStarted (l : Loc) (v : testing.common) (cleanupStarted' : sync.atomic.Bool') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_cleanupStarted (l : Loc) (v : testing.common) (cleanupStarted' : sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cleanupStarted" l) v.cleanupStarted' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cleanupStarted" l) cleanupStarted' (DFrac.own 1))
@@ -415,7 +455,9 @@ instance common_access_load_runner (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_runner (l : Loc) (v : testing.common) (runner' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_runner (l : Loc) (v : testing.common) (runner' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"runner" l) v.runner' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"runner" l) runner' (DFrac.own 1))
@@ -431,7 +473,9 @@ instance common_access_load_isParallel (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_isParallel (l : Loc) (v : testing.common) (isParallel' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_isParallel (l : Loc) (v : testing.common) (isParallel' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"isParallel" l) v.isParallel' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"isParallel" l) isParallel' (DFrac.own 1))
@@ -447,7 +491,9 @@ instance common_access_load_parent (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_parent (l : Loc) (v : testing.common) (parent' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_parent (l : Loc) (v : testing.common) (parent' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"parent" l) v.parent' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"parent" l) parent' (DFrac.own 1))
@@ -463,7 +509,9 @@ instance common_access_load_level (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_level (l : Loc) (v : testing.common) (level' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_level (l : Loc) (v : testing.common) (level' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"level" l) v.level' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"level" l) level' (DFrac.own 1))
@@ -479,7 +527,9 @@ instance common_access_load_creator (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_creator (l : Loc) (v : testing.common) (creator' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_creator (l : Loc) (v : testing.common) (creator' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"creator" l) v.creator' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"creator" l) creator' (DFrac.own 1))
@@ -495,7 +545,9 @@ instance common_access_load_modulePath (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_modulePath (l : Loc) (v : testing.common) (modulePath' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_modulePath (l : Loc) (v : testing.common) (modulePath' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"modulePath" l) v.modulePath' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"modulePath" l) modulePath' (DFrac.own 1))
@@ -511,7 +563,9 @@ instance common_access_load_importPath (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_importPath (l : Loc) (v : testing.common) (importPath' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_importPath (l : Loc) (v : testing.common) (importPath' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"importPath" l) v.importPath' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"importPath" l) importPath' (DFrac.own 1))
@@ -527,7 +581,9 @@ instance common_access_load_name (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_name (l : Loc) (v : testing.common) (name' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_name (l : Loc) (v : testing.common) (name' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"name" l) name' (DFrac.own 1))
@@ -543,7 +599,9 @@ instance common_access_load_start (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_start (l : Loc) (v : testing.common) (start' : testing.highPrecisionTime) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_start (l : Loc) (v : testing.common) (start' : testing.highPrecisionTime) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"start" l) v.start' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"start" l) start' (DFrac.own 1))
@@ -559,7 +617,9 @@ instance common_access_load_duration (l : Loc) (v : testing.common) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance common_access_store_duration (l : Loc) (v : testing.common) (duration' : time.Duration) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_duration (l : Loc) (v : testing.common) (duration' : time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"duration" l) v.duration' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"duration" l) duration' (DFrac.own 1))
@@ -575,7 +635,9 @@ instance common_access_load_barrier (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_barrier (l : Loc) (v : testing.common) (barrier' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_barrier (l : Loc) (v : testing.common) (barrier' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"barrier" l) v.barrier' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"barrier" l) barrier' (DFrac.own 1))
@@ -591,7 +653,9 @@ instance common_access_load_signal (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_signal (l : Loc) (v : testing.common) (signal' : GoChan) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_signal (l : Loc) (v : testing.common) (signal' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"signal" l) v.signal' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"signal" l) signal' (DFrac.own 1))
@@ -607,7 +671,9 @@ instance common_access_load_sub (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_sub (l : Loc) (v : testing.common) (sub' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_sub (l : Loc) (v : testing.common) (sub' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"sub" l) v.sub' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"sub" l) sub' (DFrac.own 1))
@@ -623,7 +689,9 @@ instance common_access_load_lastRaceErrors (l : Loc) (v : testing.common) (dq : 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_lastRaceErrors (l : Loc) (v : testing.common) (lastRaceErrors' : sync.atomic.Int64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_lastRaceErrors (l : Loc) (v : testing.common) (lastRaceErrors' : sync.atomic.Int64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"lastRaceErrors" l) v.lastRaceErrors' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"lastRaceErrors" l) lastRaceErrors' (DFrac.own 1))
@@ -639,7 +707,9 @@ instance common_access_load_raceErrorLogged (l : Loc) (v : testing.common) (dq :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_raceErrorLogged (l : Loc) (v : testing.common) (raceErrorLogged' : sync.atomic.Bool') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_raceErrorLogged (l : Loc) (v : testing.common) (raceErrorLogged' : sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"raceErrorLogged" l) v.raceErrorLogged' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"raceErrorLogged" l) raceErrorLogged' (DFrac.own 1))
@@ -655,7 +725,9 @@ instance common_access_load_tempDirMu (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_tempDirMu (l : Loc) (v : testing.common) (tempDirMu' : sync.Mutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_tempDirMu (l : Loc) (v : testing.common) (tempDirMu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"tempDirMu" l) v.tempDirMu' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"tempDirMu" l) tempDirMu' (DFrac.own 1))
@@ -671,7 +743,9 @@ instance common_access_load_tempDir (l : Loc) (v : testing.common) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_tempDir (l : Loc) (v : testing.common) (tempDir' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_tempDir (l : Loc) (v : testing.common) (tempDir' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"tempDir" l) v.tempDir' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"tempDir" l) tempDir' (DFrac.own 1))
@@ -687,7 +761,9 @@ instance common_access_load_tempDirErr (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_tempDirErr (l : Loc) (v : testing.common) (tempDirErr' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_tempDirErr (l : Loc) (v : testing.common) (tempDirErr' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"tempDirErr" l) v.tempDirErr' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"tempDirErr" l) tempDirErr' (DFrac.own 1))
@@ -703,7 +779,9 @@ instance common_access_load_tempDirSeq (l : Loc) (v : testing.common) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance common_access_store_tempDirSeq (l : Loc) (v : testing.common) (tempDirSeq' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_tempDirSeq (l : Loc) (v : testing.common) (tempDirSeq' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"tempDirSeq" l) v.tempDirSeq' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"tempDirSeq" l) tempDirSeq' (DFrac.own 1))
@@ -719,7 +797,9 @@ instance common_access_load_artifactDirOnce (l : Loc) (v : testing.common) (dq :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_artifactDirOnce (l : Loc) (v : testing.common) (artifactDirOnce' : sync.Once) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_artifactDirOnce (l : Loc) (v : testing.common) (artifactDirOnce' : sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"artifactDirOnce" l) v.artifactDirOnce' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"artifactDirOnce" l) artifactDirOnce' (DFrac.own 1))
@@ -735,7 +815,9 @@ instance common_access_load_artifactDir (l : Loc) (v : testing.common) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance common_access_store_artifactDir (l : Loc) (v : testing.common) (artifactDir' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_artifactDir (l : Loc) (v : testing.common) (artifactDir' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"artifactDir" l) v.artifactDir' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"artifactDir" l) artifactDir' (DFrac.own 1))
@@ -751,7 +833,9 @@ instance common_access_load_artifactDirErr (l : Loc) (v : testing.common) (dq : 
  by
   solve_pointsto_access_struct
 
-instance common_access_store_artifactDirErr (l : Loc) (v : testing.common) (artifactDirErr' : GoError) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_artifactDirErr (l : Loc) (v : testing.common) (artifactDirErr' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"artifactDirErr" l) v.artifactDirErr' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"artifactDirErr" l) artifactDirErr' (DFrac.own 1))
@@ -767,7 +851,9 @@ instance common_access_load_ctx (l : Loc) (v : testing.common) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance common_access_store_ctx (l : Loc) (v : testing.common) (ctx' : context.Context) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_ctx (l : Loc) (v : testing.common) (ctx' : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"ctx" l) v.ctx' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"ctx" l) ctx' (DFrac.own 1))
@@ -783,7 +869,9 @@ instance common_access_load_cancelCtx (l : Loc) (v : testing.common) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance common_access_store_cancelCtx (l : Loc) (v : testing.common) (cancelCtx' : context.CancelFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) common_access_store_cancelCtx (l : Loc) (v : testing.common) (cancelCtx' : context.CancelFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.common go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.common go!"cancelCtx" l) cancelCtx' (DFrac.own 1))
@@ -824,7 +912,9 @@ instance fuzzState_access_load_deps (l : Loc) (v : testing.fuzzState) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance fuzzState_access_store_deps (l : Loc) (v : testing.fuzzState) (deps' : testing.testDeps) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fuzzState_access_store_deps (l : Loc) (v : testing.fuzzState) (deps' : testing.testDeps) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.fuzzState go!"deps" l) v.deps' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.fuzzState go!"deps" l) deps' (DFrac.own 1))
@@ -840,7 +930,9 @@ instance fuzzState_access_load_mode (l : Loc) (v : testing.fuzzState) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance fuzzState_access_store_mode (l : Loc) (v : testing.fuzzState) (mode' : testing.fuzzMode) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) fuzzState_access_store_mode (l : Loc) (v : testing.fuzzState) (mode' : testing.fuzzMode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.fuzzState go!"mode" l) v.mode' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.fuzzState go!"mode" l) mode' (DFrac.own 1))
@@ -884,7 +976,9 @@ instance matcher_access_load_filter (l : Loc) (v : testing.matcher) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_filter (l : Loc) (v : testing.matcher) (filter' : testing.filterMatch) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) matcher_access_store_filter (l : Loc) (v : testing.matcher) (filter' : testing.filterMatch) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"filter" l) v.filter' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"filter" l) filter' (DFrac.own 1))
@@ -900,7 +994,9 @@ instance matcher_access_load_skip (l : Loc) (v : testing.matcher) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_skip (l : Loc) (v : testing.matcher) (skip' : testing.filterMatch) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) matcher_access_store_skip (l : Loc) (v : testing.matcher) (skip' : testing.filterMatch) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"skip" l) v.skip' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"skip" l) skip' (DFrac.own 1))
@@ -916,7 +1012,9 @@ instance matcher_access_load_matchFunc (l : Loc) (v : testing.matcher) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_matchFunc (l : Loc) (v : testing.matcher) (matchFunc' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) matcher_access_store_matchFunc (l : Loc) (v : testing.matcher) (matchFunc' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"matchFunc" l) v.matchFunc' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"matchFunc" l) matchFunc' (DFrac.own 1))
@@ -932,7 +1030,9 @@ instance matcher_access_load_mu (l : Loc) (v : testing.matcher) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_mu (l : Loc) (v : testing.matcher) (mu' : sync.Mutex) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) matcher_access_store_mu (l : Loc) (v : testing.matcher) (mu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"mu" l) mu' (DFrac.own 1))
@@ -948,7 +1048,9 @@ instance matcher_access_load_subNames (l : Loc) (v : testing.matcher) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance matcher_access_store_subNames (l : Loc) (v : testing.matcher) (subNames' : GoMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) matcher_access_store_subNames (l : Loc) (v : testing.matcher) (subNames' : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.matcher go!"subNames" l) v.subNames' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.matcher go!"subNames" l) subNames' (DFrac.own 1))
@@ -996,7 +1098,9 @@ instance M_access_load_deps (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_deps (l : Loc) (v : testing.M) (deps' : testing.testDeps) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_deps (l : Loc) (v : testing.M) (deps' : testing.testDeps) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"deps" l) v.deps' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"deps" l) deps' (DFrac.own 1))
@@ -1012,7 +1116,9 @@ instance M_access_load_tests (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_tests (l : Loc) (v : testing.M) (tests' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_tests (l : Loc) (v : testing.M) (tests' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"tests" l) v.tests' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"tests" l) tests' (DFrac.own 1))
@@ -1028,7 +1134,9 @@ instance M_access_load_benchmarks (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_benchmarks (l : Loc) (v : testing.M) (benchmarks' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_benchmarks (l : Loc) (v : testing.M) (benchmarks' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"benchmarks" l) v.benchmarks' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"benchmarks" l) benchmarks' (DFrac.own 1))
@@ -1044,7 +1152,9 @@ instance M_access_load_fuzzTargets (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_fuzzTargets (l : Loc) (v : testing.M) (fuzzTargets' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_fuzzTargets (l : Loc) (v : testing.M) (fuzzTargets' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"fuzzTargets" l) v.fuzzTargets' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"fuzzTargets" l) fuzzTargets' (DFrac.own 1))
@@ -1060,7 +1170,9 @@ instance M_access_load_examples (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_examples (l : Loc) (v : testing.M) (examples' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_examples (l : Loc) (v : testing.M) (examples' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"examples" l) v.examples' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"examples" l) examples' (DFrac.own 1))
@@ -1076,7 +1188,9 @@ instance M_access_load_timer (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_timer (l : Loc) (v : testing.M) (timer' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_timer (l : Loc) (v : testing.M) (timer' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"timer" l) v.timer' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"timer" l) timer' (DFrac.own 1))
@@ -1092,7 +1206,9 @@ instance M_access_load_afterOnce (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_afterOnce (l : Loc) (v : testing.M) (afterOnce' : sync.Once) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_afterOnce (l : Loc) (v : testing.M) (afterOnce' : sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"afterOnce" l) v.afterOnce' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"afterOnce" l) afterOnce' (DFrac.own 1))
@@ -1108,7 +1224,9 @@ instance M_access_load_numRun (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_numRun (l : Loc) (v : testing.M) (numRun' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_numRun (l : Loc) (v : testing.M) (numRun' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"numRun" l) v.numRun' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"numRun" l) numRun' (DFrac.own 1))
@@ -1124,7 +1242,9 @@ instance M_access_load_exitCode (l : Loc) (v : testing.M) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance M_access_store_exitCode (l : Loc) (v : testing.M) (exitCode' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) M_access_store_exitCode (l : Loc) (v : testing.M) (exitCode' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.M go!"exitCode" l) v.exitCode' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.M go!"exitCode" l) exitCode' (DFrac.own 1))

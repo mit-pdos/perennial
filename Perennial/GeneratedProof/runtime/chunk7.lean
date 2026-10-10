@@ -56,7 +56,9 @@ instance elfPhdr_access_load_p_type (l : Loc) (v : runtime.elfPhdr) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_type (l : Loc) (v : runtime.elfPhdr) (p_type' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_type (l : Loc) (v : runtime.elfPhdr) (p_type' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) v.p_type' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) p_type' (DFrac.own 1))
@@ -72,7 +74,9 @@ instance elfPhdr_access_load_p_flags (l : Loc) (v : runtime.elfPhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_flags (l : Loc) (v : runtime.elfPhdr) (p_flags' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_flags (l : Loc) (v : runtime.elfPhdr) (p_flags' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) v.p_flags' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) p_flags' (DFrac.own 1))
@@ -88,7 +92,9 @@ instance elfPhdr_access_load_p_offset (l : Loc) (v : runtime.elfPhdr) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_offset (l : Loc) (v : runtime.elfPhdr) (p_offset' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_offset (l : Loc) (v : runtime.elfPhdr) (p_offset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) v.p_offset' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) p_offset' (DFrac.own 1))
@@ -104,7 +110,9 @@ instance elfPhdr_access_load_p_vaddr (l : Loc) (v : runtime.elfPhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_vaddr (l : Loc) (v : runtime.elfPhdr) (p_vaddr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_vaddr (l : Loc) (v : runtime.elfPhdr) (p_vaddr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) v.p_vaddr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) p_vaddr' (DFrac.own 1))
@@ -120,7 +128,9 @@ instance elfPhdr_access_load_p_paddr (l : Loc) (v : runtime.elfPhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_paddr (l : Loc) (v : runtime.elfPhdr) (p_paddr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_paddr (l : Loc) (v : runtime.elfPhdr) (p_paddr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) v.p_paddr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) p_paddr' (DFrac.own 1))
@@ -136,7 +146,9 @@ instance elfPhdr_access_load_p_filesz (l : Loc) (v : runtime.elfPhdr) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_filesz (l : Loc) (v : runtime.elfPhdr) (p_filesz' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_filesz (l : Loc) (v : runtime.elfPhdr) (p_filesz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) v.p_filesz' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) p_filesz' (DFrac.own 1))
@@ -152,7 +164,9 @@ instance elfPhdr_access_load_p_memsz (l : Loc) (v : runtime.elfPhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_memsz (l : Loc) (v : runtime.elfPhdr) (p_memsz' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_memsz (l : Loc) (v : runtime.elfPhdr) (p_memsz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) v.p_memsz' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) p_memsz' (DFrac.own 1))
@@ -168,7 +182,9 @@ instance elfPhdr_access_load_p_align (l : Loc) (v : runtime.elfPhdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfPhdr_access_store_p_align (l : Loc) (v : runtime.elfPhdr) (p_align' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfPhdr_access_store_p_align (l : Loc) (v : runtime.elfPhdr) (p_align' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) v.p_align' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) p_align' (DFrac.own 1))
@@ -217,7 +233,9 @@ instance elfShdr_access_load_sh_name (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_name (l : Loc) (v : runtime.elfShdr) (sh_name' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_name (l : Loc) (v : runtime.elfShdr) (sh_name' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) v.sh_name' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) sh_name' (DFrac.own 1))
@@ -233,7 +251,9 @@ instance elfShdr_access_load_sh_type (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_type (l : Loc) (v : runtime.elfShdr) (sh_type' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_type (l : Loc) (v : runtime.elfShdr) (sh_type' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) v.sh_type' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) sh_type' (DFrac.own 1))
@@ -249,7 +269,9 @@ instance elfShdr_access_load_sh_flags (l : Loc) (v : runtime.elfShdr) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_flags (l : Loc) (v : runtime.elfShdr) (sh_flags' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_flags (l : Loc) (v : runtime.elfShdr) (sh_flags' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) v.sh_flags' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) sh_flags' (DFrac.own 1))
@@ -265,7 +287,9 @@ instance elfShdr_access_load_sh_addr (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_addr (l : Loc) (v : runtime.elfShdr) (sh_addr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_addr (l : Loc) (v : runtime.elfShdr) (sh_addr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) v.sh_addr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) sh_addr' (DFrac.own 1))
@@ -281,7 +305,9 @@ instance elfShdr_access_load_sh_offset (l : Loc) (v : runtime.elfShdr) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_offset (l : Loc) (v : runtime.elfShdr) (sh_offset' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_offset (l : Loc) (v : runtime.elfShdr) (sh_offset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) v.sh_offset' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) sh_offset' (DFrac.own 1))
@@ -297,7 +323,9 @@ instance elfShdr_access_load_sh_size (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_size (l : Loc) (v : runtime.elfShdr) (sh_size' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_size (l : Loc) (v : runtime.elfShdr) (sh_size' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) v.sh_size' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) sh_size' (DFrac.own 1))
@@ -313,7 +341,9 @@ instance elfShdr_access_load_sh_link (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_link (l : Loc) (v : runtime.elfShdr) (sh_link' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_link (l : Loc) (v : runtime.elfShdr) (sh_link' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) v.sh_link' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) sh_link' (DFrac.own 1))
@@ -329,7 +359,9 @@ instance elfShdr_access_load_sh_info (l : Loc) (v : runtime.elfShdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_info (l : Loc) (v : runtime.elfShdr) (sh_info' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_info (l : Loc) (v : runtime.elfShdr) (sh_info' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) v.sh_info' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) sh_info' (DFrac.own 1))
@@ -345,7 +377,9 @@ instance elfShdr_access_load_sh_addralign (l : Loc) (v : runtime.elfShdr) (dq : 
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_addralign (l : Loc) (v : runtime.elfShdr) (sh_addralign' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_addralign (l : Loc) (v : runtime.elfShdr) (sh_addralign' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) v.sh_addralign' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) sh_addralign' (DFrac.own 1))
@@ -361,7 +395,9 @@ instance elfShdr_access_load_sh_entsize (l : Loc) (v : runtime.elfShdr) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance elfShdr_access_store_sh_entsize (l : Loc) (v : runtime.elfShdr) (sh_entsize' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfShdr_access_store_sh_entsize (l : Loc) (v : runtime.elfShdr) (sh_entsize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) v.sh_entsize' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) sh_entsize' (DFrac.own 1))
@@ -402,7 +438,9 @@ instance elfDyn_access_load_d_tag (l : Loc) (v : runtime.elfDyn) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance elfDyn_access_store_d_tag (l : Loc) (v : runtime.elfDyn) (d_tag' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfDyn_access_store_d_tag (l : Loc) (v : runtime.elfDyn) (d_tag' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfDyn go!"d_tag" l) v.d_tag' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfDyn go!"d_tag" l) d_tag' (DFrac.own 1))
@@ -418,7 +456,9 @@ instance elfDyn_access_load_d_val (l : Loc) (v : runtime.elfDyn) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance elfDyn_access_store_d_val (l : Loc) (v : runtime.elfDyn) (d_val' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfDyn_access_store_d_val (l : Loc) (v : runtime.elfDyn) (d_val' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfDyn go!"d_val" l) v.d_val' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfDyn go!"d_val" l) d_val' (DFrac.own 1))
@@ -459,7 +499,9 @@ instance elfVerdaux_access_load_vda_name (l : Loc) (v : runtime.elfVerdaux) (dq 
  by
   solve_pointsto_access_struct
 
-instance elfVerdaux_access_store_vda_name (l : Loc) (v : runtime.elfVerdaux) (vda_name' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfVerdaux_access_store_vda_name (l : Loc) (v : runtime.elfVerdaux) (vda_name' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfVerdaux go!"vda_name" l) v.vda_name' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfVerdaux go!"vda_name" l) vda_name' (DFrac.own 1))
@@ -475,7 +517,9 @@ instance elfVerdaux_access_load_vda_next (l : Loc) (v : runtime.elfVerdaux) (dq 
  by
   solve_pointsto_access_struct
 
-instance elfVerdaux_access_store_vda_next (l : Loc) (v : runtime.elfVerdaux) (vda_next' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) elfVerdaux_access_store_vda_next (l : Loc) (v : runtime.elfVerdaux) (vda_next' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.elfVerdaux go!"vda_next" l) v.vda_next' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.elfVerdaux go!"vda_next" l) vda_next' (DFrac.own 1))
@@ -518,7 +562,9 @@ instance vdsoSymbolKey_access_load_name (l : Loc) (v : runtime.vdsoSymbolKey) (d
  by
   solve_pointsto_access_struct
 
-instance vdsoSymbolKey_access_store_name (l : Loc) (v : runtime.vdsoSymbolKey) (name' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoSymbolKey_access_store_name (l : Loc) (v : runtime.vdsoSymbolKey) (name' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"name" l) name' (DFrac.own 1))
@@ -534,7 +580,9 @@ instance vdsoSymbolKey_access_load_symHash (l : Loc) (v : runtime.vdsoSymbolKey)
  by
   solve_pointsto_access_struct
 
-instance vdsoSymbolKey_access_store_symHash (l : Loc) (v : runtime.vdsoSymbolKey) (symHash' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoSymbolKey_access_store_symHash (l : Loc) (v : runtime.vdsoSymbolKey) (symHash' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"symHash" l) v.symHash' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"symHash" l) symHash' (DFrac.own 1))
@@ -550,7 +598,9 @@ instance vdsoSymbolKey_access_load_gnuHash (l : Loc) (v : runtime.vdsoSymbolKey)
  by
   solve_pointsto_access_struct
 
-instance vdsoSymbolKey_access_store_gnuHash (l : Loc) (v : runtime.vdsoSymbolKey) (gnuHash' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoSymbolKey_access_store_gnuHash (l : Loc) (v : runtime.vdsoSymbolKey) (gnuHash' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"gnuHash" l) v.gnuHash' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"gnuHash" l) gnuHash' (DFrac.own 1))
@@ -566,7 +616,9 @@ instance vdsoSymbolKey_access_load_ptr (l : Loc) (v : runtime.vdsoSymbolKey) (dq
  by
   solve_pointsto_access_struct
 
-instance vdsoSymbolKey_access_store_ptr (l : Loc) (v : runtime.vdsoSymbolKey) (ptr' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoSymbolKey_access_store_ptr (l : Loc) (v : runtime.vdsoSymbolKey) (ptr' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"ptr" l) v.ptr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoSymbolKey go!"ptr" l) ptr' (DFrac.own 1))
@@ -607,7 +659,9 @@ instance vdsoVersionKey_access_load_version (l : Loc) (v : runtime.vdsoVersionKe
  by
   solve_pointsto_access_struct
 
-instance vdsoVersionKey_access_store_version (l : Loc) (v : runtime.vdsoVersionKey) (version' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoVersionKey_access_store_version (l : Loc) (v : runtime.vdsoVersionKey) (version' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoVersionKey go!"version" l) v.version' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoVersionKey go!"version" l) version' (DFrac.own 1))
@@ -623,7 +677,9 @@ instance vdsoVersionKey_access_load_verHash (l : Loc) (v : runtime.vdsoVersionKe
  by
   solve_pointsto_access_struct
 
-instance vdsoVersionKey_access_store_verHash (l : Loc) (v : runtime.vdsoVersionKey) (verHash' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoVersionKey_access_store_verHash (l : Loc) (v : runtime.vdsoVersionKey) (verHash' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoVersionKey go!"verHash" l) v.verHash' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoVersionKey go!"verHash" l) verHash' (DFrac.own 1))
@@ -673,7 +729,9 @@ instance vdsoInfo_access_load_valid (l : Loc) (v : runtime.vdsoInfo) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_valid (l : Loc) (v : runtime.vdsoInfo) (valid' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_valid (l : Loc) (v : runtime.vdsoInfo) (valid' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"valid" l) v.valid' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"valid" l) valid' (DFrac.own 1))
@@ -689,7 +747,9 @@ instance vdsoInfo_access_load_loadAddr (l : Loc) (v : runtime.vdsoInfo) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_loadAddr (l : Loc) (v : runtime.vdsoInfo) (loadAddr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_loadAddr (l : Loc) (v : runtime.vdsoInfo) (loadAddr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"loadAddr" l) v.loadAddr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"loadAddr" l) loadAddr' (DFrac.own 1))
@@ -705,7 +765,9 @@ instance vdsoInfo_access_load_loadOffset (l : Loc) (v : runtime.vdsoInfo) (dq : 
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_loadOffset (l : Loc) (v : runtime.vdsoInfo) (loadOffset' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_loadOffset (l : Loc) (v : runtime.vdsoInfo) (loadOffset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"loadOffset" l) v.loadOffset' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"loadOffset" l) loadOffset' (DFrac.own 1))
@@ -721,7 +783,9 @@ instance vdsoInfo_access_load_symtab (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_symtab (l : Loc) (v : runtime.vdsoInfo) (symtab' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_symtab (l : Loc) (v : runtime.vdsoInfo) (symtab' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symtab" l) v.symtab' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symtab" l) symtab' (DFrac.own 1))
@@ -737,7 +801,9 @@ instance vdsoInfo_access_load_symstrings (l : Loc) (v : runtime.vdsoInfo) (dq : 
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_symstrings (l : Loc) (v : runtime.vdsoInfo) (symstrings' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_symstrings (l : Loc) (v : runtime.vdsoInfo) (symstrings' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symstrings" l) v.symstrings' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symstrings" l) symstrings' (DFrac.own 1))
@@ -753,7 +819,9 @@ instance vdsoInfo_access_load_chain (l : Loc) (v : runtime.vdsoInfo) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_chain (l : Loc) (v : runtime.vdsoInfo) (chain' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_chain (l : Loc) (v : runtime.vdsoInfo) (chain' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"chain" l) v.chain' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"chain" l) chain' (DFrac.own 1))
@@ -769,7 +837,9 @@ instance vdsoInfo_access_load_bucket (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_bucket (l : Loc) (v : runtime.vdsoInfo) (bucket' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_bucket (l : Loc) (v : runtime.vdsoInfo) (bucket' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"bucket" l) v.bucket' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"bucket" l) bucket' (DFrac.own 1))
@@ -785,7 +855,9 @@ instance vdsoInfo_access_load_symOff (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_symOff (l : Loc) (v : runtime.vdsoInfo) (symOff' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_symOff (l : Loc) (v : runtime.vdsoInfo) (symOff' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symOff" l) v.symOff' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"symOff" l) symOff' (DFrac.own 1))
@@ -801,7 +873,9 @@ instance vdsoInfo_access_load_isGNUHash (l : Loc) (v : runtime.vdsoInfo) (dq : D
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_isGNUHash (l : Loc) (v : runtime.vdsoInfo) (isGNUHash' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_isGNUHash (l : Loc) (v : runtime.vdsoInfo) (isGNUHash' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"isGNUHash" l) v.isGNUHash' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"isGNUHash" l) isGNUHash' (DFrac.own 1))
@@ -817,7 +891,9 @@ instance vdsoInfo_access_load_versym (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_versym (l : Loc) (v : runtime.vdsoInfo) (versym' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_versym (l : Loc) (v : runtime.vdsoInfo) (versym' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"versym" l) v.versym' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"versym" l) versym' (DFrac.own 1))
@@ -833,7 +909,9 @@ instance vdsoInfo_access_load_verdef (l : Loc) (v : runtime.vdsoInfo) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance vdsoInfo_access_store_verdef (l : Loc) (v : runtime.vdsoInfo) (verdef' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) vdsoInfo_access_store_verdef (l : Loc) (v : runtime.vdsoInfo) (verdef' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"verdef" l) v.verdef' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.vdsoInfo go!"verdef" l) verdef' (DFrac.own 1))

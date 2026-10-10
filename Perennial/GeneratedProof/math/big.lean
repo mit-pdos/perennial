@@ -105,7 +105,9 @@ instance decimal_access_load_mant (l : Loc) (v : math.big.decimal) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance decimal_access_store_mant (l : Loc) (v : math.big.decimal) (mant' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) decimal_access_store_mant (l : Loc) (v : math.big.decimal) (mant' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.decimal go!"mant" l) v.mant' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.decimal go!"mant" l) mant' (DFrac.own 1))
@@ -121,7 +123,9 @@ instance decimal_access_load_exp (l : Loc) (v : math.big.decimal) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance decimal_access_store_exp (l : Loc) (v : math.big.decimal) (exp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) decimal_access_store_exp (l : Loc) (v : math.big.decimal) (exp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.decimal go!"exp" l) v.exp' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.decimal go!"exp" l) exp' (DFrac.own 1))
@@ -167,7 +171,9 @@ instance Float_access_load_prec (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_prec (l : Loc) (v : math.big.Float) (prec' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_prec (l : Loc) (v : math.big.Float) (prec' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"prec" l) v.prec' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"prec" l) prec' (DFrac.own 1))
@@ -183,7 +189,9 @@ instance Float_access_load_mode (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_mode (l : Loc) (v : math.big.Float) (mode' : math.big.RoundingMode) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_mode (l : Loc) (v : math.big.Float) (mode' : math.big.RoundingMode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"mode" l) v.mode' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"mode" l) mode' (DFrac.own 1))
@@ -199,7 +207,9 @@ instance Float_access_load_acc (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_acc (l : Loc) (v : math.big.Float) (acc' : math.big.Accuracy) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_acc (l : Loc) (v : math.big.Float) (acc' : math.big.Accuracy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"acc" l) v.acc' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"acc" l) acc' (DFrac.own 1))
@@ -215,7 +225,9 @@ instance Float_access_load_form (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_form (l : Loc) (v : math.big.Float) (form' : math.big.form) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_form (l : Loc) (v : math.big.Float) (form' : math.big.form) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"form" l) v.form' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"form" l) form' (DFrac.own 1))
@@ -231,7 +243,9 @@ instance Float_access_load_neg (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_neg (l : Loc) (v : math.big.Float) (neg' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_neg (l : Loc) (v : math.big.Float) (neg' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"neg" l) v.neg' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"neg" l) neg' (DFrac.own 1))
@@ -247,7 +261,9 @@ instance Float_access_load_mant (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_mant (l : Loc) (v : math.big.Float) (mant' : math.big.nat) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_mant (l : Loc) (v : math.big.Float) (mant' : math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"mant" l) v.mant' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"mant" l) mant' (DFrac.own 1))
@@ -263,7 +279,9 @@ instance Float_access_load_exp (l : Loc) (v : math.big.Float) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Float_access_store_exp (l : Loc) (v : math.big.Float) (exp' : w32) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Float_access_store_exp (l : Loc) (v : math.big.Float) (exp' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"exp" l) v.exp' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"exp" l) exp' (DFrac.own 1))
@@ -303,7 +321,9 @@ instance ErrNaN_access_load_msg (l : Loc) (v : math.big.ErrNaN) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance ErrNaN_access_store_msg (l : Loc) (v : math.big.ErrNaN) (msg' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) ErrNaN_access_store_msg (l : Loc) (v : math.big.ErrNaN) (msg' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.ErrNaN go!"msg" l) v.msg' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.ErrNaN go!"msg" l) msg' (DFrac.own 1))
@@ -344,7 +364,9 @@ instance Int'_access_load_neg (l : Loc) (v : math.big.Int') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int'_access_store_neg (l : Loc) (v : math.big.Int') (neg' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Int'_access_store_neg (l : Loc) (v : math.big.Int') (neg' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Int' go!"neg" l) v.neg' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Int' go!"neg" l) neg' (DFrac.own 1))
@@ -360,7 +382,9 @@ instance Int'_access_load_abs (l : Loc) (v : math.big.Int') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int'_access_store_abs (l : Loc) (v : math.big.Int') (abs' : math.big.nat) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Int'_access_store_abs (l : Loc) (v : math.big.Int') (abs' : math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Int' go!"abs" l) v.abs' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Int' go!"abs" l) abs' (DFrac.own 1))
@@ -400,7 +424,9 @@ instance byteReader_access_load_ScanState (l : Loc) (v : math.big.byteReader) (d
  by
   solve_pointsto_access_struct
 
-instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : fmt.ScanState) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : fmt.ScanState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) v.ScanState' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) ScanState' (DFrac.own 1))
@@ -440,7 +466,9 @@ instance stack_access_load_w (l : Loc) (v : math.big.stack) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stack_access_store_w (l : Loc) (v : math.big.stack) (w' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stack_access_store_w (l : Loc) (v : math.big.stack) (w' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.stack go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.stack go!"w" l) w' (DFrac.own 1))
@@ -482,7 +510,9 @@ instance divisor_access_load_bbb (l : Loc) (v : math.big.divisor) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_bbb (l : Loc) (v : math.big.divisor) (bbb' : math.big.nat) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) divisor_access_store_bbb (l : Loc) (v : math.big.divisor) (bbb' : math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.divisor go!"bbb" l) v.bbb' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.divisor go!"bbb" l) bbb' (DFrac.own 1))
@@ -498,7 +528,9 @@ instance divisor_access_load_nbits (l : Loc) (v : math.big.divisor) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_nbits (l : Loc) (v : math.big.divisor) (nbits' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) divisor_access_store_nbits (l : Loc) (v : math.big.divisor) (nbits' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.divisor go!"nbits" l) v.nbits' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.divisor go!"nbits" l) nbits' (DFrac.own 1))
@@ -514,7 +546,9 @@ instance divisor_access_load_ndigits (l : Loc) (v : math.big.divisor) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance divisor_access_store_ndigits (l : Loc) (v : math.big.divisor) (ndigits' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) divisor_access_store_ndigits (l : Loc) (v : math.big.divisor) (ndigits' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.divisor go!"ndigits" l) v.ndigits' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.divisor go!"ndigits" l) ndigits' (DFrac.own 1))
@@ -555,7 +589,9 @@ instance Rat_access_load_a (l : Loc) (v : math.big.Rat) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rat_access_store_a (l : Loc) (v : math.big.Rat) (a' : math.big.Int') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rat_access_store_a (l : Loc) (v : math.big.Rat) (a' : math.big.Int') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Rat go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Rat go!"a" l) a' (DFrac.own 1))
@@ -571,7 +607,9 @@ instance Rat_access_load_b (l : Loc) (v : math.big.Rat) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rat_access_store_b (l : Loc) (v : math.big.Rat) (b' : math.big.Int') :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Rat_access_store_b (l : Loc) (v : math.big.Rat) (b' : math.big.Int') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Rat go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Rat go!"b" l) b' (DFrac.own 1))

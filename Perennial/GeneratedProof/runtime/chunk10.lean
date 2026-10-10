@@ -53,7 +53,9 @@ instance maybeTraceableChan_access_load_maybeTraceablePtr (l : Loc) (v : runtime
  by
   solve_pointsto_access_struct
 
-instance maybeTraceableChan_access_store_maybeTraceablePtr (l : Loc) (v : runtime.maybeTraceableChan) (maybeTraceablePtr' : runtime.maybeTraceablePtr) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) maybeTraceableChan_access_store_maybeTraceablePtr (l : Loc) (v : runtime.maybeTraceableChan) (maybeTraceablePtr' : runtime.maybeTraceablePtr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) v.maybeTraceablePtr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) maybeTraceablePtr' (DFrac.own 1))
@@ -94,7 +96,9 @@ instance heldLockInfo_access_load_lockAddr (l : Loc) (v : runtime.heldLockInfo) 
  by
   solve_pointsto_access_struct
 
-instance heldLockInfo_access_store_lockAddr (l : Loc) (v : runtime.heldLockInfo) (lockAddr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) heldLockInfo_access_store_lockAddr (l : Loc) (v : runtime.heldLockInfo) (lockAddr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) v.lockAddr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) lockAddr' (DFrac.own 1))
@@ -110,7 +114,9 @@ instance heldLockInfo_access_load_rank (l : Loc) (v : runtime.heldLockInfo) (dq 
  by
   solve_pointsto_access_struct
 
-instance heldLockInfo_access_store_rank (l : Loc) (v : runtime.heldLockInfo) (rank' : runtime.lockRank) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) heldLockInfo_access_store_rank (l : Loc) (v : runtime.heldLockInfo) (rank' : runtime.lockRank) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) v.rank' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) rank' (DFrac.own 1))
@@ -150,7 +156,9 @@ instance gTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-instance gTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.gTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) gTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.gTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) traceSchedResourceState' (DFrac.own 1))
@@ -191,7 +199,9 @@ instance mPadded_access_load_m (l : Loc) (v : runtime.mPadded) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance mPadded_access_store_m (l : Loc) (v : runtime.mPadded) (m' : runtime.m) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) mPadded_access_store_m (l : Loc) (v : runtime.mPadded) (m' : runtime.m) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mPadded go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mPadded go!"m" l) m' (DFrac.own 1))
@@ -207,7 +217,9 @@ instance mPadded_access_load__1 (l : Loc) (v : runtime.mPadded) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance mPadded_access_store__1 (l : Loc) (v : runtime.mPadded) (_1' : (GoArray w8 216)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) mPadded_access_store__1 (l : Loc) (v : runtime.mPadded) (_1' : (GoArray w8 216)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mPadded go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mPadded go!"_1" l) _1' (DFrac.own 1))
@@ -250,7 +262,9 @@ instance runtimeSelect_access_load_dir (l : Loc) (v : runtime.runtimeSelect) (dq
  by
   solve_pointsto_access_struct
 
-instance runtimeSelect_access_store_dir (l : Loc) (v : runtime.runtimeSelect) (dir' : runtime.selectDir) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) runtimeSelect_access_store_dir (l : Loc) (v : runtime.runtimeSelect) (dir' : runtime.selectDir) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) v.dir' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) dir' (DFrac.own 1))
@@ -266,7 +280,9 @@ instance runtimeSelect_access_load_typ (l : Loc) (v : runtime.runtimeSelect) (dq
  by
   solve_pointsto_access_struct
 
-instance runtimeSelect_access_store_typ (l : Loc) (v : runtime.runtimeSelect) (typ' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) runtimeSelect_access_store_typ (l : Loc) (v : runtime.runtimeSelect) (typ' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) v.typ' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) typ' (DFrac.own 1))
@@ -282,7 +298,9 @@ instance runtimeSelect_access_load_ch (l : Loc) (v : runtime.runtimeSelect) (dq 
  by
   solve_pointsto_access_struct
 
-instance runtimeSelect_access_store_ch (l : Loc) (v : runtime.runtimeSelect) (ch' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) runtimeSelect_access_store_ch (l : Loc) (v : runtime.runtimeSelect) (ch' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) v.ch' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) ch' (DFrac.own 1))
@@ -298,7 +316,9 @@ instance runtimeSelect_access_load_val (l : Loc) (v : runtime.runtimeSelect) (dq
  by
   solve_pointsto_access_struct
 
-instance runtimeSelect_access_store_val (l : Loc) (v : runtime.runtimeSelect) (val' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) runtimeSelect_access_store_val (l : Loc) (v : runtime.runtimeSelect) (val' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) val' (DFrac.own 1))
@@ -341,7 +361,9 @@ instance gsignalStack_access_load_stack (l : Loc) (v : runtime.gsignalStack) (dq
  by
   solve_pointsto_access_struct
 
-instance gsignalStack_access_store_stack (l : Loc) (v : runtime.gsignalStack) (stack' : runtime.stack) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) gsignalStack_access_store_stack (l : Loc) (v : runtime.gsignalStack) (stack' : runtime.stack) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) v.stack' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) stack' (DFrac.own 1))
@@ -357,7 +379,9 @@ instance gsignalStack_access_load_stackguard0 (l : Loc) (v : runtime.gsignalStac
  by
   solve_pointsto_access_struct
 
-instance gsignalStack_access_store_stackguard0 (l : Loc) (v : runtime.gsignalStack) (stackguard0' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) gsignalStack_access_store_stackguard0 (l : Loc) (v : runtime.gsignalStack) (stackguard0' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) v.stackguard0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) stackguard0' (DFrac.own 1))
@@ -373,7 +397,9 @@ instance gsignalStack_access_load_stackguard1 (l : Loc) (v : runtime.gsignalStac
  by
   solve_pointsto_access_struct
 
-instance gsignalStack_access_store_stackguard1 (l : Loc) (v : runtime.gsignalStack) (stackguard1' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) gsignalStack_access_store_stackguard1 (l : Loc) (v : runtime.gsignalStack) (stackguard1' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) v.stackguard1' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) stackguard1' (DFrac.own 1))
@@ -389,7 +415,9 @@ instance gsignalStack_access_load_stktopsp (l : Loc) (v : runtime.gsignalStack) 
  by
   solve_pointsto_access_struct
 
-instance gsignalStack_access_store_stktopsp (l : Loc) (v : runtime.gsignalStack) (stktopsp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) gsignalStack_access_store_stktopsp (l : Loc) (v : runtime.gsignalStack) (stktopsp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) v.stktopsp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) stktopsp' (DFrac.own 1))
@@ -431,7 +459,9 @@ instance adjustinfo_access_load_old (l : Loc) (v : runtime.adjustinfo) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance adjustinfo_access_store_old (l : Loc) (v : runtime.adjustinfo) (old' : runtime.stack) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) adjustinfo_access_store_old (l : Loc) (v : runtime.adjustinfo) (old' : runtime.stack) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) v.old' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) old' (DFrac.own 1))
@@ -447,7 +477,9 @@ instance adjustinfo_access_load_delta (l : Loc) (v : runtime.adjustinfo) (dq : D
  by
   solve_pointsto_access_struct
 
-instance adjustinfo_access_store_delta (l : Loc) (v : runtime.adjustinfo) (delta' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) adjustinfo_access_store_delta (l : Loc) (v : runtime.adjustinfo) (delta' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) v.delta' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) delta' (DFrac.own 1))
@@ -463,7 +495,9 @@ instance adjustinfo_access_load_sghi (l : Loc) (v : runtime.adjustinfo) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance adjustinfo_access_store_sghi (l : Loc) (v : runtime.adjustinfo) (sghi' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) adjustinfo_access_store_sghi (l : Loc) (v : runtime.adjustinfo) (sghi' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) v.sghi' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) sghi' (DFrac.own 1))
@@ -510,7 +544,9 @@ instance stkframe_access_load_fn (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_fn (l : Loc) (v : runtime.stkframe) (fn' : runtime.funcInfo) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_fn (l : Loc) (v : runtime.stkframe) (fn' : runtime.funcInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) v.fn' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) fn' (DFrac.own 1))
@@ -526,7 +562,9 @@ instance stkframe_access_load_pc (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_pc (l : Loc) (v : runtime.stkframe) (pc' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_pc (l : Loc) (v : runtime.stkframe) (pc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) v.pc' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) pc' (DFrac.own 1))
@@ -542,7 +580,9 @@ instance stkframe_access_load_continpc (l : Loc) (v : runtime.stkframe) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_continpc (l : Loc) (v : runtime.stkframe) (continpc' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_continpc (l : Loc) (v : runtime.stkframe) (continpc' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) v.continpc' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) continpc' (DFrac.own 1))
@@ -558,7 +598,9 @@ instance stkframe_access_load_lr (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_lr (l : Loc) (v : runtime.stkframe) (lr' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_lr (l : Loc) (v : runtime.stkframe) (lr' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) v.lr' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) lr' (DFrac.own 1))
@@ -574,7 +616,9 @@ instance stkframe_access_load_sp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_sp (l : Loc) (v : runtime.stkframe) (sp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_sp (l : Loc) (v : runtime.stkframe) (sp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) v.sp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) sp' (DFrac.own 1))
@@ -590,7 +634,9 @@ instance stkframe_access_load_fp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_fp (l : Loc) (v : runtime.stkframe) (fp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_fp (l : Loc) (v : runtime.stkframe) (fp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) v.fp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) fp' (DFrac.own 1))
@@ -606,7 +652,9 @@ instance stkframe_access_load_varp (l : Loc) (v : runtime.stkframe) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_varp (l : Loc) (v : runtime.stkframe) (varp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_varp (l : Loc) (v : runtime.stkframe) (varp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) v.varp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) varp' (DFrac.own 1))
@@ -622,7 +670,9 @@ instance stkframe_access_load_argp (l : Loc) (v : runtime.stkframe) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance stkframe_access_store_argp (l : Loc) (v : runtime.stkframe) (argp' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) stkframe_access_store_argp (l : Loc) (v : runtime.stkframe) (argp' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) v.argp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) argp' (DFrac.own 1))
@@ -669,7 +719,9 @@ instance Frame_access_load_PC (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_PC (l : Loc) (v : runtime.Frame) (PC' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_PC (l : Loc) (v : runtime.Frame) (PC' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"PC" l) v.PC' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"PC" l) PC' (DFrac.own 1))
@@ -685,7 +737,9 @@ instance Frame_access_load_Func (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_Func (l : Loc) (v : runtime.Frame) (Func' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_Func (l : Loc) (v : runtime.Frame) (Func' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"Func" l) v.Func' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"Func" l) Func' (DFrac.own 1))
@@ -701,7 +755,9 @@ instance Frame_access_load_Function (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_Function (l : Loc) (v : runtime.Frame) (Function' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_Function (l : Loc) (v : runtime.Frame) (Function' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"Function" l) v.Function' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"Function" l) Function' (DFrac.own 1))
@@ -717,7 +773,9 @@ instance Frame_access_load_File (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_File (l : Loc) (v : runtime.Frame) (File' : GoString) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_File (l : Loc) (v : runtime.Frame) (File' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"File" l) v.File' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"File" l) File' (DFrac.own 1))
@@ -733,7 +791,9 @@ instance Frame_access_load_Line (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_Line (l : Loc) (v : runtime.Frame) (Line' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_Line (l : Loc) (v : runtime.Frame) (Line' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"Line" l) v.Line' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"Line" l) Line' (DFrac.own 1))
@@ -749,7 +809,9 @@ instance Frame_access_load_startLine (l : Loc) (v : runtime.Frame) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_startLine (l : Loc) (v : runtime.Frame) (startLine' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_startLine (l : Loc) (v : runtime.Frame) (startLine' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) v.startLine' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) startLine' (DFrac.own 1))
@@ -765,7 +827,9 @@ instance Frame_access_load_Entry (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_Entry (l : Loc) (v : runtime.Frame) (Entry' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_Entry (l : Loc) (v : runtime.Frame) (Entry' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) v.Entry' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) Entry' (DFrac.own 1))
@@ -781,7 +845,9 @@ instance Frame_access_load_funcInfo (l : Loc) (v : runtime.Frame) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Frame_access_store_funcInfo (l : Loc) (v : runtime.Frame) (funcInfo' : runtime.funcInfo) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Frame_access_store_funcInfo (l : Loc) (v : runtime.Frame) (funcInfo' : runtime.funcInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) v.funcInfo' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) funcInfo' (DFrac.own 1))
@@ -822,7 +888,9 @@ instance pcvalueCache_access_load_entries (l : Loc) (v : runtime.pcvalueCache) (
  by
   solve_pointsto_access_struct
 
-instance pcvalueCache_access_store_entries (l : Loc) (v : runtime.pcvalueCache) (entries' : (GoArray (GoArray runtime.pcvalueCacheEnt 8) 2)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pcvalueCache_access_store_entries (l : Loc) (v : runtime.pcvalueCache) (entries' : (GoArray (GoArray runtime.pcvalueCacheEnt 8) 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) entries' (DFrac.own 1))
@@ -838,7 +906,9 @@ instance pcvalueCache_access_load_inUse (l : Loc) (v : runtime.pcvalueCache) (dq
  by
   solve_pointsto_access_struct
 
-instance pcvalueCache_access_store_inUse (l : Loc) (v : runtime.pcvalueCache) (inUse' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pcvalueCache_access_store_inUse (l : Loc) (v : runtime.pcvalueCache) (inUse' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) v.inUse' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) inUse' (DFrac.own 1))
@@ -879,7 +949,9 @@ instance inlineUnwinder_access_load_f (l : Loc) (v : runtime.inlineUnwinder) (dq
  by
   solve_pointsto_access_struct
 
-instance inlineUnwinder_access_store_f (l : Loc) (v : runtime.inlineUnwinder) (f' : runtime.funcInfo) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) inlineUnwinder_access_store_f (l : Loc) (v : runtime.inlineUnwinder) (f' : runtime.funcInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) f' (DFrac.own 1))
@@ -895,7 +967,9 @@ instance inlineUnwinder_access_load_inlTree (l : Loc) (v : runtime.inlineUnwinde
  by
   solve_pointsto_access_struct
 
-instance inlineUnwinder_access_store_inlTree (l : Loc) (v : runtime.inlineUnwinder) (inlTree' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) inlineUnwinder_access_store_inlTree (l : Loc) (v : runtime.inlineUnwinder) (inlTree' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) v.inlTree' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) inlTree' (DFrac.own 1))
@@ -937,7 +1011,9 @@ instance specialBubble_access_load__0 (l : Loc) (v : runtime.specialBubble) (dq 
  by
   solve_pointsto_access_struct
 
-instance specialBubble_access_store__0 (l : Loc) (v : runtime.specialBubble) (_0' : internal.runtime.sys.NotInHeap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) specialBubble_access_store__0 (l : Loc) (v : runtime.specialBubble) (_0' : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.specialBubble go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.specialBubble go!"_0" l) _0' (DFrac.own 1))
@@ -953,7 +1029,9 @@ instance specialBubble_access_load_special (l : Loc) (v : runtime.specialBubble)
  by
   solve_pointsto_access_struct
 
-instance specialBubble_access_store_special (l : Loc) (v : runtime.specialBubble) (special' : runtime.special) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) specialBubble_access_store_special (l : Loc) (v : runtime.specialBubble) (special' : runtime.special) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) v.special' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) special' (DFrac.own 1))
@@ -969,7 +1047,9 @@ instance specialBubble_access_load_bubbleid (l : Loc) (v : runtime.specialBubble
  by
   solve_pointsto_access_struct
 
-instance specialBubble_access_store_bubbleid (l : Loc) (v : runtime.specialBubble) (bubbleid' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) specialBubble_access_store_bubbleid (l : Loc) (v : runtime.specialBubble) (bubbleid' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) v.bubbleid' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) bubbleid' (DFrac.own 1))
@@ -1012,7 +1092,9 @@ instance traceBufHeader_access_load_link (l : Loc) (v : runtime.traceBufHeader) 
  by
   solve_pointsto_access_struct
 
-instance traceBufHeader_access_store_link (l : Loc) (v : runtime.traceBufHeader) (link' : Loc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceBufHeader_access_store_link (l : Loc) (v : runtime.traceBufHeader) (link' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) v.link' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) link' (DFrac.own 1))
@@ -1028,7 +1110,9 @@ instance traceBufHeader_access_load_lastTime (l : Loc) (v : runtime.traceBufHead
  by
   solve_pointsto_access_struct
 
-instance traceBufHeader_access_store_lastTime (l : Loc) (v : runtime.traceBufHeader) (lastTime' : runtime.traceTime) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceBufHeader_access_store_lastTime (l : Loc) (v : runtime.traceBufHeader) (lastTime' : runtime.traceTime) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) v.lastTime' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) lastTime' (DFrac.own 1))
@@ -1044,7 +1128,9 @@ instance traceBufHeader_access_load_pos (l : Loc) (v : runtime.traceBufHeader) (
  by
   solve_pointsto_access_struct
 
-instance traceBufHeader_access_store_pos (l : Loc) (v : runtime.traceBufHeader) (pos' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceBufHeader_access_store_pos (l : Loc) (v : runtime.traceBufHeader) (pos' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) v.pos' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) pos' (DFrac.own 1))
@@ -1060,7 +1146,9 @@ instance traceBufHeader_access_load_lenPos (l : Loc) (v : runtime.traceBufHeader
  by
   solve_pointsto_access_struct
 
-instance traceBufHeader_access_store_lenPos (l : Loc) (v : runtime.traceBufHeader) (lenPos' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceBufHeader_access_store_lenPos (l : Loc) (v : runtime.traceBufHeader) (lenPos' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) v.lenPos' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) lenPos' (DFrac.own 1))
@@ -1100,7 +1188,9 @@ instance traceEventWriter_access_load_tl (l : Loc) (v : runtime.traceEventWriter
  by
   solve_pointsto_access_struct
 
-instance traceEventWriter_access_store_tl (l : Loc) (v : runtime.traceEventWriter) (tl' : runtime.traceLocker) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceEventWriter_access_store_tl (l : Loc) (v : runtime.traceEventWriter) (tl' : runtime.traceLocker) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) v.tl' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) tl' (DFrac.own 1))
@@ -1142,7 +1232,9 @@ instance traceRegionAllocBlock_access_load__0 (l : Loc) (v : runtime.traceRegion
  by
   solve_pointsto_access_struct
 
-instance traceRegionAllocBlock_access_store__0 (l : Loc) (v : runtime.traceRegionAllocBlock) (_0' : internal.runtime.sys.NotInHeap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceRegionAllocBlock_access_store__0 (l : Loc) (v : runtime.traceRegionAllocBlock) (_0' : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_0" l) _0' (DFrac.own 1))
@@ -1158,7 +1250,9 @@ instance traceRegionAllocBlock_access_load_traceRegionAllocBlockHeader (l : Loc)
  by
   solve_pointsto_access_struct
 
-instance traceRegionAllocBlock_access_store_traceRegionAllocBlockHeader (l : Loc) (v : runtime.traceRegionAllocBlock) (traceRegionAllocBlockHeader' : runtime.traceRegionAllocBlockHeader) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceRegionAllocBlock_access_store_traceRegionAllocBlockHeader (l : Loc) (v : runtime.traceRegionAllocBlock) (traceRegionAllocBlockHeader' : runtime.traceRegionAllocBlockHeader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) v.traceRegionAllocBlockHeader' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) traceRegionAllocBlockHeader' (DFrac.own 1))
@@ -1174,7 +1268,9 @@ instance traceRegionAllocBlock_access_load_data (l : Loc) (v : runtime.traceRegi
  by
   solve_pointsto_access_struct
 
-instance traceRegionAllocBlock_access_store_data (l : Loc) (v : runtime.traceRegionAllocBlock) (data' : (GoArray w8 65520)) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceRegionAllocBlock_access_store_data (l : Loc) (v : runtime.traceRegionAllocBlock) (data' : (GoArray w8 65520)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) data' (DFrac.own 1))
@@ -1219,7 +1315,9 @@ instance pTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.pTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.pTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) traceSchedResourceState' (DFrac.own 1))
@@ -1235,7 +1333,9 @@ instance pTraceState_access_load_mSyscallID (l : Loc) (v : runtime.pTraceState) 
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_mSyscallID (l : Loc) (v : runtime.pTraceState) (mSyscallID' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_mSyscallID (l : Loc) (v : runtime.pTraceState) (mSyscallID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) v.mSyscallID' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) mSyscallID' (DFrac.own 1))
@@ -1251,7 +1351,9 @@ instance pTraceState_access_load_maySweep (l : Loc) (v : runtime.pTraceState) (d
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_maySweep (l : Loc) (v : runtime.pTraceState) (maySweep' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_maySweep (l : Loc) (v : runtime.pTraceState) (maySweep' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) v.maySweep' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) maySweep' (DFrac.own 1))
@@ -1267,7 +1369,9 @@ instance pTraceState_access_load_inSweep (l : Loc) (v : runtime.pTraceState) (dq
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_inSweep (l : Loc) (v : runtime.pTraceState) (inSweep' : Bool) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_inSweep (l : Loc) (v : runtime.pTraceState) (inSweep' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) v.inSweep' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) inSweep' (DFrac.own 1))
@@ -1283,7 +1387,9 @@ instance pTraceState_access_load_swept (l : Loc) (v : runtime.pTraceState) (dq :
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_swept (l : Loc) (v : runtime.pTraceState) (swept' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_swept (l : Loc) (v : runtime.pTraceState) (swept' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) v.swept' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) swept' (DFrac.own 1))
@@ -1299,7 +1405,9 @@ instance pTraceState_access_load_reclaimed (l : Loc) (v : runtime.pTraceState) (
  by
   solve_pointsto_access_struct
 
-instance pTraceState_access_store_reclaimed (l : Loc) (v : runtime.pTraceState) (reclaimed' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) pTraceState_access_store_reclaimed (l : Loc) (v : runtime.pTraceState) (reclaimed' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) v.reclaimed' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) reclaimed' (DFrac.own 1))
@@ -1339,7 +1447,9 @@ instance traceStackTable_access_load_tab (l : Loc) (v : runtime.traceStackTable)
  by
   solve_pointsto_access_struct
 
-instance traceStackTable_access_store_tab (l : Loc) (v : runtime.traceStackTable) (tab' : runtime.traceMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceStackTable_access_store_tab (l : Loc) (v : runtime.traceStackTable) (tab' : runtime.traceMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) v.tab' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) tab' (DFrac.own 1))
@@ -1379,7 +1489,9 @@ instance traceTypeTable_access_load_tab (l : Loc) (v : runtime.traceTypeTable) (
  by
   solve_pointsto_access_struct
 
-instance traceTypeTable_access_store_tab (l : Loc) (v : runtime.traceTypeTable) (tab' : runtime.traceMap) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) traceTypeTable_access_store_tab (l : Loc) (v : runtime.traceTypeTable) (tab' : runtime.traceMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) v.tab' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) tab' (DFrac.own 1))

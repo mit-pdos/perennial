@@ -520,7 +520,6 @@ theorem Worker.wp_run (γ : WorkqNames) (w neighbor : Loc) (sh : shared) :
     imod start_bag (stealReplyPred (GF := GF) γ) _ reply γreply (by simp) $$ Hreply_is Hown with #Hreply
     icases Hnpt with ∗Hnpt
     iStructNamed Hnpt
-    wp_auto_lc 2
     wp_apply_core chan.wp_select_blocking
     iapply BigAndL.bigAndL_cons.2
     isplit

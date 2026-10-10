@@ -50,7 +50,9 @@ instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) buf' (DFrac.own 1))
@@ -66,7 +68,9 @@ instance Buffer_access_load_off (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_off (l : Loc) (v : bytes.Buffer) (off' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Buffer_access_store_off (l : Loc) (v : bytes.Buffer) (off' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) off' (DFrac.own 1))
@@ -82,7 +86,9 @@ instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : bytes.readOp) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : bytes.readOp) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) v.lastRead' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) lastRead' (DFrac.own 1))
@@ -124,7 +130,9 @@ instance Reader_access_load_s (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) s' (DFrac.own 1))
@@ -140,7 +148,9 @@ instance Reader_access_load_i (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : Loc) (v : bytes.Reader) (i' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_i (l : Loc) (v : bytes.Reader) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) v.i' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) i' (DFrac.own 1))
@@ -156,7 +166,9 @@ instance Reader_access_load_prevRune (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : Loc) (v : bytes.Reader) (prevRune' : w64) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) Reader_access_store_prevRune (l : Loc) (v : bytes.Reader) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) v.prevRune' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) prevRune' (DFrac.own 1))

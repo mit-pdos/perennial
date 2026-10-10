@@ -47,7 +47,9 @@ instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) Less' (DFrac.own 1))
@@ -63,7 +65,9 @@ instance lessSwap_access_load_Swap (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : GoFunc) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) Swap' (DFrac.own 1))
@@ -103,7 +107,9 @@ instance reverse_access_load_Interface (l : Loc) (v : sort.reverse) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : sort.Interface) :
+-- below the load instance, which a load must find (with `dq`): the store instance
+-- also matches a load (storing the same value), but only at `DFrac.own 1`
+instance (priority := low) reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : sort.Interface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.reverse go!"Interface" l) Interface' (DFrac.own 1))
