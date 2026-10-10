@@ -85,6 +85,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
+* **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
+  evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
+  steps to it, a function with `defer`s runs its body under a `Catch`
+  (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
+  in a deferred function literal) reads and clears the panic. A postcondition
+  receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
+  goroutine must not panic (`wp_fork`, `goose_adequacy_nopanic`). Run-time panics
+  of builtins (`Panic "msg"`) are stuck. See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

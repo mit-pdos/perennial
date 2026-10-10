@@ -434,7 +434,9 @@ theorem wp_DoSomeLocking' [sync.Assumptions] (l : Loc) (R : IProp GF) :
 ```
 
 A `go` statement is `Fork e`; `wp_fork` (`Perennial/GooseLang/Lifting.lean`)
-asks for `WP e {{ True }}` for the new goroutine. Resources shared by both
+asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}` for the new goroutine: it must not
+panic (`itrivial` and `wp_auto` close `⌜v.isPanic = false⌝` at the goroutine's
+final value). Resources shared by both
 goroutines must be persistent (`ipersist H` turns `l ↦ v` into `l ↦□ v`), or
 protected by a lock created with `sync.init_Mutex`:
 
@@ -670,10 +672,14 @@ example (l : List w64) (h : 2 < l.length) : True := by
   `wp_for`, `wp_alloc`. `wp_func_call; wp_call` steps into a function without a
   spec.
 * **`wp_apply` and lemmas without continuation.** If the applied spec closes the
-  goal (e.g. a `panic` spec), use `wp_apply_core`.
+  goal, use `wp_apply_core`.
 * **Hypotheses that mention functions.** `wp_func_call` rewrites the first
   `#(functions ..)` in the goal; if a hypothesis mentions another function,
-  `rw [func_unfold (f := F)]` instead (see `semantics_proof/panic.lean`).
+  `rw [func_unfold (f := F)]` instead.
+* **Panics.** `wp_apply wp_panic` (or a spec whose postcondition is a panic)
+  continues with the panic unwinding to the nearest `Catch` (a function with
+  `defer`) or to `Φ (PanicV p)`; see the reference, "Panics". A `let:` or call
+  that binds a generic `v : val` needs `v.isPanic = false` in the Lean context.
 
 ## 14. Tactic summary
 

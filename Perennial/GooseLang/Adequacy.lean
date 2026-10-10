@@ -29,6 +29,10 @@ Notes:
   thread count `GlobalState.threads` stays below `T` (`RealThreadsBelow`),
   started from a configuration with the main thread only (`g.threads = 1`).
   For `T ≤ 1` they are vacuous. See `Threads.lean`.
+* Panics. A thread's final value may be a panic `PanicV p`: the main thread's is
+  constrained by the client's `φ`, whose convention is `φ (PanicV _) = False`, and
+  a forked thread's by `forkPost` (`goose_irisGS`: not a panic, `wp_fork`).
+  `goose_adequacy_nopanic` concludes that no thread ends in a panic.
 -/
 module
 

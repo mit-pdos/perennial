@@ -62,7 +62,7 @@ arithmetic 65 (left assoc) · `![t] e` max. Lean's `&&` (35) and `||` (30) bind
 more loosely than comparisons, so parenthesize operands. Notations defined later: `![t] e`, `e1 <-[t] e2`,
 `@! f`, `r @!! t @!! m` (`Defn/PostLang`), `e1 ;;; e2`, `do: e`, `return: e`
 (`Defn/Exception`), `break: e`, `continue: e`, `for: c ; p := e`
-(`Defn/Loop`), `with_defer: e` (`Defn/Defer`).
+(`Defn/Loop`), `with_defer: e`, `with_defer_recover: r; e` (`Defn/Defer`).
 -/
 module
 

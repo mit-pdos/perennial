@@ -20,7 +20,8 @@ Notes:
   thread tokens of the thread fuel (`threadFuel t = threadToks t`,
   `Threads.lean`). The lifting lemmas `goose_wp_lift_*` restate iris-lean's for
   the real `base_step` and `gooseStateInterp` (as `gooseCfgInterp`), for the
-  plain redexes; Go instructions, the only counted steps, have their own lemma
+  plain redexes that do not unwind a panic (`Unwinds`; the panic steps are
+  `pure_unwind`, `wp_unwind` and `wp_catch`, section "Panics"); Go instructions, the only counted steps, have their own lemma
   `wp_GoInstruction_receipt`, which handles the stutter by Löb induction and
   hands out a time receipt; `Fork` (`wp_fork_tok`, likewise by Löb induction)
   hands out a thread token and `ThreadExit` (`wp_ThreadExit`) takes one back.

@@ -502,9 +502,11 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 
 | Lemma | |
 |:--|:--|
-| `wp_for`, `wp_for_post_do/continue/break/return` | loops (used by the tactics) |
-| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`) |
-| `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
+| `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
+| `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
+| `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
+| `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
 | `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
@@ -606,6 +608,58 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
   · iexists _; iexact Hx
   wp_end
 ````
+
+### Panics
+
+A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` steps
+to it (`wp_panic : Φ (PanicV #p) ⊢ WP (@! go.panic #p) {{ Φ }}`), and it unwinds
+every evaluation frame but that of `Catch e h k`, which continues with `h p` (a
+panic) or `k v` (a value). So a postcondition `Φ` also receives panics, while a
+spec `{{ P }} e {{ RET v; Q }}` names a normal value (`#x` is never a panic,
+`isPanic_intoVal`) and therefore excludes them. A spec that lets a function panic
+says what `Φ (PanicV p)` it provides; after `wp_apply` of it, `wp_auto` takes the
+panic through the caller's evaluation context (`wp_unwind`) up to a `Catch`.
+A function with `defer`s runs its body under a `Catch` (`with_defer:`): the
+deferred chain runs on both outcomes and a panic is raised again; if a deferred
+function literal calls `recover()`, Goose emits `with_defer_recover:`, whose
+`$panic` cell the handler sets and `recover()` (`recoverPanic`) reads and
+clears, and the function then returns its named results
+(`semantics_proof/recover.lean`):
+
+```lean
+theorem wp_recoverNamed :
+    {{ (True : IProp GF) }} (App (Val (@! recoverNamed)) (Val #()))
+    {{ RET #(W64 42); True }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_with_defer_recover as %defer %pnc defer pnc
+  wp_apply wp_panic                               -- unwinds to the handler
+  wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- in the deferred literal
+  iapply HΦ
+  itrivial
+```
+
+A loop body that panics proves its `forPostcondition` with `wp_for_post`
+(`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
+of range, a failed type assertion) are stuck, not unwinding: proofs show they
+are unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`).
+
+**Binding a value needs it not to be a panic.** A step that binds or pairs a
+value (a call, a `let:`, a pair, a Go instruction's argument, a frame holding an
+evaluated operand) needs `v.isPanic = false`, since a panic would unwind it
+instead. The tactics prove it for `#x`, `val` constructors (also behind
+definitions such as `exceptionSeq`), `if`s of those and hypotheses
+`h : v.isPanic = false` or `h : v = w` in the Lean context; for a generic
+`v : val` from a postcondition, get one (`obtain ⟨x, rfl⟩ : ∃ x, v = #x`) or case
+on `v.isPanic` (`val.isPanic_eq_true`). A postcondition `⌜v.isPanic = false⌝ ∗ Q`
+reached at such a value becomes `Q` (and `⌜v.isPanic = false⌝` is closed by
+`wp_auto` and `itrivial`).
+
+**Goroutines must not panic.** `wp_fork` asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}`
+(`forkPost`), and `goose_adequacy_nopanic` concludes that no thread of an execution
+ends in a panic when the main thread's `φ` excludes panics (the convention
+`φ (PanicV _) = False`): an unrecovered panic, which kills a Go program, is a
+verification failure.
 
 ### Ghost state and invariants
 
@@ -882,17 +936,17 @@ are the thread fuel, owned by the state interpretation
 
 **Getting and returning tokens.**
 
-* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ _, threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
+* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
   The forking thread receives a token (out of the thread fuel), and the forked
   thread must end with one (its `ThreadExit` returns it to the fuel). Whether
   the token stays with the forking thread, goes to the forked thread, or is
   deposited in an invariant is up to the proof: every live thread is accounted
   for by exactly one token, wherever it is.
-* `wp_fork`: the usual rule, `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
+* `wp_fork`: the usual rule, `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
   the forked thread keeps its token to itself.
-* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ _, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
+* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
   the token given to the body (which uses it and ends with it);
-  `wp_fork_tok_self`: `▷ WP e {{ _, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
+  `wp_fork_tok_self`: `▷ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
   the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
 * `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
   `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).

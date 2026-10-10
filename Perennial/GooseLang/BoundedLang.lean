@@ -3,7 +3,7 @@ The bounded GooseLang semantics: the proof device behind time receipts (Mével,
 Jourdan, Pottier, "Time credits and time receipts in Iris", ESOP 2019) and
 thread tokens (`Threads.lean`).
 
-The real semantics (`base_step`, `gooseRealEctxiLang` in `Lang.lean`) is the
+The real semantics (`HeadStep`, `gooseRealEctxiLang` in `Lang.lean`) is the
 trusted model of Go and is unchanged. This file adds a separate layer on top of
 it: the state of the registered iris-lean language `goose_ectxi_lang` is
 `BcfgState = CfgState × Fuel`, the real configuration together with a *fuel*
