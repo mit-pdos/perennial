@@ -80,6 +80,16 @@ type Ctx struct {
 	// include a defer prelude+prologue.
 	usesDefer bool
 
+	// Set when the function's own body defers a function literal that calls
+	// recover(): the function is wrapped with `with_defer_recover:`, which binds
+	// the `$panic` cell that recover() reads and clears.
+	usesRecover bool
+	// recover() is translated only when this is set: directly in a function
+	// literal that is the operand of a `defer` statement.
+	recoverOK bool
+	// the next function literal translated is the operand of a `defer`
+	nextFuncLitDeferred bool
+
 	globalVars     []*ast.Ident
 	functions      []*ast.FuncDecl
 	namedTypeSpecs []*ast.TypeSpec
@@ -344,6 +354,12 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 			e = ctx.expr(s.Args[0])
 		}
 		return glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty, e), true
+	case "recover":
+		if !ctx.recoverOK {
+			ctx.unsupported(s, "recover() is supported only directly in a function literal "+
+				"deferred by a defer statement (defer func() { ... recover() ... }())")
+		}
+		return glang.NewCallExpr(glang.VerbatimExpr("recoverPanic"), glang.IdentExpr("$panic")), true
 	case "len", "cap":
 		// go/types gives the builtin a signature type exactly when the call is
 		// not constant-folded; then the ordinary call path applies the operand.
@@ -877,8 +893,7 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	case "iota":
 		return ctx.constantLiteral(e)
 	case "recover":
-		return glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
-			glang.VerbatimExpr("go."+e.Name), glang.ListExpr{}, glang.Tt)
+		ctx.nope(e, "recover should be handled elsewhere")
 	default:
 		ctx.unsupported(e, "builtin identifier of type %v", ctx.typeOf(e))
 	}
@@ -1031,6 +1046,13 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	}(ctx.defaultReturn)
 
 	ctx.usesDefer = false
+	defer func(b, ok bool) {
+		ctx.usesRecover = b
+		ctx.recoverOK = ok
+	}(ctx.usesRecover, ctx.recoverOK)
+	ctx.usesRecover = false
+	ctx.recoverOK = ctx.nextFuncLitDeferred
+	ctx.nextFuncLitDeferred = false
 
 	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
 	var defaultRetExpr glang.TupleExpr
@@ -1079,25 +1101,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 			}
 		}
 	}
-	if e.Type.Results != nil {
-		for _, r := range e.Type.Results.List {
-			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-			for _, name := range r.Names {
-				fl.Body = glang.LetExpr{
-					Names: []string{name.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: fl.Body,
-				}
-			}
-		}
-	}
-
-	if ctx.usesDefer {
-		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fl.Body)
-	} else {
-		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fl.Body)
-	}
+	fl.Body = ctx.wrapFuncBody(fl.Body, e.Type.Results)
 
 	return fl
 }
@@ -1851,6 +1855,73 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	return expr
 }
 
+// callsRecoverDirectly reports whether body calls the builtin recover() outside
+// any nested function literal.
+func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.CallExpr:
+			if id, ok := n.Fun.(*ast.Ident); ok && id.Name == "recover" &&
+				ctx.info.Types[n.Fun].IsBuiltin() {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// wrapFuncBody wraps the body of a function (with its parameters' allocations)
+// with the allocations of its named results and with `with_defer:` (if it
+// defers), `with_defer_recover:` (if a deferred function literal calls
+// recover()) or `exception_do`. For `with_defer_recover:` the named results are
+// allocated outside, so that the results expression (what a bare `return`
+// returns, or the zero values of unnamed results) can read them.
+func (ctx *Ctx) wrapFuncBody(body glang.Expr, results *ast.FieldList) glang.Expr {
+	allocResults := func(body glang.Expr) glang.Expr {
+		if results != nil {
+			for _, r := range results.List {
+				t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+				for _, name := range r.Names {
+					body = glang.LetExpr{
+						Names: []string{name.Name},
+						ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+							glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
+						Cont: body,
+					}
+				}
+			}
+		}
+		return body
+	}
+	if ctx.usesRecover {
+		var res glang.TupleExpr
+		if results != nil {
+			for _, r := range results.List {
+				if r.Names == nil {
+					t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+					res = append(res, glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt))
+				}
+				for _, name := range r.Names {
+					res = append(res, ctx.namedResultValue(name, r.Type))
+				}
+			}
+		}
+		if len(res) == 0 {
+			res = glang.TupleExpr{glang.Tt}
+		}
+		return allocResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"), res, body))
+	}
+	body = allocResults(body)
+	if ctx.usesDefer {
+		return glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
+	}
+	return glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
+}
+
 // namedResultValue is the value of the named result `name` (of type `ty`) on a
 // bare `return`: the contents of its local variable, or the zero value for a
 // blank result `_`, which has no variable (the binding of `_` is anonymous, and
@@ -1957,9 +2028,20 @@ func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 		X:   expr,
 	}
 
+	var fun glang.Expr
+	if fl, ok := s.Call.Fun.(*ast.FuncLit); ok {
+		if ctx.callsRecoverDirectly(fl.Body) {
+			ctx.usesRecover = true
+		}
+		ctx.nextFuncLitDeferred = true
+		fun = ctx.expr(s.Call.Fun)
+		ctx.nextFuncLitDeferred = false
+	} else {
+		fun = ctx.expr(s.Call.Fun)
+	}
 	expr = glang.LetExpr{
 		Names:   []string{"$f"},
-		ValExpr: ctx.expr(s.Call.Fun),
+		ValExpr: fun,
 		Cont:    expr,
 	}
 
@@ -2339,6 +2421,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 
 	ctx.usesDefer = false
+	ctx.usesRecover = false
+	ctx.recoverOK = false
+	ctx.nextFuncLitDeferred = false
 	var fd glang.FuncDecl
 	addSourceDoc(d.Doc, &fd.Comment)
 	ctx.addSourceFile(d, &fd.Comment)
@@ -2438,6 +2523,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	body := ctx.blockStmt(d.Body, cont)
 
 	if d.Name.Name == "init" {
+		if ctx.usesRecover {
+			ctx.unsupported(d, "recover() in a package init function")
+		}
 		if ctx.usesDefer {
 			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
 		} else {
@@ -2464,25 +2552,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	}
 	maybeAddReceiver()
-	if d.Type.Results != nil {
-		for _, r := range d.Type.Results.List {
-			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-			for _, name := range r.Names {
-				fd.Body = glang.LetExpr{
-					Names: []string{name.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: fd.Body,
-				}
-			}
-		}
-	}
-
-	if ctx.usesDefer {
-		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fd.Body)
-	} else {
-		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fd.Body)
-	}
+	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type.Results)
 
 	ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, fd)
 }

@@ -456,6 +456,14 @@ func (suite *GoTestSuite) TestLinearize() {
 	suite.Equal(true, testLinearize())
 }
 
+func (suite *GoTestSuite) TestRecoverNamed() {
+	suite.Equal(true, testRecoverNamed())
+}
+
+func (suite *GoTestSuite) TestCatchTwoDeep() {
+	suite.Equal(true, testCatchTwoDeep())
+}
+
 func (suite *GoTestSuite) TestShortcircuitAndTF() {
 	suite.Equal(true, testShortcircuitAndTF())
 }

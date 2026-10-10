@@ -166,7 +166,7 @@ func init() {
 	PkgInfo GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder
 	GoAnd GoOr GoXor GoBitClear GoShiftl GoShiftr GoPos GoNeg GoNot GoComplement
 	struct_field_ref intoVal exceptionSeq doExecute doReturn exceptionDo doBreak
-	doContinue doFor catchBreak wrapDefer GoString Loc zeroValDef structFieldRef`) {
+	doContinue doFor catchBreak wrapDefer wrapDeferRecover recoverPanic GoString Loc zeroValDef structFieldRef`) {
 		LeanShadowNames[w] = true
 	}
 }
@@ -677,6 +677,7 @@ const (
 	// a GooseLang expr constructor; argModes gives the mode of each argument
 	headExprCtor
 	headWithDefer
+	headWithDeferRecover
 )
 
 type leanHead struct {
@@ -687,37 +688,39 @@ type leanHead struct {
 }
 
 var leanHeads = map[string]leanHead{
-	"FuncResolve":      {kind: headInstr, name: "FuncResolve", nTerm: 2},
-	"MethodResolve":    {kind: headInstr, name: "MethodResolve", nTerm: 2},
-	"GoAlloc":          {kind: headInstr, name: "GoAlloc", nTerm: 1},
-	"GoZeroVal":        {kind: headInstr, name: "GoZeroVal", nTerm: 1},
-	"GlobalVarAddr":    {kind: headInstr, name: "GlobalVarAddr", nTerm: 1},
-	"StructFieldGet":   {kind: headInstr, name: "StructFieldGet", nTerm: 2},
-	"StructFieldSet":   {kind: headInstr, name: "StructFieldSet", nTerm: 2},
-	"StructFieldRef":   {kind: headInstr, name: "StructFieldRef", nTerm: 2},
-	"Index":            {kind: headInstr, name: "Index", nTerm: 1},
-	"IndexRef":         {kind: headInstr, name: "IndexRef", nTerm: 1},
-	"Slice":            {kind: headInstr, name: "Slice", nTerm: 1},
-	"FullSlice":        {kind: headInstr, name: "FullSlice", nTerm: 1},
-	"TypeAssert":       {kind: headInstr, name: "TypeAssert", nTerm: 1},
-	"TypeAssert2":      {kind: headInstr, name: "TypeAssert2", nTerm: 1},
-	"Convert":          {kind: headInstr, name: "Convert", nTerm: 2},
-	"CompositeLiteral": {kind: headInstr, name: "CompositeLiteral", nTerm: 1},
-	"SelectStmt":       {kind: headInstr, name: "SelectStmt", nTerm: 0},
-	"chan.receive":     {kind: headValFn, name: "chan.receive", nTerm: 1},
-	"chan.send":        {kind: headValFn, name: "chan.send", nTerm: 1},
-	"map.lookup1":      {kind: headValFn, name: "map.lookup1", nTerm: 2},
-	"map.lookup2":      {kind: headValFn, name: "map.lookup2", nTerm: 2},
-	"map.insert":       {kind: headValFn, name: "map.insert", nTerm: 1},
-	"package.init":     {kind: headValFn, name: "package.init", nTerm: 1},
-	"go.GlobalAlloc":   {kind: headValFn, name: "go.GlobalAlloc", nTerm: 2},
-	"exception_do":     {kind: headVal, name: "exceptionDo"},
-	"with_defer:":      {kind: headWithDefer},
-	"Fst":              {kind: headExprCtor, name: "Fst", argModes: []LeanMode{LeanExpr}},
-	"Snd":              {kind: headExprCtor, name: "Snd", argModes: []LeanMode{LeanExpr}},
-	"LiteralValue":     {kind: headExprCtor, name: "LiteralValue", argModes: []LeanMode{LeanTerm}},
-	"KeyedElement":     {kind: headTermCtor, name: "KeyedElement", argModes: []LeanMode{LeanTerm, LeanTerm}},
-	"Some":             {kind: headTermCtor, name: "some", argModes: []LeanMode{LeanTerm}},
+	"FuncResolve":         {kind: headInstr, name: "FuncResolve", nTerm: 2},
+	"MethodResolve":       {kind: headInstr, name: "MethodResolve", nTerm: 2},
+	"GoAlloc":             {kind: headInstr, name: "GoAlloc", nTerm: 1},
+	"GoZeroVal":           {kind: headInstr, name: "GoZeroVal", nTerm: 1},
+	"GlobalVarAddr":       {kind: headInstr, name: "GlobalVarAddr", nTerm: 1},
+	"StructFieldGet":      {kind: headInstr, name: "StructFieldGet", nTerm: 2},
+	"StructFieldSet":      {kind: headInstr, name: "StructFieldSet", nTerm: 2},
+	"StructFieldRef":      {kind: headInstr, name: "StructFieldRef", nTerm: 2},
+	"Index":               {kind: headInstr, name: "Index", nTerm: 1},
+	"IndexRef":            {kind: headInstr, name: "IndexRef", nTerm: 1},
+	"Slice":               {kind: headInstr, name: "Slice", nTerm: 1},
+	"FullSlice":           {kind: headInstr, name: "FullSlice", nTerm: 1},
+	"TypeAssert":          {kind: headInstr, name: "TypeAssert", nTerm: 1},
+	"TypeAssert2":         {kind: headInstr, name: "TypeAssert2", nTerm: 1},
+	"Convert":             {kind: headInstr, name: "Convert", nTerm: 2},
+	"CompositeLiteral":    {kind: headInstr, name: "CompositeLiteral", nTerm: 1},
+	"SelectStmt":          {kind: headInstr, name: "SelectStmt", nTerm: 0},
+	"chan.receive":        {kind: headValFn, name: "chan.receive", nTerm: 1},
+	"chan.send":           {kind: headValFn, name: "chan.send", nTerm: 1},
+	"map.lookup1":         {kind: headValFn, name: "map.lookup1", nTerm: 2},
+	"map.lookup2":         {kind: headValFn, name: "map.lookup2", nTerm: 2},
+	"map.insert":          {kind: headValFn, name: "map.insert", nTerm: 1},
+	"package.init":        {kind: headValFn, name: "package.init", nTerm: 1},
+	"go.GlobalAlloc":      {kind: headValFn, name: "go.GlobalAlloc", nTerm: 2},
+	"exception_do":        {kind: headVal, name: "exceptionDo"},
+	"with_defer:":         {kind: headWithDefer},
+	"with_defer_recover:": {kind: headWithDeferRecover},
+	"recoverPanic":        {kind: headVal, name: "recoverPanic"},
+	"Fst":                 {kind: headExprCtor, name: "Fst", argModes: []LeanMode{LeanExpr}},
+	"Snd":                 {kind: headExprCtor, name: "Snd", argModes: []LeanMode{LeanExpr}},
+	"LiteralValue":        {kind: headExprCtor, name: "LiteralValue", argModes: []LeanMode{LeanTerm}},
+	"KeyedElement":        {kind: headTermCtor, name: "KeyedElement", argModes: []LeanMode{LeanTerm, LeanTerm}},
+	"Some":                {kind: headTermCtor, name: "some", argModes: []LeanMode{LeanTerm}},
 	"ElementExpression": {kind: headTermCtor, name: "ElementExpression",
 		argModes: []LeanMode{LeanTerm, LeanExpr}},
 	"KeyField":   {kind: headTermCtor, name: "KeyField", argModes: []LeanMode{LeanTerm}},
@@ -792,6 +795,13 @@ func (h leanHead) render(args []Expr, m LeanMode) string {
 		}
 		return eLetLike("App", []string{eVal("wrapDefer")},
 			eLam([]string{"$defer"}, args[0].Lean(LeanExpr)))
+	case headWithDeferRecover:
+		if len(args) != 2 {
+			panic("with_defer_recover: expects two arguments")
+		}
+		return eLetLike("App", []string{lapp("App", eVal("wrapDeferRecover"),
+			eLam(nil, args[0].Lean(LeanExpr)))},
+			eLam([]string{"$defer", "$panic"}, args[1].Lean(LeanExpr)))
 	case headTermCtor, headExprCtor:
 		var as []string
 		for i, a := range args {
