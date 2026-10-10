@@ -94,6 +94,10 @@ type Ctx struct {
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
+	// Packages the code refers to (a type of theirs) without importing them
+	// (`fnv.New64a()` is a hash.Hash64): the Lean file imports their
+	// translation, but they are not imports of the package (no Assumptions).
+	implicitImports map[string]bool
 	// Full Go import path -> Assumptions class field name. For colliding
 	// package names, imports ending in "a/v1" and "b/v1" become
 	// "import_a_v1_Assumption" and "import_b_v1_Assumption" rather than both
@@ -115,6 +119,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		pkgIdent:          glang.LeanPkgId(pkg.PkgPath),
 		errorReporter:     newErrorReporter(pkg.Fset),
 		importNames:       make(map[string]*types.PkgName),
+		implicitImports:   make(map[string]bool),
 		importAssumptions: make(map[string]string),
 		filter:            filter,
 		localTypes:        make(map[string]bool),
@@ -2974,7 +2979,13 @@ func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	// `errors.X` from inside namespace `a.errors` would resolve to
 	// `a.errors.X`.
 	path := pkg.Path()
-	if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
+	if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath && ctx.filter.ShouldImport(path) {
+		// Not imported by the Go code, but the config allows importing it.
+		if !ctx.implicitImports[path] {
+			ctx.implicitImports[path] = true
+			ctx.out.importDecls = append(ctx.out.importDecls, glang.ImportDecl{Path: path})
+		}
+	} else if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
 		// Not imported (filtered out by the config): refer to an imported
 		// package with the same name, if any.
 		for _, n := range ctx.importNamesOrdered {

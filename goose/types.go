@@ -62,8 +62,9 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 		}
 
 		if _, ok := typ.(*types.Alias); ok {
+			// the descriptor X.ty, as for a translated alias (glang.TypeDecl)
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
-				DeclName: typeName,
+				DeclName: typeName + ".ty",
 				Type:     typeStr,
 			})
 		} else if _, ok := typ.(*types.Named); ok {

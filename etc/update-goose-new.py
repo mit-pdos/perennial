@@ -257,7 +257,9 @@ def main():
             "log",
             "encoding/binary",
             "encoding/hex",
+            "hash",
             "hash/fnv",
+            "io/fs",
             "syscall",
         )
 

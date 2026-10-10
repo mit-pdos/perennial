@@ -2247,7 +2247,7 @@ axiom schedt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom _func.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom itab [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom itab.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom semTable.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -2265,33 +2265,33 @@ axiom traceWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom traceMap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom nameOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom nameOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom typeOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom typeOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom textOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom textOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom _type [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom _type.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom rtype.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom uncommontype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom uncommontype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom interfacetype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom interfacetype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom arraytype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom arraytype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom chantype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom chantype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom slicetype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom slicetype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom functype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom functype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom ptrtype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ptrtype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom name [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom name.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom structtype [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom structtype.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom _typePair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 

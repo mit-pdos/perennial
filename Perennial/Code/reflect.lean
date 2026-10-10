@@ -242,25 +242,25 @@ axiom Type'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom Kind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom uncommonType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom uncommonType.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom common.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom rtype.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom aNameOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aNameOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom aTypeOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aTypeOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom aTextOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aTextOff.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom ChanDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom arrayType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom arrayType.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom chanType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom chanType.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom funcType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom funcType.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom interfaceType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -268,7 +268,7 @@ axiom ptrType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom sliceType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom structField [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom structField.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom structType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 

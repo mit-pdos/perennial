@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.github_com.goose_lang.primitive.async_disk
+public import Perennial.Code.github_com.goose_lang.primitive.disk
 public import Perennial.Golang.Defn
 public import Perennial.AsyncDiskPrelude
 

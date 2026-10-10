@@ -158,13 +158,13 @@ attribute [irreducible] fileStat.ty
 
 axiom anonStruct_f8f8bfb82606ff67.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom DirEntry [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom DirEntry.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom dirInfo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom PathError [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom PathError.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom syscallErrorType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom syscallErrorType.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom Process.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
@@ -183,9 +183,9 @@ axiom root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 @[reducible] def sysfdType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
-axiom FileInfo [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom FileInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
-axiom FileMode [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom FileMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom fileStat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
