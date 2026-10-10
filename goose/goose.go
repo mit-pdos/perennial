@@ -817,6 +817,13 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	xT := ctx.typeOf(e.X)
 	ty := ctx.glangType(e, xT)
 	arrayTy, isArray := underlyingType(xT).(*types.Array)
+	// a pointer to an array: p[i:j] is (*p)[i:j], the slice of the array at p
+	var arrayPtr bool
+	if ptrTy, ok := underlyingType(xT).(*types.Pointer); ok {
+		if arrayTy, arrayPtr = underlyingType(ptrTy.Elem()).(*types.Array); arrayPtr {
+			ty = ctx.glangType(e, ptrTy.Elem())
+		}
+	}
 
 	var lowExpr glang.Expr = glang.Int64Val{Value: glang.IntToZ(0)}
 	var highExpr glang.Expr
@@ -826,6 +833,9 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	// wrong. len of an array is its constant length.
 	if isArray {
 		x = ctx.exprAddr(e.X)
+		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
+	} else if arrayPtr {
+		x = ctx.expr(e.X)
 		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
 	} else {
 		x = ctx.expr(e.X)

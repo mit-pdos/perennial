@@ -1008,6 +1008,12 @@ noncomputable def unsafeSliceCall [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def unsafeAddr [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeAddr"
 
+noncomputable def sliceArrayPtr [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceArrayPtr"
+
+noncomputable def sliceArrayPtr2 [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceArrayPtr2"
+
 noncomputable def variadicFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.variadicFunc"
 
@@ -4974,6 +4980,30 @@ noncomputable def unsafeAddr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (Convert «unsafe».Pointer go.uintptr))) (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p")))))))
 
+/-- Slicing a pointer to an array (bbolt's UnsafeByteSlice).
+
+    go: unsafe_ops.go:23:6 -/
+noncomputable def sliceArrayPtr.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "i"
+  (Lam "j"
+  (App (Val exceptionDo)
+  (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (Var "j"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.ArrayType 16 go.byte))))) (Var "p"))
+  (App (Val doReturn)
+  (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.ArrayType 16 go.byte))))) (Var "p"))
+  (App (Val (GoInstruction (FullSlice (go.GoType.ArrayType 16 go.byte)))) (Pair (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))))))))))
+
+/-- go: unsafe_ops.go:27:6 -/
+noncomputable def sliceArrayPtr2.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.ArrayType 16 go.byte))))) (Var "p"))
+  (App (Val doReturn)
+  (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.ArrayType 16 go.byte))))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 16 go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 16)))))))))
+
 /-- go: varargs.go:3:6 -/
 noncomputable def variadicFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
@@ -6764,6 +6794,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   unsafeAddCall_unfold : FuncUnfold unsafeAddCall [] unsafeAddCall.impl
   unsafeSliceCall_unfold : FuncUnfold unsafeSliceCall [] unsafeSliceCall.impl
   unsafeAddr_unfold : FuncUnfold unsafeAddr [] unsafeAddr.impl
+  sliceArrayPtr_unfold : FuncUnfold sliceArrayPtr [] sliceArrayPtr.impl
+  sliceArrayPtr2_unfold : FuncUnfold sliceArrayPtr2 [] sliceArrayPtr2.impl
   variadicFunc_unfold : FuncUnfold variadicFunc [] variadicFunc.impl
   testVariadicCall_unfold : FuncUnfold testVariadicCall [] testVariadicCall.impl
   returnMultiple_unfold : FuncUnfold returnMultiple [] returnMultiple.impl
@@ -7027,6 +7059,8 @@ attribute [instance] Assumptions.anonStruct_185bb3b548659d52_instance
   Assumptions.unsafeAddCall_unfold
   Assumptions.unsafeSliceCall_unfold
   Assumptions.unsafeAddr_unfold
+  Assumptions.sliceArrayPtr_unfold
+  Assumptions.sliceArrayPtr2_unfold
   Assumptions.variadicFunc_unfold
   Assumptions.testVariadicCall_unfold
   Assumptions.returnMultiple_unfold

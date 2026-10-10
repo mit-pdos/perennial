@@ -18,3 +18,12 @@ func unsafeSliceCall(p *uint64, n int) []uint64 {
 func unsafeAddr(p unsafe.Pointer) uintptr {
 	return uintptr(p)
 }
+
+// Slicing a pointer to an array (bbolt's UnsafeByteSlice).
+func sliceArrayPtr(p *[16]byte, i, j int) []byte {
+	return p[i:j:j]
+}
+
+func sliceArrayPtr2(p *[16]byte) []byte {
+	return p[2:]
+}
