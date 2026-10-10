@@ -30,9 +30,14 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
     go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
-  -- TODO: implement alloc_array
-  alloc_array (n : Int) (elem : go.GoType) (v : val) :
-    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder] AngelicExit #()
+  /-- An array is allocated as one block of `n` elements (`AllocN`), into which the value is
+  stored. A size past the address space is not allocated (`AngelicExit`). -/
+  alloc_array (n : Int) (elem : go.GoType) (v : val) {V : Type} [ZeroVal V] [TypeRepr elem V] :
+    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder]
+      (if 0 ≤ n ∧ n * typeSize V < 2^63 then
+        (Let "l" (AllocN (Val (LitV (LitInt (W64 (n * typeSize V))))) (Val #()))
+          gl(GoStore (go.ArrayType n elem) ("l", v) ;; "l") : Expr)
+       else gl(AngelicExit #()))
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]

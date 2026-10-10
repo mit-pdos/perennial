@@ -539,21 +539,16 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 
   alloc_primitive (v : val) (u : go.GoType) [H : IsPrimitive u] :
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
-  alloc_struct (v : val) {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] :
+  /-- A struct is allocated as one block of its size (`AllocN`, its fields at their offsets,
+  `go.StructLayout`), into which the value is stored. A size past the address space is
+  not allocated (`AngelicExit`). -/
+  alloc_struct (v : val) {fds : List go.field_decl} {V : Type} [ZeroVal V]
+      [TypeRepr (go.StructType fds) V] :
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
-      (let: "l" := GoPrealloc #() in
-       List.foldr (fun fd alloc_rest =>
-                let (field_name, field_type) := match fd with
-                                                | go.FieldDecl n t => (n, t)
-                                                | go.EmbeddedField n t => (n, t)
-                let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
-                gl(let: "l_field" :=
-                    GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
-                  (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #()
-                   else AngelicExit #()) ;;
-                  alloc_rest)
-         ) (#() : Expr) fds_unsealed ;;
-       "l")
+      (if typeSize V < 2^63 then
+        (Let "l" (AllocN (Val (LitV (LitInt (W64 (typeSize V))))) (Val #()))
+          gl(GoStore (go.StructType fds) ("l", v) ;; "l") : Expr)
+       else gl(AngelicExit #()))
 
   load_primitive (u : go.GoType) [H : IsPrimitive u] (l : val) :
     ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l

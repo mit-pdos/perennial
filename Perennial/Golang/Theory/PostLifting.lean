@@ -408,6 +408,51 @@ theorem wp_AngelicExit (Φ : val → IProp GF) :
   iframe Hctx
   iexact IH
 
+theorem rawCells_of_pointstoVals (l : Loc) (k : Nat) (v : val) :
+    pointstoVals l (DFrac.own 1) (List.replicate k v) ⊢ (rawCells l (k : Int) : IProp GF) := by
+  unfold pointstoVals rawCells
+  rw [show ((k : Int)).toNat = k by omega]
+  induction k generalizing l with
+  | zero => iintro _; rw [List.range_zero]; iapply BigSepL.bigSepL_nil.2; itrivial
+  | succ k ih =>
+    rw [List.replicate_succ', List.range_succ]
+    iintro H
+    icases BigSepL.bigSepL_append.1 $$ H with ⟨H1, H2⟩
+    iapply BigSepL.bigSepL_append.2
+    isplitl [H1]
+    · iapply ih $$ H1
+    · icases BigSepL.bigSepL_singleton.1 $$ H2 with H2
+      iapply BigSepL.bigSepL_singleton.2
+      simp only [List.length_replicate, Nat.zero_add]
+      iexists _; iexact H2
+
+/-- Allocating `sz` cells (`AllocN`) and storing into them: what `GoAlloc` of a struct or
+an array expands to. -/
+theorem wp_alloc_raw (t : go.GoType) (sz : Int) (hsz : 0 ≤ sz ∧ sz < 2^63) (v : val)
+    (P : Loc → IProp GF)
+    (hstore : ∀ l, {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l sz : IProp GF) }}
+      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l v))) @ s; E
+      {{ RET #(); P l }}) :
+    {{ (True : IProp GF) }}
+      (Let "l" (AllocN (Val (LitV (LitInt (W64 sz)))) (Val #()))
+        gl(GoStore t ("l", v) ;; "l")) @ s; E
+    {{ (l : Loc), RET #l; P l }} := by
+  iintro %Φ _ HΦ
+  wp_apply_core wp_allocN _ _
+  iintro %l ⟨%Hl, Hpts⟩
+  ihave Hraw := rawCells_of_pointstoVals l _ _ $$ Hpts
+  have hn : ((uint.nat (W64 sz) : Nat) : Int) = sz := by
+    simp only [uint.nat, W64, BitVec.toNat_ofInt]
+    rw [Int.emod_eq_of_lt hsz.1 (by omega)]; omega
+  rw [hn]
+  wp_pures
+  wp_apply_core hstore l $$ [Hraw]
+  · iframe; ipureintro; exact Hl.1
+  iintro HP
+  wp_pures
+  iapply HΦ
+  iexact HP
+
 theorem wp_PackageInitCheck (pkg : GoString) (σ : GMap GoString Bool) :
     {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitCheck pkg))) (Val #())) @ s; E
     {{ RET #((σ !! pkg).getD false); ownGoState σ }} := by

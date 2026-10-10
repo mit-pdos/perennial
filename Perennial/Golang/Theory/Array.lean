@@ -422,6 +422,50 @@ theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : I
     iapply HΦ
     iexact Hl
 
+theorem intoVal_typed_array_store_raw' (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} {t' : go.GoType} [t' ↓u go.ArrayType n t] (l : Loc)
+    (w : GoArray V n) :
+    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize (GoArray V n)) : IProp GF) }}
+      (App (Val (GoInstruction (GoStore t'))) (Val (PairV #l #w))) @ s; E
+    {{ RET #(); l ↦ w }} := by
+  iintro %Φ ⟨%Hc, Hraw⟩ HΦ
+  have _tagged := @go.tagged_internal_inst
+  wp_pure
+  clear _tagged
+  by_cases hn : 0 ≤ n ∧ n < 2^63-1
+  case neg =>
+    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
+    iapply wp_AngelicExit
+  by_cases hwlen : (w.arr.length : Int) = n
+  case neg =>
+    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      eq_true (fun h => hwlen h.2.2), ↓reduceIte]
+    iapply wp_AngelicExit
+  simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+      eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
+  have e : n * typeSize V = ((n.toNat : Nat) : Int) * typeSize V := by
+    rw [Int.toNat_of_nonneg hn.1]
+  rw [go.typeSize_array V n hn.1, e]
+  ihave Hraw := rawCells_rawElems (V := V) l Hc n.toNat $$ Hraw
+  iapply wp_store_array_loop_raw t n l Hc w hwlen hn n.toNat (by omega) $$ Hraw
+  iintro ⟨Hl, -⟩
+  have hws : w.arr.take n.toNat = w.arr := List.take_of_length_le (by omega)
+  rw [hws]
+  iapply HΦ
+  iapply typedPointsto_combine _ _ _ (fun h => by subst h; exact Hc rfl)
+  simp only [TypedPointsto.typedPointstoDef]
+  isplit
+  · ipureintro; exact hwlen
+  · iexact Hl
+
+theorem intoVal_typed_array_store_raw (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : Loc) (v : GoArray V n) :
+    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize (GoArray V n)) : IProp GF) }}
+      (App (Val (GoInstruction (GoStore (go.ArrayType n t)))) (Val (PairV #l #v))) @ s; E
+    {{ RET #(); l ↦ v }} :=
+  intoVal_typed_array_store_raw' t n l v
+
 instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int) :
     IntoValTypedUnderlying (GF := GF) (GoArray V n) (go.ArrayType n t) := by
   constructor
@@ -430,7 +474,17 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    iapply wp_AngelicExit
+    split
+    · rename_i h
+      iapply (wp_alloc_raw (go.ArrayType n t) (n * typeSize V)
+        ⟨Int.mul_nonneg h.1 (go.typeSize_nonneg V), h.2⟩ #v (fun l => typedPointsto l v (DFrac.own 1))
+        (fun l => by
+          have := intoVal_typed_array_store_raw (GF := GF) (V := V) t n (s := s) (E := E) l v
+          rw [go.typeSize_array V n h.1] at this
+          exact this))
+      · itrivial
+      · inext; iexact HΦ
+    · iapply wp_AngelicExit
   · intro s E t' _ l dq v
     iintro %Φ Hl HΦ
     have _tagged := @go.tagged_internal_inst
@@ -494,36 +548,7 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     · ipureintro; exact hwlen
     · iexact Hl
   · intro s E t' _ l w
-    iintro %Φ ⟨%Hc, Hraw⟩ HΦ
-    have _tagged := @go.tagged_internal_inst
-    wp_pure
-    clear _tagged
-    by_cases hn : 0 ≤ n ∧ n < 2^63-1
-    case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
-        eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
-      iapply wp_AngelicExit
-    by_cases hwlen : (w.arr.length : Int) = n
-    case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
-        eq_true (fun h => hwlen h.2.2), ↓reduceIte]
-      iapply wp_AngelicExit
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
-        eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
-    have e : n * typeSize V = ((n.toNat : Nat) : Int) * typeSize V := by
-      rw [Int.toNat_of_nonneg hn.1]
-    rw [go.typeSize_array V n hn.1, e]
-    ihave Hraw := rawCells_rawElems (V := V) l Hc n.toNat $$ Hraw
-    iapply wp_store_array_loop_raw t n l Hc w hwlen hn n.toNat (by omega) $$ Hraw
-    iintro ⟨Hl, -⟩
-    have hws : w.arr.take n.toNat = w.arr := List.take_of_length_le (by omega)
-    rw [hws]
-    iapply HΦ
-    iapply typedPointsto_combine _ _ _ (fun h => by subst h; exact Hc rfl)
-    simp only [TypedPointsto.typedPointstoDef]
-    isplit
-    · ipureintro; exact hwlen
-    · iexact Hl
+    exact intoVal_typed_array_store_raw' t n l w
   · exact go.type_repr_array t V n
 
 end intoVal

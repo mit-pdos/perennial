@@ -1189,42 +1189,6 @@ theorem wp_pure_raw_step {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (hlc := hlc) (
     iprop(▷ WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }} :=
   tac_wp_pure_wp (Hwp := Hwp) (K := []) hφ .rfl .rfl
 
-theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
-    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
-    [go.TypeReprUnderlying (go.StructType fds) V]
-    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
-    (hfs : FieldsMatch fds_unsealed fs)
-    (hdef : ∀ l v dq, typedPointstoDef l v dq ⊣⊢ structFieldsPointsto fs l v dq)
-    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (v : V) :
-    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
-    {{ (l : Loc), RET #l; l ↦ v }} := by
-  iintro %Φ _ HΦ
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
-      (allocStructRaw fds #v fds_unsealed) := by
-    have _tagged := @go.tagged_internal_inst
-    infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
-  inext
-  rw [allocStructRaw_eq]
-  wp_bind (GoPrealloc #())
-  iapply wp_GoPrealloc
-  · itrivial
-  inext
-  iintro %l %Hl
-  wp_pures
-  rw [subst_allocFields]
-  wp_bind (List.foldr _ _ _)
-  iapply (struct_alloc_fields' v l s E fds_unsealed fs hfs)
-  iintro Hfs
-  wp_pures
-  iapply HΦ
-  rw [typedPointsto_unseal]
-  unfold typedPointstoWrap
-  isplitl [Hfs]
-  · iapply (hdef l v _).2
-    iexact Hfs
-  · ipureintro; exact Hl
-
 /-! ### Load -/
 
 /-- The expansion of `GoLoad (go.StructType fds) l` (`go.load_struct`). -/
@@ -1680,6 +1644,36 @@ theorem struct_wp_store_raw {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     iexact Hl
   · ipureintro; intro h; subst h; exact Hc rfl
 
+theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
+    [hrepr : go.TypeReprUnderlying (go.StructType fds) V]
+    (fs : List (StructFieldDesc (GF := GF) V (go.StructType fds)))
+    (hfs : FieldsMatch fds_unsealed fs)
+    (hdef : ∀ l v dq, typedPointstoDef l v dq ⊣⊢ structFieldsPointsto fs l v dq)
+    (hraw : ∀ l, l.locCar ≠ 0 → rawCells l (typeSize V) ⊢ structFieldsRaw fs l)
+    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (v : V) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
+    {{ (l : Loc), RET #l; l ↦ v }} := by
+  iintro %Φ _ HΦ
+  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
+      (if typeSize V < 2^63 then
+        (Let "l" (AllocN (Val (LitV (LitInt (W64 (typeSize V))))) (Val #()))
+          gl(GoStore (go.StructType fds) ("l", #v) ;; "l") : Expr)
+       else gl(AngelicExit #())) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  inext
+  by_cases h : typeSize V < 2^63
+  · rw [if_pos h]
+    iapply (wp_alloc_raw (go.StructType fds) (typeSize V) ⟨go.typeSize_nonneg V, h⟩ #v
+      (fun l => typedPointsto l v (DFrac.own 1))
+      (fun l => struct_wp_store_raw (t := go.StructType fds) fs hfs hdef hraw l v))
+    · itrivial
+    · inext; iexact HΦ
+  · rw [ite_eq_right_iff.mpr (fun h' => absurd h' h)]
+    iapply wp_AngelicExit
+
 theorem structFieldsRaw_eq {V : Type} {T : go.GoType}
     (fs : List (StructFieldDesc (GF := GF) V T)) (l : Loc) :
     structFieldsRaw fs l ⊣⊢ ([∗list] f ∈ fs, iprop(⌜(structFieldRef V f.name l).locCar ≠ 0⌝ ∗
@@ -1746,7 +1740,7 @@ theorem struct_into_val_typed {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V
     (hrebuild : ∀ x, structRebuild fs (zero_val V) x = x)
     (hraw : ∀ l, l.locCar ≠ 0 → rawCells l (typeSize V) ⊢ structFieldsRaw fs l) :
     IntoValTypedUnderlying (GF := GF) V (go.StructType fds) where
-  wp_alloc_def v := struct_wp_alloc fs hfs hdef v
+  wp_alloc_def v := struct_wp_alloc fs hfs hdef hraw v
   wp_load_def l dq v := struct_wp_load fs hfs hdef hrebuild l dq v
   wp_store_def l v w := struct_wp_store fs hfs hdef l v w
   wp_store_raw_def l w := struct_wp_store_raw fs hfs hdef hraw l w
@@ -1889,13 +1883,20 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    wp_apply wp_GoPrealloc as %l %Hnotnull
-    try wp_auto_angelic
-    subst_vars
-    iapply HΦ
-    try simp only [TypedPointsto.typedPointstoDef, named]
-    (try iframe_exact); (try iframe)
-    ipureintro; (try simp only [and_self]); exact Hnotnull
+    split
+    · wp_apply_core wp_allocN _ _
+      iintro %l ⟨%Hl, -⟩
+      have Hnn : l ≠ null := fun h => by subst h; exact Hl.1 rfl
+      wp_pures
+      have _tagged := @go.tagged_internal_inst
+      try wp_auto
+      clear _tagged
+      cases v
+      iapply HΦ
+      try simp only [TypedPointsto.typedPointstoDef, named]
+      (try iframe_exact); (try iframe)
+      ipureintro; (try simp only [and_self]); first | exact Hnn | exact ⟨Hnn, Hnn⟩
+    · iapply wp_AngelicExit
   · intro s E t _ l dq v
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
