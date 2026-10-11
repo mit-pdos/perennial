@@ -54,9 +54,7 @@ instance Termios_access_load_Iflag (l : Loc) (v : syscall.Termios) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Iflag (l : Loc) (v : syscall.Termios) (Iflag' : w32) :
+instance Termios_access_store_Iflag (l : Loc) (v : syscall.Termios) (Iflag' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) Iflag' (DFrac.own 1))
@@ -72,9 +70,7 @@ instance Termios_access_load_Oflag (l : Loc) (v : syscall.Termios) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Oflag (l : Loc) (v : syscall.Termios) (Oflag' : w32) :
+instance Termios_access_store_Oflag (l : Loc) (v : syscall.Termios) (Oflag' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) Oflag' (DFrac.own 1))
@@ -90,9 +86,7 @@ instance Termios_access_load_Cflag (l : Loc) (v : syscall.Termios) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Cflag (l : Loc) (v : syscall.Termios) (Cflag' : w32) :
+instance Termios_access_store_Cflag (l : Loc) (v : syscall.Termios) (Cflag' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) Cflag' (DFrac.own 1))
@@ -108,9 +102,7 @@ instance Termios_access_load_Lflag (l : Loc) (v : syscall.Termios) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Lflag (l : Loc) (v : syscall.Termios) (Lflag' : w32) :
+instance Termios_access_store_Lflag (l : Loc) (v : syscall.Termios) (Lflag' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) Lflag' (DFrac.own 1))
@@ -126,9 +118,7 @@ instance Termios_access_load_Line (l : Loc) (v : syscall.Termios) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Line (l : Loc) (v : syscall.Termios) (Line' : w8) :
+instance Termios_access_store_Line (l : Loc) (v : syscall.Termios) (Line' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) Line' (DFrac.own 1))
@@ -144,9 +134,7 @@ instance Termios_access_load_Cc (l : Loc) (v : syscall.Termios) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Cc (l : Loc) (v : syscall.Termios) (Cc' : (GoArray w8 32)) :
+instance Termios_access_store_Cc (l : Loc) (v : syscall.Termios) (Cc' : (GoArray w8 32)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) Cc' (DFrac.own 1))
@@ -162,9 +150,7 @@ instance Termios_access_load_Pad_cgo_0 (l : Loc) (v : syscall.Termios) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Pad_cgo_0 (l : Loc) (v : syscall.Termios) (Pad_cgo_0' : (GoArray w8 3)) :
+instance Termios_access_store_Pad_cgo_0 (l : Loc) (v : syscall.Termios) (Pad_cgo_0' : (GoArray w8 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) Pad_cgo_0' (DFrac.own 1))
@@ -180,9 +166,7 @@ instance Termios_access_load_Ispeed (l : Loc) (v : syscall.Termios) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Ispeed (l : Loc) (v : syscall.Termios) (Ispeed' : w32) :
+instance Termios_access_store_Ispeed (l : Loc) (v : syscall.Termios) (Ispeed' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) Ispeed' (DFrac.own 1))
@@ -198,9 +182,7 @@ instance Termios_access_load_Ospeed (l : Loc) (v : syscall.Termios) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Termios_access_store_Ospeed (l : Loc) (v : syscall.Termios) (Ospeed' : w32) :
+instance Termios_access_store_Ospeed (l : Loc) (v : syscall.Termios) (Ospeed' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) Ospeed' (DFrac.own 1))

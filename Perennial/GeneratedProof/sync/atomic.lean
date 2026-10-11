@@ -71,9 +71,7 @@ instance Bool'_access_load__0 (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Bool'_access_store__0 (l : Loc) (v : sync.atomic.Bool') (_0' : sync.atomic.noCopy) :
+instance Bool'_access_store__0 (l : Loc) (v : sync.atomic.Bool') (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) _0' (DFrac.own 1))
@@ -89,9 +87,7 @@ instance Bool'_access_load_v (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Bool'_access_store_v (l : Loc) (v : sync.atomic.Bool') (v' : w32) :
+instance Bool'_access_store_v (l : Loc) (v : sync.atomic.Bool') (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v' (DFrac.own 1))
@@ -133,9 +129,7 @@ instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (GoArray Loc 0)) :
+instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) _0' (DFrac.own 1))
@@ -151,9 +145,7 @@ instance Pointer_access_load__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_1' : sync.atomic.noCopy) :
+instance Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_1' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) _1' (DFrac.own 1))
@@ -169,9 +161,7 @@ instance Pointer_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Lo
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pointer_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (v' : Loc) :
+instance Pointer_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (v' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v' (DFrac.own 1))
@@ -212,9 +202,7 @@ instance Int32_access_load__0 (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Int32_access_store__0 (l : Loc) (v : sync.atomic.Int32) (_0' : sync.atomic.noCopy) :
+instance Int32_access_store__0 (l : Loc) (v : sync.atomic.Int32) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) _0' (DFrac.own 1))
@@ -230,9 +218,7 @@ instance Int32_access_load_v (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Int32_access_store_v (l : Loc) (v : sync.atomic.Int32) (v' : w32) :
+instance Int32_access_store_v (l : Loc) (v : sync.atomic.Int32) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v' (DFrac.own 1))
@@ -297,9 +283,7 @@ instance Int64_access_load__0 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Int64_access_store__0 (l : Loc) (v : sync.atomic.Int64) (_0' : sync.atomic.noCopy) :
+instance Int64_access_store__0 (l : Loc) (v : sync.atomic.Int64) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) _0' (DFrac.own 1))
@@ -315,9 +299,7 @@ instance Int64_access_load__1 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Int64_access_store__1 (l : Loc) (v : sync.atomic.Int64) (_1' : sync.atomic.align64) :
+instance Int64_access_store__1 (l : Loc) (v : sync.atomic.Int64) (_1' : sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) _1' (DFrac.own 1))
@@ -333,9 +315,7 @@ instance Int64_access_load_v (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Int64_access_store_v (l : Loc) (v : sync.atomic.Int64) (v' : w64) :
+instance Int64_access_store_v (l : Loc) (v : sync.atomic.Int64) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v' (DFrac.own 1))
@@ -376,9 +356,7 @@ instance Uint32_access_load__0 (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uint32_access_store__0 (l : Loc) (v : sync.atomic.Uint32) (_0' : sync.atomic.noCopy) :
+instance Uint32_access_store__0 (l : Loc) (v : sync.atomic.Uint32) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) _0' (DFrac.own 1))
@@ -394,9 +372,7 @@ instance Uint32_access_load_v (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uint32_access_store_v (l : Loc) (v : sync.atomic.Uint32) (v' : w32) :
+instance Uint32_access_store_v (l : Loc) (v : sync.atomic.Uint32) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v' (DFrac.own 1))
@@ -438,9 +414,7 @@ instance Uint64_access_load__0 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uint64_access_store__0 (l : Loc) (v : sync.atomic.Uint64) (_0' : sync.atomic.noCopy) :
+instance Uint64_access_store__0 (l : Loc) (v : sync.atomic.Uint64) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) _0' (DFrac.own 1))
@@ -456,9 +430,7 @@ instance Uint64_access_load__1 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uint64_access_store__1 (l : Loc) (v : sync.atomic.Uint64) (_1' : sync.atomic.align64) :
+instance Uint64_access_store__1 (l : Loc) (v : sync.atomic.Uint64) (_1' : sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) _1' (DFrac.own 1))
@@ -474,9 +446,7 @@ instance Uint64_access_load_v (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uint64_access_store_v (l : Loc) (v : sync.atomic.Uint64) (v' : w64) :
+instance Uint64_access_store_v (l : Loc) (v : sync.atomic.Uint64) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v' (DFrac.own 1))
@@ -517,9 +487,7 @@ instance Uintptr_access_load__0 (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uintptr_access_store__0 (l : Loc) (v : sync.atomic.Uintptr) (_0' : sync.atomic.noCopy) :
+instance Uintptr_access_store__0 (l : Loc) (v : sync.atomic.Uintptr) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) _0' (DFrac.own 1))
@@ -535,9 +503,7 @@ instance Uintptr_access_load_v (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Uintptr_access_store_v (l : Loc) (v : sync.atomic.Uintptr) (v' : w64) :
+instance Uintptr_access_store_v (l : Loc) (v : sync.atomic.Uintptr) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v' (DFrac.own 1))
@@ -578,9 +544,7 @@ instance efaceWords_access_load_typ (l : Loc) (v : sync.atomic.efaceWords) (dq :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) efaceWords_access_store_typ (l : Loc) (v : sync.atomic.efaceWords) (typ' : Loc) :
+instance efaceWords_access_store_typ (l : Loc) (v : sync.atomic.efaceWords) (typ' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) typ' (DFrac.own 1))
@@ -596,9 +560,7 @@ instance efaceWords_access_load_data (l : Loc) (v : sync.atomic.efaceWords) (dq 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) efaceWords_access_store_data (l : Loc) (v : sync.atomic.efaceWords) (data' : Loc) :
+instance efaceWords_access_store_data (l : Loc) (v : sync.atomic.efaceWords) (data' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) data' (DFrac.own 1))

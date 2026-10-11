@@ -51,9 +51,7 @@ instance ParseError_access_load_Layout (l : Loc) (v : time.ParseError) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ParseError_access_store_Layout (l : Loc) (v : time.ParseError) (Layout' : GoString) :
+instance ParseError_access_store_Layout (l : Loc) (v : time.ParseError) (Layout' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.ParseError go!"Layout" l) v.Layout' (DFrac.own 1))
       (typedPointsto (structFieldRef time.ParseError go!"Layout" l) Layout' (DFrac.own 1))
@@ -69,9 +67,7 @@ instance ParseError_access_load_Value (l : Loc) (v : time.ParseError) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ParseError_access_store_Value (l : Loc) (v : time.ParseError) (Value' : GoString) :
+instance ParseError_access_store_Value (l : Loc) (v : time.ParseError) (Value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.ParseError go!"Value" l) v.Value' (DFrac.own 1))
       (typedPointsto (structFieldRef time.ParseError go!"Value" l) Value' (DFrac.own 1))
@@ -87,9 +83,7 @@ instance ParseError_access_load_LayoutElem (l : Loc) (v : time.ParseError) (dq :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ParseError_access_store_LayoutElem (l : Loc) (v : time.ParseError) (LayoutElem' : GoString) :
+instance ParseError_access_store_LayoutElem (l : Loc) (v : time.ParseError) (LayoutElem' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.ParseError go!"LayoutElem" l) v.LayoutElem' (DFrac.own 1))
       (typedPointsto (structFieldRef time.ParseError go!"LayoutElem" l) LayoutElem' (DFrac.own 1))
@@ -105,9 +99,7 @@ instance ParseError_access_load_ValueElem (l : Loc) (v : time.ParseError) (dq : 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ParseError_access_store_ValueElem (l : Loc) (v : time.ParseError) (ValueElem' : GoString) :
+instance ParseError_access_store_ValueElem (l : Loc) (v : time.ParseError) (ValueElem' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.ParseError go!"ValueElem" l) v.ValueElem' (DFrac.own 1))
       (typedPointsto (structFieldRef time.ParseError go!"ValueElem" l) ValueElem' (DFrac.own 1))
@@ -123,9 +115,7 @@ instance ParseError_access_load_Message (l : Loc) (v : time.ParseError) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ParseError_access_store_Message (l : Loc) (v : time.ParseError) (Message' : GoString) :
+instance ParseError_access_store_Message (l : Loc) (v : time.ParseError) (Message' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.ParseError go!"Message" l) v.Message' (DFrac.own 1))
       (typedPointsto (structFieldRef time.ParseError go!"Message" l) Message' (DFrac.own 1))
@@ -166,9 +156,7 @@ instance parseDurationError_access_load_message (l : Loc) (v : time.parseDuratio
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) parseDurationError_access_store_message (l : Loc) (v : time.parseDurationError) (message' : GoString) :
+instance parseDurationError_access_store_message (l : Loc) (v : time.parseDurationError) (message' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.parseDurationError go!"message" l) v.message' (DFrac.own 1))
       (typedPointsto (structFieldRef time.parseDurationError go!"message" l) message' (DFrac.own 1))
@@ -184,9 +172,7 @@ instance parseDurationError_access_load_value (l : Loc) (v : time.parseDurationE
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) parseDurationError_access_store_value (l : Loc) (v : time.parseDurationError) (value' : GoString) :
+instance parseDurationError_access_store_value (l : Loc) (v : time.parseDurationError) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.parseDurationError go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef time.parseDurationError go!"value" l) value' (DFrac.own 1))
@@ -227,9 +213,7 @@ instance Timer_access_load_C (l : Loc) (v : time.Timer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Timer_access_store_C (l : Loc) (v : time.Timer) (C' : GoChan) :
+instance Timer_access_store_C (l : Loc) (v : time.Timer) (C' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Timer go!"C" l) v.C' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Timer go!"C" l) C' (DFrac.own 1))
@@ -245,9 +229,7 @@ instance Timer_access_load_initTimer (l : Loc) (v : time.Timer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Timer_access_store_initTimer (l : Loc) (v : time.Timer) (initTimer' : Bool) :
+instance Timer_access_store_initTimer (l : Loc) (v : time.Timer) (initTimer' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Timer go!"initTimer" l) v.initTimer' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Timer go!"initTimer" l) initTimer' (DFrac.own 1))
@@ -288,9 +270,7 @@ instance Ticker_access_load_C (l : Loc) (v : time.Ticker) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Ticker_access_store_C (l : Loc) (v : time.Ticker) (C' : GoChan) :
+instance Ticker_access_store_C (l : Loc) (v : time.Ticker) (C' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Ticker go!"C" l) v.C' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Ticker go!"C" l) C' (DFrac.own 1))
@@ -306,9 +286,7 @@ instance Ticker_access_load_initTicker (l : Loc) (v : time.Ticker) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Ticker_access_store_initTicker (l : Loc) (v : time.Ticker) (initTicker' : Bool) :
+instance Ticker_access_store_initTicker (l : Loc) (v : time.Ticker) (initTicker' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Ticker go!"initTicker" l) v.initTicker' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Ticker go!"initTicker" l) initTicker' (DFrac.own 1))
@@ -350,9 +328,7 @@ instance Time_access_load_wall (l : Loc) (v : time.Time) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Time_access_store_wall (l : Loc) (v : time.Time) (wall' : w64) :
+instance Time_access_store_wall (l : Loc) (v : time.Time) (wall' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Time go!"wall" l) v.wall' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Time go!"wall" l) wall' (DFrac.own 1))
@@ -368,9 +344,7 @@ instance Time_access_load_ext (l : Loc) (v : time.Time) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Time_access_store_ext (l : Loc) (v : time.Time) (ext' : w64) :
+instance Time_access_store_ext (l : Loc) (v : time.Time) (ext' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Time go!"ext" l) v.ext' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Time go!"ext" l) ext' (DFrac.own 1))
@@ -386,9 +360,7 @@ instance Time_access_load_loc (l : Loc) (v : time.Time) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Time_access_store_loc (l : Loc) (v : time.Time) (loc' : Loc) :
+instance Time_access_store_loc (l : Loc) (v : time.Time) (loc' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Time go!"loc" l) v.loc' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Time go!"loc" l) loc' (DFrac.own 1))
@@ -434,9 +406,7 @@ instance Location_access_load_name (l : Loc) (v : time.Location) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_name (l : Loc) (v : time.Location) (name' : GoString) :
+instance Location_access_store_name (l : Loc) (v : time.Location) (name' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"name" l) name' (DFrac.own 1))
@@ -452,9 +422,7 @@ instance Location_access_load_zone (l : Loc) (v : time.Location) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_zone (l : Loc) (v : time.Location) (zone' : GoSlice) :
+instance Location_access_store_zone (l : Loc) (v : time.Location) (zone' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"zone" l) v.zone' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"zone" l) zone' (DFrac.own 1))
@@ -470,9 +438,7 @@ instance Location_access_load_tx (l : Loc) (v : time.Location) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_tx (l : Loc) (v : time.Location) (tx' : GoSlice) :
+instance Location_access_store_tx (l : Loc) (v : time.Location) (tx' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"tx" l) v.tx' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"tx" l) tx' (DFrac.own 1))
@@ -488,9 +454,7 @@ instance Location_access_load_extend (l : Loc) (v : time.Location) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_extend (l : Loc) (v : time.Location) (extend' : GoString) :
+instance Location_access_store_extend (l : Loc) (v : time.Location) (extend' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"extend" l) v.extend' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"extend" l) extend' (DFrac.own 1))
@@ -506,9 +470,7 @@ instance Location_access_load_cacheStart (l : Loc) (v : time.Location) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_cacheStart (l : Loc) (v : time.Location) (cacheStart' : w64) :
+instance Location_access_store_cacheStart (l : Loc) (v : time.Location) (cacheStart' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"cacheStart" l) v.cacheStart' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"cacheStart" l) cacheStart' (DFrac.own 1))
@@ -524,9 +486,7 @@ instance Location_access_load_cacheEnd (l : Loc) (v : time.Location) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_cacheEnd (l : Loc) (v : time.Location) (cacheEnd' : w64) :
+instance Location_access_store_cacheEnd (l : Loc) (v : time.Location) (cacheEnd' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"cacheEnd" l) v.cacheEnd' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"cacheEnd" l) cacheEnd' (DFrac.own 1))
@@ -542,9 +502,7 @@ instance Location_access_load_cacheZone (l : Loc) (v : time.Location) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Location_access_store_cacheZone (l : Loc) (v : time.Location) (cacheZone' : Loc) :
+instance Location_access_store_cacheZone (l : Loc) (v : time.Location) (cacheZone' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.Location go!"cacheZone" l) v.cacheZone' (DFrac.own 1))
       (typedPointsto (structFieldRef time.Location go!"cacheZone" l) cacheZone' (DFrac.own 1))
@@ -586,9 +544,7 @@ instance zone_access_load_name (l : Loc) (v : time.zone) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zone_access_store_name (l : Loc) (v : time.zone) (name' : GoString) :
+instance zone_access_store_name (l : Loc) (v : time.zone) (name' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zone go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zone go!"name" l) name' (DFrac.own 1))
@@ -604,9 +560,7 @@ instance zone_access_load_offset (l : Loc) (v : time.zone) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zone_access_store_offset (l : Loc) (v : time.zone) (offset' : w64) :
+instance zone_access_store_offset (l : Loc) (v : time.zone) (offset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zone go!"offset" l) v.offset' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zone go!"offset" l) offset' (DFrac.own 1))
@@ -622,9 +576,7 @@ instance zone_access_load_isDST (l : Loc) (v : time.zone) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zone_access_store_isDST (l : Loc) (v : time.zone) (isDST' : Bool) :
+instance zone_access_store_isDST (l : Loc) (v : time.zone) (isDST' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zone go!"isDST" l) v.isDST' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zone go!"isDST" l) isDST' (DFrac.own 1))
@@ -667,9 +619,7 @@ instance zoneTrans_access_load_when (l : Loc) (v : time.zoneTrans) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zoneTrans_access_store_when (l : Loc) (v : time.zoneTrans) (when' : w64) :
+instance zoneTrans_access_store_when (l : Loc) (v : time.zoneTrans) (when' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zoneTrans go!"when" l) v.when' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zoneTrans go!"when" l) when' (DFrac.own 1))
@@ -685,9 +635,7 @@ instance zoneTrans_access_load_index (l : Loc) (v : time.zoneTrans) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zoneTrans_access_store_index (l : Loc) (v : time.zoneTrans) (index' : w8) :
+instance zoneTrans_access_store_index (l : Loc) (v : time.zoneTrans) (index' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zoneTrans go!"index" l) v.index' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zoneTrans go!"index" l) index' (DFrac.own 1))
@@ -703,9 +651,7 @@ instance zoneTrans_access_load_isstd (l : Loc) (v : time.zoneTrans) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zoneTrans_access_store_isstd (l : Loc) (v : time.zoneTrans) (isstd' : Bool) :
+instance zoneTrans_access_store_isstd (l : Loc) (v : time.zoneTrans) (isstd' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zoneTrans go!"isstd" l) v.isstd' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zoneTrans go!"isstd" l) isstd' (DFrac.own 1))
@@ -721,9 +667,7 @@ instance zoneTrans_access_load_isutc (l : Loc) (v : time.zoneTrans) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) zoneTrans_access_store_isutc (l : Loc) (v : time.zoneTrans) (isutc' : Bool) :
+instance zoneTrans_access_store_isutc (l : Loc) (v : time.zoneTrans) (isutc' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.zoneTrans go!"isutc" l) v.isutc' (DFrac.own 1))
       (typedPointsto (structFieldRef time.zoneTrans go!"isutc" l) isutc' (DFrac.own 1))
@@ -767,9 +711,7 @@ instance rule_access_load_kind (l : Loc) (v : time.rule) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) rule_access_store_kind (l : Loc) (v : time.rule) (kind' : time.ruleKind) :
+instance rule_access_store_kind (l : Loc) (v : time.rule) (kind' : time.ruleKind) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"kind" l) v.kind' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"kind" l) kind' (DFrac.own 1))
@@ -785,9 +727,7 @@ instance rule_access_load_day (l : Loc) (v : time.rule) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) rule_access_store_day (l : Loc) (v : time.rule) (day' : w64) :
+instance rule_access_store_day (l : Loc) (v : time.rule) (day' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"day" l) v.day' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"day" l) day' (DFrac.own 1))
@@ -803,9 +743,7 @@ instance rule_access_load_week (l : Loc) (v : time.rule) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) rule_access_store_week (l : Loc) (v : time.rule) (week' : w64) :
+instance rule_access_store_week (l : Loc) (v : time.rule) (week' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"week" l) v.week' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"week" l) week' (DFrac.own 1))
@@ -821,9 +759,7 @@ instance rule_access_load_mon (l : Loc) (v : time.rule) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) rule_access_store_mon (l : Loc) (v : time.rule) (mon' : w64) :
+instance rule_access_store_mon (l : Loc) (v : time.rule) (mon' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"mon" l) v.mon' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"mon" l) mon' (DFrac.own 1))
@@ -839,9 +775,7 @@ instance rule_access_load_time (l : Loc) (v : time.rule) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) rule_access_store_time (l : Loc) (v : time.rule) (time' : w64) :
+instance rule_access_store_time (l : Loc) (v : time.rule) (time' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"time" l) v.time' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"time" l) time' (DFrac.own 1))
@@ -882,9 +816,7 @@ instance dataIO_access_load_p (l : Loc) (v : time.dataIO) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) dataIO_access_store_p (l : Loc) (v : time.dataIO) (p' : GoSlice) :
+instance dataIO_access_store_p (l : Loc) (v : time.dataIO) (p' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.dataIO go!"p" l) v.p' (DFrac.own 1))
       (typedPointsto (structFieldRef time.dataIO go!"p" l) p' (DFrac.own 1))
@@ -900,9 +832,7 @@ instance dataIO_access_load_error (l : Loc) (v : time.dataIO) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) dataIO_access_store_error (l : Loc) (v : time.dataIO) (error' : Bool) :
+instance dataIO_access_store_error (l : Loc) (v : time.dataIO) (error' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.dataIO go!"error" l) v.error' (DFrac.own 1))
       (typedPointsto (structFieldRef time.dataIO go!"error" l) error' (DFrac.own 1))

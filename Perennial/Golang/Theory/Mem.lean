@@ -278,7 +278,12 @@ meta def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
   let GF := (← gooseGSArgs wp.ι)[6]!
   for (_, ivar, p, P) in ← hypsListFor hyps l do
     let saved ← saveState
-    let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none none
+    -- the fraction of a typed points-to hypothesis is the one to load at (a struct's
+    -- field points-tos have its fraction): with a fresh one, a store instance (at
+    -- `DFrac.own 1`) would also match a load through a fractional struct points-to
+    let P ← instantiateMVars P
+    let dq? := if P.isAppOfArity ``typedPointsto 6 then some (P.getArg! 5) else none
+    let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none dq?
     if let some (hacc, P') ← synthAccess A A P then
       if ← isDefEq P' P then
         let r := hyps.remove true ivar

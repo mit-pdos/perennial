@@ -51,9 +51,7 @@ instance Channel_access_load_cap {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Channel_access_store_cap {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (cap' : w64) :
+instance Channel_access_store_cap {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (cap' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"cap" l) v.cap' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"cap" l) cap' (DFrac.own 1))
@@ -69,9 +67,7 @@ instance Channel_access_load_mu {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Channel_access_store_mu {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (mu' : Loc) :
+instance Channel_access_store_mu {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (mu' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"mu" l) mu' (DFrac.own 1))
@@ -87,9 +83,7 @@ instance Channel_access_load_state {T' : Type} [TypedPointsto (GF := GF) T'] (l 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Channel_access_store_state {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (state' : github_com.mit_pdos.perennial.goose.model.channel.offerState) :
+instance Channel_access_store_state {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (state' : github_com.mit_pdos.perennial.goose.model.channel.offerState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"state" l) state' (DFrac.own 1))
@@ -105,9 +99,7 @@ instance Channel_access_load_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Channel_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (buffer' : GoSlice) :
+instance Channel_access_store_buffer {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (buffer' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"buffer" l) v.buffer' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"buffer" l) buffer' (DFrac.own 1))
@@ -123,9 +115,7 @@ instance Channel_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Lo
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Channel_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (v' : T') :
+instance Channel_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (v' : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"v" l) v' (DFrac.own 1))

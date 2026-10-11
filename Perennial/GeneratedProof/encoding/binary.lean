@@ -99,9 +99,7 @@ instance coder_access_load_order (l : Loc) (v : encoding.binary.coder) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
+instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) order' (DFrac.own 1))
@@ -117,9 +115,7 @@ instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
+instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) buf' (DFrac.own 1))
@@ -135,9 +131,7 @@ instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
+instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) offset' (DFrac.own 1))
@@ -177,9 +171,7 @@ instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.na
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
+instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) littleEndian' (DFrac.own 1))

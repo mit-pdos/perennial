@@ -134,9 +134,7 @@ instance notifyList_access_load_wait (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) notifyList_access_store_wait (l : Loc) (v : sync.notifyList) (wait' : w32) :
+instance notifyList_access_store_wait (l : Loc) (v : sync.notifyList) (wait' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) v.wait' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) wait' (DFrac.own 1))
@@ -152,9 +150,7 @@ instance notifyList_access_load_notify (l : Loc) (v : sync.notifyList) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) notifyList_access_store_notify (l : Loc) (v : sync.notifyList) (notify' : w32) :
+instance notifyList_access_store_notify (l : Loc) (v : sync.notifyList) (notify' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) v.notify' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) notify' (DFrac.own 1))
@@ -170,9 +166,7 @@ instance notifyList_access_load_lock (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) notifyList_access_store_lock (l : Loc) (v : sync.notifyList) (lock' : w64) :
+instance notifyList_access_store_lock (l : Loc) (v : sync.notifyList) (lock' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) v.lock' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) lock' (DFrac.own 1))
@@ -188,9 +182,7 @@ instance notifyList_access_load_head (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) notifyList_access_store_head (l : Loc) (v : sync.notifyList) (head' : Loc) :
+instance notifyList_access_store_head (l : Loc) (v : sync.notifyList) (head' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) v.head' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) head' (DFrac.own 1))
@@ -206,9 +198,7 @@ instance notifyList_access_load_tail (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) notifyList_access_store_tail (l : Loc) (v : sync.notifyList) (tail' : Loc) :
+instance notifyList_access_store_tail (l : Loc) (v : sync.notifyList) (tail' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) tail' (DFrac.own 1))
@@ -251,9 +241,7 @@ instance Cond_access_load_noCopy (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cond_access_store_noCopy (l : Loc) (v : sync.Cond) (noCopy' : sync.noCopy) :
+instance Cond_access_store_noCopy (l : Loc) (v : sync.Cond) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -269,9 +257,7 @@ instance Cond_access_load_L (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cond_access_store_L (l : Loc) (v : sync.Cond) (L' : sync.Locker) :
+instance Cond_access_store_L (l : Loc) (v : sync.Cond) (L' : sync.Locker) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"L" l) v.L' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"L" l) L' (DFrac.own 1))
@@ -287,9 +273,7 @@ instance Cond_access_load_notify (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cond_access_store_notify (l : Loc) (v : sync.Cond) (notify' : sync.notifyList) :
+instance Cond_access_store_notify (l : Loc) (v : sync.Cond) (notify' : sync.notifyList) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) v.notify' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) notify' (DFrac.own 1))
@@ -305,9 +289,7 @@ instance Cond_access_load_checker (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cond_access_store_checker (l : Loc) (v : sync.Cond) (checker' : sync.copyChecker) :
+instance Cond_access_store_checker (l : Loc) (v : sync.Cond) (checker' : sync.copyChecker) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) v.checker' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) checker' (DFrac.own 1))
@@ -368,9 +350,7 @@ instance Once_access_load__0 (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
+instance Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"_0" l) _0' (DFrac.own 1))
@@ -386,9 +366,7 @@ instance Once_access_load_done (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.Bool') :
+instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"done" l) done' (DFrac.own 1))
@@ -404,9 +382,7 @@ instance Once_access_load_m (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Once_access_store_m (l : Loc) (v : sync.Once) (m' : sync.Mutex) :
+instance Once_access_store_m (l : Loc) (v : sync.Once) (m' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"m" l) m' (DFrac.own 1))
@@ -451,9 +427,7 @@ instance Pool_access_load_noCopy (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_noCopy (l : Loc) (v : sync.Pool) (noCopy' : sync.noCopy) :
+instance Pool_access_store_noCopy (l : Loc) (v : sync.Pool) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -469,9 +443,7 @@ instance Pool_access_load_local (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_local (l : Loc) (v : sync.Pool) (local' : Loc) :
+instance Pool_access_store_local (l : Loc) (v : sync.Pool) (local' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"local" l) v.local' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"local" l) local' (DFrac.own 1))
@@ -487,9 +459,7 @@ instance Pool_access_load_localSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_localSize (l : Loc) (v : sync.Pool) (localSize' : w64) :
+instance Pool_access_store_localSize (l : Loc) (v : sync.Pool) (localSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) v.localSize' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) localSize' (DFrac.own 1))
@@ -505,9 +475,7 @@ instance Pool_access_load_victim (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_victim (l : Loc) (v : sync.Pool) (victim' : Loc) :
+instance Pool_access_store_victim (l : Loc) (v : sync.Pool) (victim' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) v.victim' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) victim' (DFrac.own 1))
@@ -523,9 +491,7 @@ instance Pool_access_load_victimSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_victimSize (l : Loc) (v : sync.Pool) (victimSize' : w64) :
+instance Pool_access_store_victimSize (l : Loc) (v : sync.Pool) (victimSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) v.victimSize' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) victimSize' (DFrac.own 1))
@@ -541,9 +507,7 @@ instance Pool_access_load_New (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : GoFunc) :
+instance Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"New" l) v.New' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"New" l) New' (DFrac.own 1))
@@ -603,9 +567,7 @@ instance poolChain_access_load_head (l : Loc) (v : sync.poolChain) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolChain_access_store_head (l : Loc) (v : sync.poolChain) (head' : Loc) :
+instance poolChain_access_store_head (l : Loc) (v : sync.poolChain) (head' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) v.head' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) head' (DFrac.own 1))
@@ -621,9 +583,7 @@ instance poolChain_access_load_tail (l : Loc) (v : sync.poolChain) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (sync.atomic.Pointer sync.poolChainElt)) :
+instance poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (sync.atomic.Pointer sync.poolChainElt)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) tail' (DFrac.own 1))
@@ -664,9 +624,7 @@ instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInte
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : GoInterface) :
+instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) private' (DFrac.own 1))
@@ -682,9 +640,7 @@ instance poolLocalInternal_access_load_shared (l : Loc) (v : sync.poolLocalInter
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolLocalInternal_access_store_shared (l : Loc) (v : sync.poolLocalInternal) (shared' : sync.poolChain) :
+instance poolLocalInternal_access_store_shared (l : Loc) (v : sync.poolLocalInternal) (shared' : sync.poolChain) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) v.shared' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) shared' (DFrac.own 1))
@@ -725,9 +681,7 @@ instance poolLocal_access_load_poolLocalInternal (l : Loc) (v : sync.poolLocal) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolLocal_access_store_poolLocalInternal (l : Loc) (v : sync.poolLocal) (poolLocalInternal' : sync.poolLocalInternal) :
+instance poolLocal_access_store_poolLocalInternal (l : Loc) (v : sync.poolLocal) (poolLocalInternal' : sync.poolLocalInternal) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) v.poolLocalInternal' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) poolLocalInternal' (DFrac.own 1))
@@ -743,9 +697,7 @@ instance poolLocal_access_load_pad (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (GoArray w8 96)) :
+instance poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (GoArray w8 96)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) v.pad' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) pad' (DFrac.own 1))
@@ -786,9 +738,7 @@ instance poolDequeue_access_load_headTail (l : Loc) (v : sync.poolDequeue) (dq :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : sync.atomic.Uint64) :
+instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) headTail' (DFrac.own 1))
@@ -804,9 +754,7 @@ instance poolDequeue_access_load_vals (l : Loc) (v : sync.poolDequeue) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : GoSlice) :
+instance poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) v.vals' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) vals' (DFrac.own 1))
@@ -847,9 +795,7 @@ instance eface_access_load_typ (l : Loc) (v : sync.eface) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) eface_access_store_typ (l : Loc) (v : sync.eface) (typ' : Loc) :
+instance eface_access_store_typ (l : Loc) (v : sync.eface) (typ' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"typ" l) v.typ' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.eface go!"typ" l) typ' (DFrac.own 1))
@@ -865,9 +811,7 @@ instance eface_access_load_val (l : Loc) (v : sync.eface) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) eface_access_store_val (l : Loc) (v : sync.eface) (val' : Loc) :
+instance eface_access_store_val (l : Loc) (v : sync.eface) (val' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.eface go!"val" l) val' (DFrac.own 1))
@@ -911,9 +855,7 @@ instance RWMutex_access_load_w (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RWMutex_access_store_w (l : Loc) (v : sync.RWMutex) (w' : sync.Mutex) :
+instance RWMutex_access_store_w (l : Loc) (v : sync.RWMutex) (w' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) w' (DFrac.own 1))
@@ -929,9 +871,7 @@ instance RWMutex_access_load_writerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RWMutex_access_store_writerSem (l : Loc) (v : sync.RWMutex) (writerSem' : w32) :
+instance RWMutex_access_store_writerSem (l : Loc) (v : sync.RWMutex) (writerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) v.writerSem' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) writerSem' (DFrac.own 1))
@@ -947,9 +887,7 @@ instance RWMutex_access_load_readerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RWMutex_access_store_readerSem (l : Loc) (v : sync.RWMutex) (readerSem' : w32) :
+instance RWMutex_access_store_readerSem (l : Loc) (v : sync.RWMutex) (readerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) v.readerSem' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) readerSem' (DFrac.own 1))
@@ -965,9 +903,7 @@ instance RWMutex_access_load_readerCount (l : Loc) (v : sync.RWMutex) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : sync.atomic.Int32) :
+instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) v.readerCount' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) readerCount' (DFrac.own 1))
@@ -983,9 +919,7 @@ instance RWMutex_access_load_readerWait (l : Loc) (v : sync.RWMutex) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : sync.atomic.Int32) :
+instance RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) v.readerWait' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) readerWait' (DFrac.own 1))
@@ -1027,9 +961,7 @@ instance WaitGroup_access_load_noCopy (l : Loc) (v : sync.WaitGroup) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) WaitGroup_access_store_noCopy (l : Loc) (v : sync.WaitGroup) (noCopy' : sync.noCopy) :
+instance WaitGroup_access_store_noCopy (l : Loc) (v : sync.WaitGroup) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -1045,9 +977,7 @@ instance WaitGroup_access_load_state (l : Loc) (v : sync.WaitGroup) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : sync.atomic.Uint64) :
+instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) state' (DFrac.own 1))
@@ -1063,9 +993,7 @@ instance WaitGroup_access_load_sema (l : Loc) (v : sync.WaitGroup) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) WaitGroup_access_store_sema (l : Loc) (v : sync.WaitGroup) (sema' : w32) :
+instance WaitGroup_access_store_sema (l : Loc) (v : sync.WaitGroup) (sema' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) v.sema' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) sema' (DFrac.own 1))

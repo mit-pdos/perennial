@@ -431,7 +431,7 @@ instance pt_access_load_x (l : Loc) (v : pt) (dq : DFrac) :
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance (priority := low) pt_access_store_x (l : Loc) (v : pt) (x' : w64) :
+instance pt_access_store_x (l : Loc) (v : pt) (x' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef pt go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef pt go!"x" l) x' (DFrac.own 1))
@@ -445,7 +445,7 @@ instance pt_access_load_y (l : Loc) (v : pt) (dq : DFrac) :
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance (priority := low) pt_access_store_y (l : Loc) (v : pt) (y' : w64) :
+instance pt_access_store_y (l : Loc) (v : pt) (y' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef pt go!"y" l) v.y' (DFrac.own 1))
       (typedPointsto (structFieldRef pt go!"y" l) y' (DFrac.own 1))
@@ -469,6 +469,15 @@ example (l : Loc) (v : pt) (dq : DFrac) :
     {{ (l ↦{dq} v : IProp GF) }}
       gl(![go.uint64] (StructFieldRef pt.ty "x" #l))
     {{ RET #v.x'; l ↦{dq} v }} := by
+  iintro %Φ Hl HΦ
+  wp_auto
+  iapply HΦ $$ Hl
+
+/-- A store of a field's own value (the load instance also matches it). -/
+example (l : Loc) (v : pt) :
+    {{ (l ↦ v : IProp GF) }}
+      gl(StructFieldRef pt.ty "x" #l <-[go.uint64] #v.x')
+    {{ RET #(); l ↦ v }} := by
   iintro %Φ Hl HΦ
   wp_auto
   iapply HΦ $$ Hl
@@ -536,7 +545,7 @@ instance ub_access_load_p (l : Loc) (v : ub) (dq : DFrac) :
       (typedPointsto l v dq) (typedPointsto l v dq) := by
   solve_pointsto_access_struct
 
-instance (priority := low) ub_access_store_p (l : Loc) (v : ub) (p' : w64) :
+instance ub_access_store_p (l : Loc) (v : ub) (p' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef ub go!"p" l) v.p' (DFrac.own 1))
       (typedPointsto (structFieldRef ub go!"p" l) p' (DFrac.own 1))

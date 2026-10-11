@@ -47,9 +47,7 @@ instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
+instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) b' (DFrac.own 1))

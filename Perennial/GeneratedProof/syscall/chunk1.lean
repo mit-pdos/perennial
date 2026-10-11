@@ -67,9 +67,7 @@ instance SysProcIDMap_access_load_ContainerID (l : Loc) (v : syscall.SysProcIDMa
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SysProcIDMap_access_store_ContainerID (l : Loc) (v : syscall.SysProcIDMap) (ContainerID' : w64) :
+instance SysProcIDMap_access_store_ContainerID (l : Loc) (v : syscall.SysProcIDMap) (ContainerID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"ContainerID" l) v.ContainerID' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"ContainerID" l) ContainerID' (DFrac.own 1))
@@ -85,9 +83,7 @@ instance SysProcIDMap_access_load_HostID (l : Loc) (v : syscall.SysProcIDMap) (d
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SysProcIDMap_access_store_HostID (l : Loc) (v : syscall.SysProcIDMap) (HostID' : w64) :
+instance SysProcIDMap_access_store_HostID (l : Loc) (v : syscall.SysProcIDMap) (HostID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"HostID" l) v.HostID' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"HostID" l) HostID' (DFrac.own 1))
@@ -103,9 +99,7 @@ instance SysProcIDMap_access_load_Size (l : Loc) (v : syscall.SysProcIDMap) (dq 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SysProcIDMap_access_store_Size (l : Loc) (v : syscall.SysProcIDMap) (Size' : w64) :
+instance SysProcIDMap_access_store_Size (l : Loc) (v : syscall.SysProcIDMap) (Size' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"Size" l) v.Size' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SysProcIDMap go!"Size" l) Size' (DFrac.own 1))
@@ -146,9 +140,7 @@ instance capHeader_access_load_version (l : Loc) (v : syscall.capHeader) (dq : D
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) capHeader_access_store_version (l : Loc) (v : syscall.capHeader) (version' : w32) :
+instance capHeader_access_store_version (l : Loc) (v : syscall.capHeader) (version' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.capHeader go!"version" l) v.version' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.capHeader go!"version" l) version' (DFrac.own 1))
@@ -164,9 +156,7 @@ instance capHeader_access_load_pid (l : Loc) (v : syscall.capHeader) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) capHeader_access_store_pid (l : Loc) (v : syscall.capHeader) (pid' : w32) :
+instance capHeader_access_store_pid (l : Loc) (v : syscall.capHeader) (pid' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.capHeader go!"pid" l) v.pid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.capHeader go!"pid" l) pid' (DFrac.own 1))
@@ -208,9 +198,7 @@ instance capData_access_load_effective (l : Loc) (v : syscall.capData) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) capData_access_store_effective (l : Loc) (v : syscall.capData) (effective' : w32) :
+instance capData_access_store_effective (l : Loc) (v : syscall.capData) (effective' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.capData go!"effective" l) v.effective' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.capData go!"effective" l) effective' (DFrac.own 1))
@@ -226,9 +214,7 @@ instance capData_access_load_permitted (l : Loc) (v : syscall.capData) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) capData_access_store_permitted (l : Loc) (v : syscall.capData) (permitted' : w32) :
+instance capData_access_store_permitted (l : Loc) (v : syscall.capData) (permitted' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.capData go!"permitted" l) v.permitted' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.capData go!"permitted" l) permitted' (DFrac.own 1))
@@ -244,9 +230,7 @@ instance capData_access_load_inheritable (l : Loc) (v : syscall.capData) (dq : D
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) capData_access_store_inheritable (l : Loc) (v : syscall.capData) (inheritable' : w32) :
+instance capData_access_store_inheritable (l : Loc) (v : syscall.capData) (inheritable' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.capData go!"inheritable" l) v.inheritable' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.capData go!"inheritable" l) inheritable' (DFrac.own 1))
@@ -296,9 +280,7 @@ instance cloneArgs_access_load_flags (l : Loc) (v : syscall.cloneArgs) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_flags (l : Loc) (v : syscall.cloneArgs) (flags' : w64) :
+instance cloneArgs_access_store_flags (l : Loc) (v : syscall.cloneArgs) (flags' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"flags" l) v.flags' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"flags" l) flags' (DFrac.own 1))
@@ -314,9 +296,7 @@ instance cloneArgs_access_load_pidFD (l : Loc) (v : syscall.cloneArgs) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_pidFD (l : Loc) (v : syscall.cloneArgs) (pidFD' : w64) :
+instance cloneArgs_access_store_pidFD (l : Loc) (v : syscall.cloneArgs) (pidFD' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"pidFD" l) v.pidFD' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"pidFD" l) pidFD' (DFrac.own 1))
@@ -332,9 +312,7 @@ instance cloneArgs_access_load_childTID (l : Loc) (v : syscall.cloneArgs) (dq : 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_childTID (l : Loc) (v : syscall.cloneArgs) (childTID' : w64) :
+instance cloneArgs_access_store_childTID (l : Loc) (v : syscall.cloneArgs) (childTID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"childTID" l) v.childTID' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"childTID" l) childTID' (DFrac.own 1))
@@ -350,9 +328,7 @@ instance cloneArgs_access_load_parentTID (l : Loc) (v : syscall.cloneArgs) (dq :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_parentTID (l : Loc) (v : syscall.cloneArgs) (parentTID' : w64) :
+instance cloneArgs_access_store_parentTID (l : Loc) (v : syscall.cloneArgs) (parentTID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"parentTID" l) v.parentTID' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"parentTID" l) parentTID' (DFrac.own 1))
@@ -368,9 +344,7 @@ instance cloneArgs_access_load_exitSignal (l : Loc) (v : syscall.cloneArgs) (dq 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_exitSignal (l : Loc) (v : syscall.cloneArgs) (exitSignal' : w64) :
+instance cloneArgs_access_store_exitSignal (l : Loc) (v : syscall.cloneArgs) (exitSignal' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"exitSignal" l) v.exitSignal' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"exitSignal" l) exitSignal' (DFrac.own 1))
@@ -386,9 +360,7 @@ instance cloneArgs_access_load_stack (l : Loc) (v : syscall.cloneArgs) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_stack (l : Loc) (v : syscall.cloneArgs) (stack' : w64) :
+instance cloneArgs_access_store_stack (l : Loc) (v : syscall.cloneArgs) (stack' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"stack" l) v.stack' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"stack" l) stack' (DFrac.own 1))
@@ -404,9 +376,7 @@ instance cloneArgs_access_load_stackSize (l : Loc) (v : syscall.cloneArgs) (dq :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_stackSize (l : Loc) (v : syscall.cloneArgs) (stackSize' : w64) :
+instance cloneArgs_access_store_stackSize (l : Loc) (v : syscall.cloneArgs) (stackSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"stackSize" l) v.stackSize' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"stackSize" l) stackSize' (DFrac.own 1))
@@ -422,9 +392,7 @@ instance cloneArgs_access_load_tls (l : Loc) (v : syscall.cloneArgs) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_tls (l : Loc) (v : syscall.cloneArgs) (tls' : w64) :
+instance cloneArgs_access_store_tls (l : Loc) (v : syscall.cloneArgs) (tls' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"tls" l) v.tls' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"tls" l) tls' (DFrac.own 1))
@@ -440,9 +408,7 @@ instance cloneArgs_access_load_setTID (l : Loc) (v : syscall.cloneArgs) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_setTID (l : Loc) (v : syscall.cloneArgs) (setTID' : w64) :
+instance cloneArgs_access_store_setTID (l : Loc) (v : syscall.cloneArgs) (setTID' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"setTID" l) v.setTID' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"setTID" l) setTID' (DFrac.own 1))
@@ -458,9 +424,7 @@ instance cloneArgs_access_load_setTIDSize (l : Loc) (v : syscall.cloneArgs) (dq 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_setTIDSize (l : Loc) (v : syscall.cloneArgs) (setTIDSize' : w64) :
+instance cloneArgs_access_store_setTIDSize (l : Loc) (v : syscall.cloneArgs) (setTIDSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"setTIDSize" l) v.setTIDSize' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"setTIDSize" l) setTIDSize' (DFrac.own 1))
@@ -476,9 +440,7 @@ instance cloneArgs_access_load_cgroup (l : Loc) (v : syscall.cloneArgs) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) cloneArgs_access_store_cgroup (l : Loc) (v : syscall.cloneArgs) (cgroup' : w64) :
+instance cloneArgs_access_store_cgroup (l : Loc) (v : syscall.cloneArgs) (cgroup' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.cloneArgs go!"cgroup" l) v.cgroup' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.cloneArgs go!"cgroup" l) cgroup' (DFrac.own 1))
@@ -521,9 +483,7 @@ instance Credential_access_load_Uid (l : Loc) (v : syscall.Credential) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Credential_access_store_Uid (l : Loc) (v : syscall.Credential) (Uid' : w32) :
+instance Credential_access_store_Uid (l : Loc) (v : syscall.Credential) (Uid' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Credential go!"Uid" l) v.Uid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Credential go!"Uid" l) Uid' (DFrac.own 1))
@@ -539,9 +499,7 @@ instance Credential_access_load_Gid (l : Loc) (v : syscall.Credential) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Credential_access_store_Gid (l : Loc) (v : syscall.Credential) (Gid' : w32) :
+instance Credential_access_store_Gid (l : Loc) (v : syscall.Credential) (Gid' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Credential go!"Gid" l) v.Gid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Credential go!"Gid" l) Gid' (DFrac.own 1))
@@ -557,9 +515,7 @@ instance Credential_access_load_Groups (l : Loc) (v : syscall.Credential) (dq : 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Credential_access_store_Groups (l : Loc) (v : syscall.Credential) (Groups' : GoSlice) :
+instance Credential_access_store_Groups (l : Loc) (v : syscall.Credential) (Groups' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Credential go!"Groups" l) v.Groups' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Credential go!"Groups" l) Groups' (DFrac.own 1))
@@ -575,9 +531,7 @@ instance Credential_access_load_NoSetGroups (l : Loc) (v : syscall.Credential) (
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Credential_access_store_NoSetGroups (l : Loc) (v : syscall.Credential) (NoSetGroups' : Bool) :
+instance Credential_access_store_NoSetGroups (l : Loc) (v : syscall.Credential) (NoSetGroups' : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Credential go!"NoSetGroups" l) v.NoSetGroups' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Credential go!"NoSetGroups" l) NoSetGroups' (DFrac.own 1))
@@ -620,9 +574,7 @@ instance ProcAttr_access_load_Dir (l : Loc) (v : syscall.ProcAttr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ProcAttr_access_store_Dir (l : Loc) (v : syscall.ProcAttr) (Dir' : GoString) :
+instance ProcAttr_access_store_Dir (l : Loc) (v : syscall.ProcAttr) (Dir' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Dir" l) v.Dir' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Dir" l) Dir' (DFrac.own 1))
@@ -638,9 +590,7 @@ instance ProcAttr_access_load_Env (l : Loc) (v : syscall.ProcAttr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ProcAttr_access_store_Env (l : Loc) (v : syscall.ProcAttr) (Env' : GoSlice) :
+instance ProcAttr_access_store_Env (l : Loc) (v : syscall.ProcAttr) (Env' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Env" l) v.Env' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Env" l) Env' (DFrac.own 1))
@@ -656,9 +606,7 @@ instance ProcAttr_access_load_Files (l : Loc) (v : syscall.ProcAttr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ProcAttr_access_store_Files (l : Loc) (v : syscall.ProcAttr) (Files' : GoSlice) :
+instance ProcAttr_access_store_Files (l : Loc) (v : syscall.ProcAttr) (Files' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Files" l) v.Files' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Files" l) Files' (DFrac.own 1))
@@ -674,9 +622,7 @@ instance ProcAttr_access_load_Sys (l : Loc) (v : syscall.ProcAttr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) ProcAttr_access_store_Sys (l : Loc) (v : syscall.ProcAttr) (Sys' : Loc) :
+instance ProcAttr_access_store_Sys (l : Loc) (v : syscall.ProcAttr) (Sys' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Sys" l) v.Sys' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.ProcAttr go!"Sys" l) Sys' (DFrac.own 1))
@@ -717,9 +663,7 @@ instance iflags_access_load_name (l : Loc) (v : syscall.iflags) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) iflags_access_store_name (l : Loc) (v : syscall.iflags) (name' : (GoArray w8 16)) :
+instance iflags_access_store_name (l : Loc) (v : syscall.iflags) (name' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.iflags go!"name" l) v.name' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.iflags go!"name" l) name' (DFrac.own 1))
@@ -735,9 +679,7 @@ instance iflags_access_load_flags (l : Loc) (v : syscall.iflags) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) iflags_access_store_flags (l : Loc) (v : syscall.iflags) (flags' : w16) :
+instance iflags_access_store_flags (l : Loc) (v : syscall.iflags) (flags' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.iflags go!"flags" l) v.flags' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.iflags go!"flags" l) flags' (DFrac.own 1))
@@ -781,9 +723,7 @@ instance NlMsghdr_access_load_Len (l : Loc) (v : syscall.NlMsghdr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NlMsghdr_access_store_Len (l : Loc) (v : syscall.NlMsghdr) (Len' : w32) :
+instance NlMsghdr_access_store_Len (l : Loc) (v : syscall.NlMsghdr) (Len' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Len" l) v.Len' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Len" l) Len' (DFrac.own 1))
@@ -799,9 +739,7 @@ instance NlMsghdr_access_load_Type (l : Loc) (v : syscall.NlMsghdr) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NlMsghdr_access_store_Type (l : Loc) (v : syscall.NlMsghdr) (Type' : w16) :
+instance NlMsghdr_access_store_Type (l : Loc) (v : syscall.NlMsghdr) (Type' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Type" l) v.Type' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Type" l) Type' (DFrac.own 1))
@@ -817,9 +755,7 @@ instance NlMsghdr_access_load_Flags (l : Loc) (v : syscall.NlMsghdr) (dq : DFrac
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NlMsghdr_access_store_Flags (l : Loc) (v : syscall.NlMsghdr) (Flags' : w16) :
+instance NlMsghdr_access_store_Flags (l : Loc) (v : syscall.NlMsghdr) (Flags' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Flags" l) v.Flags' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Flags" l) Flags' (DFrac.own 1))
@@ -835,9 +771,7 @@ instance NlMsghdr_access_load_Seq (l : Loc) (v : syscall.NlMsghdr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NlMsghdr_access_store_Seq (l : Loc) (v : syscall.NlMsghdr) (Seq' : w32) :
+instance NlMsghdr_access_store_Seq (l : Loc) (v : syscall.NlMsghdr) (Seq' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Seq" l) v.Seq' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Seq" l) Seq' (DFrac.own 1))
@@ -853,9 +787,7 @@ instance NlMsghdr_access_load_Pid (l : Loc) (v : syscall.NlMsghdr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NlMsghdr_access_store_Pid (l : Loc) (v : syscall.NlMsghdr) (Pid' : w32) :
+instance NlMsghdr_access_store_Pid (l : Loc) (v : syscall.NlMsghdr) (Pid' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Pid" l) v.Pid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsghdr go!"Pid" l) Pid' (DFrac.own 1))
@@ -895,9 +827,7 @@ instance RtGenmsg_access_load_Family (l : Loc) (v : syscall.RtGenmsg) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RtGenmsg_access_store_Family (l : Loc) (v : syscall.RtGenmsg) (Family' : w8) :
+instance RtGenmsg_access_store_Family (l : Loc) (v : syscall.RtGenmsg) (Family' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RtGenmsg go!"Family" l) v.Family' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RtGenmsg go!"Family" l) Family' (DFrac.own 1))
@@ -938,9 +868,7 @@ instance RtAttr_access_load_Len (l : Loc) (v : syscall.RtAttr) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RtAttr_access_store_Len (l : Loc) (v : syscall.RtAttr) (Len' : w16) :
+instance RtAttr_access_store_Len (l : Loc) (v : syscall.RtAttr) (Len' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RtAttr go!"Len" l) v.Len' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RtAttr go!"Len" l) Len' (DFrac.own 1))
@@ -956,9 +884,7 @@ instance RtAttr_access_load_Type (l : Loc) (v : syscall.RtAttr) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RtAttr_access_store_Type (l : Loc) (v : syscall.RtAttr) (Type' : w16) :
+instance RtAttr_access_store_Type (l : Loc) (v : syscall.RtAttr) (Type' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RtAttr go!"Type" l) v.Type' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RtAttr go!"Type" l) Type' (DFrac.own 1))
@@ -1000,9 +926,7 @@ instance Cmsghdr_access_load_Len (l : Loc) (v : syscall.Cmsghdr) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cmsghdr_access_store_Len (l : Loc) (v : syscall.Cmsghdr) (Len' : w64) :
+instance Cmsghdr_access_store_Len (l : Loc) (v : syscall.Cmsghdr) (Len' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Len" l) v.Len' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Len" l) Len' (DFrac.own 1))
@@ -1018,9 +942,7 @@ instance Cmsghdr_access_load_Level (l : Loc) (v : syscall.Cmsghdr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cmsghdr_access_store_Level (l : Loc) (v : syscall.Cmsghdr) (Level' : w32) :
+instance Cmsghdr_access_store_Level (l : Loc) (v : syscall.Cmsghdr) (Level' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Level" l) v.Level' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Level" l) Level' (DFrac.own 1))
@@ -1036,9 +958,7 @@ instance Cmsghdr_access_load_Type (l : Loc) (v : syscall.Cmsghdr) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) Cmsghdr_access_store_Type (l : Loc) (v : syscall.Cmsghdr) (Type' : w32) :
+instance Cmsghdr_access_store_Type (l : Loc) (v : syscall.Cmsghdr) (Type' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Type" l) v.Type' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Cmsghdr go!"Type" l) Type' (DFrac.own 1))
@@ -1084,9 +1004,7 @@ instance RawSockaddrLinklayer_access_load_Family (l : Loc) (v : syscall.RawSocka
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Family (l : Loc) (v : syscall.RawSockaddrLinklayer) (Family' : w16) :
+instance RawSockaddrLinklayer_access_store_Family (l : Loc) (v : syscall.RawSockaddrLinklayer) (Family' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Family" l) v.Family' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Family" l) Family' (DFrac.own 1))
@@ -1102,9 +1020,7 @@ instance RawSockaddrLinklayer_access_load_Protocol (l : Loc) (v : syscall.RawSoc
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Protocol (l : Loc) (v : syscall.RawSockaddrLinklayer) (Protocol' : w16) :
+instance RawSockaddrLinklayer_access_store_Protocol (l : Loc) (v : syscall.RawSockaddrLinklayer) (Protocol' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Protocol" l) v.Protocol' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Protocol" l) Protocol' (DFrac.own 1))
@@ -1120,9 +1036,7 @@ instance RawSockaddrLinklayer_access_load_Ifindex (l : Loc) (v : syscall.RawSock
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Ifindex (l : Loc) (v : syscall.RawSockaddrLinklayer) (Ifindex' : w32) :
+instance RawSockaddrLinklayer_access_store_Ifindex (l : Loc) (v : syscall.RawSockaddrLinklayer) (Ifindex' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Ifindex" l) v.Ifindex' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Ifindex" l) Ifindex' (DFrac.own 1))
@@ -1138,9 +1052,7 @@ instance RawSockaddrLinklayer_access_load_Hatype (l : Loc) (v : syscall.RawSocka
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Hatype (l : Loc) (v : syscall.RawSockaddrLinklayer) (Hatype' : w16) :
+instance RawSockaddrLinklayer_access_store_Hatype (l : Loc) (v : syscall.RawSockaddrLinklayer) (Hatype' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Hatype" l) v.Hatype' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Hatype" l) Hatype' (DFrac.own 1))
@@ -1156,9 +1068,7 @@ instance RawSockaddrLinklayer_access_load_Pkttype (l : Loc) (v : syscall.RawSock
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Pkttype (l : Loc) (v : syscall.RawSockaddrLinklayer) (Pkttype' : w8) :
+instance RawSockaddrLinklayer_access_store_Pkttype (l : Loc) (v : syscall.RawSockaddrLinklayer) (Pkttype' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Pkttype" l) v.Pkttype' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Pkttype" l) Pkttype' (DFrac.own 1))
@@ -1174,9 +1084,7 @@ instance RawSockaddrLinklayer_access_load_Halen (l : Loc) (v : syscall.RawSockad
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Halen (l : Loc) (v : syscall.RawSockaddrLinklayer) (Halen' : w8) :
+instance RawSockaddrLinklayer_access_store_Halen (l : Loc) (v : syscall.RawSockaddrLinklayer) (Halen' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Halen" l) v.Halen' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Halen" l) Halen' (DFrac.own 1))
@@ -1192,9 +1100,7 @@ instance RawSockaddrLinklayer_access_load_Addr (l : Loc) (v : syscall.RawSockadd
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrLinklayer_access_store_Addr (l : Loc) (v : syscall.RawSockaddrLinklayer) (Addr' : (GoArray w8 8)) :
+instance RawSockaddrLinklayer_access_store_Addr (l : Loc) (v : syscall.RawSockaddrLinklayer) (Addr' : (GoArray w8 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Addr" l) v.Addr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrLinklayer go!"Addr" l) Addr' (DFrac.own 1))
@@ -1237,9 +1143,7 @@ instance RawSockaddrNetlink_access_load_Family (l : Loc) (v : syscall.RawSockadd
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrNetlink_access_store_Family (l : Loc) (v : syscall.RawSockaddrNetlink) (Family' : w16) :
+instance RawSockaddrNetlink_access_store_Family (l : Loc) (v : syscall.RawSockaddrNetlink) (Family' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Family" l) v.Family' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Family" l) Family' (DFrac.own 1))
@@ -1255,9 +1159,7 @@ instance RawSockaddrNetlink_access_load_Pad (l : Loc) (v : syscall.RawSockaddrNe
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrNetlink_access_store_Pad (l : Loc) (v : syscall.RawSockaddrNetlink) (Pad' : w16) :
+instance RawSockaddrNetlink_access_store_Pad (l : Loc) (v : syscall.RawSockaddrNetlink) (Pad' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Pad" l) v.Pad' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Pad" l) Pad' (DFrac.own 1))
@@ -1273,9 +1175,7 @@ instance RawSockaddrNetlink_access_load_Pid (l : Loc) (v : syscall.RawSockaddrNe
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrNetlink_access_store_Pid (l : Loc) (v : syscall.RawSockaddrNetlink) (Pid' : w32) :
+instance RawSockaddrNetlink_access_store_Pid (l : Loc) (v : syscall.RawSockaddrNetlink) (Pid' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Pid" l) v.Pid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Pid" l) Pid' (DFrac.own 1))
@@ -1291,9 +1191,7 @@ instance RawSockaddrNetlink_access_load_Groups (l : Loc) (v : syscall.RawSockadd
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrNetlink_access_store_Groups (l : Loc) (v : syscall.RawSockaddrNetlink) (Groups' : w32) :
+instance RawSockaddrNetlink_access_store_Groups (l : Loc) (v : syscall.RawSockaddrNetlink) (Groups' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Groups" l) v.Groups' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrNetlink go!"Groups" l) Groups' (DFrac.own 1))
@@ -1355,9 +1253,7 @@ instance RawSockaddrInet4_access_load_Family (l : Loc) (v : syscall.RawSockaddrI
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet4_access_store_Family (l : Loc) (v : syscall.RawSockaddrInet4) (Family' : w16) :
+instance RawSockaddrInet4_access_store_Family (l : Loc) (v : syscall.RawSockaddrInet4) (Family' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Family" l) v.Family' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Family" l) Family' (DFrac.own 1))
@@ -1373,9 +1269,7 @@ instance RawSockaddrInet4_access_load_Port (l : Loc) (v : syscall.RawSockaddrIne
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet4_access_store_Port (l : Loc) (v : syscall.RawSockaddrInet4) (Port' : w16) :
+instance RawSockaddrInet4_access_store_Port (l : Loc) (v : syscall.RawSockaddrInet4) (Port' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Port" l) v.Port' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Port" l) Port' (DFrac.own 1))
@@ -1391,9 +1285,7 @@ instance RawSockaddrInet4_access_load_Addr (l : Loc) (v : syscall.RawSockaddrIne
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet4_access_store_Addr (l : Loc) (v : syscall.RawSockaddrInet4) (Addr' : (GoArray w8 4)) :
+instance RawSockaddrInet4_access_store_Addr (l : Loc) (v : syscall.RawSockaddrInet4) (Addr' : (GoArray w8 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Addr" l) v.Addr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Addr" l) Addr' (DFrac.own 1))
@@ -1409,9 +1301,7 @@ instance RawSockaddrInet4_access_load_Zero (l : Loc) (v : syscall.RawSockaddrIne
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet4_access_store_Zero (l : Loc) (v : syscall.RawSockaddrInet4) (Zero' : (GoArray w8 8)) :
+instance RawSockaddrInet4_access_store_Zero (l : Loc) (v : syscall.RawSockaddrInet4) (Zero' : (GoArray w8 8)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Zero" l) v.Zero' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet4 go!"Zero" l) Zero' (DFrac.own 1))
@@ -1455,9 +1345,7 @@ instance RawSockaddrInet6_access_load_Family (l : Loc) (v : syscall.RawSockaddrI
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet6_access_store_Family (l : Loc) (v : syscall.RawSockaddrInet6) (Family' : w16) :
+instance RawSockaddrInet6_access_store_Family (l : Loc) (v : syscall.RawSockaddrInet6) (Family' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Family" l) v.Family' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Family" l) Family' (DFrac.own 1))
@@ -1473,9 +1361,7 @@ instance RawSockaddrInet6_access_load_Port (l : Loc) (v : syscall.RawSockaddrIne
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet6_access_store_Port (l : Loc) (v : syscall.RawSockaddrInet6) (Port' : w16) :
+instance RawSockaddrInet6_access_store_Port (l : Loc) (v : syscall.RawSockaddrInet6) (Port' : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Port" l) v.Port' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Port" l) Port' (DFrac.own 1))
@@ -1491,9 +1377,7 @@ instance RawSockaddrInet6_access_load_Flowinfo (l : Loc) (v : syscall.RawSockadd
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet6_access_store_Flowinfo (l : Loc) (v : syscall.RawSockaddrInet6) (Flowinfo' : w32) :
+instance RawSockaddrInet6_access_store_Flowinfo (l : Loc) (v : syscall.RawSockaddrInet6) (Flowinfo' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Flowinfo" l) v.Flowinfo' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Flowinfo" l) Flowinfo' (DFrac.own 1))
@@ -1509,9 +1393,7 @@ instance RawSockaddrInet6_access_load_Addr (l : Loc) (v : syscall.RawSockaddrIne
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet6_access_store_Addr (l : Loc) (v : syscall.RawSockaddrInet6) (Addr' : (GoArray w8 16)) :
+instance RawSockaddrInet6_access_store_Addr (l : Loc) (v : syscall.RawSockaddrInet6) (Addr' : (GoArray w8 16)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Addr" l) v.Addr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Addr" l) Addr' (DFrac.own 1))
@@ -1527,9 +1409,7 @@ instance RawSockaddrInet6_access_load_Scope_id (l : Loc) (v : syscall.RawSockadd
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) RawSockaddrInet6_access_store_Scope_id (l : Loc) (v : syscall.RawSockaddrInet6) (Scope_id' : w32) :
+instance RawSockaddrInet6_access_store_Scope_id (l : Loc) (v : syscall.RawSockaddrInet6) (Scope_id' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Scope_id" l) v.Scope_id' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrInet6 go!"Scope_id" l) Scope_id' (DFrac.own 1))

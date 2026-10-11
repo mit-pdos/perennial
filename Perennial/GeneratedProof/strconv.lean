@@ -48,9 +48,7 @@ instance NumError_access_load_Func (l : Loc) (v : strconv.NumError) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NumError_access_store_Func (l : Loc) (v : strconv.NumError) (Func' : GoString) :
+instance NumError_access_store_Func (l : Loc) (v : strconv.NumError) (Func' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) Func' (DFrac.own 1))
@@ -66,9 +64,7 @@ instance NumError_access_load_Num (l : Loc) (v : strconv.NumError) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NumError_access_store_Num (l : Loc) (v : strconv.NumError) (Num' : GoString) :
+instance NumError_access_store_Num (l : Loc) (v : strconv.NumError) (Num' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) Num' (DFrac.own 1))
@@ -84,9 +80,7 @@ instance NumError_access_load_Err (l : Loc) (v : strconv.NumError) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) NumError_access_store_Err (l : Loc) (v : strconv.NumError) (Err' : GoError) :
+instance NumError_access_store_Err (l : Loc) (v : strconv.NumError) (Err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) Err' (DFrac.own 1))

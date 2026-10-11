@@ -49,9 +49,7 @@ instance LimitedReader_access_load_R (l : Loc) (v : io.LimitedReader) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (R' : io.Reader) :
+instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (R' : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' (DFrac.own 1))
       (typedPointsto (structFieldRef io.LimitedReader go!"R" l) R' (DFrac.own 1))
@@ -67,9 +65,7 @@ instance LimitedReader_access_load_N (l : Loc) (v : io.LimitedReader) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) LimitedReader_access_store_N (l : Loc) (v : io.LimitedReader) (N' : w64) :
+instance LimitedReader_access_store_N (l : Loc) (v : io.LimitedReader) (N' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' (DFrac.own 1))
       (typedPointsto (structFieldRef io.LimitedReader go!"N" l) N' (DFrac.own 1))
@@ -113,9 +109,7 @@ instance SectionReader_access_load_r (l : Loc) (v : io.SectionReader) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (r' : io.ReaderAt) :
+instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (r' : io.ReaderAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"r" l) r' (DFrac.own 1))
@@ -131,9 +125,7 @@ instance SectionReader_access_load_base (l : Loc) (v : io.SectionReader) (dq : D
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SectionReader_access_store_base (l : Loc) (v : io.SectionReader) (base' : w64) :
+instance SectionReader_access_store_base (l : Loc) (v : io.SectionReader) (base' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"base" l) base' (DFrac.own 1))
@@ -149,9 +141,7 @@ instance SectionReader_access_load_off (l : Loc) (v : io.SectionReader) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SectionReader_access_store_off (l : Loc) (v : io.SectionReader) (off' : w64) :
+instance SectionReader_access_store_off (l : Loc) (v : io.SectionReader) (off' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"off" l) off' (DFrac.own 1))
@@ -167,9 +157,7 @@ instance SectionReader_access_load_limit (l : Loc) (v : io.SectionReader) (dq : 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SectionReader_access_store_limit (l : Loc) (v : io.SectionReader) (limit' : w64) :
+instance SectionReader_access_store_limit (l : Loc) (v : io.SectionReader) (limit' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"limit" l) limit' (DFrac.own 1))
@@ -185,9 +173,7 @@ instance SectionReader_access_load_n (l : Loc) (v : io.SectionReader) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) SectionReader_access_store_n (l : Loc) (v : io.SectionReader) (n' : w64) :
+instance SectionReader_access_store_n (l : Loc) (v : io.SectionReader) (n' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"n" l) n' (DFrac.own 1))
@@ -229,9 +215,7 @@ instance OffsetWriter_access_load_w (l : Loc) (v : io.OffsetWriter) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (w' : io.WriterAt) :
+instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (w' : io.WriterAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) w' (DFrac.own 1))
@@ -247,9 +231,7 @@ instance OffsetWriter_access_load_base (l : Loc) (v : io.OffsetWriter) (dq : DFr
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) OffsetWriter_access_store_base (l : Loc) (v : io.OffsetWriter) (base' : w64) :
+instance OffsetWriter_access_store_base (l : Loc) (v : io.OffsetWriter) (base' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' (DFrac.own 1))
       (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) base' (DFrac.own 1))
@@ -265,9 +247,7 @@ instance OffsetWriter_access_load_off (l : Loc) (v : io.OffsetWriter) (dq : DFra
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) OffsetWriter_access_store_off (l : Loc) (v : io.OffsetWriter) (off' : w64) :
+instance OffsetWriter_access_store_off (l : Loc) (v : io.OffsetWriter) (off' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) off' (DFrac.own 1))
@@ -308,9 +288,7 @@ instance teeReader_access_load_r (l : Loc) (v : io.teeReader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) teeReader_access_store_r (l : Loc) (v : io.teeReader) (r' : io.Reader) :
+instance teeReader_access_store_r (l : Loc) (v : io.teeReader) (r' : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.teeReader go!"r" l) r' (DFrac.own 1))
@@ -326,9 +304,7 @@ instance teeReader_access_load_w (l : Loc) (v : io.teeReader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) teeReader_access_store_w (l : Loc) (v : io.teeReader) (w' : io.Writer) :
+instance teeReader_access_store_w (l : Loc) (v : io.teeReader) (w' : io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef io.teeReader go!"w" l) w' (DFrac.own 1))
@@ -391,9 +367,7 @@ instance nopCloser_access_load_Reader (l : Loc) (v : io.nopCloser) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (Reader' : io.Reader) :
+instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (Reader' : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' (DFrac.own 1))
       (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) Reader' (DFrac.own 1))
@@ -433,9 +407,7 @@ instance nopCloserWriterTo_access_load_Reader (l : Loc) (v : io.nopCloserWriterT
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (Reader' : io.Reader) :
+instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (Reader' : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' (DFrac.own 1))
       (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) Reader' (DFrac.own 1))
@@ -498,9 +470,7 @@ instance multiReader_access_load_readers (l : Loc) (v : io.multiReader) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) multiReader_access_store_readers (l : Loc) (v : io.multiReader) (readers' : GoSlice) :
+instance multiReader_access_store_readers (l : Loc) (v : io.multiReader) (readers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' (DFrac.own 1))
       (typedPointsto (structFieldRef io.multiReader go!"readers" l) readers' (DFrac.own 1))
@@ -540,9 +510,7 @@ instance multiWriter_access_load_writers (l : Loc) (v : io.multiWriter) (dq : DF
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (writers' : GoSlice) :
+instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (writers' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' (DFrac.own 1))
       (typedPointsto (structFieldRef io.multiWriter go!"writers" l) writers' (DFrac.own 1))
@@ -583,9 +551,7 @@ instance onceError_access_load_Mutex (l : Loc) (v : io.onceError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : sync.Mutex) :
+instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) Mutex' (DFrac.own 1))
@@ -601,9 +567,7 @@ instance onceError_access_load_err (l : Loc) (v : io.onceError) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) onceError_access_store_err (l : Loc) (v : io.onceError) (err' : GoError) :
+instance onceError_access_store_err (l : Loc) (v : io.onceError) (err' : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef io.onceError go!"err" l) err' (DFrac.own 1))
@@ -649,9 +613,7 @@ instance pipe_access_load_wrMu (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : sync.Mutex) :
+instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) wrMu' (DFrac.own 1))
@@ -667,9 +629,7 @@ instance pipe_access_load_wrCh (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_wrCh (l : Loc) (v : io.pipe) (wrCh' : GoChan) :
+instance pipe_access_store_wrCh (l : Loc) (v : io.pipe) (wrCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"wrCh" l) wrCh' (DFrac.own 1))
@@ -685,9 +645,7 @@ instance pipe_access_load_rdCh (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_rdCh (l : Loc) (v : io.pipe) (rdCh' : GoChan) :
+instance pipe_access_store_rdCh (l : Loc) (v : io.pipe) (rdCh' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"rdCh" l) rdCh' (DFrac.own 1))
@@ -703,9 +661,7 @@ instance pipe_access_load_once (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_once (l : Loc) (v : io.pipe) (once' : sync.Once) :
+instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"once" l) once' (DFrac.own 1))
@@ -721,9 +677,7 @@ instance pipe_access_load_done (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_done (l : Loc) (v : io.pipe) (done' : GoChan) :
+instance pipe_access_store_done (l : Loc) (v : io.pipe) (done' : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"done" l) done' (DFrac.own 1))
@@ -739,9 +693,7 @@ instance pipe_access_load_rerr (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_rerr (l : Loc) (v : io.pipe) (rerr' : io.onceError) :
+instance pipe_access_store_rerr (l : Loc) (v : io.pipe) (rerr' : io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"rerr" l) rerr' (DFrac.own 1))
@@ -757,9 +709,7 @@ instance pipe_access_load_werr (l : Loc) (v : io.pipe) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) pipe_access_store_werr (l : Loc) (v : io.pipe) (werr' : io.onceError) :
+instance pipe_access_store_werr (l : Loc) (v : io.pipe) (werr' : io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"werr" l) werr' (DFrac.own 1))
@@ -799,9 +749,7 @@ instance PipeReader_access_load_pipe (l : Loc) (v : io.PipeReader) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (pipe' : io.pipe) :
+instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (pipe' : io.pipe) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' (DFrac.own 1))
       (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) pipe' (DFrac.own 1))
@@ -841,9 +789,7 @@ instance PipeWriter_access_load_r (l : Loc) (v : io.PipeWriter) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
--- below the load instance, which a load must find (with `dq`): the store instance
--- also matches a load (storing the same value), but only at `DFrac.own 1`
-instance (priority := low) PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (r' : io.PipeReader) :
+instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (r' : io.PipeReader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.PipeWriter go!"r" l) r' (DFrac.own 1))
