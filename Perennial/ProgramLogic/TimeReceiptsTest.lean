@@ -29,7 +29,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 /-! ## The laws (paper, Fig. 3) -/
 
 section laws
-variable {GF : BundledGFunctors} [ReceiptGS GF]
+variable {GF : BundledGFunctors} [AllG GF] [ReceiptGS GF]
 
 example (m n : Nat) : ⧗ (m + n) ⊣⊢@{IProp GF} ⧗ m ∗ ⧗ n := receipt_add m n
 example : ⊢@{IProp GF} |==> ⧗ 0 := receipt_zero

@@ -19,8 +19,8 @@ Notes:
   and `goose_invariance` are about the *real* semantics (`RealNsteps`,
   `gooseRealEctxiLang`) and conclude for executions of fewer than `N` steps
   (for `N = 0` they are vacuous); they follow from the bounded ones by the
-  simulation `bounded_nsteps_of_real`. `gooseGpreS` also allocates the receipt
-  ghost state (`goose_preG_receipt`), which does not depend on `N`.
+  simulation `bounded_nsteps_of_real`. The receipt ghost state is allocated
+  from `gooseGpreS`'s `AllG GF` (`goosePreGAllG`), which does not depend on `N`.
 * Thread tokens. Likewise every theorem takes the thread bound `T`: the thread
   ghost state is allocated with `threadBound GF = T` (also a hypothesis of
   `Hwp`, which moreover receives the main thread's token `threadTok`), the
@@ -80,13 +80,13 @@ class GooseGpreS [ext : FfiSyntax] (ffi : FfiModel) [FfiInterp ffi] [FfiInterpAd
   goose_preG_proph : prophMapPreS proph_id val GF (GMap proph_id)
   goosePreGFfi : ffiGpreS (ffi := ffi) GF
   goose_preG_go_state : GoStatePreG GF
-  goose_preG_receipt : ReceiptGpreS GF
-  /-- The `allG GF` of the `HeapGS` to be allocated (`GooseGlobalGS.gooseAllG`);
-  not an instance, so that under the `HeapGS` of `Hwp` there is only that one -/
+  /-- The `allG GF` of the `HeapGS` to be allocated (`GooseGlobalGS.gooseAllG`),
+  from which the receipt and thread ghost state are allocated; not an instance,
+  so that under the `HeapGS` of `Hwp` there is only that one -/
   goosePreGAllG : AllG GF
 
 attribute [reducible, instance] GooseGpreS.goose_preG_iris GooseGpreS.goose_preG_heap
-  GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state GooseGpreS.goose_preG_receipt
+  GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state
 
 section adequacy
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
@@ -117,12 +117,11 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   imod ffi_global_init GF hPre.goosePreGFfi g.globalWorld Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
   imod ffi_local_init GF hPre.goosePreGFfi σ.world g.globalWorld Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
-  imod receipt_init (hPre := hPre.goose_preG_receipt) N hN with ⟨%γR, %γL, HR⟩
   letI := hPre.goosePreGAllG
+  imod receipt_init N hN with ⟨%γR, %γL, HR⟩
   imod thread_init T hT with ⟨%γT, HT⟩
   let G : GooseGlobalGS .hasLC GF :=
-    ⟨Hinv, hPre.goosePreGAllG, hProph, hFG,
-      ⟨hPre.goose_preG_receipt.receiptPreGAllG, γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
+    ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
   let L : GooseLocalGS GF :=
     ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩

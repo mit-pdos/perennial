@@ -731,7 +731,6 @@ ghost state (with `receiptBound_pos : 0 < receiptBound GF`):
 
 ```
 class ReceiptGS (GF : BundledGFunctors) where
-  receiptAllG : AllG GF
   receiptTokName : GName
   receiptLbName : GName
   receiptBound : Nat
@@ -744,13 +743,13 @@ Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
 (`receiptTokName`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
 Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
 the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
-`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere the `AllG GF`
-in scope is `GooseGlobalGS`'s `gooseAllG`.
+The receipts are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
+one `AllG` of every proof under `HeapGS`).
 
 `ReceiptGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, so a
 proof can write `receiptBound GF` without new section variables. Nothing else
 depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
-receipt camera (`ReceiptGpreS`, `GooseGpreS`) are the same for every `N`. A
+ghost state to allocate (`GooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
 `(Hbound : receiptBound GF ≤ 2 ^ 64)`, and every caller passes the premise on;
 the client discharges it when it picks `N` at adequacy time (below). Prefer to

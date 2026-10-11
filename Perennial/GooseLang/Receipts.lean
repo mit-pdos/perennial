@@ -31,9 +31,8 @@ in the mask). `receiptFuel f` (`receiptAuth (N - (f + 1))`) is owned by the
 GooseLang state interpretation (`Lifting.lean`) for fuel `f`. The ghost state
 (`receiptGpreS`/`gooseGpreS`) does not depend on `N`.
 
-`receiptGS` carries its own `allG GF` (`receiptAllG`), a local instance of this
-file only: outside it, the `allG GF` in scope is `gooseGlobalGS`'s (`Lifting.lean`),
-and making `receiptAllG` a global instance would put two in scope.
+The receipts are ghost state of the one `allG GF`, which `GooseGlobalGS`
+(`Lifting.lean`) carries alongside `ReceiptGS`; here it is the ambient `[AllG GF]`.
 -/
 module
 
@@ -51,19 +50,15 @@ namespace Perennial
 
 open Iris Iris.BI
 
-/-- Ghost state for time receipts, before allocation. It does not fix the bound,
-which is chosen when the ghost state is allocated (`receipt_init`). -/
-class ReceiptGpreS (GF : BundledGFunctors) where
-  receiptPreGAllG : AllG GF
-
 /-- Ghost state for time receipts. `receiptBound` is the bound `N` of time
 receipts (`⧗ N ⊢ False`): an unspecified positive number, fixed when the ghost
 state is allocated at adequacy time (`goose_adequacy`), where it is also the
 bound on the length of the executions the adequacy theorems are about. A proof
 that needs `N` to be small enough takes it as a premise (e.g. `wp_clock_incr`
-in `ProgramLogic/TimeReceiptsTest.lean` assumes `receiptBound GF ≤ 2 ^ 64`). -/
+in `ProgramLogic/TimeReceiptsTest.lean` assumes `receiptBound GF ≤ 2 ^ 64`). The
+names are those of ghost state of the ambient `[AllG GF]`; before allocation
+(`receipt_init`) nothing but `AllG GF` is needed. -/
 class ReceiptGS (GF : BundledGFunctors) where
-  receiptAllG : AllG GF
   /-- `ghost_map Nat Unit`: the token `k ↪ ()` of every counted step `k`. -/
   receiptTokName : GName
   /-- `mono_nat`: the number of counted steps. -/
@@ -71,15 +66,12 @@ class ReceiptGS (GF : BundledGFunctors) where
   receiptBound : Nat
   receiptBound_pos : 0 < receiptBound
 
-attribute [reducible] ReceiptGS.receiptAllG
-attribute [local instance] ReceiptGS.receiptAllG
-
 export ReceiptGS (receiptBound receiptBound_pos)
 
 /-! ## Definitions -/
 
 section defs
-variable {GF : BundledGFunctors} [hR : ReceiptGS GF]
+variable {GF : BundledGFunctors} [AllG GF] [hR : ReceiptGS GF]
 
 /-- `⧖ n`: a persistent time receipt for `n` steps. -/
 def preceipt (n : Nat) : IProp GF :=
@@ -116,7 +108,7 @@ notation:max "⧖" n:max => preceipt n
 /-! ## Laws (paper, Fig. 3) -/
 
 section laws
-variable {GF : BundledGFunctors} [hR : ReceiptGS GF]
+variable {GF : BundledGFunctors} [AllG GF] [hR : ReceiptGS GF]
 open ProofMode
 
 instance preceipt_timeless (n : Nat) : Timeless (preceipt (GF := GF) n) := by
@@ -411,7 +403,7 @@ theorem receiptFuel_tick (f m : Nat) :
 
 end laws
 
-theorem receiptFuel_init {GF : BundledGFunctors} [hR : ReceiptGS GF] :
+theorem receiptFuel_init {GF : BundledGFunctors} [AllG GF] [hR : ReceiptGS GF] :
     receiptAuth (GF := GF) 0 ⊢ receiptFuel (receiptBound GF - 1) := by
   have := hR.receiptBound_pos
   unfold receiptFuel
@@ -422,15 +414,13 @@ theorem receiptFuel_init {GF : BundledGFunctors} [hR : ReceiptGS GF] :
 
 /-- Allocation of the receipt ghost state for a bound `N > 0`, with counter `0`,
 i.e. fuel `N - 1` for the bounded semantics. -/
-theorem receipt_init {GF : BundledGFunctors} [hPre : ReceiptGpreS GF] (N : Nat) (hN : 0 < N) :
-    ⊢@{IProp GF} |==> ∃ γt γl : GName,
-      receiptFuel (hR := ⟨hPre.receiptPreGAllG, γt, γl, N, hN⟩) (N - 1) := by
-  letI := hPre.receiptPreGAllG
+theorem receipt_init {GF : BundledGFunctors} [AllG GF] (N : Nat) (hN : 0 < N) :
+    ⊢@{IProp GF} |==> ∃ γt γl : GName, receiptFuel (hR := ⟨γt, γl, N, hN⟩) (N - 1) := by
   imod ghost_map_alloc_empty (GF := GF) (K := Nat) (V := Unit) with ⟨%γt, Ht⟩
   imod mono_nat_own_alloc (GF := GF) 0 with ⟨%γl, Hl, -⟩
   imodintro
   iexists γt, γl
-  iapply receiptFuel_init (hR := ⟨hPre.receiptPreGAllG, γt, γl, N, hN⟩)
+  iapply receiptFuel_init (hR := ⟨γt, γl, N, hN⟩)
   unfold receiptAuth
   iexists ∅
   iframe Ht Hl
