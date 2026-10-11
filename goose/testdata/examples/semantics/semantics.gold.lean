@@ -668,23 +668,14 @@ noncomputable def testLinearize [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def recoverNamed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverNamed"
 
-noncomputable def panicInLoop [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicInLoop"
-
-noncomputable def panicTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicTwoDeep"
-
-noncomputable def catchTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTwoDeep"
-
-noncomputable def panicUnrecovered [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicUnrecovered"
+noncomputable def recoverInLoop [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverInLoop"
 
 noncomputable def testRecoverNamed [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverNamed"
 
-noncomputable def testCatchTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCatchTwoDeep"
+noncomputable def testRecoverInLoop [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverInLoop"
 
 noncomputable def CheckTrue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckTrue"
@@ -4584,9 +4575,8 @@ noncomputable def shouldPanic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"bad")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
 
 /-- go: precedence.go:3:6 -/
 noncomputable def testOrCompareSimple.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4692,9 +4682,8 @@ noncomputable def recoverNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam "$defer"
   (Lam "$panic"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"boom")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))
   (App (Val doExecute)
   (Let "$f" (Lam BAnon
   (App (Val exceptionDo)
@@ -4718,56 +4707,34 @@ noncomputable def recoverNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))))
 
-/-- go: recover.go:13:6 -/
-noncomputable def panicInLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
+/-- recoverInLoop panics in the fourth iteration of its loop. The panic ends the
+    loop (as a return would); the deferred function recovers it and sets the
+    named result.
+
+    go: recover.go:16:6 -/
+noncomputable def recoverInLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))
+  (Lam "$defer"
+  (Lam "$panic"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (Val #(W64 0))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"loop")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #())))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
-
-/-- go: recover.go:21:6 -/
-noncomputable def panicTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (App (Val (GoInstruction (FuncResolve panicInLoop []))) (Val #())) (Val #()))))))
-
-/-- catchTwoDeep recovers a panic raised two calls down, inside a loop.
-
-    go: recover.go:26:6 -/
-noncomputable def catchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (App (App (Val wrapDeferRecover) (Lam BAnon
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))
-  (Lam "$defer"
-  (Lam "$panic"
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #false))))
-  (App (Val doExecute)
-  (App (App (Val (GoInstruction (FuncResolve panicTwoDeep []))) (Val #())) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
   (App (Val doExecute)
   (Let "$f" (Lam BAnon
   (App (Val exceptionDo)
@@ -4776,9 +4743,9 @@ noncomputable def catchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
   (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
-  (Let "$r0" (Val #true)
+  (Let "$r0" (Val #(W64 7))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
@@ -4786,43 +4753,19 @@ noncomputable def catchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))))
 
-/-- panicUnrecovered runs its deferred function and keeps panicking.
-
-    go: recover.go:37:6 -/
-noncomputable def panicUnrecovered.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (App (Val wrapDefer)
-  (Lam "$defer"
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"unrecovered")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
-  (App (Val doExecute)
-  (Let "$f" (Lam BAnon
-  (App (Val exceptionDo)
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
-  (Lam BAnon
-  (Seq (App (Var "$f") (Val #()))
-  (App (Var "$oldf") (Val #()))))))))))))))
-
-/-- go: recover.go:42:6 -/
+/-- go: recover.go:29:6 -/
 noncomputable def testRecoverNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve recoverNamed []))) (Val #())) (Val #())) (Val #(W64 42)))))))
 
-/-- go: recover.go:46:6 -/
-noncomputable def testCatchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
+/-- go: recover.go:33:6 -/
+noncomputable def testRecoverInLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (FuncResolve catchTwoDeep []))) (Val #())) (Val #())))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve recoverInLoop []))) (Val #())) (Val #())) (Val #(W64 7)))))))
 
 /-- go: shortcircuiting.go:11:6 -/
 noncomputable def CheckTrue.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5984,9 +5927,8 @@ noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Pair (Var "cache") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "diskSize")) (Val logLength))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"disk is too small to host log")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -6164,9 +6106,8 @@ noncomputable def Log.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "aBlock") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val MaxTxnWrites))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"transaction is at capacity")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -7830,12 +7771,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testShiftMod_unfold : FuncUnfold testShiftMod [] testShiftMod.impl
   testLinearize_unfold : FuncUnfold testLinearize [] testLinearize.impl
   recoverNamed_unfold : FuncUnfold recoverNamed [] recoverNamed.impl
-  panicInLoop_unfold : FuncUnfold panicInLoop [] panicInLoop.impl
-  panicTwoDeep_unfold : FuncUnfold panicTwoDeep [] panicTwoDeep.impl
-  catchTwoDeep_unfold : FuncUnfold catchTwoDeep [] catchTwoDeep.impl
-  panicUnrecovered_unfold : FuncUnfold panicUnrecovered [] panicUnrecovered.impl
+  recoverInLoop_unfold : FuncUnfold recoverInLoop [] recoverInLoop.impl
   testRecoverNamed_unfold : FuncUnfold testRecoverNamed [] testRecoverNamed.impl
-  testCatchTwoDeep_unfold : FuncUnfold testCatchTwoDeep [] testCatchTwoDeep.impl
+  testRecoverInLoop_unfold : FuncUnfold testRecoverInLoop [] testRecoverInLoop.impl
   CheckTrue_unfold : FuncUnfold CheckTrue [] CheckTrue.impl
   CheckFalse_unfold : FuncUnfold CheckFalse [] CheckFalse.impl
   testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] testShortcircuitAndTF.impl
@@ -8065,12 +8003,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testShiftMod_unfold
   Assumptions.testLinearize_unfold
   Assumptions.recoverNamed_unfold
-  Assumptions.panicInLoop_unfold
-  Assumptions.panicTwoDeep_unfold
-  Assumptions.catchTwoDeep_unfold
-  Assumptions.panicUnrecovered_unfold
+  Assumptions.recoverInLoop_unfold
   Assumptions.testRecoverNamed_unfold
-  Assumptions.testCatchTwoDeep_unfold
+  Assumptions.testRecoverInLoop_unfold
   Assumptions.CheckTrue_unfold
   Assumptions.CheckFalse_unfold
   Assumptions.testShortcircuitAndTF_unfold

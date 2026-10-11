@@ -85,15 +85,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
-* **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
-  evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
-  steps to it, a function with `defer`s runs its body under a `Catch`
-  (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
-  in a deferred function literal) reads and clears the panic. A postcondition
-  receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
-  goroutine must not panic (`wp_fork`, `goose_adequacy_nopanic`). Run-time panics
-  of builtins (`Panic "msg"`) are stuck. See
-  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Panics.** `panic(p)` is a third outcome of the exception monad that models
+  function bodies (`Golang/Defn/Exception.lean`), `panicVal p = ("panic", p)`,
+  next to `do:` and `return:`: like a `return:`, it ends the body (`;;;` and the
+  loop combinators pass it on). The function's deferred functions then run
+  (`wrapDefer`, `Golang/Defn/Defer.lean`), and if one of them calls `recover()`
+  (Goose translates it only directly in a deferred function literal) the
+  function returns its named results (`wrapDeferRecover`). A panic that no
+  deferred function of the function recovers is stuck at the end of the
+  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`):
+  a proof shows that it does not happen. The model does not propagate a panic to
+  the caller (in Go the caller's deferred functions run and may recover it), so
+  a program that recovers a callee's panic is not provable. GooseLang itself has
+  no panic construct. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

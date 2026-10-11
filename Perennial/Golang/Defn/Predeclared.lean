@@ -32,9 +32,10 @@ def max.impl (t : go.GoType) (n : Nat) : val :=
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
   | _ => LitV LitPoison
 
-/-- `panic(v)` starts a panic with the value `v` (`Raise`), which unwinds the
-evaluation context up to a `Catch` (a function with `defer`s, `wrapDefer`). -/
-def panic.impl : val := λ: "v", Raise "v"
+/-- `panic(v)` is the outcome `("panic", v)` of the exception monad (`panicVal v`,
+`Defn/Exception.lean`), which ends the function body like a `return:`; the
+function's deferred functions then run and may `recover()` it (`Defn/Defer.lean`). -/
+def panic.impl : val := λ: "v", (#"panic", Var "v")
 
 end helpers
 
