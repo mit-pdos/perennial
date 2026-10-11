@@ -169,7 +169,7 @@ end wps
 section chan_wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
@@ -209,7 +209,7 @@ instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
 
 /-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`). -/
 axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (d : time.Duration) :
     {{ (True : IProp GF) }}
       (App (Val (@! time.NewTimer)) (Val #d))
@@ -217,7 +217,7 @@ axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemanti
 
 /-- Spec of `(*Timer).Stop()` (axiom): some `bool`. -/
 axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
@@ -225,7 +225,7 @@ axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSeman
 
 /-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`. -/
 axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames)
     (d : time.Duration) :
     {{ isTimer (GF := GF) t ch γ }}

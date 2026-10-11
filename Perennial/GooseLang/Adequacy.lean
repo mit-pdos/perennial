@@ -81,11 +81,12 @@ class GooseGpreS [ext : FfiSyntax] (ffi : FfiModel) [FfiInterp ffi] [FfiInterpAd
   goosePreGFfi : ffiGpreS (ffi := ffi) GF
   goose_preG_go_state : GoStatePreG GF
   goose_preG_receipt : ReceiptGpreS GF
-  goose_preG_thread : ThreadGpreS GF
+  /-- The `allG GF` of the `HeapGS` to be allocated (`GooseGlobalGS.gooseAllG`);
+  not an instance, so that under the `HeapGS` of `Hwp` there is only that one -/
+  goosePreGAllG : AllG GF
 
 attribute [reducible, instance] GooseGpreS.goose_preG_iris GooseGpreS.goose_preG_heap
   GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state GooseGpreS.goose_preG_receipt
-  GooseGpreS.goose_preG_thread
 
 section adequacy
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
@@ -117,16 +118,16 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   imod ffi_local_init GF hPre.goosePreGFfi σ.world g.globalWorld Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
   imod receipt_init (hPre := hPre.goose_preG_receipt) N hN with ⟨%γR, %γL, HR⟩
-  imod thread_init (hPre := hPre.goose_preG_thread) T hT with ⟨%γT, HT⟩
+  letI := hPre.goosePreGAllG
+  imod thread_init T hT with ⟨%γT, HT⟩
   let G : GooseGlobalGS .hasLC GF :=
-    ⟨Hinv, hProph, hFG, ⟨hPre.goose_preG_receipt.receiptPreGAllG, γR, γL, N, hN⟩,
-      ⟨hPre.goose_preG_thread.threadPreGAllG, γT, T, hT⟩⟩
+    ⟨Hinv, hPre.goosePreGAllG, hProph, hFG,
+      ⟨hPre.goose_preG_receipt.receiptPreGAllG, γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
   let L : GooseLocalGS GF :=
     ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩
   -- the main thread's token and the thread fuel
-  have Hsplit := (threadToks_add (hT := ⟨hPre.goose_preG_thread.threadPreGAllG, γT, T, hT⟩)
-    (T - 2) 1).1
+  have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
   rw [show T - 2 + 1 = T - 1 by omega] at Hsplit
   icases Hsplit $$ HT with ⟨Hfuel, Htok⟩
   imod (@Hwp hG rfl rfl rfl rfl) $$ Hgstart Hlstart Hgs' Htok with HP

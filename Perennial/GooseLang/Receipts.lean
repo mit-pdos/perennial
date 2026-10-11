@@ -31,10 +31,9 @@ in the mask). `receiptFuel f` (`receiptAuth (N - (f + 1))`) is owned by the
 GooseLang state interpretation (`Lifting.lean`) for fuel `f`. The ghost state
 (`receiptGpreS`/`gooseGpreS`) does not depend on `N`.
 
-`receiptGS` carries its own `allG GF` (`receiptAllG`), which is a local instance
-of this file only: `heapGS` (of which `receiptGS` is a part) does not provide
-`allG`, and proofs take `[allG GF]` separately, so making `receiptAllG` a global
-instance would put two `allG GF` instances in scope.
+`receiptGS` carries its own `allG GF` (`receiptAllG`), a local instance of this
+file only: outside it, the `allG GF` in scope is `gooseGlobalGS`'s (`Lifting.lean`),
+and making `receiptAllG` a global instance would put two in scope.
 -/
 module
 

@@ -29,7 +29,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_ses
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : etcd_session.Assumptions]
 
 local notation "pkg" =>
@@ -53,7 +53,6 @@ theorem isInv_access :
     isPkgInit (PROP := IProp GF) pkg ⊢ sync.isMutex (globalAddr mu) muInv := by
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg
 
-omit [AllG GF] in
 theorem pointsto_halves {V : Type} [TypedPointsto (GF := GF) V] (l : Loc) (v : V) :
     typedPointsto (GF := GF) l v (DFrac.own 1) ⊣⊢
       typedPointsto l v (DFrac.own (1 : Qp).half) ∗ typedPointsto l v (DFrac.own (1 : Qp).half) := by

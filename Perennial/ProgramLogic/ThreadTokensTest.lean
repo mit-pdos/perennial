@@ -32,7 +32,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 /-! ## The laws -/
 
 section laws
-variable {GF : BundledGFunctors} [ThreadGS GF]
+variable {GF : BundledGFunctors} [AllG GF] [ThreadGS GF]
 
 example (m n : Nat) : threadToks (m + n) ⊣⊢@{IProp GF} threadToks m ∗ threadToks n :=
   threadToks_add m n

@@ -744,8 +744,8 @@ Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
 (`receiptTokName`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
 Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
 the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
-`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
-their own `[AllG GF]`.
+`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere the `AllG GF`
+in scope is `GooseGlobalGS`'s `gooseAllG`.
 
 `ReceiptGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, so a
 proof can write `receiptBound GF` without new section variables. Nothing else
@@ -898,14 +898,14 @@ state (with `threadBound_gt : 1 < threadBound GF`, the main thread being live):
 
 ```
 class ThreadGS (GF : BundledGFunctors) where
-  threadAllG : AllG GF
   threadTokName : GName
   threadBound : Nat
   threadBound_gt : 1 < threadBound
 ```
 
-`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`; as
-for `N`, a proof that needs `T` to be small states it as a premise
+`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, and
+its tokens are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
+one `AllG` of every proof under `HeapGS`); as for `N`, a proof that needs `T` to be small states it as a premise
 (`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy
 time.
 

@@ -39,7 +39,7 @@ structure FutureNames where
 section future
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
@@ -102,7 +102,7 @@ theorem Permutation_cons_split {A : Type} (x : A) (l l' : List A) (h : l.Perm (x
 
 theorem start_future (ch : Loc) (γ : ChanNames) (s : ChanState V)
     (Hs : s = .Idle ∨ s = .Buffered []) :
-    ⊢ isChan ch γ V -∗ ownChan γ V s ={⊤}=∗
+    ⊢ isChan (GF := GF) ch γ V -∗ ownChan γ V s ={⊤}=∗
       ∃ γmf, isFuture V γmf ch ∗ Await (V := V) γmf [] := by
   iintro #Hch Hoc
   imod auth_set_init (A := GName) with ⟨%γpending, Hset_auth⟩
@@ -224,7 +224,7 @@ theorem future_fulfill_au (γ : FutureNames) (ch : Loc) (v : V) (Φ : IProp GF) 
   all_goals first | itrivial | (iexfalso; iexact Hi)
 
 theorem wp_future_fulfill (γ : FutureNames) (ch : Loc) (v : V) :
-    {{ isFuture V γ ch ∗ Fulfilled γ v }}
+    {{ isFuture (GF := GF) V γ ch ∗ Fulfilled γ v }}
       (App (App (Val (chan.send t)) (Val #ch)) (Val #v))
     {{ RET #(); True }} := by
   iintro %Φ ⟨#Hmf, HFulfilled⟩ HΦ

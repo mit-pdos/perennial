@@ -638,7 +638,7 @@ theorem sext_32_64 (x : w32) : sint.Z (W64 (sint.Z x)) = sint.Z x := by
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -646,7 +646,7 @@ def ownRWMutexDef (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
   ghostVar γ.protGn.stateGn (1 : Qp).half state
 @[irreducible] def ownRWMutex (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
   ownRWMutexDef γ state
-theorem ownRWMutex_unseal : @ownRWMutex GF _ = @ownRWMutexDef GF _ := by
+theorem ownRWMutex_unseal : ownRWMutex (GF := GF) = ownRWMutexDef (GF := GF) := by
   funext; with_unfolding_all rfl
 instance ownRWMutex_timeless (γ : RWMutexNames) (state : rwmutex) :
     Timeless (ownRWMutex (GF := GF) γ state) := by
@@ -654,7 +654,7 @@ instance ownRWMutex_timeless (γ : RWMutexNames) (state : rwmutex) :
 
 def ownRLockTokenDef (γ : RWMutexNames) : IProp GF := ownToks γ.protGn.rlockOverflowGn 1
 @[irreducible] def ownRLockToken (γ : RWMutexNames) : IProp GF := ownRLockTokenDef γ
-theorem ownRLockToken_unseal : @ownRLockToken GF _ = @ownRLockTokenDef GF _ := by
+theorem ownRLockToken_unseal : ownRLockToken (GF := GF) = ownRLockTokenDef (GF := GF) := by
   funext; with_unfolding_all rfl
 
 abbrev RWW (rw : Loc) : Loc := structFieldRef RWMutex go!"w" rw
