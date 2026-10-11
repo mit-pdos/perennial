@@ -61,6 +61,7 @@ theorem wp_mkRequest (f : GoFunc) (Q : GoString → IProp GF) :
   imod start_future (V := GoString) ch γ (.Buffered []) (.inr rfl) $$ Hch Hown
     with ⟨%γfut, #Hfut, HAwait⟩
   imod future_alloc_promise (V := GoString) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
+  rw [List.nil_append]
   imodintro
   iapply HΦ
   unfold doRequest awaitRequest
