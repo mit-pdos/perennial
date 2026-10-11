@@ -490,6 +490,137 @@ axiom wp_As [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
     {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}
 
+/-! ### `Is`
+
+`Is(err, target)` walks the error tree of `err` as `AsType` does, checking at each error `e`
+whether `e == target` (when `target`'s dynamic type is comparable, which it finds by reflection)
+and calling `e.Is(target)` if `e` has an `Is(error) bool` method. Its precondition is the
+analogue of `isErrorTree`: a pure set `S` of errors containing `err`, closed under the `Unwrap`
+methods, and for each error in it the specs of its methods (`errorIsNode`); a predicate `M` says
+what an `Is` method's `true` means. -/
+
+/-- A pointer error: a non-nil error whose dynamic type is a pointer type `*T` and whose value
+is a pointer, such as `errors.New`'s `*errorString` (`wp_New_ptr`). Go's `==` on two such errors
+is the equality of their types and pointers, Lean's equality of the interface values. -/
+def IsPointerError [FfiSyntax] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
+  ∃ (T : go.GoType) (l : Loc), ii.ty = go.PointerType T ∧ ii.v = #l
+
+/-- `errors.New(msg)` as `wp_New`, telling also that the error is a pointer error. -/
+theorem wp_New_ptr (msg : GoString) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! New)) (Val #msg))
+    {{ (err : GoInterfaceOk), RET #(interface.ok err);
+        ⌜IsPointerError err⌝ ∗
+        □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+          WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
+  wp_start
+  wp_auto
+  wp_alloc x as Hx
+  iStructNamed Hx
+  ipersist s
+  wp_auto
+  iapply HΦ
+  isplitl []
+  · ipureintro; exact ⟨_, x, rfl, rfl⟩
+  imodintro
+  iintro %Φ HΦ
+  dsimp only
+  rw [method_unfold]
+  wp_auto
+  iexact HΦ
+
+/-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`:
+* `Is(error) bool` (if `ii` has it) is called with `target` and returns a `bool`, `true` only if
+  `M ii`;
+* `Unwrap() error` returns an error in `S`;
+* `Unwrap() []error` returns a slice of errors in `S`. -/
+def errorIsNode (S : GoError → Prop) (M : GoInterfaceOk → Prop) (target : GoError)
+    (ii : GoInterfaceOk) : IProp GF :=
+  iprop(
+    "#HIs" ∷ (if methodSet ii.ty !! go!"Is" = some (go.Signature [go.error] false [go.bool]) then
+      iprop({{ True }}
+        (App (Val #(methods ii.ty go!"Is" ii.v)) (Val #target))
+      {{ (b : Bool), RET #b; ⌜b = true → M ii⌝ }})
+      else iprop(True)) ∗
+    "#HUnwrap" ∷ (if methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error]) then
+      iprop({{ True }}
+        (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
+      {{ (e : GoError), RET #e; ⌜S e⌝ }})
+      else if methodSet ii.ty !! go!"Unwrap" =
+          some (go.Signature [] false [go.GoType.SliceType go.error]) then
+      iprop({{ True }}
+        (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
+      {{ (s : GoSlice) (dq : DFrac) (es : List GoError), RET #s;
+          s ↦*{dq} es ∗ ⌜∀ e ∈ es, S e⌝ }})
+      else iprop(True)))
+
+/-- Every non-nil error of `S` satisfies `errorIsNode`. -/
+abbrev errorIsTree (S : GoError → Prop) (M : GoInterfaceOk → Prop) (target : GoError) :
+    IProp GF :=
+  iprop(□ ∀ ii : GoInterfaceOk, ⌜S (interface.ok ii)⌝ -∗ errorIsNode (GF := GF) S M target ii)
+
+/-- A leaf error without an `Is(error) bool` method is a one-error tree, for any `M`. -/
+theorem errorIsTree_leaf (ii : GoInterfaceOk) (M : GoInterfaceOk → Prop) (target : GoError)
+    (hleaf : isLeafError ii)
+    (hIs : methodSet ii.ty !! go!"Is" ≠ some (go.Signature [go.error] false [go.bool])) :
+    ⊢ errorIsTree (GF := GF) (· = interface.ok ii) M target := by
+  obtain ⟨-, hU1, hU2⟩ := hleaf
+  iintro !> %ii' %h
+  cases h
+  unfold errorIsNode
+  simp only [hIs, hU1, hU2, ↓reduceIte]
+  isplitr <;> itrivial
+
+/-- Spec of `errors.Is(err, target)` (axiom): `Is` finds whether `target`'s dynamic type is
+comparable by reflection (`internal/reflectlite`, not translated). Its precondition is the error
+tree of `err` (`errorIsTree S M target ∗ ⌜S err⌝`). It returns `err == target` if either is
+`nil`; otherwise it returns `true` if `err == target` and `target` is comparable (its first check),
+and, for a pointer error `target` (`IsPointerError`, for which Go's `==` is Lean's equality), only
+if some error of the tree is `target` or has an `Is` method that returned `true` (`M`).
+Go's `Is` does not panic for a `target` that is not comparable: it then skips the `==` checks;
+this spec says nothing of the result in that case beyond the `nil` cases. -/
+axiom wp_Is [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+    [sem : go.Semantics] [package_sem : errors.Assumptions]
+    (S : GoError → Prop) (M : GoInterfaceOk → Prop) (err target : GoError) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ errorIsTree (GF := GF) S M target ∗ ⌜S err⌝ }}
+      (App (App (Val (@! Is)) (Val #err)) (Val #target))
+    {{ (b : Bool), RET #b;
+        ⌜(err = interface.nil ∨ target = interface.nil) → b = decide (err = target)⌝ ∗
+        ⌜∀ tii, target = interface.ok tii → IsPointerError tii → err = target → b = true⌝ ∗
+        ⌜∀ tii, target = interface.ok tii → IsPointerError tii → err ≠ interface.nil →
+          b = true → ∃ ii, S (interface.ok ii) ∧ (interface.ok ii = target ∨ M ii)⌝ }}
+
+/-- `errors.Is(err, target)` for a leaf `err` without an `Is` method and a `nil` or pointer
+`target` (an `errors.New` error): `err == target`. -/
+theorem wp_Is_leaf (ii : GoInterfaceOk) (target : GoError) (hleaf : isLeafError ii)
+    (hIs : methodSet ii.ty !! go!"Is" ≠ some (go.Signature [go.error] false [go.bool]))
+    (htarget : ∀ tii, target = interface.ok tii → IsPointerError tii) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors }}
+      (App (App (Val (@! Is)) (Val #(interface.ok ii))) (Val #target))
+    {{ RET #(decide (interface.ok ii = target)); True }} := by
+  iintro %Φ #Hinit HΦ
+  ihave #Htree := errorIsTree_leaf (GF := GF) ii (fun _ => False) target hleaf hIs
+  wp_apply +noauto wp_Is (· = interface.ok ii) (fun _ => False) (interface.ok ii) target
+    $$ [$Hinit $Htree] as %b ⟨%Hnil, %Heq, %Hsome⟩
+  · ipureintro; rfl
+  have hb : b = decide (interface.ok ii = target) := by
+    cases target with
+    | nil => exact Hnil (Or.inr rfl)
+    | ok tii =>
+      have hp := htarget tii rfl
+      by_cases h : interface.ok ii = interface.ok tii
+      · rw [decide_eq_true h]; exact Heq tii rfl hp h
+      · rw [decide_eq_false h]
+        cases b
+        · rfl
+        · obtain ⟨ii', hii', hm⟩ := Hsome tii rfl hp (by simp) rfl
+          rw [hii'] at hm
+          exact absurd (hm.resolve_right id) h
+  rw [← hb]
+  iapply HΦ
+  itrivial
+
 end wps
 
 end errors
