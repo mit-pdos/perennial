@@ -153,6 +153,21 @@ def mapElem.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] mapElem.ty
 
+def mvT.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mvT" [])
+
+attribute [irreducible] mvT.ty
+
+def mvEmbed.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mvEmbed" [])
+
+attribute [irreducible] mvEmbed.ty
+
+def mvEmbedPtr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mvEmbedPtr" [])
+
+attribute [irreducible] mvEmbedPtr.ty
+
 def containsPointer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.containsPointer" [])
 
@@ -757,6 +772,15 @@ noncomputable def mapClearTest [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def mapLookupConversion [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mapLookupConversion"
+
+noncomputable def mvMakeEmbed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mvMakeEmbed"
+
+noncomputable def mvMakeEmbedPtr [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.mvMakeEmbedPtr"
+
+noncomputable def methodValues [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.methodValues"
 
 noncomputable def returnTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.returnTwo"
@@ -2173,7 +2197,7 @@ noncomputable def useEmbeddedMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc embedD.ty))) (Var "d"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Bar"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #()))))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #()))))))))
 
 /-- go: embedded.go:64:6 -/
 noncomputable def useEmbeddedMethod2.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -2182,9 +2206,9 @@ noncomputable def useEmbeddedMethod2.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "d" (App (Val (GoInstruction (GoAlloc embedD.ty))) (Var "d"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Foo"))) (Var "d")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d"))))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve embedB.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedB.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #())) (App (App (Val (GoInstruction (MethodResolve embedB.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedB.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d")))))) (Val #())))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedD.ty) go!"Car"))) (Var "d")) (Val #())))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Car"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "d"))))) (Val #())))))))
 
 /-- go: empty_functions.go:3:6 -/
 noncomputable def empty.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3478,6 +3502,160 @@ noncomputable def mapLookupConversion.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.any go.bool)))) (Pair (Var "m") (Var "$r0")))))))))
 
+/-- go: method_values.go:9:14 -/
+noncomputable def mvT.val.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc mvT.ty))) (Var "t"))
+  (App (Val doReturn)
+  (Val #()))))))
+
+/-- go: method_values.go:11:15 -/
+noncomputable def mvT.ptr.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType mvT.ty)))) (Var "t"))
+  (App (Val doReturn)
+  (Val #()))))))
+
+/-- go: method_values.go:21:6 -/
+noncomputable def mvMakeEmbed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (CompositeLiteral mvEmbed.ty))) (LiteralValue [])))))
+
+/-- go: method_values.go:25:6 -/
+noncomputable def mvMakeEmbedPtr.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (CompositeLiteral mvEmbedPtr.ty))) (LiteralValue [])))))
+
+/-- go: method_values.go:29:6 -/
+noncomputable def methodValues.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "e"
+  (Lam "ep"
+  (App (Val wrapDefer)
+  (Lam "$defer"
+  (Let "ep" (App (Val (GoInstruction (GoAlloc mvEmbedPtr.ty))) (Var "ep"))
+  (Let "e" (App (Val (GoInstruction (GoAlloc mvEmbed.ty))) (Var "e"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType mvT.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (App (Val (GoInstruction (CompositeLiteral mvT.ty))) (LiteralValue []))
+  (Let "t" (App (Val (GoInstruction (GoAlloc mvT.ty))) (App (Val (GoInstruction (GoZeroVal mvT.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (Var "t")))
+  (Let "f1" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (Var "t"))
+  (Let "f2" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (Var "p"))))
+  (Let "f3" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (Var "p")))
+  (Let "f4" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (App (Val (GoInstruction (StructFieldRef mvEmbed.ty go!"mvT"))) (Var "e"))))
+  (Let "f5" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (StructFieldRef mvEmbed.ty go!"mvT"))) (Var "e")))
+  (Let "f6" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (App (Val (GoInstruction (StructFieldRef mvEmbedPtr.ty go!"mvT"))) (Var "ep")))))
+  (Let "f7" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (App (Val (GoInstruction (StructFieldRef mvEmbedPtr.ty go!"mvT"))) (Var "ep"))))
+  (Let "f8" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (StructFieldGet mvEmbed.ty go!"mvT"))) (App (App (Val (GoInstruction (FuncResolve mvMakeEmbed []))) (Val #())) (Val #()))))
+  (Let "f9" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (StructFieldGet mvEmbedPtr.ty go!"mvT"))) (App (App (Val (GoInstruction (FuncResolve mvMakeEmbedPtr []))) (Val #())) (Val #()))))
+  (Let "f10" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$go" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (Var "t")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$go" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (Var "p"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (Var "p")))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))
+  (App (Val doExecute)
+  (Fork
+  (App (Var "$go") (Val #()))))))))
+  (App (Val doExecute)
+  (Fork
+  (App (Var "$go") (Val #()))))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (Var "t")))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f10")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f9")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f8")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f7")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f6")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f5")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f4")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f3")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f2")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f1")) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f10") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f9") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f8") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f7") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f6") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f5") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f4") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f3") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f1") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore mvT.ty))) (Pair (Var "t") (Var "$r0"))))))))))))))))
+
 /-- go: multiple.go:3:6 -/
 noncomputable def returnTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
@@ -3914,7 +4092,7 @@ noncomputable def RecursiveEmbedded.recurEmbeddedMethod.impl [FfiSyntax] [GoGlob
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Other.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldRef RecursiveEmbedded.ty go!"Other"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (Var "r")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (App (Val (GoInstruction (StructFieldRef Other.ty go!"RecursiveEmbedded"))) (App (Val (GoInstruction (StructFieldRef RecursiveEmbedded.ty go!"Other"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (Var "r")))))) (Val #()))))))))
 
 /-- go: renamedImport.go:7:6 -/
 noncomputable def useRenamedImport.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4568,7 +4746,7 @@ noncomputable def UseAdd.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "c" (App (Val (GoInstruction (GoAlloc Point.ty))) (App (Val (GoInstruction (GoZeroVal Point.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(W64 4))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Point.ty) go!"Add"))) (Var "c")) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve Point.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "c"))) (Var "$a0")))
   (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -5713,6 +5891,127 @@ attribute [instance] mapElem.TypeAssumptions.type_repr
   mapElem.TypeAssumptions.get_b
   mapElem.TypeAssumptions.set_b
 
+structure mvT [FfiSyntax] where
+  mk ::
+  x' : w64
+
+instance mvT.zero_val [FfiSyntax] : ZeroVal mvT :=
+  ⟨mvT.mk zeroValDef⟩
+
+@[reducible] def mvT.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] def mvT.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  mvT.fieldsUnsealed
+
+instance equals_unfold_mvT [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold mvT.fields mvT.fieldsUnsealed :=
+  ⟨by unfold mvT.fields; rfl⟩
+
+@[reducible] def mvT.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mvT.fields)
+
+class mvT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying mvT.underlying mvT
+  underlying : go.UnderlyingDirectedEq mvT.ty mvT.underlying
+  get_x : ∀ (x : mvT), go.IsGoStepPureDetTagged under (StructFieldGet mvT.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : mvT) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mvT.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : mvT)))
+  val_unfold : MethodUnfold mvT.ty go!"val" mvT.val.impl
+  ptr_ptr_unfold : MethodUnfold (go.GoType.PointerType mvT.ty) go!"ptr" mvT.ptr.impl
+  ptr_val_unfold : MethodUnfold (go.GoType.PointerType mvT.ty) go!"val" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (GoLoad mvT.ty))) (Var "$r"))))
+
+attribute [instance] mvT.TypeAssumptions.type_repr
+  mvT.TypeAssumptions.underlying
+  mvT.TypeAssumptions.get_x
+  mvT.TypeAssumptions.set_x
+  mvT.TypeAssumptions.val_unfold
+  mvT.TypeAssumptions.ptr_ptr_unfold
+  mvT.TypeAssumptions.ptr_val_unfold
+
+structure mvEmbed [FfiSyntax] where
+  mk ::
+  mvT' : mvT
+
+instance mvEmbed.zero_val [FfiSyntax] : ZeroVal mvEmbed :=
+  ⟨mvEmbed.mk zeroValDef⟩
+
+@[reducible] def mvEmbed.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"mvT" mvT.ty)]
+
+@[irreducible] def mvEmbed.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  mvEmbed.fieldsUnsealed
+
+instance equals_unfold_mvEmbed [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold mvEmbed.fields mvEmbed.fieldsUnsealed :=
+  ⟨by unfold mvEmbed.fields; rfl⟩
+
+@[reducible] def mvEmbed.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mvEmbed.fields)
+
+class mvEmbed.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying mvEmbed.underlying mvEmbed
+  underlying : go.UnderlyingDirectedEq mvEmbed.ty mvEmbed.underlying
+  get_mvT : ∀ (x : mvEmbed), go.IsGoStepPureDetTagged under (StructFieldGet mvEmbed.underlying go!"mvT") #x (Val #(x.mvT'))
+  set_mvT : ∀ (x : mvEmbed) (y : mvT), go.IsGoStepPureDetTagged under (StructFieldSet mvEmbed.underlying go!"mvT") (PairV #x #y) (Val #(({ x with mvT' := y } : mvEmbed)))
+  val_unfold : MethodUnfold mvEmbed.ty go!"val" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve mvT.ty go!"val"))) (App (Val (GoInstruction (StructFieldGet mvEmbed.ty go!"mvT"))) (Var "$r"))))
+  ptr_ptr_unfold : MethodUnfold (go.GoType.PointerType mvEmbed.ty) go!"ptr" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (StructFieldRef mvEmbed.ty go!"mvT"))) (Var "$r"))))
+  ptr_val_unfold : MethodUnfold (go.GoType.PointerType mvEmbed.ty) go!"val" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"val"))) (App (Val (GoInstruction (StructFieldRef mvEmbed.ty go!"mvT"))) (Var "$r"))))
+
+attribute [instance] mvEmbed.TypeAssumptions.type_repr
+  mvEmbed.TypeAssumptions.underlying
+  mvEmbed.TypeAssumptions.get_mvT
+  mvEmbed.TypeAssumptions.set_mvT
+  mvEmbed.TypeAssumptions.val_unfold
+  mvEmbed.TypeAssumptions.ptr_ptr_unfold
+  mvEmbed.TypeAssumptions.ptr_val_unfold
+
+structure mvEmbedPtr [FfiSyntax] where
+  mk ::
+  mvT' : Loc
+
+instance mvEmbedPtr.zero_val [FfiSyntax] : ZeroVal mvEmbedPtr :=
+  ⟨mvEmbedPtr.mk zeroValDef⟩
+
+@[reducible] def mvEmbedPtr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"mvT" (go.GoType.PointerType mvT.ty))]
+
+@[irreducible] def mvEmbedPtr.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  mvEmbedPtr.fieldsUnsealed
+
+instance equals_unfold_mvEmbedPtr [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold mvEmbedPtr.fields mvEmbedPtr.fieldsUnsealed :=
+  ⟨by unfold mvEmbedPtr.fields; rfl⟩
+
+@[reducible] def mvEmbedPtr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mvEmbedPtr.fields)
+
+class mvEmbedPtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying mvEmbedPtr.underlying mvEmbedPtr
+  underlying : go.UnderlyingDirectedEq mvEmbedPtr.ty mvEmbedPtr.underlying
+  get_mvT : ∀ (x : mvEmbedPtr), go.IsGoStepPureDetTagged under (StructFieldGet mvEmbedPtr.underlying go!"mvT") #x (Val #(x.mvT'))
+  set_mvT : ∀ (x : mvEmbedPtr) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mvEmbedPtr.underlying go!"mvT") (PairV #x #y) (Val #(({ x with mvT' := y } : mvEmbedPtr)))
+  ptr_unfold : MethodUnfold mvEmbedPtr.ty go!"ptr" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (StructFieldGet mvEmbedPtr.ty go!"mvT"))) (Var "$r"))))
+  val_unfold : MethodUnfold mvEmbedPtr.ty go!"val" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"val"))) (App (Val (GoInstruction (StructFieldGet mvEmbedPtr.ty go!"mvT"))) (Var "$r"))))
+  ptr_ptr_unfold : MethodUnfold (go.GoType.PointerType mvEmbedPtr.ty) go!"ptr" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"ptr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (App (Val (GoInstruction (StructFieldRef mvEmbedPtr.ty go!"mvT"))) (Var "$r")))))
+  ptr_val_unfold : MethodUnfold (go.GoType.PointerType mvEmbedPtr.ty) go!"val" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvT.ty) go!"val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType mvT.ty)))) (App (Val (GoInstruction (StructFieldRef mvEmbedPtr.ty go!"mvT"))) (Var "$r")))))
+
+attribute [instance] mvEmbedPtr.TypeAssumptions.type_repr
+  mvEmbedPtr.TypeAssumptions.underlying
+  mvEmbedPtr.TypeAssumptions.get_mvT
+  mvEmbedPtr.TypeAssumptions.set_mvT
+  mvEmbedPtr.TypeAssumptions.ptr_unfold
+  mvEmbedPtr.TypeAssumptions.val_unfold
+  mvEmbedPtr.TypeAssumptions.ptr_ptr_unfold
+  mvEmbedPtr.TypeAssumptions.ptr_val_unfold
+
 structure containsPointer [FfiSyntax] where
   mk ::
   s' : Loc
@@ -6314,6 +6613,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   IntWrapper_instance : IntWrapper.TypeAssumptions
   MapWrapper_instance : MapWrapper.TypeAssumptions
   mapElem_instance : mapElem.TypeAssumptions
+  mvT_instance : mvT.TypeAssumptions
+  mvEmbed_instance : mvEmbed.TypeAssumptions
+  mvEmbedPtr_instance : mvEmbedPtr.TypeAssumptions
   containsPointer_instance : containsPointer.TypeAssumptions
   wrapExternalStruct_instance : wrapExternalStruct.TypeAssumptions
   typing_instance : typing.TypeAssumptions
@@ -6459,6 +6761,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   mapLiteralTest_unfold : FuncUnfold mapLiteralTest [] mapLiteralTest.impl
   mapClearTest_unfold : FuncUnfold mapClearTest [] mapClearTest.impl
   mapLookupConversion_unfold : FuncUnfold mapLookupConversion [] mapLookupConversion.impl
+  mvMakeEmbed_unfold : FuncUnfold mvMakeEmbed [] mvMakeEmbed.impl
+  mvMakeEmbedPtr_unfold : FuncUnfold mvMakeEmbedPtr [] mvMakeEmbedPtr.impl
+  methodValues_unfold : FuncUnfold methodValues [] methodValues.impl
   returnTwo_unfold : FuncUnfold returnTwo [] returnTwo.impl
   returnTwoWrapper_unfold : FuncUnfold returnTwoWrapper [] returnTwoWrapper.impl
   multipleVar_unfold : FuncUnfold multipleVar [] multipleVar.impl
@@ -6573,6 +6878,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.IntWrapper_instance
   Assumptions.MapWrapper_instance
   Assumptions.mapElem_instance
+  Assumptions.mvT_instance
+  Assumptions.mvEmbed_instance
+  Assumptions.mvEmbedPtr_instance
   Assumptions.containsPointer_instance
   Assumptions.wrapExternalStruct_instance
   Assumptions.typing_instance
@@ -6718,6 +7026,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.mapLiteralTest_unfold
   Assumptions.mapClearTest_unfold
   Assumptions.mapLookupConversion_unfold
+  Assumptions.mvMakeEmbed_unfold
+  Assumptions.mvMakeEmbedPtr_unfold
+  Assumptions.methodValues_unfold
   Assumptions.returnTwo_unfold
   Assumptions.returnTwoWrapper_unfold
   Assumptions.multipleVar_unfold

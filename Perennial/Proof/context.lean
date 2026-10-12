@@ -2798,7 +2798,7 @@ theorem wp_WithDeadlineCause (parent : GoInterfaceOk) (parent_desc : ContextDesc
   | some cur =>
     dsimp only [Option.getD]
     wp_auto
-    wp_apply time.Time.wp_ptr_Before $$ [$cur] as %b cur
+    wp_apply time.Time.wp_Before as %b -
     cases b
     case true =>
       wp_auto

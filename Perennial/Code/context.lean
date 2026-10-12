@@ -1244,7 +1244,7 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (Var "d"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.time.Time.ty) go!"Before"))) (Var "cur")) (Var "$a0"))) (Val #false))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Time.ty go!"Before"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (Var "cur"))) (Var "$a0"))) (Val #false))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
   (App (App (Val (GoInstruction (FuncResolve WithCancel []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
@@ -1287,7 +1287,7 @@ noncomputable def timerCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType timerCtx.ty)))) (Var "c"))
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"Context"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c")))))
-  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0"))) (Val #(go!".WithDeadline(")))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.time.Time.ty) go!"String"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c")))) (Val #())))) (Val #(go!" [")))) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0"))) (Val #(go!".WithDeadline(")))) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Time.ty go!"String"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #())))) (Val #(go!" [")))) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Until []))) (Val #())) (Var "$a0")))) (Val #())))) (Val #(go!"])")))))))))
 
 /-- go: context.go:679:20 -/
