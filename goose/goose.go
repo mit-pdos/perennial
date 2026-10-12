@@ -767,22 +767,42 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	if e.High != nil {
 		highExpr = ctx.expr(e.High)
 	}
+	var maxExpr glang.Expr
 	if e.Max != nil {
-		highExpr = ctx.expr(e.High)
-		return glang.LetExpr{
-			Names:   []string{"$s"},
-			ValExpr: x,
-			Cont: glang.NewCallExpr(glang.VerbatimExpr("FullSlice"), ty,
-				glang.TupleExpr{glang.IdentExpr("$s"), lowExpr, highExpr, ctx.expr(e.Max)}),
-		}
-	} else {
-		return glang.LetExpr{
-			Names:   []string{"$s"},
-			ValExpr: x,
-			Cont: glang.NewCallExpr(glang.VerbatimExpr("Slice"), ty,
-				glang.TupleExpr{glang.IdentExpr("$s"), lowExpr, highExpr}),
-		}
+		maxExpr = ctx.expr(e.Max)
 	}
+
+	// As for x[i] (indexFirst): gc evaluates the bounds' calls and then reads
+	// x's variables, so when x has no call or receive and a bound has one, the
+	// given bounds are bound first, left to right, and x is read after them.
+	var boundBinds []glang.LetExpr
+	if !ctx.mayAssignVars(e.X) &&
+		(ctx.mayAssignVars(e.Low) || ctx.mayAssignVars(e.High) || ctx.mayAssignVars(e.Max)) {
+		bind := func(b ast.Expr, be *glang.Expr, name string) {
+			if b != nil {
+				boundBinds = append(boundBinds, glang.LetExpr{Names: []string{name}, ValExpr: *be})
+				*be = glang.IdentExpr(name)
+			}
+		}
+		bind(e.Low, &lowExpr, "$lo")
+		bind(e.High, &highExpr, "$hi")
+		bind(e.Max, &maxExpr, "$max")
+	}
+
+	var sl glang.Expr
+	if e.Max != nil {
+		sl = glang.NewCallExpr(glang.VerbatimExpr("FullSlice"), ty,
+			glang.TupleExpr{glang.IdentExpr("$s"), lowExpr, highExpr, maxExpr})
+	} else {
+		sl = glang.NewCallExpr(glang.VerbatimExpr("Slice"), ty,
+			glang.TupleExpr{glang.IdentExpr("$s"), lowExpr, highExpr})
+	}
+	var res glang.Expr = glang.LetExpr{Names: []string{"$s"}, ValExpr: x, Cont: sl}
+	for i := len(boundBinds) - 1; i >= 0; i-- {
+		boundBinds[i].Cont = res
+		res = boundBinds[i]
+	}
+	return res
 }
 
 func (ctx *Ctx) unaryExpr(e *ast.UnaryExpr, multipleBindings bool) glang.Expr {
@@ -1032,10 +1052,27 @@ func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
 		return ctx.expr(e.X)
 	}
 
-	return glang.NewCallExpr(glang.VerbatimExpr("Index"),
-		ctx.glangType(e, ctx.typeOf(e.X)),
-		glang.TupleExpr{ctx.expr(e.X),
-			ctx.exprIntoType(e.Index, types.Typ[types.Int])})
+	return ctx.indexFirst(e.X, e.Index, ctx.exprIntoType(e.Index, types.Typ[types.Int]),
+		func(i glang.Expr) glang.Expr {
+			return glang.NewCallExpr(glang.VerbatimExpr("Index"),
+				ctx.glangType(e, ctx.typeOf(e.X)),
+				glang.TupleExpr{ctx.expr(e.X), i})
+		})
+}
+
+// indexFirst builds x[i] (as build applied to i's translation ie) in the order
+// gc evaluates it. The spec ("Order of evaluation") orders only the calls and
+// receives of x and i; gc evaluates i's and then reads x's variables, so when
+// i can assign a variable and x cannot (mayAssignVars), i is bound first and x
+// read after it (`s[f()]` with f changing s indexes the new s, and panics if
+// that is out of range). Otherwise x is translated first, which runs its calls
+// before i's as the spec requires.
+func (ctx *Ctx) indexFirst(x ast.Expr, i ast.Expr, ie glang.Expr, build func(glang.Expr) glang.Expr) glang.Expr {
+	if !ctx.mayAssignVars(x) && ctx.mayAssignVars(i) {
+		return glang.LetExpr{Names: []string{"$idx"}, ValExpr: ie,
+			Cont: build(glang.IdentExpr("$idx"))}
+	}
+	return build(ie)
 }
 
 func (ctx *Ctx) indexListExpr(e *ast.IndexListExpr) glang.Expr {
@@ -1684,10 +1721,12 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		default:
 			target = ctx.expr(e.X)
 		}
-		return glang.NewCallExpr(glang.VerbatimExpr("IndexRef"),
-			ctx.glangType(e, targetTy),
-			glang.TupleExpr{target,
-				ctx.exprIntoType(e.Index, ctx.getIndexType(e.Index, targetTy))})
+		return ctx.indexFirst(e.X, e.Index,
+			ctx.exprIntoType(e.Index, ctx.getIndexType(e.Index, targetTy)),
+			func(i glang.Expr) glang.Expr {
+				return glang.NewCallExpr(glang.VerbatimExpr("IndexRef"),
+					ctx.glangType(e, targetTy), glang.TupleExpr{target, i})
+			})
 	case *ast.StarExpr:
 		return ctx.expr(e.X)
 	case *ast.SelectorExpr:
@@ -1946,6 +1985,61 @@ func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.T
 		e = binds[i]
 	}
 	return glang.NewDoSeq(e, cont)
+}
+
+// mayAssignVars reports whether evaluating e can assign a variable: whether it
+// contains a call of a function or method or a receive (a builtin or a
+// conversion assigns none). It is false for an absent (nil) e.
+func (ctx *Ctx) mayAssignVars(e ast.Expr) bool {
+	if e == nil {
+		return false
+	}
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.CallExpr:
+			if !ctx.isConversionOrBuiltin(n) {
+				found = true
+			}
+		case *ast.UnaryExpr:
+			if n.Op == token.ARROW {
+				found = true
+			}
+		case *ast.FuncLit:
+			return false
+		}
+		return !found
+	})
+	return found
+}
+
+// isConversionOrBuiltin reports whether call is a conversion T(x) or a call of
+// a builtin.
+func (ctx *Ctx) isConversionOrBuiltin(call *ast.CallExpr) bool {
+	fun := ast.Unparen(call.Fun)
+	if tv := ctx.info.Types[fun]; tv.IsType() || tv.IsBuiltin() {
+		return true
+	}
+	var id *ast.Ident
+	switch f := fun.(type) {
+	case *ast.Ident:
+		id = f
+	case *ast.SelectorExpr:
+		id = f.Sel
+	case *ast.ArrayType, *ast.MapType, *ast.ChanType, *ast.FuncType,
+		*ast.InterfaceType, *ast.StructType:
+		// a type literal ([]byte(s)): a conversion ((*T)(p) is told from
+		// (*f)() by Types above)
+		return true
+	}
+	if id == nil {
+		return false
+	}
+	switch ctx.info.Uses[id].(type) {
+	case *types.TypeName, *types.Builtin:
+		return true
+	}
+	return false
 }
 
 // hasCallOrRecv reports whether e contains a call (or conversion) or a

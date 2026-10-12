@@ -163,3 +163,32 @@ func testOpAssignMapReadAfterRhs() bool {
 	m[0] += f()
 	return len(m1) == 0 && m2[0] == 1
 }
+
+// x[i] and x[lo:hi] read the variables in x after evaluating the calls in the
+// index and the bounds, as gc does.
+func testStringIndexReadAfterCall() bool {
+	s := "abcdef"
+	f := func() int {
+		s = "xy"
+		return 1
+	}
+	return s[f()] == 'y'
+}
+
+func testStringSliceReadAfterCall() bool {
+	s := "abcdef"
+	f := func() int {
+		s = "xy"
+		return 1
+	}
+	return s[f():] == "y"
+}
+
+func testSliceIndexReadAfterCall() bool {
+	a := []uint64{1, 2, 3}
+	f := func() int {
+		a = []uint64{4, 5}
+		return 1
+	}
+	return a[f()] == 5
+}

@@ -204,6 +204,18 @@ func (suite *GoTestSuite) TestOpAssignMapReadAfterRhs() {
 	suite.Equal(true, testOpAssignMapReadAfterRhs())
 }
 
+func (suite *GoTestSuite) TestStringIndexReadAfterCall() {
+	suite.Equal(true, testStringIndexReadAfterCall())
+}
+
+func (suite *GoTestSuite) TestStringSliceReadAfterCall() {
+	suite.Equal(true, testStringSliceReadAfterCall())
+}
+
+func (suite *GoTestSuite) TestSliceIndexReadAfterCall() {
+	suite.Equal(true, testSliceIndexReadAfterCall())
+}
+
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }

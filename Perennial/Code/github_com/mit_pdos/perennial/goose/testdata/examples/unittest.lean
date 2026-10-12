@@ -1265,7 +1265,8 @@ noncomputable def chanSelect.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "a")) (App (App (Val (GoInstruction (FuncResolve f []))) (Val #())) (Val #())))) (Var "$r0"))))))))]))))))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Let "$idx" (App (App (Val (GoInstruction (FuncResolve f []))) (Val #())) (Val #()))
+  (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "a")) (Var "$idx")))) (Var "$r0"))))))))]))))))))))))))))))))
 
 /-- go: chan.go:59:6 -/
 noncomputable def chanDirectional.impl [FfiSyntax] [GoGlobalContext] : val :=
