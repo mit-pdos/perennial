@@ -786,6 +786,142 @@ noncomputable def readFile [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def initLocal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"time.initLocal"
 
+/-- when is a helper function for setting the 'when' field of a runtimeTimer.
+    It returns what the time will be, in nanoseconds, Duration d in the future.
+    If d is negative, it is ignored. If the returned value would be less than
+    zero because of an overflow, MaxInt64 is returned.
+
+    go: sleep.go:52:6 -/
+noncomputable def when.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "d"
+  (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))))
+  (Let "t" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 9223372036854775807))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "t") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "t") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))))
+  (App (Val doReturn)
+  (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (Val #())))))))
+
+/-- Stop prevents the [Timer] from firing.
+    It returns true if the call stops the timer, false if the timer has already
+    expired or been stopped.
+
+    For a func-based timer created with [AfterFunc](d, f),
+    if t.Stop returns false, then the timer has already expired
+    and the function f has been started in its own goroutine;
+    Stop does not wait for f to complete before returning.
+    If the caller needs to know whether f is completed,
+    it must coordinate with f explicitly.
+
+    For a chan-based timer created with NewTimer(d), as of Go 1.23,
+    any receive from t.C after Stop has returned is guaranteed to block
+    rather than receive a stale time value from before the Stop;
+    if the program has not received from t.C already and the timer is
+    running, Stop is guaranteed to return true.
+    Before Go 1.23, the only safe way to use Stop was insert an extra
+    <-t.C if Stop returned false to drain a potential stale value.
+    See the [NewTimer] documentation for more details.
+
+    go: sleep.go:113:17 -/
+noncomputable def Timer.Stop.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve stopTimer []))) (Val #())) (Var "$a0"))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"initTimer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"time: Stop called on uninitialized Timer")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))))
+
+/-- Reset changes the timer to expire after duration d.
+    It returns true if the timer had been active, false if the timer had
+    expired or been stopped.
+
+    For a func-based timer created with [AfterFunc](d, f), Reset either reschedules
+    when f will run, in which case Reset returns true, or schedules f
+    to run again, in which case it returns false.
+    When Reset returns false, Reset neither waits for the prior f to
+    complete before returning nor does it guarantee that the subsequent
+    goroutine running f does not run concurrently with the prior
+    one. If the caller needs to know whether the prior execution of
+    f is completed, it must coordinate with f explicitly.
+
+    For a chan-based timer created with NewTimer, as of Go 1.23,
+    any receive from t.C after Reset has returned is guaranteed not
+    to receive a time value corresponding to the previous timer settings;
+    if the program has not received from t.C already and the timer is
+    running, Reset is guaranteed to return true.
+    Before Go 1.23, the only safe way to use Reset was to call [Timer.Stop]
+    and explicitly drain the timer first.
+    See the [NewTimer] documentation for more details.
+
+    go: sleep.go:171:17 -/
+noncomputable def Timer.Reset.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam "d"
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val (GoInstruction (FuncResolve when []))) (Val #())) (Var "$a0")))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "w"))
+  (Let "$a2" (Val #(W64 0))
+  (App (App (App (App (Val (GoInstruction (FuncResolve resetTimer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "w") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"initTimer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"time: Reset called on uninitialized Timer")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))))
+
+/-- After waits for the duration to elapse and then sends the current time
+    on the returned channel.
+    It is equivalent to [NewTimer](d).C.
+
+    Before Go 1.23, this documentation warned that the underlying
+    [Timer] would not be recovered by the garbage collector until the
+    timer fired, and that if efficiency was a concern, code should use
+    NewTimer instead and call [Timer.Stop] if the timer is no longer needed.
+    As of Go 1.23, the garbage collector can recover unreferenced,
+    unstopped timers. There is no reason to prefer NewTimer when After will do.
+
+    go: sleep.go:202:6 -/
+noncomputable def After.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "d"
+  (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly Time.ty)))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"C"))) (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val (GoInstruction (FuncResolve NewTimer []))) (Val #())) (Var "$a0")))))))))
+
 /-- nsec returns the time's nanoseconds.
 
     go: time.go:176:16 -/
@@ -1082,6 +1218,8 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
   set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Reset" Timer.Reset.impl
+  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Stop" Timer.Stop.impl
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
@@ -1089,6 +1227,8 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.set_C
   Timer.TypeAssumptions.get_initTimer
   Timer.TypeAssumptions.set_initTimer
+  Timer.TypeAssumptions.ptr_Reset_unfold
+  Timer.TypeAssumptions.ptr_Stop_unfold
 
 structure Ticker [FfiSyntax] where
   mk ::
@@ -1592,9 +1732,12 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   fileSizeError_instance : fileSizeError.TypeAssumptions
   dataIO_instance : dataIO.TypeAssumptions
   Sleep_unfold : FuncUnfold Sleep [] Sleep.impl
-  syncTimer_unfold : FuncUnfold syncTimer [] syncTimer.impl
-  newTimer_unfold : FuncUnfold newTimer [] newTimer.impl
+  when_unfold : FuncUnfold when [] when.impl
+  stopTimer_unfold : FuncUnfold stopTimer [] stopTimer.impl
+  resetTimer_unfold : FuncUnfold resetTimer [] resetTimer.impl
+  NewTimer_unfold : FuncUnfold NewTimer [] NewTimer.impl
   After_unfold : FuncUnfold After [] After.impl
+  Since_unfold : FuncUnfold Since [] Since.impl
   runtimeNano_unfold : FuncUnfold runtimeNano [] runtimeNano.impl
 
 attribute [instance] Assumptions.ParseError_instance
@@ -1621,9 +1764,12 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.fileSizeError_instance
   Assumptions.dataIO_instance
   Assumptions.Sleep_unfold
-  Assumptions.syncTimer_unfold
-  Assumptions.newTimer_unfold
+  Assumptions.when_unfold
+  Assumptions.stopTimer_unfold
+  Assumptions.resetTimer_unfold
+  Assumptions.NewTimer_unfold
   Assumptions.After_unfold
+  Assumptions.Since_unfold
   Assumptions.runtimeNano_unfold
 
 end time

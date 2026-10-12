@@ -7,9 +7,9 @@ Notes:
   pointer-receiver method, `Time.wp_ptr_Add`), but `Time.wp_Add` stays an axiom: the body
   uses `&^`, which `GoOp GoBitClear` leaves without semantics, and calls the untranslated
   `addSec` and `stripMono`.
-* `wp_After` needs the channel theory, which fixes `hlc := HasLC.hasLC` and
-  `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
-  channel ghost state) is defined here.
+* The timer specs (`wp_NewTimer`, `Timer.wp_Stop`, `Timer.wp_Reset`, `wp_After`) need the
+  channel theory, which fixes `hlc := HasLC.hasLC`; they live in their own section.
+  `Pos.Countable time.Time.t` (for the channel ghost state) is defined here.
 -/
 module
 
@@ -119,15 +119,6 @@ axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics 
       (App (Val (@! time.Until)) (Val #deadline))
     {{ (x : w64), RET #x; True }}
 
-/-- Spec of `time.Since` (axiom): some duration (`time.Now().Sub(t)`, a clock reading, like
-`time.Now` and `time.Until`). -/
-axiom wp_Since [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) :
-    {{ (True : IProp GF) }}
-      (App (Val (@! time.Since)) (Val #t))
-    {{ (d : w64), RET #d; True }}
-
 /-- Spec of `Time.Add` (axiom). -/
 axiom Time.wp_Add [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
@@ -164,6 +155,15 @@ theorem wp_Sleep (d : time.Duration) :
   wp_start
   wp_end
 
+/-- `time.Since(t)`: some duration (`Since.impl`, a clock reading). -/
+theorem wp_Since (t : time.Time) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.Since)) (Val #t))
+    {{ (d : w64), RET #d; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
 end wps
 
 section chan_wps
@@ -173,64 +173,129 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem wp_After (d : time.Duration) :
-    {{ (True : IProp GF) }}
-      (App (Val (@! time.After)) (Val #d))
-    {{ (ch : Loc) (γ : ChanNames), RET #ch;
-        isChanBag γ ch (V := time.Time) (fun _ => iprop(True)) }} := by
-  wp_start
-  rw [show go.GoType.Named go!"time.Time" [] = time.Time.ty by with_unfolding_all rfl]
-  wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
-  · ipureintro; decide
-  imod start_bag (fun _ => iprop(True)) _ ch γ trivial $$ His Hown with #Hch
-  wp_apply wp_fork $$ []
-  · wp_apply wp_arbitraryTime as %t -
-    wp_apply wp_bag_send $$ [$Hch]
-    itrivial
-  wp_end
+/-! ### Timers
 
-/-! ### Timers (the trust boundary: `NewTimer`, `Timer.Stop` and `Timer.Reset` are not
-translated; the runtime's timers are not modelled)
+`NewTimer` is a trusted model (`NewTimer.impl`); `Timer.Stop`, `Timer.Reset`, `when` and `After`
+are translated, over the trusted runtime primitives `stopTimer`, `resetTimer` and `runtimeNano`.
 
 A `*Timer` from `NewTimer` is `isTimer t ch γ`: its `C` field holds, for good, a channel `ch` on
-which a receive may yield some time (a bag of times, `isChanBag`, with no logical content). The
-specs say nothing about *when* (or whether) a value arrives: `Stop` and `Reset` return some
-`bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
-timer's channel delivers nothing; the model allows it), which is sound for safety. -/
+which a receive may yield some time (a bag of times, `isChanBag`, with no logical content), and
+its `initTimer` field holds `true`. The specs say nothing about *when* (or whether) a value
+arrives: `Stop` and `Reset` return some `bool` and change nothing the proof can observe. -/
 
 /-- `t` is a `*Timer` made by `NewTimer`, whose channel `C` is `ch` (persistent). -/
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
+    structFieldRef time.Timer go!"initTimer" t ↦□ true ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
     Persistent (isTimer (GF := GF) t ch γ) := by
   unfold isTimer; infer_instance
 
-/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`). -/
-axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (d : time.Duration) :
+theorem wp_NewTimer (d : time.Duration) :
     {{ (True : IProp GF) }}
       (App (Val (@! time.NewTimer)) (Val #d))
-    {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTimer t ch γ }}
+    {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTimer t ch γ }} := by
+  wp_start
+  rw [show go.GoType.Named go!"time.Time" [] = time.Time.ty by with_unfolding_all rfl]
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_apply wp_ArbitraryInt as %x -
+  wp_if_destruct
+  all_goals
+  wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
+  · ipureintro; decide
+  imod start_bag (fun _ => iprop(True)) _ ch γ (by simp) $$ His Hown with #Hch
+  wp_apply wp_fork $$ []
+  · wp_pures
+    wp_for
+    try simp only [decide_eq_true_eq, ↓reduceIte]
+    try wp_auto
+    wp_apply wp_arbitraryTime as %t -
+    wp_apply wp_bag_send $$ [$Hch]
+    wp_for_post
+    iempintro
+  iapply wp_fupd
+  wp_alloc tl as Ht
+  iStructNamed Ht
+  ipersist C
+  ipersist initTimer
+  imodintro
+  iapply HΦ
+  unfold isTimer
+  iframe #
 
-/-- Spec of `(*Timer).Stop()` (axiom): some `bool`. -/
-axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames) :
+theorem wp_stopTimer (t : Loc) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.stopTimer)) (Val #t))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+theorem wp_resetTimer (t : Loc) (w p : w64) :
+    {{ (True : IProp GF) }}
+      (App (App (App (Val (@! time.resetTimer)) (Val #t)) (Val #w)) (Val #p))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+theorem wp_runtimeNano :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.runtimeNano)) (Val #()))
+    {{ (x : w64), RET #x; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+theorem wp_when (d : time.Duration) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.when)) (Val #d))
+    {{ (x : w64), RET #x; True }} := by
+  wp_start
+  wp_auto
+  wp_if_destruct
+  · wp_apply wp_runtimeNano as %x -
+    wp_end
+  · wp_apply wp_runtimeNano as %x -
+    wp_if_destruct <;> wp_end
+
+theorem Timer.wp_Stop (t ch : Loc) (γ : ChanNames) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
-    {{ (b : Bool), RET #b; True }}
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start as #Ht
+  unfold isTimer
+  icases Ht with ⟨#HC, #Hinit, #Hch⟩
+  wp_auto
+  wp_apply wp_stopTimer as %b -
+  wp_end
 
-/-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`. -/
-axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames)
-    (d : time.Duration) :
+theorem Timer.wp_Reset (t ch : Loc) (γ : ChanNames) (d : time.Duration) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Reset")) (Val #d))
-    {{ (b : Bool), RET #b; True }}
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start as #Ht
+  unfold isTimer
+  icases Ht with ⟨#HC, #Hinit, #Hch⟩
+  wp_auto
+  wp_apply wp_when as %w -
+  wp_apply wp_resetTimer as %b -
+  wp_end
+
+theorem wp_After (d : time.Duration) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.After)) (Val #d))
+    {{ (ch : Loc) (γ : ChanNames), RET #ch;
+        isChanBag γ ch (V := time.Time) (fun _ => iprop(True)) }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_NewTimer as %t %ch %γ #Ht
+  unfold isTimer
+  icases Ht with ⟨#HC, #Hinit, #Hch⟩
+  wp_auto
+  wp_end
 
 end chan_wps
 
