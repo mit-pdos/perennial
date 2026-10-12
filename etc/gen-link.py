@@ -112,7 +112,8 @@ def check_file_name(path, name, pkg):
 
 def result_name(spec):
     cs = components(spec)
-    return ".".join(cs[:-1] + ["wp_" + cs[-1]])
+    # `wp_` + a quoted keyword is an ordinary identifier (`sort.«Sort»` -> `sort.wp_Sort`)
+    return ".".join(cs[:-1] + ["wp_" + strip_guillemets(cs[-1])])
 
 
 def proof_signature(text, start):
@@ -167,7 +168,9 @@ def main():
             err(f"{rel(path)}: `{name}.wp_proof` has no spec `{name}.spec` in "
                 f"{rel(spec_path)}", pkg)
         hyps = HYP.findall(proof_signature(text, d.start()))
-        context = re.findall(r"^open .*$|^variable .*$", text, re.M)
+        # section-level `open`s and `variable`s (not `open … in`, which scopes one declaration)
+        context = [l for l in re.findall(r"^open .*$|^variable .*$", text, re.M)
+                   if not l.rstrip().endswith(" in")]
         packages.setdefault(pkg, {})[name] = (path, hyps, context)
 
     for name, (pkg, path) in specs.items():
