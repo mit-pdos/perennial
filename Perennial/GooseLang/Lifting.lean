@@ -1639,14 +1639,6 @@ theorem unwinds_det {Ki Ki' : EctxItem} {p p' : val}
     Expr.Val.injEq, val.PanicV.injEq] at h <;>
     (repeat (obtain ⟨h₁, h⟩ := h; try subst h₁)) <;> (try subst h) <;> simp_all [val.isPanic]
 
-theorem redexKind_unwind (Ki : EctxItem) (p : val) :
-    redexKind (fillItem Ki (Val (PanicV p))) = .plain := by
-  cases Ki <;> try rfl
-  rename_i e1
-  cases e1 <;> try rfl
-  rename_i v
-  cases v <;> rfl
-
 /-- The unwinding step: a frame other than `Catch`'s around a panic steps to the panic. -/
 theorem pure_unwind (Ki : EctxItem) (p : val) (hK : Ki.unwinds = true) :
     Language.PureExec True 1 (fillItem Ki (Val (PanicV p))) (Val (PanicV p)) where

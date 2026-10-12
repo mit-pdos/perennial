@@ -22,7 +22,8 @@ does not format: it ignores the arguments `a` and returns `errors.New(format)`, 
 `*errors.errorString` whose `Error()` is `format` itself. So it does not model `%w` (Go returns
 a `*fmt.wrapError`/`*fmt.wrapErrors` that `errors.Unwrap`/`errors.Is` see through), the
 formatted text, or any method the arguments' `Error()`/`String()` would call during
-formatting. `wp_Errorf` only promises a non-nil error whose `Error()` returns some string. -/
+formatting. `wp_Errorf` only promises a non-nil error whose `Error()` returns some string, and
+only for arguments of predeclared basic types (`fmt.ArgsWf`), which have no methods. -/
 noncomputable def Errorf.impl : val :=
   λ: "format" "a", FuncResolve errors.New [] #() "format"
 
@@ -580,7 +581,8 @@ the zeros (`Sprintf("%05d", -42)` is `"-0042"`), not truncated if longer. At any
 output is an arbitrary string. At the end, if arguments remain unused (Go appends
 `%!(EXTRA ...)`), an arbitrary string is appended. This over-approximates Go's output, except
 that the model does not call any method of the arguments (Go's formatting may call their
-`Error()`, `String()` or `Format` methods, with whatever effects they have).
+`Error()`, `String()` or `Format` methods, with whatever effects they have, panics included):
+the specs (`fmt.ArgsWf`) admit only arguments of predeclared basic types, which have none.
 
 `wp_Sprintf` (`Perennial/Proof/fmt.lean`) states the result with the relation
 `fmt.SprintfOut`. -/
@@ -676,14 +678,15 @@ noncomputable def Sprintf.impl : val :=
   (Lam BAnon
   (Val #()))))))))))))
 
--- FIXME: Returns some stuff
+/-- `Print(a...)`: not modelled; stuck. (`Print` takes one argument, the slice `a`.) -/
 def Print.impl : val :=
-  λ: "format" "a",
+  λ: "a",
     Panic "unimplemented"
 
 /-- `Printf(format, a...)`: writes to standard output, which is not modelled, and returns the
 number of bytes written and an error; the model returns `(0, nil)`, and `wp_Printf` says nothing
-of either. -/
+of either. It does not call the arguments' methods, as Go's formatting does: `wp_Printf` admits
+only arguments of predeclared basic types (`fmt.ArgsWf`). -/
 def Printf.impl : val :=
   λ: "format" "a", (#(W64 0), #GoInterface.nil)
 

@@ -6,6 +6,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.log
 public import Perennial.GeneratedProof.log
+public import Perennial.Proof.fmt
 
 @[expose] public section
 
@@ -38,11 +39,16 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   -- Unprovable: `std'init` and `bufferPool'init` are opaque (axioms in Perennial/Code/log.lean).
   sorry
 
-theorem wp_Printf (msg : GoString) (arg : GoSlice) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.log }}
+/-- `log.Printf(format, args...)` returns; the output is not modelled. The model
+(`TrustedCode/log.lean`) does nothing, while Go formats the arguments as `fmt.Sprintf` does,
+calling the `Error()`/`String()` methods of arguments that have them: so the arguments must be of
+predeclared basic types (`fmt.ArgsWf`), for which Go calls no method. -/
+theorem wp_Printf (msg : GoString) (arg : GoSlice) (xs : List GoInterface) (dq : DFrac)
+    (Hxs : fmt.ArgsWf xs) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ arg ↦*{dq} xs }}
       (App (App (Val (@! Printf)) (Val #msg)) (Val #arg))
-    {{ RET #(); True }} := by
-  wp_start
+    {{ RET #(); arg ↦*{dq} xs }} := by
+  wp_start as Hsl
   wp_end
 
 end wps

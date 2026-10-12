@@ -68,6 +68,9 @@ attribute [irreducible] SelectDir.ty
 @[reducible] noncomputable def SelectRecv [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 1)
 
+noncomputable def runtimePanic [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/model/channel.runtimePanic"
+
 noncomputable def NewChannel [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NewChannel"
 
@@ -86,11 +89,30 @@ noncomputable def BlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def NonBlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect3"
 
-/-- go: channel.go:31:6 -/
+/-- runtimePanic stands for a run-time panic of Go's channels (send on or close
+    of a closed channel, close of a nil channel). Go raises a runtime.Error
+    after releasing the channel's lock; the model is stuck instead
+    (primitive.Assert(false) is a stuck Panic in GooseLang), as for the other
+    run-time panics of builtins, so that a recovered panic can never observe a
+    value or a channel state Go does not have.
+
+    go: channel.go:13:6 -/
+noncomputable def runtimePanic.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (Let "$a0" (Val #false)
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.Assert []))) (Val #())) (Var "$a0")))))))
+
+/-- go: channel.go:41:6 -/
 noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "cap"
   (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val idle)
   (Let "local_state" (App (Val (GoInstruction (GoAlloc offerState.ty))) (App (Val (GoInstruction (GoZeroVal offerState.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -108,12 +130,17 @@ noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (Var "local_state") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (Var "local_state") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 4294967296))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (Val #())))))))
 
 /-- Non-Blocking send operation for select statements. Blocking send and blocking select
     statements simply call this in a for loop until it returns true.
 
-    go: channel.go:46:22 -/
+    go: channel.go:64:22 -/
 noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "val"
@@ -126,9 +153,14 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad offerState.ty))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val closed)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #false))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"send on closed channel")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val buffered)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -233,7 +265,7 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
 
     c <- val
 
-    go: channel.go:109:22 -/
+    go: channel.go:129:22 -/
 noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
@@ -268,7 +300,7 @@ noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
     around nonblocking TryReceive. If false, we don't make an offer since we don't need to match
     with another non-blocking send.
 
-    go: channel.go:124:22 -/
+    go: channel.go:144:22 -/
 noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
@@ -293,7 +325,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -319,7 +351,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -407,7 +439,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val doExecute)
   (Val #()))))))))))
 
-/-- go: channel.go:197:22 -/
+/-- go: channel.go:217:22 -/
 noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -457,7 +489,7 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
     may be successful exchanges that need to complete, which is equivalent to the go runtime where
     the closer must still obtain the channel's lock
 
-    go: channel.go:214:22 -/
+    go: channel.go:234:22 -/
 noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -466,9 +498,14 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (App (Val (GoInstruction (GoLoad offerState.ty))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
   (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val closed)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #false))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"close of closed channel")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))
   (If (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val buffered))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val idle))))
   (Let "$r0" (Val closed)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -493,7 +530,7 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
 
     close(c)
 
-    go: channel.go:236:22 -/
+    go: channel.go:258:22 -/
 noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -511,8 +548,7 @@ noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (Channel.ty T))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (Channel.ty T))))) (Val UntypedNil)))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"close of nil channel")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #())))
   (App (Val doExecute)
   (Val #())))))))))
 
@@ -521,7 +557,7 @@ noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
     is equivalent to:
     v := c<-
 
-    go: channel.go:248:22 -/
+    go: channel.go:270:22 -/
 noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -550,7 +586,7 @@ noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T
     This might not be worth specifying since it is hard to make good use of channel length
     semantics.
 
-    go: channel.go:260:22 -/
+    go: channel.go:282:22 -/
 noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -582,7 +618,7 @@ noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
     is equivalent to:
     cap(c)
 
-    go: channel.go:274:22 -/
+    go: channel.go:296:22 -/
 noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -599,7 +635,7 @@ noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
 
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
-    go: channel.go:282:22 -/
+    go: channel.go:304:22 -/
 noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -1351,6 +1387,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   offerState_instance : offerState.TypeAssumptions
   Channel_instance : Channel.TypeAssumptions
   SelectDir_instance : SelectDir.TypeAssumptions
+  runtimePanic_unfold : FuncUnfold runtimePanic [] runtimePanic.impl
   NewChannel_unfold : ∀ (T : go.GoType), FuncUnfold NewChannel [T] (NewChannel.impl T)
   NonBlockingSelect1_unfold : ∀ (T : go.GoType), FuncUnfold NonBlockingSelect1 [T] (NonBlockingSelect1.impl T)
   BlockingSelect2_unfold : ∀ (T1 T2 : go.GoType), FuncUnfold BlockingSelect2 [T1, T2] (BlockingSelect2.impl T1 T2)
@@ -1362,6 +1399,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
 attribute [instance] Assumptions.offerState_instance
   Assumptions.Channel_instance
   Assumptions.SelectDir_instance
+  Assumptions.runtimePanic_unfold
   Assumptions.NewChannel_unfold
   Assumptions.NonBlockingSelect1_unfold
   Assumptions.BlockingSelect2_unfold

@@ -47,7 +47,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   grove/disk ones) hold for every `N` and `T`: they allocate the ghost state
   with `receiptBound GF = N` and `threadBound GF = T` (hypotheses of the WP
   premise `Hwp`, which also receives the main thread's token, and from which
-  the client discharges the proof's premises about the bounds) and are about
+  the client discharges the proof's premises about the bounds; the main
+  thread's postcondition must exclude panics, see "Panics" below) and are about
   real executions of *fewer than `N` steps* along which *fewer than `T`
   threads are live*, explicit hypotheses. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
@@ -74,11 +75,23 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
   `assume` that fails loops forever, so the proofs cover the executions where
   it holds):
-  * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`);
-  * `strings.Join`'s total length (`TrustedCode/strings.lean`).
+  * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`).
+    **Known to be reachable, not yet fixed:** with zero-size elements no
+    memory bounds the length, and Go panics where the model assumes:
+    `x := make([]struct{}, 1<<62); x = append(x, x...)` panics with
+    "growslice: len out of range". A program with that bug verifies.
 
-  Overflows that a program *can* reach are not assumed away. `sync.WaitGroup`'s
-  `int32` counter is one (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
+  Only a length that must exist in memory may be assumed away; a length Go
+  computes and checks *before* allocating is reachable. Overflows that a
+  program *can* reach are not assumed away. `strings.Join` is one: Go sums the
+  elements' lengths and panics before allocating anything, so a few gigabytes
+  of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
+  the panic. **Known, not yet fixed:** `Join` is still a trusted model that
+  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
+  that translates the real `Join` is on branch `join-translation`; its model of
+  `strings.Builder.String` must first be made stuck where Go's `String`
+  aliases the builder's buffer). `sync.WaitGroup`'s
+  `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per
   unit discharges the bound with thread tokens (above): `n` tokens give `n <
@@ -91,8 +104,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
   in a deferred function literal) reads and clears the panic. A postcondition
   receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
-  goroutine must not panic (`wp_fork`, `goose_adequacy_nopanic`). Run-time panics
-  of builtins (`Panic "msg"`) are stuck. See
+  goroutine must not panic (`wp_fork`: `forkPost`). The adequacy theorems
+  (`goose_adequacy` and the grove/disk ones) require the main thread's
+  postcondition `φ` to exclude panics (`hφ : ∀ p, ¬ φ (PanicV p)`, a pure fact
+  about `φ`) and conclude that no thread of the execution has an *unrecovered
+  panic* (`UnrecoveredPanic`, `GooseLang/BoundedLang.lean`): no thread is
+  `PanicV p`, and none is unwinding a panic through frames none of which is a
+  `Catch`, so a verified program does not die of a panic within the step bound.
+  Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with

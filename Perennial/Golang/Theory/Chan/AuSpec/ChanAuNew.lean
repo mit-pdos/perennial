@@ -28,13 +28,19 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 set_option goose.wp.extras true in
 set_option maxHeartbeats 400000 in
 theorem wp_NewChannel (cap : w64) :
-    {{ (⌜0 ≤ sint.Z cap⌝ : IProp GF) }}
+    {{ (⌜0 ≤ sint.Z cap ∧ sint.Z cap < 2 ^ 32⌝ : IProp GF) }}
       (App (Val #(functions channel.NewChannel [t])) (Val #cap))
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
         ⌜γ.chanCap = cap⌝ ∗
         ownChan γ V (if cap = W64 0 then ChanState.Idle else ChanState.Buffered ([] : List V)) }} := by
   wp_start as %Hle
+  wp_auto
+  -- `cap < 0 || cap >= 1<<32` is false (the premise)
+  rw [decide_eq_false (show ¬ sint.Z cap < sint.Z (W64 0) by simp; omega)]
+  wp_auto
+  rw [decide_eq_false (show ¬ sint.Z cap ≥ sint.Z (W64 4294967296) by
+    rw [show sint.Z (W64 4294967296) = 4294967296 from rfl]; omega)]
   wp_auto
   simp only [channel.idle, channel.buffered]
   wp_auto
@@ -83,7 +89,7 @@ theorem wp_NewChannel (cap : w64) :
     · iexists «$v1_ptr»
       iframe #
       ipureintro
-      exact ⟨Hnot_null, Hle⟩
+      exact ⟨Hnot_null, Hle.1⟩
     isplitl []
     · ipureintro; trivial
     isplitl [Hstate_frag]

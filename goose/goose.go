@@ -286,10 +286,17 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
+		paramTy := funcSig.Params().At(i-1).Type()
+		// `append(b, s...)` with a string `s` (the only variadic string
+		// parameter) appends the bytes of `s`, as `[]byte(s)...` does.
+		if b, ok := paramTy.Underlying().(*types.Basic); ok && funcSig.Variadic() &&
+			i == funcSig.Params().Len() && b.Info()&types.IsString != 0 {
+			paramTy = types.NewSlice(types.Universe.Lookup("byte").Type())
+		}
 		expr = glang.LetExpr{
 			Names: []string{fmt.Sprintf("$a%d", i-1)},
 			ValExpr: ctx.handleImplicitConversion(intermediates[i-1].n,
-				intermediates[i-1].t, funcSig.Params().At(i-1).Type(), intermediates[i-1].e),
+				intermediates[i-1].t, paramTy, intermediates[i-1].e),
 			Cont: expr,
 		}
 	}
@@ -756,7 +763,7 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 		x = ctx.expr(e.X)
 		highExpr = glang.NewCallExpr(
 			glang.VerbatimExpr("FuncResolve"),
-			glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, ctx.expr(e.X))
+			glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, glang.IdentExpr("$s"))
 	}
 
 	if e.Low != nil {
@@ -1751,9 +1758,34 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 		return scope(e)
 	}
 
-	// Execute assignments left-to-right
+	// Execute assignments left-to-right. With several left-hand sides, Go
+	// evaluates their index and indirection operands before any assignment
+	// (the targets are bound to $l<i>, or $lm<i> and $lk<i> for a map, below).
+	multi := len(s.Lhs) > 1
+	var lhsLets []glang.LetExpr
 	for i := len(s.Lhs); i > 0; i-- {
-		e = ctx.assignFromTo(s.Lhs[i-1], glang.IdentExpr(fmt.Sprintf("$r%d", i-1)), e)
+		lhs, rhs := s.Lhs[i-1], glang.IdentExpr(fmt.Sprintf("$r%d", i-1))
+		ix, isIx := ast.Unparen(lhs).(*ast.IndexExpr)
+		var mapTy *types.Map
+		if isIx {
+			mapTy, _ = ctx.typeOf(ix.X).Underlying().(*types.Map)
+		}
+		if _, ok := lhs.(*ast.Ident); ok || !multi {
+			e = ctx.assignFromTo(lhs, rhs, e)
+		} else if mapTy != nil {
+			m, k := fmt.Sprintf("$lm%d", i-1), fmt.Sprintf("$lk%d", i-1)
+			lhsLets = append(lhsLets,
+				glang.LetExpr{Names: []string{k}, ValExpr: ctx.exprIntoType(ix.Index, mapTy.Key())},
+				glang.LetExpr{Names: []string{m}, ValExpr: ctx.expr(ix.X)})
+			e = glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
+				ctx.glangType(ix.Index, mapTy.Key()), glang.IdentExpr(m), glang.IdentExpr(k), rhs), e)
+		} else {
+			l := fmt.Sprintf("$l%d", i-1)
+			lhsLets = append(lhsLets, glang.LetExpr{Names: []string{l}, ValExpr: ctx.exprAddr(lhs)})
+			e = glang.NewDoSeq(glang.StoreStmt{
+				Dst: glang.IdentExpr(l), X: rhs, Ty: ctx.glangType(lhs, ctx.typeOf(lhs)),
+			}, e)
+		}
 	}
 	e = scope(e)
 
@@ -1807,6 +1839,11 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 		}
 	}
 
+	// the left-hand operands are evaluated first, in order ($l0 outermost)
+	for _, l := range lhsLets {
+		l.Cont = e
+		e = l
+	}
 	return e
 }
 
@@ -2214,13 +2251,8 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 		Clauses: clauses,
 	})
 
+	// Go evaluates each case's channel, then its send value, in source order.
 	for i := len(chs) - 1; i >= 0; i-- {
-		expr = glang.LetExpr{
-			Names:   []string{fmt.Sprintf("$ch%d", i)},
-			ValExpr: chs[i],
-			Cont:    expr,
-		}
-
 		s := s.Body.List[i].(*ast.CommClause)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
 			expr = glang.LetExpr{
@@ -2228,6 +2260,11 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 				ValExpr: ctx.expr(c.Value),
 				Cont:    expr,
 			}
+		}
+		expr = glang.LetExpr{
+			Names:   []string{fmt.Sprintf("$ch%d", i)},
+			ValExpr: chs[i],
+			Cont:    expr,
 		}
 	}
 
