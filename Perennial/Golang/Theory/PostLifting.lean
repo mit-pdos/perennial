@@ -434,7 +434,7 @@ theorem wp_alloc_raw (t : go.GoType) (sz : Int) (hsz : 0 ≤ sz ∧ sz < 2^63) (
     (P : Loc → IProp GF)
     (hstore : ∀ l, {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l sz : IProp GF) }}
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #l v))) @ s; E
-      {{ RET #(); P l }}) :
+      {{ RET #(); P l }}) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }}
       (Let "l" (AllocN (Val (LitV (LitInt (W64 sz)))) (Val (LitV (LitByte 0))))
         gl(GoStore t ("l", v) ;; "l")) @ s; E
@@ -771,7 +771,7 @@ macro "solve_into_val_typed" : tactic => `(tactic| (
     iintro %Φ ⟨%Hc, Hraw⟩ HΦ
     icases rawCells_first l _ (by simp) $$ Hraw with ⟨%v0, Hl⟩
     wp_pures
-    wp_apply_core _internal_wp_untyped_store l _ _ $$ Hl
+    wp_apply_core _internal_wp_untyped_store l _ _ (isPanic_intoVal _) $$ Hl
     iintro Hl
     iapply HΦ
     iframe Hl
