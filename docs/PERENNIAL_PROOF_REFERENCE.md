@@ -671,7 +671,10 @@ stuck (Go 1.21 turns it into a run-time panic with a `*runtime.PanicNilError`,
 and a `nil` in the `$panic` cell means "not panicking"), so `wp_panic` takes a
 non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
 statement of a `for` (`doFor` runs the post statement under `do:`, which would
-drop the panic), nor `defer panic(..)` or `go panic(..)`.
+drop the panic), nor `defer panic(..)` or `go panic(..)`, nor a `recover()` in a
+deferred function literal that itself defers a literal calling `recover()` (the
+inner `with_defer_recover:` would bind its own `$panic` cell, hiding the one the
+outer `recover()` must read).
 
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out

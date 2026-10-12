@@ -1083,6 +1083,13 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.nextFuncLitDeferred = false
 
 	ctx.beginFuncBody(e.Body, e.Type.Results)
+	if ctx.recoverOK && ctx.callsRecoverDirectly(e.Body) && ctx.defersRecover(e.Body) {
+		// the literal's own `with_defer_recover:` would bind a fresh `$panic`,
+		// hiding the cell of the function that deferred it, which its
+		// recover() must read
+		ctx.unsupported(e, "recover() in a deferred function literal that itself "+
+			"defers a function literal calling recover()")
+	}
 
 	defer func(oldFuncType *types.Signature) {
 		ctx.curFuncType = oldFuncType
@@ -2032,6 +2039,24 @@ func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
 		case *ast.CallExpr:
 			if id, ok := n.Fun.(*ast.Ident); ok && id.Name == "recover" &&
 				ctx.info.Types[n.Fun].IsBuiltin() {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// defersRecover reports whether body defers (outside any nested function
+// literal) a function literal that calls recover() directly.
+func (ctx *Ctx) defersRecover(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.DeferStmt:
+			if fl, ok := n.Call.Fun.(*ast.FuncLit); ok && ctx.callsRecoverDirectly(fl.Body) {
 				found = true
 			}
 		}
