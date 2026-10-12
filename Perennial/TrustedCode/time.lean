@@ -55,6 +55,20 @@ def After.impl : val :=
 def Sleep.impl : val :=
   λ: "d", #()
 
+/-- `AfterFunc(d, f)`: Go's `AfterFunc` makes a runtime timer (`newTimer(when(d), 0, goFunc, f,
+nil)`) that, unless stopped first, runs `go f()` after `d`. Modeled as a fresh `*Timer` (with no
+channel; `initTimer` set, as `newTimer` does) and a goroutine that calls `f`: the delay is a
+no-op, and an execution in which the goroutine never runs (the timer is stopped, or never fires)
+is a prefix of the model's executions. -/
+def AfterFunc.impl : val :=
+  λ: "d" "f",
+    let: "t" := GoAlloc (go.Named go!"time.Timer" [])
+      (CompositeLiteral (go.Named go!"time.Timer" []) (LiteralValue [
+        KeyedElement (some (KeyField go!"initTimer")) (ElementExpression go.bool #true)
+      ])) in
+    Fork ("f" #()) ;;
+    "t"
+
 end code
 end time
 

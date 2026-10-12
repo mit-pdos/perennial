@@ -10,6 +10,8 @@ Notes:
   the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
   `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
 * The axioms bind their package assumptions (`[package_sem : time.Assumptions]`) explicitly.
+* `AfterFunc` is modeled (`TrustedCode/time.lean`) as a fresh `*Timer` and a goroutine that
+  calls the callback (`wp_AfterFunc`); its timer's `Stop` is the axiom `Timer.wp_Stop_func`.
 * `wp_After` needs the channel theory, which fixes `hlc := HasLC.hasLC` and
   `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
   channel ghost state) is defined here.
@@ -391,6 +393,52 @@ axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSema
     (d : time.Duration) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Reset")) (Val #d))
+    {{ (b : Bool), RET #b; True }}
+
+/-! ### `AfterFunc` timers
+
+`AfterFunc(d, f)` is modeled (`TrustedCode/time.lean`) as a fresh `*Timer` with no channel
+and `initTimer` set, and a goroutine that calls `f`. Its `Stop` is not translated (it calls the
+runtime's `stopTimer`); `Timer.wp_Stop_func` is its spec. -/
+
+/-- `t` is a `*Timer` made by `AfterFunc` (persistent): `initTimer` is set. -/
+def isFuncTimer (t : Loc) : IProp GF :=
+  iprop(structFieldRef time.Timer go!"initTimer" t ↦□ true)
+
+instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t) := by
+  unfold isFuncTimer; infer_instance
+
+/-- `AfterFunc(d, f)`: `f()` runs in a new goroutine (the model ignores the delay, and an
+execution in which `f` never runs is a prefix of one in which it does), so it must be safe to
+run then and must not panic. -/
+theorem wp_AfterFunc (d : time.Duration) (f : GoFunc) :
+    {{ (WP (App (Val #f) (Val #())) {{ (fun v : val => iprop(⌜v.isPanic = false⌝)) }} : IProp GF) }}
+      (App (App (Val (@! time.AfterFunc)) (Val #d)) (Val #f))
+    {{ (t : Loc), RET #t; isFuncTimer (GF := GF) t }} := by
+  wp_start as Hf
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  iStructNamed t
+  ipersist initTimer
+  wp_bind (Fork _)
+  iapply wp_fork $$ [Hf]
+  · inext; iexact Hf
+  inext
+  wp_pures
+  iapply HΦ
+  unfold isFuncTimer
+  iexact initTimer
+
+/-- Spec of `(*Timer).Stop()` for a timer made by `AfterFunc` (axiom): some `bool`. Go's `Stop`
+checks `initTimer` (set by `AfterFunc`) and calls the runtime's `stopTimer`, which stops the
+timer if it has not fired (so that `f` does not run) and reports whether it did; the model of
+`AfterFunc` runs `f` regardless, so the result says nothing the proof can use. -/
+axiom Timer.wp_Stop_func [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
+    [hG : HeapGS HasLC.hasLC GF] [sem : go.Semantics] [package_sem : time.Assumptions]
+    (t : Loc) :
+    {{ isFuncTimer (GF := GF) t }}
+      (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
     {{ (b : Bool), RET #b; True }}
 
 end chan_wps

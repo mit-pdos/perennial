@@ -1848,6 +1848,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   syncTimer_unfold : FuncUnfold syncTimer [] syncTimer.impl
   newTimer_unfold : FuncUnfold newTimer [] newTimer.impl
   After_unfold : FuncUnfold After [] After.impl
+  AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   subMono_unfold : FuncUnfold subMono [] subMono.impl
   Since_unfold : FuncUnfold Since [] Since.impl
   Until_unfold : FuncUnfold Until [] Until.impl
@@ -1881,6 +1882,7 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.syncTimer_unfold
   Assumptions.newTimer_unfold
   Assumptions.After_unfold
+  Assumptions.AfterFunc_unfold
   Assumptions.subMono_unfold
   Assumptions.Since_unfold
   Assumptions.Until_unfold

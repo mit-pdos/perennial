@@ -10,6 +10,9 @@ trusted = [
 
   "After",
   "Sleep",
+  # `AfterFunc` calls the runtime's `newTimer` with `goFunc` (which type-asserts its argument
+  # to `func()`); modeled in TrustedCode/time.lean as a goroutine that calls `f`.
+  "AfterFunc",
 ]
 translate = [
   "Time",
