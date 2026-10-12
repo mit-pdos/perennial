@@ -44,14 +44,13 @@ instance disk_interp_adequacy : FfiInterpAdequacy disk_model where
 open disk_ffi in
 /-- Adequacy for GooseLang with the disk FFI: if the WP is proved for arbitrary
 time-receipt and thread bounds `N` and `T` (`receiptBound GF = N`,
-`threadBound GF = T`; the proof gets the main thread's token) with a
-postcondition `φ` that excludes panics (`hφ`), then in every real execution of
-fewer than `N` steps along which fewer than `T` threads are live, no thread is
-stuck, a final value of the main thread satisfies `φ`, and no thread has an
-unrecovered panic (see `goose_adequacy`). -/
+`threadBound GF = T`; the proof gets the main thread's token), then in every
+real execution of fewer than `N` steps along which fewer than `T` threads are
+live, no thread is stuck and a final value of the main thread satisfies `φ`
+(see `goose_adequacy`). -/
 theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : GooseGpreS disk_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
-    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (φ : val → Prop)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -63,9 +62,8 @@ theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
-  refine goose_adequacy (GF := GF) N T e σ g φ hφ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) := by
+  refine goose_adequacy (GF := GF) N T e σ g φ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
     Hthreads Hlive
   intro hG HN HT Hlctx
   iintro _ Hd Hgs Htok

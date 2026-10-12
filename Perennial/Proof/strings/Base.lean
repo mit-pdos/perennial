@@ -1,13 +1,16 @@
 /-
 Shared definitions of the proofs of the Go `strings` package: its `isPkgInit`,
-the models of what `Fields`, `Compare`, `TrimPrefix` and `Split` return, and
-lemmas about them.
+the models of what `Fields`, `Compare`, `TrimPrefix` and `Split` return, when `Join`
+returns (`JoinFits`), and lemmas about them.
 -/
 module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.strings
 public import Perennial.GeneratedProof.strings
+public import Perennial.Proof.internal.abi.Base
+public import Perennial.Proof.internal.bytealg.Base
+public import Perennial.Proof.«unsafe».Base
 
 @[expose] public section
 
@@ -103,6 +106,44 @@ theorem intercalate_take_succ (sep : GoString) (xs : List GoString) (n : Nat) (x
       exact ⟨by omega, List.ne_nil_of_length_pos (by omega)⟩
     simp only [Option.toList_some]
     exact intercalate_snoc sep _ x this
+
+/-- The lengths of the first `j + 1` strings: those of the first `j`, and the next one's. -/
+theorem sum_take_succ (xs : List GoString) (j : Nat) (h : j < xs.length) :
+    ((xs.take (j + 1)).map List.length).sum = ((xs.take j).map List.length).sum + xs[j].length := by
+  rw [List.take_succ, List.getElem?_eq_getElem h, List.map_append, List.sum_append]
+  simp
+
+theorem sum_take_le (xs : List GoString) (j : Nat) :
+    ((xs.take j).map List.length).sum ≤ (xs.map List.length).sum := by
+  conv => rhs; rw [← List.take_append_drop j xs]
+  simp only [List.map_append, List.sum_append]
+  omega
+
+/-- The length of a join: the elements' lengths and one separator between each two. -/
+theorem intercalate_length (sep : GoString) :
+    ∀ xs : List GoString, xs ≠ [] →
+      (sep.intercalate xs).length = sep.length * (xs.length - 1) + (xs.map List.length).sum
+  | [], h => absurd rfl h
+  | [x], _ => by simp [List.intercalate]
+  | x :: y :: ys, _ => by
+    have ih := intercalate_length sep (y :: ys) (List.cons_ne_nil _ _)
+    simp only [List.intercalate_cons_cons, List.length_append, List.length_cons,
+      List.map_cons, List.sum_cons] at ih ⊢
+    rw [ih]
+    simp only [Nat.add_sub_cancel]
+    rw [Nat.mul_add, Nat.mul_one]
+    omega
+
+/-- When `strings.Join(xs, sep)` returns instead of panicking: at most one element, or a join
+of at most `maxAlloc` bytes (`internal/bytealg.maxAlloc`, Go's largest allocation on 64-bit
+Linux). For two or more elements Go sums the lengths and allocates the result at once
+(`Builder.Grow`, then `bytealg.MakeNoZero`), so it panics otherwise: "strings: Join output
+length overflow" when the sum overflows `int`, "makeslice: len out of range" when it exceeds
+`maxAlloc`. Both happen before anything is allocated, so a program can reach them (with many
+aliased elements). The bound implies that the overflow checks pass, so this is exactly Go's
+condition. -/
+def JoinFits (xs : List GoString) (sep : GoString) : Prop :=
+  xs.length ≤ 1 ∨ ((sep.intercalate xs).length : Int) ≤ internal.bytealg.maxAlloc
 
 /-- What `strings.Compare(a, b)` returns: `-1`, `0` or `+1` as `a` is lexicographically less
 than, equal to or greater than `b` (Go's `<` on strings, `GoStringLt`), as `bytes.compareResult`. -/

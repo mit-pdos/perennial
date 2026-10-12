@@ -2,8 +2,9 @@
 # PreToolUse(Bash) hook: keep `lean` (and `master`) clean.
 #
 # Denies, with a reason the model sees:
-#   * git commit / merge / rebase / cherry-pick / revert / am / pull while the
-#     checkout the command runs in is on lean or master;
+#   * git commit / merge / rebase / cherry-pick / revert / am / pull / push while
+#     the checkout the command runs in is on lean or master (a push that only
+#     deletes other branches, `git push origin --delete <topic>`, passes);
 #   * git push whose refspec targets lean or master, or any force push.
 # etc/land.sh is the one sanctioned way to move lean: commands that invoke it
 # pass. Everything else passes untouched (no output).
@@ -33,7 +34,11 @@ if printf '%s' "$c" | grep -Eq '(^|[;&|[:space:]])git[[:space:]]+([^;&|]*[[:spac
 fi
 
 # --- history-changing commands while on lean ---------------------------------
-if printf '%s' "$c" | grep -Eq '(^|[;&|[:space:]])git[[:space:]]+([^;&|]*[[:space:]])?(commit|merge|rebase|cherry-pick|revert|am|pull|push)([[:space:]]|$)'; then
+# A push that only deletes remote branches (`git push origin --delete <topic>`, the
+# last step of landing) changes nothing about this checkout: drop such segments
+# first. Deleting lean or master was already denied above.
+h=$(printf '%s' "$c" | sed -E 's/[;&|]+/\n/g' | grep -Ev '(^|[[:space:]])git[[:space:]]+([^[:space:]]+[[:space:]]+)*push[[:space:]]([^[:space:]]+[[:space:]]+)*(--delete|-d)([[:space:]]|$)' | tr '\n' ';')
+if printf '%s' "$h" | grep -Eq '(^|[;&|[:space:]])git[[:space:]]+([^;&|]*[[:space:]])?(commit|merge|rebase|cherry-pick|revert|am|pull|push)([[:space:]]|$)'; then
   dir=$(printf '%s' "$in" | jq -r '.cwd // ""')
   d2=$(printf '%s' "$c" | grep -oE '(^|[;&|[:space:]])cd[[:space:]]+[^[:space:];&|]+' | head -1 | sed -E 's/^[;&|[:space:]]*cd[[:space:]]+//')
   [ -n "$d2" ] && dir=$d2

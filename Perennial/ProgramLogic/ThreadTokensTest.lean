@@ -106,7 +106,7 @@ theorem wp_counter_register (Hbound : threadBound GF ≤ 2 ^ 31) (l : Loc) :
 given one by its own proof, e.g. out of an invariant). Two tokens are then at
 hand, so `2 < threadBound GF`. -/
 example (e : Expr) (s : Stuckness) (E : CoPset) :
-    threadTok ∗ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF) }} ⊢
+    threadTok ∗ ▷ WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢
       WP (Fork e) @ s; E {{ _v, threadToks 2 ∗ ⌜2 < threadBound GF⌝ }} := by
   iintro ⟨Htok, He⟩
   iapply wp_fork_tok
@@ -132,7 +132,6 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy f
 variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 
 example [GooseGpreS ffi GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
-    (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       threadBound GF ≤ 2 ^ 31 →
@@ -145,9 +144,8 @@ example [GooseGpreS ffi GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) 
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < N)
     (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow (2 ^ 31) n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
-  goose_adequacy N (2 ^ 31) e σ g φ hφ Hinitg Hinit
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
+  goose_adequacy N (2 ^ 31) e σ g φ Hinitg Hinit
     (@fun hG _ HT Hlctx => Hwp (hG := hG) (Nat.le_of_eq HT) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 

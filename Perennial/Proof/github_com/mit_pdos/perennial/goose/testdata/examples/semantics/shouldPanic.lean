@@ -24,11 +24,11 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shouldPanic.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.shouldPanic.spec (GF := GF) (hG := hG) := fun Φ => by
-  iintro HΦ
+  iintro Hstuck
   wp_func_call
   wp_call
   wp_apply wp_panic
-  iexact HΦ
+  iapply Hstuck
 
 end proof
 

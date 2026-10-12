@@ -1,5 +1,5 @@
 /-
-`panicUnrecovered`'s spec (a goose semantics test, `recover.go`).
+`recoverInLoop`'s spec (a goose semantics test, `recover.go`).
 -/
 module
 
@@ -22,11 +22,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `panicUnrecovered` runs its deferred function and keeps panicking. -/
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicUnrecovered.spec : Prop :=
-  ∀ (Φ : val → IProp GF),
-    Φ (PanicV #(interface.mkOk go.string #go!"unrecovered")) ⊢
-      WP (App (Val (@! panicUnrecovered)) (Val #())) {{ Φ }}
+/-- `recoverInLoop`: the panic in the fourth iteration ends the loop
+(`wp_for_post_panic`) and the body; the deferred literal recovers it. -/
+abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.recoverInLoop.spec : Prop :=
+  {{ (True : IProp GF) }} (App (Val (@! recoverInLoop)) (Val #()))
+  {{ RET #(W64 7); True }}
 
 end spec
 

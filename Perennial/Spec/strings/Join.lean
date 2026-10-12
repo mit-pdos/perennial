@@ -20,9 +20,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- `strings.Join(elems, sep)`: the elements of `elems` separated by `sep`. -/
+/-- `strings.Join(elems, sep)`: the elements of `elems` separated by `sep`, when the result fits
+(`JoinFits`; Go panics otherwise). -/
 abbrev strings.Join.spec : Prop :=
   ∀ (elems : GoSlice) (xs : List GoString) (dq : DFrac) (sep : GoString),
+  JoinFits xs sep →
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ elems ↦*{dq} xs }}
       (App (App (Val (@! Join)) (Val #elems)) (Val #sep))
     {{ RET #(sep.intercalate xs); elems ↦*{dq} xs }}

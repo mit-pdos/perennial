@@ -1,5 +1,5 @@
 /-
-`panicInLoop`'s spec (a goose semantics test, `recover.go`).
+`testOpAssignReadsAfterRhs`'s spec (a goose semantics test, `evalorder.go`).
 -/
 module
 
@@ -22,11 +22,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `panicInLoop` panics in the fourth iteration of its loop. -/
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicInLoop.spec : Prop :=
-  ∀ (Φ : val → IProp GF),
-    Φ (PanicV #(interface.mkOk go.string #go!"loop")) ⊢
-      WP (App (Val (@! panicInLoop)) (Val #())) {{ Φ }}
+abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOpAssignReadsAfterRhs.spec : Prop :=
+  TestFunOk (GF := GF) testOpAssignReadsAfterRhs
 
 end spec
 

@@ -36,8 +36,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
 instance pure_wp_chan_for_range (c : GoChan) (elem_type : go.GoType) (body : val) :
-    PureWp (G := G) (L := L) (body.isPanic = false)
-      (App (App (Val (chan.forRange elem_type)) (Val #c)) (Val body))
+    PureWp (G := G) (L := L) True (App (App (Val (chan.forRange elem_type)) (Val #c)) (Val body))
       gl(for: (λ: <>, #true : val) ; (λ: <>, #() : val) := (λ: <>,
           let: ("v", "ok") := chan.receive elem_type #c in
           if: "ok" then
@@ -45,7 +44,7 @@ instance pure_wp_chan_for_range (c : GoChan) (elem_type : go.GoType) (body : val
           else
             -- channel is closed
             break: #() : val)) where
-  pure_wp_wp s E Φ K hb := by
+  pure_wp_wp s E Φ K _ := by
     unfold chan.forRange
     iintro H
     wp_call_lc Hlc
@@ -172,19 +171,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
-/-- How the outcome `retv` of a select case body continues: a value `v` as the
-outcome `(v, true)` of trying the case, a panic by unwinding. -/
-def selectRet (Φ : val → IProp GF) (retv : val) : IProp GF :=
-  if retv.isPanic then Φ retv else Φ (PairV retv #true)
-
-theorem selectRet_val (Φ : val → IProp GF) {retv : val} (h : retv.isPanic = false) :
-    selectRet Φ retv = Φ (PairV retv #true) := by
-  unfold selectRet; rw [h]; rfl
-
-theorem selectRet_panic (Φ : val → IProp GF) (p : val) :
-    selectRet Φ (PanicV p) = Φ (PanicV p) := by
-  simp [selectRet]
-
 /-- The precondition for a blocking select case. -/
 def blockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
   match c with
@@ -283,7 +269,7 @@ transform that into a `sendAu` of a different. So, these lemmas are written to t
 wand that turns Ψ into Φ. -/
 theorem wp_tryCommClause_blocking (c : comm_clause) (Ψ : val → IProp GF) :
     ⊢ ∀ Φ : val → IProp GF, (blockingClausePre c Ψ ∧ Φ (PairV #() #false)) -∗
-      (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (App (Val (chan.tryCommClause c)) (Val #true)) {{ Φ }} := by
   rcases c with ⟨⟨t, ch, e⟩ | ⟨t, ch⟩, body⟩
   · iintro %Φ HΦ Hwand
@@ -312,14 +298,8 @@ theorem wp_tryCommClause_blocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_bind body
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases HΦ with ⟨-, HΦ⟩
       wp_auto
       iexact HΦ
@@ -348,14 +328,8 @@ theorem wp_tryCommClause_blocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_bind (App body _)
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases HΦ with ⟨-, HΦ⟩
       wp_auto
       iexact HΦ
@@ -363,7 +337,7 @@ theorem wp_tryCommClause_blocking (c : comm_clause) (Ψ : val → IProp GF) :
 /-- `wp_tryCommClause_blocking`, for a case that may also be on a nil channel. -/
 theorem wp_tryCommClause_blocking_nil (c : comm_clause) (Ψ : val → IProp GF) :
     ⊢ ∀ Φ : val → IProp GF, ((blockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
-      (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (App (Val (chan.tryCommClause c)) (Val #true)) {{ Φ }} := by
   iintro %Φ HΦ Hwand
   icases BI.and_or_right.1 $$ HΦ with (HΦ | HΦ)
@@ -373,7 +347,7 @@ theorem wp_tryCommClause_blocking_nil (c : comm_clause) (Ψ : val → IProp GF) 
 set_option maxHeartbeats 400000 in
 theorem wp_trySelect_blocking_nil (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, blockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
-      □ (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect true clauses) {{ Φ }} := by
   induction clauses with
   | nil =>
@@ -400,20 +374,12 @@ theorem wp_trySelect_blocking_nil (clauses : List comm_clause) (Ψ Φ : val → 
             iexact H
         · iexact Hwand
     · iintro %r Hr
-      cases hr : r.isPanic
-      · simp only [selectRet_val _ hr]
-        wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        simp only [selectRet_panic]
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
 
 theorem wp_trySelect_blocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, blockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
-      □ (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect true clauses) {{ Φ }} := by
   iintro HΦ #Hwand
   iapply wp_trySelect_blocking_nil clauses Ψ Φ $$ [HΦ] Hwand
@@ -476,14 +442,8 @@ theorem wp_select_blocking_nil (clauses : List comm_clause) (Φ : val → IProp 
       iapply IH $$ Hcases
   · imodintro
     iintro %r Hr
-    cases hr : r.isPanic
-    · simp only [selectRet_val _ hr]
-      wp_auto
-      iexact Hr
-    · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-      simp only [selectRet_panic]
-      wp_auto
-      iexact Hr
+    wp_auto
+    iexact Hr
 
 theorem wp_select_blocking (clauses : List comm_clause) (Φ : val → IProp GF) :
     ⊢ ([∧list] c ∈ clauses, blockingClausePre c Φ) -∗
@@ -514,7 +474,7 @@ def nonblockingClausePre (c : comm_clause) (Ψ : val → IProp GF) : IProp GF :=
 set_option maxHeartbeats 400000 in
 theorem wp_tryCommClause_nonblocking (c : comm_clause) (Ψ : val → IProp GF) :
     ⊢ ∀ Φ : val → IProp GF, (nonblockingClausePre c Ψ ∧ Φ (PairV #() #false)) -∗
-      (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (App (Val (chan.tryCommClause c)) (Val #false)) {{ Φ }} := by
   rcases c with ⟨⟨t, ch, e⟩ | ⟨t, ch⟩, body⟩
   · iintro %Φ HΦ Hwand
@@ -545,14 +505,8 @@ theorem wp_tryCommClause_nonblocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_bind body
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases HΦ with ⟨-, HΦ⟩
       wp_auto
       iexact HΦ
@@ -583,14 +537,8 @@ theorem wp_tryCommClause_nonblocking (c : comm_clause) (Ψ : val → IProp GF) :
       wp_bind (App body _)
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases HΦ with ⟨-, HΦ⟩
       wp_auto
       iexact HΦ
@@ -598,7 +546,7 @@ theorem wp_tryCommClause_nonblocking (c : comm_clause) (Ψ : val → IProp GF) :
 /-- `wp_tryCommClause_nonblocking`, for a case that may also be on a nil channel. -/
 theorem wp_tryCommClause_nonblocking_nil (c : comm_clause) (Ψ : val → IProp GF) :
     ⊢ ∀ Φ : val → IProp GF, ((nonblockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
-      (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (App (Val (chan.tryCommClause c)) (Val #false)) {{ Φ }} := by
   iintro %Φ HΦ Hwand
   icases BI.and_or_right.1 $$ HΦ with (HΦ | HΦ)
@@ -608,7 +556,7 @@ theorem wp_tryCommClause_nonblocking_nil (c : comm_clause) (Ψ : val → IProp G
 set_option maxHeartbeats 400000 in
 theorem wp_trySelect_nonblocking_nil (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Ψ ∨ nilClausePre c) ∧ Φ (PairV #() #false)) -∗
-      □ (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect false clauses) {{ Φ }} := by
   induction clauses with
   | nil =>
@@ -635,20 +583,12 @@ theorem wp_trySelect_nonblocking_nil (clauses : List comm_clause) (Ψ Φ : val �
             iexact H
         · iexact Hwand
     · iintro %r Hr
-      cases hr : r.isPanic
-      · simp only [selectRet_val _ hr]
-        wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        simp only [selectRet_panic]
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
 
 theorem wp_trySelect_nonblocking (clauses : List comm_clause) (Ψ Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Ψ) ∧ Φ (PairV #() #false)) -∗
-      □ (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect false clauses) {{ Φ }} := by
   iintro HΦ #Hwand
   iapply wp_trySelect_nonblocking_nil clauses Ψ Φ $$ [HΦ] Hwand
@@ -699,14 +639,8 @@ theorem wp_select_nonblocking_nil (clauses : List comm_clause) (dflt : Expr) (Φ
       iexact H
   · imodintro
     iintro %r Hr
-    cases hr : r.isPanic
-    · simp only [selectRet_val _ hr]
-      wp_auto
-      iexact Hr
-    · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-      simp only [selectRet_panic]
-      wp_auto
-      iexact Hr
+    wp_auto
+    iexact Hr
 
 theorem wp_select_nonblocking (clauses : List comm_clause) (dflt : Expr) (Φ : val → IProp GF) :
     ⊢ (([∧list] c ∈ clauses, nonblockingClausePre c Φ) ∧ WP dflt {{ Φ }}) -∗
@@ -763,7 +697,7 @@ set_option maxHeartbeats 400000 in
 theorem wp_trySelect_case_nonblocking_alt (c : comm_clause) (Ψ : val → IProp GF)
     (Ψnotready : IProp GF) :
     ⊢ ∀ Φ : val → IProp GF, nonblockingAltClausePre c Ψ Ψnotready -∗
-      ((∀ retv, Ψ retv -∗ selectRet Φ retv) ∧ (Ψnotready -∗ Φ (PairV #() #false))) -∗
+      ((∀ retv, Ψ retv -∗ Φ (PairV retv #true)) ∧ (Ψnotready -∗ Φ (PairV #() #false))) -∗
       WP (App (Val (chan.tryCommClause c)) (Val #false)) {{ Φ }} := by
   rcases c with ⟨⟨t, ch, e⟩ | ⟨t, ch⟩, body⟩
   · iintro %Φ HΦ Hwand
@@ -784,14 +718,8 @@ theorem wp_trySelect_case_nonblocking_alt (c : comm_clause) (Ψ : val → IProp 
       wp_bind body
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases Hwand with ⟨-, Hwand⟩
       iintro Hnr
       wp_auto
@@ -814,14 +742,8 @@ theorem wp_trySelect_case_nonblocking_alt (c : comm_clause) (Ψ : val → IProp 
       wp_bind (App body _)
       iapply wp_wand $$ Hwp
       iintro %r Hr
-      cases hr : r.isPanic
-      · wp_auto
-        rw [← selectRet_val Φ hr]
-        iapply Hwand $$ Hr
-      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-        wp_auto
-        rw [← selectRet_panic Φ p]
-        iapply Hwand $$ Hr
+      wp_auto
+      iapply Hwand $$ Hr
     · icases Hwand with ⟨-, Hwand⟩
       iintro Hnr
       wp_auto
@@ -833,7 +755,7 @@ theorem wp_trySelect_nonblocking_alt (Φnrs : List (IProp GF)) (clauses : List c
     ⊢ ([∗list] c;Φnr ∈ clauses;Φnrs, P -∗ nonblockingAltClausePre c Ψ iprop(P ∗ Φnr)) -∗
       P -∗
       (P -∗ ([∗list] Φnr ∈ Φnrs, Φnr) -∗ Φ (PairV #() #false)) -∗
-      □ (∀ retv, Ψ retv -∗ selectRet Φ retv) -∗
+      □ (∀ retv, Ψ retv -∗ Φ (PairV retv #true)) -∗
       WP (chan.trySelect false clauses) {{ Φ }} := by
   induction clauses generalizing Φnrs Φ with
   | nil =>
@@ -858,16 +780,8 @@ theorem wp_trySelect_nonblocking_alt (Φnrs : List (IProp GF)) (clauses : List c
     · iapply H $$ HP
     · isplit
       · iintro %r Hr
-        cases hr : r.isPanic
-        · simp only [selectRet_val _ hr]
-          wp_auto
-          rw [← selectRet_val Φ hr]
-          iapply Hwand $$ Hr
-        · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-          simp only [selectRet_panic]
-          wp_auto
-          rw [← selectRet_panic Φ p]
-          iapply Hwand $$ Hr
+        wp_auto
+        iapply Hwand $$ Hr
       · iintro ⟨HP, Hnr⟩
         wp_auto
         iapply ih Φnrs' Φ $$ HΦ HP [Hwandnr Hnr] Hwand
@@ -907,14 +821,8 @@ theorem wp_select_nonblocking_alt (Φnrs : List (IProp GF)) (P : IProp GF)
     iapply (BigSepL.bigSepL_perm Hperm_Φnrs).2 $$ Hnrs
   · imodintro
     iintro %r Hr
-    cases hr : r.isPanic
-    · simp only [selectRet_val _ hr]
-      wp_auto
-      iexact Hr
-    · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hr
-      simp only [selectRet_panic]
-      wp_auto
-      iexact Hr
+    wp_auto
+    iexact Hr
 
 end select_proof
 

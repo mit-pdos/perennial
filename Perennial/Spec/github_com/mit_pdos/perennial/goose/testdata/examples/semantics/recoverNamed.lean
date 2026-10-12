@@ -22,8 +22,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `recoverNamed`: the deferred literal recovers the panic (`recover()` reads and
-clears the `$panic` cell) and sets the named result, which the function returns. -/
+/-- `recoverNamed`: the body's outcome is the panic (`wp_panic`), which
+`with_defer_recover:` stores in the `$panic` cell; the deferred literal recovers
+it (`recover()` reads and clears the cell) and sets the named result, which the
+function returns. -/
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.recoverNamed.spec : Prop :=
   {{ (True : IProp GF) }} (App (Val (@! recoverNamed)) (Val #()))
   {{ RET #(W64 42); True }}

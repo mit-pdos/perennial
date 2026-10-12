@@ -20,7 +20,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- The package's `initialize'`: allocate `asciiSpace`. -/
+/-- The package's `initialize'`: allocate `asciiSpace` and initialize `unsafe`,
+`internal/bytealg` and `internal/abi`. -/
 abbrev strings.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
   GetIsPkgInitProp pkg_id.strings get_is_pkg_init →

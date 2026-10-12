@@ -1,9 +1,9 @@
 /-
-`testCatchTwoDeep`'s spec (a goose semantics test, `recover.go`).
+The proof of `testIncDecNarrow` (a goose semantics test, `evalorder.go`).
 -/
 module
 
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Base
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncDecNarrow
 
 @[expose] public section
 
@@ -16,15 +16,16 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
-section spec
+section proof
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep.spec : Prop :=
-  TestFunOk (GF := GF) testCatchTwoDeep
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncDecNarrow.wp_proof :
+    github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncDecNarrow.spec (GF := GF) (hG := hG) := by
+  semantics_auto
 
-end spec
+end proof
 
 end Perennial

@@ -22,10 +22,10 @@ variable [package_sem : time.Assumptions]
 
 /-- `AfterFunc(d, f)`: `f()` runs in a new goroutine (the model ignores the delay, and an
 execution in which `f` never runs is a prefix of one in which it does), so it must be safe to
-run then and must not panic. -/
+run then (a panic in `f` that `f` does not recover is stuck, so its WP rules it out). -/
 abbrev time.AfterFunc.spec : Prop :=
   ∀ (d : time.Duration) (f : GoFunc),
-    {{ (WP (App (Val #f) (Val #())) {{ (fun v : val => iprop(⌜v.isPanic = false⌝)) }} : IProp GF) }}
+    {{ (WP (App (Val #f) (Val #())) {{ _v, True }} : IProp GF) }}
       (App (App (Val (@! time.AfterFunc)) (Val #d)) (Val #f))
     {{ (t : Loc), RET #t; isFuncTimer (GF := GF) t }}
 

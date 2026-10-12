@@ -27,7 +27,6 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.recoverN
   wp_start
   wp_auto
   wp_apply wp_with_defer_recover as %defer %pnc defer pnc
-  -- the panic unwinds to the `Catch`, whose handler runs the deferred literal
   wp_apply wp_panic
   wp_apply wp_recoverPanic $$ [$pnc] as pnc
   iapply HΦ

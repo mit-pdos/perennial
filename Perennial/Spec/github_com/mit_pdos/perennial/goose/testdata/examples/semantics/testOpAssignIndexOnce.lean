@@ -1,5 +1,5 @@
 /-
-`panicTwoDeep`'s spec (a goose semantics test, `recover.go`).
+`testOpAssignIndexOnce`'s spec (a goose semantics test, `evalorder.go`).
 -/
 module
 
@@ -22,11 +22,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `panicTwoDeep` panics through its call of `panicInLoop`. -/
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicTwoDeep.spec : Prop :=
-  ∀ (Φ : val → IProp GF),
-    Φ (PanicV #(interface.mkOk go.string #go!"loop")) ⊢
-      WP (App (Val (@! panicTwoDeep)) (Val #())) {{ Φ }}
+abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOpAssignIndexOnce.spec : Prop :=
+  TestFunOk (GF := GF) testOpAssignIndexOnce
 
 end spec
 

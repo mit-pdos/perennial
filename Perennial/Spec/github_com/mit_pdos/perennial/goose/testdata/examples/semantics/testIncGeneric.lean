@@ -1,5 +1,5 @@
 /-
-`catchTwoDeep`'s spec (a goose semantics test, `recover.go`).
+`testIncGeneric`'s spec (a goose semantics test, `evalorder.go`).
 -/
 module
 
@@ -22,12 +22,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `catchTwoDeep`: the panic raised two calls down, inside a loop, unwinds to the
-`Catch` of `catchTwoDeep`'s `defer`, whose literal recovers it and sets the named
-result. -/
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catchTwoDeep.spec : Prop :=
-  {{ (True : IProp GF) }} (App (Val (@! catchTwoDeep)) (Val #()))
-  {{ RET #true; True }}
+abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncGeneric.spec : Prop :=
+  TestFunOk (GF := GF) testIncGeneric
 
 end spec
 

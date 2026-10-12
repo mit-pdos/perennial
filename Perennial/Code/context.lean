@@ -363,9 +363,8 @@ noncomputable def withCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType cancelCtx.ty)))) (Pair (Var "c") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals Context.ty))) (Pair (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")) (App (Val (GoInstruction (Convert go.untypedNil Context.ty))) (Val UntypedNil)))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot create context from nil parent")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #())))))))
 
@@ -1024,9 +1023,8 @@ noncomputable def cancelCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"context: internal error: missing cancel error")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #()))))))))))))))
 
@@ -1045,9 +1043,8 @@ noncomputable def WithoutCancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert withoutCancelCtx.ty Context.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
   (App (Val (GoInstruction (CompositeLiteral withoutCancelCtx.ty))) (LiteralValue [(KeyedElement none (ElementExpression Context.ty (Var "$v0")))])))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals Context.ty))) (Pair (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")) (App (Val (GoInstruction (Convert go.untypedNil Context.ty))) (Val UntypedNil)))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot create context from nil parent")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #())))))))
 
@@ -1242,9 +1239,8 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.time.Time.ty))) (Pair (Var "cur") (Var "$r0")))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals Context.ty))) (Pair (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")) (App (Val (GoInstruction (Convert go.untypedNil Context.ty))) (Val UntypedNil)))))
-  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot create context from nil parent")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
   (Val #()))))))))))))
 
