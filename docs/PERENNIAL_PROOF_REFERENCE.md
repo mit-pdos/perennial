@@ -646,8 +646,10 @@ negative shift count) are stuck, not unwinding: proofs show they are unreachable
 (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A division `x / y` steps to
 `if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
 signed types): a literal divisor is decided by `wp_pures`, another needs
-`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift by a signed count goes
-through `go.shiftCount` (`wp_shiftCount_int`).
+`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift `x << y` is
+`GoShift GoShiftl t ct` with the types of both operands; a signed count `y`
+steps to `if sint.Z y < 0 then Panic "negative shift amount" else ...`, closed
+the same way (`rw [if_neg (show ¬ sint.Z y < 0 by ...)]`).
 
 **Binding a value needs it not to be a panic.** A step that binds or pairs a
 value (a call, a `let:`, a pair, a Go instruction's argument, a frame holding an

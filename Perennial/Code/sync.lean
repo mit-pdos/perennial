@@ -844,12 +844,12 @@ noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "bubbled" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoShift GoShiftl go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))) (Val #(32 : Int))))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Add"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Var "$a0")))
   (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoShift GoShiftr go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(32 : Int)))))
   (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 2147483647)))))
@@ -1015,7 +1015,7 @@ noncomputable def WaitGroup.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))) (Val #()))
   (Let "state" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoShift GoShiftr go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(32 : Int)))))
   (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (Val #(W64 2147483647)))))
