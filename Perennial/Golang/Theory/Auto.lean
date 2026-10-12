@@ -1619,12 +1619,12 @@ theorem struct_wp_store_raw {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   rw [typedPointsto_unseal]
   unfold typedPointstoWrap
   ihave Hraw := hraw l Hc $$ Hraw
-  have hpw : PureWp (hlc := hlc) (GF := GF) True
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((PairV #l #w).isPanic = false)
       (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w)))
       (storeStructRaw fds #l #w fds_unsealed) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
   rw [storeStructRaw_eq]
   have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1655,14 +1655,15 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
     {{ (l : Loc), RET #l; l ↦ v }} := by
   iintro %Φ _ HΦ
-  have hpw : PureWp (hlc := hlc) (GF := GF) True (App (Val (GoInstruction (GoAlloc t))) (Val #v))
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((#v : val).isPanic = false)
+      (App (Val (GoInstruction (GoAlloc t))) (Val #v))
       (if typeSize V < 2^63 then
         (Let "l" (AllocN (Val (LitV (LitInt (W64 (typeSize V))))) (Val (LitV (LitByte 0))))
           gl(GoStore (go.StructType fds) ("l", #v) ;; "l") : Expr)
        else gl(AngelicExit #())) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
   by_cases h : typeSize V < 2^63
   · rw [if_pos h]
