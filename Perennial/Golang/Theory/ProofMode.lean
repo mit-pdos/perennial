@@ -29,6 +29,8 @@ public import Perennial.Golang.Theory.SubstSimp
 public import Perennial.Golang.Theory.SubstEnv
 public import Perennial.Golang.Theory.TacticsSimpAttr
 public import Perennial.Golang.Theory.IrisTactics
+public import Perennial.Helpers.ThreadRef
+public meta import Perennial.Helpers.ThreadRef
 public import Perennial.GooseLang.Notation
 public import Iris.ProofMode
 
@@ -787,10 +789,12 @@ meta def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
                 s := args[5]!, E := args[6]!, e, Φ := args[8]!, tail }
 
 /-- Caches of `needsGooseSimp` (cleared by `wp_auto`/`wp_pures` at the start):
-the simp heads, the result per (shared) subterm, and per constant. -/
-meta initialize needsHeadsCache : IO.Ref (Option (Option NameSet)) ← IO.mkRef none
-meta initialize needsCache : IO.Ref (Std.HashMap Lean.Expr Bool) ← IO.mkRef {}
-meta initialize needsConstCache : IO.Ref (Std.HashMap Name Bool) ← IO.mkRef {}
+the simp heads, the result per (shared) subterm, and per constant. Per thread
+(`ThreadRef`): the heads depend on the declaration's environment (a later
+declaration may see more `goose_wp_simp` rules). -/
+meta initialize needsHeadsCache : ThreadRef (Option (Option NameSet)) ← ThreadRef.new none
+meta initialize needsCache : ThreadRef (Std.HashMap Lean.Expr Bool) ← ThreadRef.new {}
+meta initialize needsConstCache : ThreadRef (Std.HashMap Name Bool) ← ThreadRef.new {}
 
 /-- Results of `synthPureWp`, per thread (declarations are elaborated in parallel)
 and cleared by every WP tactic (`withNoSorry`). The keys contain the local
@@ -1713,10 +1717,13 @@ meta def binderNeProof (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (b : Opti
     let ye := (be.getArg! 0)
     mkApp4 (mkConst ``binder_named_ne_named) ext xe ye (strNeProof x y xe ye)
 
-/-- Whether `wp_auto` takes `if: #(decide P) then e else AngelicExit #()` steps
-(introducing `P` as an inaccessible hypothesis); set by
-`solve_into_val_typed_struct` (`Auto.lean`). -/
-initialize autoAngelicIf : IO.Ref Bool ← IO.mkRef false
+/-- The (internal) option saying whether `wp_auto` takes
+`if: #(decide P) then e else AngelicExit #()` steps (introducing `P` as an
+inaccessible hypothesis); set by `wp_auto_angelic` for
+`solve_into_val_typed_struct` (`Auto.lean`). An option (scoped to the call), not
+a global flag, which the `wp_auto` of declarations elaborated in parallel would
+see. -/
+meta def autoAngelicIfOpt : Name := `goose.wp.autoAngelicIf
 
 register_option goose.wp.introSimp : Bool := {
   defValue := true
@@ -1731,15 +1738,15 @@ register_option goose.wp.fvAnnot : Bool := {
 
 /-! ### Closedness annotations (meta level) -/
 
-/-- Whether `substPf` uses closedness annotations (`fvClosed`), and the caches of
-free-variable sets and closedness proofs (set up by `wp_auto`). -/
-initialize fvAnnotMode : IO.Ref Bool ← IO.mkRef false
-meta initialize fvCache : IO.Ref (Std.HashMap Lean.Expr (Option (List String))) ← IO.mkRef {}
-meta initialize closedCache : IO.Ref (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)) ← IO.mkRef {}
+/-- The caches of free-variable sets and closedness proofs (set up by `wp_auto`;
+per thread, `ThreadRef`, as `wp_auto` resets them). -/
+meta initialize fvCache : ThreadRef (Std.HashMap Lean.Expr (Option (List String))) ← ThreadRef.new {}
+meta initialize closedCache : ThreadRef (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)) ← ThreadRef.new {}
 /-- Terms that `assignHoisted` may hoist out of binders (`hoistClosed`): the closedness
 annotations `fvClosed S e` and their proofs, which are shared by the steps below
-binders. In creation order: a term comes after the ones it contains. -/
-meta initialize hoistCandidates : IO.Ref (Array Lean.Expr) ← IO.mkRef #[]
+binders. In creation order: a term comes after the ones it contains. Per thread
+(`ThreadRef`): `wp_auto` resets them at its start and takes them at its end. -/
+meta initialize hoistCandidates : ThreadRef (Array Lean.Expr) ← ThreadRef.new #[]
 
 /-- A literal `List String` expression. -/
 meta def strListExpr (l : List String) : Lean.Expr :=
@@ -3113,8 +3120,8 @@ unsafe def hoistClosedImpl (e : Lean.Expr) (cands : Array Lean.Expr) (zs Rs : Ar
 opaque hoistClosed (e : Lean.Expr) (cands : Array Lean.Expr) (zs Rs : Array Lean.Expr) : MetaM Lean.Expr
 
 /-- The number of steps that introduced a binder in the proof (allocations), for
-`assignHoisted`. -/
-initialize binderSteps : IO.Ref Nat ← IO.mkRef 0
+`assignHoisted`; per thread (`ThreadRef`), reset by `wp_auto`. -/
+initialize binderSteps : ThreadRef Nat ← ThreadRef.new 0
 
 /-- `assignHoisted` only hoists when there are at least this many binders. -/
 def hoistMinBinders : Nat := 4
