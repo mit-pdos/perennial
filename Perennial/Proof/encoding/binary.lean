@@ -7,7 +7,7 @@ little-endian decoding of `bs.reverse`.
 module
 
 public import Perennial.Proof.sync
-public import Perennial.Proof.slices_proof.slices_init
+public import Perennial.Proof.slices
 public import Perennial.Proof.math
 public import Perennial.Proof.io
 public import Perennial.Proof.errors

@@ -7,7 +7,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Golang.Theory.Chan
 public import Perennial.Golang.Theory.Chan.Idioms.Bag
-public import Perennial.Proof.sync_proof.waitgroup_join
+public import Perennial.Proof.sync
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
 @[expose] public section

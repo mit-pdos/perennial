@@ -3,7 +3,7 @@ Package initialization of `io`.
 -/
 module
 
-public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync
 public import Perennial.Proof.errors
 public import Perennial.Code.io
 public import Perennial.GeneratedProof.io

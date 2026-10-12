@@ -5,7 +5,7 @@ Specs of `insertionSort` and `partialInsertionSort` over a `sort.Interface`
 module
 
 public import Perennial.Proof.sort_proof.pdqSort.sort_basics
-public import Perennial.Proof.slices_proof.pdqSort.insertionSort
+public import Perennial.Proof.slices.InsertionSortBasics
 
 @[expose] public section
 

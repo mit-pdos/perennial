@@ -8,7 +8,7 @@ public import Perennial.Proof.sort_proof.pdqSort.sort_basics
 public import Perennial.Proof.sort_proof.pdqSort.partition
 public import Perennial.Proof.sort_proof.pdqSort.insertionSort
 public import Perennial.Proof.sort_proof.pdqSort.heapSort
-public import Perennial.Proof.slices_proof.pdqSort.pdqSort
+public import Perennial.Proof.slices.PdqSortBasics
 
 @[expose] public section
 

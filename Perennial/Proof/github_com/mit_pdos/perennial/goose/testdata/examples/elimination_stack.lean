@@ -14,7 +14,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.Golang.Theory.Chan
 public import Perennial.Golang.Theory.Chan.Idioms.Base
 public import Perennial.Golang.Theory.Chan.Idioms.Bag
-public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.sync
 public import Perennial.Proof.strings
 public import Perennial.Proof.time
 public import Perennial.Ghost.Token

@@ -5,7 +5,7 @@ Specs of `siftDown` and `heapSort` over a `sort.Interface`
 module
 
 public import Perennial.Proof.sort_proof.pdqSort.sort_basics
-public import Perennial.Proof.slices_proof.pdqSort.heapSort
+public import Perennial.Proof.slices.HeapSortBasics
 
 @[expose] public section
 

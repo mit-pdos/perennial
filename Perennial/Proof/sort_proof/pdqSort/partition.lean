@@ -6,8 +6,8 @@ Specs of `order2`, `median`, `medianAdjacent`, `choosePivot`, `breakPatterns`,
 module
 
 public import Perennial.Proof.sort_proof.pdqSort.sort_basics
-public import Perennial.Proof.slices_proof.pdqSort.partition
-public import Perennial.Proof.math.bits_exact
+public import Perennial.Proof.slices.PartitionBasics
+public import Perennial.Proof.math.bits
 
 @[expose] public section
 

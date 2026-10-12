@@ -16,7 +16,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.sort
 public import Perennial.GeneratedProof.sort
 public import Perennial.Proof.sort_proof.sort_init
-public import Perennial.Proof.slices_proof.pdqSort.sort_basics
+public import Perennial.Proof.slices.SortBasics
 
 @[expose] public section
 

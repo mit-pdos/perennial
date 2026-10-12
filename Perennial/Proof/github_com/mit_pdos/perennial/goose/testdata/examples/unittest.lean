@@ -12,7 +12,7 @@ public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testd
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Proof.fmt
 public import Perennial.Proof.log
-public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync
 public import Perennial.Proof.github_com.goose_lang.primitive
 public import Perennial.Proof.github_com.goose_lang.primitive.disk
 public import Perennial.Proof.github_com.goose_lang.std

@@ -49,6 +49,7 @@ NAME = r"[A-Za-z_«][A-Za-z0-9_'.«»!?]*"
 SPEC_DECL = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)?(?:abbrev|def)\s+(" + NAME + r")\.spec\b", re.M)
 PROOF_DECL = re.compile(r"^\s*(theorem|axiom)\s+(" + NAME + r")\.wp_proof\b", re.M)
 HYP = re.compile(r"\(\s*(" + NAME + r")\s*:\s*(" + NAME + r")\.spec\b")
+VAR_BINDER = re.compile(r"[({\[]\s*([A-Za-z_][\w'\s]*?)\s*:")
 IMPORT = re.compile(r"^(?:public )?import (Perennial\.Proof\.\S+)", re.M)
 
 errors = []
@@ -260,13 +261,40 @@ def main():
         lines += [f"public import {m}" for m in sorted(imports)]
         lines += ["", "@[expose] public section", "", "namespace Perennial", ""]
         lines += [v for v in context if v.startswith("open ")]
-        lines += ["", "section link"]
-        lines += [v for v in context if v.startswith("variable ")]
-        for n in order:
-            _, hyps, _ = proofs[n]
-            args = "".join(f" {result_name(c)}" for _, c in hyps)
-            lines += ["", f"theorem {result_name(n)} : {n}.spec (GF := GF) (hG := hG) :=",
-                      f"  {n}.wp_proof{args}"]
+        # One `section link` with the union of the proofs' `variable`s, unless two of
+        # them declare a binder differently (e.g. `[hG : HeapGS HasLC.hasLC GF]` for a
+        # proof that needs later credits): then a section per run of proofs with the
+        # same `variable`s, each with that proof file's own.
+        def own_vars(n):
+            return [v for v in proofs[n][2] if v.startswith("variable ")]
+        binders = {}
+        for v in context:
+            if v.startswith("variable "):
+                for names in VAR_BINDER.findall(v):
+                    for b in names.split():
+                        binders.setdefault(b, set()).add(v)
+        if any(len(vs) > 1 for vs in binders.values()):
+            runs = []
+            for n in order:
+                if runs and own_vars(runs[-1][-1]) == own_vars(n):
+                    runs[-1].append(n)
+                else:
+                    runs.append([n])
+            sections = [(own_vars(r[0]), r) for r in runs]
+        else:
+            sections = [([v for v in context if v.startswith("variable ")], order)]
+        for i, (vs, ns) in enumerate(sections):
+            if i > 0:
+                lines += ["", "end link", ""]
+            else:
+                lines += [""]
+            lines += ["section link"]
+            lines += vs
+            for n in ns:
+                _, hyps, _ = proofs[n]
+                args = "".join(f" {result_name(c)}" for _, c in hyps)
+                lines += ["", f"theorem {result_name(n)} : {n}.spec (GF := GF) (hG := hG) :=",
+                          f"  {n}.wp_proof{args}"]
         lines += ["", "end link", "", "end Perennial", ""]
         outputs[os.path.join(PROOF, pkg, "Link.lean")] = "\n".join(lines)
 

@@ -7,7 +7,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Proof.errors
 public import Perennial.Proof.time
-public import Perennial.Proof.sync_proof.mutex
+public import Perennial.Proof.sync
 public import Perennial.Proof.github_com.goose_lang.primitive
 public import Perennial.Golang.Theory.Chan
 public import Perennial.Golang.Theory.Chan.Idioms.Bag

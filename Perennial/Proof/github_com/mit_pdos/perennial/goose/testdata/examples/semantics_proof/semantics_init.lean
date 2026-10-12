@@ -11,7 +11,7 @@ module
 
 public import Perennial.Proof.DiskPrelude
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
-public import Perennial.Proof.sync_proof.base
+public import Perennial.Proof.sync
 public import Perennial.Proof.encoding.binary
 public import Perennial.Proof.github_com.goose_lang.primitive
 public import Perennial.Proof.github_com.goose_lang.primitive.disk

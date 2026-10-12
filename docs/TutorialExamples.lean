@@ -12,7 +12,7 @@ The examples verify functions of goose's unit-test package
 `Perennial/Code/github_com/mit_pdos/perennial/goose/testdata/examples/unittest.lean`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
-import Perennial.Proof.sync_proof.mutex
+import Perennial.Proof.sync
 
 set_option linter.iris.style.nameCheck false
 -- (the library sets this in `lakefile.toml`; `lake env lean` does not read it)

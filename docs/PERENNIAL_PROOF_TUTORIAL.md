@@ -114,7 +114,7 @@ unit-test package (its proof file already defines its `IsPkgInit` instance):
 
 ```lean
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
-import Perennial.Proof.sync_proof.mutex
+import Perennial.Proof.sync
 ```
 
 ```lean
