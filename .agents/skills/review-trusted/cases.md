@@ -111,6 +111,19 @@ the quoted-Go-vs-real-source section showing the model is not the source; the
 docstring's own words "the semantics has no string slicing". That sentence is
 the R2 trigger: the gap it names is a missing feature, and the thing to fix.
 
+**How it was reworked** (branch `string-slice`). `StringSemantics.string_slice`
+added the rule; `Split`, `TrimPrefix`, `HasPrefix`, `Compare` and everything
+they call (`genSplit`, `Count`, `internal/stringslite.Index`, `bytealg`'s
+`IndexRabinKarp`, `HashStr`, `Cutover`, `CompareString`) became goose's
+translation, and their specs were re-proved against it. The goose run on the
+real source left trusted only what has no Go body or reads the CPU:
+`bytealg.IndexByteString`, `IndexString`, `CountString`,
+`abigen_runtime_cmpstring` (assembly) and bytealg's `init` (`MaxLen` from
+`cpu.X86.HasAVX2`, which the runtime sets from `cpuid`; goose gained
+`trusted = ["init"]` for it). The trusted surface went from three
+hundred-line pasted terms to five models of a few lines each, written in
+GooseLang notation.
+
 ## Case 3 — OK (NOTE R3, R8): `Map length: the model assumes a map has fewer than 2^63 keys` (9276bd1ed)
 
 `len(m)` returned `W64 (GMap.size m)` unbounded; the rule now steps to

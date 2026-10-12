@@ -8,6 +8,8 @@ public import Perennial.Code.strings
 public import Perennial.GeneratedProof.strings
 public import Perennial.Proof.internal.abi
 public import Perennial.Proof.internal.bytealg
+public import Perennial.Proof.internal.stringslite
+public import Perennial.Proof.unicode.utf8
 public import Perennial.Proof.unsafe
 
 @[expose] public section
@@ -65,6 +67,203 @@ example : splitFields helloWorldWs = [go!"hello", go!"world"] := by decide
 example : splitFields go!"  hello\tthere\ngeneral\rkenobi " =
     [go!"hello", go!"there", go!"general", go!"kenobi"] := by decide
 
+/-! ## `Count` and `Split` -/
+
+open internal.bytealg (firstOcc firstOcc_eq_some_iff firstOcc_eq_none_iff)
+
+/-- The first occurrence of `sep` ends within `s`. -/
+theorem firstOcc_end_le (s sep : GoString) (k : Nat) (h : firstOcc s sep = some k) :
+    k + sep.length ≤ s.length := by
+  obtain ⟨hk, hp, -⟩ := (firstOcc_eq_some_iff s sep k).1 h
+  have := hp.length_le
+  simp only [List.length_drop] at this
+  omega
+
+/-- The number of non-overlapping occurrences of `sep` in `s`, found left to right, for a
+non-empty `sep` (what Go's `Count(s, sep)` returns then). -/
+def countOcc (s sep : GoString) : Nat :=
+  if hsep : sep = [] then 0 else
+  match h : firstOcc s sep with
+  | none => 0
+  | some k => countOcc (s.drop (k + sep.length)) sep + 1
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
+/-- What `strings.Split(s, sep)` returns, for a non-empty `sep`: the substrings of `s` between
+the occurrences of `sep`, found left to right without overlap. `split "" sep = [""]`, and a
+trailing `sep` gives a trailing empty field. -/
+def split (s sep : GoString) : List GoString :=
+  if hsep : sep = [] then [s] else
+  match h : firstOcc s sep with
+  | none => [s]
+  | some k => s.take k :: split (s.drop (k + sep.length)) sep
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
+theorem split_none (s sep : GoString) (hsep : sep ≠ []) (h : firstOcc s sep = none) :
+    split s sep = [s] := by
+  rw [split]; simp only [hsep, ↓reduceDIte]
+  split <;> simp_all
+
+theorem split_some (s sep : GoString) (hsep : sep ≠ []) (k : Nat) (h : firstOcc s sep = some k) :
+    split s sep = s.take k :: split (s.drop (k + sep.length)) sep := by
+  rw [split]; simp only [hsep, ↓reduceDIte]
+  split <;> simp_all
+
+theorem countOcc_none (s sep : GoString) (hsep : sep ≠ []) (h : firstOcc s sep = none) :
+    countOcc s sep = 0 := by
+  rw [countOcc]; simp only [hsep, ↓reduceDIte]
+  split <;> simp_all
+
+theorem countOcc_some (s sep : GoString) (hsep : sep ≠ []) (k : Nat)
+    (h : firstOcc s sep = some k) :
+    countOcc s sep = countOcc (s.drop (k + sep.length)) sep + 1 := by
+  rw [countOcc]; simp only [hsep, ↓reduceDIte]
+  split <;> simp_all
+
+/-! Tests of `split`. -/
+
+example : split go!"a/b" go!"/" = [go!"a", go!"b"] := by
+  rw [split_some _ _ (by simp) 1 (by decide), split_none _ _ (by simp) (by decide)]; rfl
+example : split go!"" go!"/" = [go!""] := split_none _ _ (by simp) (by decide)
+example : split go!"a/" go!"/" = [go!"a", go!""] := by
+  rw [split_some _ _ (by simp) 1 (by decide), split_none _ _ (by simp) (by decide)]; rfl
+example : split go!"x//ab///" go!"//" = [go!"x", go!"ab", go!"/"] := by
+  rw [split_some _ _ (by simp) 1 (by decide), split_some _ _ (by simp) 2 (by decide),
+    split_none _ _ (by simp) (by decide)]; rfl
+
+/-- `strings.Split` returns at least one field. -/
+theorem split_ne_nil (s sep : GoString) : split s sep ≠ [] := by
+  rw [split]
+  split
+  · simp
+  · split <;> simp
+
+/-- `strings.Split` returns `Count + 1` fields. -/
+theorem split_length (s sep : GoString) (hsep : sep ≠ []) :
+    (split s sep).length = countOcc s sep + 1 := by
+  rcases h : firstOcc s sep with _ | k
+  · rw [split_none s sep hsep h, countOcc_none s sep hsep h]; rfl
+  · rw [split_some s sep hsep k h, countOcc_some s sep hsep k h, List.length_cons,
+      split_length (s.drop (k + sep.length)) sep hsep]
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
+/-- At most one occurrence per byte. -/
+theorem countOcc_le (s sep : GoString) (hsep : sep ≠ []) : countOcc s sep ≤ s.length := by
+  rcases h : firstOcc s sep with _ | k
+  · rw [countOcc_none s sep hsep h]; omega
+  · rw [countOcc_some s sep hsep k h]
+    have := countOcc_le (s.drop (k + sep.length)) sep hsep
+    have := firstOcc_end_le s sep k h
+    have := List.length_pos_iff.2 hsep
+    simp only [List.length_drop] at *
+    omega
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
+/-- The occurrences of a single byte are its copies. -/
+theorem countOcc_singleton (s : GoString) (c : w8) : countOcc s [c] = s.count c := by
+  rcases h : firstOcc s [c] with _ | k
+  · rw [countOcc_none s [c] (by simp) h, eq_comm, List.count_eq_zero]
+    intro hc
+    obtain ⟨i, hi, hsi⟩ := List.getElem_of_mem hc
+    exact (firstOcc_eq_none_iff s [c]).1 h i (by omega)
+      ((internal.bytealg.occ_singleton_iff s c i).2 (by rw [List.getElem?_eq_getElem hi, hsi]))
+  · rw [countOcc_some s [c] (by simp) k h, List.length_singleton,
+      countOcc_singleton (s.drop (k + 1)) c]
+    obtain ⟨hk, hp, hmin⟩ := (firstOcc_eq_some_iff s [c] k).1 h
+    have hsk := (internal.bytealg.occ_singleton_iff s c k).1 hp
+    have hkl : k < s.length := by
+      rcases Nat.lt_or_ge k s.length with h' | h'
+      · exact h'
+      · rw [List.getElem?_eq_none h'] at hsk; cases hsk
+    have hsk' : s[k] = c := by rw [List.getElem?_eq_getElem hkl] at hsk; cases hsk; rfl
+    have htake : (s.take k).count c = 0 := by
+      rw [List.count_eq_zero]
+      intro hc
+      obtain ⟨i, hi, hsi⟩ := List.getElem_of_mem hc
+      simp only [List.length_take] at hi
+      apply hmin i (by omega)
+      rw [internal.bytealg.occ_singleton_iff, ← hsi, List.getElem_take]
+      exact List.getElem?_eq_getElem (by omega)
+    have hsplit : s.count c = (s.take k).count c + (s.drop k).count c := by
+      rw [← List.count_append, List.take_append_drop]
+    rw [hsplit, htake, List.drop_eq_getElem_cons hkl, hsk', List.count_cons_self]
+    omega
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s [c] k h
+  simp only [List.length_drop, List.length_singleton] at *
+  omega
+
+/-- The fields of `split s sep` joined by `sep` (as `strings.Join` joins them) give `s` back. -/
+theorem intercalate_split (s sep : GoString) (hsep : sep ≠ []) :
+    sep.intercalate (split s sep) = s := by
+  rcases h : firstOcc s sep with _ | k
+  · rw [split_none s sep hsep h]; simp
+  · rw [split_some s sep hsep k h, List.intercalate_cons_of_ne_nil (split_ne_nil _ _),
+      intercalate_split (s.drop (k + sep.length)) sep hsep]
+    obtain ⟨-, ⟨t, ht⟩, -⟩ := (firstOcc_eq_some_iff s sep k).1 h
+    have : s.drop (k + sep.length) = t := by
+      rw [← List.drop_drop, ← ht, List.drop_left]
+    rw [this, List.append_assoc, ht, List.take_append_drop]
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
+/-- No field of `split s sep` contains `sep`, for a non-empty `sep`. -/
+theorem split_no_infix (s sep : GoString) (hsep : sep ≠ []) :
+    ∀ f ∈ split s sep, ¬ sep <:+: f := by
+  rcases h : firstOcc s sep with _ | k
+  · rw [split_none s sep hsep h]
+    intro f hf ⟨u, v, huv⟩
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+    subst hf
+    apply (firstOcc_eq_none_iff f sep).1 h u.length (by rw [← huv]; simp <;> omega)
+    rw [← huv]
+    simp
+  · rw [split_some s sep hsep k h]
+    intro f hf
+    simp only [List.mem_cons] at hf
+    rcases hf with rfl | hf
+    · rintro ⟨u, v, huv⟩
+      obtain ⟨hk, -, hmin⟩ := (firstOcc_eq_some_iff s sep k).1 h
+      have hlen : u.length + sep.length ≤ k := by
+        have := congrArg List.length huv
+        simp only [List.length_append, List.length_take] at this
+        omega
+      apply hmin u.length (by have := List.length_pos_iff.2 hsep; omega)
+      rw [← List.take_append_drop k s, List.drop_append_of_le_length (by simp; omega), ← huv]
+      simp only [List.append_assoc, List.drop_left]
+      exact List.prefix_append _ _
+    · exact split_no_infix (s.drop (k + sep.length)) sep hsep f hf
+termination_by s.length
+decreasing_by
+  have := firstOcc_end_le s sep k h
+  have := List.length_pos_iff.2 hsep
+  simp only [List.length_drop]
+  omega
+
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -89,7 +288,10 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoArray w8 256) asciiSpace (go.ArrayType 256 go.uint8) with H
-  wp_apply «unsafe».wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hunsafe⟩
+  wp_apply internal.stringslite.wp_initialize' _ Hinit.2.2.2.2.2.1 $$ Hown
+    as ⟨Hown, #Hstringslite⟩
+  wp_apply «unsafe».wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hunsafe⟩
+  wp_apply unicode.utf8.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hutf8⟩
   wp_apply internal.bytealg.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hbytealg⟩
   wp_apply internal.abi.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Habi⟩
   iframe Hown
@@ -605,341 +807,243 @@ theorem wp_Join (elems : GoSlice) (xs : List GoString) (dq : DFrac) (sep : GoStr
     rw [Hsub]
     iframe
 
-/-- `strings.HasPrefix(s, prefix)`: whether `s` begins with `prefix`. Proved from the model of
-`HasPrefix` (`Perennial/TrustedCode/strings.lean`). -/
+/-! ## `HasPrefix`, `TrimPrefix`, `Compare`, `Index`, `IndexByte` -/
+
+/-- `strings.HasPrefix(s, prefix)`: whether `s` begins with `prefix`. -/
 theorem wp_HasPrefix (s pfx : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (App (Val (@! HasPrefix)) (Val #s)) (Val #pfx))
     {{ RET #(decide (pfx <+: s)); True }} := by
   wp_start
   wp_auto
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hs
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hp
-  wp_if_destruct
-  · rw [decide_eq_false (fun h => by have := h.length_le; word)]
-    iapply HΦ; itrivial
-  ihave IH : iprop(∃ n : w64,
-      "i" ∷ i_ptr ↦ n ∗
-      "%Hn" ∷ ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ (pfx.length : Int)⌝ ∗
-      "%Heq" ∷ ⌜pfx.take (sint.nat n) = s.take (sint.nat n)⌝) $$ [i]
-  · iexists _
-    iframe
-    ipureintro
-    rw [show zero_val w64 = W64 0 from rfl]
-    exact ⟨⟨by word, by word⟩, by simp only [show sint.nat (W64 0) = 0 from rfl, List.take_zero]⟩
-  -- the Go variable `prefix` is a keyword in cases patterns
-  irename «prefix» => Hpfx
-  wp_for IH
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
-  wp_if_destruct
-  · have Hif' := of_decide_eq_true (go.intoVal_inj Hif)
-    have Hlt : sint.nat n < pfx.length := by word
-    have Hlt' : sint.nat n < s.length := by word
-    rw [List.getElem?_eq_getElem Hlt']
-    wp_auto
-    rw [List.getElem?_eq_getElem Hlt]
-    wp_auto
-    wp_if_destruct
-    · wp_for_post
-      iframe
-      iexists _
-      iframe
-      ipureintro
-      refine ⟨⟨by word, by word⟩, ?_⟩
-      rw [show sint.nat (n + W64 1) = sint.nat n + 1 by word, List.take_add_one,
-        List.take_add_one, Heq, List.getElem?_eq_getElem Hlt', List.getElem?_eq_getElem Hlt, Hif]
-    · wp_for_post
-      rw [decide_eq_false]
-      · iapply HΦ; itrivial
-      intro h
-      apply Hif
-      obtain ⟨t, rfl⟩ := h
-      simp [List.getElem_append_left Hlt]
-  · have Hnot : ¬ sint.Z n < sint.Z (W64 pfx.length) := fun h => Hif (by rw [decide_eq_true h])
-    simp only [decide_eq_false Hnot, Bool.false_eq_true, ↓reduceIte]
-    wp_auto
-    rw [decide_eq_true]
-    · iapply HΦ; itrivial
-    rw [show sint.nat n = pfx.length by word, List.take_length] at Heq
-    rw [Heq]
-    exact List.take_prefix _ _
+  wp_apply internal.stringslite.wp_HasPrefix
+  iapply HΦ; itrivial
 
-/-- What `strings.Compare(a, b)` returns: `-1`, `0` or `+1` as `a` is lexicographically less
-than, equal to or greater than `b` (Go's `<` on strings, `GoStringLt`), as `bytes.compareResult`. -/
-def compareResult (a b : GoString) : w64 :=
-  if go.GoStringLt a b then W64 (-1) else if a = b then W64 0 else W64 1
-
-/-- `strings.Compare(a, b)`: `compareResult a b`. Proved from the model of `Compare`
-(`Perennial/TrustedCode/strings.lean`). -/
-theorem wp_Compare (a b : GoString) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
-      (App (App (Val (@! Compare)) (Val #a)) (Val #b))
-    {{ RET #(compareResult a b); True }} := by
-  wp_start
-  unfold compareResult
-  by_cases hlt : go.GoStringLt a b
-  · simp only [hlt, decide_true, ↓reduceIte]
-    wp_auto
-    iapply HΦ; itrivial
-  · simp only [hlt, decide_false, ↓reduceIte]
-    wp_auto
-    by_cases heq : a = b
-    · simp only [heq, decide_true, ↓reduceIte]
-      wp_auto
-      iapply HΦ; itrivial
-    · simp only [heq, decide_false, ↓reduceIte]
-      wp_auto
-      iapply HΦ; itrivial
-
-/-- What `strings.TrimPrefix(s, pfx)` returns: `s` without the prefix `pfx` if it has it,
-else `s`. -/
-def trimPrefix (s pfx : GoString) : GoString :=
-  if pfx <+: s then s.drop pfx.length else s
-
-/-- `strings.TrimPrefix(s, pfx)`: `trimPrefix s pfx`. Proved from the model of `TrimPrefix`
-(`Perennial/TrustedCode/strings.lean`). -/
+/-- `strings.TrimPrefix(s, prefix)`: `s` without the prefix `prefix` if it has it, else `s`. -/
 theorem wp_TrimPrefix (s pfx : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (App (Val (@! TrimPrefix)) (Val #s)) (Val #pfx))
-    {{ RET #(trimPrefix s pfx); True }} := by
-  wp_start as #Hinit
+    {{ RET #(internal.stringslite.trimPrefix s pfx); True }} := by
+  wp_start
   wp_auto
-  -- the model calls `HasPrefix` by its name (the trusted code is below `Code.strings`)
-  rw [show (go!"strings.HasPrefix" : GoString) = HasPrefix from rfl]
-  wp_apply wp_HasPrefix
-  unfold trimPrefix
-  by_cases h : pfx <+: s
-  · simp only [h, decide_true, ↓reduceIte]
+  wp_apply internal.stringslite.wp_TrimPrefix
+  iapply HΦ; itrivial
+
+/-- `strings.Compare(a, b)`: `-1`, `0` or `+1` as `a` is lexicographically less than, equal to
+or greater than `b`. -/
+theorem wp_Compare (a b : GoString) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! Compare)) (Val #a)) (Val #b))
+    {{ RET #(internal.bytealg.compareResult a b); True }} := by
+  wp_start
+  wp_auto
+  wp_apply internal.bytealg.wp_CompareString
+  iapply HΦ; itrivial
+
+/-- `strings.Index(s, substr)`: the index of the first occurrence of `substr` in `s`, or `-1`. -/
+theorem wp_Index (s sub : GoString) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! Index')) (Val #s)) (Val #sub))
+    {{ RET #(internal.bytealg.indexResult s sub); True }} := by
+  wp_start
+  wp_auto
+  wp_apply internal.stringslite.wp_Index
+  iapply HΦ; itrivial
+
+/-- `strings.IndexByte(s, c)`: the index of the first `c` in `s`, or `-1`. -/
+theorem wp_IndexByte (s : GoString) (c : w8) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! IndexByte)) (Val #s)) (Val #c))
+    {{ RET #(internal.bytealg.indexResult s [c]); True }} := by
+  wp_start
+  wp_auto
+  wp_apply internal.stringslite.wp_IndexByte
+  iapply HΦ; itrivial
+
+
+/-- `strings.Count(s, sep)`, for a non-empty `sep`: the number of non-overlapping occurrences of
+`sep` in `s`. (For an empty `sep` Go counts the UTF-8 sequences of `s`, plus one, with
+`unicode/utf8.RuneCountInString`, which goose does not translate.) -/
+theorem wp_Count (s sep : GoString) (Hsep : sep ≠ []) (Hs : s.length < 2 ^ 63) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! Count)) (Val #s)) (Val #sep))
+    {{ RET #(W64 (countOcc s sep)); True }} := by
+  wp_start
+  wp_auto
+  have Hpos := List.length_pos_iff.2 Hsep
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hsepl
+  rw [decide_eq_false (show ¬ W64 sep.length = W64 0 by word)]
+  wp_auto
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+  wp_if_destruct
+  · -- one byte: `bytealg.CountString(s, sep[0])`
+    obtain ⟨c, rfl⟩ : ∃ c, sep = [c] := List.length_eq_one_iff.1 (by word)
+    simp only [show (0 : Int) ≤ sint.Z (W64 0) by decide, ↓reduceIte, List.getElem?_cons_zero]
     wp_auto
-    wp_apply wp_string_to_bytes as %sl ⟨Hsl, Hcap⟩
-    ihave %Hlen := ownSlice_len $$ Hsl
-    ihave %Hwf := ownSlice_wf $$ Hsl
-    have Hp : pfx.length ≤ s.length := h.length_le
-    wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hp'
-    have Hk : 0 ≤ sint.Z (W64 pfx.length) ∧ sint.Z (W64 pfx.length) ≤ sint.Z sl.len := by word
-    rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
-    icases (ownSlice_split_all (W64 pfx.length) sl _ s Hk).1 $$ Hsl with ⟨-, Hsl⟩
-    rw [show sint.nat (W64 pfx.length) = pfx.length by word]
-    wp_apply wp_bytes_to_string $$ Hsl as -
+    wp_apply internal.bytealg.wp_CountString
+    rw [countOcc_singleton]
     iapply HΦ; itrivial
-  · simp only [h, decide_false, ↓reduceIte]
+  ihave IH : iprop(∃ (cur : GoString) (k : Nat),
+      "s" ∷ s_ptr ↦ cur ∗
+      "n" ∷ n_ptr ↦ W64 k ∗
+      "%Hk" ∷ ⌜countOcc s sep = k + countOcc cur sep ∧ cur.length ≤ s.length⌝) $$ [s n]
+  · iexists s, 0
+    iframe
+    ipureintro
+    omega
+  wp_for IH
+  wp_apply wp_Index
+  rcases internal.bytealg.indexResult_cases cur sep with ⟨j, hj, hres, hjle⟩ | ⟨hj, hres⟩
+  · -- an occurrence at `j`: count it and go on after it
+    have Hend := firstOcc_end_le cur sep j hj
+    rw [hres, decide_eq_false (show ¬ W64 j = W64 (-1) by word)]
     wp_auto
+    wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+    wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hcur
+    rw [ite_eq_left ⟨by word, by word, by word⟩,
+      show sint.nat (W64 j + W64 sep.length) = j + sep.length by word,
+      List.take_of_length_le (by simp; word)]
+    wp_auto
+    wp_for_post
+    iframe
+    iexists _, k + 1
+    rw [show W64 k + W64 1 = W64 (k + 1 : Nat) by word]
+    iframe
+    ipureintro
+    rw [countOcc_some cur sep Hsep j hj] at Hk
+    exact ⟨by omega, by simp; omega⟩
+  · -- no more occurrences: `n` is the count
+    rw [hres]
+    wp_auto
+    wp_for_post
+    rw [Hk.1, countOcc_none cur sep Hsep hj, Nat.add_zero]
     iapply HΦ; itrivial
 
-/-- The fields that Go's `strings.Split` makes of the rest `r` of a string when the current field
-is `field`: at an occurrence of `sep` the field ends and the next one starts after the
-occurrence; any other byte goes to the current field. For an empty `sep` it keeps all of `r` in
-the field (Go splits into UTF-8 sequences instead; `wp_Split` requires `sep` non-empty). -/
-def splitAux (sep : GoString) : GoString → GoString → List GoString
-  | [], field => [field]
-  | c :: r, field =>
-    if sep ≠ [] ∧ sep <+: c :: r then field :: splitAux sep ((c :: r).drop sep.length) []
-    else splitAux sep r (field ++ [c])
-termination_by r => r.length
-decreasing_by
-  · obtain ⟨hne, -⟩ := ‹sep ≠ [] ∧ sep <+: c :: r›
-    have : 0 < sep.length := List.length_pos_iff.mpr hne
-    simp only [List.length_drop, List.length_cons]; omega
-  · simp
-
-/-- What `strings.Split(s, sep)` returns, for a non-empty `sep`: the substrings of `s` between
-the occurrences of `sep`, found left to right without overlap. `split "" sep = [""]`, and a
-trailing `sep` gives a trailing empty field. -/
-def split (s sep : GoString) : List GoString := splitAux sep s []
-
-/-! Tests of `split`. -/
-
-example : split go!"a/b" go!"/" = [go!"a", go!"b"] := by simp [split, splitAux]
-example : split go!"" go!"/" = [go!""] := by simp [split, splitAux]
-example : split go!"a/" go!"/" = [go!"a", go!""] := by simp [split, splitAux]
-example : split go!"x//ab///" go!"//" = [go!"x", go!"ab", go!"/"] := by simp [split, splitAux]
-
-theorem splitAux_ne_nil (sep r field : GoString) : splitAux sep r field ≠ [] := by
-  fun_induction splitAux sep r field <;> simp_all
-
-/-- `strings.Split` returns at least one field. -/
-theorem split_ne_nil (s sep : GoString) : split s sep ≠ [] := splitAux_ne_nil _ _ _
-
-theorem intercalate_splitAux (sep r field : GoString) :
-    sep.intercalate (splitAux sep r field) = field ++ r := by
-  fun_induction splitAux sep r field with
-  | case1 field => simp
-  | case2 c r field h ih =>
-    obtain ⟨t, ht⟩ := h.2
-    rw [List.intercalate_cons_of_ne_nil (splitAux_ne_nil _ _ _), ih, ← ht]
+/-- `strings.genSplit(s, sep, 0, -1)` (`Split`'s case of `genSplit`, which keeps no part of the
+separator and splits at every occurrence), for a non-empty `sep`: a new slice of the fields
+`split s sep`. -/
+theorem wp_genSplit (s sep : GoString) (Hsep : sep ≠ []) (Hs : s.length < 2 ^ 63 - 1) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (App (App (Val (@! genSplit)) (Val #s)) (Val #sep)) (Val #(W64 0)))
+        (Val #(W64 (-1))))
+    {{ (sl : GoSlice), RET #sl;
+        sl ↦* split s sep ∗ ownSliceCap GoString sl (DFrac.own 1) }} := by
+  wp_start
+  wp_auto
+  rw [decide_eq_false Hsep]
+  wp_auto
+  have Hc := countOcc_le s sep Hsep
+  wp_apply wp_Count s sep Hsep (by omega)
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+  rw [decide_eq_false (show ¬ sint.Z (W64 s.length + W64 1) <
+    sint.Z (W64 (countOcc s sep) + W64 1) by word)]
+  wp_auto
+  wp_apply wp_slice_make2 (V := GoString) (W64 (countOcc s sep) + W64 1) as %a ⟨Ha, Hacap⟩
+  · ipureintro; word
+  rw [show sint.nat (W64 (countOcc s sep) + W64 1) = countOcc s sep + 1 by word,
+    show (zero_val GoString) = ([] : GoString) from rfl]
+  ihave %Halen := ownSlice_len $$ Ha
+  simp only [List.length_replicate] at Halen
+  ihave IH : iprop(∃ (i : w64) (cur : GoString) (fields : List GoString),
+      "i" ∷ i_ptr ↦ i ∗
+      "s" ∷ s_ptr ↦ cur ∗
+      "Ha" ∷ a ↦* (fields ++ List.replicate (countOcc s sep + 1 - fields.length) ([] : GoString)) ∗
+      "%Hinv" ∷ ⌜0 ≤ sint.Z i ∧ sint.nat i = fields.length ∧ fields.length ≤ countOcc s sep ∧
+        split s sep = fields ++ split cur sep ∧
+        countOcc cur sep = countOcc s sep - fields.length ∧ cur.length ≤ s.length⌝) $$ [i s Ha]
+  · iexists (W64 0), s, []
+    iframe
+    ipureintro
+    exact ⟨by decide, rfl, by simp, by simp, by simp, Nat.le_refl _⟩
+  wp_for IH
+  obtain ⟨Hi0, Hi, Hfl, Hsplit, Hcnt, Hcur⟩ := Hinv
+  wp_if_destruct
+  · -- a field before the next occurrence of `sep`
+    wp_apply wp_Index
+    rcases internal.bytealg.indexResult_cases cur sep with ⟨j, hj, hres, hjle⟩ | ⟨hj, hres⟩
+    · have Hend := firstOcc_end_le cur sep j hj
+      rw [hres, decide_eq_false (show ¬ sint.Z (W64 j) < sint.Z (W64 0) by word)]
+      wp_auto
+      rw [ite_eq_left ⟨by word, by word, by word⟩,
+        show sint.nat (W64 j + W64 0) - 0 = j by word, List.drop_zero]
+      wp_auto
+      ihave %Halen' := ownSlice_len $$ Ha
+      simp only [List.length_append, List.length_replicate] at Halen'
+      rw [ite_eq_left ⟨by word, by word⟩]
+      wp_apply wp_store_slice_index (V := GoString) a (sint.Z i) _ (cur.take j) $$ [Ha] as Ha
+      · iframe; ipureintro; simp only [List.length_append, List.length_replicate]; word
+      wp_auto
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hcurl
+      rw [ite_eq_left ⟨by word, by word, by word⟩,
+        show sint.nat (W64 j + W64 sep.length) = j + sep.length by word,
+        show (cur.drop (j + sep.length)).take (sint.nat (W64 cur.length) - (j + sep.length)) =
+          cur.drop (j + sep.length) from List.take_of_length_le (by rw [List.length_drop]; word)]
+      wp_auto
+      wp_for_post
+      iframe
+      iexists _, _, fields ++ [cur.take j]
+      have Hset :
+          (fields ++ List.replicate (countOcc s sep + 1 - fields.length) ([] : GoString)).set
+          (sint.Z i).toNat (cur.take j) =
+          (fields ++ [cur.take j]) ++
+            List.replicate (countOcc s sep + 1 - (fields ++ [cur.take j]).length) [] := by
+        rw [show (sint.Z i).toNat = fields.length by word,
+          List.set_append_right _ _ (Nat.le_refl _), Nat.sub_self]
+        obtain ⟨m', hm'⟩ : ∃ m', countOcc s sep + 1 - fields.length = m' + 1 :=
+          ⟨countOcc s sep - fields.length, by omega⟩
+        rw [hm', List.replicate_succ, List.set_cons_zero, List.length_append,
+          List.length_singleton, show countOcc s sep + 1 - (fields.length + 1) = m' by omega]
+        simp
+      rw [Hset]
+      iframe
+      ipureintro
+      rw [countOcc_some cur sep Hsep j hj] at Hcnt
+      refine ⟨by word, by simp; word, by simp; omega, ?_, by simp; omega, by simp; omega⟩
+      rw [Hsplit, split_some cur sep Hsep j hj]
+      simp
+    · rw [countOcc_none cur sep Hsep hj] at Hcnt
+      have := Hif
+      exfalso; word
+  · -- the last field: `a[i] = s`, return `a[:i+1]`
+    have Hic : fields.length = countOcc s sep := by word
+    rw [Hic, Nat.sub_self] at Hcnt
+    have Hnone : firstOcc cur sep = none := by
+      rcases h : firstOcc cur sep with _ | k
+      · rfl
+      · rw [countOcc_some cur sep Hsep k h] at Hcnt; omega
+    ihave %Halen' := ownSlice_len $$ Ha
+    ihave %Hawf := ownSlice_wf $$ Ha
+    simp only [List.length_append, List.length_replicate] at Halen'
+    rw [ite_eq_left ⟨Hi0, by word⟩]
+    wp_apply wp_store_slice_index (V := GoString) a (sint.Z i) _ cur $$ [Ha] as Ha
+    · iframe; ipureintro; simp only [List.length_append, List.length_replicate]; word
+    wp_auto
+    rw [ite_eq_left ⟨by decide, by word, by word⟩,
+      show slice.slice a GoString (W64 0) (i + W64 1) = a by
+        rw [show i + W64 1 = a.len by word]; exact (slice_slice_trivial a).symm]
+    wp_auto
+    iapply HΦ
+    iframe
+    rw [Hsplit, split_none cur sep Hsep Hnone, Hic, Nat.add_sub_cancel_left,
+      show (sint.Z i).toNat = fields.length by word,
+      List.replicate_one, List.set_append_right _ _ (Nat.le_refl _), Nat.sub_self]
     simp
-  | case3 c r field h ih => rw [ih]; simp
+    iexact Ha
 
-/-- The fields of `split s sep` joined by `sep` (as `strings.Join` joins them) give `s` back. -/
-theorem intercalate_split (s sep : GoString) : sep.intercalate (split s sep) = s :=
-  intercalate_splitAux sep s []
-
-theorem splitAux_no_infix (sep r field : GoString) (hsep : sep ≠ [])
-    (H : ∀ k < field.length, ¬ sep <+: field.drop k ++ r) :
-    ∀ f ∈ splitAux sep r field, ¬ sep <:+: f := by
-  fun_induction splitAux sep r field with
-  | case1 field =>
-    intro f hf ⟨u, v, huv⟩
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
-    subst hf
-    have hlt : u.length < f.length := by
-      rw [← huv]; have := List.length_pos_iff.mpr hsep; simp; omega
-    apply H u.length hlt
-    rw [← huv]; simp
-  | case2 c r field h ih =>
-    intro f hf
-    simp only [List.mem_cons] at hf
-    rcases hf with rfl | hf
-    · rintro ⟨u, v, huv⟩
-      have hlt : u.length < f.length := by
-        rw [← huv]; have := List.length_pos_iff.mpr hsep; simp; omega
-      apply H u.length hlt
-      rw [← huv]; simp
-    · exact ih (by simp) f hf
-  | case3 c r field h ih =>
-    apply ih
-    intro k hk
-    simp only [List.length_append, List.length_cons, List.length_nil] at hk
-    by_cases hk' : k < field.length
-    · rw [List.drop_append_of_le_length (by omega)]
-      simpa using H k hk'
-    · rw [show k = field.length by omega, List.drop_append_of_le_length (Nat.le_refl _)]
-      simp only [List.drop_length, List.nil_append, List.singleton_append]
-      exact fun hp => h ⟨hsep, hp⟩
-
-/-- No field of `split s sep` contains `sep`, for a non-empty `sep`. -/
-theorem split_no_infix (s sep : GoString) (hsep : sep ≠ []) :
-    ∀ f ∈ split s sep, ¬ sep <:+: f :=
-  splitAux_no_infix sep s [] hsep (by simp)
-
-/-- `strings.Split(s, sep)`, for a non-empty `sep`: a new slice of the fields `split s sep`.
-Proved from the model of `Split` (`Perennial/TrustedCode/strings.lean`), which does not model
-Go's split of `s` into UTF-8 sequences for an empty `sep`. -/
-theorem wp_Split (s sep : GoString) (Hsep : sep ≠ []) :
+/-- `strings.Split(s, sep)`, for a non-empty `sep` and `s` shorter than `2^63 - 1` bytes: a new
+slice of the fields `split s sep`. (For an empty `sep` Go splits `s` into its UTF-8 sequences,
+which this spec does not cover.) -/
+theorem wp_Split (s sep : GoString) (Hsep : sep ≠ []) (Hs : s.length < 2 ^ 63 - 1) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
       (App (App (Val (@! Split)) (Val #s)) (Val #sep))
     {{ (sl : GoSlice), RET #sl;
         sl ↦* split s sep ∗ ownSliceCap GoString sl (DFrac.own 1) }} := by
-  wp_start as #Hinit
-  obtain ⟨c0, Hc0⟩ : ∃ c0, sep[0]? = some c0 := by
-    cases sep with
-    | nil => exact absurd rfl Hsep
-    | cons c _ => exact ⟨c, rfl⟩
+  wp_start
   wp_auto
-  rw [Hc0]
-  wp_auto
-  ihave IH : iprop(∃ (a_sl : GoSlice) (fs : List GoString) (field rest : GoString),
-      "a" ∷ a_ptr ↦ a_sl ∗
-      "Ha" ∷ a_sl ↦* fs ∗
-      "Hcap" ∷ ownSliceCap GoString a_sl (DFrac.own 1) ∗
-      "field" ∷ field_ptr ↦ field ∗
-      "rest" ∷ rest_ptr ↦ rest ∗
-      "%Hinv" ∷ ⌜split s sep = fs ++ splitAux sep rest field⌝) $$ [a field rest]
-  · iexists _, [], _, _
-    iframe
-    isplitl []
-    · iapply ownSlice_nil
-    isplitl []
-    · iapply ownSliceCap_nil
-    ipureintro
-    rfl
-  wp_for IH
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hrlen
-  wp_if_destruct
-  · have Hif' := of_decide_eq_true (go.intoVal_inj Hif)
-    obtain ⟨c, r, rfl⟩ : ∃ c r, rest = c :: r := by
-      cases rest with
-      | nil => exfalso; simp at Hif'
-      | cons c r => exact ⟨c, r, rfl⟩
-    -- the model calls `HasPrefix` by its name (the trusted code is below `Code.strings`)
-    rw [show (go!"strings.HasPrefix" : GoString) = HasPrefix from rfl]
-    wp_apply wp_HasPrefix
-    by_cases hp : sep <+: c :: r
-    · -- an occurrence of `sep`: the field ends
-      simp only [hp, decide_true]
-      wp_auto
-      wp_bind (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string))))
-        (Val (LiteralValueV _)))
-      iapply wp_slice_literal (V := GoString) (t := go.string) [field]
-      wp_auto
-      rw [show go.arrayLiteralSize
-        [KeyedElement none (ElementExpression go.string #field)] = 1 from rfl]
-      isplitl []
-      · ipureintro; rfl
-      iintro %sl_ptr ⟨Htmp, -⟩
-      wp_auto
-      wp_apply wp_slice_append (V := GoString) (t := go.string) a_sl fs _ [field] (DFrac.own 1)
-        $$ [Ha Hcap Htmp] as %a' ⟨Ha', Hcap', -⟩
-      · iframe
-      wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
-      ihave %Hlen := ownSlice_len $$ Hsl
-      ihave %Hwf := ownSlice_wf $$ Hsl
-      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
-      have Hp : sep.length ≤ (c :: r).length := hp.length_le
-      have Hk : 0 ≤ sint.Z (W64 sep.length) ∧ sint.Z (W64 sep.length) ≤ sint.Z sl.len := by word
-      rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
-      icases (ownSlice_split_all (W64 sep.length) sl _ _ Hk).1 $$ Hsl with ⟨-, Hsl⟩
-      rw [show sint.nat (W64 sep.length) = sep.length by word]
-      wp_apply wp_bytes_to_string $$ Hsl as -
-      wp_for_post
-      iframe
-      iexists _, _, _, _
-      iframe
-      ipureintro
-      rw [Hinv, splitAux, ite_eq_left ⟨Hsep, hp⟩]
-      simp
-    · -- another byte: it goes to the field
-      simp only [hp, decide_false]
-      wp_auto
-      wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
-        (Val (LiteralValueV _)))
-      iapply wp_slice_literal (V := w8) (t := go.byte) [c]
-      wp_auto
-      rw [show go.arrayLiteralSize
-        [KeyedElement none (ElementExpression go.byte #c)] = 1 from rfl]
-      isplitl []
-      · ipureintro; rfl
-      iintro %c_sl ⟨Hc_sl, -⟩
-      wp_apply wp_bytes_to_string $$ Hc_sl as -
-      wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
-      ihave %Hlen := ownSlice_len $$ Hsl
-      ihave %Hwf := ownSlice_wf $$ Hsl
-      have Hk : 0 ≤ sint.Z (W64 1) ∧ sint.Z (W64 1) ≤ sint.Z sl.len := by
-        simp only [List.length_cons] at Hlen Hrlen; word
-      rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
-      icases (ownSlice_split_all (W64 1) sl _ _ Hk).1 $$ Hsl with ⟨-, Hsl⟩
-      rw [show sint.nat (W64 1) = 1 by word]
-      wp_apply wp_bytes_to_string $$ Hsl as -
-      wp_for_post
-      iframe
-      iexists _, _, _, _
-      iframe
-      ipureintro
-      rw [Hinv, splitAux, ite_eq_right (fun h => hp h.2)]
-      simp
-  · -- the end of `s`: the last field
-    have Hnot : ¬ sint.Z (W64 0) < sint.Z (W64 rest.length) :=
-      fun h => Hif (by rw [decide_eq_true h])
-    simp only [decide_eq_false Hnot, Bool.false_eq_true, ↓reduceIte]
-    have Hrest : rest = [] := List.eq_nil_of_length_eq_zero (by word)
-    subst Hrest
-    wp_auto
-    wp_bind (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string))))
-      (Val (LiteralValueV _)))
-    iapply wp_slice_literal (V := GoString) (t := go.string) [field]
-    wp_auto
-    rw [show go.arrayLiteralSize
-      [KeyedElement none (ElementExpression go.string #field)] = 1 from rfl]
-    isplitl []
-    · ipureintro; rfl
-    iintro %sl_ptr ⟨Htmp, -⟩
-    wp_apply wp_slice_append (V := GoString) (t := go.string) a_sl fs _ [field] (DFrac.own 1)
-      $$ [Ha Hcap Htmp] as %a' ⟨Ha', Hcap', -⟩
-    · iframe
-    rw [Hinv, splitAux]
-    iapply HΦ
-    iframe
-
+  wp_apply wp_genSplit s sep Hsep Hs as %sl ⟨Hsl, Hcap⟩
+  iapply HΦ
+  iframe
 
 /-- FIXME: this is wrong (unsound) for strings with non-ASCII
 runes. Simplest solution might be to add a precondition for the string to be

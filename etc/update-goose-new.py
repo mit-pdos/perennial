@@ -254,6 +254,8 @@ def main():
             "internal/race",
             "internal/abi",
             "internal/bytealg",
+            "internal/stringslite",
+            "unicode/utf8",
             "time",
             "fmt",
             "log",

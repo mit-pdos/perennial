@@ -529,7 +529,11 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 `Perennial/Proof/{sort,slices,math,bytes,strings,errors,cmp,unsafe}.lean` and
 their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
 `pdqSort` family, ...); `Perennial/Proof/math/big.lean` (`math.big.ownInt`,
-`wp_NewInt`, `wp_Int64`).
+`wp_NewInt`, `wp_Int64`); `Perennial/Proof/strings.lean` with
+`Perennial/Proof/internal/{stringslite,bytealg}.lean` (`strings.wp_Split`,
+`wp_Count`, `wp_Index`, `wp_HasPrefix`, `wp_TrimPrefix`, `wp_Compare`, `wp_Join`,
+`Builder.wp_String`; the first occurrence of a substring is
+`internal.bytealg.firstOcc`, Go's `Index` result `indexResult`).
 
 ---
 

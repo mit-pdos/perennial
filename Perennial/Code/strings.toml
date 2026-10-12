@@ -8,11 +8,21 @@ translate = [
   "Builder.grow",
   "Builder.WriteString",
   "Builder.copyCheck",
+  # so are `Split` and what it calls, and `HasPrefix` and `TrimPrefix`
+  "HasPrefix",
+  "TrimPrefix",
+  "Index",
+  "IndexByte",
+  "Count",
+  "Split",
+  "genSplit",
+  "explode",
+  "Compare",
 ]
-imports = ["!*", "internal/abi", "internal/bytealg", "unsafe"]
+imports = ["!*", "internal/abi", "internal/bytealg", "internal/stringslite", "unicode/utf8", "unsafe"]
 # `Builder.String` is `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))`, which goose does
 # not translate: a model in TrustedCode/strings.lean.
-trusted = ["Builder.String", "HasPrefix", "Compare", "TrimPrefix", "Split"]
+trusted = ["Builder.String"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
