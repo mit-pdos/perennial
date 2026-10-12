@@ -1198,9 +1198,31 @@ attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.get_v
   Uintptr.TypeAssumptions.set_v
 
+structure Value [FfiSyntax] where
+  mk ::
+  v' : GoInterface
+
+instance Value.zero_val [FfiSyntax] : ZeroVal Value :=
+  ⟨Value.mk zeroValDef⟩
+
+@[reducible] def Value.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"v" go.any)]
+
+@[irreducible] def Value.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  Value.fieldsUnsealed
+
+instance equals_unfold_Value [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold Value.fields Value.fieldsUnsealed :=
+  ⟨by unfold Value.fields; rfl⟩
+
+@[reducible] def Value.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Value.fields)
+
 class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
+  get_v : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Value) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value)))
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"CompareAndSwap" Value.CompareAndSwap.impl
   ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Load" Value.Load.impl
   ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Store" Value.Store.impl
@@ -1208,6 +1230,8 @@ class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
+  Value.TypeAssumptions.get_v
+  Value.TypeAssumptions.set_v
   Value.TypeAssumptions.ptr_CompareAndSwap_unfold
   Value.TypeAssumptions.ptr_Load_unfold
   Value.TypeAssumptions.ptr_Store_unfold

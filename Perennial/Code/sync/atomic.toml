@@ -15,6 +15,8 @@ translate = [
   "Pointer*",
 
   "_",
+
+  "Value",
 ]
 
 trusted = [
@@ -47,10 +49,11 @@ trusted = [
   "SwapPointer",
   "CompareAndSwapPointer",
 
-  # `Value`'s methods reinterpret the `any` field as two `unsafe.Pointer`s
-  # (`efaceWords`), which goose cannot model; `Value` is modeled in
-  # TrustedCode/sync/atomic.lean as an atomic cell holding an `any`.
-  "Value",
+  # `Value`'s methods call `runtime_procPin`/`runtime_procUnpin` (external
+  # functions, which goose rejects) and reinterpret the `any` field as two
+  # `unsafe.Pointer` words (`efaceWords`), a memory layout the semantics does
+  # not have (an interface is one value). They are modeled in
+  # TrustedCode/sync/atomic.lean as atomic operations on the field `v`.
   "Value.*",
 ]
 
