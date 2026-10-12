@@ -607,4 +607,107 @@ example (Φ : val → IProp GF) :
 
 end uintptr_tests
 
+/-! Integer operations against Go's semantics: one pinned case per kind of
+operation where signed and unsigned (or sign and zero extension) differ. -/
+section int_op_tests
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+/-- Unsigned division and remainder: `uint32(0x80000000) / 2 == 0x40000000`,
+`uint32(0xFFFFFFFF) % 10 == 5`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W32 0x40000000) ⊢ WP gl(#(W32 0x80000000) /⟨go.uint32⟩ #(W32 2)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W32 0x80000000 / W32 2 : w32) = W32 0x40000000 by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W32 5) ⊢ WP gl(#(W32 0xFFFFFFFF) %⟨go.uint32⟩ #(W32 10)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W32 0xFFFFFFFF % W32 10 : w32) = W32 5 by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W16 0x4000) ⊢ WP gl(#(W16 0x8000) /⟨go.uint16⟩ #(W16 2)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W16 0x8000 / W16 2 : w16) = W16 0x4000 by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W64 0x4000000000000000) ⊢
+      WP gl(#(W64 0x8000000000000000) /⟨go.uint64⟩ #(W64 2)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W64 0x8000000000000000 / W64 2 : w64) = W64 0x4000000000000000 by decide]
+  iexact H
+
+/-- Signed division truncates towards zero and the remainder has the sign of the
+dividend: `int32(-7) / 2 == -3`, `int32(-7) % 2 == -1`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W32 (-3)) ⊢ WP gl(#(W32 (-7)) /⟨go.int32⟩ #(W32 2)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show BitVec.sdiv (W32 (-7)) (W32 2) = W32 (-3) by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W32 (-1)) ⊢ WP gl(#(W32 (-7)) %⟨go.int32⟩ #(W32 2)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show BitVec.srem (W32 (-7)) (W32 2) = W32 (-1) by decide]
+  iexact H
+
+/-- The most negative value divided by `-1` overflows back to itself, with remainder 0. -/
+example (Φ : val → IProp GF) :
+    Φ #(W64 (-2^63)) ⊢ WP gl(#(W64 (-2^63)) /⟨go.int⟩ #(W64 (-1))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show BitVec.sdiv (W64 (-2^63)) (W64 (-1)) = W64 (-2^63) by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W8 0) ⊢ WP gl(#(W8 (-128)) %⟨go.int8⟩ #(W8 (-1))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show BitVec.srem (W8 (-128)) (W8 (-1)) = W8 0 by decide]
+  iexact H
+
+/-- Comparisons: `uint32(0x80000000) > 1`, but `int32(-0x80000000) < 1`. -/
+example (Φ : val → IProp GF) :
+    Φ #false ⊢ WP gl(#(W32 0x80000000) <⟨go.uint32⟩ #(W32 1)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #true ⊢ WP gl(#(W32 0x80000000) <⟨go.int32⟩ #(W32 1)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+/-- Conversions widen a signed operand by sign extension and an unsigned one by
+zero extension: `uint64(int8(-1)) == 2^64-1`, `int64(uint8(0xFF)) == 255`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W64 (2^64 - 1)) ⊢ WP (App (Val (GoInstruction (Convert go.int8 go.uint64)))
+      (Val #(W8 0xFF))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show W64 (sint.Z (W8 0xFF)) = W64 (2^64 - 1) by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W64 255) ⊢ WP (App (Val (GoInstruction (Convert go.uint8 go.int64)))
+      (Val #(W8 0xFF))) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show W64 (uint.Z (W8 0xFF)) = W64 255 by decide]
+  iexact H
+
+end int_op_tests
+
 end Perennial

@@ -616,9 +616,8 @@ class Uint32Semantics [GoSemanticsFunctions] : Prop where
   plus_uint32 (v1 v2 : w32) : ⟦GoOp GoPlus go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint32 (v1 v2 : w32) : ⟦GoOp GoSub go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint32 (v1 v2 : w32) : ⟦GoOp GoMul go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint32 (v1 v2 : w32) : ⟦GoOp GoDiv go.uint32, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
-  remainder_uint32 (v1 v2 : w32) : ⟦GoOp GoRemainder go.uint32, (#v1, #v2)⟧
-    ⤳[under] #(BitVec.srem v1 v2)
+  div_uint32 (v1 v2 : w32) : ⟦GoOp GoDiv go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
+  remainder_uint32 (v1 v2 : w32) : ⟦GoOp GoRemainder go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
   and_uint32 (v1 v2 : w32) : ⟦GoOp GoAnd go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint32 (v1 v2 : w32) : ⟦GoOp GoBitClear go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint32 (v1 v2 : w32) : ⟦GoOp GoOr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
