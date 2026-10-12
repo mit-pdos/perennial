@@ -173,7 +173,10 @@ static data, like the generated `Assumptions` classes.
   conversions whose target is an interface (`NotInterface`). Not modelled
   (stuck): assertions and conversions to a non-empty interface from an
   interface (`runtime.getitab`, to be translated), and `==` on two non-nil
-  interfaces with the same dynamic type (it needs the type's equality).
+  interfaces with the same dynamic type (it needs the type's equality). They
+  are stuck by having no rule (the `NoGetitab` premise; `==` is a rule only for
+  different or nil type words), not by a `Panic` that could be read as Go's
+  behaviour.
 * **The abstraction.** Program proofs see an interface value as an opaque
   `i : GoIface` (or `GoEface`) with the persistent fact `isIface i I T x`
   ("an interface of type `I` holding `x : T`"), and the specs

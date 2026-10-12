@@ -56,8 +56,7 @@ variable {s : Stuckness} {E : CoPset}
 
 open ProofMode go
 
-attribute [local instance] InterfaceSemanticsB.go_eq_interface
-  InterfaceSemanticsB.convert_to_interface InterfaceSemanticsB.type_assert_step
+attribute [local instance] InterfaceSemanticsB.convert_to_interface InterfaceSemanticsB.type_assert_step
   InterfaceSemanticsB.method_interface
 
 /-! ## Byte lemmas about itabs -/
@@ -221,6 +220,7 @@ theorem wp_convert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.Go
     (x : V) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert T I))) (Val #x)) @ s; E
     {{ (i : GoIface), RET #i; isIface i I T x }} := by
+  haveI : NoGetitab Tunder I := ⟨fun h => by rw [hT] at h; cases h⟩
   iintro %Φ _ HΦ
   iapply static_isItab T I rfl
   iintro #Htab
@@ -243,6 +243,7 @@ theorem wp_convert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.Go
     (hN : isUntypedNil Tunder = false) (x : V) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert T I))) (Val #x)) @ s; E
     {{ (i : GoEface), RET #i; isEface i T x }} := by
+  haveI : NoGetitab Tunder I := ⟨fun h => by rw [hT] at h; cases h⟩
   iintro %Φ _ HΦ
   wp_pures
   have hm : (itabMethods I).isEmpty = true := by rw [IfaceMethods.itab_methods]; rfl
@@ -296,6 +297,7 @@ theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
     (i : GoIface) (I : go.GoType) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ isIface (GF := GF) i I T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by
+  haveI : NoGetitab Tunder T := ⟨fun h => by rw [hT] at h; cases h⟩
   unfold isIface isItab
   iintro %Φ ⟨⟨%inter, %h, #Hb, %hp⟩, #Hd⟩ HΦ
   obtain ⟨hne, -⟩ := hp
@@ -327,6 +329,7 @@ theorem wp_type_assert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
     (i : GoEface) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ isEface (GF := GF) i T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by
+  haveI : NoGetitab Tunder T := ⟨fun h => by rw [hT] at h; cases h⟩
   unfold isEface
   iintro %Φ ⟨%ht, #Hd⟩ HΦ
   obtain ⟨tp, d⟩ := i
@@ -347,9 +350,12 @@ theorem wp_eq_eface_nil :
         (Val (PairV #(zero_val GoEface) #(zero_val GoEface)))) @ s; E
     {{ RET #true; True }} := by
   iintro %Φ _ HΦ
-  rw [show (zero_val GoEface) = ⟨0, 0⟩ from rfl, ← eface_val (GF := GF)]
-  wp_pures
-  unfold ifaceEqV
+  rw [show (zero_val GoEface) = ⟨W64 0, W64 0⟩ from rfl, ← eface_val (GF := GF)]
+  haveI := InterfaceSemanticsB.go_eq_interface [] false (W64 0) (W64 0) (W64 0) (W64 0) (Or.inr rfl)
+  iapply wp_go_step_receipt' (GoOp GoEquals (go.InterfaceType [])) _ _ Φ rfl
+  inext
+  iintro - -
+  rw [decide_eq_true rfl]
   wp_pures
   iapply HΦ; itrivial
 

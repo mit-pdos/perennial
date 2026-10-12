@@ -83,6 +83,13 @@ class TypeBytes [StaticSymbols] (t : go.GoType) (V : Type) [inst : ByteRepr V] :
 class IfaceMethods [StaticSymbols] (t : go.GoType) (ms : outParam (List GoString)) : Prop where
   itab_methods : itabMethods t = ms
 
+/-- A conversion to `to`, or an assertion to `to`, of a value whose type has the
+underlying type `funder` needs no `runtime.getitab`: the source is not an
+interface, or `to`'s method set is empty. The steps that would need `getitab`
+are left out (stuck), not modelled yet. -/
+class NoGetitab [StaticSymbols] (funder to : go.GoType) : Prop where
+  no_getitab : isInterfaceType funder = true → (itabMethods to).isEmpty = true
+
 section facts
 variable [FfiSyntax] [GoGlobalContext]
 
@@ -165,14 +172,6 @@ def typeAssertEface : val :=
   LamV "i" (If (eqU (Fst (Snd (Var "i"))) (Val #(W64 0))) (Panic "type assertion failed")
     (App (Val convToEface) (Var "i")))
 
-/-- `==` on interface values: unequal dynamic types (type words) give `false`,
-two nils `true`; equal non-nil dynamic types are not modelled (stuck). -/
-def ifaceEqV : val :=
-  LamV "p" (If (eqU (Fst (Snd (Fst (Var "p")))) (Fst (Snd (Snd (Var "p")))))
-    (If (eqU (Fst (Snd (Fst (Var "p")))) (Val #(W64 0))) (Val #true)
-      (Panic "interface comparison of equal dynamic types is not modelled"))
-    (Val #false))
-
 /-- The code of method `m` of `t` called through an itab: load the receiver from
 the data word and call the method. -/
 def ifnWrapper (t : go.GoType) (m : GoString) : val :=
@@ -240,22 +239,28 @@ class InterfaceSemanticsB : Prop where
   iface_inj : IntoValInj GoIface
   is_comparable_interface (elems : List go.InterfaceElem) :
     ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #()
-  go_eq_interface (elems : List go.InterfaceElem) (v : val) :
-    ⟦GoOp GoEquals (go.InterfaceType elems), v⟧ ⤳[under] (App (Val ifaceEqV) (Val v))
-  /-- `I(v)`. From the same type it is the identity (as `convert_same` says); from
-an interface to an empty interface it keeps the dynamic type; from an interface
-to another non-empty interface it needs the itab for the target type, from
-`runtime.getitab` (not modelled), even when the underlying types are the same
-(Go recomputes the itab: an interface of type `I` has an itab for `I`); `nil`
-is `(0, 0)`; a concrete value is boxed, with its type descriptor or its static
-itab. -/
+  /-- `==` on interface values compares the type words (the itab or type
+  descriptor) first, as the compiler does: different ones give `false`, two
+  nils `true`. Equal non-nil type words need the dynamic type's equality
+  (`runtime.efaceeq`, which panics on an uncomparable type): not modelled, no
+  step. -/
+  go_eq_interface (elems : List go.InterfaceElem) (tag : Bool) (a d b e : w64)
+    (h : a ≠ b ∨ a = 0) :
+    ⟦GoOp GoEquals (go.InterfaceType elems),
+      PairV (PairV #tag (PairV #a #d)) (PairV #tag (PairV #b #e))⟧ ⤳[under] #(decide (a = b))
+  /-- `I(v)`. From an interface to an empty interface it keeps the dynamic type
+(the identity from the same type, as `convert_same` says); `nil` is `(0, 0)`; a
+concrete value is boxed, with its type descriptor or its static itab. From an
+interface to a non-empty interface (`NoGetitab` fails) there is no step: it
+needs the itab for the target type from `runtime.getitab`, not modelled, even
+between two interface types with the same underlying type (Go recomputes the
+itab: an interface of type `I` has an itab for `I`); from the same non-empty
+interface type it is `convert_same`. -/
   convert_to_interface (v : val) {from_ funder to : go.GoType} {elems : List go.InterfaceElem}
-    [from_ ↓u funder] [to ≤u go.InterfaceType elems] :
+    [from_ ↓u funder] [to ≤u go.InterfaceType elems] [NoGetitab funder to] :
     ⟦Convert from_ to, v⟧ ⤳
     (if isInterfaceType funder then
-       (if from_ = to then Val v
-        else if (itabMethods to).isEmpty then App (Val convToEface) (Val v)
-        else Panic "interface conversion through runtime.getitab is not modelled")
+       (if from_ = to then Val v else App (Val convToEface) (Val v))
      else if isUntypedNil funder then
        (if (itabMethods to).isEmpty then Val #(zero_val GoEface) else Val #(zero_val GoIface))
      else if (itabMethods to).isEmpty then
@@ -265,12 +270,11 @@ itab. -/
        App (Val (LamV "d" (Pair (Val #true) (Pair (Val #(itabAddr from_ to)) (Var "d")))))
          (App (Val (boxBytes from_)) (Val v)))
   /-- `x.(T)`: to a concrete type, compare descriptors; to an empty interface,
-  keep the value; to a non-empty interface, `runtime.getitab` (not modelled). -/
-  type_assert_step {t tunder : go.GoType} [t ↓u tunder] (v : val) :
+  keep the value; to a non-empty interface (`NoGetitab` fails) there is no step
+  (`runtime.getitab`, not modelled). -/
+  type_assert_step {t tunder : go.GoType} [t ↓u tunder] [NoGetitab tunder t] (v : val) :
     ⟦TypeAssert t, v⟧ ⤳
-    (if isInterfaceType tunder then
-       (if (itabMethods t).isEmpty then App (Val typeAssertEface) (Val v)
-        else Panic "interface assertion through runtime.getitab is not modelled")
+    (if isInterfaceType tunder then App (Val typeAssertEface) (Val v)
      else App (Val (typeAssertConcrete t)) (Val v))
   /-- `i.m`: the method's code from the itab, applied to the data word -/
   method_interface (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
