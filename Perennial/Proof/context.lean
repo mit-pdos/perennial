@@ -1,25 +1,25 @@
 /-
 Specifications for Go's `context` package.
 
-Proved: `wp_Background`; `wp_WithCancel_Background` (`WithCancel(Background())`) and
+Proved: `wp_Background`; `wp_WithCancel_Background` (`WithCancel(Background())`),
 `wp_WithCancel` for a parent that is itself a `*cancelCtx` made by `WithCancel`
-(`isCancelCtxCtx`); the `*cancelCtx` methods (`wp_cancelCtx_Done`, `wp_cancelCtx_Err`,
-`wp_cancelCtx_Value`, `wp_cancelCtx_cancel`); `propagateCancel` for these two kinds of parents
-(`wp_propagateCancel_background`, `wp_propagateCancel_cancelCtx`); `wp_withCancel`,
-`wp_WithCancel_gen`, `wp_removeChild`; `wp_parentCancelCtx` (any context),
-`wp_parentCancelCtx_background`, `wp_parentCancelCtx_self`; `wp_Cause`; and `wp_WithDeadline` /
-`wp_WithTimeout` from the spec of `WithDeadlineCause`.
+(`isCancelCtxCtx`), and `wp_WithCancel_any` for any parent (`isContext`; the new context's Done
+proposition is then `True`); the `*cancelCtx` methods (`wp_cancelCtx_Done`, `wp_cancelCtx_Err`,
+`wp_cancelCtx_Value`, `wp_cancelCtx_cancel`); `propagateCancel` (`wp_propagateCancel_background`,
+`wp_propagateCancel_cancelCtx`, and `wp_propagateCancel_any` for any `isContext` parent and a
+child whose `cancel` needs nothing of the parent); `wp_withCancel`, `wp_WithCancel_gen`,
+`wp_removeChild`; `wp_parentCancelCtx` (any context), `wp_parentCancelCtx_background`,
+`wp_parentCancelCtx_self`, `wp_parentCancelCtx_timer`; `wp_Cause`; the `*timerCtx` methods
+(`wp_timerCtx_cancel`, `wp_timerCtx_Done`, ...) and `isContext_timerCtx`;
+`wp_WithDeadlineCause`, and from it `wp_WithDeadline` and `wp_WithTimeout`.
 
-Not proved:
-* `wp_WithDeadlineCause` (`sorry`): it calls `time.Time.Before`, `time.AfterFunc` and (in
-  `timerCtx.cancel`) `Timer.Stop`, which are neither translated (`Perennial/Code/time.toml`) nor
-  axiomatized.
-* `WithCancel` of other parents: `propagateCancel`'s remaining branches, for a parent with an
-  `AfterFunc` method (`parent.(afterFuncer)`) and the goroutine for any other parent, need
-  method-set facts (`methodSet` is uninterpreted in the model, so the type assertion to
-  `afterFuncer` cannot be decided) and a spec of the parent's `AfterFunc`. For the parents in
-  scope, the proofs show these branches are not taken: `Background()`'s `Done()` is `nil`, and a
-  `*cancelCtx` parent is found by `parentCancelCtx` (`wp_parentCancelCtx_self`).
+Not proved: `propagateCancel`'s branches for a parent that `parentCancelCtx` does not resolve to a
+`*cancelCtx` (a parent with an `AfterFunc` method, `parent.(afterFuncer)`, and the goroutine for
+any other parent). They need method-set facts (`methodSet` is uninterpreted in the model, so the
+type assertion to `afterFuncer` cannot be decided) and a spec of the parent's `AfterFunc`. The
+proofs show they are not taken: `Background()`'s `Done()` is `nil`, and every `isContext` is
+resolved by `parentCancelCtx` (`"#HParentCC"`, true of the `*cancelCtx` and `*timerCtx` contexts
+made here).
 
 Design (see also the comments at each definition):
 * Lazily determined Done channel. A context's Done channel cannot be fixed when the context
@@ -82,13 +82,25 @@ Design (see also the comments at each definition):
   `wp_WithCancel_gen`) take it as a premise; `wp_WithCancel` gets it from its parent.
 * `isTypedErr e`: `e` is a non-nil error whose dynamic type is in `error`'s type set (so
   `e.(error)`, in `cancelCtx.Err`, succeeds). True of every Go error; tracked since the model has
-  no method-set facts (`Canceled`'s is assumed in `isInit`).
+  no method-set facts (`Canceled`'s and `DeadlineExceeded`'s are assumed in `isInit`).
 * `isContext` includes `"#HValue"`, the spec of `c.Value(&cancelCtxKey)`: the result, if it
   is a `*cancelCtx`, is a valid one (`isCancelCtx`). `Cause`, `parentCancelCtx` (and through
   it `removeChild`) call `Value(&cancelCtxKey)` to find the innermost `*cancelCtx`.
 * `wp_WithDeadlineCause`, `wp_WithDeadline`: the deadline is an existential `some d'` with
   `d' = d ∨ parent_desc.Deadline = some d'`, since when the parent's deadline is earlier,
   `WithDeadlineCause` returns `WithCancel(parent)`.
+* `isContext` also says (`"#HErrDone"`, `"#HDoneFresh"`, `"#HParentCC"`, `"#HClosedchan"`) what a
+  child's `propagateCancel` needs of its parent: once done, `Err()` returns a typed error; the
+  Done channel is not `closedchan` unless the context is done; `parentCancelCtx` finds a
+  `*cancelCtx` (so the branches above are not reached); and `context`'s `isClosedchanInit`.
+* A `*cancelCtx`'s lock invariant has an extra resource `R` (`cancelCtxLockInv`,
+  `isCancelCtxOfR`; `isCancelCtxOf` hides it): the fields of an enclosing struct that the same
+  `mu` protects, a `*timerCtx`'s `timer` (`timerR`: `nil` or a timer from `AfterFunc`,
+  `time.isFuncTimer`). `timerCtx.cancel` stops it with `time.Timer.wp_Stop_func` (an axiom).
+* A `*timerCtx` (the context of `WithDeadlineCause`) has Done proposition `True`: its cancel
+  function, its `AfterFunc` callback and its parent's cancellation all cancel it with nothing
+  to give. `AfterFunc` is modeled as a goroutine that calls the callback
+  (`TrustedCode/time.lean`).
 
 Notes:
 * Texan triples nested inside `isContext` are written out as
@@ -167,13 +179,16 @@ theorem isTypedErr_ne_nil [GoSemanticsFunctions] {e : GoInterface} (h : isTypedE
 * `"Hgoroutines"`: the `goroutines` counter;
 * `"#Hclosedchan"`: the global `closedchan` holds a fixed channel;
 * `"#HCanceled"`: the global `Canceled` holds a fixed error (`errors.New("context
-  canceled")`), whose type implements `error` (`isTypedErr`). Go never writes `closedchan`
-  or `Canceled` after initialization. -/
+  canceled")`), whose type implements `error` (`isTypedErr`);
+* `"#HDeadlineExceeded"`: likewise for `DeadlineExceeded` (`deadlineExceededError{}`).
+Go never writes `closedchan`, `Canceled` or `DeadlineExceeded` after initialization. -/
 abbrev isInit : IProp GF :=
   iprop("Hgoroutines" ∷
     inv nroot (∃ g, sync.atomic.ownInt32 (globalAddr context.goroutines) (DFrac.own 1) g) ∗
   "#Hclosedchan" ∷ (∃ ch : GoChan, globalAddr context.closedchan ↦□ ch) ∗
   "#HCanceled" ∷ (∃ e : GoInterface, globalAddr context.Canceled ↦□ e ∗ ⌜isTypedErr e⌝) ∗
+  "#HDeadlineExceeded" ∷
+    (∃ e : GoInterface, globalAddr context.DeadlineExceeded ↦□ e ∗ ⌜isTypedErr e⌝) ∗
   "_" ∷ True)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.context :=
@@ -280,6 +295,19 @@ instance doneFresh_pers (γ : ContextNames) (P : IProp GF) (ch : GoChan) :
     Persistent (doneFresh γ P ch) := by
   unfold doneFresh; infer_instance
 
+/-- The timeless part of `doneFresh`: the Done channel `ch` is not `closedchan`, or the context
+is done. Persistent. -/
+def doneFreshT (γ : ContextNames) (ch : GoChan) : IProp GF :=
+  iprop((∃ cch : GoChan, globalAddr context.closedchan ↦□ cch ∗ ⌜ch ≠ cch⌝) ∨ ContextClosed γ)
+
+instance doneFreshT_pers (γ : ContextNames) (ch : GoChan) :
+    Persistent (doneFreshT (GF := GF) γ ch) := by
+  unfold doneFreshT; infer_instance
+
+instance doneFreshT_timeless (γ : ContextNames) (ch : GoChan) :
+    Timeless (doneFreshT (GF := GF) γ ch) := by
+  unfold doneFreshT ContextClosed; infer_instance
+
 /-- The invariant of a `*cancelCtx` `c` with names `γ` and Done proposition `P`: the
 `atomic.Value` cells `done` and `err`, which the Go code also reads without `c.mu`.
 * `done` holds `doneAny od`; while `od = none`, half of the done cell `γ.doneGn` (the other
@@ -322,8 +350,10 @@ def childrenInv (m : GoMap) (P : IProp GF) : IProp GF :=
 (`children`, `cause`), and the other halves of the ghost cells of `cancelCtxInv`: `closed` is
 whether `c` is canceled; until then, the children (`childrenInv`) and, once the Done channel
 `ch` is made (by `Done()`), the right to close it (`ownBroadcastChan .. .Pending`). A canceled
-`c` has a Done channel (`cancel` stores `closedchan` if there is none). -/
-def cancelCtxLockInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+`c` has a Done channel (`cancel` stores `closedchan` if there is none). `R`: the fields of an
+enclosing struct that `c.mu` also protects (a `*timerCtx`'s `timer`; `True` for a plain
+`*cancelCtx`). -/
+def cancelCtxLockInv (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :=
   iprop(∃ (children : GoMap) (cause : GoError) (od : Option GoChan) (closed : Bool),
     "children" ∷ structFieldRef context.cancelCtx go!"children" c ↦ children ∗
     "cause" ∷ structFieldRef context.cancelCtx go!"cause" c ↦ cause ∗
@@ -334,13 +364,28 @@ def cancelCtxLockInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
           ⌜closed = false⌝)
       | some ch => iprop(dghostVar γ.doneGn .discard (some ch) ∗
           (if closed then iprop(True)
-           else ∃ γch, ownBroadcastChan ch γch iprop(P ∗ ContextClosed γ) .Pending))))
+           else ∃ γch, ownBroadcastChan ch γch iprop(P ∗ ContextClosed γ) .Pending))) ∗
+    "HR" ∷ R)
 
-/-- `c` is a (shared) `*cancelCtx` with ghost names `γ` and Done proposition `P`; it carries
-`context`'s `isClosedchanInit` (`"#Hcci"`), which its methods need. -/
-def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+/-- `c` is a (shared) `*cancelCtx` with ghost names `γ`, Done proposition `P` and extra lock
+resource `R` (`cancelCtxLockInv`); it carries `context`'s `isClosedchanInit` (`"#Hcci"`), which
+its methods need. -/
+def isCancelCtxOfR (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :=
   iprop("#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
-      (cancelCtxLockInv c γ P) ∗
+      (cancelCtxLockInv c γ P R) ∗
+    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
+    "#Hcci" ∷ isClosedchanInit)
+
+instance isCancelCtxOfR_pers (c : Loc) (γ : ContextNames) (P R : IProp GF) :
+    Persistent (isCancelCtxOfR c γ P R) := by
+  unfold isCancelCtxOfR; infer_instance
+
+/-- `c` is a (shared) `*cancelCtx` with ghost names `γ` and Done proposition `P` (for some
+extra lock resource, `isCancelCtxOfR`). -/
+def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+  iprop(∃ R : IProp GF,
+    "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
+      (cancelCtxLockInv c γ P R) ∗
     "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
     "#Hcci" ∷ isClosedchanInit)
 
@@ -348,11 +393,18 @@ instance isCancelCtxOf_pers (c : Loc) (γ : ContextNames) (P : IProp GF) :
     Persistent (isCancelCtxOf c γ P) := by
   unfold isCancelCtxOf; infer_instance
 
+theorem isCancelCtxOfR_of (c : Loc) (γ : ContextNames) (P R : IProp GF) :
+    isCancelCtxOfR c γ P R ⊢ isCancelCtxOf c γ P := by
+  unfold isCancelCtxOfR isCancelCtxOf
+  iintro H
+  iexists R
+  iexact H
+
 theorem isCancelCtxOf_closedchan (c : Loc) (γ : ContextNames) (P : IProp GF) :
     isCancelCtxOf c γ P ⊢ isClosedchanInit := by
   iintro #Hc
   iunfold isCancelCtxOf at Hc
-  icases Hc with ⟨-, -, #Hcci⟩
+  icases Hc with ⟨%R, -, -, #Hcci⟩
   iexact Hcci
 
 /-- `c` is a (shared) `*cancelCtx`. -/
@@ -414,7 +466,21 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   "#HValue" ∷
     □ (∀ Φ : val → IProp GF, True -∗
       ▷ (∀ v : GoInterface, isCancelCtxAny v -∗ Φ #v) -∗
-      WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}))
+      WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}) ∗
+  "#HErrDone" ∷
+    □ (∀ Φ : val → IProp GF, ContextClosed s.Done_gn -∗
+      ▷ (∀ err : GoInterface, ⌜isTypedErr err⌝ -∗ Φ #err) -∗
+      WP (App (Val #(methods c.ty go!"Err" c.v)) (Val #())) {{ Φ }}) ∗
+  "#HDoneFresh" ∷
+    □ (∀ ch : GoChan, dghostVar s.Done_gn.doneGn .discard (some ch) ={⊤}=∗
+      doneFreshT s.Done_gn ch) ∗
+  "#HParentCC" ∷ (⌜c.ty ≠ context.stopCtx.ty⌝ ∗
+    □ (∀ (ch cch : GoChan) (Φ : val → IProp GF),
+      dghostVar s.Done_gn.doneGn .discard (some ch) -∗
+      globalAddr context.closedchan ↦□ cch -∗ ⌜ch ≠ cch⌝ -∗
+      ▷ (∀ p : Loc, isCancelCtx p -∗ Φ (PairV #p #true)) -∗
+      WP (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok c))) {{ Φ }})) ∗
+  "#HClosedchan" ∷ isClosedchanInit)
 
 /-- `c` is a valid context described by `s` (not sealed). See the file header:
 * `"#HDone"` returns some channel `ch` with `isContextDone s ch γch`, which carries the
@@ -422,7 +488,18 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
 * `"#HErr"` takes `ContextClosed s.Done_gn` (precondition, only for `cl = Done`) and gives
   `□ s.PDone ∗ ContextClosed s.Done_gn` (postcondition, for a non-nil error).
 * `"#HValue"` only specifies the key `&cancelCtxKey`; the `Values` field of `ContextDesc` is
-  unused. -/
+  unused.
+* `"#HErrDone"`: once the context is done, `Err()` returns a typed error (`isTypedErr`), which
+  a child's `cancel` stores (and its `Err()` type-asserts to `error`).
+* `"#HDoneFresh"`: the Done channel `ch` (once known) is not `closedchan`, or the context is
+  done.
+* `"#HParentCC"`: `c` is not a `stopCtx`, and `parentCancelCtx(c)` finds a `*cancelCtx` once the
+  Done channel `ch` is known (and is not `closedchan`). So `propagateCancel(c, child)` registers
+  `child` with that `*cancelCtx`, or cancels it at once, and never reaches its branches for
+  other parents (an `afterFuncer`, whose type assertion the model cannot decide, or the
+  goroutine), nor does `removeChild(c, child)` reach its `stopCtx` branch. True of the contexts
+  this file makes (`*cancelCtx`, `*timerCtx`).
+* `"#HClosedchan"`: `context`'s `isClosedchanInit`. -/
 abbrev isContext (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   isContextDef c s
 
@@ -603,7 +680,7 @@ theorem isContextDone_weaken (s : ContextDesc (IProp GF)) (P' : IProp GF) (ch : 
 theorem isContext_weaken (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) (P' : IProp GF) :
     ⊢ □ (s.PDone -∗ P') -∗ isContext c s -∗ isContext c { s with PDone := P' } := by
   unfold isContext isContextDef
-  iintro #HP ⟨#HDeadline, #HDone, #HErr, #HValue⟩
+  iintro #HP ⟨#HDeadline, #HDone, #HErr, #HValue, #HErrDone, #HDoneFresh, #HParentCC, #Hcci⟩
   isplitl []
   · iexact HDeadline
   isplitl []
@@ -635,7 +712,15 @@ theorem isContext_weaken (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) (P' : 
         isplitl []
         · imodintro; iapply HP $$ Hp
         · iexact Hc
+  isplitl []
   · iexact HValue
+  isplitl []
+  · iexact HErrDone
+  isplitl []
+  · imodintro
+    iintro %ch #Hd
+    iapply HDoneFresh $$ Hd
+  iframe #
 
 /-! ### The `atomic.Value` cells of a `*cancelCtx` -/
 
@@ -896,14 +981,14 @@ theorem wp_cancelCtx_Done (c : Loc) (γ : ContextNames) (P : IProp GF) :
     wp_auto
     wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
     unfold cancelCtxLockInv
-    icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod⟩
+    icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
     cases od with
     | some ch =>
       icases Hod with ⟨#Hdg, Hpend⟩
       wp_apply wp_done_Load_frag c γ P (some ch) $$ [$Hc Hdg] as ⟨-, Hd⟩
       · unfold doneFrag; iexact Hdg
       icases Hd with ⟨%γch, #Hd, #Hfr⟩
-      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hpend]
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hpend HR]
       · inext; iexists children, cause, some ch, closed; dsimp only; simp only [named]
         iframe; iframe #
       iapply HΦ; iframe #
@@ -955,7 +1040,7 @@ theorem wp_cancelCtx_Done (c : Loc) (γ : ContextNames) (P : IProp GF) :
         imodintro
         wp_auto
         subst hcl
-        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hbc]
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hbc HR]
         · inext; iexists children, cause, some ch, false; dsimp only; simp only [named]
           iframe; iframe #; simp only [Bool.false_eq_true, ↓reduceIte]; iexists γch; iframe
         iapply HΦ
@@ -1084,6 +1169,15 @@ instance safeMapKey_cancelCtx (c : Loc) :
     wp_auto
     iapply HΦ
 
+/-- A `*timerCtx` as a key of a `children` map is safe (comparable). -/
+instance safeMapKey_timerCtx (c : Loc) :
+    SafeMapKey (GF := GF) context.canceler.ty
+      (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c : GoInterface) where
+  wp_go_eq_safe_map_key s E Φ := by
+    iintro HΦ
+    wp_auto
+    iapply HΦ
+
 theorem wp_Cause (ctx : GoInterfaceOk) (ctx_desc : ContextDesc (IProp GF)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         "#Hctx" ∷ isContext ctx ctx_desc }}
@@ -1091,7 +1185,7 @@ theorem wp_Cause (ctx : GoInterfaceOk) (ctx_desc : ContextDesc (IProp GF)) :
     {{ (err : GoInterface), RET #err; True }} := by
   wp_start as #Hctx
   unfold isContext isContextDef
-  icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue⟩
+  icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue, -⟩
   wp_auto
   ihave #HErr' := HErr $$ %Broadcast.Unknown
   wp_apply HErr' as %err -
@@ -1119,9 +1213,9 @@ theorem wp_Cause (ctx : GoInterfaceOk) (ctx_desc : ContextDesc (IProp GF)) :
         wp_auto
         wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
         unfold cancelCtxLockInv
-        icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod⟩
+        icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
         wp_auto
-        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod]
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod HR]
         · inext; iexists children, cause, od, closed; iframe
         cases cause with
         | nil =>
@@ -1152,7 +1246,7 @@ theorem wp_parentCancelCtx (parent : GoInterfaceOk) (parent_desc : ContextDesc (
   ihave #Hi := isInit_access $$ Hpkg
   icases Hi with ⟨_, ⟨%closed, #Hclosed⟩, _⟩
   unfold isContext isContextDef
-  icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue⟩
+  icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue, -⟩
   wp_auto
   wp_apply HDone as %done %γdone #Hdone
   by_cases h1 : done = closed
@@ -1221,28 +1315,31 @@ theorem wp_parentCancelCtx (parent : GoInterfaceOk) (parent_desc : ContextDesc (
       simp only [Bool.false_eq_true, ↓reduceIte]
       ipureintro; trivial
 
-/-- A parent context in the scope of these specs: `Background()`, or a context that is a
-`*cancelCtx`. -/
+/-- A parent context in the scope of these specs: `Background()`, or a context (`isContext`). -/
 def isParentCtx (parent : GoInterfaceOk) : IProp GF :=
-  iprop(⌜parent = backgroundCtxVal⌝ ∨
-    ∃ s, isContext parent s ∗ ⌜parent.ty = go.GoType.PointerType context.cancelCtx.ty⌝)
+  iprop(⌜parent = backgroundCtxVal⌝ ∨ ∃ s, isContext parent s)
 
 instance isParentCtx_pers (parent : GoInterfaceOk) : Persistent (isParentCtx (GF := GF) parent) := by
   unfold isParentCtx; infer_instance
 
-theorem wp_removeChild (parent : GoInterfaceOk) (c : Loc) :
+/-- `removeChild(parent, child)` for a child (a `canceler`) that is a safe map key. -/
+theorem wp_removeChild (parent : GoInterfaceOk) (child : GoInterface)
+    [SafeMapKey (GF := GF) context.canceler.ty child] :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isParentCtx parent }}
-      (App (App (Val (@! context.removeChild)) (Val #(interface.ok parent)))
-        (Val #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c)))
+      (App (App (Val (@! context.removeChild)) (Val #(interface.ok parent))) (Val #child))
     {{ RET #(); True }} := by
   wp_start as #Hpar
   unfold isParentCtx
-  icases Hpar with (%hbg | ⟨%s, #Hctx, %hty⟩)
+  icases Hpar with (%hbg | ⟨%s, #Hctx⟩)
   · subst hbg
     wp_auto
     wp_apply wp_parentCancelCtx_background
     iapply HΦ; itrivial
-  · have hne : parent.ty ≠ context.stopCtx.ty := by rw [hty]; exact ptrCancelCtx_ne_stopCtx
+  · ihave %hne : ⌜parent.ty ≠ context.stopCtx.ty⌝ $$ [Hctx]
+    · unfold isContext isContextDef
+      iNamed Hctx
+      icases HParentCC with ⟨%h, -⟩
+      ipureintro; exact h
     wp_auto
     simp only [hne, ↓reduceIte, _root_.decide_false]
     wp_auto
@@ -1258,12 +1355,12 @@ theorem wp_removeChild (parent : GoInterfaceOk) (c : Loc) :
       wp_auto
       wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
       unfold cancelCtxLockInv
-      icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod⟩
+      icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
       wp_auto
       by_cases hnil : children = map.nil
       · rw [show decide (children = map.nil) = true from decide_eq_true hnil]
         wp_auto
-        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod]
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod HR]
         · inext; iexists children, cause, od, closed; iframe
         iapply HΦ; itrivial
       · rw [show decide (children = map.nil) = false from decide_eq_false hnil]
@@ -1275,7 +1372,7 @@ theorem wp_removeChild (parent : GoInterfaceOk) (c : Loc) :
           · exact absurd h hnil
           wp_auto
           wp_apply wp_mapDelete $$ [$HM] as HM
-          wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcg HM Hod]
+          wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcg HM Hod HR]
           · inext; iexists children, cause, od, false; simp only [Bool.false_eq_true, ↓reduceIte]
             iframe
             simp only [named]
@@ -1296,13 +1393,13 @@ theorem wp_removeChild (parent : GoInterfaceOk) (c : Loc) :
           icases Hcl with ⟨-, %h⟩
           exact absurd h hnil
 
-theorem cancelCtxLockInv_closed (c : Loc) (γ : ContextNames) (P : IProp GF) (x : GoChan)
+theorem cancelCtxLockInv_closed (c : Loc) (γ : ContextNames) (P R : IProp GF) (x : GoChan)
     (cause : GoError) :
     ⊢ ContextClosed γ -∗ dghostVar γ.doneGn .discard (some x) -∗
       structFieldRef context.cancelCtx go!"children" c ↦ map.nil -∗
-      structFieldRef context.cancelCtx go!"cause" c ↦ cause -∗
-      cancelCtxLockInv c γ P := by
-  iintro #Hcl #Hd Hch Hca
+      structFieldRef context.cancelCtx go!"cause" c ↦ cause -∗ R -∗
+      cancelCtxLockInv c γ P R := by
+  iintro #Hcl #Hd Hch Hca HR
   unfold cancelCtxLockInv
   iexists map.nil, cause, some x, true
   simp only [↓reduceIte, named]
@@ -1338,7 +1435,7 @@ theorem wp_cancelCtx_cancel (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : B
   all_goals
     wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
     unfold cancelCtxLockInv
-    icases Hlk with ⟨%children, %cause0, %od, %closed, Hchildren, Hcause, Hcl, Hod⟩
+    icases Hlk with ⟨%children, %cause0, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
     cases closed
     · simp only [Bool.false_eq_true, ↓reduceIte]
       icases Hcl with ⟨Hcg, Hch⟩
@@ -1463,9 +1560,9 @@ theorem wp_cancelCtx_cancel (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : B
                iintro ⟨%v, %cv, child, err, cause⟩ HM
                wp_auto)
           all_goals
-            wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause]
+            wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause HR]
             · inext
-              ihave H := cancelCtxLockInv_closed c γ P _ _ $$ [] Hdgf Hchildren Hcause
+              ihave H := cancelCtxLockInv_closed c γ P R _ _ $$ [] Hdgf Hchildren Hcause HR
               · unfold ContextClosed; iexact Hclosed
               iunfold cancelCtxLockInv at H
               iexact H
@@ -1475,7 +1572,7 @@ theorem wp_cancelCtx_cancel (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : B
             · simp only [↓reduceIte]
               icases Hrm with ⟨%parent, #Hpf, #Hpar⟩
               wp_auto
-              wp_apply wp_removeChild parent c $$ [$Hpar]
+              wp_apply wp_removeChild parent (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) $$ [$Hpar]
               iapply HΦ; unfold ContextClosed; iexact Hclosed
       · rw [ite_eq_right he]
         icases Hcg' with ⟨-, -, Hc2⟩
@@ -1492,7 +1589,7 @@ theorem wp_cancelCtx_cancel (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : B
       | nil => exact absurd ht id
       | ok ie =>
       wp_auto
-      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hod]
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hod HR]
       · inext; iexists children, _, od, true; simp only [↓reduceIte, named]; iframe; iframe #
         ipureintro; exact hch
       iapply HΦ $$ Hclosed
@@ -1520,15 +1617,48 @@ theorem isContextDone_doneGn (s : ContextDesc (IProp GF)) (ch : GoChan) (γch : 
   rw [isContextDone_unseal]; unfold isContextDoneDef
   iintro ⟨$, -⟩
 
+/-- Once the Done channel `ch` of a `*cancelCtx` is determined, it is not `closedchan` or the
+context is done (`doneFresh`, from the invariant). -/
+theorem cancelCtx_doneFresh (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : GoChan) :
+    ⊢ isCancelCtxOf c γ P -∗ dghostVar γ.doneGn .discard (some ch) -∗ |={⊤}=>
+      doneFreshT γ ch := by
+  iintro #Hc #Hd
+  iunfold isCancelCtxOf at Hc
+  icases Hc with ⟨%R, -, #Hinv, -⟩
+  imod inv_acc (E := ⊤) (fun _ _ => CoPset.mem_full) $$ Hinv with ⟨Hi, Hclose⟩
+  ihave Hx : ▷ (cancelCtxInv c γ P ∗ doneFreshT γ ch) $$ [Hi]
+  · inext
+    unfold cancelCtxInv
+    icases Hi with ⟨%od, %e, Hdone, Hdg, Herr, Hcg⟩
+    cases od with
+    | none =>
+      dsimp only
+      ihave %h := dghostVar_agree _ _ _ _ _ $$ Hd Hdg
+      cases h
+    | some ch' =>
+      icases Hdg with ⟨%γch, #Hd', #Hfr⟩
+      ihave #Hdd' := isContextDone_doneGn _ _ _ $$ Hd'
+      ihave %h := dghostVar_agree _ _ _ _ _ $$ Hd Hdd'
+      cases h
+      isplitl [Hdone Herr Hcg]
+      · iexists (some ch), e; iframe; iexists γch; iframe #
+      unfold doneFresh doneFreshT
+      icases Hfr with (#Hf | ⟨-, #Hcl⟩)
+      · ileft; iexact Hf
+      · iright; iexact Hcl
+  icases Hx with ⟨Hi, >#Hfr⟩
+  imod Hclose $$ Hi with -
+  imodintro
+  iexact Hfr
+
 /-- `c.done.Load()` once the Done channel `ch` is known: it returns `ch`. -/
-theorem wp_done_Load_known (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : GoChan)
-    (γch : ChanNames) :
+theorem wp_done_Load_known (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : GoChan) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
-        isContextDone (cdesc γ P) ch γch }}
+        dghostVar γ.doneGn .discard (some ch) }}
       (App (Val (structFieldRef context.cancelCtx go!"done" c @!!
         go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
     {{ RET #(doneAny (some ch)); True }} := by
-  iintro %Φ ⟨#Hpkg, #Hc, #Hd⟩ HΦ
+  iintro %Φ ⟨#Hpkg, #Hc, #Hdd⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
   iapply sync.atomic.Value.wp_Load _ (DFrac.own 1)
@@ -1540,7 +1670,6 @@ theorem wp_done_Load_known (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : Go
   inext
   unfold cancelCtxInv
   icases Hi with ⟨%od, %e, Hdone, Hdg, Herr, Hcg⟩
-  ihave #Hdd := isContextDone_doneGn _ _ _ $$ Hd
   cases od
   case none =>
     dsimp only
@@ -1563,12 +1692,12 @@ theorem wp_done_Load_known (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : Go
     iapply HΦ $$ []
     itrivial
 
-/-- `parentCancelCtx(p)` for a `*cancelCtx` `p` whose Done channel `ch` (as returned by an
-earlier `p.Done()`) is not `closedchan`: it returns `p`. -/
-theorem wp_parentCancelCtx_self (p : Loc) (s : ContextDesc (IProp GF)) (ch cch : GoChan)
-    (γch : ChanNames) (hcch : ch ≠ cch) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf p s.Done_gn s.PDone ∗
-        isContextDone (cdesc s.Done_gn s.PDone) ch γch ∗ globalAddr context.closedchan ↦□ cch }}
+/-- `parentCancelCtx(p)` for a `*cancelCtx` `p` whose Done channel `ch` (once determined, e.g.
+by an earlier `p.Done()`) is not `closedchan`: it returns `p`. -/
+theorem wp_parentCancelCtx_self (p : Loc) (γ : ContextNames) (P : IProp GF) (ch cch : GoChan)
+    (hcch : ch ≠ cch) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf p γ P ∗
+        dghostVar γ.doneGn .discard (some ch) ∗ globalAddr context.closedchan ↦□ cch }}
       (App (Val (@! context.parentCancelCtx))
         (Val #(interface.ok (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #p))))
     {{ RET (PairV #p #true); True }} := by
@@ -1578,17 +1707,17 @@ theorem wp_parentCancelCtx_self (p : Loc) (s : ContextDesc (IProp GF)) (ch cch :
   wp_load
   wp_pures
   wp_apply wp_cancelCtx_Done p _ _ $$ [$Hp] as %ch' %γch' ⟨#Hd', -⟩
-  ihave %heq := isContextDone_agree (cdesc s.Done_gn s.PDone) ch ch' γch γch' $$ [Hd Hd']
-  · iframe #
-  subst heq
-  ihave #Hch := isContextDone_is_chan _ _ _ $$ Hd
+  ihave #Hdd' := isContextDone_doneGn _ _ _ $$ Hd'
+  ihave %heq := dghostVar_agree _ _ _ _ _ $$ Hd Hdd'
+  cases heq
+  ihave #Hch := isContextDone_is_chan _ _ _ $$ Hd'
   ihave %hnn := isChan_ne_nil _ _ $$ Hch
   rw [decide_eq_false hcch]
   wp_auto
   rw [decide_eq_false hnn]
   wp_auto
   wp_apply wp_cancelCtx_Value p _ _ $$ [$Hp]
-  wp_apply wp_done_Load_known p _ _ ch γch $$ [$Hp $Hd]
+  wp_apply wp_done_Load_known p _ _ ch $$ [$Hp $Hd]
   iapply HΦ; itrivial
 
 theorem ownMap_not_nil_dup (mref : Loc) (m : GMap GoInterface Unit) :
@@ -1718,13 +1847,14 @@ theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF
   · iframe
   · iintro ⟨c, child, parent, Hf, HΦ⟩ -
     wp_auto
-    wp_apply wp_parentCancelCtx_self p s ch cch γch hcc $$ [$Hp $Hd $Hcch]
+    ihave #Hdg := isContextDone_doneGn _ _ _ $$ Hd
+    wp_apply wp_parentCancelCtx_self p s.Done_gn s.PDone ch cch hcc $$ [$Hp $Hdg $Hcch]
     ihave #Hp' := Hp
     iunfold isCancelCtxOf at Hp'
-    icases Hp' with ⟨#Hmup, #Hinvp, -⟩
+    icases Hp' with ⟨%Rp, #Hmup, #Hinvp, -⟩
     wp_apply sync.Mutex.wp_Lock $$ [$Hmup] as ⟨Hlocked, Hlk⟩
     iunfold cancelCtxLockInv at Hlk
-    icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod⟩
+    icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
     cases closed
     · simp only [Bool.false_eq_true, ↓reduceIte]
       icases Hcl with ⟨Hcg, Hchs⟩
@@ -1744,7 +1874,7 @@ theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF
         wp_apply (wp_mapInsert context.canceler.ty m (∅ : GMap GoInterface Unit)
           (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) ()) $$ [$HM] as HM
         ihave #Hcs := childCancelSpec_cancelCtx c γ P s.PDone $$ [$Hpkg $Hc $HPP]
-        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod]
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod HR]
         · inext; unfold cancelCtxLockInv
           iexists m, cause, od, false
           simp only [Bool.false_eq_true, ↓reduceIte, named]
@@ -1769,7 +1899,7 @@ theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF
         wp_apply (wp_mapInsert context.canceler.ty children M
           (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) ()) $$ [$HM] as HM
         ihave #Hcs := childCancelSpec_cancelCtx c γ P s.PDone $$ [$Hpkg $Hc $HPP]
-        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod]
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod HR]
         · inext; unfold cancelCtxLockInv
           iexists children, cause, od, false
           simp only [Bool.false_eq_true, ↓reduceIte, named]
@@ -1803,11 +1933,254 @@ theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF
       · isplitl []
         · imodintro; iapply HPP; iapply Hpd; ipureintro; simp
         · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
-      wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod]
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod HR]
       · inext; unfold cancelCtxLockInv
         iexists children, cause, od, true; simp only [↓reduceIte, named]; iframe; iframe #
         ipureintro; exact hch
       iapply HΦ $$ Hf
+
+/-- A `childCancelSpec` that needs nothing of the parent's Done proposition holds for any. -/
+theorem childCancelSpec_true (Q : IProp GF) (k : GoInterface) :
+    childCancelSpec iprop(True) k ⊢ childCancelSpec Q k := by
+  cases k with
+  | nil => simp only [childCancelSpec]; iintro H; iexact H
+  | ok ki =>
+    simp only [childCancelSpec]
+    iintro #H
+    imodintro
+    iintro %err %cause %Φ %herr #- HΦ
+    iapply H $$ %err %cause %Φ %herr [] HΦ
+    imodintro; itrivial
+
+/-- `c.propagateCancel(parent, child)` for any context `parent` (`isContext`) and a child whose
+`cancel(false, err, cause)` needs nothing but a typed error (`childCancelSpec True`): the child
+is canceled at once if the parent is done, and is otherwise added to the `children` of the
+`*cancelCtx` that `parentCancelCtx(parent)` finds (`"#HParentCC"`; the branches for other
+parents are not reached). -/
+theorem wp_propagateCancel_any (c : Loc) (parent : GoInterfaceOk) (s : ContextDesc (IProp GF))
+    (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) ∗ isContext parent s ∗
+        childCancelSpec iprop(True) k }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok parent)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok parent : GoInterface) }} := by
+  wp_start as ⟨Hf, #Hctx, #Hk⟩
+  ihave #Hctx2 := Hctx
+  iunfold isContext at Hctx2
+  iunfold isContextDef at Hctx2
+  icases Hctx2 with ⟨#HDeadline, #HDone, #HErr, #HValue, #HErrDone, #HDoneFresh, ⟨%hstop, #HPar⟩,
+    #Hcci⟩
+  ihave #Hi := Hcci
+  iunfold isClosedchanInit at Hi
+  icases Hi with ⟨%cch, %γc, #Hcch, #Hcchan, #Hcinv⟩
+  cases k with
+  | nil => simp only [childCancelSpec]; iexfalso; iexact Hk
+  | ok ki =>
+  wp_auto
+  wp_apply HDone as %ch %γch #Hd
+  ihave #Hch := isContextDone_is_chan _ _ _ $$ Hd
+  ihave %hnn := isChan_ne_nil _ _ $$ Hch
+  rw [decide_eq_false hnn]
+  wp_auto
+  ihave #Hdg := isContextDone_doneGn _ _ _ $$ Hd
+  simp only [childCancelSpec]
+  by_cases hcc : ch = cch
+  · subst hcc
+    imod HDoneFresh $$ Hdg with #Hfr
+    iunfold doneFreshT at Hfr
+    icases Hfr with (⟨%cch', #Hcch', %hne⟩ | #Hcl)
+    · icombine Hcch Hcch' gives %heq
+      exact absurd heq hne
+    wp_apply_core chan.wp_select_nonblocking_alt [iprop(False)]
+        iprop(c_ptr ↦ c ∗ child_ptr ↦ (GoInterface.ok ki) ∗
+          parent_ptr ↦ (interface.ok parent : GoInterface) ∗
+          ctxField c ↦ (interface.ok parent : GoInterface))
+        $$ [HΦ] [c child parent Hf] []
+    · iapply BigSepL2.bigSepL2_singleton.2
+      iintro ⟨c, child, parent, Hf⟩
+      simp only [chan.nonblockingAltClausePre]
+      iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γc
+      isplitr
+      · ipureintro; rfl
+      isplitr
+      · iexact Hcchan
+      iapply closed_chan_nonblocking_receive $$ Hcinv
+      wp_auto
+      wp_apply HErrDone $$ Hcl as %e %htyped
+      wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
+      wp_apply Hk
+      · ipureintro; exact htyped
+      · imodintro; itrivial
+      iapply HΦ $$ Hf
+    · iframe
+    · iintro - Hnr
+      icases BigSepL.bigSepL_singleton.1 $$ Hnr with Hfalse
+      iexfalso; iexact Hfalse
+  wp_apply_core chan.wp_select_nonblocking_alt [iprop(⌜ch ≠ cch⌝)]
+      iprop(c_ptr ↦ c ∗ child_ptr ↦ (GoInterface.ok ki) ∗
+        parent_ptr ↦ (interface.ok parent : GoInterface) ∗
+        ctxField c ↦ (interface.ok parent : GoInterface) ∗
+        (ctxField c ↦ (interface.ok parent : GoInterface) -∗ Φ #()))
+      $$ [] [c child parent Hf HΦ] []
+  · iapply BigSepL2.bigSepL2_singleton.2
+    iintro ⟨c, child, parent, Hf, HΦ⟩
+    simp only [chan.nonblockingAltClausePre]
+    iexists Unit, inferInstance, inferInstance, inferInstance, inferInstance, ch, γch
+    isplitr
+    · ipureintro; rfl
+    isplitr
+    · iexact Hch
+    iapply isContextDone_nonblocking_receive _ _ _ _ _ $$ Hd
+    isplit
+    · iintro ⟨-, #Hcl⟩
+      wp_auto
+      wp_apply HErrDone $$ Hcl as %e %htyped
+      wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
+      wp_apply Hk
+      · ipureintro; exact htyped
+      · imodintro; itrivial
+      iapply HΦ $$ Hf
+    · iframe; ipureintro; exact hcc
+  · iframe
+  · iintro ⟨c, child, parent, Hf, HΦ⟩ -
+    wp_auto
+    wp_bind (App (Val (@! context.parentCancelCtx)) _)
+    iapply HPar $$ %ch %cch Hdg Hcch %hcc
+    inext
+    iintro %p #Hp
+    iunfold isCancelCtx at Hp
+    icases Hp with ⟨%γp, %Pp, #Hp⟩
+    ihave #Hksp : childCancelSpec Pp (GoInterface.ok ki) $$ []
+    · iapply childCancelSpec_true
+      simp only [childCancelSpec]
+      iexact Hk
+    ihave #Hp' := Hp
+    iunfold isCancelCtxOf at Hp'
+    icases Hp' with ⟨%Rp, #Hmup, #Hinvp, -⟩
+    wp_auto
+    wp_apply sync.Mutex.wp_Lock $$ [$Hmup] as ⟨Hlocked, Hlk⟩
+    iunfold cancelCtxLockInv at Hlk
+    icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
+    cases closed
+    · simp only [Bool.false_eq_true, ↓reduceIte]
+      icases Hcl with ⟨Hcg, Hchs⟩
+      wp_apply wp_err_Load_frag p _ _ false $$ [$Hp Hcg] as %e ⟨Hcg, Hhe⟩
+      · unfold closedFrag; simp only [Bool.false_eq_true, ↓reduceIte]; iexact Hcg
+      icases Hhe with ⟨%he, -, -⟩
+      have he := he (by simp)
+      subst he
+      wp_auto
+      iunfold childrenInv at Hchs
+      icases Hchs with (%hnil | ⟨%M, HM, #Hspecs⟩)
+      · subst hnil
+        rw [show decide (map.nil = map.nil) = true from decide_eq_true rfl]
+        wp_pures
+        wp_apply (wp_map_make1 (K := GoInterface) (V := Unit) context.canceler.ty
+          (go.GoType.StructType [])) as %m HM
+        wp_apply (wp_mapInsert context.canceler.ty m (∅ : GMap GoInterface Unit)
+          (GoInterface.ok ki) ()) $$ [$HM] as HM
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod HR]
+        · inext; unfold cancelCtxLockInv
+          iexists m, cause, od, false
+          simp only [Bool.false_eq_true, ↓reduceIte, named]
+          iframe
+          unfold closedFrag; simp only [Bool.false_eq_true, ↓reduceIte]
+          iframe
+          unfold childrenInv
+          iright
+          iexists _
+          iframe HM
+          imodintro
+          iintro %k %u %hk
+          rw [GMap.lookup_insert_eq_iff] at hk
+          split at hk
+          · rename_i heq; subst heq; iexact Hksp
+          · simp at hk
+        iapply HΦ $$ Hf
+      · icases ownMap_not_nil_dup _ _ $$ HM with ⟨HM, %hnn'⟩
+        rw [show decide (children = map.nil) = false from decide_eq_false hnn']
+        wp_pures
+        wp_auto
+        wp_apply (wp_mapInsert context.canceler.ty children M
+          (GoInterface.ok ki) ()) $$ [$HM] as HM
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hcg HM Hod HR]
+        · inext; unfold cancelCtxLockInv
+          iexists children, cause, od, false
+          simp only [Bool.false_eq_true, ↓reduceIte, named]
+          iframe
+          unfold closedFrag; simp only [Bool.false_eq_true, ↓reduceIte]
+          iframe
+          unfold childrenInv
+          iright
+          iexists _
+          iframe HM
+          imodintro
+          iintro %k %u %hk
+          rw [GMap.lookup_insert_eq_iff] at hk
+          split at hk
+          · rename_i heq; subst heq; iexact Hksp
+          · iapply Hspecs $$ %k %u %hk
+        iapply HΦ $$ Hf
+    · simp only [↓reduceIte]
+      icases Hcl with ⟨#Hclosed, %hch⟩
+      wp_apply wp_err_Load_frag p _ _ true $$ [$Hp] as %e ⟨-, Hhe⟩
+      · unfold closedFrag; simp only [↓reduceIte]; iexact Hclosed
+      icases Hhe with ⟨-, %ht, -⟩
+      have ht := ht (by simp)
+      cases e with
+      | nil => exact absurd ht id
+      | ok ie =>
+      wp_auto
+      erw [ite_eq_left ht]
+      wp_auto
+      wp_apply Hk
+      · ipureintro; exact ht
+      · imodintro; itrivial
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod HR]
+      · inext; unfold cancelCtxLockInv
+        iexists children, cause, od, true; simp only [↓reduceIte, named]; iframe; iframe #
+        ipureintro; exact hch
+      iapply HΦ $$ Hf
+
+/-- A new `*cancelCtx` (all fields zero) with Done proposition `P` and extra lock resource
+`R`: fresh ghost names `γ`, its invariant and the lock invariant of `c.mu`; the `Context` field
+is left out, for `propagateCancel` to set. -/
+theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
+    ⊢ isClosedchanInit -∗ c ↦ (zero_val context.cancelCtx) -∗ R -∗ |={⊤}=>
+      ∃ γ : ContextNames, isCancelCtxOfR c γ P R ∗ ctxField c ↦ (interface.nil : GoInterface) := by
+  iintro #Hcci Hc HRes
+  iStructNamedPrefix Hc "F"
+  imod dghostVar_alloc (GF := GF) (none : Option GoChan) with ⟨%gd, Hgd⟩
+  icases dghostVar_split _ _ (.own (1 : Qp).half) (.own (1 : Qp).half) $$ [Hgd] with ⟨Hgd1, Hgd2⟩
+  · rw [DFrac.op_own, Qp.half_add_half]; iexact Hgd
+  imod dghostVar_alloc (GF := GF) false with ⟨%gc, Hgc⟩
+  icases dghostVar_split _ _ (.own (1 : Qp).half) (.own (1 : Qp).half) $$ [Hgc] with ⟨Hgc1, Hgc2⟩
+  · rw [DFrac.op_own, Qp.half_add_half]; iexact Hgc
+  imod inv_alloc cancelCtxN ⊤ (cancelCtxInv c ⟨gd, gc⟩ P) $$ [Fdone Ferr Hgd1 Hgc1]
+    with #Hinv
+  · inext
+    unfold cancelCtxInv
+    iexists none, GoInterface.nil
+    rw [ite_eq_left rfl]
+    dsimp only [doneAny]
+    iframe Hgd1 Hgc1
+    isplitl [Fdone]
+    · iapply (sync.atomic.ownValue_zero _ _).1; iexact Fdone
+    · iapply (sync.atomic.ownValue_zero _ _).1; iexact Ferr
+  ihave HL : cancelCtxLockInv c ⟨gd, gc⟩ P R $$ [Fchildren Fcause Hgd2 Hgc2 HRes]
+  · unfold cancelCtxLockInv
+    iexists (zero_val context.cancelCtx).children', (zero_val context.cancelCtx).cause', none,
+      false
+    simp only [Bool.false_eq_true, ↓reduceIte, named]
+    iframe
+    simp only [childrenInv]
+    ileft; ipureintro; rfl
+  imod sync.init_Mutex (cancelCtxLockInv c ⟨gd, gc⟩ P R) ⊤ _ $$ Fmu HL with #Hmu
+  iexists ⟨gd, gc⟩
+  iframe FContext
+  unfold isCancelCtxOfR; iframe #
 
 /-- `withCancel(parent)`, given the spec of `c.propagateCancel(parent, c)` for the new `c` (with
 `Pre`): allocates the `*cancelCtx` `c` with fresh ghost names `γ` and Done proposition `P`, and
@@ -1826,36 +2199,11 @@ theorem wp_withCancel (parent : GoInterfaceOk) (P Pre : IProp GF)
         isCancelCtxOf c γ P ∗ ctxField c ↦□ (interface.ok parent : GoInterface) }} := by
   wp_start as ⟨#Hcci, Hpre⟩
   wp_auto
-  iStructNamedPrefix «$r0» "F"
-  imod dghostVar_alloc (GF := GF) (none : Option GoChan) with ⟨%gd, Hgd⟩
-  icases dghostVar_split _ _ (.own (1 : Qp).half) (.own (1 : Qp).half) $$ [Hgd] with ⟨Hgd1, Hgd2⟩
-  · rw [DFrac.op_own, Qp.half_add_half]; iexact Hgd
-  imod dghostVar_alloc (GF := GF) false with ⟨%gc, Hgc⟩
-  icases dghostVar_split _ _ (.own (1 : Qp).half) (.own (1 : Qp).half) $$ [Hgc] with ⟨Hgc1, Hgc2⟩
-  · rw [DFrac.op_own, Qp.half_add_half]; iexact Hgc
-  imod inv_alloc cancelCtxN ⊤ (cancelCtxInv «$r0_ptr» ⟨gd, gc⟩ P) $$ [Fdone Ferr Hgd1 Hgc1]
-    with #Hinv
-  · inext
-    unfold cancelCtxInv
-    iexists none, GoInterface.nil
-    rw [ite_eq_left rfl]
-    dsimp only [doneAny]
-    iframe Hgd1 Hgc1
-    isplitl [Fdone]
-    · iapply (sync.atomic.ownValue_zero _ _).1; iexact Fdone
-    · iapply (sync.atomic.ownValue_zero _ _).1; iexact Ferr
-  ihave HR : cancelCtxLockInv «$r0_ptr» ⟨gd, gc⟩ P $$ [Fchildren Fcause Hgd2 Hgc2]
-  · unfold cancelCtxLockInv
-    iexists map.nil, GoInterface.nil, none, false
-    simp only [Bool.false_eq_true, ↓reduceIte, named]
-    iframe
-    simp only [childrenInv]
-    ileft; ipureintro; trivial
-  imod sync.init_Mutex (cancelCtxLockInv «$r0_ptr» ⟨gd, gc⟩ P) ⊤ _ $$ Fmu HR with #Hmu
-  ihave #Hc : isCancelCtxOf «$r0_ptr» ⟨gd, gc⟩ P $$ []
-  · unfold isCancelCtxOf; iframe #
+  imod cancelCtx_alloc «$r0_ptr» P iprop(True) $$ Hcci «$r0» [] with ⟨%γ, #Hc, FContext⟩
+  · itrivial
+  ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
   iapply wp_fupd
-  wp_apply Hprop «$r0_ptr» ⟨gd, gc⟩ $$ [$Hc FContext Hpre] as HC
+  wp_apply Hprop «$r0_ptr» γ $$ [$Hc' FContext Hpre] as HC
   · iframe
   dsimp only [ctxField]
   ipersist HC
@@ -1945,6 +2293,7 @@ theorem isContext_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF) (parent
       · rw [ite_eq_right he]; rw [ite_eq_right he] at *
         icases He with ⟨-, #Hp, #Hcl⟩
         iframe #
+  isplitl []
   · imodintro
     iintro %Φ - HΦ
     iapply wp_cancelCtx_Value $$ [$Hpkg $Hc]
@@ -1956,6 +2305,32 @@ theorem isContext_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF) (parent
     isplitl []
     · ipureintro; rfl
     · unfold isCancelCtx; iexists γ, P; iexact Hc
+  subst hγ hP
+  isplitl []
+  · imodintro
+    iintro %Φ #Hcl HΦ
+    iapply wp_cancelCtx_Err c _ _ true $$ [$Hpkg $Hc]
+    · simp only [↓reduceIte]; iexact Hcl
+    inext
+    iintro %e ⟨%hne, He⟩
+    have hne := hne rfl
+    rw [ite_eq_right hne]
+    icases He with ⟨%ht, -⟩
+    iapply HΦ; ipureintro; exact ht
+  isplitl []
+  · imodintro
+    iintro %ch #Hd
+    iapply cancelCtx_doneFresh $$ Hc Hd
+  isplitl []
+  · isplitl []
+    · ipureintro; exact ptrCancelCtx_ne_stopCtx
+    · imodintro
+      iintro %ch %cch %Φ #Hd #Hcch %hne HΦ
+      iapply wp_parentCancelCtx_self c _ _ ch cch hne $$ [$Hpkg $Hc $Hd $Hcch]
+      inext; iintro -
+      iapply HΦ
+      unfold isCancelCtx; iexists _, _; iexact Hc
+  · iapply isCancelCtxOf_closedchan $$ Hc
 
 /-- The spec of a cancel function: given `□ P`, it cancels the context with ghost names `γ`. -/
 def cancelSpec (cancel : GoFunc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
@@ -2031,6 +2406,278 @@ theorem wp_WithCancel_gen (parent : GoInterfaceOk) (P Pre : IProp GF)
     iframe #
   iapply HΦ' $$ Hclosed
 
+/-- `WithCancel(parent)` for any context `parent` (`isContext`): the new context is a
+`*cancelCtx` with the parent's deadline whose cancel function needs nothing (so its Done
+proposition is `True`). -/
+theorem wp_WithCancel_any (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent s }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok parent)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        cancelSpec cancel γ' iprop(True) ∗
+        isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } }} := by
+  iintro %Φ ⟨#Hpkg, #Hctx⟩ HΦ
+  ihave #Hctx2 := Hctx
+  iunfold isContext at Hctx2
+  iunfold isContextDef at Hctx2
+  icases Hctx2 with ⟨-, -, -, -, -, -, -, #Hcci⟩
+  iapply wp_WithCancel_gen parent iprop(True) iprop(isContext parent s)
+      (fun c γ => by
+        iintro %Φ ⟨#Hpkg, #Hc, Hf, #Hctx⟩ HΦ
+        ihave #Htt : □ (iprop(True) -∗ iprop(True)) $$ []
+        · imodintro; iintro -; itrivial
+        ihave #Hk := childCancelSpec_cancelCtx c γ iprop(True) iprop(True) $$ [$Hpkg $Hc $Htt]
+        iapply wp_propagateCancel_any c parent s _ $$ [$Hpkg $Hf $Hctx $Hk] HΦ)
+  · iframe #
+    unfold isParentCtx; iright; iexists s; iframe #
+  inext
+  iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
+  ihave #Hdl := deadlineSpec_isContext _ _ $$ Hctx
+  iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
+  isplitl []
+  · iexact Hcancel
+  · iapply isContext_cancelCtx c γ _ parent _ rfl rfl
+    iframe #
+
+/-! ### `*timerCtx` -/
+
+/-- The `cancelCtx` embedded in the `*timerCtx` `c`. -/
+abbrev tcc [GoSemanticsFunctions] (c : Loc) : Loc :=
+  structFieldRef context.timerCtx go!"cancelCtx" c
+
+/-- The extra lock resource of a `*timerCtx` `c` (`cancelCtxLockInv`): its `timer`, which
+`c.mu` protects: `nil`, or a timer made by `AfterFunc`. -/
+def timerR (c : Loc) : IProp GF :=
+  iprop(∃ tm : Loc, structFieldRef context.timerCtx go!"timer" c ↦ tm ∗
+    (⌜tm = Loc.null⌝ ∨ time.isFuncTimer tm))
+
+/-- `c.cancel(rm, err, cause)` for a `*timerCtx` `c` and a typed error `err`: cancels the
+embedded `*cancelCtx`, removes `c` from its parent if `rm`, and stops the timer. -/
+theorem wp_timerCtx_cancel (c : Loc) (γ : ContextNames) (rm : Bool) (err cause : GoInterface)
+    (herr : isTypedErr err) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        isCancelCtxOfR (tcc c) γ iprop(True) (timerR c) ∗
+        (if rm then iprop(∃ parent : GoInterfaceOk,
+            ctxField (tcc c) ↦□ (interface.ok parent : GoInterface) ∗ isParentCtx parent)
+         else iprop(True)) }}
+      (App (App (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"cancel" #c))
+        (Val #rm)) (Val #err)) (Val #cause))
+    {{ RET #(); ContextClosed γ }} := by
+  wp_start as ⟨#Hc, Hrm⟩
+  ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
+  wp_auto
+  wp_apply wp_cancelCtx_cancel (tcc c) γ iprop(True) false err cause herr $$ [$Hc'] as #Hclosed
+  · isplitl []
+    · imodintro; itrivial
+    · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+  iunfold isCancelCtxOfR at Hc
+  iNamed Hc
+  cases rm
+  all_goals simp only [Bool.false_eq_true, ↓reduceIte]
+  rotate_left
+  icases Hrm with ⟨%parent, #Hpf, #Hpar⟩
+  wp_auto
+  wp_apply wp_removeChild parent
+    (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c) $$ [$Hpar]
+  all_goals
+    try wp_auto
+    wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
+    iunfold cancelCtxLockInv at Hlk
+    icases Hlk with ⟨%children, %cause0, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
+    iunfold timerR at HR
+    icases HR with ⟨%tm, Htm, Htmr⟩
+    wp_auto
+    by_cases htm : tm = Loc.null
+    · subst htm
+      wp_auto
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm]
+      · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+        unfold timerR; iexists Loc.null; iframe; ileft; ipureintro; rfl
+      iapply HΦ $$ Hclosed
+    · icases Htmr with (%h | #Htf)
+      · exact absurd h htm
+      rw [decide_eq_false htm]
+      wp_auto
+      wp_apply time.Timer.wp_Stop_func tm $$ [$Htf] as %b -
+      wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm]
+      · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+        unfold timerR; iexists Loc.null; iframe; ileft; ipureintro; rfl
+      iapply HΦ $$ Hclosed
+
+/-- The `childCancelSpec` of a `*timerCtx` (it needs nothing of its parent's Done
+proposition). -/
+theorem childCancelSpec_timerCtx (c : Loc) (γ : ContextNames) :
+    isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        isCancelCtxOfR (tcc c) γ iprop(True) (timerR c) ⊢
+      childCancelSpec iprop(True)
+        (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c) := by
+  iintro ⟨#Hpkg, #Hc⟩
+  simp only [childCancelSpec]
+  imodintro
+  iintro %err %cause %Φ %herr - HΦ
+  iapply wp_timerCtx_cancel c γ false err cause herr $$ [$Hpkg $Hc]
+  · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+  inext; iintro -; iexact HΦ
+
+theorem wp_timerCtx_Done (c : Loc) (γ : ContextNames) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf (tcc c) γ P }}
+      (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"Done" #c)) (Val #()))
+    {{ (ch : GoChan) (γch : ChanNames), RET #ch; isContextDone (cdesc γ P) ch γch ∗
+        doneFresh γ P ch }} := by
+  wp_start as #Hc
+  wp_apply wp_cancelCtx_Done (tcc c) γ P $$ [$Hc] as %ch %γch ⟨#Hd, #Hfr⟩
+  iapply HΦ; iframe #
+
+theorem wp_timerCtx_Err (c : Loc) (γ : ContextNames) (P : IProp GF) (cl : Bool) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf (tcc c) γ P ∗
+        (if cl then ContextClosed γ else iprop(True)) }}
+      (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"Err" #c)) (Val #()))
+    {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
+        (if e = interface.nil then iprop(True)
+         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }} := by
+  wp_start as ⟨#Hc, Hcl⟩
+  wp_apply wp_cancelCtx_Err (tcc c) γ P cl $$ [$Hc $Hcl] as %e He
+  iapply HΦ $$ He
+
+theorem wp_timerCtx_Value (c : Loc) (γ : ContextNames) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf (tcc c) γ P }}
+      (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"Value" #c))
+        (Val #cancelCtxKeyAny))
+    {{ RET #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #(tcc c)); True }} := by
+  wp_start as #Hc
+  wp_apply wp_cancelCtx_Value (tcc c) γ P $$ [$Hc]
+  iapply HΦ; itrivial
+
+/-- `parentCancelCtx(c)` for a `*timerCtx` `c` whose Done channel `ch` is not `closedchan`: it
+returns the embedded `*cancelCtx`. -/
+theorem wp_parentCancelCtx_timer (c : Loc) (γ : ContextNames) (P : IProp GF) (ch cch : GoChan)
+    (hcch : ch ≠ cch) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf (tcc c) γ P ∗
+        dghostVar γ.doneGn .discard (some ch) ∗ globalAddr context.closedchan ↦□ cch }}
+      (App (Val (@! context.parentCancelCtx))
+        (Val #(interface.ok (interface.mk (go.GoType.PointerType context.timerCtx.ty) #c))))
+    {{ RET (PairV #(tcc c) #true); True }} := by
+  wp_start as ⟨#Hp, #Hd, #Hcch⟩
+  wp_alloc par as Hpar
+  wp_pures
+  wp_load
+  wp_pures
+  wp_apply wp_timerCtx_Done c _ _ $$ [$Hp] as %ch' %γch' ⟨#Hd', -⟩
+  ihave #Hdd' := isContextDone_doneGn _ _ _ $$ Hd'
+  ihave %heq := dghostVar_agree _ _ _ _ _ $$ Hd Hdd'
+  cases heq
+  ihave #Hch := isContextDone_is_chan _ _ _ $$ Hd'
+  ihave %hnn := isChan_ne_nil _ _ $$ Hch
+  rw [decide_eq_false hcch]
+  wp_auto
+  rw [decide_eq_false hnn]
+  wp_auto
+  wp_apply wp_timerCtx_Value c _ _ $$ [$Hp]
+  wp_apply wp_done_Load_known (tcc c) _ _ ch $$ [$Hp $Hd]
+  iapply HΦ; itrivial
+
+theorem timerCtx_ne_stopCtx :
+    go.GoType.PointerType context.timerCtx.ty ≠ context.stopCtx.ty := by
+  unfold context.stopCtx.ty
+  intro h; cases h
+
+/-- A `*timerCtx` `c` (names `γ`, Done proposition `True`) with deadline `d` is a context
+described by `s` (whose deadline is `some d`). -/
+theorem isContext_timerCtx (c : Loc) (γ : ContextNames) (d : time.Time)
+    (s : ContextDesc (IProp GF)) (hγ : s.Done_gn = γ) (hP : s.PDone = iprop(True))
+    (hd : s.Deadline = some d) :
+    isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        isCancelCtxOfR (tcc c) γ iprop(True) (timerR c) ∗
+        structFieldRef context.timerCtx go!"deadline" c ↦□ d ⊢
+      isContext (interface.mk (go.GoType.PointerType context.timerCtx.ty) #c) s := by
+  iintro ⟨#Hpkg, #HcR, #Hdl⟩
+  ihave #Hc := isCancelCtxOfR_of _ _ _ _ $$ HcR
+  subst hγ
+  unfold isContext isContextDef
+  isplitl []
+  · imodintro
+    iintro %Φ - HΦ
+    wp_method_call
+    wp_auto
+    rw [hd]
+    dsimp only [Option.getD]
+    iapply HΦ $$ []
+    itrivial
+  isplitl []
+  · imodintro
+    iintro %Φ - HΦ
+    iapply wp_timerCtx_Done $$ [$Hpkg $Hc]
+    inext
+    iintro %ch %γch ⟨#Hd, -⟩
+    iapply HΦ
+    iapply isContextDone_congr $$ Hd
+    · unfold cdesc; simp
+    · unfold cdesc; simp [hP]
+  isplitl []
+  · iintro %cl
+    imodintro
+    iintro %Φ Hpre HΦ
+    cases cl
+    case Done =>
+      iapply wp_timerCtx_Err c _ _ true $$ [$Hpkg $Hc Hpre]
+      · simp only [↓reduceIte]; iexact Hpre
+      inext
+      iintro %e ⟨%hne, -⟩
+      iapply HΦ
+      ipureintro; exact hne rfl
+    all_goals
+      iapply wp_timerCtx_Err c _ _ false $$ [$Hpkg $Hc]
+      · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+      inext
+      iintro %e ⟨-, He⟩
+      iapply HΦ
+      dsimp only
+      by_cases he : e = interface.nil
+      · subst he; simp only [ite_true]; itrivial
+      · rw [ite_eq_right he]; rw [ite_eq_right he] at *
+        icases He with ⟨-, -, #Hcl⟩
+        rw [hP]
+        isplitl []
+        · imodintro; itrivial
+        · iexact Hcl
+  isplitl []
+  · imodintro
+    iintro %Φ - HΦ
+    iapply wp_timerCtx_Value $$ [$Hpkg $Hc]
+    inext
+    iintro -
+    iapply HΦ
+    simp only [isCancelCtxAny, ↓reduceIte]
+    iexists (tcc c)
+    isplitl []
+    · ipureintro; rfl
+    · unfold isCancelCtx; iexists s.Done_gn, iprop(True); iexact Hc
+  isplitl []
+  · imodintro
+    iintro %Φ #Hcl HΦ
+    iapply wp_timerCtx_Err c _ _ true $$ [$Hpkg $Hc]
+    · simp only [↓reduceIte]; iexact Hcl
+    inext
+    iintro %e ⟨%hne, He⟩
+    have hne := hne rfl
+    rw [ite_eq_right hne]
+    icases He with ⟨%ht, -⟩
+    iapply HΦ; ipureintro; exact ht
+  isplitl []
+  · imodintro
+    iintro %ch #Hd
+    iapply cancelCtx_doneFresh $$ Hc Hd
+  isplitl []
+  · isplitl []
+    · ipureintro; exact timerCtx_ne_stopCtx
+    · imodintro
+      iintro %ch %cch %Φ #Hd #Hcch %hne HΦ
+      iapply wp_parentCancelCtx_timer c _ _ ch cch hne $$ [$Hpkg $Hc $Hd $Hcch]
+      inext; iintro -
+      iapply HΦ
+      unfold isCancelCtx; iexists _, _; iexact Hc
+  · iapply isCancelCtxOf_closedchan $$ Hc
+
 /-- `WithCancel(ctx)` for a parent `ctx` that is a `*cancelCtx` made by `WithCancel`
 (`isCancelCtxCtx`). The new context's Done channel does not exist yet when `WithCancel` returns,
 so the postcondition gives fresh ghost names `γ'` for it. The cancel function's precondition is
@@ -2062,7 +2709,7 @@ theorem wp_WithCancel (PDone' : IProp GF) (ctx : GoInterfaceOk)
   · iframe #
     isplitl []
     · imodintro; iintro H; ileft; iexact H
-    unfold isParentCtx; iright; iexists ctx_desc; iframe #; ipureintro; rw [hp]
+    unfold isParentCtx; iright; iexists ctx_desc; iframe #
   inext
   iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
   ihave #Hdl := deadlineSpec_isContext _ _ $$ Hctx
@@ -2134,12 +2781,231 @@ theorem wp_WithDeadlineCause (parent : GoInterfaceOk) (parent_desc : ContextDesc
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         isContext ctx'
           { parent_desc with Deadline := some d', PDone := iprop(True), Done_gn := γ' } }} := by
-  -- Unprovable: it calls `cur.Before(d)` (`time.Time.Before`), `time.AfterFunc` and (in
-  -- `timerCtx.cancel`) `c.timer.Stop()`, which are neither translated
-  -- (`Perennial/Code/time.toml`) nor axiomatized. (Its `WithCancel(parent)` case and the
-  -- `*cancelCtx` embedded in the `timerCtx` would also need `WithCancel` for an arbitrary
-  -- `isContext` parent, see the file header.)
-  sorry -- not proved
+  wp_start as #Hctx
+  ihave #Hctx2 := Hctx
+  iunfold isContext at Hctx2
+  iunfold isContextDef at Hctx2
+  icases Hctx2 with ⟨#HDeadline, -, -, -, -, -, -, #Hcci⟩
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨_, _, ⟨%canceled, #Hcanceled, %hcanceled⟩, ⟨%dexc, #Hdexc, %hdexc⟩, _⟩
+  iapply wp_with_defer
+  iintro %defer Hdefer
+  wp_auto
+  wp_apply HDeadline
+  cases hdl : parent_desc.Deadline with
+  | some cur =>
+    dsimp only [Option.getD]
+    wp_auto
+    wp_apply time.Time.wp_ptr_Before $$ [$cur] as %b cur
+    cases b
+    case true =>
+      wp_auto
+      wp_apply wp_WithCancel_any parent parent_desc $$ [$Hctx]
+        as %ctx' %γ' %cancel ⟨#Hcancel, #Hctx'⟩
+      have heq : ({ parent_desc with PDone := iprop(True), Done_gn := γ' } : ContextDesc (IProp GF)) =
+          { parent_desc with Deadline := some cur, PDone := iprop(True), Done_gn := γ' } := by
+        cases parent_desc; simp only at hdl; subst hdl; rfl
+      rw [heq] at *
+      iapply HΦ $$ %ctx' %γ' %cancel %cur
+      isplitl []
+      · ipureintro; right; rfl
+      isplitl []
+      · unfold cancelSpec
+        imodintro
+        iintro %Φ' - HΦ'
+        iapply Hcancel
+        · imodintro; itrivial
+        inext; iintro -; iapply HΦ' $$ []; itrivial
+      · iexact Hctx'
+    all_goals
+      wp_auto
+      iStructNamedPrefix «$r0» "T"
+      ipersist c
+      ipersist cause
+      ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
+      · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
+      imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
+        with ⟨%γ, #Hc, Hf⟩
+      ipersist Tdeadline
+      ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]
+      wp_apply wp_propagateCancel_any (tcc «$r0_ptr») parent parent_desc _ $$ [$Hf $Hctx $Hk] as Hf
+      ipersist Hf
+      ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
+      wp_apply time.wp_Until as %dur -
+      wp_if_destruct
+      · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+        · simp only [↓reduceIte]
+          iexists parent; iframe #
+          unfold isParentCtx; iright; iexists parent_desc; iframe #
+        simp only [recv_eq_func_mk]
+        iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+        isplitl []
+        · ipureintro; left; rfl
+        isplitl []
+        · imodintro
+          iintro %Φ' - HΦ'
+          wp_auto
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc]
+            as -
+          · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+          iapply HΦ' $$ []; itrivial
+        · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+          iframe #
+      · ihave #Hc2 := Hc
+        iunfold isCancelCtxOfR at Hc2
+        icases Hc2 with ⟨#Hmu, -, -⟩
+        wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
+        iunfold cancelCtxLockInv at Hlk
+        icases Hlk with ⟨%children, %cause0, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
+        iunfold timerR at HR
+        icases HR with ⟨%tm0, Htm0, Htm0r⟩
+        wp_apply wp_err_Load (tcc «$r0_ptr») γ iprop(True) false $$ [$Hc'] as %e ⟨-, -⟩
+        · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+        cases e with
+        | nil =>
+          wp_auto
+          wp_apply time.wp_AfterFunc as %tm #Htm
+          · wp_auto
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+            · simp only [↓reduceIte]
+              iexists parent; iframe #
+              unfold isParentCtx; iright; iexists parent_desc; iframe #
+            itrivial
+          wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
+          · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+            unfold timerR; iexists tm; iframe; iright; iexact Htm
+          simp only [recv_eq_func_mk]
+          iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+          isplitl []
+          · ipureintro; left; rfl
+          isplitl []
+          · imodintro
+            iintro %Φ' - HΦ'
+            wp_auto
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+              as -
+            · simp only [↓reduceIte]
+              iexists parent; iframe #
+              unfold isParentCtx; iright; iexists parent_desc; iframe #
+            iapply HΦ' $$ []; itrivial
+          · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+            iframe #
+        | ok ie =>
+          wp_auto
+          wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
+          · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+            unfold timerR; iexists tm0; iframe
+          simp only [recv_eq_func_mk]
+          iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+          isplitl []
+          · ipureintro; left; rfl
+          isplitl []
+          · imodintro
+            iintro %Φ' - HΦ'
+            wp_auto
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+              as -
+            · simp only [↓reduceIte]
+              iexists parent; iframe #
+              unfold isParentCtx; iright; iexists parent_desc; iframe #
+            iapply HΦ' $$ []; itrivial
+          · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+            iframe #
+  | none =>
+    dsimp only [Option.getD]
+    wp_auto
+    iStructNamedPrefix «$r0» "T"
+    ipersist c
+    ipersist cause
+    ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
+    · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
+    imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
+      with ⟨%γ, #Hc, Hf⟩
+    ipersist Tdeadline
+    ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]
+    wp_apply wp_propagateCancel_any (tcc «$r0_ptr») parent parent_desc _ $$ [$Hf $Hctx $Hk] as Hf
+    ipersist Hf
+    ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
+    wp_apply time.wp_Until as %dur -
+    wp_if_destruct
+    · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+      · simp only [↓reduceIte]
+        iexists parent; iframe #
+        unfold isParentCtx; iright; iexists parent_desc; iframe #
+      simp only [recv_eq_func_mk]
+      iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+      isplitl []
+      · ipureintro; left; rfl
+      isplitl []
+      · imodintro
+        iintro %Φ' - HΦ'
+        wp_auto
+        wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc]
+          as -
+        · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+        iapply HΦ' $$ []; itrivial
+      · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+        iframe #
+    · ihave #Hc2 := Hc
+      iunfold isCancelCtxOfR at Hc2
+      icases Hc2 with ⟨#Hmu, -, -⟩
+      wp_apply sync.Mutex.wp_Lock $$ [$Hmu] as ⟨Hlocked, Hlk⟩
+      iunfold cancelCtxLockInv at Hlk
+      icases Hlk with ⟨%children, %cause0, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
+      iunfold timerR at HR
+      icases HR with ⟨%tm0, Htm0, Htm0r⟩
+      wp_apply wp_err_Load (tcc «$r0_ptr») γ iprop(True) false $$ [$Hc'] as %e ⟨-, -⟩
+      · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
+      cases e with
+      | nil =>
+        wp_auto
+        wp_apply time.wp_AfterFunc as %tm #Htm
+        · wp_auto
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+          · simp only [↓reduceIte]
+            iexists parent; iframe #
+            unfold isParentCtx; iright; iexists parent_desc; iframe #
+          itrivial
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
+        · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+          unfold timerR; iexists tm; iframe; iright; iexact Htm
+        simp only [recv_eq_func_mk]
+        iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+        isplitl []
+        · ipureintro; left; rfl
+        isplitl []
+        · imodintro
+          iintro %Φ' - HΦ'
+          wp_auto
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+            as -
+          · simp only [↓reduceIte]
+            iexists parent; iframe #
+            unfold isParentCtx; iright; iexists parent_desc; iframe #
+          iapply HΦ' $$ []; itrivial
+        · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+          iframe #
+      | ok ie =>
+        wp_auto
+        wp_apply sync.Mutex.wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
+        · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
+          unfold timerR; iexists tm0; iframe
+        simp only [recv_eq_func_mk]
+        iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
+        isplitl []
+        · ipureintro; left; rfl
+        isplitl []
+        · imodintro
+          iintro %Φ' - HΦ'
+          wp_auto
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+            as -
+          · simp only [↓reduceIte]
+            iexists parent; iframe #
+            unfold isParentCtx; iright; iexists parent_desc; iframe #
+          iapply HΦ' $$ []; itrivial
+        · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
+          iframe #
 
 /-- Fresh ghost names and an existential deadline, as for `wp_WithDeadlineCause`. -/
 theorem wp_WithDeadline (parent : GoInterfaceOk) (parent_desc : ContextDesc (IProp GF))
