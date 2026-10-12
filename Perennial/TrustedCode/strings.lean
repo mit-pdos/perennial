@@ -43,8 +43,8 @@ copy. The two differ only if one of those bytes is written after `String` reads 
 `Builder` used through one address never does (`WriteString` appends past `len(b.buf)`, `grow`
 copies to a new buffer). A copy of the struct can: after `saved := b`, `b.WriteString`,
 `s := b.String()`, `b = saved`, a `b.WriteString` writes into the bytes `s` aliases, changing
-`s` in Go; so can a write through `saved` in another goroutine while `String` runs on a third
-copy (no race in Go: `String` reads only the header). `lockBytes` read-locks those bytes before
+`s` in Go. (A write through the copy `saved` itself panics in `copyCheck`, `saved.addr` being
+`&b`; the aliasing write goes through `b` again.) `lockBytes` read-locks those bytes before
 the conversion reads them, so every such write either lands before the copy (and Go's `s` sees
 it too) or is stuck. Both dereference `b` (a nil `b` panics in Go and is stuck in the
 model). -/
