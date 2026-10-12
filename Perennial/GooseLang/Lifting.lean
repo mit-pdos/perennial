@@ -1479,12 +1479,12 @@ theorem wp_alloc_untyped (v : val) (Hv : v.isPanic = false := by simp) :
 
 /-- `AllocN n v`: a fresh block of `n` cells holding `v`, owned. `l` is the start of a
 block, so the cells of `l` are exactly `l +ₗ i` for `0 ≤ i < n`. -/
-theorem wp_allocN (n : w64) (v : val) :
+theorem wp_allocN (n : w64) (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (AllocN (Val (LitV (LitInt n))) (Val v)) @ s; E
     {{ l, RET #l; ⌜l.locCar ≠ 0 ∧ l.addrOffset = 0⌝ ∗
         pointstoVals l (.own 1) (List.replicate (uint.nat n) v) }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -1520,7 +1520,8 @@ theorem wp_allocN (n : w64) (v : val) :
 `bs` at `l`. -/
 theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : List w8)
     (arg r : val) (hn : 0 < n) (hlen : bs.length = n)
-    (hev : wordOpEval n op (leInt bs) arg = some (r, none)) :
+    (hev : wordOpEval n op (leInt bs) arg = some (r, none))
+    (Hv : arg.isPanic = false := by simp) :
     {{ ▷ pointstoVals (GF := GF) l q (byteVals bs) }} (AtomicWord n op (Val #l) (Val arg)) @ s; E
     {{ RET r; pointstoVals l q (byteVals bs) }} := by
   iintro %Φ >Hl HΦ
@@ -1528,7 +1529,7 @@ theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : 
     intro h; simp [byteVals] at h; subst h; simp at hlen; omega
   icases pointstoVals_car l q _ hne $$ Hl with %hc
   ihave Hl := pointstoVals_to_na l q _ $$ Hl
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases na_heap_read_cells σ₁.1.heap l q (byteVals bs) $$ Hσ Hl with %Hcells
   have Hcells' : ∀ i (h : i < bs.length), ∃ k,
@@ -1581,7 +1582,8 @@ theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : 
 the `n` bytes `bs` at `l`. -/
 theorem wp_atomic_word_write (n : Nat) (op : WordOp) (l : Loc) (bs : List w8)
     (arg r : val) (z : Int) (hn : 0 < n) (hlen : bs.length = n)
-    (hev : wordOpEval n op (leInt bs) arg = some (r, some z)) :
+    (hev : wordOpEval n op (leInt bs) arg = some (r, some z))
+    (Hv : arg.isPanic = false := by simp) :
     {{ ▷ pointstoVals (GF := GF) l (.own 1) (byteVals bs) }}
       (AtomicWord n op (Val #l) (Val arg)) @ s; E
     {{ RET r; pointstoVals l (.own 1) (byteVals (leBytes n z)) }} := by
@@ -1590,7 +1592,7 @@ theorem wp_atomic_word_write (n : Nat) (op : WordOp) (l : Loc) (bs : List w8)
     intro h; simp [byteVals] at h; subst h; simp at hlen; omega
   icases pointstoVals_car l _ _ hne $$ Hl with %hc
   ihave Hl := pointstoVals_to_na l _ _ $$ Hl
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases na_heap_read_cells_1 σ₁.1.heap l (byteVals bs) $$ Hσ Hl with %Hcells
   have Hcells' : ∀ i (h : i < bs.length),
