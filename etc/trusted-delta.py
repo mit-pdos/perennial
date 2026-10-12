@@ -148,8 +148,8 @@ def parse_diff(diff_args):
             cur["status"] = "D"
         elif line.startswith("rename to"):
             cur["status"] = "R"
-        elif line.startswith(""):
-            m = re.match(r" -\d+(?:,\d+)? \+(\d+)", line)
+        elif line.startswith("@@"):
+            m = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", line)
             new_ln = int(m.group(1))
         elif line.startswith("+") and not line.startswith("+++"):
             cur["lines"].append((new_ln, "+", line[1:], prose))
