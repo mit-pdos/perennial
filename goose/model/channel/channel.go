@@ -4,6 +4,16 @@ import (
 	"github.com/goose-lang/primitive"
 )
 
+// runtimePanic stands for a run-time panic of Go's channels (send on or close
+// of a closed channel, close of a nil channel). Go raises a runtime.Error
+// after releasing the channel's lock; the model is stuck instead
+// (primitive.Assert(false) is a stuck Panic in GooseLang), as for the other
+// run-time panics of builtins, so that a recovered panic can never observe a
+// value or a channel state Go does not have.
+func runtimePanic() {
+	primitive.Assert(false)
+}
+
 type offerState uint64
 
 const (
@@ -51,7 +61,9 @@ func (c *Channel[T]) TrySend(val T, blocking bool) bool {
 	c.mu.Lock()
 	switch c.state {
 	case closed:
-		panic("send on closed channel")
+		c.mu.Unlock()
+		runtimePanic() // send on closed channel
+		return false // not reached
 	case buffered:
 		// If we have room, buffer our value
 		if len(c.buffer) < int(c.cap) {
@@ -215,7 +227,9 @@ func (c *Channel[T]) tryClose() bool {
 	c.mu.Lock()
 	switch c.state {
 	case closed:
-		panic("close of closed channel")
+		c.mu.Unlock()
+		runtimePanic() // close of closed channel
+		return false // not reached
 	case idle, buffered:
 		c.state = closed
 		c.mu.Unlock()
@@ -235,7 +249,7 @@ func (c *Channel[T]) tryClose() bool {
 // close(c)
 func (c *Channel[T]) Close() {
 	if c == nil {
-		panic("close of nil channel")
+		runtimePanic() // close of nil channel
 	}
 	for !c.tryClose() {
 	}
