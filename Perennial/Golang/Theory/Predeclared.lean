@@ -72,6 +72,7 @@ theorem word_wp_store_raw (V : Type) [ZeroVal V] [TypedPointsto (GF := GF) V] (u
   wp_apply_core wp_atomic_word_write n .swap l bs #w _ (toZ w) hn hlen hev $$ [Hl]
   · iexact Hl
   iintro Hl
+  have _ := wordLit_isPanic n (leInt bs)
   wp_pures
   iapply HΦ
   rw [typedPointsto_unseal]; unfold typedPointstoWrap

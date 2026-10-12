@@ -1516,6 +1516,9 @@ theorem wp_allocN (n : w64) (v : val) (Hv : v.isPanic = false := by simp) :
 
 /-! ### Atomic operations on words -/
 
+@[simp] theorem wordLit_isPanic (n : Nat) (z : Int) : (wordLit n z).isPanic = false := by
+  unfold wordLit; split <;> rfl
+
 /-- An atomic operation that does not write (`load`, a failing `cmpxchg`), on the `n` bytes
 `bs` at `l`. -/
 theorem wp_atomic_word_read (n : Nat) (op : WordOp) (l : Loc) (q : DFrac) (bs : List w8)
