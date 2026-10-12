@@ -206,8 +206,6 @@ theorem wp_unbox {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T
   wp_apply wp_bload d (W64 (ByteRepr.size V)) dq (ByteRepr.encode x)
     (by rw [ByteRepr.length_encode]; simp; omega) $$ [$Hd] as Hd
   wp_pures
-  rw [ByteRepr.decode_encode]
-  wp_pures
   iapply HΦ $$ Hd
 
 /-! ## The interface specs (what program proofs use) -/
@@ -281,7 +279,6 @@ theorem wp_iface_method_resolve {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I 
   wp_apply wp_bload (byteAddr i.tab (24 + 8 * (itabMethods I).idxOf m)) (W64 8) .discard
     (ByteRepr.encode (methodAddr T m)) (by rw [ByteRepr.length_encode]; rfl) $$ [$Hf] as -
   wp_pures
-  rw [w64_combine_encode]
   iapply wp_static_func _ _ (hmeth m hm) rfl
   iintro #Hfn
   wp_apply wp_func_load (methodAddr T m) (ifnWrapper T m) $$ [$Hfn]
@@ -318,7 +315,6 @@ theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
   wp_apply wp_bload (byteAddr tab 8) (W64 8) .discard (ByteRepr.encode (typeAddr T))
     (by rw [ByteRepr.length_encode]; rfl) $$ [$Ht] as -
   wp_pures
-  rw [w64_combine_encode]
   wp_pures
   wp_apply wp_unbox T d .discard x hsz $$ [$Hd] as -
   iapply HΦ; itrivial

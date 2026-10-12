@@ -210,12 +210,11 @@ class BytesSemantics : Prop where
   encode_step {V : Type} [ZeroVal V] [ByteRepr V] {t : go.GoType} [TypeRepr t V]
     [TypeBytes t V] (x : V) :
     ⟦EncodeBytes t, #x⟧ ⤳ (Val (blobV (ByteRepr.encode x)))
+  /-- Decoding the encoding of `x` gives `x`. Bytes that are not an encoding have
+  no step: Go has no behaviour for them (only `unsafe` code can produce them). -/
   decode_step {V : Type} [ZeroVal V] [ByteRepr V] {t : go.GoType} [TypeRepr t V]
-    [TypeBytes t V] (bs : List w8) :
-    ⟦DecodeBytes t, blobV bs⟧ ⤳
-      (match (ByteRepr.decode bs : Option V) with
-       | some x => Val #x
-       | none => Panic "the bytes are not a value of the type")
+    [TypeBytes t V] (x : V) :
+    ⟦DecodeBytes t, blobV (ByteRepr.encode x)⟧ ⤳ Val #x
   size_step {V : Type} [ZeroVal V] [ByteRepr V] {t : go.GoType} [TypeRepr t V]
     [TypeBytes t V] :
     ⟦SizeOf t, #()⟧ ⤳ (Val #(W64 (ByteRepr.size V)))
