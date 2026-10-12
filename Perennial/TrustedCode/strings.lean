@@ -16,6 +16,17 @@ namespace strings
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
+/-- `lockBytes buf i` read-locks `buf[i]`, ..., `buf[len(buf)-1]` and never unlocks them: each
+`StartRead` is left without its `FinishRead`, so any later write to one of those bytes is stuck
+(a write starts with `PrepareWrite`, which needs the location to have no readers, `PrepareWriteS`
+in `Lang.lean`), while reads still go through. -/
+def Builder.String.lockBytes : val :=
+  rec: "lock" "buf" "i" :=
+    if: "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "buf" then
+      StartRead (IndexRef (go.SliceType go.byte) ("buf", "i")) ;;
+      "lock" "buf" ("i" +⟨go.int⟩ #(W64 1))
+    else #()
+
 /-- `b.String()`: the bytes written to the builder `b`. Go's `String` is
 
 ```go
@@ -34,18 +45,23 @@ func (b *Builder) String() string {
 ```
 
 (the receiver's type written out as `strings.Builder`'s named type, which this file cannot refer
-to by its generated name `Builder.ty`). The two return the same string: Go's shares `b.buf`'s
-bytes where the model copies them, which is unobservable because a `Builder` never changes a
-byte once written (`WriteString`, `Write`, `WriteByte` and `WriteRune` append; `grow` copies to
-a new buffer; `Reset` drops the buffer). Both dereference `b` (a nil `b` panics in Go and is
-stuck in the model). -/
+to by its generated name `Builder.ty`), with `b.buf` bound to `buf` and `lockBytes buf 0` run
+after the conversion. Go's result shares `b.buf`'s
+bytes where the model's is a copy. The two differ only if one of those bytes is written later,
+which a `Builder` used through one address never does (`WriteString` appends past `len(b.buf)`,
+`grow` copies to a new buffer); a copy of the struct can: after `saved := b`, `b.WriteString`,
+`s := b.String()`, `b = saved`, a `b.WriteString` writes into the bytes `s` aliases, changing `s`
+in Go. `lockBytes` leaves those bytes read-locked, so that write is stuck in the model. Both
+dereference `b` (a nil `b` panics in Go and is stuck in the model). -/
 noncomputable def Builder.String.impl : val :=
   (LamV "b"
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))))))))
+  (Let "buf" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))
+  (Let "s" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Var "buf"))
+  (Seq (App (App (Val Builder.String.lockBytes) (Var "buf")) (Val #(W64 0)))
+  (App (Val doReturn) (Var "s")))))))))
 
 /-- `HasPrefix(s, prefix)`: whether `s` begins with `prefix`. Go's `HasPrefix` is
 `len(s) >= len(prefix) && s[:len(prefix)] == prefix` (in `internal/stringslite`); Goose's Go

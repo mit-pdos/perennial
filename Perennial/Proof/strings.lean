@@ -244,23 +244,85 @@ theorem Builder.wp_Grow (b addr : Loc) (buf : GoSlice) (s : GoString) (n : w64)
     ipureintro
     exact Or.inr rfl
 
-/-- `b.String()` returns the bytes written. -/
+/-- A byte's points-to, as a heap points-to. -/
+theorem typedPointsto_w8_heap (l : Loc) (v : w8) (dq : DFrac) :
+    typedPointsto (GF := GF) l v dq ⊢ heapPointsto l dq #v := by
+  rw [typedPointsto_unseal_eq]
+  simp only [typedPointstoDef_heap]
+  iintro ⟨H, -⟩
+  iexact H
+
+/-- `lockBytes buf i` (`TrustedCode/strings.lean`), given the bytes of `buf` from index `i` on,
+read-locks them and keeps them. -/
+theorem Builder.wp_lockBytes (buf : GoSlice) :
+    ∀ (k : Nat) (i : w64) (vs : List w8), vs.length = k → 0 ≤ sint.Z i →
+    sint.Z i + vs.length = sint.Z buf.len →
+    {{ (arrayElems (GF := GF) (arrayIndexRef w8 (sint.Z i) buf.ptr) vs (DFrac.own 1)) }}
+      (App (App (Val Builder.String.lockBytes) (Val #buf)) (Val #i))
+    {{ RET #(); True }} := by
+  intro k
+  induction k with
+  | zero =>
+    intro i vs hk hi hlen
+    iintro %Φ _ HΦ
+    wp_call
+    rw [decide_eq_false (by rw [List.length_eq_zero_iff.1 hk] at hlen; simp at hlen; omega)]
+    wp_pures
+    iapply HΦ; itrivial
+  | succ k ih =>
+    intro i vs hk hi hlen
+    iintro %Φ Hl HΦ
+    obtain ⟨v, vs', rfl⟩ : ∃ v vs', vs = v :: vs' := by
+      cases vs with
+      | nil => simp at hk
+      | cons v vs' => exact ⟨v, vs', rfl⟩
+    simp only [List.length_cons] at hk hlen
+    have hlt : sint.Z i < sint.Z buf.len := by omega
+    wp_call
+    rw [decide_eq_true hlt]
+    wp_pures
+    rw [ite_eq_left ⟨hi, hlt⟩]
+    icases (arrayElems_cons _ v vs' _).1 $$ Hl with ⟨Hv, Hl⟩
+    rw [go.arrayIndexRef_0]
+    ihave Hv := typedPointsto_w8_heap _ _ _ $$ Hv
+    simp only [sliceIndexRef]
+    have hi1 : sint.Z (i + W64 1) = sint.Z i + 1 := by word
+    have hrec := ih (i + W64 1) vs' (by omega) (by omega) (by push_cast at hlen; omega)
+    rw [hi1, go.arrayIndexRef_add] at hrec
+    wp_apply_core wp_start_read _ _ _ $$ Hv
+    iintro ⟨-, -⟩
+    wp_pures
+    iapply hrec $$ Hl HΦ
+
+/-- The bytes of `sl`, as element points-tos from its start. -/
+theorem ownSlice_arrayElems (sl : GoSlice) (vs : List w8) :
+    (sl ↦* vs : IProp GF) ⊢ arrayElems (arrayIndexRef w8 0 sl.ptr) vs (DFrac.own 1) := by
+  rw [ownSlice_unseal]; unfold ownSliceDef
+  iintro (%H | ⟨H, %_⟩)
+  · obtain ⟨-, rfl⟩ := H
+    unfold arrayElems; iapply BigSepL.bigSepL_nil.2; iempintro
+  · rw [go.arrayIndexRef_0, typedPointsto_unseal]; unfold typedPointstoWrap
+    simp only [TypedPointsto.typedPointstoDef]
+    icases H with ⟨⟨-, H⟩, -⟩
+    iexact H
+
+/-- `b.String()` returns the bytes written. The model leaves them read-locked (so that a later
+write through a copy of the builder is stuck), so the builder is used up. -/
 theorem Builder.wp_String (b : Loc) (s : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ ownBuilder b s }}
       (App (Val (b @!! go.GoType.PointerType Builder.ty @!! go!"String")) (Val #()))
-    {{ RET #s; ownBuilder b s }} := by
+    {{ RET #s; True }} := by
   wp_start as Hb
   unfold ownBuilder
   icases Hb with ⟨%addr, %buf, Hb, %Haddr, Hs, Hcap⟩
   rw [Builder_ty_eq]
   wp_auto
-  dsimp only
   wp_apply wp_bytes_to_string $$ Hs as Hs
-  iapply HΦ
-  iexists addr, buf
-  iframe
-  ipureintro
-  exact Haddr
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hs
+  ihave Hs := ownSlice_arrayElems _ _ $$ Hs
+  wp_apply Builder.wp_lockBytes buf s.length (W64 0) s rfl (by decide) (by word) $$ [Hs]
+  · rw [show sint.Z (W64 0) = 0 from rfl]; iexact Hs
+  iapply HΦ; itrivial
 
 /-- A join with one more element at the end. -/
 theorem intercalate_snoc (sep : GoString) :
@@ -533,7 +595,7 @@ theorem wp_Join (elems : GoSlice) (xs : List GoString) (dq : DFrac) (sep : GoStr
       exact ⟨by word, by word⟩
     rw [List.take_of_length_le (show xs'.length ≤ (sint.Z j).toNat by
       simp only [List.length_cons] at Hm; omega)]
-    wp_apply Builder.wp_String b_ptr _ $$ [$Hb] as -
+    wp_apply Builder.wp_String b_ptr _ $$ [$Hb]
     iapply HΦ
     iapply (ownSlice_slice (W64 1) elems.len elems dq _ Hb1).2
     rw [Hsub]
