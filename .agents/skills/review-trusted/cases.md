@@ -4,7 +4,7 @@ Past changes to the trusted base and how the review should grade them. Each
 is a real commit on `lean` (`git show <sha>`); `etc/trusted-delta.py <sha>`
 reproduces the report. Compare a new change against these before grading it.
 
-## Case 1 — BLOCK (R2): `sync: WaitGroup.Add assumes its counter does not overflow` (614fa61d3)
+## Case 1 — BLOCK (R3): `sync: WaitGroup.Add assumes its counter does not overflow` (614fa61d3)
 
 **What it did.** Replaced goose's translation of `WaitGroup.Add` by a trusted
 model (`TrustedCode/sync.lean`, `sync.toml`: `"!WaitGroup.Add"` in
@@ -30,12 +30,12 @@ Under the model this program verifies; in Go it panics. `append`'s and
 exist in a 64-bit address space, so no Go execution is removed. "A real
 program would not keep `2^31` goroutines pending" describes a *likely*
 program, not an *impossible* execution, and a WaitGroup counter is not even
-tied to goroutines. The "unprovable loop" is a program-logic problem (R2a):
+tied to goroutines. The "unprovable loop" is a program-logic problem (R3a):
 the proof needed a global bound the local spec could not supply.
 
 **Signals the report shows.** `assume` in a tier-0 file; `"!WaitGroup.Add"`
-plus a `trusted` entry (R6: goose *can* translate it, so why replace it);
-the README diff adding to "Model assumptions". Each alone deserves the R2
+plus a `trusted` entry (R7: goose *can* translate it, so why replace it);
+the README diff adding to "Model assumptions". Each alone deserves the R3
 test; together they are the whole pattern.
 
 **The fix that was applied** (`3847b33a4`, with `72cc3f7e7`, `4f89ebd09`,
@@ -46,12 +46,12 @@ with `threadToks T ⊢ False` for the adequacy parameter `T`), so a caller whose
 counter is backed by one goroutine per unit discharges the bound, and the
 client assumes `threadBound GF ≤ 2^31` at adequacy time. The semantics change
 this required (thread count in `GlobalState`, `Fork` and `ThreadExit`
-bookkeeping) is itself a tier-0 change: graded OK under R4 because it only
+bookkeeping) is itself a tier-0 change: graded OK under R5 because it only
 adds bookkeeping, every Go execution with fewer than `T` live threads is still
 modelled, and the new adequacy hypothesis "fewer than `T` threads are live" is
-about real executions and documented (R5, R7).
+about real executions and documented (R6, R8).
 
-## Case 2 — REWORK (R1), NOTE (R3): `strings: trusted model of Split, wp_Split, split` (99be071f3)
+## Case 2 — REWORK (R2), NOTE (R4): `strings: trusted model of Split, wp_Split, split` (99be071f3)
 
 **What it did.** Added `Split.impl` to `TrustedCode/strings.lean` and `Split`
 to `strings.toml`'s `trusted`. The docstring is honest: "Goose's Go semantics
@@ -64,7 +64,7 @@ separator splits into UTF-8 sequences and the model cannot. `wp_Split` and
 the pure `split` function and lemmas are proved.
 
 **Why it needs rework.** This is rung 5 of R1 used to paper over a rung-3
-gap. The real `strings.Split` is `genSplit`, which uses `s[:m]` and
+gap, a missing feature in the sense of R2. The real `strings.Split` is `genSplit`, which uses `s[:m]` and
 `s[m+len(sep):]`; goose already translates `s[a:b]` on a string to
 `Slice go.string (#s, a, b)` (`goose.go`, `sliceExpr`): what is missing is
 one step rule in `StringSemantics` (`Golang/Defn/String.lean`), of the shape
@@ -86,7 +86,7 @@ translated code rather than trusted code. The extra trusted lines are not
 wrong, they are *unnecessary*, and each hand-pasted 100-line GooseLang term is
 a place where a future edit can silently diverge from Go.
 
-**Fidelity notes (R3).** The empty-`sep` divergence is documented and
+**Fidelity notes (R4).** The empty-`sep` divergence is documented and
 excluded by the spec: NOTE, acceptable. `_ = sep[0]` as a device to make a
 case stuck is a smell: a model should be stuck where it is *incomplete*, by
 not handling the case, not by a fake panic that a reader may take for Go's
@@ -102,16 +102,16 @@ output except for one line: the call to `HasPrefix` is `FuncResolve
 go!"strings.HasPrefix" []` where goose emits `FuncResolve
 _root_.Perennial.strings.HasPrefix []` (an import-order adaptation, since
 `TrustedCode` is imported by `Code/strings`). Harmless here, but the
-docstring says "goose's translation" and does not name the edit: NOTE (R7).
+docstring says "goose's translation" and does not name the edit: NOTE (R8).
 This is why the procedure asks to re-run goose on quoted Go rather than trust
 the sentence.
 
 **Signals the report shows.** A new `trusted-impl`; a `trusted` list growing;
 the quoted-Go-vs-real-source section showing the model is not the source; the
 docstring's own words "the semantics has no string slicing". That sentence is
-the R1 trigger: the gap it names is the thing to fix.
+the R2 trigger: the gap it names is a missing feature, and the thing to fix.
 
-## Case 3 — OK (NOTE R2, R7): `Map length: the model assumes a map has fewer than 2^63 keys` (9276bd1ed)
+## Case 3 — OK (NOTE R3, R8): `Map length: the model assumes a map has fewer than 2^63 keys` (9276bd1ed)
 
 `len(m)` returned `W64 (GMap.size m)` unbounded; the rule now steps to
 `assume false` for `2^63` keys or more, so `make([]T, 0, len(m))` verifies.
@@ -123,7 +123,7 @@ the count been of something a program controls without allocating memory
 proportionally (a counter, a sequence number, a WaitGroup), it would be
 Case 1.
 
-## Case 4 — REWORK (R1a), BLOCK (R3): `strings.Join` trusted model (00b3c10ea)
+## Case 4 — REWORK (R2), BLOCK (R4): `strings.Join` trusted model (00b3c10ea)
 
 **What it did.** It added `Join` to `strings.toml`'s `trusted` list, with a
 hand-written `Join.impl`: goose's translation of a `+=` loop, "because Go's
@@ -133,7 +133,7 @@ README listed Join's total length under "Model assumptions".
 **How it was first graded, and why that was wrong.** This file first graded
 it OK. It accepted the docstring's reason and called the length assumption
 "of the unreachable kind". Both were calibration failures:
-- *R1a.* Go's `Join` is ordinary Go: a `switch`, two overflow checks, then
+- *R2.* Go's `Join` is ordinary Go: a `switch`, two overflow checks, then
   `Builder.Grow`/`WriteString`/`String`. Goose rejects only three one-line
   primitives inside `Builder`:
   - `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` in `String`;
@@ -143,7 +143,7 @@ it OK. It accepted the docstring's reason and called the length assumption
   Those, and nothing above them, are what may be trusted. A goose run on the
   real source with `Join` moved to `translate` shows this in a minute; the
   review never ran it.
-- *R3 / R2.* The model had no `assume` at all, and Go's overflow panic is
+- *R4 / R3.* The model had no `assume` at all, and Go's overflow panic is
   reachable. Go checks the would-be length *before* allocating:
 
   ```go
@@ -172,35 +172,38 @@ it OK. It accepted the docstring's reason and called the length assumption
 
 Go's mutex is runtime/assembly and has data races goose's translation would
 expose; a hand-written model is the only option (rung 5), documented in the
-tutorial. The review question for such a model is R3's atomicity clause:
+tutorial. The review question for such a model is R4's atomicity clause:
 the model must not be more forgiving than Go (double unlock must still be a
 fault, `Lock` must block, not spin into success).
 
-## Case 6 — OK (R4, R5, R7): thread count in the semantics (`72cc3f7e7`, `4f89ebd09`)
+## Case 6 — OK (R5, R6, R8): thread count in the semantics (`72cc3f7e7`, `4f89ebd09`)
 
 A real semantics change: `GlobalState.threads`, `Fork e` spawning
 `e ;; ThreadExit`, the bounded layer's thread fuel, and adequacy theorems
 taking a `T` with the hypothesis that fewer than `T` threads are live. Graded
-OK because (R4) the only behavioural change is that `Fork` stutters once the
+OK because (R5) the only behavioural change is that `Fork` stutters once the
 fuel is out, in the *bounded* layer only, while the real semantics merely
-counts; (R5) the new hypothesis is about real executions and checkable from
-outside; (R7) `README.md` and the proof reference describe it. This is what a
+counts; (R6) the new hypothesis is about real executions and checkable from
+outside; (R8) `README.md` and the proof reference describe it. This is what a
 good tier-0 change looks like: it *removed* a reason to add a model
 assumption.
 
 ## Shapes to watch for (from these cases)
 
 - A trusted model whose docstring quotes Go that is not the Go source, with a
-  reason of the form "the semantics has no X": R1, fix X.
+  reason of the form "the semantics has no X": R2 (missing feature), fix X.
 - `"!Name"` in `translate` next to `Name` in `trusted`: goose can translate
-  it; the message must say why a hand-written copy is better (R6, R1).
+  it; the message must say why a hand-written copy is better (R7, R2).
 - An `assume` justified by what programs *usually* do, or by a proof being
-  otherwise impossible: R2 / R2a.
-- A model that is more defined, more deterministic or more atomic than Go: R3.
-- A change to an adequacy theorem's hypotheses without a README change: R5, R7.
-- A trusted term longer than the Go it models: R1 rung 4 (write it in Go).
+  otherwise impossible: R3 / R3a.
+- A model that is more defined, more deterministic or more atomic than Go: R4.
+- A change to an adequacy theorem's hypotheses without a README change: R6, R8.
+- A trusted term longer than the Go it models: R2, or at least R1 rung 4 (write it in Go).
 - A trusted model of a function whose real source is ordinary Go and that only
   calls something untranslatable (`Join` over `Builder.String`'s
-  `unsafe.String`): R1a. Run goose on the real source; trust the callee.
+  `unsafe.String`): R2. Run goose on the real source; trust the callee.
 - A "graded OK" precedent in this file that rested on the author's reason
   rather than a goose run: re-check it (case 4 was one).
+- A goose run that fails, offered as the whole justification: R2 also asks
+  whether the failure is irreducible. An unsupported statement form or a
+  missing semantics rule is a feature to add, not a reason to trust.

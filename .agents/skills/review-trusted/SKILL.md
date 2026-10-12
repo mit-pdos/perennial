@@ -1,6 +1,6 @@
 ---
 name: review-trusted
-description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of functions whose real source goose translates; every trusted entry needs a failing goose run on the real source), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
+description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of Go that goose translates or could be extended to translate: trust is only for irreducible primitives, shown by a goose run on the real source), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
 argument-hint: "[commit | A..B | (nothing: branch + working tree)] [--fix]"
 ---
 
@@ -50,16 +50,16 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    (`go doc -src`). Read the tier-0 diffs in full; `--full` prints the other
    tiers. Also read, outside the report, the specs and proofs that *use* each
    new trusted item (`grep` for its name under `Perennial/Proof`,
-   `Golang/Theory`): R3 and R6 cannot be applied from the model alone. If
+   `Golang/Theory`): R4 and R7 cannot be applied from the model alone. If
    there is no tier-0 change and no signal in tiers 1-2, say so and stop: this
    review is about trust, `/code-review` is about bugs. `git show TARGET`
-   gives the rest of the change (README, docs, proofs) that steps 2 and R7
+   gives the rest of the change (README, docs, proofs) that steps 2 and R8
    need.
 
 2. **Read the commit message / PR description for the *why*.** A trusted
    change must say what it adds to the trusted base and which lower rung of R1
-   it rejected. No *why* at all for new tier-0 trust: REWORK (R7). A *why*
-   without the rejected alternative: NOTE (R7), unless R1 finds the
+   it rejected. No *why* at all for new tier-0 trust: REWORK (R8). A *why*
+   without the rejected alternative: NOTE (R8), unless R1 finds the
    alternative was the right one, in which case R1 carries the finding.
 
 3. **Classify every tier-0 item** as one of: new semantics rule; changed
@@ -76,7 +76,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    - for **every** trusted entry the change adds or touches (a `trusted` name,
      a `"!Name"` in `translate`, a hand-written `.impl`, a `Name.underlying`
      in `TrustedCode`), run goose on the **real** Go source with the entry
-     moved from `trusted` to `translate`, and record what goose says (R1a).
+     moved from `trusted` to `translate`, and record what goose says (R2).
      Copy the configuration so the repo is untouched:
      `cp -r Perennial/Code <scratch>/cfg` (a few MB),
      edit `<scratch>/cfg/<pkg>.toml`, then
@@ -88,7 +88,8 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
      trusted): move it to `translate` and rerun, until each remaining callee
      is one goose rejects. Those callees, and only those, may be trusted.
      If goose fails on the entry itself, record the exact construct and the
-     function it names;
+     function it names. Then classify each failure as *irreducible* or a
+     *missing feature* (R2): only the former may stay trusted;
    - when a docstring says the model "is goose's translation of" some Go,
      check that claim: put the quoted Go in a scratch module and run goose on
      it, then diff the generated `.impl` against the committed one. Build
@@ -140,7 +141,7 @@ Each finding cites a rule. Severity: **BLOCK** (unsound, or forbidden by
 `README.md`), **REWORK** (sound but adds trust that should not exist, or adds
 it in the wrong place), **NOTE** (accepted trust to record, or a doc gap).
 
-**R1. The trust ladder: trust is a last resort, and never a workaround.**
+**R1. The trust ladder: trust is a last resort.**
 For each new trusted item, ask what the *least trusted* way to get the same
 thing is, in this order, and require the change to be on the lowest rung that
 works:
@@ -148,47 +149,72 @@ works:
 1. prove it (a theorem in `Golang/Theory` or `Proof`);
 2. translate the real Go source with goose (add the package/function to
    `translate`);
-3. **extend the Go semantics or goose** so that the real source translates
-   (a new rule in the right `*Semantics` class in `Golang/Defn`, its lifting
-   lemma in `Golang/Theory`, a goose change with a unit test and gold file);
+3. **extend goose or the Go semantics** so that the real source translates
+   (a goose change with a unit test and gold file; a new rule in the right
+   `*Semantics` class in `Golang/Defn` with its lifting lemma in
+   `Golang/Theory`);
 4. write the model *in Go* under `goose/model/` and translate it, so the
    trusted artifact is readable Go;
-5. hand-write GooseLang in `TrustedCode` (only for what Go itself does in
-   assembly, `unsafe`, or the runtime: `sync.Mutex`, `unsafe.String`, ...);
-6. `assume` (R2);
+5. hand-write GooseLang in `TrustedCode`;
+6. `assume` (R3);
 7. `axiom` (needs prior discussion per `README.md`: BLOCK without it).
 
-A model whose docstring quotes Go code that is *not* the real source, and says
-so because "the semantics has no X" (string slicing, a conversion, a builtin),
-is a workaround on rung 5 for a gap that belongs on rung 3: **REWORK**. The
-fix is to add X. The same holds when the trusted part is larger than the
-primitive that really needs trust: trust `Index`, not `Split`. Severity:
-REWORK; BLOCK if the workaround also changes behaviour (R3).
+Rungs 4 and 5 are allowed only under R2. Every finding about *where* trust
+sits names the rung the change should be on.
 
-*R1a. A trusted model needs evidence from goose, not a reason in a docstring.*
-The default for any Go function is that goose translates its real source. A
-trusted entry is justified only by a goose run on that source that fails
-(step 4), and only at the innermost function where it fails. The trusted unit
-must be the smallest one that contains the construct goose rejects
-(`unsafe.String`, assembly, `go:linkname`, a runtime intrinsic); everything
-around it is translated. The usual failure is a model of an ordinary Go
-function that merely *calls* something untranslatable. `strings.Join` is
-plain Go (overflow checks, then a `Builder`), and its only untranslatable
-parts are three one-line primitives inside `Builder`. So trusting `Join`
-was wrong, and so was any model of `Join` (`cases.md`, case 4). It follows
-that:
-- an entry with no recorded goose run is REWORK. Do the run yourself, and
-  never accept "goose does not support X" or "it uses `unsafe`" without it;
-- an entry whose real source goose translates, or would translate once a
-  callee is trusted, is REWORK (BLOCK if the model also departs from Go, R3).
-  The fix is to translate it and trust the callee;
-- a model "of the same result computed differently" is never justified by
-  convenience of proof. Prove the real code;
-- this applies to inherited entries too. When a change adds a spec for, or
-  touches, an existing trusted entry, check that entry as if it were new, and
-  report the result even if the change did not create it.
+**R2. Trusted code must be irreducible: translate the real source, and if goose
+cannot, make goose able to.**
+By default goose translates the real source of every Go function. A trusted
+entry is any `trusted` name, any `"!Name"` in `translate`, any hand-written
+`.impl`, and any `Name.underlying` in `TrustedCode`. It is justified only when
+both of these hold:
 
-**R2. A model assumption must be unreachable, not merely unlikely.**
+- *Evidence.* There is a goose run on the real source that fails (step 4), at
+  the innermost function where it fails. The trusted unit is the smallest one
+  that contains what fails, and everything around it is translated. A reason
+  written in a docstring is not evidence.
+- *Irreducibility.* What fails is something that no reasonable extension of
+  goose or of the semantics would express as plain Go:
+  - assembly, or a `go:linkname`/external function with no Go body
+    (`runtime_procPin`, `stopTimer`, `bytealg.IndexString`);
+  - `unsafe` code that reinterprets memory layout
+    (`(*efaceWords)(unsafe.Pointer(v))`, `unsafe.String(unsafe.SliceData(b), n)`);
+  - behaviour the runtime gives an object and that plain Go code cannot
+    give it: a timer channel whose `cap` and `len` are 0, `sync.Mutex`'s
+    runtime semaphores, a racy lock-free fast path whose races goose would
+    expose.
+
+A *missing feature* is not a justification. Examples:
+- goose reports an unsupported construct of ordinary Go (a statement form, a
+  builtin, a conversion, a range form);
+- the translation is stuck on a missing semantics rule (string slicing,
+  `&^`, a numeric conversion).
+
+The fix for a missing feature is rung 3: extend goose (unit test, gold file)
+or add the semantics rule (with its lifting lemma, R5), then translate the
+real function. This holds even when only one program needs the feature.
+Never write a model of that one function instead. The telltale case is a
+docstring that quotes Go which is not the real source, "because the
+semantics/goose has no X": the fix is to add X.
+
+Grading:
+- **No goose run recorded: REWORK.** Do the run yourself. Never accept
+  "goose does not support X" or "it uses `unsafe`" without one.
+- **The real source translates, or would once a callee is trusted: REWORK.**
+  Translate it and trust the callee (`strings.Join` over `Builder.String`'s
+  `unsafe.String`, case 4).
+- **The run fails on a missing feature: REWORK.** Extend goose or the
+  semantics (`strings.Split` and `TrimPrefix` over string slicing, case 2).
+- **Any of these where the model also departs from Go (R4): BLOCK.**
+- **"The real code is harder to prove" never justifies a model.** Prove the
+  real code. If it reads state whose ownership is not yet available (a
+  package variable behind an unproved initializer), that is a gap in the
+  proofs to fill, not a reason to trust.
+- **Inherited entries count too.** When a change adds a spec for, or touches,
+  an existing trusted entry, check that entry as if it were new, and report
+  the result even if the change did not create it.
+
+**R3. A model assumption must be unreachable, not merely unlikely.**
 An `assume`, `AngelicExit` or deliberately stuck branch removes executions
 from the model, so every verified program is only verified on the remaining
 ones. That is sound only if *no Go program can reach the removed executions*
@@ -200,19 +226,19 @@ it exists and runs (`wg.Add(1<<30); wg.Add(1<<30)` panics in Go), the
 assumption is **BLOCK**: a program with that bug would verify. "A real
 program would not do this", "the scheduler would have to be adversarial",
 "the proof is otherwise impossible" are not arguments: the first two describe
-reachable behaviour, the third is a program-logic problem (R2a). Check the
+reachable behaviour, the third is a program-logic problem (R3a). Check the
 assumption against the function's *argument domain*, not against the
 docstring's story: `Add(delta int)` takes any `int`, so an argument about
 goroutines or memory does not bound its counter.
 
-*R2a.* When an assumption was added because a proof needed a bound the
+*R3a.* When an assumption was added because a proof needed a bound the
 program cannot provide locally, the fix is in the logic, not the model: a
 spec premise the caller discharges, backed where needed by a ghost resource
 whose total is bounded by adequacy (thread tokens `threadToks`, time receipts
 `⧗`; `README.md`, "Bounded layer, time receipts and thread tokens"). Point
 the author there.
 
-**R3. A trusted model must be faithful to Go where Go is defined, and may be
+**R4. A trusted model must be faithful to Go where Go is defined, and may be
 only *less* defined, never *more*.** Compare against the real source
 (`go doc -src pkg.Func`, or the module cache), not against the docstring's
 paraphrase. Check, in this order: panics Go performs that the model omits
@@ -232,7 +258,7 @@ case). Unicode: Go strings are
 bytes in the model (`GoString = List w8`); anything the Go function does per
 rune is a divergence to document.
 
-**R4. A semantics change may only add Go behaviours or refine stuck ones.**
+**R5. A semantics change may only add Go behaviours or refine stuck ones.**
 For a new or changed rule in `Golang/Defn`, `GooseLang/Lang.lean`,
 `BoundedLang.lean` or an FFI: name the Go spec sentence it implements; check
 the rule is *at least* as nondeterministic as Go (a deterministic choice
@@ -247,7 +273,7 @@ message must say so. Any new or changed `*Semantics` field must have its
 lifting lemma, and the gold files/translator tests must still pass
 (`cd goose && go test ./...`).
 
-**R5. Adequacy statements are the contract: every change to them is trust.**
+**R6. Adequacy statements are the contract: every change to them is trust.**
 For `goose_adequacy*`, `goose_invariance*`, `goose_init`, the grove/disk
 adequacy theorems and `GooseGpreS`: new hypotheses must be about *real
 executions* and checkable from outside the logic (fewer than `N` steps,
@@ -257,19 +283,19 @@ layer; `README.md` and `docs/PERENNIAL_PROOF_REFERENCE.md` must describe the
 new hypothesis. Missing documentation is REWORK; a hypothesis the client
 cannot establish without trusting the logic is BLOCK.
 
-**R6. Generated code is trusted only through goose.** Any hand edit of
+**R7. Generated code is trusted only through goose.** Any hand edit of
 `Perennial/Code/**/*.lean` or `Perennial/GeneratedProof/**` is REWORK:
 regenerate with `etc/update-goose-new.py` (or the `goose`/`proofgen`
 commands in `goose/README.md`) and commit goose's output. When a `.toml`
 changes, the regenerated `.lean` must be in the same change. A `"!Name"` in
 `translate` paired with `Name` in `trusted` replaces goose's translation of a
-function goose *can* translate by a hand-written one: that needs an R1
+function goose *can* translate by a hand-written one: that needs an R2
 justification in the commit message, and the model must be goose's own output
 of the real source except for the one documented change (rename the model's
 parameters back to the generated names, then `diff` the two bodies; or run
 goose on the source as in step 4).
 
-**R7. Trust must be visible.** Every tier-0 addition needs: a docstring that
+**R8. Trust must be visible.** Every tier-0 addition needs: a docstring that
 says what the model/rule does *and* where it departs from Go; the commit
 message saying why trust was added and which lower rung was rejected; for a
 model assumption, an entry in `README.md` "Model assumptions"; for an
@@ -278,7 +304,7 @@ adequacy or semantics change, the corresponding section of `README.md` /
 to goose changes: a translator change must be small and obviously correct
 (prefer fewer lines); a large translator diff is REWORK unless split.
 
-**R8. No hidden trust in tiers 1-2.** `sorry` in `GooseLang`, `Golang`,
+**R9. No hidden trust in tiers 1-2.** `sorry` in `GooseLang`, `Golang`,
 `Std`, `Algebra`, `Ghost` is an axiom: BLOCK. `opaque`, `partial def`,
 `implemented_by`, `unsafe` in those tiers: BLOCK unless the docstring shows
 nothing is proved about the value. `native_decide`/`bv_decide`: BLOCK
@@ -295,15 +321,16 @@ Verdict: BLOCK | REWORK | OK (n NOTEs)
 
 Trust delta (everything the change adds to the trusted base, accepted or not):
 - <item>: <one line: what it trusts, and why that rung of R1 is the right one;
-  for a trusted entry, the goose run on the real source (R1a): the construct
-  and innermost function goose rejected, or "translates": REWORK>
+  for a trusted entry, the goose run on the real source and its result (R2):
+  "translates" (REWORK), "missing feature: <construct>" (REWORK, extend goose
+  or the semantics), or "irreducible: <construct> in <innermost function>">
 Inherited (pre-existing trust the change relies on, for context): <...>
 Made visible (trust that already existed and that the change now documents): <...>
 
 Findings (most severe first):
-1. [BLOCK R2] <file:line> — <defect in one sentence>.
+1. [BLOCK R3] <file:line> — <defect in one sentence>.
    Evidence: <the Go program / spec sentence / diff that shows it>.
-   Fix: <the concrete change; name the lower rung for R1, the resource for R2a>.
+   Fix: <the concrete change; name the lower rung for R1, the resource for R3a>.
 2. ...
 
 Checked: <commands run: build, #print axioms, go run, go test, go doc, goose>
@@ -318,38 +345,42 @@ normal outcome.
 
 Work in a worktree if not already in one (`EnterWorktree`). Apply the fixes
 most-severe first, each as its own commit with a message that explains the
-soundness reason (the message is itself reviewed by R7). Playbook:
+soundness reason (the message is itself reviewed by R8). Playbook:
 
-- **Reachable assumption (R2):** remove the `assume`/stuck branch and restore
+- **Reachable assumption (R3):** remove the `assume`/stuck branch and restore
   Go's behaviour, preferably by letting goose translate the function again
   (drop the `!Name`/`trusted` entries, regenerate). Move the obligation into
   the spec as a premise; if a caller cannot discharge it locally, back it with
-  the ghost resource that adequacy bounds (R2a). Re-prove the specs that used
+  the ghost resource that adequacy bounds (R3a). Re-prove the specs that used
   the assumption. The WaitGroup revert (`cases.md`, case 1) is the template.
-- **Workaround model (R1):** add the missing rule to the right `*Semantics`
-  class (`Golang/Defn`), prove its lifting lemma in `Golang/Theory` (with the
-  Go-level spec: bounds → `Panic`), extend goose if the construct does not
-  translate yet (unit test in `goose/testdata/examples/unittest`, regenerate
-  the gold with `go test -update-gold` and audit the diff), then translate
-  the real function (or its Go-written model under `goose/model/`) and delete
-  the hand-written `.impl` and its `trusted` entry. Keep the old spec's
-  statement; re-prove it against the translated code.
-- **Unjustified trusted entry (R1a):** move the function to `translate`.
-  Trust only the innermost callees that goose rejects (one-line models where
-  possible, such as `unsafe.String(unsafe.SliceData(b), n)` as `string(b)`),
-  each with a docstring naming the rejected construct. Regenerate, delete the
-  old `.impl` and its `trusted` entry, and re-prove the old spec against the
-  translated code (Go's own checks and panics come with it; add the premises
-  they need). Rerun goose to show that nothing larger than the primitives is
-  trusted.
-- **Infidelity (R3):** make the model do what Go does; if that is out of
+- **Trusted code that is not irreducible (R2):** move the function to
+  `translate` and regenerate.
+  - For a missing feature, extend goose: a unit test in
+    `goose/testdata/examples/unittest` or a semantics test in
+    `testdata/examples/semantics`, then `go test -update-gold` and an audit of
+    the gold diff.
+  - Or add the missing rule to the right `*Semantics` class (`Golang/Defn`),
+    with its lifting lemma in `Golang/Theory` and the Go-level spec (bounds →
+    `Panic`). Adding a rule where the model is stuck today is the normal rung-3
+    fix and is applied. Changing a behaviour that is already defined is the
+    user's decision (R5).
+  - Trust only the innermost irreducible callees, as one-line models where
+    possible (`unsafe.String(unsafe.SliceData(b), n)` as `string(b)`), each with
+    a docstring that names the irreducible construct.
+  - Delete the old `.impl` and its `trusted` entry. Re-prove the old spec
+    against the translated code; Go's own checks and panics come with it, so
+    add the premises they need.
+  - Rerun goose to show that only irreducible primitives remain trusted.
+- **Infidelity (R4):** make the model do what Go does; if that is out of
   reach, make the model stuck/panicking there, say so in the docstring, and
   add the exclusion to every spec. Never leave a divergence silent.
-- **Hand-edited generated code (R6):** regenerate and diff.
-- **Semantics/adequacy (R4, R5):** these are the user's decisions; produce
+- **Hand-edited generated code (R7):** regenerate and diff.
+- **Changed semantics/adequacy (R5, R6):** changing a defined behaviour or an
+  adequacy statement is the user's decision (a new rule for a stuck construct,
+  under R2, is not); produce
   the fix as a proposal in the report (diff included) rather than applying
-  it, unless the fix is a pure documentation update (R7).
-- **Docs (R7):** update `README.md` "Model assumptions" / the relevant doc
+  it, unless the fix is a pure documentation update (R8).
+- **Docs (R8):** update `README.md` "Model assumptions" / the relevant doc
   section and the docstring.
 
 After fixing: `lake build` every touched module and its direct dependents,
