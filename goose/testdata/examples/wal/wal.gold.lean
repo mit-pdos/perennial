@@ -72,7 +72,7 @@ noncomputable def intToBlock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.encoding.binary.littleEndian.ty go!"PutUint64"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.encoding.binary.littleEndian.ty))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #())))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))))
 
@@ -82,7 +82,7 @@ noncomputable def blockToInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "v"))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "v"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.encoding.binary.littleEndian.ty go!"Uint64"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.encoding.binary.littleEndian.ty))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #())))) (Var "$a0")))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -192,19 +192,19 @@ noncomputable def Log.BeginTxn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #false))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #true))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #()))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"lock"))) (Var "l")) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"lock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))))))
 
 /-- Read from the logical disk.
 
@@ -238,13 +238,13 @@ noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "dv") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "v")))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #()))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -252,7 +252,7 @@ noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "v") (Var "$r0"))))))))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"lock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #())))))))))
 
 /-- go: log.go:89:14 -/
 noncomputable def Log.Size.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -301,7 +301,7 @@ noncomputable def Log.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "length")) (Val #(W64 1))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"length"))) (Var "l"))) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -326,7 +326,7 @@ noncomputable def Log.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"lock"))) (Var "l")) (Val #()))))))))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"lock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))))))))))
 
 /-- Commit the current transaction.
 
@@ -355,11 +355,11 @@ noncomputable def Log.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "header") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"lock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #())))))))))
 
 /-- go: log.go:121:6 -/
 noncomputable def getLogEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -487,7 +487,7 @@ noncomputable def Log.Apply.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"unlock"))) (Var "l")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"unlock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"length"))) (Var "l"))) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -500,7 +500,7 @@ noncomputable def Log.Apply.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "length") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"lock"))) (Var "l")) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"lock"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "l"))) (Val #())))))))))
 
 /-- Open recovers the log following a crash or shutdown
 

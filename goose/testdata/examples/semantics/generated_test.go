@@ -392,6 +392,34 @@ func (suite *GoTestSuite) TestMapSize() {
 	suite.Equal(true, testMapSize())
 }
 
+func (suite *GoTestSuite) TestMethodValueCopiesReceiver() {
+	suite.Equal(true, testMethodValueCopiesReceiver())
+}
+
+func (suite *GoTestSuite) TestMethodValuePointerReceiver() {
+	suite.Equal(true, testMethodValuePointerReceiver())
+}
+
+func (suite *GoTestSuite) TestMethodValueThroughPointer() {
+	suite.Equal(true, testMethodValueThroughPointer())
+}
+
+func (suite *GoTestSuite) TestMethodValueEmbedded() {
+	suite.Equal(true, testMethodValueEmbedded())
+}
+
+func (suite *GoTestSuite) TestMethodValueEmbeddedPointer() {
+	suite.Equal(true, testMethodValueEmbeddedPointer())
+}
+
+func (suite *GoTestSuite) TestMethodValueDefer() {
+	suite.Equal(true, testMethodValueDefer())
+}
+
+func (suite *GoTestSuite) TestMethodValueDeferArg() {
+	suite.Equal(true, testMethodValueDeferArg())
+}
+
 func (suite *GoTestSuite) TestAssignTwo() {
 	suite.Equal(true, testAssignTwo())
 }

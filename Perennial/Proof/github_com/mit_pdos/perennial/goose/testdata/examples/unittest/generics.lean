@@ -102,7 +102,7 @@ theorem wp_useBoxGet :
     {{ RET #(W64 42); True }} := by
   wp_start
   wp_apply wp_makeGenericBox
-  wp_apply Box.wp_Get $$ [$]
+  wp_apply Box.wp_Get' $$ [$]
   wp_end
 
 theorem wp_useContainer :
