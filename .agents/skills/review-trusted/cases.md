@@ -123,14 +123,50 @@ the count been of something a program controls without allocating memory
 proportionally (a counter, a sequence number, a WaitGroup), it would be
 Case 1.
 
-## Case 4 — OK (NOTE R1): `strings.Join` trusted model (`TrustedCode/strings.lean`)
+## Case 4 — REWORK (R1a), BLOCK (R3): `strings.Join` trusted model (00b3c10ea)
 
-Go's `Join` copies through a `strings.Builder` whose `String()` is
-`unsafe.String`: a genuine rung-5 situation (goose does not translate
-`unsafe`). The model is goose's translation of a `+=` loop and says so, and
-its one assumption (the total length fits an `int`) is of the unreachable
-kind. Note that a Go-file model under `goose/model/strings` (rung 4) would
-have been better still, and is the shape to ask for next time.
+**What it did.** It added `Join` to `strings.toml`'s `trusted` list, with a
+hand-written `Join.impl`: goose's translation of a `+=` loop, "because Go's
+`Join` copies through a `strings.Builder` whose `String()` is `unsafe.String`".
+README listed Join's total length under "Model assumptions".
+
+**How it was first graded, and why that was wrong.** This file first graded
+it OK. It accepted the docstring's reason and called the length assumption
+"of the unreachable kind". Both were calibration failures:
+- *R1a.* Go's `Join` is ordinary Go: a `switch`, two overflow checks, then
+  `Builder.Grow`/`WriteString`/`String`. Goose rejects only three one-line
+  primitives inside `Builder`:
+  - `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` in `String`;
+  - `bytealg.MakeNoZero` in `grow`;
+  - `abi.NoEscape` in `copyCheck`.
+
+  Those, and nothing above them, are what may be trusted. A goose run on the
+  real source with `Join` moved to `translate` shows this in a minute; the
+  review never ran it.
+- *R3 / R2.* The model had no `assume` at all, and Go's overflow panic is
+  reachable. Go checks the would-be length *before* allocating:
+
+  ```go
+  sep := strings.Repeat("x", 1<<33)
+  elems := make([]string, 1<<30+1)
+  strings.Join(elems, sep) // panic: strings: Join output length overflow
+  ```
+
+  This runs in about 8 GiB of memory. `wp_Join` promised a normal return.
+  Translating the real code would have carried Go's checks along
+  automatically: a hand-written model loses exactly the things its author did
+  not think of.
+
+**The fix.**
+- Translate `Join` and the `Builder` methods; trust only the three
+  primitives.
+- `wp_Join` gains a premise that excludes the overflow.
+- The README entry is removed.
+
+**Signals.**
+- A `trusted` entry for a function whose `go doc -src` is plain Go.
+- A docstring whose reason names a construct in a *callee*.
+- A trusted term that quotes Go which is not the real source.
 
 ## Case 5 — OK: `sync.Mutex` trusted (`sync.toml`, `TrustedCode/sync.lean`)
 
@@ -163,3 +199,8 @@ assumption.
 - A model that is more defined, more deterministic or more atomic than Go: R3.
 - A change to an adequacy theorem's hypotheses without a README change: R5, R7.
 - A trusted term longer than the Go it models: R1 rung 4 (write it in Go).
+- A trusted model of a function whose real source is ordinary Go and that only
+  calls something untranslatable (`Join` over `Builder.String`'s
+  `unsafe.String`): R1a. Run goose on the real source; trust the callee.
+- A "graded OK" precedent in this file that rested on the author's reason
+  rather than a goose run: re-check it (case 4 was one).

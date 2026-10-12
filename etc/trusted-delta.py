@@ -302,6 +302,12 @@ def main(argv):
         for p, _ in cfg:
             for key, added, removed in toml_lists(p, rev_old, rev_new):
                 print(f"- {p} `{key}`: added {added or '[]'}, removed {removed or '[]'}")
+                if key == "trusted":
+                    pkg = os.path.relpath(p, "Perennial/Code")[: -len(".toml")]
+                    for name in added:
+                        print(f"  - R1a: `{name}` must be justified by a failing goose run on the "
+                              f"real source: move it to `translate` in a copy of the configuration "
+                              f"and run `goose -configdir <copy> -dir goose {pkg}` (SKILL.md, step 4)")
         print("\nA declaration that is neither translated nor trusted is axiomatized "
               "(name and type only). A `!pattern` in `translate` with the same name in "
               "`trusted` replaces goose's translation by a hand-written model: ask why "

@@ -1,6 +1,6 @@
 ---
 name: review-trusted
-description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added, and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
+description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of functions whose real source goose translates; every trusted entry needs a failing goose run on the real source), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
 argument-hint: "[commit | A..B | (nothing: branch + working tree)] [--fix]"
 ---
 
@@ -73,6 +73,22 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    - compare a trusted model with the *real* Go source (the report's
      `go doc -src` output, or the Go module source) line by line; `go doc -u`
      shows unexported helpers (`genSplit`, ...);
+   - for **every** trusted entry the change adds or touches (a `trusted` name,
+     a `"!Name"` in `translate`, a hand-written `.impl`, a `Name.underlying`
+     in `TrustedCode`), run goose on the **real** Go source with the entry
+     moved from `trusted` to `translate`, and record what goose says (R1a).
+     Copy the configuration so the repo is untouched:
+     `cp -r Perennial/Code <scratch>/cfg` (a few MB),
+     edit `<scratch>/cfg/<pkg>.toml`, then
+     `<scratch>/goose -out <scratch>/out -configdir <scratch>/cfg -dir goose <pkg>`
+     (standard-library packages are translated from `-dir goose`, as in
+     `etc/update-goose-new.py`). If goose translates it, the entry is
+     unjustified. Then do the same for each callee the translation leaves
+     axiomatized (a `FuncResolve` of a name that is neither translated nor
+     trusted): move it to `translate` and rerun, until each remaining callee
+     is one goose rejects. Those callees, and only those, may be trusted.
+     If goose fails on the entry itself, record the exact construct and the
+     function it names;
    - when a docstring says the model "is goose's translation of" some Go,
      check that claim: put the quoted Go in a scratch module and run goose on
      it, then diff the generated `.impl` against the committed one. Build
@@ -148,6 +164,29 @@ is a workaround on rung 5 for a gap that belongs on rung 3: **REWORK**. The
 fix is to add X. The same holds when the trusted part is larger than the
 primitive that really needs trust: trust `Index`, not `Split`. Severity:
 REWORK; BLOCK if the workaround also changes behaviour (R3).
+
+*R1a. A trusted model needs evidence from goose, not a reason in a docstring.*
+The default for any Go function is that goose translates its real source. A
+trusted entry is justified only by a goose run on that source that fails
+(step 4), and only at the innermost function where it fails. The trusted unit
+must be the smallest one that contains the construct goose rejects
+(`unsafe.String`, assembly, `go:linkname`, a runtime intrinsic); everything
+around it is translated. The usual failure is a model of an ordinary Go
+function that merely *calls* something untranslatable. `strings.Join` is
+plain Go (overflow checks, then a `Builder`), and its only untranslatable
+parts are three one-line primitives inside `Builder`. So trusting `Join`
+was wrong, and so was any model of `Join` (`cases.md`, case 4). It follows
+that:
+- an entry with no recorded goose run is REWORK. Do the run yourself, and
+  never accept "goose does not support X" or "it uses `unsafe`" without it;
+- an entry whose real source goose translates, or would translate once a
+  callee is trusted, is REWORK (BLOCK if the model also departs from Go, R3).
+  The fix is to translate it and trust the callee;
+- a model "of the same result computed differently" is never justified by
+  convenience of proof. Prove the real code;
+- this applies to inherited entries too. When a change adds a spec for, or
+  touches, an existing trusted entry, check that entry as if it were new, and
+  report the result even if the change did not create it.
 
 **R2. A model assumption must be unreachable, not merely unlikely.**
 An `assume`, `AngelicExit` or deliberately stuck branch removes executions
@@ -255,7 +294,9 @@ checked. Keep it short enough to act on.
 Verdict: BLOCK | REWORK | OK (n NOTEs)
 
 Trust delta (everything the change adds to the trusted base, accepted or not):
-- <item>: <one line: what it trusts, and why that rung of R1 is the right one>
+- <item>: <one line: what it trusts, and why that rung of R1 is the right one;
+  for a trusted entry, the goose run on the real source (R1a): the construct
+  and innermost function goose rejected, or "translates": REWORK>
 Inherited (pre-existing trust the change relies on, for context): <...>
 Made visible (trust that already existed and that the change now documents): <...>
 
@@ -293,6 +334,14 @@ soundness reason (the message is itself reviewed by R7). Playbook:
   the real function (or its Go-written model under `goose/model/`) and delete
   the hand-written `.impl` and its `trusted` entry. Keep the old spec's
   statement; re-prove it against the translated code.
+- **Unjustified trusted entry (R1a):** move the function to `translate`.
+  Trust only the innermost callees that goose rejects (one-line models where
+  possible, such as `unsafe.String(unsafe.SliceData(b), n)` as `string(b)`),
+  each with a docstring naming the rejected construct. Regenerate, delete the
+  old `.impl` and its `trusted` entry, and re-prove the old spec against the
+  translated code (Go's own checks and panics come with it; add the premises
+  they need). Rerun goose to show that nothing larger than the primitives is
+  trusted.
 - **Infidelity (R3):** make the model do what Go does; if that is out of
   reach, make the model stuck/panicking there, say so in the docstring, and
   add the exclusion to every spec. Never leave a divergence silent.
