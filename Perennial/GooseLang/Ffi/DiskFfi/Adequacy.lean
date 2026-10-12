@@ -51,7 +51,7 @@ stuck, a final value of the main thread satisfies `φ`, and no thread has an
 unrecovered panic (see `goose_adequacy`). -/
 theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : GooseGpreS disk_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
-    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p)) (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -65,7 +65,7 @@ theorem disk_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
-  refine goose_adequacy (GF := GF) N T e σ g φ hφ trivial trivial ?_ n κs t2 σ2 Hsteps Hbound
+  refine goose_adequacy (GF := GF) N T e σ g φ hφ trivial trivial Hbm ?_ n κs t2 σ2 Hsteps Hbound
     Hthreads Hlive
   intro hG HN HT Hlctx
   iintro _ Hd Hgs Htok

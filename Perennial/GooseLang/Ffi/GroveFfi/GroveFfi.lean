@@ -189,7 +189,7 @@ theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) (Hv : v.isPa
   iapply goose_wp_lift_base_step rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -204,7 +204,7 @@ theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) (Hv : v.isPa
   imod Hclose
   rcases Hcase with ⟨rfl, rfl, rfl⟩ | Hgrove
   · imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
     · iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -217,7 +217,7 @@ theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) (Hv : v.isPa
     itrivial
   · imod HΦ $$ %_ %_ %_ %_ %_ %Hgrove Hffi Hgffi with ⟨Hffi, Hgffi, Hwp⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
     · iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -503,7 +503,7 @@ theorem wp_time_acc (e : Expr) (Φ : val → IProp GF) (h : toVal e = none) :
   rcases σ₁ with ⟨σ₁, c⟩
   icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   icases (grove_global_ctx_eq _).mp $$ Hgffi with ⟨Hnet, Htime⟩
   imod Hacc $$ %σ₁.2.globalWorld.groveGlobalTime Htime with ⟨Htime, Hwp⟩
   ihave Hwp := wp_unfold.1 $$ Hwp

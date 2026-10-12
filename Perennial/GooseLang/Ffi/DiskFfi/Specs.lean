@@ -231,7 +231,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   icases (disk_local_ctx_eq _).mp $$ Hffi with Hffi
   unfold diskPointsto
   icases genHeap_lookup (G := (gooseDiskGS (L := L)).diskGGenHeapG) $$ Hffi Ha with %Hd
@@ -255,7 +255,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
   imodintro
   isplitr
   · ipureintro; rfl
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     simp only [List.nil_append]
     dsimp only [stateInsertList]
@@ -269,7 +269,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
     · ipureintro; exact Hlctx
     isplitl [Hgffi]
     · iexact Hgffi
-    iexact Hproph
+    iframe
   iexists #l
   isplit
   · ipureintro; rfl
@@ -289,7 +289,7 @@ theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   icases (disk_local_ctx_eq _).mp $$ Hffi with Hffi
   unfold diskPointsto
   icases genHeap_lookup (G := (gooseDiskGS (L := L)).diskGGenHeapG) $$ Hffi Ha with %Hd
@@ -317,7 +317,7 @@ theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
   imodintro
   isplitr
   · ipureintro; rfl
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     simp only [List.nil_append]
     try dsimp only
@@ -331,7 +331,7 @@ theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
     · ipureintro; exact Hlctx
     isplitl [Hgffi]
     · iexact Hgffi
-    iexact Hproph
+    iframe
   iexists #()
   isplit
   · ipureintro; rfl

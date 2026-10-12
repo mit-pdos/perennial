@@ -111,6 +111,13 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Byte memory (prototype).** Next to the `val` heap, the state has a
+  byte-addressed memory `ByteMem` (`GooseLang/Lang.lean`, "Byte memory";
+  program logic in `GooseLang/ByteLifting.lean`): bytes at `w64` addresses with
+  allocation blocks for `unsafe.Add`, interned type descriptors and func
+  pointers. The Go model does not use it yet; `docs/BYTE_MEMORY.md` describes
+  the design, what the prototype confirms and the migration plan. The adequacy
+  theorems start from an empty byte memory (`σ.bmem = default`).
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

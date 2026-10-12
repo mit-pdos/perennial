@@ -117,7 +117,32 @@ inductive PrimOp1 where
   | AllocOp
   /-- start a panic with the given value (the body of `go.panic`) -/
   | RaiseOp
-deriving DecidableEq
+  /- Byte memory (see "Byte memory" below). An address range is the argument
+  `(#a, #n)`, `a n : w64`; a byte string is a `blobV`. -/
+  /-- `(#align, blobV bs)`: allocate a fresh block holding `bs`, aligned to `align` -/
+  | BAllocOp
+  /-- `blobV bs`: immutable bytes `bs` (string data): a fresh frozen block, or any
+  frozen range already holding `bs` -/
+  | BAllocFrozenOp
+  /-- `(#a, #n)`: atomic read of `n` bytes -/
+  | BLoadOp
+  /-- `(#a, #n)`: non-atomic read, part 1 (returns the bytes) -/
+  | BStartReadOp
+  /-- `(#a, #n)`: non-atomic read, part 2 -/
+  | BFinishReadOp
+  /-- `(#a, #n)`: non-atomic write, part 1 -/
+  | BPrepareWriteOp
+  /-- `(#a, #n)`: make `n` bytes immutable -/
+  | BFreezeOp
+  /-- a closure: allocate a func pointer to it -/
+  | FuncAllocOp
+  /-- `#p`: the closure of the func pointer `p` -/
+  | FuncLoadOp
+  /-- `blobV bs`: the address of the (unique) descriptor of type `t`, allocated
+  with contents `bs` on first use -/
+  | TypeInternOp (t : go.GoType)
+
+noncomputable instance : DecidableEq PrimOp1 := fun a b => Classical.propDecidable (a = b)
 
 inductive PrimOp2 where
   /-- pointer, value -/
@@ -126,6 +151,12 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
+  /-- `#a`, `blobV bs`: non-atomic write, part 2 -/
+  | BFinishWriteOp
+  /-- `#a`, `blobV bs`: atomic swap of `bs.length` bytes; returns the old bytes -/
+  | BSwapOp
+  /-- `#p`, `#off`: `unsafe.Add(p, off)`, defined only within `p`'s block -/
+  | UnsafeAddOp
 deriving DecidableEq
 
 inductive GoOperator where
@@ -335,6 +366,22 @@ abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
 
+/-- A byte string as a value (the contents of a byte-memory range). -/
+abbrev blobV (bs : List w8) : val := LitV (LitString bs)
+abbrev BAlloc (e : Expr) : Expr := Primitive1 .BAllocOp e
+abbrev BAllocFrozen (e : Expr) : Expr := Primitive1 .BAllocFrozenOp e
+abbrev BLoad (e : Expr) : Expr := Primitive1 .BLoadOp e
+abbrev BStartRead (e : Expr) : Expr := Primitive1 .BStartReadOp e
+abbrev BFinishRead (e : Expr) : Expr := Primitive1 .BFinishReadOp e
+abbrev BPrepareWrite (e : Expr) : Expr := Primitive1 .BPrepareWriteOp e
+abbrev BFreeze (e : Expr) : Expr := Primitive1 .BFreezeOp e
+abbrev FuncAlloc (e : Expr) : Expr := Primitive1 .FuncAllocOp e
+abbrev FuncLoad (e : Expr) : Expr := Primitive1 .FuncLoadOp e
+abbrev TypeIntern (t : go.GoType) (e : Expr) : Expr := Primitive1 (.TypeInternOp t) e
+abbrev BFinishWrite (e1 e2 : Expr) : Expr := Primitive2 .BFinishWriteOp e1 e2
+abbrev BSwap (e1 e2 : Expr) : Expr := Primitive2 .BSwapOp e1 e2
+abbrev UnsafeAdd (e1 e2 : Expr) : Expr := Primitive2 .UnsafeAddOp e1 e2
+
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
 abbrev Seq (e1 e2 : Expr) : Expr := Let BAnon e1 e2
@@ -476,10 +523,110 @@ structure GoState where
 instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False⟩⟩
 instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
+/-! ### Byte memory
+
+The byte memory (`ByteMem`) is a prototype of a byte-addressed Go memory, next
+to the `val` heap: memory maps `w64` addresses to bytes, and the values stored
+in it are encoded as bytes by the Go layer. Besides the bytes it has three
+tables:
+
+* `blocks`, the allocation blocks (base address and size): the provenance of
+  pointers, which `unsafe.Add` (`UnsafeAddOp`) must stay within;
+* `types`, the type descriptors, allocated on first use (`TypeInternOp`) and
+  unique per type, so that the dynamic types of interfaces compare by address;
+* `funcs`, the code of func pointers (`FuncAllocOp`): a func value is the
+  address of its closure, as in Go.
+
+Each byte has a mode: `Rd n` (`n` non-atomic readers), `Wr` (a non-atomic write
+in progress) or `Frozen n` (immutable, `n` readers): string data and type
+descriptors are frozen, and a write to a frozen byte is stuck. Address `0` is
+never allocated (a fresh range starts above it and does not wrap around). An
+allocation that finds no fresh range loops (`BAllocOomS`, ...): out of memory is a
+fatal error in Go, not a panic. -/
+
+inductive ByteMode where
+  | Rd (n : Nat)
+  | Wr
+  | Frozen (n : Nat)
+deriving DecidableEq
+
+instance : Inhabited ByteMode := ⟨.Rd 0⟩
+
+namespace ByteMode
+
+/-- Not being written (a non-atomic or atomic read may start). -/
+def Readable : ByteMode → Prop
+  | Wr => False
+  | _ => True
+
+/-- One more reader. -/
+def rl : ByteMode → ByteMode
+  | Rd n => Rd (n + 1)
+  | Frozen n => Frozen (n + 1)
+  | Wr => Wr
+
+/-- One reader less. -/
+def url : ByteMode → ByteMode
+  | Rd (n + 1) => Rd n
+  | Frozen (n + 1) => Frozen n
+  | m => m
+
+/-- At least one reader. -/
+def HasReader : ByteMode → Prop
+  | Rd (_ + 1) => True
+  | Frozen (_ + 1) => True
+  | _ => False
+
+/-- Frozen. -/
+def IsFrozen : ByteMode → Prop
+  | Frozen _ => True
+  | _ => False
+
+end ByteMode
+
+abbrev ByteCell := ByteMode × w8
+
+structure ByteMem where
+  bytes : GMap w64 ByteCell
+  blocks : GMap w64 Nat
+  types : GMap go.GoType w64
+  funcs : GMap w64 val
+
+instance : Inhabited ByteMem := ⟨⟨∅, ∅, ∅, ∅⟩⟩
+
+/-- `a + i`, the `i`-th byte from `a`. -/
+abbrev byteAddr (a : w64) (i : Nat) : w64 := a + BitVec.ofNat 64 i
+
+/-- The cells `cs` are at `a, a + 1, ...` in `m`. -/
+def LookupRange (m : GMap w64 ByteCell) : w64 → List ByteCell → Prop
+  | _, [] => True
+  | a, c :: cs => m !! a = some c ∧ LookupRange m (a + 1) cs
+
+/-- `m` with the cells `cs` written at `a, a + 1, ...`. -/
+def insertRange (m : GMap w64 ByteCell) : w64 → List ByteCell → GMap w64 ByteCell
+  | _, [] => m
+  | a, c :: cs => <[a := c]> (insertRange m (a + 1) cs)
+
+/-- `[a, a + n)` is a fresh range of `m`: unallocated, not containing `0` and not
+wrapping around. -/
+def FreshRange (m : GMap w64 ByteCell) (a : w64) (n : Nat) : Prop :=
+  a ≠ 0 ∧ a.toNat + n ≤ 2 ^ 64 ∧ ∀ i < n, m !! byteAddr a i = none
+
+/-- `a` is a multiple of `al` (any address if `al = 0`). -/
+def Aligned (a al : w64) : Prop := al = 0 ∨ a.toNat % al.toNat = 0
+
+/-- `x` is in the block `[b, b + sz)`. -/
+def InBlock (b : w64) (sz : Nat) (x : w64) : Prop := b.toNat ≤ x.toNat ∧ x.toNat < b.toNat + sz
+
+/-- The blocks after allocating `n ≠ 0` bytes at `a` (empty allocations have no block). -/
+def addBlock (blocks : GMap w64 Nat) (a : w64) (n : Nat) : GMap w64 Nat :=
+  if n = 0 then blocks else <[a := n]> blocks
+
 structure state where
   heap : GMap Loc (NonAtomic val)
   goState : GoState
   world : ffi_state
+  bmem : ByteMem
 
 structure GlobalState where
   globalWorld : ffi_global_state
@@ -493,7 +640,7 @@ structure GlobalState where
   in `Threads.lean`. -/
   threads : Nat
 
-instance : Inhabited state := ⟨⟨∅, default, default⟩⟩
+instance : Inhabited state := ⟨⟨∅, default, default, default⟩⟩
 instance : Inhabited GlobalState := ⟨⟨default, ∅, 1⟩⟩
 
 /-- The state of the iris-lean language: the local and the global state. -/
@@ -668,6 +815,17 @@ def setHeap (f : GMap Loc (NonAtomic val) → GMap Loc (NonAtomic val)) (σg : C
     CfgState :=
   ({ σg.1 with heap := f σg.1.heap }, σg.2)
 
+def setBmem (f : ByteMem → ByteMem) (σg : CfgState) : CfgState :=
+  ({ σg.1 with bmem := f σg.1.bmem }, σg.2)
+
+/-- The byte memory with the cells `cs` written at `a`. -/
+abbrev ByteMem.writeRange (m : ByteMem) (a : w64) (cs : List ByteCell) : ByteMem :=
+  { m with bytes := insertRange m.bytes a cs }
+
+/-- The byte memory after allocating the cells `cs` as a block at `a`. -/
+abbrev ByteMem.allocRange (m : ByteMem) (a : w64) (cs : List ByteCell) : ByteMem :=
+  { m with bytes := insertRange m.bytes a cs, blocks := addBlock m.blocks a cs.length }
+
 open Classical in
 /-- The base step relation:
 `base_step e σg κs e' σg' efs`. -/
@@ -751,6 +909,85 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   /-- A value reaching a `Catch` continues with the normal continuation. -/
   | CatchValS v h k σg :
       v.isPanic = false → BaseStep (Catch (Val v) h k) σg [] (App k (Val v)) σg []
+  -- Byte memory (see "Byte memory" above).
+  | BAllocS (al : w64) (bs : List w8) (a : w64) σg :
+      FreshRange σg.1.bmem.bytes a bs.length → Aligned a al →
+      BaseStep (BAlloc (Val (PairV #al (blobV bs)))) σg [] (Val #a)
+        (setBmem (·.allocRange a (bs.map (.Rd 0, ·))) σg) []
+  /-- Out of memory: loops. -/
+  | BAllocOomS (al : w64) (bs : List w8) σg :
+      (¬ ∃ a, FreshRange σg.1.bmem.bytes a bs.length ∧ Aligned a al) →
+      BaseStep (BAlloc (Val (PairV #al (blobV bs)))) σg []
+        (BAlloc (Val (PairV #al (blobV bs)))) σg []
+  | BAllocFrozenS (bs : List w8) (a : w64) σg :
+      FreshRange σg.1.bmem.bytes a bs.length →
+      BaseStep (BAllocFrozen (Val (blobV bs))) σg [] (Val #a)
+        (setBmem (·.allocRange a (bs.map (.Frozen 0, ·))) σg) []
+  /-- Immutable data may be shared: any frozen range holding `bs` (for `bs = []`,
+  any address). -/
+  | BAllocFrozenReuseS (bs : List w8) (a : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → (∀ c ∈ cs, c.1.IsFrozen) → cs.map Prod.snd = bs →
+      BaseStep (BAllocFrozen (Val (blobV bs))) σg [] (Val #a) σg []
+  | BAllocFrozenOomS (bs : List w8) σg :
+      (¬ ∃ a, FreshRange σg.1.bmem.bytes a bs.length) →
+      BaseStep (BAllocFrozen (Val (blobV bs))) σg [] (BAllocFrozen (Val (blobV bs))) σg []
+  | BLoadS (a n : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = n.toNat → (∀ c ∈ cs, c.1.Readable) →
+      BaseStep (BLoad (Val (PairV #a #n))) σg [] (Val (blobV (cs.map Prod.snd))) σg []
+  | BStartReadS (a n : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = n.toNat → (∀ c ∈ cs, c.1.Readable) →
+      BaseStep (BStartRead (Val (PairV #a #n))) σg [] (Val (blobV (cs.map Prod.snd)))
+        (setBmem (·.writeRange a (cs.map fun c => (c.1.rl, c.2))) σg) []
+  | BFinishReadS (a n : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = n.toNat → (∀ c ∈ cs, c.1.HasReader) →
+      BaseStep (BFinishRead (Val (PairV #a #n))) σg [] (Val #())
+        (setBmem (·.writeRange a (cs.map fun c => (c.1.url, c.2))) σg) []
+  | BPrepareWriteS (a n : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = n.toNat → (∀ c ∈ cs, c.1 = .Rd 0) →
+      BaseStep (BPrepareWrite (Val (PairV #a #n))) σg [] (Val #())
+        (setBmem (·.writeRange a (cs.map fun c => (.Wr, c.2))) σg) []
+  | BFreezeS (a n : w64) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = n.toNat → (∀ c ∈ cs, c.1 = .Rd 0) →
+      BaseStep (BFreeze (Val (PairV #a #n))) σg [] (Val #())
+        (setBmem (·.writeRange a (cs.map fun c => (.Frozen 0, c.2))) σg) []
+  | BFinishWriteS (a : w64) (bs : List w8) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = bs.length → bs.length < 2 ^ 64 →
+      (∀ c ∈ cs, c.1 = .Wr) →
+      BaseStep (BFinishWrite (Val #a) (Val (blobV bs))) σg [] (Val #())
+        (setBmem (·.writeRange a (bs.map (.Rd 0, ·))) σg) []
+  | BSwapS (a : w64) (bs : List w8) (cs : List ByteCell) σg :
+      LookupRange σg.1.bmem.bytes a cs → cs.length = bs.length → bs.length < 2 ^ 64 →
+      (∀ c ∈ cs, c.1 = .Rd 0) →
+      BaseStep (BSwap (Val #a) (Val (blobV bs))) σg [] (Val (blobV (cs.map Prod.snd)))
+        (setBmem (·.writeRange a (bs.map (.Rd 0, ·))) σg) []
+  /-- `unsafe.Add(p, off)` within the block of `p` (Go: "the result must point
+  into the same allocated object"; one past the end is not in it). -/
+  | UnsafeAddS (p off b : w64) (sz : Nat) σg :
+      σg.1.bmem.blocks !! b = some sz → InBlock b sz p → InBlock b sz (p + off) →
+      BaseStep (UnsafeAdd (Val #p) (Val #off)) σg [] (Val #(p + off)) σg []
+  | UnsafeAddZeroS (p : w64) σg :
+      BaseStep (UnsafeAdd (Val #p) (Val #(0 : w64))) σg [] (Val #p) σg []
+  | FuncAllocS (v : val) (p : w64) σg :
+      p ≠ 0 → σg.1.bmem.funcs !! p = none →
+      BaseStep (FuncAlloc (Val v)) σg [] (Val #p)
+        (setBmem (fun m => { m with funcs := <[p := v]> m.funcs }) σg) []
+  | FuncAllocOomS (v : val) σg :
+      (∀ p : w64, p ≠ 0 → σg.1.bmem.funcs !! p ≠ none) →
+      BaseStep (FuncAlloc (Val v)) σg [] (FuncAlloc (Val v)) σg []
+  | FuncLoadS (p : w64) (v : val) σg :
+      σg.1.bmem.funcs !! p = some v →
+      BaseStep (FuncLoad (Val #p)) σg [] (Val v) σg []
+  | TypeInternHitS (t : go.GoType) (bs : List w8) (p : w64) σg :
+      σg.1.bmem.types !! t = some p →
+      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (Val #p) σg []
+  | TypeInternNewS (t : go.GoType) (bs : List w8) (a : w64) σg :
+      σg.1.bmem.types !! t = none → bs ≠ [] → FreshRange σg.1.bmem.bytes a bs.length →
+      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (Val #a)
+        (setBmem (fun m => { m.allocRange a (bs.map (.Frozen 0, ·)) with
+          types := <[t := a]> m.types }) σg) []
+  | TypeInternOomS (t : go.GoType) (bs : List w8) σg :
+      σg.1.bmem.types !! t = none → (¬ ∃ a, FreshRange σg.1.bmem.bytes a bs.length) →
+      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (TypeIntern t (Val (blobV bs))) σg []
 
 theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl

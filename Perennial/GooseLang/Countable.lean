@@ -159,32 +159,20 @@ local instance : Inhabited GoOperator := ⟨.GoEquals⟩
 local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
 local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
 
-def PrimOp1.toNat : PrimOp1 → Nat
-  | .PrepareWriteOp => 0
-  | .StartReadOp => 1
-  | .FinishReadOp => 2
-  | .LoadOp => 3
-  | .AllocOp => 4
-  | .RaiseOp => 5
-def PrimOp1.fromNat : Nat → PrimOp1
-  | 0 => .PrepareWriteOp
-  | 1 => .StartReadOp
-  | 2 => .FinishReadOp
-  | 3 => .LoadOp
-  | 4 => .AllocOp
-  | 5 => .RaiseOp
-  | _ => .PrepareWriteOp
-instance PrimOp1.countable : Pos.Countable PrimOp1 :=
-  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
-
 def PrimOp2.toNat : PrimOp2 → Nat
   | .FinishStoreOp => 0
   | .AtomicSwapOp => 1
   | .AtomicAddOp => 2
+  | .BFinishWriteOp => 3
+  | .BSwapOp => 4
+  | .UnsafeAddOp => 5
 def PrimOp2.fromNat : Nat → PrimOp2
   | 0 => .FinishStoreOp
   | 1 => .AtomicSwapOp
   | 2 => .AtomicAddOp
+  | 3 => .BFinishWriteOp
+  | 4 => .BSwapOp
+  | 5 => .UnsafeAddOp
   | _ => .FinishStoreOp
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
   countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
@@ -240,6 +228,47 @@ def GoUnaryOperator.fromNat : Nat → GoUnaryOperator
   | _ => .GoPos
 instance GoUnaryOperator.countable : Pos.Countable GoUnaryOperator :=
   countableOfLeftInverse GoUnaryOperator.toNat GoUnaryOperator.fromNat (by intro x; cases x <;> rfl)
+
+local instance : Inhabited PrimOp1 := ⟨.LoadOp⟩
+
+def PrimOp1.toTree : PrimOp1 → GenTree
+  | .PrepareWriteOp => node 0 []
+  | .StartReadOp => node 1 []
+  | .FinishReadOp => node 2 []
+  | .LoadOp => node 3 []
+  | .AllocOp => node 4 []
+  | .RaiseOp => node 5 []
+  | .BAllocOp => node 6 []
+  | .BAllocFrozenOp => node 7 []
+  | .BLoadOp => node 8 []
+  | .BStartReadOp => node 9 []
+  | .BFinishReadOp => node 10 []
+  | .BPrepareWriteOp => node 11 []
+  | .BFreezeOp => node 12 []
+  | .FuncAllocOp => node 13 []
+  | .FuncLoadOp => node 14 []
+  | .TypeInternOp x0 => node 15 [of x0]
+def PrimOp1.ofTree : GenTree → PrimOp1
+  | node 0 [] => .PrepareWriteOp
+  | node 1 [] => .StartReadOp
+  | node 2 [] => .FinishReadOp
+  | node 3 [] => .LoadOp
+  | node 4 [] => .AllocOp
+  | node 5 [] => .RaiseOp
+  | node 6 [] => .BAllocOp
+  | node 7 [] => .BAllocFrozenOp
+  | node 8 [] => .BLoadOp
+  | node 9 [] => .BStartReadOp
+  | node 10 [] => .BFinishReadOp
+  | node 11 [] => .BPrepareWriteOp
+  | node 12 [] => .BFreezeOp
+  | node 13 [] => .FuncAllocOp
+  | node 14 [] => .FuncLoadOp
+  | node 15 [x0] => .TypeInternOp (decLeaf x0)
+  | _ => default
+instance PrimOp1.countable : Pos.Countable PrimOp1 :=
+  countableOfLeftInverse PrimOp1.toTree PrimOp1.ofTree
+    (by intro x; cases x <;> (conv => lhs; whnf) <;> simp only [decLeaf_of])
 
 def PrimOp0.toTree : PrimOp0 → GenTree
   | .PanicOp x0 => node 0 [of x0]

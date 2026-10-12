@@ -46,6 +46,8 @@ public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Receipts
 public import Perennial.GooseLang.Threads
+public import Perennial.GooseLang.Countable
+public import Perennial.Ghost.GhostMap
 
 @[expose] public section
 
@@ -291,6 +293,76 @@ theorem goState_init (hT : GoStatePreG GF) (package_inited : GMap GoString Bool)
 
 end go_state_definitions
 
+/-! ## Byte memory ghost state
+
+The bytes are a non-atomic heap `NaHeapGS w64 w8` whose lock states are the
+byte modes (`btls`); the blocks and the func table are ghost maps whose
+fragments are handed out persistently (`k ↪[γ]□ v`); the type table is a ghost
+map together with its inverse (from descriptor addresses to types), so that one
+type has one address and one address one type (`isType`). `BmemWf` holds the pure
+invariants: blocks are non-empty and allocated, and type descriptors are
+allocated, so that a fresh range avoids them. -/
+
+section byte_mem
+variable [FfiSyntax]
+
+class ByteMemGS (GF : BundledGFunctors) where
+  bm_heapGS : NaHeapGS w64 w8 GF
+  bm_blocksName : GName
+  bm_typesName : GName
+  bm_typesFwdName : GName
+  bm_funcsName : GName
+
+class ByteMemPreG (GF : BundledGFunctors) where
+  bm_heap_preG : NaHeapGpreS w64 w8 GF
+
+attribute [reducible, instance] ByteMemGS.bm_heapGS ByteMemPreG.bm_heap_preG
+
+/-- The lock state of a byte mode: a frozen byte is read-locked. -/
+def btls : ByteMode → LockState
+  | .Rd n => RSt n
+  | .Wr => WSt
+  | .Frozen n => RSt n
+
+@[simp] theorem btls_Rd (n : Nat) : btls (.Rd n) = RSt n := rfl
+@[simp] theorem btls_Wr : btls .Wr = WSt := rfl
+@[simp] theorem btls_Frozen (n : Nat) : btls (.Frozen n) = RSt n := rfl
+
+/-- The pure invariants of the byte memory. -/
+def BmemWf (m : ByteMem) : Prop :=
+  (∀ b sz, m.blocks !! b = some sz → 0 < sz ∧ ∀ i < sz, (m.bytes !! byteAddr b i).isSome) ∧
+  (∀ t p, m.types !! t = some p → (m.bytes !! p).isSome)
+
+/-- `rev` is the inverse of the type table `types` (which is thus injective). -/
+def TypesRev (types : GMap go.GoType w64) (rev : GMap w64 go.GoType) : Prop :=
+  ∀ t p, types !! t = some p ↔ rev !! p = some t
+
+variable {GF : BundledGFunctors} [AllG GF]
+
+/-- `a ↦b{dq} b`: ownership of the byte at `a`. -/
+def bytePointsto [hB : ByteMemGS GF] (a : w64) (dq : DFrac) (b : w8) : IProp GF :=
+  naHeapPointsto a dq b
+
+/-- The descriptor of type `t` is at `p` (persistent): an entry of the type table
+and of its inverse. -/
+def isType [hB : ByteMemGS GF] (p : w64) (t : go.GoType) : IProp GF :=
+  iprop(ghostMapElem hB.bm_typesName p .discard t ∗ ghostMapElem hB.bm_typesFwdName t .discard p)
+
+/-- The byte memory interpretation. Frozen bytes and interned types are kept
+persistently (`□ ∀ ...`), since a step may return them to a thread that does
+not own them (`BAllocFrozenReuseS`, `TypeInternHitS`). -/
+def bmemCtx [hB : ByteMemGS GF] (m : ByteMem) : IProp GF :=
+  iprop(naHeapCtx btls m.bytes ∗
+    (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
+    ghostMapAuth hB.bm_blocksName 1 m.blocks ∗
+    ghostMapAuth hB.bm_typesFwdName 1 m.types ∗
+    (∃ rev, ghostMapAuth hB.bm_typesName 1 rev ∗ ⌜TypesRev m.types rev⌝ ∗
+      □ ∀ p t, ⌜rev !! p = some t⌝ → isType p t) ∗
+    ghostMapAuth hB.bm_funcsName 1 m.funcs ∗
+    ⌜BmemWf m⌝)
+
+end byte_mem
+
 /-! ## FFI interpretation and GooseLang ghost state -/
 
 /-- An FFI layer's ghost state: `ffiLocalGS`/`ffiGlobalGS` bundle the CMRAs and
@@ -331,11 +403,12 @@ class GooseLocalGS (GF : BundledGFunctors) where
   goose_go_local_context : GoLocalContext
   goose_na_heapGS : NaHeapGS Loc val GF
   goose_go_stateGS : GoStateGS GF
+  goose_bmemGS : ByteMemGS GF
 
 attribute [reducible, instance] GooseGlobalGS.gooseAllG GooseGlobalGS.goose_prophGS
   GooseGlobalGS.goose_receiptGS GooseGlobalGS.goose_threadGS
   GooseLocalGS.goose_go_local_context
-  GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS
+  GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS GooseLocalGS.goose_bmemGS
 
 /-- Bundles the global and local ghost state (not including `GoGlobalContext`). -/
 class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
@@ -366,7 +439,8 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     ownGoStateCtx σ.1.goState.packageState ∗
     ⌜σ.1.goState.goLctx = L.goose_go_local_context⌝ ∗
     ffiGlobalCtx G.gooseFfiGlobalGS σ.2.globalWorld ∗
-    prophMapInterp κs σ.2.usedProphId)
+    prophMapInterp κs σ.2.usedProphId ∗
+    bmemCtx σ.1.bmem)
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
 the real configuration, the authoritative receipt counter for the step fuel and
@@ -680,7 +754,8 @@ theorem goose_stateInterp_eq (σ : CfgState) (ns : Nat) (κs : List Observation)
         ownGoStateCtx σ.1.goState.packageState ∗
         ⌜σ.1.goState.goLctx = L.goose_go_local_context⌝ ∗
         ffiGlobalCtx G.gooseFfiGlobalGS σ.2.globalWorld ∗
-        prophMapInterp κs σ.2.usedProphId) := .rfl
+        prophMapInterp κs σ.2.usedProphId ∗
+        bmemCtx σ.1.bmem) := .rfl
 
 theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List Observation)
     (nt : Nat) :
@@ -799,7 +874,7 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   iapply goose_wp_lift_atomic_base_step_no_fork h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   imod H $$ %σ₁ Hheap with ⟨%Hred, H⟩
   imodintro
   isplitr
@@ -1253,7 +1328,7 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   imodintro
   isplitr
   · ipureintro; exact ⟨[], _, _, _, .exit (.base not_unwinds_ThreadExit (BaseStep.ThreadExitS σ))⟩
@@ -1267,9 +1342,9 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     obtain ⟨rfl, rfl, rfl, rfl⟩ :=
       baseStep_ThreadExit_inv (baseStep_of_headStep not_unwinds_ThreadExit Hb)
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht Htok]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm Hc Ht Htok]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      isplitl [Hheap Hffi Hgs Hgffi Hproph]
+      isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
       · iapply (goose_stateInterp_eq _ _ _ _).mpr
         dsimp only [List.nil_append]
         iframe
@@ -1324,7 +1399,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
     cases t with
     | zero => exact ⟨[], _, _, [], .forkStutter⟩
@@ -1350,7 +1425,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
     icases H $$ Htok with ⟨He, HΦ⟩
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1365,7 +1440,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   | forkStutter =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1442,7 +1517,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   rcases σ₁ with ⟨σ₁, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ₁ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
   have Hreal := HeadStep.base (not_unwinds_GoInstruction Harg)
     (BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h))
@@ -1472,7 +1547,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
     · iframe Hc; iexact Hm
     imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1485,7 +1560,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   | stutter _ _ =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1553,7 +1628,7 @@ theorem wp_new_proph :
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   imodintro
   isplitr
   · ipureintro
@@ -1567,7 +1642,7 @@ theorem wp_new_proph :
   imodintro
   isplitr
   · ipureintro; trivial
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     dsimp only
     iframe
@@ -1585,7 +1660,7 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
   imodintro
   isplitr
   · ipureintro; exact ⟨_, _, _, [], BaseStep.ResolveProphS p v σ₁⟩
@@ -1600,7 +1675,7 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
   imodintro
   isplitr
   · ipureintro; trivial
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hffi Hgs Hgffi Hproph Hbm]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     iframe
     ipureintro; exact Hlctx

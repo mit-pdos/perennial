@@ -118,6 +118,7 @@ variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF ≤ 2 ^ 64 →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
@@ -130,7 +131,7 @@ example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) 
     (Hthreads : g.threads = 1) (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
-  goose_adequacy (2 ^ 64) T e σ g φ hφ Hinitg Hinit
+  goose_adequacy (2 ^ 64) T e σ g φ hφ Hinitg Hinit Hbm
     (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 

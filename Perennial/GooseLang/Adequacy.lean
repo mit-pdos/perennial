@@ -83,13 +83,14 @@ class GooseGpreS [ext : FfiSyntax] (ffi : FfiModel) [FfiInterp ffi] [FfiInterpAd
   goose_preG_proph : prophMapPreS proph_id val GF (GMap proph_id)
   goosePreGFfi : ffiGpreS (ffi := ffi) GF
   goose_preG_go_state : GoStatePreG GF
+  goose_preG_bmem : ByteMemPreG GF
   /-- The `allG GF` of the `HeapGS` to be allocated (`GooseGlobalGS.gooseAllG`),
   from which the receipt and thread ghost state are allocated; not an instance,
   so that under the `HeapGS` of `Hwp` there is only that one -/
   goosePreGAllG : AllG GF
 
 attribute [reducible, instance] GooseGpreS.goose_preG_iris GooseGpreS.goose_preG_heap
-  GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state
+  GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state GooseGpreS.goose_preG_bmem
 
 section adequacy
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
@@ -101,6 +102,7 @@ run a WP proof under it. This is the common core of the adequacy theorems. -/
 theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
     (N T : Nat) (hN : 0 < N) (hT : 1 < T) (σ : state) (g : GlobalState) (κs : List Observation)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (P : HeapGS .hasLC GF → IProp GF)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       hG.goose_globalGS.gooseInvGS = Hinv →
@@ -123,10 +125,18 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   letI := hPre.goosePreGAllG
   imod receipt_init N hN with ⟨%γR, %γL, HR⟩
   imod thread_init T hT with ⟨%γT, HT⟩
+  imod na_heap_init (L := w64) (V := w8)
+    (hG := ⟨hPre.goose_preG_bmem.bm_heap_preG.na_heap_preG_inG, default⟩) btls
+    (∅ : GMap w64 ByteCell) with ⟨%hBytes, Hbytes⟩
+  imod ghost_map_alloc_empty (K := w64) (V := Nat) with ⟨%γblocks, Hblocks⟩
+  imod ghost_map_alloc_empty (K := w64) (V := go.GoType) with ⟨%γtypes, Htypes⟩
+  imod ghost_map_alloc_empty (K := go.GoType) (V := w64) with ⟨%γtypesFwd, HtypesFwd⟩
+  imod ghost_map_alloc_empty (K := w64) (V := val) with ⟨%γfuncs, Hfuncs⟩
   let G : GooseGlobalGS .hasLC GF :=
     ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
   let L : GooseLocalGS GF :=
-    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ⟩
+    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ,
+      ⟨hBytes, γblocks, γtypes, γtypesFwd, γfuncs⟩⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩
   -- the main thread's token and the thread fuel
   have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
@@ -138,9 +148,25 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   isplitr
   · ipureintro; rfl
   iframe HP
-  unfold gooseBstateInterp gooseStateInterp threadFuel
+  unfold gooseBstateInterp gooseStateInterp threadFuel bmemCtx
+  rw [Hbm]
   iframe
-  ipureintro; rfl
+  isplitr
+  · ipureintro; rfl
+  isplitr
+  · imodintro; iintro %a %b %n %h
+    exact absurd h (by show (∅ : GMap w64 ByteCell) !! a ≠ _; simp)
+  isplitr
+  · isplitr
+    · ipureintro; intro t p
+      show (∅ : GMap go.GoType w64) !! t = some p ↔ (∅ : GMap w64 go.GoType) !! p = some t
+      simp
+    · imodintro; iintro %p %t %h
+      exact absurd h (by show (∅ : GMap w64 go.GoType) !! p ≠ _; simp)
+  ipureintro
+  refine ⟨fun b sz h => ?_, fun t p h => ?_⟩
+  · exact absurd h (by show (∅ : GMap w64 Nat) !! b ≠ some sz; simp)
+  · exact absurd h (by show (∅ : GMap go.GoType w64) !! t ≠ some p; simp)
 
 /-- Adequacy of the bounded GooseLang language (the one the program logic is
 built for): a WP proved for `e` under any instantiation of the GooseLang ghost
@@ -152,6 +178,7 @@ for the real semantics. -/
 theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -163,7 +190,7 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
     adequate Stuckness.NotStuck e (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) (fun v _ => φ v) := by
   refine wp_adequacy (GF := GF) Stuckness.NotStuck e (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) φ ?_
   intro Hinv κs
-  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
+  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit Hbm
     (fun (_ : HeapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}))
     (@fun hG HinvEq HN HT Hlctx => by subst HinvEq; exact Hwp (hG := hG) HN HT Hlctx)
     with ⟨%hG, %HinvEq, Hσ, Hwp⟩
@@ -183,6 +210,7 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -197,7 +225,7 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
   refine wp_strong_adequacy (GF := GF) Stuckness.NotStuck [e]
     (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) n κs t2 σ2 (v.isPanic = false) (fun _ => 0) ?_ Hsteps
   intro Hinv
-  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
+  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit Hbm
     (fun (_ : HeapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}))
     (@fun hG HinvEq HN HT Hlctx => by subst HinvEq; exact Hwp (hG := hG) HN HT Hlctx)
     with ⟨%hG, %HinvEq, Hσ, Hwp⟩
@@ -235,6 +263,7 @@ theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) 
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -253,7 +282,7 @@ theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) 
       (t₁ ++ Val (PanicV p) :: t₂, σ2) :=
     ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hsteps⟩).trans (Hp [] t₁ t₂ σ2)
   obtain ⟨m, κs', Hm⟩ := (Language.erasedStep_nSteps _ _).mp Hreach
-  have := goose_adequacy_nopanic_blang N T hN hT e σ g φ hφ Hinitg Hinit Hwp Hm (PanicV p)
+  have := goose_adequacy_nopanic_blang N T hN hT e σ g φ hφ Hinitg Hinit Hbm Hwp Hm (PanicV p)
     (by simp)
   simp at this
 
@@ -274,6 +303,7 @@ postcondition `φ` that excludes panics (`hφ`), then in every real execution of
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -289,7 +319,7 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
   have hT : 1 < T := by have := Hlive.start; simp only at this; omega
-  have Hadeq := goose_adequacy_blang N T (by omega) hT e σ g φ Hinitg Hinit Hwp
+  have Hadeq := goose_adequacy_blang N T (by omega) hT e σ g φ Hinitg Hinit Hbm Hwp
   obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
     (by simp only; omega)
   have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, (σ2, ⟨c, t⟩)) :=
@@ -299,7 +329,7 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     exact Hadeq.adequate_result t2' (σ2, ⟨c, t⟩) v Hreach
   · intro e2 he2
     exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
-  · exact goose_no_unrecovered_panic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
+  · exact goose_no_unrecovered_panic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hbm Hwp Hb
 
 /-- Invariance for the bounded language: under the same hypotheses as
 `goose_adequacy`, a state property that follows from the FFI's global
@@ -307,6 +337,7 @@ interpretation holds in every reachable configuration of the bounded semantics. 
 theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
     (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -322,7 +353,7 @@ theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < 
   refine wp_invariance (GF := GF) Stuckness.NotStuck e (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) σ2
     t2 _ ?_ Hsteps
   intro Hinv κs
-  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
+  imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit Hbm
     (fun (_ : HeapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
         (∀ g', ffiGlobalCtx (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝)))
     (@fun hG HinvEq HN HT Hlctx => by subst HinvEq; exact Hwp (hG := hG) HN HT Hlctx)
@@ -348,6 +379,7 @@ along which fewer than `T` threads are live. -/
 theorem goose_invariance [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = default)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -365,7 +397,7 @@ theorem goose_invariance [hPre : GooseGpreS ffi GF] (N T : Nat)
   have hT : 1 < T := by have := Hlive.start; simp only at this; omega
   obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
     (by simp only; omega)
-  exact goose_invariance_blang (σ2 := (σ2, ⟨c, t⟩)) N T (by omega) hT e σ g φinv Hinitg Hinit Hwp
+  exact goose_invariance_blang (σ2 := (σ2, ⟨c, t⟩)) N T (by omega) hT e σ g φinv Hinitg Hinit Hbm Hwp
     ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩)
 
 end adequacy
