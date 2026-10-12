@@ -1,2 +1,3 @@
 .lake/
 .claude/worktrees/
+.claude/settings.local.json

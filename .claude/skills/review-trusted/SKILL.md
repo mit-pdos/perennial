@@ -111,6 +111,13 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
 
 5. **Report** in the format below. Then, with `--fix`, apply the playbook.
 
+6. **Record the verdict for landing.** When the final verdict is OK (every
+   BLOCK and REWORK fixed and committed, or no trusted change at all) and the
+   target was the current branch, run `etc/land.sh mark-reviewed`: it records
+   the branch's reviewed changes, and `etc/land.sh push` (the `/land` skill)
+   refuses to move `lean` without it. Never record with an open BLOCK or
+   REWORK, and never for a review of some other commit or range.
+
 ## Rules
 
 Each finding cites a rule. Severity: **BLOCK** (unsound, or forbidden by
