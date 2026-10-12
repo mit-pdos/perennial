@@ -379,9 +379,6 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     isplitl []
     · ipureintro; simp
     imodintro
-    isplitl []
-    · imodintro; itrivial
-    imodintro
     iexists _
     iframe HM
     ipureintro
