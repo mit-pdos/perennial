@@ -330,6 +330,15 @@ theorem wp_Sleep (d : time.Duration) :
 
 end wps
 
+/-- `t` was returned by `NewTimer` (opaque): the runtime allocated it as the head of one of its
+timers (`runtime.timeTimer`: the `Timer`'s fields followed by the runtime's state) and set its
+`initTimer`, so that `Stop` and `Reset` may call the runtime's `stopTimer` and `resetTimer` on
+it. Only the axiom `wp_NewTimer` provides it; no points-to gives it, so a `Timer` the program
+allocates, or a copy of one, is not one. Its meaning is fixed by the axioms that mention it
+(`wp_NewTimer`, `Timer.wp_Stop`, `Timer.wp_Reset`); nothing else is proved about it (the value
+`False` only shows that the type is inhabited: Lean does not unfold an `opaque`). -/
+opaque newTimerMade {GF : BundledGFunctors} (t : Loc) : IProp GF := iprop(False)
+
 section chan_wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -357,21 +366,30 @@ theorem wp_After (d : time.Duration) :
 translated; the runtime's timers are not modelled)
 
 A `*Timer` from `NewTimer` is `isTimer t ch γ`: its `C` field holds, for good, a channel `ch` on
-which a receive may yield some time (a bag of times, `isChanBag`, with no logical content). The
-specs say nothing about *when* (or whether) a value arrives: `Stop` and `Reset` return some
-`bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
-timer's channel delivers nothing; the model allows it), which is sound for safety. -/
+which a receive may yield some time (a bag of times, `isChanBag`, with no logical content), and
+`t` is one of the runtime's timers (`newTimerMade t`). The specs say nothing about *when* (or
+whether) a value arrives: `Stop` and `Reset` return some `bool` and change nothing the proof can
+observe. This over-approximates Go's timers (a stopped timer's channel delivers nothing; the
+model allows it), which is sound for safety.
+
+`newTimerMade t` is what makes `isTimer` unforgeable. The points-to of `C` alone is not: a
+program can allocate its own `Timer` and copy `C` into it (`u := new(time.Timer); u.C = t.C`),
+and Go's `Stop` and `Reset` on that `u` panic ("uninitialized Timer"); with the points-to of
+`initTimer` as well, it could copy the whole struct (`*u = *t`), and the runtime's `stopTimer`
+and `resetTimer` would treat the memory after `u` as their timer state. -/
 
 /-- `t` is a `*Timer` made by `NewTimer`, whose channel `C` is `ch` (persistent). -/
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
-    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
+    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)) ∗
+    □ newTimerMade (GF := GF) t)
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
     Persistent (isTimer (GF := GF) t ch γ) := by
   unfold isTimer; infer_instance
 
-/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`). -/
+/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`), one of the runtime's timers
+(`newTimerMade`). -/
 axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (d : time.Duration) :
@@ -379,7 +397,8 @@ axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemanti
       (App (Val (@! time.NewTimer)) (Val #d))
     {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTimer t ch γ }}
 
-/-- Spec of `(*Timer).Stop()` (axiom): some `bool`. -/
+/-- Spec of `(*Timer).Stop()` (axiom): some `bool`, for a timer made by `NewTimer` (`isTimer`, whose
+`newTimerMade t` a `Timer` the program made, such as a copy, does not have). -/
 axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames) :
@@ -387,7 +406,8 @@ axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSeman
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
     {{ (b : Bool), RET #b; True }}
 
-/-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`. -/
+/-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`, for a timer made by `NewTimer` (`isTimer`; see
+`Timer.wp_Stop`). -/
 axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames)
