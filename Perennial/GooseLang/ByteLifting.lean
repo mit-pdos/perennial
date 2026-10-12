@@ -7,8 +7,6 @@ Resources:
   (string data, type descriptors) are only ever owned that way.
 * `isBlock b sz`: `[b, b + sz)` is an allocation block (persistent), the
   provenance that `unsafe.Add` needs.
-* `isType p t`: the descriptor of type `t` is at `p` (persistent). One address
-  has one type (`isType_agree`) and one type one address (`wp_type_intern_known`).
 * `isFunc p v`: the func pointer `p` holds the closure `v` (persistent).
 
 The WP lemmas cover every byte-memory primitive. Allocations loop when memory
@@ -20,8 +18,7 @@ addresses of a range to be distinct (lengths below `2 ^ 64`).
 
 The interpretation (`bmemCtx`, `Lifting.lean`) keeps persistent fragments of
 every frozen byte and every interned type, so that a step may return frozen data
-(`BAllocFrozenReuseS`) or an existing descriptor (`TypeInternHitS`) to a thread
-that never owned it.
+(`BAllocFrozenReuseS`) to a thread that never owned it.
 -/
 module
 
@@ -98,31 +95,11 @@ instance bytesPointsto_timeless (a : w64) (dq : DFrac) (bs : List w8) :
     Timeless (bytesPointsto (GF := GF) a dq bs) := by
   unfold bytesPointsto bytePointsto; infer_instance
 
-instance isType_persistent (p : w64) (t : go.GoType) : Persistent (isType (GF := GF) p t) := by
-  unfold isType; infer_instance
-
 instance isBlock_persistent (b : w64) (sz : Nat) : Persistent (isBlock (GF := GF) b sz) := by
   unfold isBlock; infer_instance
 
 instance isFunc_persistent (p : w64) (v : val) : Persistent (isFunc (GF := GF) p v) := by
   unfold isFunc; infer_instance
-
-theorem isType_fwd (p : w64) (t : go.GoType) :
-    isType (GF := GF) p t ⊢ ghostMapElem L.goose_bmemGS.bm_typesFwdName t .discard p := by
-  unfold isType; iintro ⟨-, H⟩; iexact H
-
-theorem isType_agree (p : w64) (t1 t2 : go.GoType) :
-    isType (GF := GF) p t1 ∗ isType p t2 ⊢ ⌜t1 = t2⌝ := by
-  unfold isType
-  iintro ⟨⟨H1, -⟩, ⟨H2, -⟩⟩
-  iapply ghostMapElem_agree $$ H1 H2
-
-/-- Type descriptors are canonical: one type has one descriptor. -/
-theorem isType_inj (p1 p2 : w64) (t : go.GoType) :
-    isType (GF := GF) p1 t ∗ isType p2 t ⊢ ⌜p1 = p2⌝ := by
-  unfold isType
-  iintro ⟨⟨-, H1⟩, ⟨-, H2⟩⟩
-  iapply ghostMapElem_agree $$ H1 H2
 
 theorem isFunc_agree (p : w64) (v1 v2 : val) :
     isFunc (GF := GF) p v1 ∗ isFunc p v2 ⊢ ⌜v1 = v2⌝ := by
@@ -492,14 +469,12 @@ theorem staticAgree_allocRange {m : ByteMem} {a : w64} {cs : List ByteCell} (h :
 theorem bmemWf_writeRange {m : ByteMem} (a : w64) (cs : List ByteCell) (h : BmemWf m)
     (hs : StaticAgree (m.writeRange a cs)) : BmemWf (m.writeRange a cs) :=
   ⟨fun b sz hb => ⟨(h.1 b sz hb).1, fun i hi =>
-      insertRange_isSome _ _ _ _ ((h.1 b sz hb).2 i hi)⟩,
-   fun t p ht => insertRange_isSome _ _ _ _ (h.2.1 t p ht), hs⟩
+      insertRange_isSome _ _ _ _ ((h.1 b sz hb).2 i hi)⟩, hs⟩
 
 theorem bmemWf_allocRange {m : ByteMem} (a : w64) (cs : List ByteCell) (h : BmemWf m)
     (hlen : cs.length ≤ 2 ^ 64) (hfree : ∀ i < cs.length, m.bytes !! byteAddr a i = none) :
     BmemWf (m.allocRange a cs) := by
-  refine ⟨fun b sz hb => ?_, fun t p ht => insertRange_isSome _ _ _ _ (h.2.1 t p ht),
-    staticAgree_allocRange h.2.2 hfree⟩
+  refine ⟨fun b sz hb => ?_, staticAgree_allocRange h.2 hfree⟩
   simp only [addBlock] at hb ⊢
   split at hb
   · exact ⟨(h.1 b sz hb).1, fun i hi => insertRange_isSome _ _ _ _ ((h.1 b sz hb).2 i hi)⟩
@@ -543,9 +518,6 @@ theorem bmemCtx_eq (m : ByteMem) :
     bmemCtx (GF := GF) m ⊣⊢ iprop(naHeapCtx btls m.bytes ∗
       (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
       ghostMapAuth L.goose_bmemGS.bm_blocksName 1 m.blocks ∗
-      ghostMapAuth L.goose_bmemGS.bm_typesFwdName 1 m.types ∗
-      (∃ rev, ghostMapAuth L.goose_bmemGS.bm_typesName 1 rev ∗ ⌜TypesRev m.types rev⌝ ∗
-        □ ∀ p t, ⌜rev !! p = some t⌝ → isType p t) ∗
       ghostMapAuth L.goose_bmemGS.bm_funcsName 1 m.funcs ∗
       ⌜BmemWf m⌝) := .rfl
 
@@ -797,7 +769,7 @@ theorem stateInterp_frozen_acc (σ : BcfgState) (ns : Nat) (κs : List Observati
   icases (goose_bstateInterp_eq σ c ns κs nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ ns κs nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
-  icases (bmemCtx_eq _).1 $$ Hbm with ⟨Hbytes, #Hfr, Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+  icases (bmemCtx_eq _).1 $$ Hbm with ⟨Hbytes, #Hfr, Hbl, Hfn, %Hwf⟩
   isplitl
   · iapply (goose_bstateInterp_eq σ c ns κs nt).2
     iframe Hc Ht
@@ -826,7 +798,7 @@ theorem wp_static_bytes {e : Expr} {Φ : val → IProp GF} (a : w64) (bs : List 
   iapply h1.2
   iintro %σ %ns %obs %obs' %nt Hσ
   icases stateInterp_frozen_acc σ ns (obs ++ obs') nt $$ Hσ with ⟨Hσ, #Hfr, %Hwf⟩
-  ihave #Hl := static_bytes_of σ.1.1.bmem a bs Hwf.2.2 hs $$ Hfr
+  ihave #Hl := static_bytes_of σ.1.1.bmem a bs Hwf.2 hs $$ Hfr
   ihave H := H $$ Hl
   icases h1.1 $$ H with H
   iapply H $$ Hσ
@@ -909,7 +881,7 @@ theorem wp_balloc (al : w64) (bs : List w8) :
     simp only [val.PairV.injEq, val.LitV.injEq, BaseLit.LitString.injEq] at hv
     obtain ⟨hal', rfl⟩ := hv
     cases intoVal_w64_inj hal'
-    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, #Hfr, Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, #Hfr, Hbl, Hfn, %Hwf⟩
     have hlen : (bs.map (ByteMode.Rd 0, ·)).length ≤ 2 ^ 64 := by
       have := hf.2.1; simp; omega
     imod bmem_alloc_block σ₁.1.bmem a (bs.map (ByteMode.Rd 0, ·)) (by simpa using hf)
@@ -917,7 +889,7 @@ theorem wp_balloc (al : w64) (bs : List w8) :
     imodintro
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hbytes Hbl Hfwd Hty Hfn]
+    isplitl [Hbytes Hbl Hfn]
     · iexists σ₁.1.bmem.allocRange a (bs.map (ByteMode.Rd 0, ·))
       isplitr
       · ipureintro; rfl
@@ -975,7 +947,7 @@ theorem wp_balloc_frozen (bs : List w8) :
   cases Hstep with
   | BAllocFrozenS bs' a _ hf =>
     simp only [val.LitV.injEq, BaseLit.LitString.injEq] at hv; subst hv
-    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, #Hfr, Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, #Hfr, Hbl, Hfn, %Hwf⟩
     have hlen : bs.length ≤ 2 ^ 64 := by have := hf.2.1; omega
     imod bmem_alloc_block σ₁.1.bmem a (bs.map (ByteMode.Frozen 0, ·)) (by simpa using hf)
       (by simp) Hwf $$ Hbytes Hbl with ⟨Hbytes, Hbl, Hl, -⟩
@@ -984,7 +956,7 @@ theorem wp_balloc_frozen (bs : List w8) :
     imodintro
     isplitr
     · ipureintro; simp
-    isplitl [Hbytes Hbl Hfwd Hty Hfn]
+    isplitl [Hbytes Hbl Hfn]
     · iexists σ₁.1.bmem.allocRange a (bs.map (ByteMode.Frozen 0, ·))
       isplitr
       · ipureintro; rfl
@@ -1097,7 +1069,7 @@ theorem wp_bstart_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length =
     · iexists σ₁.1.bmem.writeRange a (cs.map fun c => (c.1.rl, c.2))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbl, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       iframe
       isplitr
@@ -1107,7 +1079,7 @@ theorem wp_bstart_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length =
             cases md <;> simp_all [ByteMode.rl, ByteMode.IsFrozen]) $$ Hfr
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
+        (staticAgree_insertRange Hwf.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
           obtain ⟨md, b⟩ := c; cases md <;> simp_all [ByteMode.rl, ByteMode.IsFrozen]))
     iexists blobV (cs.map Prod.snd)
     isplit
@@ -1145,7 +1117,7 @@ theorem wp_bfinish_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length 
     · iexists σ₁.1.bmem.writeRange a (cs.map fun c => (c.1.url, c.2))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbl, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       iframe
       isplitr
@@ -1158,7 +1130,7 @@ theorem wp_bfinish_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length 
             | Frozen k => cases k <;> simp_all [ByteMode.url, ByteMode.IsFrozen]) $$ Hfr
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
+        (staticAgree_insertRange Hwf.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
           obtain ⟨md, b⟩ := c
           cases md with
           | Rd k => simp_all [ByteMode.IsFrozen]
@@ -1204,7 +1176,7 @@ theorem wp_bprepare_write (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) 
     · iexists σ₁.1.bmem.writeRange a (cs.map (fun c => (ByteMode.Wr, c.2)))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbl, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       iframe
       isplitr
@@ -1212,7 +1184,7 @@ theorem wp_bprepare_write (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) 
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs (by have := n.isLt; omega) (by simp)
+        (staticAgree_insertRange Hwf.2 Hcs (by have := n.isLt; omega) (by simp)
           (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists #()
     isplit
@@ -1255,7 +1227,7 @@ theorem wp_bfinish_write (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.le
     · iexists σ₁.1.bmem.writeRange a (bs'.map (ByteMode.Rd 0, ·))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbl, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       iframe
       isplitr
@@ -1263,7 +1235,7 @@ theorem wp_bfinish_write (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.le
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs (by simpa using hlt) (by simp [hlen])
+        (staticAgree_insertRange Hwf.2 Hcs (by simpa using hlt) (by simp [hlen])
           (frozenKept_of_notFrozen fun c hc => by
             obtain ⟨_, _, rfl⟩ := List.mem_map.mp hc; simp [ByteMode.IsFrozen]))
     iexists #()
@@ -1307,7 +1279,7 @@ theorem wp_bswap (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.length)
     · iexists σ₁.1.bmem.writeRange a (bs'.map (ByteMode.Rd 0, ·))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbl, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       iframe
       isplitr
@@ -1315,7 +1287,7 @@ theorem wp_bswap (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.length)
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs (by omega) (by simp; omega)
+        (staticAgree_insertRange Hwf.2 Hcs (by omega) (by simp; omega)
           (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists blobV bs
     isplit
@@ -1360,7 +1332,7 @@ theorem wp_bfreeze (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) :
     · iexists σ₁.1.bmem.writeRange a (cs.map (fun c => (ByteMode.Frozen 0, c.2)))
       isplitr
       · ipureintro; rfl
-      icases Hrest with ⟨Hbk, Hfwd, Hty, Hfn, %Hwf⟩
+      icases Hrest with ⟨Hbk, Hfn, %Hwf⟩
       iapply (bmemCtx_eq _).2
       rw [Hcells]
       iframe
@@ -1368,7 +1340,7 @@ theorem wp_bfreeze (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) :
       · iapply frozen_insertRange_frozen _ a bs 0 Hbl $$ Hfr Hl
       ipureintro
       exact bmemWf_writeRange a _ Hwf
-        (staticAgree_insertRange Hwf.2.2 Hcs (by have := n.isLt; omega) (by rw [← Hmap]; simp)
+        (staticAgree_insertRange Hwf.2 Hcs (by have := n.isLt; omega) (by rw [← Hmap]; simp)
           (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists #()
     isplit
@@ -1496,12 +1468,12 @@ theorem wp_func_alloc (v : val) (Hv : v.isPanic = false := by simp) :
   imod Hclose
   cases Hstep with
   | FuncAllocS _ p _ hp0 hpn =>
-    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfn, %Hwf⟩
     imod ghost_map_insert_persist p v hpn $$ Hfn with ⟨Hfn, #Hp⟩
     imodintro
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hbytes Hfr Hbl Hfwd Hty Hfn]
+    isplitl [Hbytes Hfr Hbl Hfn]
     · iexists { σ₁.1.bmem with funcs := <[p := v]> σ₁.1.bmem.funcs }
       isplitr
       · ipureintro; rfl
@@ -1532,9 +1504,9 @@ theorem wp_func_load (p : w64) (v : val) :
   iintro %Φ #Hf HΦ
   iapply wp_lift_atomic_bmem_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
-  icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfwd, Hty, Hfn, Hwf⟩
+  icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfn, Hwf⟩
   icases ghost_map_lookup $$ Hfn Hf with %Hlk
-  ihave Hσ : bmemCtx σ₁.1.bmem $$ [Hbytes Hfr Hbl Hfwd Hty Hfn Hwf]
+  ihave Hσ : bmemCtx σ₁.1.bmem $$ [Hbytes Hfr Hbl Hfn Hwf]
   · iapply (bmemCtx_eq _).2; iframe
   imodintro
   isplitr
@@ -1558,179 +1530,6 @@ theorem wp_func_load (p : w64) (v : val) :
     isplit
     · ipureintro; rfl
     iapply HΦ; itrivial
-
-/-! ### Type descriptors -/
-
-theorem wp_type_intern (t : go.GoType) (bs : List w8) (hbs : bs ≠ []) :
-    {{ (True : IProp GF) }} (TypeIntern t (Val (blobV bs))) @ s; E
-    {{ (p : w64), RET #p; isType p t }} := by
-  iintro %Φ _ HΦ
-  iapply (show ⊢ ▷ (∀ p : w64, isType (GF := GF) p t -∗ Φ #p) -∗
-      WP (TypeIntern t (Val (blobV bs))) @ s; E {{ Φ }} from ?_) $$ HΦ
-  iloeb as IH
-  iintro HΦ
-  iapply wp_lift_bmem_step rfl rfl (by not_unwinds)
-  iintro %σ₁ Hσ
-  iapply fupd_mask_intro Std.LawfulSet.empty_subset
-  iintro Hclose
-  isplitr
-  · ipureintro
-    cases hlk : σ₁.1.bmem.types !! t with
-    | some p => exact ⟨[], _, _, [], BaseStep.TypeInternHitS t bs p σ₁ hlk⟩
-    | none =>
-      by_cases ha : ∃ a, FreshRange σ₁.1.bmem.bytes a bs.length
-      · obtain ⟨a, hf⟩ := ha
-        exact ⟨[], _, _, [], BaseStep.TypeInternNewS t bs a σ₁ hlk hbs hf⟩
-      · exact ⟨[], _, _, [], BaseStep.TypeInternOomS t bs σ₁ hlk ha⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  imod Hclose
-  generalize hv : blobV bs = v at Hstep
-  cases Hstep with
-  | TypeInternHitS _ bs' p _ hlk =>
-    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfwd, ⟨%rev, Hrev, %HTR, #Hrevfr⟩, Hrest⟩
-    ihave #Ht := Hrevfr $$ %p %t %((HTR t p).1 hlk)
-    imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hbytes Hfr Hbl Hfwd Hrev Hrest]
-    · iexists σ₁.1.bmem
-      isplitr
-      · ipureintro; rfl
-      iapply (bmemCtx_eq _).2
-      iframe
-      isplitr
-      · ipureintro; exact HTR
-      iexact Hrevfr
-    iapply wp_value'
-    iapply HΦ $$ Ht
-  | TypeInternNewS _ bs' a _ hnone _ hf =>
-    simp only [val.LitV.injEq, BaseLit.LitString.injEq] at hv; subst hv
-    icases (bmemCtx_eq _).1 $$ Hσ with
-      ⟨Hbytes, #Hfr, Hbl, Hfwd, ⟨%rev, Hrev, %HTR, #Hrevfr⟩, Hfn, %Hwf⟩
-    have hlen : bs.length ≤ 2 ^ 64 := by have := hf.2.1; omega
-    have hpos : 0 < bs.length := List.length_pos_iff.mpr hbs
-    have ha0 : σ₁.1.bmem.bytes !! a = none := by
-      have := freshRange_lookup hf (i := 0) hpos; rwa [byteAddr_zero] at this
-    have hnotA : ∀ t', σ₁.1.bmem.types !! t' ≠ some a := by
-      intro t' ht'; have := Hwf.2.1 t' a ht'; rw [ha0] at this; cases this
-    have hra : rev !! a = none := by
-      cases hr : rev !! a with
-      | none => rfl
-      | some t' => exact absurd ((HTR t' a).2 hr) (hnotA t')
-    imod bmem_alloc_block σ₁.1.bmem a (bs.map (ByteMode.Frozen 0, ·)) (by simpa using hf)
-      (by simp) Hwf $$ Hbytes Hbl with ⟨Hbytes, Hbl, Hl, -⟩
-    simp only [List.map_map, Function.comp_def, List.map_id']
-    imod bytesPointsto_persist a _ bs $$ Hl with #Hl
-    imod ghost_map_insert_persist t a hnone $$ Hfwd with ⟨Hfwd, #Hf1⟩
-    imod ghost_map_insert_persist a t hra $$ Hrev with ⟨Hrev, #Hf2⟩
-    have HTR' : TypesRev (<[t := a]> σ₁.1.bmem.types) (<[a := t]> rev) := by
-      intro t'' p''
-      rw [GMap.lookup_insert_eq_iff, GMap.lookup_insert_eq_iff]
-      by_cases h1 : t = t''
-      · subst h1
-        by_cases h2 : a = p''
-        · subst h2; simp
-        · rw [if_pos rfl, if_neg h2]
-          refine ⟨fun h => absurd (Option.some.inj h) h2, fun h => ?_⟩
-          have := (HTR t p'').2 h; rw [hnone] at this; cases this
-      · by_cases h2 : a = p''
-        · subst h2
-          rw [if_neg h1, if_pos rfl]
-          exact ⟨fun h => absurd h (hnotA t''), fun h => absurd (Option.some.inj h) h1⟩
-        · rw [if_neg h1, if_neg h2]; exact HTR t'' p''
-    have hwf' : BmemWf { σ₁.1.bmem.allocRange a (bs.map (ByteMode.Frozen 0, ·)) with
-        types := <[t := a]> σ₁.1.bmem.types } := by
-      have h0 := bmemWf_allocRange a (bs.map (ByteMode.Frozen 0, ·)) Hwf (by simpa using hlen)
-        (fun i hi => hf.2.2 i (by simpa using hi))
-      refine ⟨h0.1, fun t'' p'' ht => ?_, h0.2.2⟩
-      rw [GMap.lookup_insert_eq_iff] at ht
-      split at ht
-      · cases ht
-        show (insertRange _ a _ !! a).isSome
-        have := lookup_insertRange_getElem σ₁.1.bmem.bytes a (bs.map (ByteMode.Frozen 0, ·))
-          (by simpa using hlen) 0 (by simpa using hpos)
-        rw [byteAddr_zero] at this
-        rw [this]; rfl
-      · exact h0.2.1 t'' p'' ht
-    imodintro
-    isplitr
-    · ipureintro; simp
-    isplitl [Hbytes Hbl Hfwd Hrev Hfn]
-    · iexists { σ₁.1.bmem.allocRange a (bs.map (ByteMode.Frozen 0, ·)) with
-        types := <[t := a]> σ₁.1.bmem.types }
-      isplitr
-      · ipureintro; rfl
-      iapply (bmemCtx_eq _).2
-      iframe
-      isplitr
-      · iapply frozen_insertRange_frozen _ a bs 0 hlen $$ Hfr Hl
-      isplitr
-      · isplitr
-        · ipureintro; exact HTR'
-        imodintro
-        iintro %p' %t' %hp'
-        rw [GMap.lookup_insert_eq_iff] at hp'
-        split at hp'
-        · rename_i hpa; subst hpa; cases hp'
-          unfold isType; isplitl
-          · iexact Hf2
-          · iexact Hf1
-        · iapply Hrevfr $$ %p' %t' %hp'
-      ipureintro; exact hwf'
-    iapply wp_value'
-    iapply HΦ
-    unfold isType; isplitl
-    · iexact Hf2
-    · iexact Hf1
-  | TypeInternOomS _ bs' _ _ _ =>
-    simp only [val.LitV.injEq, BaseLit.LitString.injEq] at hv; subst hv
-    imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists σ₁.1.bmem
-      isplitr
-      · ipureintro; rfl
-      iexact Hσ
-    iapply IH
-    inext
-    iexact HΦ
-
-theorem wp_type_intern_known (t : go.GoType) (bs : List w8) (p : w64) :
-    {{ isType (GF := GF) p t }} (TypeIntern t (Val (blobV bs))) @ s; E
-    {{ RET #p; True }} := by
-  iintro %Φ #Ht HΦ
-  iapply wp_lift_atomic_bmem_step rfl rfl (by not_unwinds)
-  iintro %σ₁ Hσ
-  icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfwd, Hrest⟩
-  icases isType_fwd p t $$ Ht with #Htf
-  icases ghost_map_lookup $$ Hfwd Htf with %Hlk
-  ihave Hσ : bmemCtx σ₁.1.bmem $$ [Hbytes Hfr Hbl Hfwd Hrest]
-  · iapply (bmemCtx_eq _).2; iframe
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨[], _, _, [], BaseStep.TypeInternHitS t bs p σ₁ Hlk⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  generalize hb : blobV bs = vb at Hstep
-  cases Hstep with
-  | TypeInternHitS t' bs' p' _ Hlk' =>
-    rw [Hlk] at Hlk'; cases Hlk'
-    imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists σ₁.1.bmem
-      isplitr
-      · ipureintro; rfl
-      iexact Hσ
-    iexists #p
-    isplit
-    · ipureintro; rfl
-    iapply HΦ; itrivial
-  | TypeInternNewS t' bs' a' _ Hnone => rw [Hlk] at Hnone; cases Hnone
-  | TypeInternOomS t' bs' _ Hnone => rw [Hlk] at Hnone; cases Hnone
 
 end lemmas
 

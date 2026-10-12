@@ -114,8 +114,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **Byte memory (prototype).** Next to the `val` heap, the state has a
   byte-addressed memory `ByteMem` (`GooseLang/Lang.lean`, "Byte memory";
   program logic in `GooseLang/ByteLifting.lean`): bytes at `w64` addresses with
-  allocation blocks for `unsafe.Add`, interned type descriptors and func
-  pointers. The Go model does not use it yet; `docs/BYTE_MEMORY.md` describes
+  allocation blocks for `unsafe.Add` and func pointers. The Go model does not use it yet; `docs/BYTE_MEMORY.md` describes
   the design, what the prototype confirms and the migration plan. The adequacy
   theorems start from the program image (`σ.bmem = staticImage`: the abstract
   `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`). A sketch of

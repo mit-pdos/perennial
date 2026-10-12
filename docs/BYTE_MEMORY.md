@@ -15,13 +15,13 @@ the Go model onto it is future work (see "Migration" below).
 
 | File | Contents |
 |------|----------|
-| `Perennial/GooseLang/Lang.lean`, "Byte memory" | trusted: the state `ByteMem` (bytes with modes, allocation blocks, type table, func table), the primitives `BAlloc`, `BAllocFrozen`, `BLoad`, `BStartRead`/`BFinishRead`, `BPrepareWrite`/`BFinishWrite`, `BSwap`, `BFreeze`, `UnsafeAdd`, `FuncAlloc`/`FuncLoad`, `TypeIntern t`, and their `BaseStep` rules |
+| `Perennial/GooseLang/Lang.lean`, "Byte memory" | trusted: the state `ByteMem` (bytes with modes, allocation blocks, func table), the primitives `BAlloc`, `BAllocFrozen`, `BLoad`, `BStartRead`/`BFinishRead`, `BPrepareWrite`/`BFinishWrite`, `BSwap`, `BFreeze`, `UnsafeAdd`, `FuncAlloc`/`FuncLoad`, and their `BaseStep` rules |
 | `Perennial/GooseLang/ByteRange.lean` | pure lemmas about address ranges (`byteAddr`, `LookupRange`, `insertRange`, `FreshRange`) |
 | `Perennial/GooseLang/Lifting.lean` | the ghost state `ByteMemGS` and its interpretation `bmemCtx`, a new conjunct of `gooseStateInterp` |
-| `Perennial/GooseLang/ByteLifting.lean` | resources (`a ↦∗{dq} bs`, `isBlock`, `isType`, `isFunc`) and a WP lemma for every primitive, all proved |
+| `Perennial/GooseLang/ByteLifting.lean` | resources (`a ↦∗{dq} bs`, `isBlock`, `isFunc`) and a WP lemma for every primitive, all proved |
 | `Perennial/GooseLang/Adequacy.lean` | allocates the byte-memory ghost state; the adequacy theorems take `σ.bmem = staticImage` (programs start with the program image: `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`) |
 | `Perennial/Golang/Defn/ByteRepr.lean` | trusted: the layout of Go values (`ByteRepr`: size, alignment, little-endian encode/decode; string, interface and slice headers; struct layout with padding) |
-| `Perennial/Golang/Theory/BytePrototype.lean` | the Go layer on top: typed points-to over bytes and struct field splitting, strings as heap objects (`isString`), interfaces with interned type descriptors (`isIface`), calls through func pointers, an `unsafe.Add` field access |
+| `Perennial/Golang/Theory/BytePrototype.lean` | the Go layer on top: typed points-to over bytes and struct field splitting, strings as heap objects (`isString`), calls through func pointers, an `unsafe.Add` field access |
 | `Perennial/Golang/Defn/StaticImage.lean` | sketch, trusted: symbols of the program image (`StaticSymbols`: `typeAddr`, `itabAddr`, `methodAddr`), facts packages assume about it (`IsTypeDesc`, `StaticItab`, `StaticMethod`), the interface semantics over the byte memory (`go.InterfaceSemanticsB`, bundled in `go.SemanticsB`) with `sorry`'d lowered primitives |
 | `Perennial/Golang/Theory/StaticIface.lean` | sketch: the interface abstraction (`isIface`, `isEface`, `Implements`, `ImplementsStatic`) and its instruction-level specs |
 | `Perennial/Proof/.../semantics_proof/interfaces_bytes.lean` | goose's unchanged interface tests proved under `go.SemanticsB` |
@@ -45,11 +45,20 @@ design (below).
   `unsafe.Add(p, off)` is defined only when `p` and `p + off` are in the same
   block (one past the end is not in it). Pointers stay plain `w64` addresses:
   the provenance is the block containing the address, which is unique because
-  blocks are disjoint and non-empty.
-* **Types.** `TypeIntern t bs` returns the unique descriptor of `t`. On first
-  use it allocates a frozen block holding `bs`, so later calls return the same
-  address. `isType p t` agrees in both directions (`isType_agree`,
-  `isType_inj`), so the dynamic-type checks of interfaces compare addresses.
+  blocks are disjoint and non-empty. Blocks are needed only for `unsafe`
+  pointer arithmetic: an address the semantics computes itself (a field or
+  element address) is in bounds by construction, but `unsafe.Add` can leave
+  its object, which Go makes invalid (`-d=checkptr` panics, the GC may crash
+  on a pointer into a free span, and a moving GC may break it). On flat memory
+  the model would define such a program (`if uintptr(p)+8 == uintptr(q) {
+  *(*int)(unsafe.Add(p, 8)) = 1 }` writes `q`, and a proof that owns `q` can
+  verify it): more defined than Go. Restricting it in the logic alone is not
+  enough, since a lemma for the out-of-object step would be provable from the
+  semantics.
+* **Types.** Type descriptors and itabs are not built at run time: they are
+  part of the program image (see "Static data and interfaces"). An earlier
+  version interned descriptors on first use (`TypeIntern`); it could not fill
+  the pointers between descriptors of recursive types and is removed.
 * **Funcs.** A func value is the address of its closure. `FuncAlloc v`
   records `v` at a fresh non-zero address and `FuncLoad p` reads it back.
 * **Out of memory.** The address space is finite. An allocation that finds no
@@ -72,32 +81,16 @@ design (below).
    per literal would be more deterministic than Go. So `BAllocFrozen` may also
    return any frozen range already holding the bytes (`BAllocFrozenReuseS`).
    Such a step hands out memory the thread never owned. The interpretation
-   therefore keeps a persistent fragment of every frozen byte, and likewise
-   of every interned type for `TypeInternHitS`.
-3. **Canonical type descriptors need two ghost maps and a well-formedness
-   invariant** (for interning; superseded by the static image, which needs
-   neither). The table maps types to addresses and the inverse map
-   addresses to types. A new descriptor's address must avoid the existing
-   ones. This follows from the pure invariant `BmemWf` (descriptors and blocks
-   are allocated memory) plus freshness. `BmemWf` does not hold for an
-   arbitrary initial state, hence the new `σ.bmem = default` hypothesis on the
-   adequacy theorems, a small change to the trusted base.
-4. **Fragment-level canonicity is free; descriptor contents are not.** For
-   `reflect` the descriptor bytes must follow the layout of `internal/abi.Type`.
-   That layout contains pointers to other descriptors (element and field
-   types), and recursive named types make the graph cyclic. Interning one type
-   at a time (the prototype) cannot fill those pointers. The options:
-   * **(recommended)** goose emits the finite set of descriptors a program
-     uses, as the Go linker does, and the initial state contains them. The
-     adequacy hypothesis then becomes "`σ.bmem` holds exactly these
-     descriptors", and `isType` facts for them are handed to the program at
-     start.
-   * Two-phase interning: reserve addresses for a strongly connected set of
-     types, then fill them.
-
-   This choice also decides itabs: goose can emit them statically, or they
-   can be interned lazily per (interface, type) pair, as Go's `getitab` does.
-5. **Values as bytes everywhere (`#(v : w64)` as its encoding).** A follow-up
+   therefore keeps a persistent fragment of every frozen byte (including the
+   static image's).
+3. **Type descriptors cannot be interned one at a time.** For `reflect` the
+   descriptor bytes must follow the layout of `internal/abi.Type`, which points
+   at other descriptors (element and field types), and recursive named types
+   make the graph cyclic: interning one type at a time cannot fill those
+   pointers. Descriptors are therefore part of the program image, as the
+   linker emits them (see "Static data and interfaces"); `TypeIntern` is
+   removed.
+4. **Values as bytes everywhere (`#(v : w64)` as its encoding).** A follow-up
    decision: let `intoVal v := blobV (ByteRepr.encode v)` and pass `list byte`
    arguments.
    * The primitives already take `#a`/`#n` through the abstract `intoVal`, so
@@ -108,7 +101,7 @@ design (below).
    * The cost is padding: `#v` must be the canonical encoding (zero padding),
      so typed points-to requires zero padding. Only `unsafe` writes into
      padding can break it, and those need ownership of the padding bytes.
-6. **GC address reuse is an open soundness question for `uintptr`.** The model
+5. **GC address reuse is an open soundness question for `uintptr`.** The model
    never frees memory, so a fresh allocation never equals the address of a
    dead object, while Go's allocator may reuse it. A program that saves
    `uintptr(p)` and compares it with a later allocation could rely on
@@ -120,7 +113,7 @@ design (below).
    * model collection of unreachable blocks.
 
    This must be settled before `uintptr` conversions are added.
-7. **Strings and interfaces turn pure operations into memory operations.**
+6. **Strings and interfaces turn pure operations into memory operations.**
    * String `==`, `<`, `+`, indexing and conversions read the bytes. So do
      interface `==` on string-valued interfaces and map keys of string type.
    * In the axiomatic Go model these stay pure *instruction* steps that unfold
@@ -232,7 +225,7 @@ on goose's unchanged translation: `testBasicInterface`,
 
 ## Migration plan (not started)
 
-1. Switch `intoVal` to `blobV ∘ encode` (finding 5). Generate `ByteRepr`
+1. Switch `intoVal` to `blobV ∘ encode` (finding 4). Generate `ByteRepr`
    instances with goose, next to the existing struct `TypeRepr`s.
 2. Make `structFieldRef`/`arrayIndexRef` concrete offsets (`ByteRepr`'s
    `fieldOffset2`, `i * size`) instead of abstract functions. Redefine typed

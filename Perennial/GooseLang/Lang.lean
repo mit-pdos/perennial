@@ -138,9 +138,6 @@ inductive PrimOp1 where
   | FuncAllocOp
   /-- `#p`: the closure of the func pointer `p` -/
   | FuncLoadOp
-  /-- `blobV bs`: the address of the (unique) descriptor of type `t`, allocated
-  with contents `bs` on first use -/
-  | TypeInternOp (t : go.GoType)
 
 noncomputable instance : DecidableEq PrimOp1 := fun a b => Classical.propDecidable (a = b)
 
@@ -377,7 +374,6 @@ abbrev BPrepareWrite (e : Expr) : Expr := Primitive1 .BPrepareWriteOp e
 abbrev BFreeze (e : Expr) : Expr := Primitive1 .BFreezeOp e
 abbrev FuncAlloc (e : Expr) : Expr := Primitive1 .FuncAllocOp e
 abbrev FuncLoad (e : Expr) : Expr := Primitive1 .FuncLoadOp e
-abbrev TypeIntern (t : go.GoType) (e : Expr) : Expr := Primitive1 (.TypeInternOp t) e
 abbrev BFinishWrite (e1 e2 : Expr) : Expr := Primitive2 .BFinishWriteOp e1 e2
 abbrev BSwap (e1 e2 : Expr) : Expr := Primitive2 .BSwapOp e1 e2
 abbrev UnsafeAdd (e1 e2 : Expr) : Expr := Primitive2 .UnsafeAddOp e1 e2
@@ -535,13 +531,11 @@ instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
 The byte memory (`ByteMem`) is a prototype of a byte-addressed Go memory, next
 to the `val` heap: memory maps `w64` addresses to bytes, and the values stored
-in it are encoded as bytes by the Go layer. Besides the bytes it has three
+in it are encoded as bytes by the Go layer. Besides the bytes it has two
 tables:
 
 * `blocks`, the allocation blocks (base address and size): the provenance of
   pointers, which `unsafe.Add` (`UnsafeAddOp`) must stay within;
-* `types`, the type descriptors, allocated on first use (`TypeInternOp`) and
-  unique per type, so that the dynamic types of interfaces compare by address;
 * `funcs`, the code of func pointers (`FuncAllocOp`): a func value is the
   address of its closure, as in Go.
 
@@ -597,15 +591,14 @@ abbrev ByteCell := ByteMode × w8
 structure ByteMem where
   bytes : GMap w64 ByteCell
   blocks : GMap w64 Nat
-  types : GMap go.GoType w64
   funcs : GMap w64 val
 
-instance : Inhabited ByteMem := ⟨⟨∅, ∅, ∅, ∅⟩⟩
+instance : Inhabited ByteMem := ⟨⟨∅, ∅, ∅⟩⟩
 
 /-- The initial byte memory: the program image (its static bytes, frozen, and
 its code) and nothing else. -/
 def staticImage [GoGlobalContext] : ByteMem :=
-  ⟨GMap.fmap (fun b => (.Frozen 0, b)) staticBytes, ∅, ∅, staticFuncs⟩
+  ⟨GMap.fmap (fun b => (.Frozen 0, b)) staticBytes, ∅, staticFuncs⟩
 
 /-- `a + i`, the `i`-th byte from `a`. -/
 abbrev byteAddr (a : w64) (i : Nat) : w64 := a + BitVec.ofNat 64 i
@@ -990,17 +983,6 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | FuncLoadS (p : w64) (v : val) σg :
       σg.1.bmem.funcs !! p = some v →
       BaseStep (FuncLoad (Val #p)) σg [] (Val v) σg []
-  | TypeInternHitS (t : go.GoType) (bs : List w8) (p : w64) σg :
-      σg.1.bmem.types !! t = some p →
-      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (Val #p) σg []
-  | TypeInternNewS (t : go.GoType) (bs : List w8) (a : w64) σg :
-      σg.1.bmem.types !! t = none → bs ≠ [] → FreshRange σg.1.bmem.bytes a bs.length →
-      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (Val #a)
-        (setBmem (fun m => { m.allocRange a (bs.map (.Frozen 0, ·)) with
-          types := <[t := a]> m.types }) σg) []
-  | TypeInternOomS (t : go.GoType) (bs : List w8) σg :
-      σg.1.bmem.types !! t = none → (¬ ∃ a, FreshRange σg.1.bmem.bytes a bs.length) →
-      BaseStep (TypeIntern t (Val (blobV bs))) σg [] (TypeIntern t (Val (blobV bs))) σg []
 
 theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl

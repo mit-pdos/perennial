@@ -247,7 +247,6 @@ def PrimOp1.toTree : PrimOp1 → GenTree
   | .BFreezeOp => node 12 []
   | .FuncAllocOp => node 13 []
   | .FuncLoadOp => node 14 []
-  | .TypeInternOp x0 => node 15 [of x0]
 def PrimOp1.ofTree : GenTree → PrimOp1
   | node 0 [] => .PrepareWriteOp
   | node 1 [] => .StartReadOp
@@ -264,7 +263,6 @@ def PrimOp1.ofTree : GenTree → PrimOp1
   | node 12 [] => .BFreezeOp
   | node 13 [] => .FuncAllocOp
   | node 14 [] => .FuncLoadOp
-  | node 15 [x0] => .TypeInternOp (decLeaf x0)
   | _ => default
 instance PrimOp1.countable : Pos.Countable PrimOp1 :=
   countableOfLeftInverse PrimOp1.toTree PrimOp1.ofTree

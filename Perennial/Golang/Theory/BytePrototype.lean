@@ -7,8 +7,8 @@ program logic in `GooseLang/ByteLifting.lean`; layouts in `Golang/Defn/ByteRepr.
   byte offset.
 * B. Strings as heap objects: a string is its header `(ptr, len)` and its
   frozen bytes (`isString`); literals, contents, `==`, `+`, indexing.
-* C. Interfaces with explicit type descriptors: `(tptr, data)` (`isIface`);
-  conversion to an interface, the comma-ok assertion, comparing dynamic types.
+* (Interfaces: see `Golang/Defn/StaticImage.lean` and
+  `Golang/Theory/StaticIface.lean`, over the program image's static descriptors.)
 * D. Funcs as code pointers (`isFunc`): calling through a func pointer.
 * E. `unsafe.Add`: computing a field address within an allocation block.
 -/
@@ -340,120 +340,6 @@ theorem wp_strIndex (s : GoStrHdr) (bs : List w8) (i : w64) (hi : i.toNat < bs.l
     omega
 
 end str_proofs
-
-/-! ## C. Interfaces with explicit type descriptors
-
-An interface value is its header `(tptr, data)`: the address of the dynamic
-type's descriptor (interned, so one type has one address) and the address of
-the (frozen) bytes of the dynamic value. -/
-
-section iface_code
-variable [FfiSyntax] [GoGlobalContext]
-
-/-- An interface value: its header. -/
-abbrev ifaceV (i : GoIfaceHdr) : val := PairV #i.tptr #i.data
-
-/-- Conversion of the value with bytes `v` of type `t` (descriptor `desc`) to an
-interface. -/
-def toIface (t : go.GoType) (desc : List w8) : val :=
-  λ: "v", (TypeIntern t (Val (blobV desc)), BAllocFrozen "v")
-
-/-- `v, ok := i.(t)` for a concrete type `t` of size `n`: compare the dynamic
-type's descriptor with `t`'s; on failure, the zero value (`n` zero bytes). -/
-def ifaceAssert2 (t : go.GoType) (desc : List w8) (n : w64) : val :=
-  λ: "i",
-    let: "p" := TypeIntern t (Val (blobV desc)) in
-    if: "p" =⟨go.uint64⟩ (Fst "i") then (BLoad (Snd "i", #n), #true)
-    else (Val (blobV (List.replicate n.toNat 0)), #false)
-
-/-- Whether two interfaces have the same dynamic type. -/
-def ifaceTypeEq : val := λ: "i1" "i2", (Fst "i1") =⟨go.uint64⟩ (Fst "i2")
-
-end iface_code
-
-section iface_proofs
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-variable [GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [GoSemanticsFunctions] [go.PreSemantics]
-
-open ProofMode
-
-/-- `i` is an interface holding a value of type `t` with bytes `bs`. -/
-def isIface (i : GoIfaceHdr) (t : go.GoType) (bs : List w8) : IProp GF :=
-  iprop(isType i.tptr t ∗ i.data ↦∗□ bs)
-
-instance isIface_persistent (i : GoIfaceHdr) (t : go.GoType) (bs : List w8) :
-    Persistent (isIface (GF := GF) i t bs) := by
-  unfold isIface; infer_instance
-
-theorem wp_toIface (t : go.GoType) (desc bs : List w8) (hdesc : desc ≠ []) :
-    {{ (True : IProp GF) }} (App (Val (toIface t desc)) (Val (blobV bs)))
-    {{ (i : GoIfaceHdr), RET ifaceV i; isIface i t bs }} := by
-  wp_start as -
-  wp_apply wp_type_intern t desc hdesc as %p #Hp
-  wp_apply wp_balloc_frozen bs as %d #Hd
-  iapply HΦ $$ %(⟨p, d⟩ : GoIfaceHdr)
-  unfold isIface
-  isplitl []
-  · iexact Hp
-  · iexact Hd
-
-theorem wp_ifaceAssert2_ok (t : go.GoType) (desc : List w8) (n : w64) (i : GoIfaceHdr)
-    (bs : List w8) (hn : bs.length = n.toNat) :
-    {{ isIface (GF := GF) i t bs }} (App (Val (ifaceAssert2 t desc n)) (Val (ifaceV i)))
-    {{ RET PairV (blobV bs) #true; True }} := by
-  unfold isIface
-  wp_start as ⟨#Ht, #Hd⟩
-  wp_apply wp_type_intern_known t desc i.tptr $$ [$Ht]
-  wp_pures
-  wp_apply wp_bload i.data n DFrac.discard bs hn $$ [$Hd] as -
-  wp_pures
-  iapply HΦ; itrivial
-
-theorem wp_ifaceAssert2_fail (t t' : go.GoType) (desc : List w8) (hdesc : desc ≠ []) (n : w64)
-    (i : GoIfaceHdr) (bs : List w8) (hne : t' ≠ t) :
-    {{ isIface (GF := GF) i t' bs }} (App (Val (ifaceAssert2 t desc n)) (Val (ifaceV i)))
-    {{ RET PairV (blobV (List.replicate n.toNat 0)) #false; True }} := by
-  unfold isIface
-  wp_start as ⟨#Ht', -⟩
-  wp_apply wp_type_intern t desc hdesc as %p #Hp
-  wp_if_destruct
-  · -- the descriptor of `t` is the dynamic type's, so `t' = t`
-    ihave %h := isType_agree i.tptr t' t $$ []
-    · isplit
-      · iexact Ht'
-      · iexact Hp
-    exact absurd h hne
-  · wp_pures
-    iapply HΦ; itrivial
-
-theorem wp_ifaceTypeEq (i1 i2 : GoIfaceHdr) (t1 t2 : go.GoType) (bs1 bs2 : List w8) :
-    {{ isIface (GF := GF) i1 t1 bs1 ∗ isIface i2 t2 bs2 }}
-      (App (App (Val ifaceTypeEq) (Val (ifaceV i1))) (Val (ifaceV i2)))
-    {{ RET #(decide (t1 = t2)); True }} := by
-  unfold isIface
-  wp_start as ⟨⟨#H1, -⟩, ⟨#H2, -⟩⟩
-  wp_pures
-  -- descriptors are canonical: equal addresses iff equal types
-  ihave %h : ⌜i1.tptr = i2.tptr ↔ t1 = t2⌝ $$ []
-  · by_cases hp : i1.tptr = i2.tptr
-    · ihave %ht := isType_agree i2.tptr t1 t2 $$ []
-      · isplit
-        · rw [← hp]; iexact H1
-        · iexact H2
-      ipureintro; exact ⟨fun _ => ht, fun _ => hp⟩
-    · by_cases ht : t1 = t2
-      · ihave %hp' := isType_inj i1.tptr i2.tptr t2 $$ []
-        · isplit
-          · rw [← ht]; iexact H1
-          · iexact H2
-        exact absurd hp' hp
-      · ipureintro; exact ⟨fun h => absurd h hp, fun h => absurd h ht⟩
-  rw [decide_eq_decide.mpr h]
-  iapply HΦ; itrivial
-
-end iface_proofs
 
 /-! ## D. Funcs as code pointers
 

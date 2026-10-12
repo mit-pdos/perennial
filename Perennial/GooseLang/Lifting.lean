@@ -297,11 +297,9 @@ end go_state_definitions
 
 The bytes are a non-atomic heap `NaHeapGS w64 w8` whose lock states are the
 byte modes (`btls`); the blocks and the func table are ghost maps whose
-fragments are handed out persistently (`k ↪[γ]□ v`); the type table is a ghost
-map together with its inverse (from descriptor addresses to types), so that one
-type has one address and one address one type (`isType`). `BmemWf` holds the pure
-invariants: blocks are non-empty and allocated, and type descriptors are
-allocated, so that a fresh range avoids them. -/
+fragments are handed out persistently (`k ↪[γ]□ v`). `BmemWf` holds the pure
+invariants: blocks are non-empty and allocated (so that a fresh range avoids
+them), and the static bytes stay frozen with their values (`StaticAgree`). -/
 
 section byte_mem
 variable [FfiSyntax]
@@ -309,8 +307,6 @@ variable [FfiSyntax]
 class ByteMemGS (GF : BundledGFunctors) where
   bm_heapGS : NaHeapGS w64 w8 GF
   bm_blocksName : GName
-  bm_typesName : GName
-  bm_typesFwdName : GName
   bm_funcsName : GName
 
 class ByteMemPreG (GF : BundledGFunctors) where
@@ -335,12 +331,7 @@ def StaticAgree [GoGlobalContext] (m : ByteMem) : Prop :=
 /-- The pure invariants of the byte memory. -/
 def BmemWf [GoGlobalContext] (m : ByteMem) : Prop :=
   (∀ b sz, m.blocks !! b = some sz → 0 < sz ∧ ∀ i < sz, (m.bytes !! byteAddr b i).isSome) ∧
-  (∀ t p, m.types !! t = some p → (m.bytes !! p).isSome) ∧
   StaticAgree m
-
-/-- `rev` is the inverse of the type table `types` (which is thus injective). -/
-def TypesRev (types : GMap go.GoType w64) (rev : GMap w64 go.GoType) : Prop :=
-  ∀ t p, types !! t = some p ↔ rev !! p = some t
 
 variable {GF : BundledGFunctors} [AllG GF]
 
@@ -348,21 +339,13 @@ variable {GF : BundledGFunctors} [AllG GF]
 def bytePointsto [hB : ByteMemGS GF] (a : w64) (dq : DFrac) (b : w8) : IProp GF :=
   naHeapPointsto a dq b
 
-/-- The descriptor of type `t` is at `p` (persistent): an entry of the type table
-and of its inverse. -/
-def isType [hB : ByteMemGS GF] (p : w64) (t : go.GoType) : IProp GF :=
-  iprop(ghostMapElem hB.bm_typesName p .discard t ∗ ghostMapElem hB.bm_typesFwdName t .discard p)
-
-/-- The byte memory interpretation. Frozen bytes and interned types are kept
-persistently (`□ ∀ ...`), since a step may return them to a thread that does
-not own them (`BAllocFrozenReuseS`, `TypeInternHitS`). -/
+/-- The byte memory interpretation. Frozen bytes are kept persistently
+(`□ ∀ ...`), since a step may return them to a thread that does not own them
+(`BAllocFrozenReuseS`), and the static bytes are among them (`StaticAgree`). -/
 def bmemCtx [GoGlobalContext] [hB : ByteMemGS GF] (m : ByteMem) : IProp GF :=
   iprop(naHeapCtx btls m.bytes ∗
     (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
     ghostMapAuth hB.bm_blocksName 1 m.blocks ∗
-    ghostMapAuth hB.bm_typesFwdName 1 m.types ∗
-    (∃ rev, ghostMapAuth hB.bm_typesName 1 rev ∗ ⌜TypesRev m.types rev⌝ ∗
-      □ ∀ p t, ⌜rev !! p = some t⌝ → isType p t) ∗
     ghostMapAuth hB.bm_funcsName 1 m.funcs ∗
     ⌜BmemWf m⌝)
 
