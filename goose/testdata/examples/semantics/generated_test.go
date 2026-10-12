@@ -156,6 +156,26 @@ func (suite *GoTestSuite) TestNamedResultShadowed() {
 	suite.Equal(true, testNamedResultShadowed())
 }
 
+func (suite *GoTestSuite) TestSliceOperandOnce() {
+	suite.Equal(true, testSliceOperandOnce())
+}
+
+func (suite *GoTestSuite) TestAssignLhsIndexFirst() {
+	suite.Equal(true, testAssignLhsIndexFirst())
+}
+
+func (suite *GoTestSuite) TestAssignLhsDerefFirst() {
+	suite.Equal(true, testAssignLhsDerefFirst())
+}
+
+func (suite *GoTestSuite) TestAssignLhsMapFirst() {
+	suite.Equal(true, testAssignLhsMapFirst())
+}
+
+func (suite *GoTestSuite) TestSelectSendOrder() {
+	suite.Equal(true, testSelectSendOrder())
+}
+
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }

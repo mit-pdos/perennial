@@ -302,6 +302,14 @@ def main(argv):
         for p, _ in cfg:
             for key, added, removed in toml_lists(p, rev_old, rev_new):
                 print(f"- {p} `{key}`: added {added or '[]'}, removed {removed or '[]'}")
+                if key == "trusted":
+                    pkg = os.path.relpath(p, "Perennial/Code")[: -len(".toml")]
+                    for name in added:
+                        print(f"  - R2: `{name}` must be justified by a goose run on the real "
+                              f"source that fails on something irreducible (not a missing goose "
+                              f"feature or semantics rule): move it to `translate` in a copy of the "
+                              f"configuration and run `goose -configdir <copy> -dir goose {pkg}` "
+                              f"(SKILL.md, step 4)")
         print("\nA declaration that is neither translated nor trusted is axiomatized "
               "(name and type only). A `!pattern` in `translate` with the same name in "
               "`trusted` replaces goose's translation by a hand-written model: ask why "
@@ -328,7 +336,7 @@ def main(argv):
                 if block and src and re.sub(r"\s", "", block) not in re.sub(r"\s", "", src):
                     print("NOTE: the quoted Go differs from the real source. Every difference is a "
                           "modelling decision to justify (or a workaround for a semantics gap: "
-                          "rule R1 of the skill).\n")
+                          "rule R2 of the skill).\n")
 
     # diffs
     if not nodiff:

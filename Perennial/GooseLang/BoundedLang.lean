@@ -230,6 +230,15 @@ real primitive step. -/
 def RealNotStuck (e : Expr) (σ : CfgState) : Prop :=
   (toVal e).isSome ∨ ∃ κ e' σ' efs, RealPrimStep e σ κ e' σ' efs
 
+/-- A thread that has panicked and is not recovering: the panic `PanicV p` under
+evaluation frames none of which is a `Catch` (`EctxItem.unwinds`). Such a thread
+is `PanicV p` already, or still unwinding towards it: each step of the thread
+unwinds one frame (`HeadStep.unwind`), whatever the state and the other threads. -/
+inductive UnrecoveredPanic : Expr → Prop
+  | panic (p : val) : UnrecoveredPanic (Val (PanicV p))
+  | frame {Ki : EctxItem} {e : Expr} :
+      Ki.unwinds = true → UnrecoveredPanic e → UnrecoveredPanic (fillItem Ki e)
+
 /-- The thread bound as a hypothesis on real executions: every configuration
 reachable from `ρ` in at most `n` real steps has fewer than `T` live threads
 (`GlobalState.threads`: the main thread and the forked threads that have not
@@ -322,6 +331,36 @@ theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {
     obtain ⟨s₁, t₁, hs₁, ht₁, hstep'⟩ := bounded_step_of_real s t T hstep (by omega) ht h₂
     obtain ⟨s', t', hsteps'⟩ := ih s₁ (by omega) t₁ (hT.step hstep) ht₁
     exact ⟨s', t', .cons hstep' hsteps'⟩
+
+/-- Unwinding a frame is a plain step of the bounded language: it uses no fuel. -/
+theorem redexKind_unwind (Ki : EctxItem) (p : val) :
+    redexKind (fillItem Ki (Val (PanicV p))) = .plain := by
+  cases Ki <;> try rfl
+  rename_i e1
+  cases e1 <;> try rfl
+  rename_i v
+  cases v <;> rfl
+
+/-- A thread with an unrecovered panic unwinds to `PanicV p` in the bounded
+language, in any state (the unwinding steps take no fuel and change nothing
+else). -/
+theorem unrecoveredPanic_steps {e : Expr} (h : UnrecoveredPanic e) :
+    ∃ p, ∀ (K : List EctxItem) (t₁ t₂ : List Expr) (σ : BcfgState),
+      (t₁ ++ fill K e :: t₂, σ) -·->ₜₚ* (t₁ ++ fill K (Val (PanicV p)) :: t₂, σ) := by
+  induction h with
+  | panic p => exact ⟨p, fun _ _ _ _ => .refl⟩
+  | @frame Ki e hKi _ ih =>
+    obtain ⟨p, ih⟩ := ih
+    refine ⟨p, fun K t₁ t₂ σ => ?_⟩
+    have h1 := ih (Ki :: K) t₁ t₂ σ
+    simp only [EctxItemLanguage.fill_cons] at h1
+    refine h1.tail ⟨[], ?_⟩
+    obtain ⟨σ, f⟩ := σ
+    have := Language.Step.atomic (BaseStep.ContextStep.intro (K := K)
+      (BoundedBaseStep.step (σ := σ) (f := f) (redexKind_unwind Ki p)
+        (HeadStep.unwind ⟨Ki, hKi, rfl⟩))) t₁ t₂
+    rw [List.append_nil] at this
+    exact this
 
 /-- Bounded reducibility implies real reducibility: every bounded step is backed
 by a real base step. -/

@@ -54,12 +54,14 @@ open grove_ffi in
 /-- Adequacy for a single Grove node (fail-stop). The proof gets ownership of the
 initial network and of the node's initial files, and the main thread's token. As
 for `goose_adequacy`, the WP is proved for arbitrary time-receipt and thread
-bounds `N` and `T` (`receiptBound GF = N`, `threadBound GF = T`) and the
-conclusion is about real executions of fewer than `N` steps along which fewer
-than `T` threads are live. -/
+bounds `N` and `T` (`receiptBound GF = N`, `threadBound GF = T`) with a
+postcondition `φ` that excludes panics (`hφ`), and the conclusion is about real
+executions of fewer than `N` steps along which fewer than `T` threads are live:
+a final value of the main thread satisfies `φ`, no thread is stuck, and no
+thread has an unrecovered panic. -/
 theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : GooseGpreS grove_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
-    (φ : val → Prop)
+    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -72,7 +74,8 @@ theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
-  goose_adequacy N T e σ g φ trivial trivial Hwp n κs t2 σ2 Hsteps Hbound Hthreads Hlive
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
+  goose_adequacy N T e σ g φ hφ trivial trivial Hwp n κs t2 σ2 Hsteps Hbound Hthreads Hlive
 
 end Perennial

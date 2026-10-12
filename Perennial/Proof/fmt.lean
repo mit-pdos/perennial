@@ -379,13 +379,26 @@ is `string` holds a string. (Go's typing guarantees it; a `GoInterface` does not
 def StringArgsWf [FfiSyntax] [GoGlobalContext] (args : List GoInterface) : Prop :=
   ∀ ii, interface.ok ii ∈ args → ii.ty = go.string → ∃ x : GoString, ii.v = #x
 
-/-- An argument's dynamic type tells the truth about its value, for the types the model of
-`Sprintf` formats: a `string` holds a string, an integer type an integer of its size. (Go's
-typing guarantees it; a `GoInterface` does not.) -/
-def ArgWf [FfiSyntax] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
-  (ii.ty = go.string → ∃ x : GoString, ii.v = #x) ∧ (IsIntType ii.ty → ∃ z, IntArgValue ii z)
+/-- One of Go's predeclared basic types (`string`, `bool`, the integer, floating-point and
+complex types). These have no methods, so Go's formatting of such an argument calls no
+`Error()`, `String()`, `Format` or `GoString` method: the models of `Sprintf`, `Errorf` and
+`Printf`, which never call an argument's methods, are faithful only for such arguments. (A
+named type, even one whose underlying type is basic, is not a predeclared type: `go.int` is
+`go.Named "int" []`.) -/
+def IsBasicType [FfiSyntax] (t : go.GoType) : Prop :=
+  t = go.string ∨ t = go.bool ∨ IsIntType t ∨ t = go.uintptr ∨ t = go.float32 ∨
+  t = go.float64 ∨ t = go.complex64 ∨ t = go.complex128
 
-/-- Every argument is well-formed (`ArgWf`): what `wp_Sprintf` needs of the arguments. -/
+/-- An argument's dynamic type tells the truth about its value, for the types the model of
+`Sprintf` formats: a `string` holds a string, an integer type an integer of its size (Go's
+typing guarantees it; a `GoInterface` does not); and the type is a predeclared basic type
+(`IsBasicType`), so that Go calls no method of the argument while formatting it. -/
+def ArgWf [FfiSyntax] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
+  (ii.ty = go.string → ∃ x : GoString, ii.v = #x) ∧ (IsIntType ii.ty → ∃ z, IntArgValue ii z) ∧
+  IsBasicType ii.ty
+
+/-- Every argument is `nil` or well-formed (`ArgWf`): what `wp_Sprintf`, `wp_Errorf` and
+`wp_Printf` need of the arguments. -/
 def ArgsWf [FfiSyntax] [GoGlobalContext] (args : List GoInterface) : Prop :=
   ∀ ii, interface.ok ii ∈ args → ArgWf ii
 
@@ -461,7 +474,8 @@ theorem ArgsWf.cons_string (x : GoString) (args : List GoInterface) (h : ArgsWf 
   intro ii hmem
   rcases List.mem_cons.mp hmem with heq | hmem
   · cases heq
-    exact ⟨fun _ => ⟨x, rfl⟩, fun hi => by simp [IsIntType, go.string, go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hi⟩
+    exact ⟨fun _ => ⟨x, rfl⟩, fun hi => by simp [IsIntType, go.string, go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hi,
+      Or.inl rfl⟩
   · exact h ii hmem
 
 theorem ArgsWf.cons_int (ii : GoInterfaceOk) (z : Int) (args : List GoInterface)
@@ -469,17 +483,17 @@ theorem ArgsWf.cons_int (ii : GoInterfaceOk) (z : Int) (args : List GoInterface)
   intro ii' hmem
   rcases List.mem_cons.mp hmem with heq | hmem
   · cases heq
-    refine ⟨fun hs => ?_, fun _ => ⟨z, hz⟩⟩
+    refine ⟨fun hs => ?_, fun _ => ⟨z, hz⟩, Or.inr (Or.inr (Or.inl hz.isIntType))⟩
     exfalso
     cases hz <;> simp [go.string, go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hs
   · exact h ii' hmem
 
 theorem ArgsWf.cons_other (t : go.GoType) (v : val) (args : List GoInterface)
-    (hs : t ≠ go.string) (hi : ¬ IsIntType t) (h : ArgsWf args) :
+    (hs : t ≠ go.string) (hi : ¬ IsIntType t) (hb : IsBasicType t) (h : ArgsWf args) :
     ArgsWf (interface.mkOk t v :: args) := by
   intro ii hmem
   rcases List.mem_cons.mp hmem with heq | hmem
-  · cases heq; exact ⟨fun h' => absurd h' hs, fun h' => absurd h' hi⟩
+  · cases heq; exact ⟨fun h' => absurd h' hs, fun h' => absurd h' hi, hb⟩
   · exact h ii hmem
 
 theorem ArgsWf.cons_nil (args : List GoInterface) (h : ArgsWf args) :
@@ -717,8 +731,12 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
 /-- `fmt.Errorf(format, args...)` returns a non-nil error whose `Error()` returns some string.
 The model of `Errorf` (`Perennial/TrustedCode/fmt.lean`) does not format: it is
 `errors.New(format)`, ignoring the arguments, so this follows from `errors.wp_New`. (The
-statement does not give back `args_sl ↦* args`, which the model never reads.) -/
-theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny) :
+statement does not give back `args_sl ↦* args`, which the model never reads.) The arguments must
+be of predeclared basic types (`ArgsWf`): Go's `Errorf` calls the `Error()`/`String()` methods of
+other arguments, which the model does not, so for them it could panic or have effects the model
+lacks. -/
+theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny)
+    (Hargs : ArgsWf args) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
     {{ (err : GoInterfaceOk), RET #(interface.ok err);
@@ -1136,7 +1154,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h1 : ty = go.int
     · subst h1
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1156,7 +1174,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h2 : ty = go.int64
     · subst h2
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int64 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1176,7 +1194,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h3 : ty = go.int32
     · subst h3
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int32 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1196,7 +1214,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h4 : ty = go.int16
     · subst h4
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int16 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1216,7 +1234,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h5 : ty = go.int8
     · subst h5
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int8 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1236,7 +1254,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h6 : ty = go.uint
     · subst h6
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1250,7 +1268,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h7 : ty = go.uint64
     · subst h7
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint64 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1264,7 +1282,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h8 : ty = go.uint32
     · subst h8
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint32 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1278,7 +1296,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h9 : ty = go.uint16
     · subst h9
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint16 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1292,7 +1310,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h10 : ty = go.uint8
     · subst h10
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint8 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -1663,14 +1681,17 @@ theorem wp_Sprintf (format : GoString) (args_sl : GoSlice) (xs : List GoInterfac
       have := Hacc [] (by rw [List.drop_eq_nil_of_le (by word)]; exact .done)
       simpa using this
 
-/-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. -/
-theorem wp_Printf (format : GoString) (args_sl : GoSlice) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt }}
+/-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. The
+arguments `args_sl ↦*{dq} xs` must be of predeclared basic types (`ArgsWf`), as for
+`wp_Sprintf`: Go calls the methods of other arguments, which the model does not. -/
+theorem wp_Printf (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
+    (Hxs : ArgsWf xs) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs }}
       (App (App (Val (@! Printf)) (Val #format)) (Val #args_sl))
-    {{ (n : w64) (err : GoInterface), RET (PairV #n #err); True }} := by
-  wp_start
+    {{ (n : w64) (err : GoInterface), RET (PairV #n #err); args_sl ↦*{dq} xs }} := by
+  wp_start as Hsl
   iapply HΦ
-  itrivial
+  iframe
 
 end wps
 

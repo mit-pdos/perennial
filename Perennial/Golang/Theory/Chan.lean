@@ -68,7 +68,7 @@ set_option goose.wp.extras true
 
 include Hunder in
 theorem wp_make2 (cap : w64) :
-    {{ (⌜0 ≤ sint.Z cap⌝ : IProp GF) }}
+    {{ (⌜0 ≤ sint.Z cap ∧ sint.Z cap < 2 ^ 32⌝ : IProp GF) }}
       (App (Val #(functions go.make2 [ct])) (Val #cap))
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗

@@ -30,9 +30,12 @@ Notes:
   started from a configuration with the main thread only (`g.threads = 1`).
   For `T ≤ 1` they are vacuous. See `Threads.lean`.
 * Panics. A thread's final value may be a panic `PanicV p`: the main thread's is
-  constrained by the client's `φ`, whose convention is `φ (PanicV _) = False`, and
-  a forked thread's by `forkPost` (`goose_irisGS`: not a panic, `wp_fork`).
-  `goose_adequacy_nopanic` concludes that no thread ends in a panic.
+  constrained by the client's `φ`, which `goose_adequacy` requires to exclude
+  panics (`hφ : ∀ p, ¬ φ (PanicV p)`), and a forked thread's by `forkPost`
+  (`goose_irisGS`: not a panic, `wp_fork`). `goose_adequacy` concludes that no
+  thread has an unrecovered panic (`UnrecoveredPanic`), finished or still
+  unwinding: an unwinding thread reaches `PanicV p` in the bounded language
+  without using fuel (`goose_no_unrecovered_panic_blang`).
 -/
 module
 
@@ -172,43 +175,6 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
   cases HinvEq
   iexact Hwp
 
-/-- Adequacy of GooseLang, for the real semantics, under the time-receipt and
-thread-bound assumptions: for any bounds `N` and `T`, if the WP is proved for
-receipt bound `N` and thread bound `T` (`Hwp` may assume `receiptBound GF = N`
-and `threadBound GF = T`, and receives the main thread's token), then in every
-real execution of `e` of fewer than `N` steps, from a configuration with the
-main thread only (`g.threads = 1`), along which fewer than `T` threads are live
-(`RealThreadsBelow T n`: every configuration reachable in at most `n` steps has
-`threads < T`), every thread is a value or can take a step, and if the main
-thread has terminated with `v` then `φ v`. -/
-theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
-    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hwp : ∀ [hG : HeapGS .hasLC GF],
-      receiptBound GF = N →
-      threadBound GF = T →
-      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
-        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
-        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
-    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
-    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) (Hthreads : g.threads = 1)
-    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) := by
-  have hT : 1 < T := by have := Hlive.start; simp only at this; omega
-  have Hadeq := goose_adequacy_blang N T (by omega) hT e σ g φ Hinitg Hinit Hwp
-  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
-    (by simp only; omega)
-  have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, (σ2, ⟨c, t⟩)) :=
-    (Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩
-  refine ⟨?_, ?_⟩
-  · rintro v t2' rfl
-    exact Hadeq.adequate_result t2' (σ2, ⟨c, t⟩) v Hreach
-  · intro e2 he2
-    exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
-
 /-- No thread of the bounded semantics ends in a panic: the main thread's
 postcondition `φ` excludes panics (`hφ`; the convention for the main thread is
 `φ (PanicV _) = False`), and a forked thread's final value satisfies `forkPost`
@@ -262,11 +228,50 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
   · have Hmem : v ∈ List.filterMap toVal t2' := List.mem_filterMap.2 ⟨Val v, Hv, rfl⟩
     iapply (BigSepL.bigSepL_mem (Φ := fun v => iprop(⌜val.isPanic v = false⌝)) Hmem) $$ Hforks
 
-/-- Adequacy of GooseLang without unrecovered panics: `goose_adequacy`, and moreover
-no thread of a real execution of fewer than `N` steps ends in a panic, given that
-the main thread's postcondition `φ` excludes panics (`hφ`, the convention
-`φ (PanicV _) = False`); forked threads cannot end in a panic by `wp_fork`. -/
-theorem goose_adequacy_nopanic [hPre : GooseGpreS ffi GF] (N T : Nat)
+/-- No thread of the bounded semantics has an unrecovered panic
+(`UnrecoveredPanic`): such a thread would unwind to `PanicV p` without using fuel
+(`unrecoveredPanic_steps`), contradicting `goose_adequacy_nopanic_blang`. -/
+theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
+    (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
+        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : BcfgState}
+    (Hsteps : Language.NSteps n ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) κs (t2, σ2))
+    (e2 : Expr) (He2 : e2 ∈ t2) : ¬ UnrecoveredPanic e2 := by
+  intro Hu
+  obtain ⟨p, Hp⟩ := unrecoveredPanic_steps Hu
+  obtain ⟨t₁, t₂, rfl⟩ := List.append_of_mem He2
+  have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ*
+      (t₁ ++ Val (PanicV p) :: t₂, σ2) :=
+    ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hsteps⟩).trans (Hp [] t₁ t₂ σ2)
+  obtain ⟨m, κs', Hm⟩ := (Language.erasedStep_nSteps _ _).mp Hreach
+  have := goose_adequacy_nopanic_blang N T hN hT e σ g φ hφ Hinitg Hinit Hwp Hm (PanicV p)
+    (by simp)
+  simp at this
+
+/-- Adequacy of GooseLang, for the real semantics, under the time-receipt and
+thread-bound assumptions: for any bounds `N` and `T`, if the WP is proved for
+receipt bound `N` and thread bound `T` (`Hwp` may assume `receiptBound GF = N`
+and `threadBound GF = T`, and receives the main thread's token) with a
+postcondition `φ` that excludes panics (`hφ`), then in every real execution of
+`e` of fewer than `N` steps, from a configuration with the main thread only
+(`g.threads = 1`), along which fewer than `T` threads are live
+(`RealThreadsBelow T n`: every configuration reachable in at most `n` steps has
+`threads < T`):
+* if the main thread has terminated with `v` then `φ v`;
+* every thread is a value or can take a step;
+* no thread has an unrecovered panic (`UnrecoveredPanic`): no thread has ended
+  in a panic `PanicV p`, and none is unwinding one through frames none of which
+  is a `Catch`. -/
+theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
@@ -282,14 +287,19 @@ theorem goose_adequacy_nopanic [hPre : GooseGpreS ffi GF] (N T : Nat)
     (Hbound : n < N) (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ v, Val v ∈ t2 → v.isPanic = false) := by
-  refine ⟨(goose_adequacy N T e σ g φ Hinitg Hinit Hwp n κs t2 σ2 Hsteps Hbound Hthreads
-    Hlive).1, (goose_adequacy N T e σ g φ Hinitg Hinit Hwp n κs t2 σ2 Hsteps Hbound Hthreads
-    Hlive).2, ?_⟩
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
   have hT : 1 < T := by have := Hlive.start; simp only at this; omega
+  have Hadeq := goose_adequacy_blang N T (by omega) hT e σ g φ Hinitg Hinit Hwp
   obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
     (by simp only; omega)
-  exact goose_adequacy_nopanic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
+  have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, (σ2, ⟨c, t⟩)) :=
+    (Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩
+  refine ⟨?_, ?_, ?_⟩
+  · rintro v t2' rfl
+    exact Hadeq.adequate_result t2' (σ2, ⟨c, t⟩) v Hreach
+  · intro e2 he2
+    exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
+  · exact goose_no_unrecovered_panic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
 
 /-- Invariance for the bounded language: under the same hypotheses as
 `goose_adequacy`, a state property that follows from the FFI's global

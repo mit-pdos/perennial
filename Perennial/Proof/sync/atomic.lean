@@ -1200,18 +1200,20 @@ theorem Bool.wp_CompareAndSwap (u : Loc) (old new : Bool) :
   iexact HΦ
 /-! ### Value
 
-`Value` is a trusted model (`Perennial/TrustedCode/sync/atomic.lean`): an atomic
-cell holding an `any`. `Store`/`Swap`/`CompareAndSwap` may panic (in the model)
-when the cell is non-empty, since the model cannot check Go's "consistently
-typed" requirement; so their specs require the cell to be empty (`nil`) at the
+`Value` is goose's translation of `struct { v any }`; its methods are trusted
+models (`Perennial/TrustedCode/sync/atomic.lean`): atomic operations on the
+field `v`. `Store`/`Swap`/`CompareAndSwap` may panic (in the model) when the
+cell is non-empty, since the model cannot check Go's "consistently typed"
+requirement; so their specs require the cell to be empty (`nil`) at the
 linearization point. -/
 
 instance : Inhabited GoInterface := ⟨interface.nil⟩
 
 instance atomic_wps_interface : AtomicWps (GF := GF) GoInterface := by solve_atomic_wps
 
+/-- The `Value` at `u` holds `x`. -/
 def ownValueDef (u : Loc) (dq : DFrac) (x : GoInterface) : IProp GF :=
-  typedPointsto (GF := GF) u (x : Value) dq
+  typedPointsto (GF := GF) u ({ v' := x } : Value) dq
 @[irreducible] def ownValue (u : Loc) (dq : DFrac) (x : GoInterface) : IProp GF :=
   ownValueDef u dq x
 theorem ownValue_unseal : @ownValue = @ownValueDef := by funext; with_unfolding_all rfl
@@ -1236,23 +1238,36 @@ instance ownValue_combines_gives (u : Loc) (x x' : GoInterface) (dq dq' : DFrac)
     rw [ownValue_unseal]; unfold ownValueDef
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
-    imodintro; ipureintro; exact Heq
+    imodintro; ipureintro
+    cases Heq; rfl
 
 /-- A zero `Value` (as in a freshly allocated struct) is an empty cell. -/
 theorem ownValue_zero (u : Loc) (dq : DFrac) :
     typedPointsto (GF := GF) u (zero_val Value) dq ⊣⊢ ownValue u dq interface.nil := by
   rw [ownValue_unseal]; exact .rfl
 
+/-- The receiver's type in the models of `Value`'s methods (`TrustedCode/sync/atomic.lean`),
+which are below `Value.ty`'s definition. -/
+theorem Value_ty_eq : (go.GoType.Named go!"sync/atomic.Value" [] : go.GoType) = Value.ty := by
+  unfold Value.ty; rfl
+
 theorem Value.wp_Load (u : Loc) (dq : DFrac) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (|={⊤,∅}=> ▷ ∃ x : GoInterface, ownValue u dq x ∗ (ownValue u dq x ={∅,⊤}=∗ Φ #x)) -∗
       WP (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"Load")) (Val #())) {{ Φ }} := by
   wp_start as _
+  rw [Value_ty_eq]
+  wp_auto
   imod HΦ with ⟨%x, >Hown, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
-  wp_apply_core wp_atomic_load _ _ u dq (x : GoInterface) $$ Hown
-  iintro Hown
-  iapply HΦ $$ Hown
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
+  iStructNamed Hown
+  wp_apply_core wp_atomic_load _ _ _ dq (x : GoInterface) $$ v
+  iintro Hv
+  iapply HΦ
+  iapply typedPointsto_combine _ _ _ Hnn
+  simp only [TypedPointsto.typedPointstoDef]
+  iframe
 
 theorem Value.wp_Store (u : Loc) (v : GoInterface) (hv : v ≠ interface.nil) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
@@ -1264,13 +1279,19 @@ theorem Value.wp_Store (u : Loc) (v : GoInterface) (hv : v ≠ interface.nil) :
   | nil => exact absurd rfl hv
   | ok ii =>
   simp only
+  rw [Value_ty_eq]
   wp_auto
   wp_bind (AtomicSwap _ _)
   imod HΦ with ⟨>Hown, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
-  wp_apply_core wp_atomic_swap _ _ u (interface.nil : GoInterface) (interface.ok ii) $$ Hown
-  iintro Hown
-  imod HΦ $$ Hown with HΦ
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
+  iStructNamed Hown
+  wp_apply_core wp_atomic_swap _ _ _ (interface.nil : GoInterface) (interface.ok ii) $$ v
+  iintro Hv
+  imod HΦ $$ [Hv] with HΦ
+  · iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
+    iframe
   imodintro
   wp_auto
   iexact HΦ
@@ -1285,13 +1306,19 @@ theorem Value.wp_Swap (u : Loc) (v : GoInterface) (hv : v ≠ interface.nil) :
   | nil => exact absurd rfl hv
   | ok ii =>
   simp only
+  rw [Value_ty_eq]
   wp_auto
   wp_bind (AtomicSwap _ _)
   imod HΦ with ⟨>Hown, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
-  wp_apply_core wp_atomic_swap _ _ u (interface.nil : GoInterface) (interface.ok ii) $$ Hown
-  iintro Hown
-  imod HΦ $$ Hown with HΦ
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
+  iStructNamed Hown
+  wp_apply_core wp_atomic_swap _ _ _ (interface.nil : GoInterface) (interface.ok ii) $$ v
+  iintro Hv
+  imod HΦ $$ [Hv] with HΦ
+  · iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
+    iframe
   imodintro
   wp_auto
   iexact HΦ
@@ -1308,11 +1335,14 @@ theorem Value.wp_CompareAndSwap (u : Loc) (new : GoInterface) (hnew : new ≠ in
   | nil => exact absurd rfl hnew
   | ok ii =>
   simp only
+  rw [Value_ty_eq]
   wp_auto
   simp only [ownValue_unseal, ownValueDef]
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
+  iStructNamed Hown
   wp_bind (Load _)
-  wp_apply_core wp_atomic_load _ _ u (DFrac.own 1) (interface.nil : GoInterface) $$ Hown
-  iintro Hown
+  wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) (interface.nil : GoInterface) $$ v
+  iintro Hv
   wp_auto
   wp_bind ArbitraryInt
   wp_apply_core wp_ArbitraryInt
@@ -1322,17 +1352,21 @@ theorem Value.wp_CompareAndSwap (u : Loc) (new : GoInterface) (hnew : new ≠ in
   · subst hx
     wp_auto
     wp_bind (CmpXchg _ _ _)
-    wp_apply_core wp_cmpxchg_suc u (interface.nil : GoInterface) interface.nil (interface.ok ii) _ _ rfl $$ Hown
-    iintro Hown
+    wp_apply_core wp_cmpxchg_suc _ (interface.nil : GoInterface) interface.nil (interface.ok ii) _ _ rfl $$ Hv
+    iintro Hv
     wp_auto
     iapply HΦ
-    simp only [↓reduceIte, Bool.false_eq_true]
-    iexact Hown
+    simp only [↓reduceIte]
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
+    iframe
   · simp only [hx, decide_false]
     wp_auto
     iapply HΦ
     simp only [↓reduceIte, Bool.false_eq_true]
-    iexact Hown
+    iapply typedPointsto_combine _ _ _ Hnn
+    simp only [TypedPointsto.typedPointstoDef]
+    iframe
 
 end wps
 
