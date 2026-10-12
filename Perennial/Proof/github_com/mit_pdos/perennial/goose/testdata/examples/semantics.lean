@@ -11,6 +11,9 @@ for each proved function `F`. By Go source file:
 * `interfaces_complex.go`, `type_equality.go`, `structs.go`, `new.go`, `slices.go`.
 * `loopvars.go`: each iteration of a loop has its own iteration variables.
 * `nil.go`: comparisons with `nil`.
+* `method_values.go`: `x.M` saves its receiver when it is evaluated (a copy of it for a
+  value-receiver method, the pointer for a pointer-receiver one), and calls of the method
+  value use the saved receiver.
 * `evalorder.go`: evaluation order of `x op= y` and `x++`. The map tests of `evalorder.go`
   (`testOpAssignMapOnce`, `testOpAssignMapReadsAfterRhs`, `testOpAssignMapReadAfterRhs`)
   are checked by the Go test suite only, like the other map tests.

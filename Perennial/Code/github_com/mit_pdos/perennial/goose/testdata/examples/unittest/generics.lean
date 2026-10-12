@@ -177,7 +177,7 @@ noncomputable def useBoxGet.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box.ty go.uint64)) go!"Get"))) (Var "x")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (Box.ty go.uint64) go!"Get"))) (App (Val (GoInstruction (GoLoad (Box.ty go.uint64)))) (Var "x"))) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (Box.ty go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
 

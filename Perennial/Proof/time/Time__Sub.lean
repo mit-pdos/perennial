@@ -44,11 +44,11 @@ theorem time.Time.Sub.wp_proof
     wp_apply wp_Time_sec $$ [$u] as %us u
     wp_apply wp_Time_nsec $$ [$t] as %tn t
     wp_apply wp_Time_nsec $$ [$u] as %un u
-    wp_apply Time.wp_ptr_Add_of wp_Time_Add $$ [$u] as %u' u
+    wp_apply wp_Time_Add as %u' -
     wp_apply wp_Time_Equal as %b -
     wp_if_destruct
     · wp_end
-    · wp_apply Time.wp_ptr_Before_of wp_Time_Before $$ [$t] as %b' t
+    · wp_apply wp_Time_Before as %b' -
       wp_if_destruct <;> wp_end
   · wp_apply wp_subMono as %d -
     wp_end

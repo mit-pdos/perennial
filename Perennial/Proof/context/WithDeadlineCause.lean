@@ -78,7 +78,7 @@ theorem context.WithDeadlineCause.wp_proof
   | some cur =>
     dsimp only [Option.getD]
     wp_auto
-    wp_apply wp_ptr_Before $$ [$cur] as %b cur
+    wp_apply wp_Before as %b -
     cases b
     case true =>
       wp_auto

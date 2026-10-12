@@ -30,6 +30,13 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testListTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoopVarCapture
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMaxUint64
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueCopiesReceiver
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDefer
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDeferArg
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbedded
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbeddedPointer
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValuePointerReceiver
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueThroughPointer
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNestedStructUpdates
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilDefault
@@ -145,6 +152,27 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testL
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMaxUint64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMaxUint64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMaxUint64.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueCopiesReceiver : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueCopiesReceiver.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueCopiesReceiver.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueDefer : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDefer.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDefer.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueDeferArg : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDeferArg.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueDeferArg.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueEmbedded : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbedded.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbedded.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueEmbeddedPointer : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbeddedPointer.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueEmbeddedPointer.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValuePointerReceiver : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValuePointerReceiver.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValuePointerReceiver.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodValueThroughPointer : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueThroughPointer.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodValueThroughPointer.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMinUint64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.wp_proof

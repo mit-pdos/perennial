@@ -52,13 +52,13 @@ noncomputable def Log.mkHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"Finish"))) (Var "enc")) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"Finish"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Val #())))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"PutInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Var "$a0")))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"PutInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Pair (Var "enc") (Var "$r0")))))))))))
 
@@ -116,10 +116,10 @@ noncomputable def Open.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewDec []))) (Val #())) (Var "$a0")))
   (Let "dec" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec.ty) go!"GetInt"))) (Var "dec")) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Dec.ty go!"GetInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Var "dec"))) (Val #()))
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec.ty) go!"GetInt"))) (Var "dec")) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Dec.ty go!"GetInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Var "dec"))) (Val #()))
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
