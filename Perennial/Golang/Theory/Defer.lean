@@ -23,14 +23,17 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-/-- `with_defer: e`: the body runs with the cell `defer` of deferred functions,
-whose chain then runs whatever the body's outcome; the outcome is then that of
-the body (`exceptionDo`: the returned value, or stuck for a panic). -/
-theorem wp_with_defer (e : Expr) (Φ : val → IProp GF) :
+/-- `with_defer: r; e`: the body runs with the cell `defer` of deferred
+functions, whose chain then runs whatever the body's outcome; then a panic is
+stuck (`exceptionDo`), and otherwise the function returns `r`, its results read
+after the chain. -/
+theorem wp_with_defer (r e : Expr) (Φ : val → IProp GF) :
     iprop(∀ defer : Loc, defer ↦ func.mk BAnon BAnon #() -∗
       WP gl(let: "$ret" := subst "$defer" #defer e in
-            (![deferType] #defer) #() ;; exceptionDo "$ret") {{ Φ }})
-    ⊢ WP (App (Val wrapDefer) (Val (RecV BAnon (BNamed "$defer") e))) {{ Φ }} := by
+            (![deferType] #defer) #() ;; exceptionDo "$ret" ;;
+            (λ: <>, r : val) #()) {{ Φ }})
+    ⊢ WP (App (App (Val wrapDefer) (Val (RecV BAnon BAnon r)))
+        (Val (RecV BAnon (BNamed "$defer") e))) {{ Φ }} := by
   iintro Hwp
   wp_call
   wp_alloc defer as Hdefer
@@ -43,8 +46,9 @@ theorem wp_with_defer (e : Expr) (Φ : val → IProp GF) :
 set to the panic's value when the body's outcome is a panic (`panicVal p`,
 `wp_panic`) before the deferred chain runs, and read and cleared by a
 `recover()` (`wp_recoverPanic`); if the body panicked and the chain cleared the
-cell, the function returns `r`, its results. `wp_auto` steps through the
-checks once the body's outcome is a `returnVal`/`panicVal`. -/
+cell, or if it did not panic, the function returns `r`, its results read after
+the chain. `wp_auto` steps through the checks once the body's outcome is a
+`returnVal`/`panicVal`. -/
 theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
     iprop(∀ defer : Loc, ∀ pnc : Loc, defer ↦ func.mk BAnon BAnon #() -∗
       pnc ↦ (interface.nil : GoInterface) -∗
@@ -54,7 +58,7 @@ theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
             if: ((Fst "$ret") =⟨go.string⟩ #"panic") &&
                 ((![go.any] #pnc) =⟨go.any⟩ #interface.nil)
             then (λ: <>, r : val) #()
-            else exceptionDo "$ret") {{ Φ }})
+            else (exceptionDo "$ret" ;; (λ: <>, r : val) #())) {{ Φ }})
     ⊢ WP (App (App (Val wrapDeferRecover) (Val (RecV BAnon BAnon r)))
         (Val (RecV BAnon (BNamed "$defer") (Rec BAnon (BNamed "$panic") e)))) {{ Φ }} := by
   iintro Hwp

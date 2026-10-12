@@ -690,7 +690,9 @@ noncomputable def cancelCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val wrapDefer)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val #())))
+  (App (App (Val wrapDefer) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Var "$res0"))))
   (Lam "$defer"
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType cancelCtx.ty)))) (Var "c"))
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #()))
@@ -702,8 +704,10 @@ noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$rv0" (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d"))))
+  (Seq (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Pair (Var "$res0") (Var "$rv0")))
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))))
+  (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
   (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) go.any))) (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -725,12 +729,14 @@ noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))))
+  (Let "$rv0" (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d"))))
+  (Seq (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Pair (Var "$res0") (Var "$rv0")))
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))
+  (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "d") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "d") (Var "$r0")))))))))))))
 
 /-- go: context.go:463:21 -/
 noncomputable def cancelCtx.Err.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1131,7 +1137,10 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "parent"
   (Lam "d"
   (Lam "cause"
-  (App (Val wrapDefer)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Context.ty))) (App (Val (GoInstruction (GoZeroVal Context.ty))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc CancelFunc.ty))) (App (Val (GoInstruction (GoZeroVal CancelFunc.ty))) (Val #())))
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Pair (App (Val (GoInstruction (GoLoad Context.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad CancelFunc.ty))) (Var "$res1")))))
   (Lam "$defer"
   (Let "cause" (App (Val (GoInstruction (GoAlloc go.error))) (Var "cause"))
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Time.ty))) (Var "d"))
@@ -1151,8 +1160,7 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType timerCtx.ty) Context.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Lam BAnon
+  (Let "__p" (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType timerCtx.ty) Context.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1161,7 +1169,13 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (Val #true)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr Canceled))) (Val #())))
   (Let "$a2" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType timerCtx.ty) go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType timerCtx.ty) go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))
+  (Let "$rv0" (Fst (Var "__p"))
+  (Let "$rv1" (Snd (Var "__p"))
+  (Seq (App (Val (GoInstruction (GoStore Context.ty))) (Pair (Var "$res0") (Var "$rv0")))
+  (Seq (App (Val (GoInstruction (GoStore CancelFunc.ty))) (Pair (Var "$res1") (Var "$rv1")))
+  (App (Val doReturn)
+  (Val #())))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"err"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #())) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "dur"))
   (Let "$a1" (Lam BAnon
@@ -1189,8 +1203,7 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"mu"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe _root_.Perennial.time.Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "dur")) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType timerCtx.ty) Context.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Lam BAnon
+  (Let "__p" (Pair (App (Val (GoInstruction (Convert (go.GoType.PointerType timerCtx.ty) Context.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1199,7 +1212,13 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (Val #false)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr Canceled))) (Val #())))
   (Let "$a2" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
-  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType timerCtx.ty) go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))))))
+  (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType timerCtx.ty) go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))
+  (Let "$rv0" (Fst (Var "__p"))
+  (Let "$rv1" (Snd (Var "__p"))
+  (Seq (App (Val (GoInstruction (GoStore Context.ty))) (Pair (Var "$res0") (Var "$rv0")))
+  (Seq (App (Val (GoInstruction (GoStore CancelFunc.ty))) (Pair (Var "$res1") (Var "$rv1")))
+  (App (Val doReturn)
+  (Val #())))))))))
   (App (Val doExecute)
   (Let "$a0" (Val #true)
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr DeadlineExceeded))) (Val #())))
@@ -1230,8 +1249,13 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve WithCancel []))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
+  (Let "__p" (Pair (Var "$ret0") (Var "$ret1"))
+  (Let "$rv0" (Fst (Var "__p"))
+  (Let "$rv1" (Snd (Var "__p"))
+  (Seq (App (Val (GoInstruction (GoStore Context.ty))) (Pair (Var "$res0") (Var "$rv0")))
+  (Seq (App (Val (GoInstruction (GoStore CancelFunc.ty))) (Pair (Var "$res1") (Var "$rv1")))
   (App (Val doReturn)
-  (Pair (Var "$ret0") (Var "$ret1"))))))
+  (Val #()))))))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -1242,7 +1266,7 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot create context from nil parent")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
   (App (Val doExecute)
-  (Val #()))))))))))))
+  (Val #()))))))))))))))
 
 /-- go: context.go:669:20 -/
 noncomputable def timerCtx.Deadline.impl [FfiSyntax] [GoGlobalContext] : val :=

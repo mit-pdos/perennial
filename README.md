@@ -101,7 +101,13 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   loop combinators pass it on). The function's deferred functions then run
   (`wrapDefer`, `Golang/Defn/Defer.lean`), and if one of them calls `recover()`
   (Goose translates it only directly in a deferred function literal) the
-  function returns its named results (`wrapDeferRecover`). A panic that no
+  function returns its results (`wrapDeferRecover`). As in Go, a function
+  that defers returns its results' values *after* its deferred functions ran,
+  which may modify named results: Goose gives each result a cell `$res<i>` (a
+  named result's own variable), translates `return e1, ..., en` as evaluating
+  the `ei`, storing them in the cells and `return: #()`, and passes the
+  wrapper a thunk reading the cells, which it calls after the deferred chain,
+  on a normal return and on a recovered panic alike. A panic that no
   deferred function of the function recovers is stuck at the end of the
   function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`):
   a proof shows that it does not happen. The model does not propagate a panic to
