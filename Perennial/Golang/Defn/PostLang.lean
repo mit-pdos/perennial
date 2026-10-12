@@ -590,8 +590,13 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   underlying type keeps the pointer (the Go spec's conversion rule "x's type and T are
   pointer types that are not named types, and their pointer base types are not type
   parameters but have identical underlying types"), e.g. `(*BTreeG[Item])(t)` for
-  `t : *BTree` with `type BTree BTreeG[Item]`. -/
-  convert_pointer_same_underlying {t1 t2 u : go.GoType} [t1 ↓u u] [t2 ↓u u] (l : Loc) :
+  `t : *BTree` with `type BTree BTreeG[Item]`. Not when the base types are
+  interfaces: `(*I2)(&a)` for `a : I1` makes an `I2` whose itab is for `I1`, and
+  Go's `i.(T)` then panics (it compares the itab with `go:itab.T,I2`) where an
+  assertion that looks only at the dynamic type would succeed; such a
+  conversion has no step. -/
+  convert_pointer_same_underlying {t1 t2 u : go.GoType} [t1 ↓u u] [t2 ↓u u] [NotInterface u]
+    (l : Loc) :
     ⟦Convert (go.PointerType t1) (go.PointerType t2), #l⟧ ⤳[under] #l
 
 attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_not_named

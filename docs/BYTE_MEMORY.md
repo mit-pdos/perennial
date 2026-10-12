@@ -177,6 +177,15 @@ static data, like the generated `Assumptions` classes.
   are stuck by having no rule (the `NoGetitab` premise; `==` is a rule only for
   different or nil type words), not by a `Panic` that could be read as Go's
   behaviour.
+* **Known divergence (unsafe only).** `i.(T)` compares the dynamic type, not
+  the itab: Go compares the itab with `go:itab.T,I` for the static type `I`.
+  They agree while every value of static type `I` has an itab for `I`. Plain Go
+  cannot break that once core's pointer conversion between same-underlying
+  pointer types excludes interface bases (`(*I2)(&a)` for `a : I1`, now no
+  step); reinterpreting memory through `unsafe.Pointer` still can, and there
+  the model's assertion succeeds where Go panics. It is the val heap's general
+  problem with type punning (the old interface representation had it too) and
+  goes away when goose emits the source type of `TypeAssert`.
 * **The abstraction.** Program proofs see an interface value as an opaque
   `i : GoIface` (or `GoEface`) with the persistent fact `isIface i I T x`
   ("an interface of type `I` holding `x : T`"), and the specs

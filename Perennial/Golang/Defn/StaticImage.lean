@@ -157,7 +157,14 @@ def dynType : val :=
       (App (Val itabType) (Fst (Snd (Var "i")))))
     (Fst (Snd (Var "i"))))
 
-/-- `i.(T)` for a concrete `T`: compare the dynamic type with `T`'s descriptor. -/
+/-- `i.(T)` for a concrete `T`: compare the dynamic type with `T`'s descriptor.
+Go compares the whole type word with `type:T` (empty interface) or
+`go:itab.T,I` (static type `I`), which also checks that the itab is for `I`.
+The two agree as long as a value of static type `I` has an itab for `I`; only
+reinterpreting memory through `unsafe.Pointer` breaks that (an `I1` read as
+an `I2`, or an `I` read as an `any`), and there this assertion succeeds where
+Go panics. The fix is for goose to emit the source type in `TypeAssert` (then
+the tag goes too). -/
 def typeAssertConcrete (t : go.GoType) : val :=
   LamV "i" (If (eqU (App (Val dynType) (Var "i")) (Val #(typeAddr t)))
     (App (Val (unboxV t)) (Snd (Snd (Var "i"))))
