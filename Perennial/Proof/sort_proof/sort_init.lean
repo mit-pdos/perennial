@@ -6,6 +6,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.sort
 public import Perennial.GeneratedProof.sort
+public import Perennial.Proof.math.bits
 
 @[expose] public section
 
@@ -40,6 +41,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   iintro Hown
   wp_auto
+  wp_apply math.bits.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hbits⟩
   iframe Hown
   is_pkg_init_finish
 
