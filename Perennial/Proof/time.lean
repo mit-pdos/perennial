@@ -2,11 +2,14 @@
 Specs for the Go `time` package.
 
 Notes:
-* The axioms `wp_Now`, `wp_Until`, `Time.wp_Add` bind their package assumptions
-  (`[package_sem : time.Assumptions]`) explicitly. `Time.Add` is translated (for its
-  pointer-receiver method, `Time.wp_ptr_Add`), but `Time.wp_Add` stays an axiom: the body
-  uses `&^`, which `GoOp GoBitClear` leaves without semantics, and calls the untranslated
-  `addSec` and `stripMono`.
+* The `Time` arithmetic is translated and proved (`Time.wp_Add`, `Time.wp_Sub`,
+  `Time.wp_Before`, `Time.wp_Equal`, `wp_Since`, `wp_Until`, ...); the specs only say that
+  these return some value (no panics; `Sub` saturates, the others wrap or fall back to the wall
+  clock). `Since` and `Until` read the global `startNano`, so they take `isPkgInit`
+  (`isInit`); they call `Now`, whose spec `wp_Now` is an axiom (`Now` reads the clock through
+  the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
+  `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
+* The axioms bind their package assumptions (`[package_sem : time.Assumptions]`) explicitly.
 * `wp_After` needs the channel theory, which fixes `hlc := HasLC.hasLC` and
   `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
   channel ghost state) is defined here.
@@ -43,8 +46,14 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
+/-- The package invariant: the global `startNano` (`runtimeNano() - 1`, set by the package's
+initialization; Go never writes it afterwards) holds a fixed value. `Since` and `Until` read
+it. -/
+abbrev isInit : IProp GF :=
+  iprop(∃ v : w64, globalAddr time.startNano ↦□ v)
+
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.time :=
-  define_is_pkg_init iprop(True)
+  define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.time :=
   build_get_is_pkg_init_wf
 
@@ -56,6 +65,10 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
         isPkgInit (PROP := IProp GF) pkg_id.time }} := by
   -- Unprovable: `UTC'init`, `Local'init`, ... are opaque (axioms in Perennial/Code/time.lean).
   sorry
+
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.time ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.time
 
 theorem Time.wp_sec (t : Loc) (tv : time.Time) :
     {{ (t ↦ tv : IProp GF) }}
@@ -79,7 +92,7 @@ theorem Time.wp_unixSec (t : Loc) (tv : time.Time) :
 theorem Time.wp_nsec (t : Loc) (tv : time.Time) :
     {{ (t ↦ tv : IProp GF) }}
       (App (Val (t @!! go.GoType.PointerType time.Time.ty @!! go!"nsec")) (Val #()))
-    {{ (x : w32), RET #x; True }} := by
+    {{ (x : w32), RET #x; t ↦ tv }} := by
   wp_start as Ht
   wp_auto
   wp_end
@@ -111,30 +124,47 @@ axiom wp_Now [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ex
       (App (Val (@! time.Now)) (Val #()))
     {{ (t : time.Time), RET #t; True }}
 
-/-- Spec of `time.Until` (axiom). -/
-axiom wp_Until [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (deadline : time.Time) :
-    {{ (True : IProp GF) }}
-      (App (Val (@! time.Until)) (Val #deadline))
-    {{ (x : w64), RET #x; True }}
+/-- `(*Time).stripMono()`: some new value of `*t`. -/
+theorem Time.wp_stripMono (l : Loc) (tv : time.Time) :
+    {{ (l ↦ tv : IProp GF) }}
+      (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"stripMono")) (Val #()))
+    {{ (tv' : time.Time), RET #(); l ↦ tv' }} := by
+  wp_start as Hl
+  wp_auto
+  wp_if_destruct
+  · wp_end
+  · wp_apply Time.wp_sec $$ [$Hl] as %x Hl
+    wp_end
 
-/-- Spec of `time.Since` (axiom): some duration (`time.Now().Sub(t)`, a clock reading, like
-`time.Now` and `time.Until`). -/
-axiom wp_Since [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) :
-    {{ (True : IProp GF) }}
-      (App (Val (@! time.Since)) (Val #t))
-    {{ (d : w64), RET #d; True }}
+/-- `(*Time).addSec(d)`: some new value of `*t`. -/
+theorem Time.wp_addSec (l : Loc) (tv : time.Time) (d : w64) :
+    {{ (l ↦ tv : IProp GF) }}
+      (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"addSec")) (Val #d))
+    {{ (tv' : time.Time), RET #(); l ↦ tv' }} := by
+  wp_start as Hl
+  wp_auto
+  wp_if_destruct
+  · wp_if_destruct <;> (try wp_if_destruct) <;> wp_end
+  · wp_if_destruct
+    · wp_if_destruct
+      · wp_end
+      · wp_apply Time.wp_stripMono $$ [$Hl] as %tv' Hl
+        wp_if_destruct <;> (try wp_if_destruct) <;> wp_end
+    · wp_apply Time.wp_stripMono $$ [$Hl] as %tv' Hl
+      wp_if_destruct <;> (try wp_if_destruct) <;> wp_end
 
-/-- Spec of `Time.Add` (axiom). -/
-axiom Time.wp_Add [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t : time.Time) (d : time.Duration) :
+/-- Spec of `Time.Add`: some time. -/
+theorem Time.wp_Add (t : time.Time) (d : time.Duration) :
     {{ (True : IProp GF) }}
       (App (Val (t @!! time.Time.ty @!! go!"Add")) (Val #d))
-    {{ (t : time.Time), RET #t; True }}
+    {{ (t : time.Time), RET #t; True }} := by
+  wp_start
+  wp_auto
+  wp_apply Time.wp_nsec $$ [$t] as %ns t
+  wp_if_destruct <;> (try wp_if_destruct) <;>
+    (wp_apply Time.wp_addSec $$ [$t] as %tv' t
+     repeat' (first | wp_if_destruct | wp_apply Time.wp_stripMono $$ [$t] as %tv'' t)
+     all_goals wp_end)
 
 /-- `(*Time).Add`: the value method on `*l` (`ptr_Add_unfold`, the method set of `*Time`). -/
 theorem Time.wp_ptr_Add (l : Loc) (t : time.Time) (d : time.Duration) :
@@ -145,6 +175,137 @@ theorem Time.wp_ptr_Add (l : Loc) (t : time.Time) (d : time.Duration) :
   wp_auto
   wp_apply Time.wp_Add as %t' -
   iapply HΦ $$ Hl
+
+/-- Spec of `Time.Before`: some `bool`. -/
+theorem Time.wp_Before (t u : time.Time) :
+    {{ (True : IProp GF) }}
+      (App (Val (t @!! time.Time.ty @!! go!"Before")) (Val #u))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_auto
+  wp_if_destruct
+  · wp_apply Time.wp_sec $$ [$t] as %ts t
+    wp_apply Time.wp_sec $$ [$u] as %us u
+    repeat' (first | wp_if_destruct | wp_apply Time.wp_nsec $$ [$t] as %tn t |
+      wp_apply Time.wp_nsec $$ [$u] as %un u)
+    all_goals wp_end
+  · wp_end
+
+/-- `(*Time).Before`. -/
+theorem Time.wp_ptr_Before (l : Loc) (t u : time.Time) :
+    {{ (l ↦ t : IProp GF) }}
+      (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"Before")) (Val #u))
+    {{ (b : Bool), RET #b; l ↦ t }} := by
+  wp_start as Hl
+  wp_auto
+  wp_apply Time.wp_Before as %b -
+  iapply HΦ $$ Hl
+
+/-- Spec of `Time.Equal`: some `bool`. -/
+theorem Time.wp_Equal (t u : time.Time) :
+    {{ (True : IProp GF) }}
+      (App (Val (t @!! time.Time.ty @!! go!"Equal")) (Val #u))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_auto
+  wp_if_destruct
+  · wp_apply Time.wp_sec $$ [$t] as %ts t
+    wp_apply Time.wp_sec $$ [$u] as %us u
+    repeat' (first | wp_if_destruct | wp_apply Time.wp_nsec $$ [$t] as %tn t |
+      wp_apply Time.wp_nsec $$ [$u] as %un u)
+    all_goals wp_end
+  · wp_end
+
+/-- Spec of `subMono`: some duration. -/
+theorem wp_subMono (t u : w64) :
+    {{ (True : IProp GF) }}
+      (App (App (Val (@! time.subMono)) (Val #t)) (Val #u))
+    {{ (d : w64), RET #d; True }} := by
+  wp_start
+  wp_auto
+  repeat' wp_if_destruct
+  all_goals wp_end
+
+/-- Spec of `Time.Sub`: some duration. -/
+theorem Time.wp_Sub (t u : time.Time) :
+    {{ (True : IProp GF) }}
+      (App (Val (t @!! time.Time.ty @!! go!"Sub")) (Val #u))
+    {{ (d : w64), RET #d; True }} := by
+  wp_start
+  wp_auto
+  wp_if_destruct
+  · wp_apply Time.wp_sec $$ [$t] as %ts t
+    wp_apply Time.wp_sec $$ [$u] as %us u
+    wp_apply Time.wp_nsec $$ [$t] as %tn t
+    wp_apply Time.wp_nsec $$ [$u] as %un u
+    wp_apply Time.wp_ptr_Add $$ [$u] as %u' u
+    wp_apply Time.wp_Equal as %b -
+    wp_if_destruct
+    · wp_end
+    · wp_apply Time.wp_ptr_Before $$ [$t] as %b' t
+      wp_if_destruct <;> wp_end
+  · wp_apply wp_subMono as %d -
+    wp_end
+
+/-- `(*Time).Sub`. -/
+theorem Time.wp_ptr_Sub (l : Loc) (t u : time.Time) :
+    {{ (l ↦ t : IProp GF) }}
+      (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"Sub")) (Val #u))
+    {{ (d : w64), RET #d; l ↦ t }} := by
+  wp_start as Hl
+  wp_auto
+  wp_apply Time.wp_Sub as %d -
+  iapply HΦ $$ Hl
+
+theorem wp_runtimeNano :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.runtimeNano)) (Val #()))
+    {{ (x : w64), RET #x; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+theorem wp_runtimeIsBubbled :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.runtimeIsBubbled)) (Val #()))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+/-- Spec of `time.Since`: some duration (`Now().Sub(t)`, or `t`'s monotonic reading
+subtracted from the current one). It reads the global `startNano` (`isPkgInit`). -/
+theorem wp_Since (t : time.Time) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.time }}
+      (App (Val (@! time.Since)) (Val #t))
+    {{ (d : w64), RET #d; True }} := by
+  wp_start
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨%sn, #Hsn⟩
+  wp_auto
+  repeat' (first | wp_if_destruct |
+    (wp_apply wp_runtimeIsBubbled as %b -; cases b <;> (try wp_auto)) |
+    wp_apply wp_runtimeNano as %x - | wp_apply wp_subMono as %d - |
+    wp_apply wp_Now as %now - | wp_apply Time.wp_Sub as %d - |
+    wp_apply Time.wp_ptr_Sub $$ [$t] as %d t)
+  all_goals wp_end
+
+/-- Spec of `time.Until`: some duration (`t.Sub(Now())`, or the current monotonic reading
+subtracted from `t`'s). It reads the global `startNano` (`isPkgInit`). -/
+theorem wp_Until (t : time.Time) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.time }}
+      (App (Val (@! time.Until)) (Val #t))
+    {{ (d : w64), RET #d; True }} := by
+  wp_start
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨%sn, #Hsn⟩
+  wp_auto
+  repeat' (first | wp_if_destruct |
+    (wp_apply wp_runtimeIsBubbled as %b -; cases b <;> (try wp_auto)) |
+    wp_apply wp_runtimeNano as %x - | wp_apply wp_subMono as %d - |
+    wp_apply wp_Now as %now - | wp_apply Time.wp_Sub as %d - |
+    wp_apply Time.wp_ptr_Sub $$ [$t] as %d t)
+  all_goals wp_end
 
 set_option goose.wp.extras true in
 theorem wp_arbitraryTime :

@@ -21,6 +21,11 @@ def newTimer.impl : val :=
 def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
 
+/-- `runtimeIsBubbled` (a `go:linkname` into the runtime) is true only inside a
+`testing/synctest` bubble; modeled as an arbitrary boolean. -/
+def runtimeIsBubbled.impl : val :=
+  λ: <>, ArbitraryInt =⟨go.int64⟩ #(W64 0)
+
 -- TODO: could avoid making this trusted by verifying the real implementation,
 -- which requires verifying `internal/godebug`.
 def syncTimer.impl : val :=
