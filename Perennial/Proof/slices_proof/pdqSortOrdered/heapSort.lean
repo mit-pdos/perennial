@@ -172,14 +172,16 @@ theorem wp_siftDownOrdered (data : GoSlice) (lo hi a b : w64) (xs : List E) :
       subst hlt
       simp only [Bool.not_true]
       wp_auto
+      heap_slice_index_k kxrt
+      wp_auto
+      heap_slice_index_k kxc
+      wp_auto
       heap_load_k Hxc kxc
       heap_load_k Hxrt kxrt
-      heap_slice_index_k kxrt
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ xs' xc $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; exact kxrt.2.2
       rw [hridx]
-      heap_slice_index_k kxc
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.nat a + sint.nat root_val) xc) xrt $$ [Hxs]
         with Hxs
@@ -321,13 +323,15 @@ theorem wp_heapSortOrdered (data : GoSlice) (a b : w64) (xs : List E) :
     · ihave %Hlen := ownSlice_len _ _ _ $$ Hxs
       obtain ⟨xi, Hxi⟩ := list_lookup_lt xs' (sint.nat a + sint.nat i_val) (by word)
       obtain ⟨x0, Hx0⟩ := list_lookup_lt xs' (sint.nat a) (by word)
+      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
+      wp_auto
+      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
+      wp_auto
       heap_load_atw Hxi
       heap_load_atw Hx0
-      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ xs' xi $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; constructor <;> word
-      rw [ite_eq_left_of_eq_true _ _ (eq_true (by constructor <;> word))]
       wp_pures
       wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.Z a).toNat xi) x0 $$ [Hxs]
         with Hxs

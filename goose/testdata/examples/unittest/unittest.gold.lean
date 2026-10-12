@@ -1172,10 +1172,10 @@ noncomputable def chanSelect.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none []))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "$v0" (Val #(W64 0))
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c"))
-  (Let "$v1" (Val #(W64 1))
+  (Let "$v0" (Val #(W64 0))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c"))
+  (Let "$v1" (Val #(W64 1))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.int (Var "$ch0") (Var "$v0")) (App (Val doExecute)
   (Val #()))),
   (CommClause (SendCase go.int (Var "$ch1") (Var "$v1")) (App (Val doExecute)
@@ -1184,8 +1184,8 @@ noncomputable def chanSelect.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c3"))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c1"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i2"))
   (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c2"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i2"))
   (Let "$ch3" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c3"))
   (Let "$ch4" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c4"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doExecute)
@@ -2587,6 +2587,7 @@ noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$l0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve returnConcrete []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -2599,7 +2600,7 @@ noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x")) (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
 
 /-- go: interfaces.go:70:6 -/
 noncomputable def testReturnStatment.impl [FfiSyntax] [GoGlobalContext] : val :=

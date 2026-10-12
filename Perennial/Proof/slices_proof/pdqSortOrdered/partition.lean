@@ -221,16 +221,18 @@ theorem wp_partitionOrdered (data : GoSlice) (a b pivot : w64)
   list_elem xs (sint.nat pivot) as xp
   list_elem xs (sint.nat a) as xa
   slice_index_if
+  wp_auto
+  slice_index_if
+  wp_auto
+  slice_index_if
   wp_apply wp_load_slice_index data (sint.Z pivot) xs _ xp (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxp_lookup
   slice_index_if
   wp_apply wp_load_slice_index data (sint.Z a) xs _ xa (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxa_lookup
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z a) xs xp $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; omega
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z pivot) _ xa $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
@@ -456,18 +458,20 @@ theorem wp_breakPatternsOrdered (data : GoSlice) (a b : w64) (xs : List E) :
       list_elem xs1 (sint.nat j) as xo
       list_elem xs1 (sint.nat idx_val) as xi
       slice_index_if
+      wp_auto
+      slice_index_if
+      wp_auto
+      rw [hjdef]
+      slice_index_if
       wp_apply wp_load_slice_index data (sint.Z j) xs1 _ xo (by word) $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; exact Hxo_lookup
       slice_index_if
       wp_apply wp_load_slice_index data (sint.Z idx_val) xs1 _ xi (by word) $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; exact Hxi_lookup
-      slice_index_if
       wp_pures
       wp_apply wp_store_slice_index data (sint.Z idx_val) xs1 xo $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; constructor <;> word
-      slice_index_if
       wp_pures
-      rw [hjdef]
       wp_apply wp_store_slice_index data (sint.Z j) _ xi $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; simp only [List.length_set]; constructor <;> word
       wp_for_post
@@ -649,16 +653,18 @@ theorem wp_partitionEqualOrdered (data : GoSlice) (a b pivot : w64)
   list_elem xs (sint.nat pivot) as xp
   list_elem xs (sint.nat a) as xa
   slice_index_if
+  wp_auto
+  slice_index_if
+  wp_auto
+  slice_index_if
   wp_apply wp_load_slice_index data (sint.Z pivot) xs _ xp (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxp_lookup
   slice_index_if
   wp_apply wp_load_slice_index data (sint.Z a) xs _ xa (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxa_lookup
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z a) xs xp $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; omega
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z pivot) _ xa $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
@@ -716,16 +722,18 @@ theorem wp_partitionEqualOrdered (data : GoSlice) (a b pivot : w64)
     have HBr1' := HBr1 rfl
     have HBr2' := HBr2 rfl
     slice_index_if
+    wp_auto
+    slice_index_if
+    wp_auto
+    slice_index_if
     wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by omega) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hxj_lookup
     slice_index_if
     wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by omega) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hxi_lookup
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z i_val) xs1 xj $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; omega
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z j_val) _ xi $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; simp; omega

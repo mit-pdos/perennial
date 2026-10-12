@@ -144,6 +144,64 @@ instance pair_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.
 end def_
 end pair
 
+namespace evalCounter
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+instance evalCounter_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter where
+  typedPointstoDef l v dq := iprop(
+    "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"n" l) v.n' dq ∗
+    "buf" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"buf" l) v.buf' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance evalCounter_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter.underlying := by
+  solve_into_val_typed_struct
+
+instance evalCounter_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance evalCounter_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (n' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance evalCounter_access_load_buf (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"buf" l) v.buf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance evalCounter_access_store_buf (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (buf' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.evalCounter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end evalCounter
+
 namespace Editor
 section def_
 
