@@ -114,8 +114,9 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    (or rule) and the Go it claims to model; the real Go source; `cases.md`;
    the semantics facts it needs so it does not chase non-divergences (strings
    are byte lists, an out-of-range index or slice is a stuck `Panic`,
-   `append`'s new capacity is arbitrary, lengths above `2^63` are assumed
-   away, a model may be *less* defined than Go but not *more*); the
+   `append`'s new capacity is arbitrary, `append`'s length above `2^63` is
+   assumed away (a known reachable assumption, already reported: do not
+   re-report it), a model may be *less* defined than Go but not *more*); the
    toolchain (`/usr/local/go/bin/go`), a scratch directory, and the rules of
    the sandbox (no edits to the repo, no `lake`, no git). Its task: a Go
    program, as short as possible, on which Go and the model disagree
@@ -219,8 +220,14 @@ An `assume`, `AngelicExit` or deliberately stuck branch removes executions
 from the model, so every verified program is only verified on the remaining
 ones. That is sound only if *no Go program can reach the removed executions*
 on the platform the semantics assumes (64-bit, finite memory). The accepted
-ones (`README.md`, "Model assumptions") are all of the form "a length/count
-exceeds 2^63": `append`'s length, `strings.Join`'s total length, `len(m)`.
+ones (`README.md`, "Model assumptions") are of the form "a count of things
+that each occupy memory exceeds 2^63": `len(m)` (every entry occupies memory).
+A length Go *computes and checks* is not of that kind. Two such assumptions
+were accepted by mistake: `strings.Join`'s total length (case 4) and
+`append`'s new length, which is reachable with zero-size elements:
+`x := make([]struct{}, 1<<62); x = append(x, x...)` panics in Go
+("growslice: len out of range") with no memory to speak of. The `append` one
+is still open.
 Test: write the shortest Go program that makes Go take the removed path. If
 it exists and runs (`wg.Add(1<<30); wg.Add(1<<30)` panics in Go), the
 assumption is **BLOCK**: a program with that bug would verify. "A real

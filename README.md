@@ -75,6 +75,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `assume` that fails loops forever, so the proofs cover the executions where
   it holds):
   * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`).
+    **Known to be reachable, not yet fixed:** with zero-size elements no
+    memory bounds the length, and Go panics where the model assumes:
+    `x := make([]struct{}, 1<<62); x = append(x, x...)` panics with
+    "growslice: len out of range". A program with that bug verifies.
 
   Only a length that must exist in memory may be assumed away; a length Go
   computes and checks *before* allocating is reachable. Overflows that a
