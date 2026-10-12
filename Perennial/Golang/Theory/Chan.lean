@@ -55,7 +55,7 @@ end proof
 section proof2
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 -- These are carefully ordered so that when the lemmas are applied, typeclass search
 -- can fill everything in.
@@ -67,7 +67,7 @@ set_option goose.wp.extras true
 
 include Hunder in
 theorem wp_make2 (cap : w64) :
-    {{ (⌜0 ≤ sint.Z cap⌝ : IProp GF) }}
+    {{ (⌜0 ≤ sint.Z cap ∧ sint.Z cap < 2 ^ 32⌝ : IProp GF) }}
       (App (Val #(functions go.make2 [ct])) (Val #cap))
     {{ (ch : Loc) (γ : ChanNames), RET #ch;
         isChan ch γ V ∗
@@ -168,7 +168,7 @@ theorem sep_and_persistent {GF : BundledGFunctors} {P Q R : IProp GF} [Persisten
 section select_proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 
 /-- The precondition for a blocking select case. -/

@@ -40,6 +40,17 @@ theorem isInitialized_access :
 
 variable [package_sem : crypto.rand.Assumptions]
 
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
+    (Hinit : GetIsPkgInitProp pkg_id.crypto.rand get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.crypto.rand }} := by
+  -- Unprovable: `Reader'init` (`var Reader io.Reader = &reader{}` in Go, behind the
+  -- platform's random source) is opaque (an axiom in Perennial/Code/crypto/rand.lean), and
+  -- `isInitialized` asks for what it stores in `Reader`.
+  sorry
+
 /-- `crypto/rand.Int(rand.Reader, max)` returns a value in `[0, max)`, and no error, for
 `0 < max < 2^63`. The bound on `max` is the range the model of `Int`
 (`Perennial/TrustedCode/crypto/rand.lean`) covers; the reader is the package's own, which
@@ -83,6 +94,7 @@ theorem wp_Int (rdr : GoInterface) (max : Loc) (mz : Int) (Hmz : 0 < mz ∧ mz <
   rw [decide_eq_false (show ¬ uint.Z (W64 (2 ^ 63)) ≤ uint.Z m by word)]
   wp_auto
   wp_apply wp_ArbitraryInt as %r _
+  rw [if_neg (show ¬ uint.Z m = 0 by omega)]
   wp_apply math.big.wp_NewInt as %v Hv
   ispecialize HΦ $$ %v %(sint.Z (r % m))
   iapply HΦ

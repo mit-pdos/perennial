@@ -508,7 +508,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `wp_panic`, `wp_exceptionDo_panic` | `panic(p)`, and an unrecovered panic at the end of a function (stuck); see "Panics" |
 | `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
-| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`) are listed in `README.md`, "Model assumptions (overflow)" |
+| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
 ### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
@@ -733,7 +733,6 @@ ghost state (with `receiptBound_pos : 0 < receiptBound GF`):
 
 ```
 class ReceiptGS (GF : BundledGFunctors) where
-  receiptAllG : AllG GF
   receiptTokName : GName
   receiptLbName : GName
   receiptBound : Nat
@@ -746,13 +745,13 @@ Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
 (`receiptTokName`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
 Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
 the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
-`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
-their own `[AllG GF]`.
+The receipts are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
+one `AllG` of every proof under `HeapGS`).
 
 `ReceiptGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, so a
 proof can write `receiptBound GF` without new section variables. Nothing else
 depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
-receipt camera (`ReceiptGpreS`, `GooseGpreS`) are the same for every `N`. A
+ghost state to allocate (`GooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
 `(Hbound : receiptBound GF ≤ 2 ^ 64)`, and every caller passes the premise on;
 the client discharges it when it picks `N` at adequacy time (below). Prefer to
@@ -900,14 +899,14 @@ state (with `threadBound_gt : 1 < threadBound GF`, the main thread being live):
 
 ```
 class ThreadGS (GF : BundledGFunctors) where
-  threadAllG : AllG GF
   threadTokName : GName
   threadBound : Nat
   threadBound_gt : 1 < threadBound
 ```
 
-`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`; as
-for `N`, a proof that needs `T` to be small states it as a premise
+`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, and
+its tokens are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
+one `AllG` of every proof under `HeapGS`); as for `N`, a proof that needs `T` to be small states it as a premise
 (`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy
 time.
 

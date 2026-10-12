@@ -1,0 +1,10 @@
+# `NoEscape` converts its argument to `uintptr` and back, which goose does not
+# translate: a model in TrustedCode/internal/abi.lean.
+# `kindNames` is the package's only initialized variable: translated so that the package's
+# initialization has a semantics.
+translate = ["!*", "kindNames", "Kind", "Invalid", "Bool", "Int", "Int8", "Int16", "Int32",
+  "Int64", "Uint", "Uint8", "Uint16", "Uint32", "Uint64", "Uintptr", "Float32", "Float64",
+  "Complex64", "Complex128", "Array", "Chan", "Func", "Interface", "Map", "Pointer", "Slice",
+  "String", "Struct", "UnsafePointer"]
+trusted = ["NoEscape"]
+imports = ["!*"]

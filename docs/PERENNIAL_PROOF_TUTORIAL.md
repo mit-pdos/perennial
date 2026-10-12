@@ -130,8 +130,8 @@ The unit-test package imports `github.com/goose-lang/primitive/disk`, so its
 FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude`)
 and the section does not bind it. Other packages are generic in the FFI and also
 bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
-as in `Perennial/Proof/sync_proof/mutex.lean`. Proofs that need ghost state add
-`[AllG GF]` (section 10).
+as in `Perennial/Proof/sync_proof/mutex.lean`. Ghost state comes with `HeapGS`
+(section 10).
 
 ## 4. Writing a specification
 
@@ -487,8 +487,11 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
 
 ## 10. Ghost state and invariants
 
-Ghost state needs `[AllG GF]` (one universal camera; no per-algebra `inG`
-classes): `ghostVar`, `ghost_map`, `mono_list`, `saved_prop`, ... live in
+Ghost state is `own` over one universal camera, `AllG GF` (no per-algebra
+`inG` classes); `HeapGS` provides the one instance, so a section with
+`[hG : HeapGS hlc GF]` does not add `[AllG GF]` (only the generic ghost
+libraries, which have no `HeapGS`, assume it). `ghostVar`, `ghost_map`,
+`mono_list`, `saved_prop`, ... live in
 `Perennial/Ghost`. Invariants are iris-lean's `inv N P`; `imod inv_alloc N E P $$ [..]`
 allocates, `iinv H with pat Hclose` opens one around an atomic step, and
 `imod Hclose $$ [..]` closes it.

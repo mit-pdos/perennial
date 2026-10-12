@@ -88,6 +88,17 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.math.big :=
 
 variable [package_sem : math.big.Assumptions]
 
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
+    (Hinit : GetIsPkgInitProp pkg_id.math.big get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.math.big }} := by
+  -- Unprovable: `natOne'init`, `pow5tab'init`, `hasADX'init`, ... (17 package-level variable
+  -- initializers) are opaque (axioms in Perennial/Code/math/big.lean): `math/big` is
+  -- translated without its variables' initializers, so they have no semantics.
+  sorry
+
 /-- `ownInt p z`: the `big.Int` at `p` holds `z`. Exclusive, since a `big.Int`
 is mutable. -/
 def ownInt (p : Loc) (z : Int) : IProp GF :=

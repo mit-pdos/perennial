@@ -1,5 +1,12 @@
-translate = ["Search", "SearchInts", "Find", "*Hint", "xorshift", "xorshift.*"]
-imports = ["!*"]
+translate = [
+  "Search", "SearchInts", "Find", "*Hint", "xorshift", "xorshift.*",
+  # sort.Sort over a sort.Interface (pdqsort, zsortinterface.go), Reverse, IsSorted, Stable
+  "Sort", "Reverse", "reverse", "reverse.*", "IsSorted", "Stable", "nextPowerOfTwo",
+  "insertionSort", "siftDown", "heapSort", "pdqsort", "partition", "partitionEqual",
+  "partialInsertionSort", "breakPatterns", "choosePivot", "order2", "median",
+  "medianAdjacent", "reverseRange", "swapRange", "stable", "symMerge", "rotate",
+]
+imports = ["!*", "math/bits"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

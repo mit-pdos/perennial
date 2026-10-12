@@ -16,56 +16,54 @@ namespace strings
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-/-- `Join(elems, sep)`: the elements of `elems` separated by `sep`. Go's `Join` sums the
-lengths, panics if the total overflows `int`, and copies into a `strings.Builder` (whose
-`String()` is `unsafe.String`, which Goose does not translate). The model is goose's
-translation of the same result computed with `+`:
+/-- `lockBytes buf i` read-locks `buf[i]`, ..., `buf[len(buf)-1]` and never unlocks them: each
+`StartRead` is left without its `FinishRead`, so any later write to one of those bytes is stuck
+(a write starts with `PrepareWrite`, which needs the location to have no readers, `PrepareWriteS`
+in `Lang.lean`), while reads still go through. -/
+def Builder.String.lockBytes : val :=
+  rec: "lock" "buf" "i" :=
+    if: "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "buf" then
+      StartRead (IndexRef (go.SliceType go.byte) ("buf", "i")) ;;
+      "lock" "buf" ("i" +⟨go.int⟩ #(W64 1))
+    else #()
+
+/-- `b.String()`: the bytes written to the builder `b`. Go's `String` is
 
 ```go
-func Join(elems []string, sep string) string {
-	var s string
-	for i, e := range elems {
-		if i > 0 {
-			s += sep
-		}
-		s += e
-	}
-	return s
+func (b *Builder) String() string {
+	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
 }
 ```
 
-So it does not model the length-overflow panic: like `append` (`sumAssumeNoOverflowSigned`)
-and string `+`, the model assumes a string's length fits in an `int`. -/
-noncomputable def Join.impl : val :=
-  (LamV "elems"
-  (Lam "sep"
+which goose does not translate (`unsafe.String`: "builtin that isn't an ident"). The model is
+goose's translation of
+
+```go
+func (b *Builder) String() string {
+	return string(b.buf)
+}
+```
+
+(the receiver's type written out as `strings.Builder`'s named type, which this file cannot refer
+to by its generated name `Builder.ty`), with `b.buf` bound to `buf` and `lockBytes buf 0` run
+before the conversion. Go's result shares `b.buf`'s bytes where the model's is a copy. The two
+differ only if one of those bytes is written after `String` reads `b.buf`, which a `Builder` used
+through one address never does (`WriteString` appends past `len(b.buf)`, `grow` copies to a new
+buffer). A copy of the struct can: after `saved := b`, `b.WriteString`, `s := b.String()`,
+`b = saved`, a `b.WriteString` writes into the bytes `s` aliases, changing `s` in Go; so can a
+write through `saved` in another goroutine while `String` runs on a third copy (no race in Go:
+`String` reads only the header). `lockBytes` read-locks those bytes before the conversion reads
+them, so every such write either lands before the copy (and Go's `s` sees it too) or is stuck.
+Both dereference `b` (a nil `b` panics in Go and is stuck in the model). -/
+noncomputable def Builder.String.impl : val :=
+  (LamV "b"
+  (Lam BAnon
   (App (Val exceptionDo)
-  (Let "sep" (App (Val (GoInstruction (GoAlloc go.string))) (Var "sep"))
-  (Let "elems" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "elems"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (Let "buf" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))
+  (Seq (App (App (Val Builder.String.lockBytes) (Var "buf")) (Val #(W64 0)))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
-  (Let "e" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val (slice.forRange go.string)) (Var "$range"))
-  (Lam "$key"
-  (Lam "$value"
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "e")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "sep")))))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "e") (Var "$value"))))))))))))))))))
+  (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Var "buf")))))))))
 
 /-- `HasPrefix(s, prefix)`: whether `s` begins with `prefix`. Go's `HasPrefix` is
 `len(s) >= len(prefix) && s[:len(prefix)] == prefix` (in `internal/stringslite`); Goose's Go
@@ -165,6 +163,107 @@ noncomputable def TrimPrefix.impl : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #())))))))))
+
+/-- `Split(s, sep)`: the substrings of `s` between the occurrences of `sep` (found left to right,
+not overlapping), as Go's `Split` (`genSplit` with `Index`) computes them. Goose's Go semantics
+has no string slicing, so the model is goose's translation of the same result computed through
+byte slices:
+
+```go
+func Split(s, sep string) []string {
+	_ = sep[0]
+	var a []string
+	var field string
+	rest := s
+	for len(rest) > 0 {
+		if HasPrefix(rest, sep) {
+			a = append(a, field)
+			field = ""
+			b := []byte(rest)
+			rest = string(b[len(sep):])
+			continue
+		}
+		field += string([]byte{rest[0]})
+		b := []byte(rest)
+		rest = string(b[1:])
+	}
+	return append(a, field)
+}
+```
+
+Go splits `s` into its UTF-8 sequences when `sep` is empty; the model does not: its first
+statement, `sep[0]`, is an index out of range for an empty `sep`, a run-time panic no proof can
+get past (`wp_PanicOp`), so every spec of `Split` requires `sep` non-empty. -/
+noncomputable def Split.impl : val :=
+  (LamV "s"
+  (Lam "sep"
+  (App (Val exceptionDo)
+  (Let "sep" (App (Val (GoInstruction (GoAlloc go.string))) (Var "sep"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "sep")) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (Let "field" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "rest" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.string))) (Var "field"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "rest"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "rest")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "rest") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "field") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "field")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "rest")) (Val #(W64 0))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0")))]))))))))))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "rest"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (App (Val (GoInstruction (FuncResolve go!"strings.HasPrefix" []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.string))) (Var "field"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(go!""))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "rest")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "rest") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "field") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "rest") (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))
 
 end code
 end strings

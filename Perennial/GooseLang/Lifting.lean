@@ -7,8 +7,10 @@ Notes:
 * iris-lean's `IrisGS_gen` class is instantiated (`goose_irisGS`) from
   `gooseGlobalGS` and `gooseLocalGS`. `heapGS` bundles the
   two. `heapGS` does *not* contain the `GoGlobalContext` (the language instance
-  itself depends on it, so it must be a separate instance argument), nor the
-  `allG` ghost state.
+  itself depends on it, so it must be a separate instance argument). It does
+  contain the one `allG GF` (`gooseAllG`), the ghost state of the thread tokens
+  and of every proof under `heapGS`, which therefore does not assume its own
+  `[allG GF]`.
 * `numLatersPerStep` is `0`. Every step still yields one
   later credit (`£ 1`).
 * The language instance is the bounded layer of `BoundedLang.lean`, whose
@@ -309,6 +311,10 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
 class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   /-- not an instance on purpose, to avoid diamonds with `IrisGS_gen` -/
   gooseInvGS : InvGS_gen hlc GF
+  /-- The one `allG GF`: the ghost state of the thread tokens (`goose_threadGS`)
+  and of every proof under `HeapGS`, which therefore does not assume its own
+  `[AllG GF]` (`Ghost/All.lean`) -/
+  gooseAllG : AllG GF
   goose_prophGS : prophMapGS proph_id val GF (GMap proph_id)
   gooseFfiGlobalGS : @ffiGlobalGS ffi _ GF
   /-- Time receipts, tied to the step fuel of the bounded semantics;
@@ -325,13 +331,12 @@ class GooseLocalGS (GF : BundledGFunctors) where
   goose_na_heapGS : NaHeapGS Loc val GF
   goose_go_stateGS : GoStateGS GF
 
-attribute [reducible, instance] GooseGlobalGS.goose_prophGS GooseGlobalGS.goose_receiptGS
-  GooseGlobalGS.goose_threadGS
+attribute [reducible, instance] GooseGlobalGS.gooseAllG GooseGlobalGS.goose_prophGS
+  GooseGlobalGS.goose_receiptGS GooseGlobalGS.goose_threadGS
   GooseLocalGS.goose_go_local_context
   GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS
 
-/-- Bundles the global and local ghost state (not including `allG` or
-`GoGlobalContext`). -/
+/-- Bundles the global and local ghost state (not including `GoGlobalContext`). -/
 class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   goose_globalGS : GooseGlobalGS hlc GF
   goose_localGS : GooseLocalGS GF

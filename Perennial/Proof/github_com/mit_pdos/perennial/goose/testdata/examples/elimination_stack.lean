@@ -62,7 +62,7 @@ structure EliminationStackNames where
 section locked_stack_proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
 def ownLockedStack (γ : GName) (σ : List GoString) : IProp GF :=
@@ -217,7 +217,7 @@ section elimination_stack_proof
 
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : elimination_stack.Assumptions]
 
 def ownEliminationStack (γ : EliminationStackNames) (σ : List GoString) : IProp GF :=

@@ -1,6 +1,18 @@
-translate = ["Builder", "asciiSpace"]
-imports = ["!*"]
-trusted = ["Join", "HasPrefix", "Compare", "TrimPrefix"]
+translate = [
+  "Builder",
+  "asciiSpace",
+  # `Join` and the `Builder` methods it calls are goose's translation of the real source
+  "maxInt",
+  "Join",
+  "Builder.Grow",
+  "Builder.grow",
+  "Builder.WriteString",
+  "Builder.copyCheck",
+]
+imports = ["!*", "internal/abi", "internal/bytealg", "unsafe"]
+# `Builder.String` is `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))`, which goose does
+# not translate: a model in TrustedCode/strings.lean.
+trusted = ["Builder.String", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

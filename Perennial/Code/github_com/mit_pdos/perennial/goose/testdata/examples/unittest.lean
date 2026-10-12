@@ -797,6 +797,18 @@ noncomputable def LogicalAndEqualityOperators [FfiSyntax] [GoGlobalContext] : Go
 noncomputable def ArithmeticShifts [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ArithmeticShifts"
 
+noncomputable def ShiftWideCount [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ShiftWideCount"
+
+noncomputable def ShiftSignedCount [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ShiftSignedCount"
+
+noncomputable def SignedShiftRight [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.SignedShiftRight"
+
+noncomputable def Complement [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Complement"
+
 noncomputable def BitwiseOps [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.BitwiseOps"
 
@@ -907,6 +919,9 @@ noncomputable def stringLength [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def x [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.x"
+
+noncomputable def appendString [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.appendString"
 
 noncomputable def UseAdd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.UseAdd"
@@ -1172,10 +1187,10 @@ noncomputable def chanSelect.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none []))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "$v0" (Val #(W64 0))
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c"))
-  (Let "$v1" (Val #(W64 1))
+  (Let "$v0" (Val #(W64 0))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c"))
+  (Let "$v1" (Val #(W64 1))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.int (Var "$ch0") (Var "$v0")) (App (Val doExecute)
   (Val #()))),
   (CommClause (SendCase go.int (Var "$ch1") (Var "$v1")) (App (Val doExecute)
@@ -1184,8 +1199,8 @@ noncomputable def chanSelect.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c3"))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c1"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i2"))
   (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c2"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i2"))
   (Let "$ch3" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c3"))
   (Let "$ch4" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Var "c4"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doExecute)
@@ -2584,6 +2599,7 @@ noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$l0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x"))
   (Let "__p" (App (App (Val (GoInstruction (FuncResolve returnConcrete []))) (Val #())) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -2596,7 +2612,7 @@ noncomputable def testMultiReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Fooer.ty)))) (Var "x")) (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore Fooer.ty))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
 
 /-- go: interfaces.go:70:6 -/
 noncomputable def testReturnStatment.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3608,9 +3624,54 @@ noncomputable def ArithmeticShifts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
   (App (Val doReturn)
-  (Val #(W64 0))))))))
+  (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoOp GoShiftl go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(3 : Int)))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int)))))))))))))
 
-/-- go: operators.go:16:6 -/
+/-- The count of a shift is a uint64, not converted to the type of the shifted
+    operand: uint8(1) << uint64(256) is 0.
+
+    go: operators.go:17:6 -/
+noncomputable def ShiftWideCount.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "s"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoShiftl go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "s"))))))))))
+
+/-- A signed count goes through go.shiftCount, which panics if it is negative.
+
+    go: operators.go:22:6 -/
+noncomputable def ShiftSignedCount.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.int))) (Var "s"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoShiftr go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x")) (App (Val (go.shiftCount go.int)) (App (Val (GoInstruction (GoLoad go.int))) (Var "s")))))))))))
+
+/-- go: operators.go:26:6 -/
+noncomputable def SignedShiftRight.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "s"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int8))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoShiftr go.int8))) (Pair (App (Val (GoInstruction (GoLoad go.int8))) (Var "x")) (App (Val (GoInstruction (Convert go.uint8 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "s")))))))))))
+
+/-- go: operators.go:30:6 -/
+noncomputable def Complement.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "y"
+  (App (Val exceptionDo)
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "y"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoComplement go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))) (App (Val (GoInstruction (Convert go.int32 go.uint64))) (App (Val (GoInstruction (GoUnOp GoComplement go.int32))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "y"))))))))))))
+
+/-- go: operators.go:34:6 -/
 noncomputable def BitwiseOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
@@ -3620,7 +3681,7 @@ noncomputable def BitwiseOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "x"))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.uint64))) (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (Val #(W64 43))))))))))))
 
-/-- go: operators.go:20:6 -/
+/-- go: operators.go:38:6 -/
 noncomputable def Comparison.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
@@ -3660,7 +3721,7 @@ noncomputable def Comparison.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))))
 
-/-- go: operators.go:39:6 -/
+/-- go: operators.go:57:6 -/
 noncomputable def AssignOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -3680,7 +3741,7 @@ noncomputable def AssignOps.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 3))))))))))))
 
-/-- go: operators.go:47:6 -/
+/-- go: operators.go:65:6 -/
 noncomputable def BitwiseAndNot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
@@ -3698,7 +3759,7 @@ noncomputable def BitwiseAndNot.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "z") (Var "$r0"))))))))))))
 
-/-- go: operators.go:53:6 -/
+/-- go: operators.go:71:6 -/
 noncomputable def Negative.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4419,6 +4480,18 @@ noncomputable def x.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (Val #(go!"ab"))
   (App (App (Val (GoInstruction (FuncResolve stringAppend []))) (Val #())) (Var "$a0")))))))
+
+/-- go: strings.go:15:6 -/
+noncomputable def appendString.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: struct_method.go:8:16 -/
 noncomputable def Point.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -6363,6 +6436,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   LogicalOperators_unfold : FuncUnfold LogicalOperators [] LogicalOperators.impl
   LogicalAndEqualityOperators_unfold : FuncUnfold LogicalAndEqualityOperators [] LogicalAndEqualityOperators.impl
   ArithmeticShifts_unfold : FuncUnfold ArithmeticShifts [] ArithmeticShifts.impl
+  ShiftWideCount_unfold : FuncUnfold ShiftWideCount [] ShiftWideCount.impl
+  ShiftSignedCount_unfold : FuncUnfold ShiftSignedCount [] ShiftSignedCount.impl
+  SignedShiftRight_unfold : FuncUnfold SignedShiftRight [] SignedShiftRight.impl
+  Complement_unfold : FuncUnfold Complement [] Complement.impl
   BitwiseOps_unfold : FuncUnfold BitwiseOps [] BitwiseOps.impl
   Comparison_unfold : FuncUnfold Comparison [] Comparison.impl
   AssignOps_unfold : FuncUnfold AssignOps [] AssignOps.impl
@@ -6400,6 +6477,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   stringAppend_unfold : FuncUnfold stringAppend [] stringAppend.impl
   stringLength_unfold : FuncUnfold stringLength [] stringLength.impl
   x_unfold : FuncUnfold x [] x.impl
+  appendString_unfold : FuncUnfold appendString [] appendString.impl
   UseAdd_unfold : FuncUnfold UseAdd [] UseAdd.impl
   UseAddWithLiteral_unfold : FuncUnfold UseAddWithLiteral [] UseAddWithLiteral.impl
   NewS_unfold : FuncUnfold NewS [] NewS.impl
@@ -6615,6 +6693,10 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.LogicalOperators_unfold
   Assumptions.LogicalAndEqualityOperators_unfold
   Assumptions.ArithmeticShifts_unfold
+  Assumptions.ShiftWideCount_unfold
+  Assumptions.ShiftSignedCount_unfold
+  Assumptions.SignedShiftRight_unfold
+  Assumptions.Complement_unfold
   Assumptions.BitwiseOps_unfold
   Assumptions.Comparison_unfold
   Assumptions.AssignOps_unfold
@@ -6652,6 +6734,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.stringAppend_unfold
   Assumptions.stringLength_unfold
   Assumptions.x_unfold
+  Assumptions.appendString_unfold
   Assumptions.UseAdd_unfold
   Assumptions.UseAddWithLiteral_unfold
   Assumptions.NewS_unfold

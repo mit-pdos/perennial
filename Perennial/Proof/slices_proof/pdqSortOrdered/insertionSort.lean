@@ -79,13 +79,11 @@ private theorem ord_wp_insertion_inner (data : GoSlice) (a b i_val : w64)
                       (FuncResolve cmp.Less [Et]) #() "$a0" "$a1") else
                 #false))
         glv(λ: <>,
-            let: "$r0" :=
-              ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
-              let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
-                do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
-                  do:
-                    (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
-                      "$r1"))
+            let: "$l0" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) in
+              let: "$l1" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) in
+                let: "$r0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                  let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                    do: "$l0" <-[Et] "$r0" ;;; do: "$l1" <-[Et] "$r1"))
       glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) {{ Φ }} := by
   iintro #Hless a data HI2 HΦ
   wp_for HI2
@@ -106,17 +104,19 @@ private theorem ord_wp_insertion_inner (data : GoSlice) (a b i_val : w64)
     · cleanup_bool_decide
       wp_auto
       slice_index_if
+      wp_auto
+      slice_index_if
+      wp_auto
+      slice_index_if
       wp_apply wp_load_slice_index data (sint.Z (j_val - W64 1)) xs'' _ x1 (by word) $$ [Hxs]
         with Hxs
       · iframe Hxs; ipureintro; exact Hx1_lookup
       slice_index_if
       wp_apply wp_load_slice_index data (sint.Z j_val) xs'' _ x0 (by omega) $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; exact Hx0_lookup
-      slice_index_if
       wp_pures
       wp_apply wp_store_slice_index data (sint.Z j_val) xs'' x1 $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; omega
-      slice_index_if
       wp_pures
       wp_apply wp_store_slice_index data (sint.Z (j_val - W64 1)) _ x0 $$ [Hxs] with Hxs
       · iframe Hxs; ipureintro; simp only [List.length_set]; word
@@ -245,13 +245,11 @@ private theorem ord_wp_shift_left (data : GoSlice) (a b i_val : w64)
                               (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                           (FuncResolve cmp.Less [Et]) #() "$a0" "$a1")) then
                 doBreak #() else do: #()) ;;;
-              let: "$r0" :=
-                ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
-                let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
-                  do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
-                    do:
-                      (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
-                        "$r1"))
+              let: "$l0" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) in
+                let: "$l1" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) in
+                  let: "$r0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                    let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                      do: "$l0" <-[Et] "$r0" ;;; do: "$l1" <-[Et] "$r1"))
       glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)))
       {{ v, ⌜v = executeVal⌝ ∗ ∃ xs3,
         "Hxs" ∷ data ↦* xs3 ∗ "i" ∷ i_ptr ↦ i_val ∗ "a" ∷ a_ptr ↦ a ∗
@@ -319,17 +317,19 @@ private theorem ord_wp_shift_left (data : GoSlice) (a b i_val : w64)
       exact header_contra R _ _ _ _ _ Header2' (by word) (by word) Hy0_lookup Hy1_lookup hRy
     · word
   slice_index_if
+  wp_auto
+  slice_index_if
+  wp_auto
+  slice_index_if
   wp_apply wp_load_slice_index data (sint.Z (jl - W64 1)) xs3 _ y1 (by word) $$ [Hxs]
     with Hxs
   · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
   slice_index_if
   wp_apply wp_load_slice_index data (sint.Z jl) xs3 _ y0 (by word) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hy0_lookup
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z jl) xs3 y1 $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; word
-  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z (jl - W64 1)) _ y0 $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp only [List.length_set]; word
@@ -375,13 +375,11 @@ private theorem ord_wp_shift_right (data : GoSlice) (a b i_val : w64)
                               (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
                           (FuncResolve cmp.Less [Et]) #() "$a0" "$a1")) then
                 doBreak #() else do: #()) ;;;
-              let: "$r0" :=
-                ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
-                let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
-                  do: (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) <-[Et] "$r0" ;;;
-                    do:
-                      (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) <-[Et]
-                        "$r1"))
+              let: "$l0" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr) in
+                let: "$l1" := (IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1)) in
+                  let: "$r0" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr -⟨go.int⟩ #(W64 1))) in
+                    let: "$r1" := ![Et] ((IndexRef Et.SliceType) (![Et.SliceType] #data_ptr, ![go.int] #j_ptr)) in
+                      do: "$l0" <-[Et] "$r0" ;;; do: "$l1" <-[Et] "$r1"))
       glv(λ: <>, do: #j_ptr <-[go.int] ![go.int] #j_ptr +⟨go.int⟩ #(W64 1))) {{ Φ }} := by
   iintro #Hless b data HRt HΦ
   wp_for HRt
@@ -414,17 +412,19 @@ private theorem ord_wp_shift_right (data : GoSlice) (a b i_val : w64)
     cleanup_bool_decide
     wp_auto
     slice_index_if
+    wp_auto
+    slice_index_if
+    wp_auto
+    slice_index_if
     wp_apply wp_load_slice_index data (sint.Z (jr - W64 1)) xs4 _ y1 (by word) $$ [Hxs]
       with Hxs
     · iframe Hxs; ipureintro; rw [hjdx]; exact Hy1_lookup
     slice_index_if
     wp_apply wp_load_slice_index data (sint.Z jr) xs4 _ y0 (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hy0_lookup
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z jr) xs4 y1 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; word
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z (jr - W64 1)) _ y0 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; simp only [List.length_set]; word
@@ -547,16 +547,18 @@ theorem wp_partialInsertionSortOrdered (data : GoSlice) (a b : w64)
     have hidx : (sint.Z (i_val - W64 1)).toNat = sint.nat i_val - 1 := hi1
     have hidx' : (sint.Z i_val).toNat = sint.nat i_val := rfl
     slice_index_if
+    wp_auto
+    slice_index_if
+    wp_auto
+    slice_index_if
     wp_apply wp_load_slice_index data (sint.Z (i_val - W64 1)) xs' _ x1 (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; rw [hidx]; exact Hx1_lookup
     slice_index_if
     wp_apply wp_load_slice_index data (sint.Z i_val) xs' _ x0 (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hx0_lookup
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z i_val) xs' x1 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; word
-    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z (i_val - W64 1)) _ x0 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; simp only [List.length_set]; word

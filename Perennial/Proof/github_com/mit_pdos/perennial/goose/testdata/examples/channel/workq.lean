@@ -198,7 +198,7 @@ end init
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
@@ -603,7 +603,9 @@ theorem tasks_to_list (γ : WorkqNames) (start : Nat) (l : List GoString) :
     · iapply ih $$ H
 
 set_option maxHeartbeats 1000000 in
-theorem wp_wordCount (docs_sl : GoSlice) (docs : List GoString) :
+/-- `wordCount(docs)`, for fewer than `2^32` documents (the model's `make(chan T, n)` is stuck for
+`n ≥ 2^32`, where Go may panic: `chan.wp_make2`). -/
+theorem wp_wordCount (docs_sl : GoSlice) (docs : List GoString) (hdocs : docs.length < 2 ^ 32) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ "Hdocs" ∷ docs_sl ↦* docs }}
       (App (Val (@! wordCount)) (Val #docs_sl))
     {{ RET #(W64 ((docs.map word_count).sum : Int)); True }} := by
@@ -651,7 +653,9 @@ theorem wp_wordCount (docs_sl : GoSlice) (docs : List GoString) :
       simp only [sint.nat, sint.Z] at h1 h2 hP ⊢
       rw [List.getElem?_append_right (by omega), List.getElem?_replicate_of_lt (by omega)]
     wp_apply chan.wp_make2 (V := GoString) docs_sl.len $$ [] as %queue %γqueue ⟨#Hq_is, %Hqcap, Hq_own⟩
-    · ipureintro; exact Hdocs_len.2
+    · ipureintro
+      refine ⟨Hdocs_len.2, ?_⟩
+      have := Hdocs_len.1; simp only [sint.nat, sint.Z] at this ⊢; omega
     wp_apply chan.wp_make1 (V := GoChan) as %steal %γsteal ⟨#Hs_is, %Hscap, Hs_own⟩
     simp only [Hi.1, hP, and_self, ↓reduceIte]
     irename «$r0» => Hwr

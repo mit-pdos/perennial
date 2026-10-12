@@ -133,7 +133,7 @@ theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -142,7 +142,7 @@ def ownWaitGroupWaitersDef (γ : WaitGroupNames) (possible_waiters : Int) : IPro
 @[irreducible] def ownWaitGroupWaiters (γ : WaitGroupNames) (possible_waiters : Int) :
     IProp GF := ownWaitGroupWaitersDef γ possible_waiters
 theorem ownWaitGroupWaiters_unseal :
-    @ownWaitGroupWaiters GF _ = @ownWaitGroupWaitersDef GF _ := by
+    ownWaitGroupWaiters (GF := GF) = ownWaitGroupWaitersDef (GF := GF) := by
   funext; with_unfolding_all rfl
 instance ownWaitGroupWaiters_timeless (γ : WaitGroupNames) (w : Int) :
     Timeless (ownWaitGroupWaiters (GF := GF) γ w) := by
@@ -152,7 +152,7 @@ def ownWaitGroupWaitTokenDef (γ : WaitGroupNames) : IProp GF := ownToks γ.wait
 @[irreducible] def ownWaitGroupWaitToken (γ : WaitGroupNames) : IProp GF :=
   ownWaitGroupWaitTokenDef γ
 theorem ownWaitGroupWaitToken_unseal :
-    @ownWaitGroupWaitToken GF _ = @ownWaitGroupWaitTokenDef GF _ := by
+    ownWaitGroupWaitToken (GF := GF) = ownWaitGroupWaitTokenDef (GF := GF) := by
   funext; with_unfolding_all rfl
 instance ownWaitGroupWaitToken_timeless (γ : WaitGroupNames) :
     Timeless (ownWaitGroupWaitToken (GF := GF) γ) := by
@@ -223,7 +223,7 @@ def ownWaitGroupDef (γ : WaitGroupNames) (counter : w32) : IProp GF :=
   ghostVar γ.counterGn (1 : Qp).half counter
 @[irreducible] def ownWaitGroup (γ : WaitGroupNames) (counter : w32) : IProp GF :=
   ownWaitGroupDef γ counter
-theorem ownWaitGroup_unseal : @ownWaitGroup GF _ = @ownWaitGroupDef GF _ := by
+theorem ownWaitGroup_unseal : ownWaitGroup (GF := GF) = ownWaitGroupDef (GF := GF) := by
   funext; with_unfolding_all rfl
 instance ownWaitGroup_timeless (γ : WaitGroupNames) (counter : w32) :
     Timeless (ownWaitGroup (GF := GF) γ counter) := by

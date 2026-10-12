@@ -57,8 +57,8 @@ noncomputable def Worker.run.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "reply" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"done"))) (Var "sh")))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string)))))) (App (Val (GoInstruction (StructFieldRef Worker.ty go!"steal"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "neighbor"))))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Var "reply"))
   (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef Worker.ty go!"queue"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "w"))))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
   (App (Val doReturn)

@@ -384,7 +384,7 @@ end tutorial
 
 section ghost
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
 -- ANCHOR: ghost
 /-- The invariant owns half of a ghost variable `γ` holding a counter; the
