@@ -159,8 +159,14 @@ it OK. It accepted the docstring's reason and called the length assumption
 
 **The fix.**
 - Translate `Join` and the `Builder` methods; trust only the three
-  primitives.
-- `wp_Join` gains a premise that excludes the overflow.
+  primitives; `wp_Join` gains a premise that excludes the overflow.
+- Its review found a further R4 BLOCK in the `Builder.String` model
+  (`string(b.buf)`): Go's `String` aliases the buffer, so after a Builder is
+  saved and restored by value, a write changes an earlier `String()` result.
+  The model, whose strings are values, cannot follow, so it is made stuck
+  there: it leaves the returned bytes read-locked (`lockBytes`), so a later
+  write to them is stuck, and `wp_String` consumes the builder. A model that
+  copies where Go shares is the shape to watch for.
 - The README entry is removed.
 
 **Signals.**

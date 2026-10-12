@@ -112,6 +112,7 @@ noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (LamV "cap"
   (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val idle)
   (Let "local_state" (App (Val (GoInstruction (GoAlloc offerState.ty))) (App (Val (GoInstruction (GoZeroVal offerState.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -129,12 +130,17 @@ noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (Var "local_state") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (Var "local_state") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "cap")) (Val #(W64 4294967296))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (Val #())))))))
 
 /-- Non-Blocking send operation for select statements. Blocking send and blocking select
     statements simply call this in a for loop until it returns true.
 
-    go: channel.go:56:22 -/
+    go: channel.go:64:22 -/
 noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "val"
@@ -259,7 +265,7 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
 
     c <- val
 
-    go: channel.go:121:22 -/
+    go: channel.go:129:22 -/
 noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
@@ -294,7 +300,7 @@ noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
     around nonblocking TryReceive. If false, we don't make an offer since we don't need to match
     with another non-blocking send.
 
-    go: channel.go:136:22 -/
+    go: channel.go:144:22 -/
 noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
@@ -433,7 +439,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val doExecute)
   (Val #()))))))))))
 
-/-- go: channel.go:209:22 -/
+/-- go: channel.go:217:22 -/
 noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -483,7 +489,7 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
     may be successful exchanges that need to complete, which is equivalent to the go runtime where
     the closer must still obtain the channel's lock
 
-    go: channel.go:226:22 -/
+    go: channel.go:234:22 -/
 noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -524,7 +530,7 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
 
     close(c)
 
-    go: channel.go:250:22 -/
+    go: channel.go:258:22 -/
 noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -551,7 +557,7 @@ noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
     is equivalent to:
     v := c<-
 
-    go: channel.go:262:22 -/
+    go: channel.go:270:22 -/
 noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -580,7 +586,7 @@ noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T
     This might not be worth specifying since it is hard to make good use of channel length
     semantics.
 
-    go: channel.go:274:22 -/
+    go: channel.go:282:22 -/
 noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -612,7 +618,7 @@ noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
     is equivalent to:
     cap(c)
 
-    go: channel.go:288:22 -/
+    go: channel.go:296:22 -/
 noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
@@ -629,7 +635,7 @@ noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
 
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
-    go: channel.go:296:22 -/
+    go: channel.go:304:22 -/
 noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon

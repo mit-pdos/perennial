@@ -39,6 +39,14 @@ type Channel[T any] struct {
 }
 
 func NewChannel[T any](cap int) *Channel[T] {
+	// Go's make panics ("makechan: size out of range") when cap < 0 or the
+	// buffer, elemsize*cap, exceeds maxAlloc (2^48) less the channel header.
+	// Element types are under 64 kB (a compile-time limit), so cap < 2^32
+	// never panics; the model is stuck outside that range (less defined than
+	// Go only for huge capacities of small elements).
+	if cap < 0 || cap >= 1<<32 {
+		runtimePanic()
+	}
 	local_state := idle
 	if cap > 0 {
 		local_state = buffered
