@@ -308,7 +308,11 @@ meta def existsWitness? (goal : Lean.Expr) (hs : Array (Name × Lean.Expr)) : Me
         found := some w
   return found
 
-meta initialize inIframe : IO.Ref Bool ← IO.mkRef false
+/-- The (internal) option set for the call of iris-lean's `iframe ∗` by
+Perennial's (which then passes it on). An option (scoped to the call), not a
+global flag: the `iframe` of a declaration elaborated in parallel (`Elab.async`)
+would see the flag and skip the prepass. -/
+meta def iframeInnerOpt : Name := `goose.iframe.inner
 
 meta register_option goose.iframe.prepass : Bool := {
   defValue := true
@@ -379,7 +383,7 @@ meta def iframePrep (n0 : Nat) : TacticM Unit := withMainContext do
 /-- Perennial's `iframe`/`iframe ∗` (see `iframePrep`), then iris-lean's. -/
 elab_rules : tactic
   | `(tactic| iframe $pats:selPat*) => do
-    if ← inIframe.get then throwUnsupportedSyntax
+    if (← getOptions).getBool iframeInnerOpt then throwUnsupportedSyntax
     unless pats.size == 1 && (pats[0]!.raw.getArg 0).isToken "∗" do
       throwUnsupportedSyntax
     let saved ← saveState
@@ -388,9 +392,8 @@ elab_rules : tactic
       try iframePrep n0 catch _ => saved.restore
     -- the prepass may already have closed the goal
     if (← getGoals).length < n0 then return
-    inIframe.set true
-    try evalTactic (← `(tactic| iframe $pats:selPat*))
-    finally inIframe.set false
+    withOptions (·.setBool iframeInnerOpt true) <|
+      evalTactic (← `(tactic| iframe $pats:selPat*))
 
 end IrisTactics
 
