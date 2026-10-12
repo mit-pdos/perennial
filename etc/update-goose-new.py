@@ -252,6 +252,8 @@ def main():
             "sync/atomic",
             "internal/synctest",
             "internal/race",
+            "internal/abi",
+            "internal/bytealg",
             "time",
             "fmt",
             "log",

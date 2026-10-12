@@ -286,10 +286,17 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
+		paramTy := funcSig.Params().At(i-1).Type()
+		// `append(b, s...)` with a string `s` (the only variadic string
+		// parameter) appends the bytes of `s`, as `[]byte(s)...` does.
+		if b, ok := paramTy.Underlying().(*types.Basic); ok && funcSig.Variadic() &&
+			i == funcSig.Params().Len() && b.Info()&types.IsString != 0 {
+			paramTy = types.NewSlice(types.Universe.Lookup("byte").Type())
+		}
 		expr = glang.LetExpr{
 			Names: []string{fmt.Sprintf("$a%d", i-1)},
 			ValExpr: ctx.handleImplicitConversion(intermediates[i-1].n,
-				intermediates[i-1].t, funcSig.Params().At(i-1).Type(), intermediates[i-1].e),
+				intermediates[i-1].t, paramTy, intermediates[i-1].e),
 			Cont: expr,
 		}
 	}

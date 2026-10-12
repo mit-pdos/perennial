@@ -508,7 +508,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
 | `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
-| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`, `strings.Join`) are listed in `README.md`, "Model assumptions (overflow)" |
+| `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
 ### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)

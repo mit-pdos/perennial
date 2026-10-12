@@ -908,6 +908,9 @@ noncomputable def stringLength [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def x [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.x"
 
+noncomputable def appendString [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.appendString"
+
 noncomputable def UseAdd [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.UseAdd"
 
@@ -4426,6 +4429,18 @@ noncomputable def x.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (Val #(go!"ab"))
   (App (App (Val (GoInstruction (FuncResolve stringAppend []))) (Val #())) (Var "$a0")))))))
 
+/-- go: strings.go:15:6 -/
+noncomputable def appendString.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
+
 /-- go: struct_method.go:8:16 -/
 noncomputable def Point.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "c"
@@ -6406,6 +6421,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   stringAppend_unfold : FuncUnfold stringAppend [] stringAppend.impl
   stringLength_unfold : FuncUnfold stringLength [] stringLength.impl
   x_unfold : FuncUnfold x [] x.impl
+  appendString_unfold : FuncUnfold appendString [] appendString.impl
   UseAdd_unfold : FuncUnfold UseAdd [] UseAdd.impl
   UseAddWithLiteral_unfold : FuncUnfold UseAddWithLiteral [] UseAddWithLiteral.impl
   NewS_unfold : FuncUnfold NewS [] NewS.impl
@@ -6658,6 +6674,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.stringAppend_unfold
   Assumptions.stringLength_unfold
   Assumptions.x_unfold
+  Assumptions.appendString_unfold
   Assumptions.UseAdd_unfold
   Assumptions.UseAddWithLiteral_unfold
   Assumptions.NewS_unfold
