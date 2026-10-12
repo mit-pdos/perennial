@@ -1,9 +1,8 @@
 /-
-Proofs of the goose semantics tests for `panic` and `recover`: a panic recovered
-by a deferred function literal that sets a named result (`recoverNamed`), a panic
-raised two calls down inside a loop that reaches a recovering `defer`
-(`catchTwoDeep`), and a panic that runs the deferred functions and continues
-(`panicUnrecovered`).
+Proofs of the goose semantics tests for `recover`: a panic recovered by a
+deferred function literal that sets a named result (`recoverNamed`), and a panic
+raised inside a loop (`recoverInLoop`), which ends the loop as a `return` would
+and is recovered the same way.
 -/
 module
 
@@ -26,76 +25,44 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-/-- `recoverNamed`: the deferred literal recovers the panic (`recover()` reads and
-clears the `$panic` cell) and sets the named result, which the function returns. -/
+/-- `recoverNamed`: the body's outcome is the panic (`wp_panic`), which
+`with_defer_recover:` stores in the `$panic` cell; the deferred literal recovers
+it (`recover()` reads and clears the cell) and sets the named result, which the
+function returns. -/
 theorem wp_recoverNamed :
     {{ (True : IProp GF) }} (App (Val (@! recoverNamed)) (Val #()))
     {{ RET #(W64 42); True }} := by
   wp_start
   wp_auto
   wp_apply wp_with_defer_recover as %defer %pnc defer pnc
-  -- the panic unwinds to the `Catch`, whose handler runs the deferred literal
   wp_apply wp_panic
   wp_apply wp_recoverPanic $$ [$pnc] as pnc
   iapply HΦ
   itrivial
 
-/-- `panicInLoop` panics in the fourth iteration of its loop. -/
-theorem wp_panicInLoop (Φ : val → IProp GF) :
-    Φ (PanicV #(interface.mkOk go.string #go!"loop")) ⊢
-      WP (App (Val (@! panicInLoop)) (Val #())) {{ Φ }} := by
-  iintro HΦ
-  wp_func_call
-  wp_call
+/-- `recoverInLoop`: the panic in the fourth iteration ends the loop
+(`wp_for_post_panic`) and the body; the deferred literal recovers it. -/
+theorem wp_recoverInLoop :
+    {{ (True : IProp GF) }} (App (Val (@! recoverInLoop)) (Val #()))
+    {{ RET #(W64 7); True }} := by
+  wp_start
   wp_auto
+  wp_apply wp_with_defer_recover as %defer %pnc defer pnc
   ihave HI : (∃ n : w64, "i" ∷ i_ptr ↦ n ∗ "%Hn" ∷ ⌜uint.Z n ≤ 3⌝ : IProp GF) $$ [i]
   · iexists _; iframe; ipureintro; decide
   wp_for HI
   wp_if_destruct
-  · -- `i == 3`: the panic ends the loop (`wp_for_post_panic`) and the function
+  · -- `i == 3`: the panic ends the loop
     wp_apply wp_panic
     wp_for_post
-    iexact HΦ
+    wp_apply wp_recoverPanic $$ [$pnc] as pnc
+    iapply HΦ
+    itrivial
   · wp_for_post
     iframe
     iexists _
     iframe
     ipureintro; word
-
-/-- `panicTwoDeep` panics through its call of `panicInLoop`. -/
-theorem wp_panicTwoDeep (Φ : val → IProp GF) :
-    Φ (PanicV #(interface.mkOk go.string #go!"loop")) ⊢
-      WP (App (Val (@! panicTwoDeep)) (Val #())) {{ Φ }} := by
-  iintro HΦ
-  wp_func_call
-  wp_call
-  wp_apply wp_panicInLoop
-  iexact HΦ
-
-/-- `catchTwoDeep`: the panic raised two calls down, inside a loop, unwinds to the
-`Catch` of `catchTwoDeep`'s `defer`, whose literal recovers it and sets the named
-result. -/
-theorem wp_catchTwoDeep :
-    {{ (True : IProp GF) }} (App (Val (@! catchTwoDeep)) (Val #()))
-    {{ RET #true; True }} := by
-  wp_start
-  wp_auto
-  wp_apply wp_with_defer_recover as %defer %pnc defer pnc
-  wp_apply wp_panicTwoDeep
-  wp_apply wp_recoverPanic $$ [$pnc] as pnc
-  iapply HΦ
-  itrivial
-
-/-- `panicUnrecovered` runs its deferred function and keeps panicking. -/
-theorem wp_panicUnrecovered (Φ : val → IProp GF) :
-    Φ (PanicV #(interface.mkOk go.string #go!"unrecovered")) ⊢
-      WP (App (Val (@! panicUnrecovered)) (Val #())) {{ Φ }} := by
-  iintro HΦ
-  wp_func_call
-  wp_call
-  wp_apply wp_with_defer as %defer defer
-  wp_apply wp_panic
-  iexact HΦ
 
 theorem wp_testRecoverNamed : TestFunOk (GF := GF) testRecoverNamed := by
   intro Φ
@@ -105,12 +72,12 @@ theorem wp_testRecoverNamed : TestFunOk (GF := GF) testRecoverNamed := by
   wp_apply wp_recoverNamed
   iexact HΦ
 
-theorem wp_testCatchTwoDeep : TestFunOk (GF := GF) testCatchTwoDeep := by
+theorem wp_testRecoverInLoop : TestFunOk (GF := GF) testRecoverInLoop := by
   intro Φ
   iintro HΦ
   wp_func_call
   wp_call
-  wp_apply wp_catchTwoDeep
+  wp_apply wp_recoverInLoop
   iexact HΦ
 
 end wps

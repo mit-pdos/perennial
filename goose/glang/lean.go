@@ -153,7 +153,7 @@ var LeanShadowNames = map[string]bool{}
 
 func init() {
 	for _, w := range strings.Fields(`Val Var Rec App If Pair Fst Snd Fork Lam
-	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoUnOp GoLoad
+	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoShift GoUnOp GoLoad
 	GoStore GoAlloc GoZeroVal FuncResolve MethodResolve StructFieldGet
 	StructFieldRef StructFieldSet GlobalVarAddr Index IndexRef Slice FullSlice
 	TypeAssert TypeAssert2 Convert CompositeLiteral SelectStmt LiteralValue
@@ -712,7 +712,6 @@ var leanHeads = map[string]leanHead{
 	"map.insert":          {kind: headValFn, name: "map.insert", nTerm: 1},
 	"package.init":        {kind: headValFn, name: "package.init", nTerm: 1},
 	"go.GlobalAlloc":      {kind: headValFn, name: "go.GlobalAlloc", nTerm: 2},
-	"go.shiftCount":       {kind: headValFn, name: "go.shiftCount", nTerm: 1},
 	"exception_do":        {kind: headVal, name: "exceptionDo"},
 	"with_defer:":         {kind: headWithDefer},
 	"with_defer_recover:": {kind: headWithDeferRecover},
@@ -975,8 +974,6 @@ var leanBinOps = map[OpId]string{
 	OpGreaterThan: "GoGt",
 	OpLessEq:      "GoLe",
 	OpGreaterEq:   "GoGe",
-	OpShl:         "GoShiftl",
-	OpShr:         "GoShiftr",
 	OpAnd:         "GoAnd",
 	OpAndNot:      "GoBitClear",
 	OpOr:          "GoOr",
@@ -995,6 +992,15 @@ func (be BinaryExpr) Lean(m LeanMode) string {
 		return lapp("If", x, y, eVal("#false"))
 	case OpLOr:
 		return lapp("If", x, eVal("#true"), y)
+	}
+	switch be.Op.OpId {
+	case OpShl, OpShr:
+		op := "GoShiftl"
+		if be.Op.OpId == OpShr {
+			op = "GoShiftr"
+		}
+		return eApp(eInstr("GoShift", op, be.Op.Type.Lean(LeanTerm), be.Op.CountType.Lean(LeanTerm)),
+			ePair(x, y))
 	}
 	op, ok := leanBinOps[be.Op.OpId]
 	if !ok {

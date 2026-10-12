@@ -47,8 +47,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   grove/disk ones) hold for every `N` and `T`: they allocate the ghost state
   with `receiptBound GF = N` and `threadBound GF = T` (hypotheses of the WP
   premise `Hwp`, which also receives the main thread's token, and from which
-  the client discharges the proof's premises about the bounds; the main
-  thread's postcondition must exclude panics, see "Panics" below) and are about
+  the client discharges the proof's premises about the bounds) and are about
   real executions of *fewer than `N` steps* along which *fewer than `T`
   threads are live*, explicit hypotheses. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
@@ -96,21 +95,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
-* **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
-  evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
-  steps to it, a function with `defer`s runs its body under a `Catch`
-  (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
-  in a deferred function literal) reads and clears the panic. A postcondition
-  receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
-  goroutine must not panic (`wp_fork`: `forkPost`). The adequacy theorems
-  (`goose_adequacy` and the grove/disk ones) require the main thread's
-  postcondition `φ` to exclude panics (`hφ : ∀ p, ¬ φ (PanicV p)`, a pure fact
-  about `φ`) and conclude that no thread of the execution has an *unrecovered
-  panic* (`UnrecoveredPanic`, `GooseLang/BoundedLang.lean`): no thread is
-  `PanicV p`, and none is unwinding a panic through frames none of which is a
-  `Catch`, so a verified program does not die of a panic within the step bound.
-  Run-time panics of builtins (`Panic "msg"`) are stuck. See
-  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Panics.** `panic(p)` is a third outcome of the exception monad that models
+  function bodies (`Golang/Defn/Exception.lean`), `panicVal p = ("panic", p)`,
+  next to `do:` and `return:`: like a `return:`, it ends the body (`;;;` and the
+  loop combinators pass it on). The function's deferred functions then run
+  (`wrapDefer`, `Golang/Defn/Defer.lean`), and if one of them calls `recover()`
+  (Goose translates it only directly in a deferred function literal) the
+  function returns its named results (`wrapDeferRecover`). A panic that no
+  deferred function of the function recovers is stuck at the end of the
+  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`):
+  a proof shows that it does not happen. The model does not propagate a panic to
+  the caller (in Go the caller's deferred functions run and may recover it), so
+  a program that recovers a callee's panic is not provable. GooseLang itself has
+  no panic construct. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

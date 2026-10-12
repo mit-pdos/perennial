@@ -416,6 +416,10 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     (e : Expr) [⟦GoUnOp o t_under, v⟧ ⤳[under] e] : ⟦GoUnOp o t, v⟧ ⤳ e
   go_op_underlying (o : GoOperator) {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦GoOp o t_under, v⟧ ⤳[under] e] : ⟦GoOp o t, v⟧ ⤳ e
+  /-- A shift resolves both of its types, the shifted operand's and the count's. -/
+  go_shift_underlying (o : GoShiftOperator) {t t_under ct ct_under : go.GoType} [t ↓u t_under]
+    [ct ↓u ct_under] (v : val) (e : Expr) [⟦GoShift o t_under ct_under, v⟧ ⤳[under] e] :
+    ⟦GoShift o t ct, v⟧ ⤳ e
   composite_literal_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦CompositeLiteral t_under, v⟧ ⤳[under] e] : ⟦CompositeLiteral t, v⟧ ⤳ e
   slice_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
@@ -583,7 +587,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 
 attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_not_named
   CoreSemantics.convert_underlying CoreSemantics.go_un_op_underlying
-  CoreSemantics.go_op_underlying CoreSemantics.composite_literal_underlying
+  CoreSemantics.go_op_underlying CoreSemantics.go_shift_underlying
+  CoreSemantics.composite_literal_underlying
   CoreSemantics.slice_underlying CoreSemantics.fullSlice_underlying
   CoreSemantics.index_underlying CoreSemantics.index_ref_underlying
   CoreSemantics.check_comparable_underlying CoreSemantics.struct_field_get_underlying
@@ -607,7 +612,7 @@ attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_n
   CoreSemantics.convert_pointer_same_underlying
 
 export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
-  go_un_op_underlying go_op_underlying composite_literal_underlying slice_underlying
+  go_un_op_underlying go_op_underlying go_shift_underlying composite_literal_underlying slice_underlying
   fullSlice_underlying index_underlying index_ref_underlying check_comparable_underlying
   struct_field_get_underlying struct_field_set_underlying structFieldRef_step_underlying
   go_zero_val_step_underlying go_func_resolve_step go_method_resolve_step go_global_var_addr_step

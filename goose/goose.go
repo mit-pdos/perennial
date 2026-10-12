@@ -288,7 +288,7 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
-		paramTy := funcSig.Params().At(i-1).Type()
+		paramTy := funcSig.Params().At(i - 1).Type()
 		// `append(b, s...)` with a string `s` (the only variadic string
 		// parameter) appends the bytes of `s`, as `[]byte(s)...` does.
 		if b, ok := paramTy.Underlying().(*types.Basic); ok && funcSig.Variadic() &&
@@ -707,20 +707,8 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			return ctx.constantLiteral(e)
 		}
 	}
-	var y glang.Expr
-	if _, ok := shiftOps[e.Op]; ok {
-		y = ctx.shiftCount(e.Y, yT)
-	} else {
-		y = ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y))
-	}
-	expr = glang.BinaryExpr{
-		X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
-		Op: glang.BinOp{
-			OpId: op,
-			Type: ctx.glangType(e, compType),
-		},
-		Y: y,
-	}
+	expr = ctx.binOpExpr(e, op, compType,
+		ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)), ctx.expr(e.Y), yT)
 
 	// FIXME: might need to do a conversion here. Handle e.g. interface
 	// conversion of (x < 10) as well as conversion of (x + 10).
@@ -728,23 +716,28 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 	return expr
 }
 
-// shiftCount translates the count y of a shift x << y or x >> y to the uint64
-// that the shift rules of the semantics take, whatever the types of x and y (a
-// count of at least x's width shifts every bit out; converting y to x's type
-// would truncate it). An unsigned or untyped constant y is converted; a signed
-// y goes through go.shiftCount, which panics if it is negative. A count whose
-// type is a type parameter is not supported: whether it is signed depends on
-// the instantiation.
-func (ctx *Ctx) shiftCount(y ast.Expr, yT types.Type) glang.Expr {
-	b, ok := yT.Underlying().(*types.Basic)
-	if !ok {
-		ctx.unsupported(y, "shift count of type %v (not a basic integer type)", yT)
+// binOpExpr is x op y with x (already translated, of type xT) and y (translated,
+// of type yT).
+func (ctx *Ctx) binOpExpr(n locatable, op glang.OpId, xT types.Type, x, y glang.Expr, yT types.Type) glang.Expr {
+	if op == glang.OpShl || op == glang.OpShr {
+		// The count keeps its own type: the semantics decides what a count of
+		// that type means (sign, width), whatever the type of the shifted
+		// operand.
+		return glang.BinaryExpr{
+			X: x,
+			Op: glang.BinOp{
+				OpId:      op,
+				Type:      ctx.glangType(n, xT),
+				CountType: ctx.glangType(n, yT),
+			},
+			Y: y,
+		}
 	}
-	e := ctx.expr(y)
-	if b.Info()&types.IsInteger != 0 && b.Info()&(types.IsUnsigned|types.IsUntyped) == 0 {
-		return glang.NewCallExpr(glang.VerbatimExpr("go.shiftCount"), ctx.glangType(y, yT), e)
+	return glang.BinaryExpr{
+		X:  x,
+		Op: glang.BinOp{OpId: op, Type: ctx.glangType(n, xT)},
+		Y:  ctx.handleImplicitConversion(n, yT, xT, y),
 	}
-	return ctx.handleImplicitConversion(y, yT, types.Typ[types.Uint64], e)
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
@@ -1371,6 +1364,10 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	}
 	var post glang.Expr = glang.Tt
 	if s.Post != nil {
+		if p, ok := s.Post.(*ast.ExprStmt); ok && ctx.isBuiltinCall(p.X, "panic") {
+			// doFor runs the post statement under `do:`, which would drop the panic
+			ctx.unsupported(s.Post, "panic in a for post statement")
+		}
 		post = ctx.stmt(s.Post, nil)
 	}
 	body := ctx.blockStmt(s.Body, nil)
@@ -1869,47 +1866,106 @@ func (ctx *Ctx) assignOpStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 	if !ok {
 		ctx.unsupported(s, "unsupported assign+update operation %v", s.Tok)
 	}
-	// construct s.lhs + s.rhs as a Go AST fragment
-	rhs := ctx.binExpr(&ast.BinaryExpr{
-		X:  s.Lhs[0],
-		Op: op,
-		Y:  s.Rhs[0],
-	})
-	// finish by constructing lhs = rhs
-	return ctx.assignFromTo(s.Lhs[0], rhs, cont)
+	return ctx.updateStmt(s.Lhs[0], gooseLangOps[op], ctx.expr(s.Rhs[0]), ctx.typeOf(s.Rhs[0]),
+		ctx.info.Types[s.Rhs[0]].Value != nil, cont)
 }
 
+// incDecStmt translates x++ and x--, which are x += 1 and x -= 1 with an
+// untyped constant 1 (spec, "IncDec statements"): the 1 is a constant of x's
+// type, or for a type parameter the untyped 1, converted by the semantics.
 func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
-	opId := glang.OpPlus
+	op := glang.OpPlus
 	if stmt.Tok == token.DEC {
-		opId = glang.OpMinus
+		op = glang.OpMinus
 	}
-	op := glang.BinOp{
-		OpId: opId,
-		Type: ctx.glangType(stmt.X, ctx.typeOf(stmt.X)),
+	xT := ctx.typeOf(stmt.X)
+	if _, ok := xT.Underlying().(*types.Basic); ok {
+		return ctx.updateStmt(stmt.X, op, ctx.constantValue(stmt, constant.MakeInt64(1), xT), xT, true, cont)
 	}
+	one := glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+	return ctx.updateStmt(stmt.X, op, one, types.Typ[types.UntypedInt], true, cont)
+}
 
-	one := glang.ZLiteral{Value: big.NewInt(1)}
-	var y glang.Expr
-
-	switch t := ctx.typeOf(stmt.X).Underlying().(type) {
-	case *types.Basic:
-		switch t.Kind() {
-		case types.Uint64, types.Int64, types.Int, types.Uint:
-			y = glang.Int64Val{Value: one}
-		case types.Uint32, types.Int32:
-			y = glang.Int32Val{Value: one}
-		case types.Uint8, types.Int8:
-			y = glang.Int8Val{Value: one}
+// updateStmt translates x op= y. Go evaluates the operands of x's index
+// expression or pointer indirection once, together with y, and only then reads
+// x (spec, "Assignment statements"), so the target (an address, or a map and a
+// key) and y are bound before x is read and written back. The spec orders only
+// the calls and receives among those operands; gc reads the variables after
+// evaluating y, so when x's operands have no call or receive, y is bound first,
+// as for x = y. Otherwise the target is bound first, which runs its calls before
+// y's as the spec requires (its variable reads then also happen before y, an
+// order the spec allows). A variable's address and a constant y (yConst) are
+// not bound: evaluating them is pure.
+func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.Type,
+	yConst bool, cont glang.Expr) glang.Expr {
+	xT := ctx.typeOf(lhs)
+	ty := ctx.glangType(lhs, xT)
+	var yv glang.Expr = glang.IdentExpr("$opy")
+	if yConst {
+		yv = y
+	}
+	var binds []glang.LetExpr
+	var update glang.Expr
+	if ix, ok := ast.Unparen(lhs).(*ast.IndexExpr); ok {
+		if mapTy, ok := ctx.typeOf(ix.X).Underlying().(*types.Map); ok {
+			kTy := ctx.glangType(ix.Index, mapTy.Key())
+			m, k := glang.IdentExpr("$opm"), glang.IdentExpr("$opk")
+			binds = []glang.LetExpr{
+				{Names: []string{"$opm"}, ValExpr: ctx.expr(ix.X)},
+				{Names: []string{"$opk"}, ValExpr: ctx.exprIntoType(ix.Index, mapTy.Key())},
+			}
+			read := glang.NewCallExpr(glang.VerbatimExpr("map.lookup1"), kTy, ty, m, k)
+			update = glang.NewCallExpr(glang.VerbatimExpr("map.insert"), kTy, m, k,
+				ctx.binOpExpr(lhs, op, xT, read, yv, yT))
 		}
-	default:
-		ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))
 	}
-	return ctx.assignFromTo(stmt.X, glang.BinaryExpr{
-		X:  ctx.expr(stmt.X),
-		Op: op,
-		Y:  y,
-	}, cont)
+	if update == nil {
+		var a glang.Expr = glang.IdentExpr("$opa")
+		if _, ok := ast.Unparen(lhs).(*ast.Ident); ok {
+			a = ctx.exprAddr(lhs)
+		} else {
+			binds = []glang.LetExpr{{Names: []string{"$opa"}, ValExpr: ctx.exprAddr(lhs)}}
+		}
+		update = glang.StoreStmt{
+			Dst: a,
+			X:   ctx.binOpExpr(lhs, op, xT, glang.DerefExpr{X: a, Ty: ty}, yv, yT),
+			Ty:  ty,
+		}
+	}
+	if !yConst {
+		yBind := glang.LetExpr{Names: []string{"$opy"}, ValExpr: y}
+		if hasCallOrRecv(lhs) {
+			binds = append(binds, yBind)
+		} else {
+			binds = append([]glang.LetExpr{yBind}, binds...)
+		}
+	}
+	var e glang.Expr = update
+	for i := len(binds) - 1; i >= 0; i-- {
+		binds[i].Cont = e
+		e = binds[i]
+	}
+	return glang.NewDoSeq(e, cont)
+}
+
+// hasCallOrRecv reports whether e contains a call (or conversion) or a
+// receive, whose evaluation order the spec fixes.
+func hasCallOrRecv(e ast.Expr) bool {
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.CallExpr:
+			found = true
+		case *ast.UnaryExpr:
+			if n.Op == token.ARROW {
+				found = true
+			}
+		case *ast.FuncLit:
+			return false
+		}
+		return !found
+	})
+	return found
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
@@ -1944,6 +2000,10 @@ func breaksOut(body *ast.BlockStmt) bool {
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
+	if ctx.isBuiltinCall(e.Call, "panic") {
+		// the goroutine's value is dropped, so the panic would be lost
+		ctx.unsupported(e, "go of panic")
+	}
 	args := make([]glang.Expr, 0, len(e.Call.Args))
 	for i := range len(e.Call.Args) {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -1962,6 +2022,17 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	expr = ctx.callExprPrelude(e.Call, expr)
 
 	return expr
+}
+
+// isBuiltinCall reports whether e is a call of the builtin function name,
+// possibly parenthesized (`(panic(v))` is a valid expression statement).
+func (ctx *Ctx) isBuiltinCall(e ast.Expr, name string) bool {
+	call, ok := ast.Unparen(e).(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	id, ok := call.Fun.(*ast.Ident)
+	return ok && id.Name == name && ctx.info.Types[call.Fun].IsBuiltin()
 }
 
 // callsRecoverDirectly reports whether body calls the builtin recover() outside
@@ -2112,6 +2183,12 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
+	if ctx.isBuiltinCall(s.Call, "panic") {
+		// the deferred chain drops the outcome of a deferred call, so the panic
+		// would be lost (a `panic` statement in a deferred function literal is
+		// translated, and is stuck at the end of the literal)
+		ctx.unsupported(s, "defer of panic")
+	}
 	ctx.usesDefer = true
 	args := make([]glang.Expr, 0, len(s.Call.Args))
 	for i := range len(s.Call.Args) {
@@ -2444,6 +2521,12 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.GoStmt:
 		return ctx.goStmt(s, cont)
 	case *ast.ExprStmt:
+		if ctx.isBuiltinCall(s.X, "panic") {
+			// `panic(v)` is the outcome `("panic", v)` of the exception monad,
+			// like a `return`: it is not wrapped in `do:` (which would make it an
+			// ordinary statement whose value is dropped).
+			return glang.SeqExpr{Expr: ctx.expr(s.X), Cont: cont}
+		}
 		return glang.NewDoSeq(ctx.expr(s.X), cont)
 	case *ast.AssignStmt:
 		if s.Tok == token.DEFINE {
@@ -2679,13 +2762,17 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 // this should only be used for untyped constant literals
 func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
-	// FIXME: emit `Convert` rather than doing it all statically here.
 	val := ctx.info.Types[e].Value
 	if e, ok := e.(*ast.Ident); ok {
 		val = ctx.info.ObjectOf(e).(*types.Const).Val()
 	}
+	return ctx.constantValue(e, val, ctx.typeOf(e))
+}
+
+// constantValue is the constant val at type t.
+func (ctx *Ctx) constantValue(e locatable, val constant.Value, t types.Type) glang.Expr {
+	// FIXME: emit `Convert` rather than doing it all statically here.
 	v := constant.Val(val)
-	t := ctx.typeOf(e)
 	constInt := func(cons string) glang.Expr {
 		switch v := v.(type) {
 		case *big.Int:

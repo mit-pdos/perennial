@@ -116,7 +116,6 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy f
 variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 
 example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
-    (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF ≤ 2 ^ 64 →
@@ -128,9 +127,8 @@ example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) 
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < 2 ^ 64)
     (Hthreads : g.threads = 1) (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
-  goose_adequacy (2 ^ 64) T e σ g φ hφ Hinitg Hinit
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) :=
+  goose_adequacy (2 ^ 64) T e σ g φ Hinitg Hinit
     (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 
