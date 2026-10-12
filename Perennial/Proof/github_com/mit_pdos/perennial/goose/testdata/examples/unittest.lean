@@ -380,19 +380,7 @@ theorem wp_useEmbeddedMethod (d : embedD) (b : embedB) :
       (App (Val (@! useEmbeddedMethod)) (Val #d))
     {{ RET #true; True }} := by
   wp_start
-  wp_auto
-  wp_method_call
-  wp_auto
-  wp_method_call
-  wp_auto
-  wp_method_call
-  wp_auto
-  wp_method_call
-  repeat wp_call
-  wp_auto
-  wp_method_call
-  repeat wp_call
-  wp_auto
+  repeat (first | wp_auto | (wp_method_call; repeat wp_call))
   iapply HΦ
   itrivial
 
