@@ -415,6 +415,12 @@ noncomputable def incGeneric [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def testIncGeneric [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIncGeneric"
 
+noncomputable def testOpAssignIndexReadAfterRhs [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOpAssignIndexReadAfterRhs"
+
+noncomputable def testOpAssignMapReadAfterRhs [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOpAssignMapReadAfterRhs"
+
 noncomputable def FirstClassFunction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.FirstClassFunction"
 
@@ -2469,9 +2475,9 @@ noncomputable def testOpAssignMapReadsAfterRhs.impl [FfiSyntax] [GoGlobalContext
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))) (Val #(W64 0))) (Val #(W64 101)))))))
   (App (Val doExecute)
+  (Let "$opy" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #()))
   (Let "$opm" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
   (Let "$opk" (Val #(W64 0))
-  (Let "$opy" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #()))
   (App (App (App (Val (map.insert go.uint64)) (Var "$opm")) (Var "$opk")) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (Var "$opm")) (Var "$opk")) (Var "$opy")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Pair (Var "f") (Var "$r0")))))))))
@@ -2524,6 +2530,87 @@ noncomputable def testIncGeneric.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint8))) (Pair (Let "$a0" (Val #(W8 255))
   (App (App (Val (GoInstruction (FuncResolve incGeneric [go.uint8]))) (Val #())) (Var "$a0"))) (Val #(W8 0)))) (App (Val (GoInstruction (GoOp GoEquals go.int16))) (Pair (Let "$a0" (Val #(W16 1))
   (App (App (Val (GoInstruction (FuncResolve incGeneric [go.int16]))) (Val #())) (Var "$a0"))) (Val #(W16 2)))) (Val #false)))))
+
+/-- x op= y reads the variables in x's operands after evaluating y, as gc does
+    (and as for x = y).
+
+    go: evalorder.go:144:6 -/
+noncomputable def testOpAssignIndexReadAfterRhs.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (Let "$v2" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #(W64 1)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "a") (Val #(W64 0))))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "a") (Val #(W64 2))))) (Val #(W64 4)))) (Val #false)))))
+  (App (Val doExecute)
+  (Let "$opy" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #()))
+  (Let "$opa" (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "a") (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$opa")) (Var "$opy")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "a") (Var "$r0")))))))))
+
+/-- go: evalorder.go:155:6 -/
+noncomputable def testOpAssignMapReadAfterRhs.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
+  (Let "m1" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
+  (Let "m2" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m1"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m2"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #(W64 1)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0"))))))))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m1"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m2"))) (Val #(W64 0))) (Val #(W64 1)))) (Val #false)))))
+  (App (Val doExecute)
+  (Let "$opy" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Var "f")) (Val #()))
+  (Let "$opm" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (Let "$opk" (Val #(W64 0))
+  (App (App (App (Val (map.insert go.uint64)) (Var "$opm")) (Var "$opk")) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (App (Val (map.lookup1 go.uint64 go.uint64)) (Var "$opm")) (Var "$opk")) (Var "$opy")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.uint64]))))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m1") (Var "$r0")))))))))
 
 /-- go: first_class_function.go:3:6 -/
 noncomputable def FirstClassFunction.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -8219,6 +8306,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testIncDecNarrow_unfold : FuncUnfold testIncDecNarrow [] testIncDecNarrow.impl
   incGeneric_unfold : ∀ (T : go.GoType), FuncUnfold incGeneric [T] (incGeneric.impl T)
   testIncGeneric_unfold : FuncUnfold testIncGeneric [] testIncGeneric.impl
+  testOpAssignIndexReadAfterRhs_unfold : FuncUnfold testOpAssignIndexReadAfterRhs [] testOpAssignIndexReadAfterRhs.impl
+  testOpAssignMapReadAfterRhs_unfold : FuncUnfold testOpAssignMapReadAfterRhs [] testOpAssignMapReadAfterRhs.impl
   FirstClassFunction_unfold : FuncUnfold FirstClassFunction [] FirstClassFunction.impl
   ApplyF_unfold : FuncUnfold ApplyF [] ApplyF.impl
   testFirstClassFunction_unfold : FuncUnfold testFirstClassFunction [] testFirstClassFunction.impl
@@ -8465,6 +8554,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testIncDecNarrow_unfold
   Assumptions.incGeneric_unfold
   Assumptions.testIncGeneric_unfold
+  Assumptions.testOpAssignIndexReadAfterRhs_unfold
+  Assumptions.testOpAssignMapReadAfterRhs_unfold
   Assumptions.FirstClassFunction_unfold
   Assumptions.ApplyF_unfold
   Assumptions.testFirstClassFunction_unfold

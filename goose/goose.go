@@ -1885,10 +1885,15 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 }
 
 // updateStmt translates x op= y. Go evaluates the operands of x's index
-// expression or pointer indirection once, then y, and only then reads x
-// (spec, "Assignment statements"), so the target (an address, or a map and a
-// key) and y are bound before x is read and written back. A variable's address
-// and a constant y (yConst) are not bound: evaluating them is pure.
+// expression or pointer indirection once, together with y, and only then reads
+// x (spec, "Assignment statements"), so the target (an address, or a map and a
+// key) and y are bound before x is read and written back. The spec orders only
+// the calls and receives among those operands; gc reads the variables after
+// evaluating y, so when x's operands have no call or receive, y is bound first,
+// as for x = y. Otherwise the target is bound first, which runs its calls before
+// y's as the spec requires (its variable reads then also happen before y, an
+// order the spec allows). A variable's address and a constant y (yConst) are
+// not bound: evaluating them is pure.
 func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.Type,
 	yConst bool, cont glang.Expr) glang.Expr {
 	xT := ctx.typeOf(lhs)
@@ -1926,7 +1931,12 @@ func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.T
 		}
 	}
 	if !yConst {
-		binds = append(binds, glang.LetExpr{Names: []string{"$opy"}, ValExpr: y})
+		yBind := glang.LetExpr{Names: []string{"$opy"}, ValExpr: y}
+		if hasCallOrRecv(lhs) {
+			binds = append(binds, yBind)
+		} else {
+			binds = append([]glang.LetExpr{yBind}, binds...)
+		}
 	}
 	var e glang.Expr = update
 	for i := len(binds) - 1; i >= 0; i-- {
@@ -1934,6 +1944,26 @@ func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.T
 		e = binds[i]
 	}
 	return glang.NewDoSeq(e, cont)
+}
+
+// hasCallOrRecv reports whether e contains a call (or conversion) or a
+// receive, whose evaluation order the spec fixes.
+func hasCallOrRecv(e ast.Expr) bool {
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.CallExpr:
+			found = true
+		case *ast.UnaryExpr:
+			if n.Op == token.ARROW {
+				found = true
+			}
+		case *ast.FuncLit:
+			return false
+		}
+		return !found
+	})
+	return found
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {

@@ -138,3 +138,28 @@ func incGeneric[T ~uint8 | ~int16](x T) T {
 func testIncGeneric() bool {
 	return incGeneric(uint8(255)) == 0 && incGeneric(int16(1)) == 2
 }
+
+// x op= y reads the variables in x's operands after evaluating y, as gc does
+// (and as for x = y).
+func testOpAssignIndexReadAfterRhs() bool {
+	a := [3]uint64{1, 2, 3}
+	i := uint64(0)
+	f := func() uint64 {
+		i = 2
+		return 1
+	}
+	a[i] += f()
+	return a[0] == 1 && a[2] == 4
+}
+
+func testOpAssignMapReadAfterRhs() bool {
+	m1 := make(map[uint64]uint64)
+	m2 := make(map[uint64]uint64)
+	m := m1
+	f := func() uint64 {
+		m = m2
+		return 1
+	}
+	m[0] += f()
+	return len(m1) == 0 && m2[0] == 1
+}

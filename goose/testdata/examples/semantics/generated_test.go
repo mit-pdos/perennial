@@ -196,6 +196,14 @@ func (suite *GoTestSuite) TestIncGeneric() {
 	suite.Equal(true, testIncGeneric())
 }
 
+func (suite *GoTestSuite) TestOpAssignIndexReadAfterRhs() {
+	suite.Equal(true, testOpAssignIndexReadAfterRhs())
+}
+
+func (suite *GoTestSuite) TestOpAssignMapReadAfterRhs() {
+	suite.Equal(true, testOpAssignMapReadAfterRhs())
+}
+
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }

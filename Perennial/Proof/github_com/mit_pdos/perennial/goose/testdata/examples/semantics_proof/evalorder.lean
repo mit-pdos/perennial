@@ -1,7 +1,7 @@
 /-
 Proofs of the evaluation-order tests of the goose `semantics` test package
 (`x op= y` and `x++`). The map tests of `evalorder.go`
-(`testOpAssignMapOnce`, `testOpAssignMapReadsAfterRhs`) are checked by the Go
+(`testOpAssignMapOnce`, `testOpAssignMapReadsAfterRhs`, `testOpAssignMapReadAfterRhs`) are checked by the Go
 test suite only, like the other map tests.
 -/
 module
@@ -59,6 +59,20 @@ theorem wp_testIncDecNarrow : TestFunOk (GF := GF) testIncDecNarrow := by
 
 theorem wp_testIncGeneric : TestFunOk (GF := GF) testIncGeneric := by
   semantics_auto
+
+theorem wp_testOpAssignIndexReadAfterRhs :
+    TestFunOk (GF := GF) testOpAssignIndexReadAfterRhs := by
+  semantics_auto
+  icases array_acc (GF := GF) _ (sint.Z (W64 2)) _ _ _ (W64 3) (by decide) rfl $$ a with ⟨Ha2, a⟩
+  steps
+  ihave a := a $$ Ha2
+  simp only [show (sint.Z (W64 2)).toNat = 2 from rfl, List.set_cons_succ, List.set_cons_zero]
+  icases array_acc (GF := GF) _ (sint.Z (W64 0)) _ _ _ (W64 1) (by decide) rfl $$ a with ⟨Ha0, a⟩
+  steps
+  ihave a := a $$ Ha0
+  icases array_acc (GF := GF) _ (sint.Z (W64 2)) _ _ _ _ (by decide) rfl $$ a with ⟨Ha2, a⟩
+  steps
+  iexact HΦ
 
 end wps
 
