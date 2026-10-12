@@ -17,6 +17,15 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace errors
 
+/-- `T` can be the element type of the target `*T` of `errors.As`: its underlying type is an
+interface type, or it implements `error` (it is in the type set of `error`: its method set has
+`Error() string`). For any other `T`, Go's `As` panics with
+`errors: *target must be interface or implement error` (when `err` is not `nil`). Method sets
+are uninterpreted in the semantics (`methodSet`), so the second disjunct is, for a concrete
+type, an assumption about the semantics (a class such as `context.ErrorStringIsError`). -/
+def AsTarget [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
+  (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
+
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -477,11 +486,11 @@ theorem isErrorTree_leaf (ii : GoInterfaceOk) {T' : Type} [ZeroVal T']
 /-- Spec of `errors.As(err, target)` for a target `*T`, `l` (axiom). `As` walks the error tree of
 `err` as `AsType[T]` does (its precondition is `wp_AsType`'s), calling the `As` methods with
 `target` itself, and stores a matching error in `*l`; it finds the target's type by reflection
-(`internal/reflectlite`, not translated). Go's `As` panics if `T` is neither an interface type
-nor implements `error` (`errors: *target must be interface or implement error`), so the axiom
-is false as stated for such a `T`; a caller must only use it for a `T` that is one or the other
-(`go vet` checks it). The premise is not stated because the model's method sets
-(`methodSet`) are uninterpreted, so that a caller could not discharge it.
+(`internal/reflectlite`, not translated).
+
+Go's `As` panics when `target` is `nil`, is not a non-`nil` pointer, or points to a type that
+is neither an interface type nor implements `error`. The target here is the pointer `l` of type
+`*T`, and `l ↦ v` implies `l ≠ null`; the premise `AsTarget T` excludes the third panic.
 
 It is not proved from a translation of `As` as `Is` is (`wp_Is`): `As` and `as` use reflection
 throughout (`reflectlite.ValueOf(target)`, `Kind`, `IsNil`, `Elem`, `Implements(errorType)`,
@@ -492,7 +501,8 @@ axiom wp_As [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
     [sem : go.Semantics] [package_sem : errors.Assumptions]
     (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
-    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T') :
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T')
+    (hT : AsTarget T) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
         l ↦ v }}
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
