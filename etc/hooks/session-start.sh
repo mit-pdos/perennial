@@ -7,6 +7,10 @@ cwd=$(printf '%s' "$in" | jq -r '.cwd // ""' 2>/dev/null)
 [ -d "$cwd" ] || cwd=$PWD
 git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1 || exit 0
 br=$(git -C "$cwd" symbolic-ref --short -q HEAD 2>/dev/null) || exit 0
+# the git hooks (etc/githooks) are the tool-independent guard; activate them
+if [ "$(git -C "$cwd" config --get core.hooksPath)" != "etc/githooks" ] && [ -x "$cwd/etc/setup-hooks.sh" ]; then
+  (cd "$cwd" && bash etc/setup-hooks.sh)
+fi
 case "$br" in
   lean|master)
     echo "Perennial workflow: this checkout is on '$br'. Do not commit here (a hook denies it). Work on a branch: EnterWorktree, or 'git switch -c <topic>' in a worktree of your own. When the work is done, run /land: it merges origin/lean in, builds what changed, runs /review-trusted --fix, and fast-forwards lean. See CLAUDE.md, Workflow.";;

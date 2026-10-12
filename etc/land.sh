@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Land the current branch on `lean`: the mechanical half of the `/land` skill
-# (.claude/skills/land/SKILL.md). This script is the only sanctioned way to
-# move `lean` (the PreToolUse hook in .claude/settings.json denies direct
-# commits on lean and pushes to it).
+# Land the current branch on `lean`: the mechanical half of the `land` skill
+# (.agents/skills/land/SKILL.md). This script is the only sanctioned way to
+# move `lean`: the git hooks in etc/githooks (activated by etc/setup-hooks.sh)
+# refuse commits on lean and pushes to it, except the one push this script
+# makes with PERENNIAL_LAND=1 after the branch has been built and reviewed.
 #
 # Usage: etc/land.sh prepare [--no-build]
 #            merge origin/lean into the branch, build the touched Lean modules,
@@ -32,6 +33,8 @@ cd "$ROOT" || exit 1
 GITDIR=$(git rev-parse --git-dir)
 MARK="$GITDIR/review-trusted.ok"
 BRANCH=$(git symbolic-ref --short -q HEAD) || die "detached HEAD; check out a branch"
+# the git hooks are part of the workflow: activate them if this clone has not
+[ "$(git config --get core.hooksPath)" = "etc/githooks" ] || bash etc/setup-hooks.sh
 
 patch_id() { git diff origin/lean...HEAD | git patch-id --stable | cut -d' ' -f1; }
 
@@ -114,7 +117,7 @@ case "$cmd" in
     [ "$(cat "$MARK")" = "$(patch_id)" ] || die "the branch's changes differ from what /review-trusted passed; rerun /review-trusted --fix"
     build_changed
     echo "land: fast-forwarding origin/lean to $(git rev-parse --short HEAD)"
-    if ! git push origin HEAD:refs/heads/lean; then
+    if ! PERENNIAL_LAND=1 git push origin HEAD:refs/heads/lean; then
       die "push rejected (origin/lean moved?); rerun etc/land.sh push"
     fi
     rm -f "$MARK"

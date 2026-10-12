@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Trust delta of a change: which trusted files it touches and what it adds to
 the trusted base. Input to the `review-trusted` skill
-(.claude/skills/review-trusted/SKILL.md); it does not judge, it reports.
+(.agents/skills/review-trusted/SKILL.md); it does not judge, it reports.
 
 Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
 

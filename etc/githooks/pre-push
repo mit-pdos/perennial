@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Git pre-push hook (activated by etc/setup-hooks.sh): lean and master move only
+# through etc/land.sh, which sets PERENNIAL_LAND=1 for its one push after the
+# branch has been built and reviewed. Also refuses non-fast-forward pushes to
+# those branches. stdin: <local ref> <local sha> <remote ref> <remote sha> per ref.
+[ "${PERENNIAL_LAND:-}" = 1 ] && exit 0
+rc=0
+while read -r lref lsha rref rsha; do
+  case "$rref" in
+    refs/heads/lean|refs/heads/master)
+      echo "perennial: refusing to push to $rref directly." >&2
+      echo "perennial: land the branch with etc/land.sh push (it merges origin/lean in, builds, and requires the trusted-base review); see AGENTS.md, Workflow." >&2
+      rc=1;;
+  esac
+done
+exit $rc

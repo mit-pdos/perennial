@@ -120,7 +120,7 @@ Run `etc/lean-ci.sh` + `etc/lean-audit.py` for the build and soundness audit
 (`sorry` roots, axioms and `opaque`s). `etc/trusted-delta.py [commit | A..B]`
 prints what a change adds to the trusted base (semantics, goose, trusted
 models, trust lists, `assume`s); the `review-trusted` skill
-(`.claude/skills/review-trusted/`) reviews it.
+(`.agents/skills/review-trusted/`) reviews it.
 
 ## Conventions
 
