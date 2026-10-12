@@ -126,7 +126,11 @@ deriving DecidableEq
 inductive GoOperator where
   | GoEquals | GoLt | GoLe | GoGt | GoGe
   | GoPlus | GoSub | GoMul | GoDiv | GoRemainder
-  | GoAnd | GoOr | GoXor | GoBitClear | GoShiftl | GoShiftr
+  | GoAnd | GoOr | GoXor | GoBitClear
+deriving DecidableEq
+
+inductive GoShiftOperator where
+  | GoShiftl | GoShiftr
 deriving DecidableEq
 
 inductive GoUnaryOperator where
@@ -137,6 +141,10 @@ inductive GoInstruction where
   | AngelicExit
   | Convert (from_ to : go.GoType)
   | GoOp (o : GoOperator) (t : go.GoType)
+  /-- `x << y` / `x >> y` with `x : t` and `y : count_t`: the two operands of a shift need not
+  have the same type, so the instruction carries both, and the semantics chooses what to do
+  with the count (`go.UntypedIntSemantics.shift_count_untyped_int`, ...). -/
+  | GoShift (o : GoShiftOperator) (t count_t : go.GoType)
   | GoUnOp (o : GoUnaryOperator) (t : go.GoType)
   | CheckComparable (t : go.GoType)
   | GoLoad (t : go.GoType)
@@ -280,9 +288,10 @@ export CommCase (SendCase RecvCase)
 export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
   LitProphecy LitSlice)
 export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
-  GoOr GoXor GoBitClear GoShiftl GoShiftr)
+  GoOr GoXor GoBitClear)
+export GoShiftOperator (GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
-export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
+export GoInstruction (AngelicExit Convert GoOp GoShift GoUnOp CheckComparable GoLoad GoStore GoAlloc
   GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index

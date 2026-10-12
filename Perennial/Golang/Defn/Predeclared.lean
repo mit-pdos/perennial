@@ -14,11 +14,14 @@ Integer division and remainder by zero are a run-time panic in Go (spec,
 run-time panics of the model). The condition is `uint.Z v2 = 0` (`sint.Z v2 = 0`
 at the signed types), the form arithmetic facts about the divisor take.
 
-Shifts (spec, "Operators" and "Integer operators"): the count of `x << y` and
-`x >> y` is a `w64` whatever the types of `x` and `y`: goose converts an
-unsigned (or constant) `y` to `uint64`, and a signed one through `shiftCount`,
-which panics on a negative count. A count of at least the width of `x` shifts
-every bit out (`<<<`, `>>>` give `0`, `sshiftRight'` the sign).
+Shifts (spec, "Operators" and "Integer operators"): `x << y` and `x >> y` are
+`GoShift o t ct` with `t` the type of `x` and `ct` that of `y`, which need not be
+the same. The count is normalized by a rule of the count's type (`shift_count_int8`,
+..., `shift_count_untyped_int`) to the same shift at count type `uint64`, which
+the shifted type's rules (`shiftl_uint8`, ...) take: a signed count is
+`Panic "negative shift amount"` when negative, and otherwise (like an unsigned
+one) its value. It is never truncated to the width of `x`: a count of at least
+that width shifts every bit out (`<<<`, `>>>` give `0`, `sshiftRight'` the sign).
 -/
 module
 
@@ -200,18 +203,6 @@ class ProphIdSemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] ProphIdSemantics.underlying_proph_id ProphIdSemantics.go_zero_val_proph_id
 export ProphIdSemantics (underlying_proph_id go_zero_val_proph_id)
 
-section shift_count
-
-/-- The count of a shift `x << y` or `x >> y` whose right operand `y` has the signed integer
-type `t` (goose applies it to `y`): Go panics if `y` is negative ("negative shift amount"),
-and otherwise shifts by `y`'s value, here as the `uint64` that the shift rules take
-(`go.Int32Semantics.shiftl_int32`, ...). An unsigned `y` is converted to `uint64` directly. -/
-def shiftCount (t : go.GoType) : val :=
-  λ: "y", if: Convert t go.int64 "y" <⟨go.int64⟩ #(W64 0) then Panic "negative shift amount"
-    else Convert t go.uint64 "y"
-
-end shift_count
-
 class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_int : go.untypedInt ↓u go.untypedInt
   neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untypedInt, #v⟧ ⤳ #(-v)
@@ -226,6 +217,12 @@ class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   convert_untyped_int_to_uint32 (v : Int) : ⟦Convert go.untypedInt go.uint32, #v⟧ ⤳[under] #(W32 v)
   convert_untyped_int_to_uint16 (v : Int) : ⟦Convert go.untypedInt go.uint16, #v⟧ ⤳[under] #(W16 v)
   convert_untyped_int_to_uint8 (v : Int) : ⟦Convert go.untypedInt go.uint8, #v⟧ ⤳[under] #(W8 v)
+  /-- A constant count must be representable as a `uint` (spec, "Operators"): any other is a
+  compile-time error, so this `Panic` is unreachable from a Go program. -/
+  shift_count_untyped_int (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : Int) :
+    ⟦GoShift o t go.untypedInt, (v1, #y)⟧ ⤳[under]
+      (if 0 ≤ y ∧ y < 2 ^ 64 then GoShift o t go.uint64 (Pair v1 #(W64 y))
+      else Panic "constant shift count out of range")
 
 attribute [instance] UntypedIntSemantics.underlying_untyped_int UntypedIntSemantics.neg_untyped_int
   UntypedIntSemantics.convert_untyped_int_to_int UntypedIntSemantics.convert_untyped_int_to_int64
@@ -234,10 +231,12 @@ attribute [instance] UntypedIntSemantics.underlying_untyped_int UntypedIntSemant
   UntypedIntSemantics.convert_untyped_int_to_uint64
   UntypedIntSemantics.convert_untyped_int_to_uint32
   UntypedIntSemantics.convert_untyped_int_to_uint16 UntypedIntSemantics.convert_untyped_int_to_uint8
+  UntypedIntSemantics.shift_count_untyped_int
 export UntypedIntSemantics (underlying_untyped_int neg_untyped_int convert_untyped_int_to_int
   convert_untyped_int_to_int64 convert_untyped_int_to_int32 convert_untyped_int_to_int16
   convert_untyped_int_to_int8 convert_untyped_int_to_uint convert_untyped_int_to_uint64
-  convert_untyped_int_to_uint32 convert_untyped_int_to_uint16 convert_untyped_int_to_uint8)
+  convert_untyped_int_to_uint32 convert_untyped_int_to_uint16 convert_untyped_int_to_uint8
+  shift_count_untyped_int)
 
 class IntSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_int : TypeReprUnderlying go.int w64
@@ -259,9 +258,12 @@ class IntSemantics [GoSemanticsFunctions] : Prop where
   bitclear_int (v1 v2 : w64) : ⟦GoOp GoBitClear go.int, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int (v1 v2 : w64) : ⟦GoOp GoOr go.int, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int (v1 v2 : w64) : ⟦GoOp GoXor go.int, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int (v1 v2 : w64) : ⟦GoOp GoShiftl go.int, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int (v1 v2 : w64) : ⟦GoOp GoShiftr go.int, (#v1, #v2)⟧
+  shiftl_int (v1 v2 : w64) : ⟦GoShift GoShiftl go.int go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_int (v1 v2 : w64) : ⟦GoShift GoShiftr go.int go.uint64, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
+  shift_count_int (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w64) :
+    ⟦GoShift o t go.int, (v1, #y)⟧ ⤳[under] (if sint.Z y < 0 then Panic "negative shift amount"
+      else GoShift o t go.uint64 (Pair v1 #y))
 
   neg_int (v : w64) : ⟦GoUnOp GoNeg go.int, #v⟧ ⤳[under] #(-v)
   complement_int (v : w64) : ⟦GoUnOp GoComplement go.int, #v⟧ ⤳[under] #(~~~v)
@@ -282,6 +284,7 @@ attribute [instance] IntSemantics.go_zero_val_int IntSemantics.comparable_int
   IntSemantics.ge_int IntSemantics.gt_int IntSemantics.plus_int IntSemantics.sub_int
   IntSemantics.mul_int IntSemantics.div_int IntSemantics.remainder_int IntSemantics.and_int IntSemantics.bitclear_int
   IntSemantics.or_int IntSemantics.xor_int IntSemantics.shiftl_int IntSemantics.shiftr_int
+  IntSemantics.shift_count_int
   IntSemantics.neg_int IntSemantics.complement_int IntSemantics.convert_int_to_int
   IntSemantics.convert_int64_to_int IntSemantics.convert_int32_to_int
   IntSemantics.convert_int16_to_int IntSemantics.convert_int8_to_int
@@ -289,7 +292,7 @@ attribute [instance] IntSemantics.go_zero_val_int IntSemantics.comparable_int
   IntSemantics.convert_uint32_to_int IntSemantics.convert_uint16_to_int
   IntSemantics.convert_uint8_to_int
 export IntSemantics (go_zero_val_int comparable_int underlying_int go_eq_int le_int lt_int ge_int
-  gt_int plus_int sub_int mul_int div_int remainder_int and_int bitclear_int or_int xor_int shiftl_int shiftr_int
+  gt_int plus_int sub_int mul_int div_int remainder_int and_int bitclear_int or_int xor_int shiftl_int shiftr_int shift_count_int
   neg_int complement_int convert_int_to_int convert_int64_to_int convert_int32_to_int
   convert_int16_to_int convert_int8_to_int convert_uint_to_int convert_uint64_to_int
   convert_uint32_to_int convert_uint16_to_int convert_uint8_to_int)
@@ -318,9 +321,13 @@ class Int64Semantics [GoSemanticsFunctions] : Prop where
   bitclear_int64 (v1 v2 : w64) : ⟦GoOp GoBitClear go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int64 (v1 v2 : w64) : ⟦GoOp GoOr go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int64 (v1 v2 : w64) : ⟦GoOp GoXor go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int64 (v1 v2 : w64) : ⟦GoOp GoShiftl go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int64 (v1 v2 : w64) : ⟦GoOp GoShiftr go.int64, (#v1, #v2)⟧
+  shiftl_int64 (v1 v2 : w64) : ⟦GoShift GoShiftl go.int64 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_int64 (v1 v2 : w64) : ⟦GoShift GoShiftr go.int64 go.uint64, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
+  shift_count_int64 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w64) :
+    ⟦GoShift o t go.int64, (v1, #y)⟧ ⤳[under] (if sint.Z y < 0 then Panic "negative shift amount"
+      else GoShift o t go.uint64 (Pair v1 #y))
 
   neg_int64 (v : w64) : ⟦GoUnOp GoNeg go.int64, #v⟧ ⤳[under] #(-v)
   complement_int64 (v : w64) : ⟦GoUnOp GoComplement go.int64, #v⟧ ⤳[under] #(~~~v)
@@ -342,6 +349,7 @@ attribute [instance] Int64Semantics.go_zero_val_int64 Int64Semantics.comparable_
   Int64Semantics.sub_int64 Int64Semantics.mul_int64 Int64Semantics.div_int64
   Int64Semantics.remainder_int64 Int64Semantics.and_int64 Int64Semantics.bitclear_int64 Int64Semantics.or_int64
   Int64Semantics.xor_int64 Int64Semantics.shiftl_int64 Int64Semantics.shiftr_int64
+  Int64Semantics.shift_count_int64
   Int64Semantics.neg_int64 Int64Semantics.complement_int64 Int64Semantics.convert_int_to_int64
   Int64Semantics.convert_int64_to_int64 Int64Semantics.convert_int32_to_int64
   Int64Semantics.convert_int16_to_int64 Int64Semantics.convert_int8_to_int64
@@ -350,7 +358,7 @@ attribute [instance] Int64Semantics.go_zero_val_int64 Int64Semantics.comparable_
   Int64Semantics.convert_uint8_to_int64
 export Int64Semantics (go_zero_val_int64 comparable_int64 underlying_int64 go_eq_int64 le_int64
   lt_int64 ge_int64 gt_int64 plus_int64 sub_int64 mul_int64 div_int64 remainder_int64 and_int64 bitclear_int64
-  or_int64 xor_int64 shiftl_int64 shiftr_int64 neg_int64 complement_int64 convert_int_to_int64
+  or_int64 xor_int64 shiftl_int64 shiftr_int64 shift_count_int64 neg_int64 complement_int64 convert_int_to_int64
   convert_int64_to_int64 convert_int32_to_int64 convert_int16_to_int64 convert_int8_to_int64
   convert_uint_to_int64 convert_uint64_to_int64 convert_uint32_to_int64 convert_uint16_to_int64
   convert_uint8_to_int64)
@@ -379,9 +387,13 @@ class Int32Semantics [GoSemanticsFunctions] : Prop where
   bitclear_int32 (v1 v2 : w32) : ⟦GoOp GoBitClear go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int32 (v1 v2 : w32) : ⟦GoOp GoOr go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int32 (v1 v2 : w32) : ⟦GoOp GoXor go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftl go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftr go.int32, (#v1, #v2)⟧
+  shiftl_int32 (v1 : w32) (v2 : w64) : ⟦GoShift GoShiftl go.int32 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_int32 (v1 : w32) (v2 : w64) : ⟦GoShift GoShiftr go.int32 go.uint64, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
+  shift_count_int32 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w32) :
+    ⟦GoShift o t go.int32, (v1, #y)⟧ ⤳[under] (if sint.Z y < 0 then Panic "negative shift amount"
+      else GoShift o t go.uint64 (Pair v1 #(W64 (sint.Z y))))
 
   neg_int32 (v : w32) : ⟦GoUnOp GoNeg go.int32, #v⟧ ⤳[under] #(-v)
   complement_int32 (v : w32) : ⟦GoUnOp GoComplement go.int32, #v⟧ ⤳[under] #(~~~v)
@@ -403,6 +415,7 @@ attribute [instance] Int32Semantics.go_zero_val_int32 Int32Semantics.comparable_
   Int32Semantics.sub_int32 Int32Semantics.mul_int32 Int32Semantics.div_int32
   Int32Semantics.remainder_int32 Int32Semantics.and_int32 Int32Semantics.bitclear_int32 Int32Semantics.or_int32
   Int32Semantics.xor_int32 Int32Semantics.shiftl_int32 Int32Semantics.shiftr_int32
+  Int32Semantics.shift_count_int32
   Int32Semantics.neg_int32 Int32Semantics.complement_int32 Int32Semantics.convert_int_to_int32
   Int32Semantics.convert_int64_to_int32 Int32Semantics.convert_int32_to_int32
   Int32Semantics.convert_int16_to_int32 Int32Semantics.convert_int8_to_int32
@@ -411,7 +424,7 @@ attribute [instance] Int32Semantics.go_zero_val_int32 Int32Semantics.comparable_
   Int32Semantics.convert_uint8_to_int32
 export Int32Semantics (go_zero_val_int32 comparable_int32 underlying_int32 go_eq_int32 le_int32
   lt_int32 ge_int32 gt_int32 plus_int32 sub_int32 mul_int32 div_int32 remainder_int32 and_int32 bitclear_int32
-  or_int32 xor_int32 shiftl_int32 shiftr_int32 neg_int32 complement_int32 convert_int_to_int32
+  or_int32 xor_int32 shiftl_int32 shiftr_int32 shift_count_int32 neg_int32 complement_int32 convert_int_to_int32
   convert_int64_to_int32 convert_int32_to_int32 convert_int16_to_int32 convert_int8_to_int32
   convert_uint_to_int32 convert_uint64_to_int32 convert_uint32_to_int32 convert_uint16_to_int32
   convert_uint8_to_int32)
@@ -440,9 +453,13 @@ class Int16Semantics [GoSemanticsFunctions] : Prop where
   bitclear_int16 (v1 v2 : w16) : ⟦GoOp GoBitClear go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int16 (v1 v2 : w16) : ⟦GoOp GoOr go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int16 (v1 v2 : w16) : ⟦GoOp GoXor go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftl go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftr go.int16, (#v1, #v2)⟧
+  shiftl_int16 (v1 : w16) (v2 : w64) : ⟦GoShift GoShiftl go.int16 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_int16 (v1 : w16) (v2 : w64) : ⟦GoShift GoShiftr go.int16 go.uint64, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
+  shift_count_int16 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w16) :
+    ⟦GoShift o t go.int16, (v1, #y)⟧ ⤳[under] (if sint.Z y < 0 then Panic "negative shift amount"
+      else GoShift o t go.uint64 (Pair v1 #(W64 (sint.Z y))))
 
   neg_int16 (v : w16) : ⟦GoUnOp GoNeg go.int16, #v⟧ ⤳[under] #(-v)
   complement_int16 (v : w16) : ⟦GoUnOp GoComplement go.int16, #v⟧ ⤳[under] #(~~~v)
@@ -464,6 +481,7 @@ attribute [instance] Int16Semantics.go_zero_val_int16 Int16Semantics.comparable_
   Int16Semantics.sub_int16 Int16Semantics.mul_int16 Int16Semantics.div_int16
   Int16Semantics.remainder_int16 Int16Semantics.and_int16 Int16Semantics.bitclear_int16 Int16Semantics.or_int16
   Int16Semantics.xor_int16 Int16Semantics.shiftl_int16 Int16Semantics.shiftr_int16
+  Int16Semantics.shift_count_int16
   Int16Semantics.neg_int16 Int16Semantics.complement_int16 Int16Semantics.convert_int_to_int16
   Int16Semantics.convert_int64_to_int16 Int16Semantics.convert_int32_to_int16
   Int16Semantics.convert_int16_to_int16 Int16Semantics.convert_int8_to_int16
@@ -472,7 +490,7 @@ attribute [instance] Int16Semantics.go_zero_val_int16 Int16Semantics.comparable_
   Int16Semantics.convert_uint8_to_int16
 export Int16Semantics (go_zero_val_int16 comparable_int16 underlying_int16 go_eq_int16 le_int16
   lt_int16 ge_int16 gt_int16 plus_int16 sub_int16 mul_int16 div_int16 remainder_int16 and_int16 bitclear_int16
-  or_int16 xor_int16 shiftl_int16 shiftr_int16 neg_int16 complement_int16 convert_int_to_int16
+  or_int16 xor_int16 shiftl_int16 shiftr_int16 shift_count_int16 neg_int16 complement_int16 convert_int_to_int16
   convert_int64_to_int16 convert_int32_to_int16 convert_int16_to_int16 convert_int8_to_int16
   convert_uint_to_int16 convert_uint64_to_int16 convert_uint32_to_int16 convert_uint16_to_int16
   convert_uint8_to_int16)
@@ -497,9 +515,13 @@ class Int8Semantics [GoSemanticsFunctions] : Prop where
   bitclear_int8 (v1 v2 : w8) : ⟦GoOp GoBitClear go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int8 (v1 v2 : w8) : ⟦GoOp GoOr go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int8 (v1 v2 : w8) : ⟦GoOp GoXor go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftl go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftr go.int8, (#v1, #v2)⟧
+  shiftl_int8 (v1 : w8) (v2 : w64) : ⟦GoShift GoShiftl go.int8 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_int8 (v1 : w8) (v2 : w64) : ⟦GoShift GoShiftr go.int8 go.uint64, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
+  shift_count_int8 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w8) :
+    ⟦GoShift o t go.int8, (v1, #y)⟧ ⤳[under] (if sint.Z y < 0 then Panic "negative shift amount"
+      else GoShift o t go.uint64 (Pair v1 #(W64 (sint.Z y))))
 
   neg_int8 (v : w8) : ⟦GoUnOp GoNeg go.int8, #v⟧ ⤳[under] #(-v)
   complement_int8 (v : w8) : ⟦GoUnOp GoComplement go.int8, #v⟧ ⤳[under] #(~~~v)
@@ -520,6 +542,7 @@ attribute [instance] Int8Semantics.go_zero_val_int8 Int8Semantics.comparable_int
   Int8Semantics.ge_int8 Int8Semantics.gt_int8 Int8Semantics.plus_int8 Int8Semantics.sub_int8
   Int8Semantics.mul_int8 Int8Semantics.div_int8 Int8Semantics.remainder_int8 Int8Semantics.and_int8 Int8Semantics.bitclear_int8
   Int8Semantics.or_int8 Int8Semantics.xor_int8 Int8Semantics.shiftl_int8 Int8Semantics.shiftr_int8
+  Int8Semantics.shift_count_int8
   Int8Semantics.neg_int8 Int8Semantics.complement_int8 Int8Semantics.convert_int_to_int8
   Int8Semantics.convert_int64_to_int8 Int8Semantics.convert_int32_to_int8
   Int8Semantics.convert_int16_to_int8 Int8Semantics.convert_int8_to_int8
@@ -528,7 +551,7 @@ attribute [instance] Int8Semantics.go_zero_val_int8 Int8Semantics.comparable_int
   Int8Semantics.convert_uint8_to_int8
 export Int8Semantics (go_zero_val_int8 comparable_int8 underlying_int8 go_eq_int8 le_int8 lt_int8
   ge_int8 gt_int8 plus_int8 sub_int8 mul_int8 div_int8 remainder_int8 and_int8 bitclear_int8 or_int8 xor_int8
-  shiftl_int8 shiftr_int8 neg_int8 complement_int8 convert_int_to_int8 convert_int64_to_int8
+  shiftl_int8 shiftr_int8 shift_count_int8 neg_int8 complement_int8 convert_int_to_int8 convert_int64_to_int8
   convert_int32_to_int8 convert_int16_to_int8 convert_int8_to_int8 convert_uint_to_int8
   convert_uint64_to_int8 convert_uint32_to_int8 convert_uint16_to_int8 convert_uint8_to_int8)
 
@@ -552,8 +575,10 @@ class UintSemantics [GoSemanticsFunctions] : Prop where
   bitclear_uint (v1 v2 : w64) : ⟦GoOp GoBitClear go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint (v1 v2 : w64) : ⟦GoOp GoOr go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint (v1 v2 : w64) : ⟦GoOp GoXor go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint (v1 v2 : w64) : ⟦GoOp GoShiftl go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint (v1 v2 : w64) : ⟦GoOp GoShiftr go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint (v1 v2 : w64) : ⟦GoShift GoShiftl go.uint go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_uint (v1 v2 : w64) : ⟦GoShift GoShiftr go.uint go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shift_count_uint (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w64) :
+    ⟦GoShift o t go.uint, (v1, #y)⟧ ⤳[under] GoShift o t go.uint64 (Pair v1 #y)
 
   complement_uint (v : w64) : ⟦GoUnOp GoComplement go.uint, #v⟧ ⤳[under] #(~~~v)
   neg_uint (v : w64) : ⟦GoUnOp GoNeg go.uint, #v⟧ ⤳[under] #(-v)
@@ -574,6 +599,7 @@ attribute [instance] UintSemantics.go_zero_val_uint UintSemantics.comparable_uin
   UintSemantics.ge_uint UintSemantics.gt_uint UintSemantics.plus_uint UintSemantics.sub_uint
   UintSemantics.mul_uint UintSemantics.div_uint UintSemantics.remainder_uint UintSemantics.and_uint UintSemantics.bitclear_uint
   UintSemantics.or_uint UintSemantics.xor_uint UintSemantics.shiftl_uint UintSemantics.shiftr_uint
+  UintSemantics.shift_count_uint
   UintSemantics.complement_uint UintSemantics.neg_uint UintSemantics.convert_int_to_uint
   UintSemantics.convert_int64_to_uint UintSemantics.convert_int32_to_uint
   UintSemantics.convert_int16_to_uint UintSemantics.convert_int8_to_uint
@@ -582,7 +608,7 @@ attribute [instance] UintSemantics.go_zero_val_uint UintSemantics.comparable_uin
   UintSemantics.convert_uint8_to_uint
 export UintSemantics (go_zero_val_uint comparable_uint underlying_uint go_eq_uint le_uint lt_uint
   ge_uint gt_uint plus_uint sub_uint mul_uint div_uint remainder_uint and_uint bitclear_uint or_uint xor_uint
-  shiftl_uint shiftr_uint complement_uint neg_uint convert_int_to_uint convert_int64_to_uint
+  shiftl_uint shiftr_uint shift_count_uint complement_uint neg_uint convert_int_to_uint convert_int64_to_uint
   convert_int32_to_uint convert_int16_to_uint convert_int8_to_uint convert_uint_to_uint
   convert_uint64_to_uint convert_uint32_to_uint convert_uint16_to_uint convert_uint8_to_uint)
 
@@ -610,8 +636,10 @@ class Uint64Semantics [GoSemanticsFunctions] : Prop where
   bitclear_uint64 (v1 v2 : w64) : ⟦GoOp GoBitClear go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint64 (v1 v2 : w64) : ⟦GoOp GoOr go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint64 (v1 v2 : w64) : ⟦GoOp GoXor go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint64 (v1 v2 : w64) : ⟦GoOp GoShiftl go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint64 (v1 v2 : w64) : ⟦GoOp GoShiftr go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint64 (v1 v2 : w64) : ⟦GoShift GoShiftl go.uint64 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_uint64 (v1 v2 : w64) : ⟦GoShift GoShiftr go.uint64 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 >>> v2)
 
   complement_uint64 (v : w64) : ⟦GoUnOp GoComplement go.uint64, #v⟧ ⤳[under] #(~~~v)
   neg_uint64 (v : w64) : ⟦GoUnOp GoNeg go.uint64, #v⟧ ⤳[under] #(-v)
@@ -670,8 +698,12 @@ class Uint32Semantics [GoSemanticsFunctions] : Prop where
   bitclear_uint32 (v1 v2 : w32) : ⟦GoOp GoBitClear go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint32 (v1 v2 : w32) : ⟦GoOp GoOr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint32 (v1 v2 : w32) : ⟦GoOp GoXor go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftl go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint32 (v1 : w32) (v2 : w64) : ⟦GoShift GoShiftl go.uint32 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_uint32 (v1 : w32) (v2 : w64) : ⟦GoShift GoShiftr go.uint32 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 >>> v2)
+  shift_count_uint32 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w32) :
+    ⟦GoShift o t go.uint32, (v1, #y)⟧ ⤳[under] GoShift o t go.uint64 (Pair v1 #(W64 (uint.Z y)))
 
   complement_uint32 (v : w32) : ⟦GoUnOp GoComplement go.uint32, #v⟧ ⤳[under] #(~~~v)
   neg_uint32 (v : w32) : ⟦GoUnOp GoNeg go.uint32, #v⟧ ⤳[under] #(-v)
@@ -693,7 +725,8 @@ attribute [instance] Uint32Semantics.go_zero_val_uint32 Uint32Semantics.comparab
   Uint32Semantics.plus_uint32 Uint32Semantics.sub_uint32 Uint32Semantics.mul_uint32
   Uint32Semantics.div_uint32 Uint32Semantics.remainder_uint32 Uint32Semantics.and_uint32 Uint32Semantics.bitclear_uint32
   Uint32Semantics.or_uint32 Uint32Semantics.xor_uint32 Uint32Semantics.shiftl_uint32
-  Uint32Semantics.shiftr_uint32 Uint32Semantics.complement_uint32 Uint32Semantics.neg_uint32
+  Uint32Semantics.shiftr_uint32
+  Uint32Semantics.shift_count_uint32 Uint32Semantics.complement_uint32 Uint32Semantics.neg_uint32
   Uint32Semantics.convert_int_to_uint32 Uint32Semantics.convert_int64_to_uint32
   Uint32Semantics.convert_int32_to_uint32 Uint32Semantics.convert_int16_to_uint32
   Uint32Semantics.convert_int8_to_uint32 Uint32Semantics.convert_uint_to_uint32
@@ -701,7 +734,7 @@ attribute [instance] Uint32Semantics.go_zero_val_uint32 Uint32Semantics.comparab
   Uint32Semantics.convert_uint16_to_uint32 Uint32Semantics.convert_uint8_to_uint32
 export Uint32Semantics (go_zero_val_uint32 comparable_uint32 underlying_uint32 go_eq_uint32
   le_uint32 lt_uint32 ge_uint32 gt_uint32 plus_uint32 sub_uint32 mul_uint32 div_uint32
-  remainder_uint32 and_uint32 bitclear_uint32 or_uint32 xor_uint32 shiftl_uint32 shiftr_uint32 complement_uint32 neg_uint32
+  remainder_uint32 and_uint32 bitclear_uint32 or_uint32 xor_uint32 shiftl_uint32 shiftr_uint32 shift_count_uint32 complement_uint32 neg_uint32
   convert_int_to_uint32 convert_int64_to_uint32 convert_int32_to_uint32 convert_int16_to_uint32
   convert_int8_to_uint32 convert_uint_to_uint32 convert_uint64_to_uint32 convert_uint32_to_uint32
   convert_uint16_to_uint32 convert_uint8_to_uint32)
@@ -730,8 +763,12 @@ class Uint16Semantics [GoSemanticsFunctions] : Prop where
   bitclear_uint16 (v1 v2 : w16) : ⟦GoOp GoBitClear go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint16 (v1 v2 : w16) : ⟦GoOp GoOr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint16 (v1 v2 : w16) : ⟦GoOp GoXor go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftl go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint16 (v1 : w16) (v2 : w64) : ⟦GoShift GoShiftl go.uint16 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_uint16 (v1 : w16) (v2 : w64) : ⟦GoShift GoShiftr go.uint16 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 >>> v2)
+  shift_count_uint16 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w16) :
+    ⟦GoShift o t go.uint16, (v1, #y)⟧ ⤳[under] GoShift o t go.uint64 (Pair v1 #(W64 (uint.Z y)))
 
   complement_uint16 (v : w16) : ⟦GoUnOp GoComplement go.uint16, #v⟧ ⤳[under] #(~~~v)
   neg_uint16 (v : w16) : ⟦GoUnOp GoNeg go.uint16, #v⟧ ⤳[under] #(-v)
@@ -753,7 +790,8 @@ attribute [instance] Uint16Semantics.go_zero_val_uint16 Uint16Semantics.comparab
   Uint16Semantics.plus_uint16 Uint16Semantics.sub_uint16 Uint16Semantics.mul_uint16
   Uint16Semantics.div_uint16 Uint16Semantics.remainder_uint16 Uint16Semantics.and_uint16 Uint16Semantics.bitclear_uint16
   Uint16Semantics.or_uint16 Uint16Semantics.xor_uint16 Uint16Semantics.shiftl_uint16
-  Uint16Semantics.shiftr_uint16 Uint16Semantics.complement_uint16 Uint16Semantics.neg_uint16
+  Uint16Semantics.shiftr_uint16
+  Uint16Semantics.shift_count_uint16 Uint16Semantics.complement_uint16 Uint16Semantics.neg_uint16
   Uint16Semantics.convert_int_to_uint16 Uint16Semantics.convert_int64_to_uint16
   Uint16Semantics.convert_int32_to_uint16 Uint16Semantics.convert_int16_to_uint16
   Uint16Semantics.convert_int8_to_uint16 Uint16Semantics.convert_uint_to_uint16
@@ -761,7 +799,7 @@ attribute [instance] Uint16Semantics.go_zero_val_uint16 Uint16Semantics.comparab
   Uint16Semantics.convert_uint16_to_uint16 Uint16Semantics.convert_uint8_to_uint16
 export Uint16Semantics (go_zero_val_uint16 comparable_uint16 underlying_uint16 go_eq_uint16
   le_uint16 lt_uint16 ge_uint16 gt_uint16 plus_uint16 sub_uint16 mul_uint16 div_uint16
-  remainder_uint16 and_uint16 bitclear_uint16 or_uint16 xor_uint16 shiftl_uint16 shiftr_uint16 complement_uint16 neg_uint16
+  remainder_uint16 and_uint16 bitclear_uint16 or_uint16 xor_uint16 shiftl_uint16 shiftr_uint16 shift_count_uint16 complement_uint16 neg_uint16
   convert_int_to_uint16 convert_int64_to_uint16 convert_int32_to_uint16 convert_int16_to_uint16
   convert_int8_to_uint16 convert_uint_to_uint16 convert_uint64_to_uint16 convert_uint32_to_uint16
   convert_uint16_to_uint16 convert_uint8_to_uint16)
@@ -790,8 +828,12 @@ class Uint8Semantics [GoSemanticsFunctions] : Prop where
   bitclear_uint8 (v1 v2 : w8) : ⟦GoOp GoBitClear go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint8 (v1 v2 : w8) : ⟦GoOp GoOr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint8 (v1 v2 : w8) : ⟦GoOp GoXor go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftl go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint8 (v1 : w8) (v2 : w64) : ⟦GoShift GoShiftl go.uint8 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_uint8 (v1 : w8) (v2 : w64) : ⟦GoShift GoShiftr go.uint8 go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 >>> v2)
+  shift_count_uint8 (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w8) :
+    ⟦GoShift o t go.uint8, (v1, #y)⟧ ⤳[under] GoShift o t go.uint64 (Pair v1 #(W64 (uint.Z y)))
 
   complement_uint8 (v : w8) : ⟦GoUnOp GoComplement go.uint8, #v⟧ ⤳[under] #(~~~v)
   neg_uint8 (v : w8) : ⟦GoUnOp GoNeg go.uint8, #v⟧ ⤳[under] #(-v)
@@ -813,6 +855,7 @@ attribute [instance] Uint8Semantics.go_zero_val_uint8 Uint8Semantics.comparable_
   Uint8Semantics.sub_uint8 Uint8Semantics.mul_uint8 Uint8Semantics.div_uint8
   Uint8Semantics.remainder_uint8 Uint8Semantics.and_uint8 Uint8Semantics.bitclear_uint8 Uint8Semantics.or_uint8
   Uint8Semantics.xor_uint8 Uint8Semantics.shiftl_uint8 Uint8Semantics.shiftr_uint8
+  Uint8Semantics.shift_count_uint8
   Uint8Semantics.complement_uint8 Uint8Semantics.neg_uint8 Uint8Semantics.convert_int_to_uint8
   Uint8Semantics.convert_int64_to_uint8 Uint8Semantics.convert_int32_to_uint8
   Uint8Semantics.convert_int16_to_uint8 Uint8Semantics.convert_int8_to_uint8
@@ -821,7 +864,7 @@ attribute [instance] Uint8Semantics.go_zero_val_uint8 Uint8Semantics.comparable_
   Uint8Semantics.convert_uint8_to_uint8
 export Uint8Semantics (go_zero_val_uint8 comparable_uint8 underlying_uint8 go_eq_uint8 le_uint8
   lt_uint8 ge_uint8 gt_uint8 plus_uint8 sub_uint8 mul_uint8 div_uint8 remainder_uint8 and_uint8 bitclear_uint8
-  or_uint8 xor_uint8 shiftl_uint8 shiftr_uint8 complement_uint8 neg_uint8 convert_int_to_uint8
+  or_uint8 xor_uint8 shiftl_uint8 shiftr_uint8 shift_count_uint8 complement_uint8 neg_uint8 convert_int_to_uint8
   convert_int64_to_uint8 convert_int32_to_uint8 convert_int16_to_uint8 convert_int8_to_uint8
   convert_uint_to_uint8 convert_uint64_to_uint8 convert_uint32_to_uint8 convert_uint16_to_uint8
   convert_uint8_to_uint8)
@@ -871,8 +914,12 @@ class UintptrSemantics [GoSemanticsFunctions] : Prop where
   bitclear_uintptr (v1 v2 : w64) : ⟦GoOp GoBitClear go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uintptr (v1 v2 : w64) : ⟦GoOp GoOr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uintptr (v1 v2 : w64) : ⟦GoOp GoXor go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uintptr (v1 v2 : w64) : ⟦GoOp GoShiftl go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uintptr (v1 v2 : w64) : ⟦GoOp GoShiftr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uintptr (v1 v2 : w64) : ⟦GoShift GoShiftl go.uintptr go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 <<< v2)
+  shiftr_uintptr (v1 v2 : w64) : ⟦GoShift GoShiftr go.uintptr go.uint64, (#v1, #v2)⟧
+    ⤳[under] #(v1 >>> v2)
+  shift_count_uintptr (o : GoShiftOperator) (t : go.GoType) (v1 : val) (y : w64) :
+    ⟦GoShift o t go.uintptr, (v1, #y)⟧ ⤳[under] GoShift o t go.uint64 (Pair v1 #y)
 
   complement_uintptr (v : w64) : ⟦GoUnOp GoComplement go.uintptr, #v⟧ ⤳[under] #(~~~v)
   neg_uintptr (v : w64) : ⟦GoUnOp GoNeg go.uintptr, #v⟧ ⤳[under] #(-v)
@@ -911,7 +958,8 @@ attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.compa
   UintptrSemantics.plus_uintptr UintptrSemantics.sub_uintptr UintptrSemantics.mul_uintptr
   UintptrSemantics.div_uintptr UintptrSemantics.remainder_uintptr UintptrSemantics.and_uintptr UintptrSemantics.bitclear_uintptr
   UintptrSemantics.or_uintptr UintptrSemantics.xor_uintptr UintptrSemantics.shiftl_uintptr
-  UintptrSemantics.shiftr_uintptr UintptrSemantics.complement_uintptr UintptrSemantics.neg_uintptr
+  UintptrSemantics.shiftr_uintptr
+  UintptrSemantics.shift_count_uintptr UintptrSemantics.complement_uintptr UintptrSemantics.neg_uintptr
   UintptrSemantics.convert_untyped_int_to_uintptr UintptrSemantics.convert_int_to_uintptr
   UintptrSemantics.convert_int64_to_uintptr UintptrSemantics.convert_int32_to_uintptr
   UintptrSemantics.convert_int16_to_uintptr UintptrSemantics.convert_int8_to_uintptr
@@ -925,7 +973,7 @@ attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.compa
   UintptrSemantics.convert_uintptr_to_uint16 UintptrSemantics.convert_uintptr_to_uint8
 export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintptr go_eq_uintptr
   le_uintptr lt_uintptr ge_uintptr gt_uintptr plus_uintptr sub_uintptr mul_uintptr div_uintptr
-  remainder_uintptr and_uintptr bitclear_uintptr or_uintptr xor_uintptr shiftl_uintptr shiftr_uintptr
+  remainder_uintptr and_uintptr bitclear_uintptr or_uintptr xor_uintptr shiftl_uintptr shiftr_uintptr shift_count_uintptr
   complement_uintptr neg_uintptr convert_untyped_int_to_uintptr convert_int_to_uintptr convert_int64_to_uintptr
   convert_int32_to_uintptr convert_int16_to_uintptr convert_int8_to_uintptr convert_uint_to_uintptr
   convert_uint64_to_uintptr convert_uint32_to_uintptr convert_uint16_to_uintptr

@@ -841,8 +841,8 @@ theorem wp_nextPowerOfTwo (length : w64) (h : 0 < sint.Z length) :
   wp_start
   wp_auto
   wp_apply math.bits.wp_Len_exact with %l %Hl
-  wp_apply wp_shiftCount_int
-  · ipureintro; have := Hl.1; word
+  rw [if_neg (show ¬ sint.Z l < 0 by have := Hl.1; word)]
+  wp_auto
   iapply HΦ
   ipureintro
   obtain ⟨_, Hlt, Hle⟩ := Hl

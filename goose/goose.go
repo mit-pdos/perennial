@@ -286,7 +286,7 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
-		paramTy := funcSig.Params().At(i-1).Type()
+		paramTy := funcSig.Params().At(i - 1).Type()
 		// `append(b, s...)` with a string `s` (the only variadic string
 		// parameter) appends the bytes of `s`, as `[]byte(s)...` does.
 		if b, ok := paramTy.Underlying().(*types.Basic); ok && funcSig.Variadic() &&
@@ -705,11 +705,19 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			return ctx.constantLiteral(e)
 		}
 	}
-	var y glang.Expr
 	if _, ok := shiftOps[e.Op]; ok {
-		y = ctx.shiftCount(e.Y, yT)
-	} else {
-		y = ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y))
+		// The count keeps its own type: the semantics decides what a count of
+		// that type means (sign, width), whatever the type of the shifted
+		// operand.
+		return glang.BinaryExpr{
+			X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
+			Op: glang.BinOp{
+				OpId:      op,
+				Type:      ctx.glangType(e, compType),
+				CountType: ctx.glangType(e.Y, yT),
+			},
+			Y: ctx.expr(e.Y),
+		}
 	}
 	expr = glang.BinaryExpr{
 		X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
@@ -717,32 +725,13 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			OpId: op,
 			Type: ctx.glangType(e, compType),
 		},
-		Y: y,
+		Y: ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y)),
 	}
 
 	// FIXME: might need to do a conversion here. Handle e.g. interface
 	// conversion of (x < 10) as well as conversion of (x + 10).
 	// expr = ctx.handleImplicitConversion(e, compType, ctx.typeOf(e), expr)
 	return expr
-}
-
-// shiftCount translates the count y of a shift x << y or x >> y to the uint64
-// that the shift rules of the semantics take, whatever the types of x and y (a
-// count of at least x's width shifts every bit out; converting y to x's type
-// would truncate it). An unsigned or untyped constant y is converted; a signed
-// y goes through go.shiftCount, which panics if it is negative. A count whose
-// type is a type parameter is not supported: whether it is signed depends on
-// the instantiation.
-func (ctx *Ctx) shiftCount(y ast.Expr, yT types.Type) glang.Expr {
-	b, ok := yT.Underlying().(*types.Basic)
-	if !ok {
-		ctx.unsupported(y, "shift count of type %v (not a basic integer type)", yT)
-	}
-	e := ctx.expr(y)
-	if b.Info()&types.IsInteger != 0 && b.Info()&(types.IsUnsigned|types.IsUntyped) == 0 {
-		return glang.NewCallExpr(glang.VerbatimExpr("go.shiftCount"), ctx.glangType(y, yT), e)
-	}
-	return ctx.handleImplicitConversion(y, yT, types.Typ[types.Uint64], e)
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {

@@ -721,38 +721,60 @@ example (Φ : val → IProp GF) (x : w64) :
   wp_auto
   iexact H
 
-/-- Shift counts are `w64`, not truncated to the shifted operand's width:
+/-- A shift count is not truncated to the shifted operand's width:
 `uint8(1) << uint64(256) == 0`, `int8(-128) >> uint64(256) == -1`. -/
 example (Φ : val → IProp GF) :
-    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8⟩ #(W64 256)) {{ Φ }} := by
+    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8, go.uint64⟩ #(W64 256)) {{ Φ }} := by
   iintro H
   wp_auto
   rw [show (W8 1 <<< W64 256 : w8) = W8 0 by decide]
   iexact H
 
 example (Φ : val → IProp GF) :
-    Φ #(W8 (-1)) ⊢ WP gl(#(W8 (-128)) >>⟨go.int8⟩ #(W64 256)) {{ Φ }} := by
+    Φ #(W8 (-1)) ⊢ WP gl(#(W8 (-128)) >>⟨go.int8, go.uint64⟩ #(W64 256)) {{ Φ }} := by
   iintro H
   wp_auto
   rw [show BitVec.sshiftRight' (W8 (-128)) (W64 256) = W8 (-1) by decide]
   iexact H
 
-/-- A signed shift count goes through `go.shiftCount`: a negative one panics (stuck), a
-non-negative one is its value. -/
+/-- A count of a narrower unsigned type is zero-extended: `uint8(1) << uint8(200) == 0`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8, go.uint8⟩ #(W8 200)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W8 1 <<< W64 (uint.Z (W8 200)) : w8) = W8 0 by decide]
+  iexact H
+
+/-- A signed count panics (stuck) when negative, and is its value otherwise. -/
 example (Φ : val → IProp GF) :
     WP (Panic "negative shift amount") {{ Φ }} ⊢
-      WP (App (Val (go.shiftCount go.int)) (Val #(W64 (-1)))) {{ Φ }} := by
+      WP gl(#(W64 1) <<⟨go.int, go.int⟩ #(W64 (-1))) {{ Φ }} := by
   iintro H
-  unfold go.shiftCount
   wp_auto
   iexact H
 
 example (Φ : val → IProp GF) :
-    Φ #(W64 3) ⊢ WP (App (Val (go.shiftCount go.int8)) (Val #(W8 3))) {{ Φ }} := by
+    Φ #(W32 8) ⊢ WP gl(#(W32 1) <<⟨go.uint32, go.int8⟩ #(W8 3)) {{ Φ }} := by
   iintro H
-  unfold go.shiftCount
   wp_auto
-  rw [show W64 (sint.Z (W8 3)) = W64 3 by decide]
+  rw [show (W32 1 <<< W64 (sint.Z (W8 3)) : w32) = W32 8 by decide]
+  iexact H
+
+/-- An untyped constant count. -/
+example (Φ : val → IProp GF) :
+    Φ #(W16 256) ⊢ WP gl(#(W16 1) <<⟨go.uint16, go.untypedInt⟩ #(8 : Int)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W16 1 <<< W64 8 : w16) = W16 256 by decide]
+  iexact H
+
+/-- The count's type is resolved like the shifted operand's: a type parameter `T` instantiated
+with a named type over `int8` behaves as `int8`. -/
+example (T : go.GoType) [T ↓u go.int8] (Φ : val → IProp GF) :
+    WP (Panic "negative shift amount") {{ Φ }} ⊢
+      WP gl(#(W64 1) <<⟨go.int, T⟩ #(W8 (-1))) {{ Φ }} := by
+  iintro H
+  wp_auto
   iexact H
 
 end int_op_tests

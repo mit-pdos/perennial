@@ -665,6 +665,18 @@ non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
 statement of a `for` (`doFor` runs the post statement under `do:`, which would
 drop the panic), nor `defer panic(..)` or `go panic(..)`.
 
+A loop body that panics proves its `forPostcondition` with `wp_for_post`
+(`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
+of range, a failed type assertion, an integer division or remainder by zero, a
+negative shift count) are stuck: proofs show they are unreachable
+(`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A division `x / y` steps to
+`if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
+signed types): a literal divisor is decided by `wp_pures`, another needs
+`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift `x << y` is
+`GoShift GoShiftl t ct` with the types of both operands; a signed count `y`
+steps to `if sint.Z y < 0 then Panic "negative shift amount" else ...`, closed
+the same way (`rw [if_neg (show ¬ sint.Z y < 0 by ...)]`).
+
 ### Ghost state and invariants
 
 ```lean

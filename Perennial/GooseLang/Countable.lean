@@ -156,6 +156,7 @@ instance Binder.countable : Pos.Countable Binder :=
 
 local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
 local instance : Inhabited GoOperator := ⟨.GoEquals⟩
+local instance : Inhabited GoShiftOperator := ⟨.GoShiftl⟩
 local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
 local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
 
@@ -202,8 +203,6 @@ def GoOperator.toNat : GoOperator → Nat
   | .GoOr => 11
   | .GoXor => 12
   | .GoBitClear => 13
-  | .GoShiftl => 14
-  | .GoShiftr => 15
 def GoOperator.fromNat : Nat → GoOperator
   | 0 => .GoEquals
   | 1 => .GoLt
@@ -219,11 +218,20 @@ def GoOperator.fromNat : Nat → GoOperator
   | 11 => .GoOr
   | 12 => .GoXor
   | 13 => .GoBitClear
-  | 14 => .GoShiftl
-  | 15 => .GoShiftr
   | _ => .GoEquals
 instance GoOperator.countable : Pos.Countable GoOperator :=
   countableOfLeftInverse GoOperator.toNat GoOperator.fromNat (by intro x; cases x <;> rfl)
+
+def GoShiftOperator.toNat : GoShiftOperator → Nat
+  | .GoShiftl => 0
+  | .GoShiftr => 1
+def GoShiftOperator.fromNat : Nat → GoShiftOperator
+  | 0 => .GoShiftl
+  | 1 => .GoShiftr
+  | _ => .GoShiftl
+instance GoShiftOperator.countable : Pos.Countable GoShiftOperator :=
+  countableOfLeftInverse GoShiftOperator.toNat GoShiftOperator.fromNat
+    (by intro x; cases x <;> rfl)
 
 def GoUnaryOperator.toNat : GoUnaryOperator → Nat
   | .GoPos => 0
@@ -323,6 +331,7 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .CompositeLiteral x0 => node 38 [of x0]
   | .SelectStmt => node 39 []
   | .InternalStringLen => node 40 []
+  | .GoShift x0 x1 x2 => node 41 [of x0, of x1, of x2]
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -365,6 +374,7 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 38 [x0] => .CompositeLiteral (decLeaf x0)
   | node 39 [] => .SelectStmt
   | node 40 [] => .InternalStringLen
+  | node 41 [x0, x1, x2] => .GoShift (decLeaf x0) (decLeaf x1) (decLeaf x2)
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree
