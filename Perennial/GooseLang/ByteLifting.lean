@@ -518,7 +518,10 @@ theorem bmemCtx_eq (m : ByteMem) :
     bmemCtx (GF := GF) m ⊣⊢ iprop(naHeapCtx btls m.bytes ∗
       (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
       ghostMapAuth L.goose_bmemGS.bm_blocksName 1 m.blocks ∗
-      ghostMapAuth L.goose_bmemGS.bm_funcsName 1 m.funcs ∗
+      (ghostMapAuth L.goose_bmemGS.bm_funcsName 1 m.funcs ∗
+        ⌜∀ p v, staticFuncs !! p = some v → m.funcs !! p = some v⌝ ∗
+        □ ∀ p v, ⌜m.funcs !! p = some v⌝ →
+          ghostMapElem L.goose_bmemGS.bm_funcsName p .discard v) ∗
       ⌜BmemWf m⌝) := .rfl
 
 theorem intoVal_w64_inj {a b : w64} (h : (#a : val) = #b) : a = b :=
@@ -802,6 +805,38 @@ theorem wp_static_bytes {e : Expr} {Φ : val → IProp GF} (a : w64) (bs : List 
   ihave H := H $$ Hl
   icases h1.1 $$ H with H
   iapply H $$ Hσ
+
+/-- The code of the program image, before any step. -/
+theorem wp_static_func {e : Expr} {Φ : val → IProp GF} (p : w64) (v : val)
+    (h : staticFuncs !! p = some v) (he : toVal e = none) :
+    (isFunc (GF := GF) p v -∗ WP e @ s; E {{ Φ }}) ⊢ WP e @ s; E {{ Φ }} := by
+  have h1 := wp_unfold (s := s) (E := E) (e := e) (Φ := Φ)
+  simp only [wp.pre] at h1
+  rw [show ToVal.toVal e = none from he] at h1
+  iintro H
+  iapply h1.2
+  iintro %σ %ns %obs %obs' %nt Hσ
+  rcases σ with ⟨σ, c⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
+  icases (bmemCtx_eq _).1 $$ Hbm with ⟨Hbytes, Hfr, Hbl, ⟨Hfn, %Hst, #Hff⟩, Hwf⟩
+  ihave #Hp := Hff $$ %p %v %(Hst p v h)
+  ihave H := H $$ []
+  · unfold isFunc; iexact Hp
+  icases h1.1 $$ H with H
+  iapply H
+  iapply (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).2
+  iframe Hc Ht
+  iapply (goose_stateInterp_eq σ ns (obs ++ obs') nt).mpr
+  iframe
+  isplitr
+  · ipureintro; exact Hlctx
+  iapply (bmemCtx_eq _).2
+  iframe
+  isplitr
+  · ipureintro; exact Hst
+  · iexact Hff
 
 /-! ### Allocation -/
 
@@ -1468,7 +1503,7 @@ theorem wp_func_alloc (v : val) (Hv : v.isPanic = false := by simp) :
   imod Hclose
   cases Hstep with
   | FuncAllocS _ p _ hp0 hpn =>
-    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfn, %Hwf⟩
+    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, ⟨Hfn, %Hst, #Hff⟩, %Hwf⟩
     imod ghost_map_insert_persist p v hpn $$ Hfn with ⟨Hfn, #Hp⟩
     imodintro
     isplitr
@@ -1479,6 +1514,20 @@ theorem wp_func_alloc (v : val) (Hv : v.isPanic = false := by simp) :
       · ipureintro; rfl
       iapply (bmemCtx_eq _).2
       iframe
+      isplitr
+      · iframe
+        isplitr
+        · ipureintro
+          intro p' v' h'
+          rw [GMap.lookup_insert_eq_iff, if_neg]
+          · exact Hst p' v' h'
+          · intro he; rw [← he] at h'; rw [Hst p v' h'] at hpn; cases hpn
+        · imodintro
+          iintro %p' %v' %h'
+          rw [GMap.lookup_insert_eq_iff] at h'
+          split at h'
+          · rename_i he; subst he; cases h'; iexact Hp
+          · iapply Hff $$ %p' %v' %h'
       ipureintro; exact Hwf
     iapply wp_value'
     iapply HΦ
@@ -1504,9 +1553,9 @@ theorem wp_func_load (p : w64) (v : val) :
   iintro %Φ #Hf HΦ
   iapply wp_lift_atomic_bmem_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
-  icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, Hfn, Hwf⟩
+  icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, ⟨Hfn, Hst, Hff⟩, Hwf⟩
   icases ghost_map_lookup $$ Hfn Hf with %Hlk
-  ihave Hσ : bmemCtx σ₁.1.bmem $$ [Hbytes Hfr Hbl Hfn Hwf]
+  ihave Hσ : bmemCtx σ₁.1.bmem $$ [Hbytes Hfr Hbl Hfn Hst Hff Hwf]
   · iapply (bmemCtx_eq _).2; iframe
   imodintro
   isplitr

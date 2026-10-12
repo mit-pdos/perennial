@@ -835,12 +835,15 @@ and the conclusion is about executions of fewer than `N` steps (along which
 fewer than `T` threads are live). The postcondition `φ` must exclude panics
 (`hφ`, see "Panics"); the conclusion is that the main thread's final value
 satisfies `φ`, that no thread is stuck, and that no thread has an unrecovered
-panic:
+panic. The program starts with the byte memory holding the program image
+(`Hbm : σ.bmem = staticImage`: the abstract static bytes `staticBytes`, frozen,
+and code `staticFuncs` of `GoGlobalContext`; see `docs/BYTE_MEMORY.md`):
 
 ```
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →

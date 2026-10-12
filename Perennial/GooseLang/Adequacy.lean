@@ -100,9 +100,58 @@ variable {GF : BundledGFunctors}
 /-- The byte-memory ghost state for the initial memory `staticImage`: the auth
 of the static bytes, with a persistent fragment of each (the interpretation's
 frozen bytes). -/
+theorem static_bytes_alloc {GF : BundledGFunctors} (hH : NaHeapGS w64 w8 GF)
+    (m : GMap w64 w8) :
+    ⊢@{IProp GF} naHeapCtx (hG := hH) btls (∅ : GMap w64 ByteCell) ==∗
+      (naHeapCtx (hG := hH) btls (GMap.fmap (fun b => ((ByteMode.Frozen 0 : ByteMode), b)) m) ∗
+      □ ∀ a b n, ⌜(GMap.fmap (fun b => ((ByteMode.Frozen 0 : ByteMode), b)) m) !! a =
+          some (.Frozen n, b)⌝ → naHeapPointsto (hG := hH) a .discard b) := by
+  induction m using GMap.map_ind with
+  | h0 =>
+    rw [GMap.fmap_empty]
+    iintro H; imodintro; iframe H
+    imodintro; iintro %a %b %n %h
+    exact absurd h (by simp)
+  | hins k v m hk ih =>
+    iintro H
+    imod ih $$ H with ⟨H, #Hfr⟩
+    rw [GMap.fmap_insert]
+    imod na_heap_alloc btls _ k v (ByteMode.Frozen 0) (by simp [hk]) rfl $$ H with ⟨H, Hk⟩
+    imod naHeapPointsto_persist k _ v $$ Hk with #Hk
+    imodintro
+    iframe H
+    imodintro
+    iintro %a %b %n %h
+    rw [GMap.lookup_insert_eq_iff] at h
+    split at h
+    · rename_i he; subst he; cases h; iexact Hk
+    · iapply Hfr $$ %a %b %n %h
+
 theorem bmem_init {GF : BundledGFunctors} [AllG GF] (hpre : ByteMemPreG GF) :
     ⊢@{IProp GF} |==> ∃ hB : ByteMemGS GF, bmemCtx (hB := hB) staticImage := by
-  sorry -- by `GMap.map_ind` over `staticBytes`: `na_heap_alloc` and persist each byte
+  imod na_heap_init (L := w64) (V := w8)
+    (hG := ⟨hpre.bm_heap_preG.na_heap_preG_inG, default⟩) btls
+    (∅ : GMap w64 ByteCell) with ⟨%hH, Hh⟩
+  imod static_bytes_alloc hH staticBytes $$ Hh with ⟨Hh, #Hfr⟩
+  imod ghost_map_alloc_empty (K := w64) (V := Nat) with ⟨%γb, Hb⟩
+  imod ghost_map_alloc_empty (K := w64) (V := val) with ⟨%γf, Hf⟩
+  imod ghost_map_insert_persist_big (γ := γf) (staticFuncs : GMap w64 val)
+    (fun k _ h2 => by simp at h2) $$ Hf with ⟨Hf, #Hfs⟩
+  rw [GMap.map_union_empty]
+  imodintro
+  iexists ⟨hH, γb, γf⟩
+  unfold bmemCtx funcsCtx staticImage bytePointsto
+  iframe
+  isplitr
+  · iexact Hfr
+  isplitr
+  · isplitr
+    · ipureintro; intro p v h; exact h
+    · imodintro
+      iintro %p %v %h
+      iapply (BigSepM.bigSepM_lookup (Φ := fun k v => ghostMapElem γf k .discard v) h) $$ Hfs
+  ipureintro
+  refine ⟨fun b sz h => absurd h (by simp), fun a b h => ⟨0, by simp [h]⟩⟩
 
 /-- Allocate all of GooseLang's ghost state for an initial configuration, and
 run a WP proof under it. This is the common core of the adequacy theorems. -/

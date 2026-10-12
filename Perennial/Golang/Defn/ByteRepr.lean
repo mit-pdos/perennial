@@ -332,9 +332,16 @@ theorem roundUp_mod (n a : Nat) : roundUp n a % a = 0 := by
 def fieldOffset2 (A B : Type) [ByteRepr A] [ByteRepr B] : Nat :=
   roundUp (size A) (align B)
 
+/-- The padding byte Go adds after a zero-size last field of a non-zero-size
+struct (`cmd/compile`'s `CalcStructSize`, Go issue 9401), so that the field's
+address does not point to the next object. -/
+def trailingPad (end_ lastSize : Nat) : Nat :=
+  if lastSize = 0 ∧ 0 < end_ then 1 else 0
+
 /-- The size of a struct of an `A` and a `B`, padding included. -/
 def prodSize (A B : Type) [ByteRepr A] [ByteRepr B] : Nat :=
-  roundUp (fieldOffset2 A B + size B) (max (align A) (align B))
+  roundUp (fieldOffset2 A B + size B + trailingPad (fieldOffset2 A B + size B) (size B))
+    (max (align A) (align B))
 
 section prod
 variable {A B : Type} [ByteRepr A] [ByteRepr B]
@@ -345,7 +352,8 @@ theorem fieldOffset2_ge : size A ≤ fieldOffset2 A B :=
 theorem fieldOffset2_mod : fieldOffset2 A B % align B = 0 := roundUp_mod _ _
 
 theorem fieldOffset2_add_le : fieldOffset2 A B + size B ≤ prodSize A B :=
-  le_roundUp _ _ (Nat.lt_of_lt_of_le (align_pos (V := A)) (Nat.le_max_left _ _))
+  Nat.le_trans (Nat.le_add_right _ _)
+    (le_roundUp _ _ (Nat.lt_of_lt_of_le (align_pos (V := A)) (Nat.le_max_left _ _)))
 
 /-- Decode a struct of an `A` and a `B`: the fields' bytes are at `[0, size A)`
 and `[fieldOffset2, fieldOffset2 + size B)`; the padding is ignored. -/
@@ -374,6 +382,11 @@ theorem prodDecode_iff (bs : List w8) (x : A) (y : B) :
   · rintro ⟨hlen, hx, hy⟩
     simp [hlen, hx, hy]
 
+/-- The layout of a Go struct with exactly two fields, `A` then `B` (Go's layout
+of `struct { a A; b B }`). Nested pairs are **not** the layout of a struct with
+more fields: Go lays fields out one after the other, aligning each, while an
+inner pair is padded and aligned as a whole (`struct { a, b byte; c int64 }`
+has size 16, `(byte × (byte × int64))` 24). Such structs need an n-ary layout. -/
 instance instProd : ByteRepr (A × B) where
   size := prodSize A B
   align := max (align A) (align B)

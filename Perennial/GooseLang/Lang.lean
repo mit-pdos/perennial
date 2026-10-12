@@ -212,6 +212,11 @@ inductive GoInstruction where
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
+  /- Byte memory (`Golang/Defn/StaticImage.lean`): the byte encoding of a value of
+     type `t`, its decoding, and the size of `t`. -/
+  | EncodeBytes (t : go.GoType)
+  | DecodeBytes (t : go.GoType)
+  | SizeOf (t : go.GoType)
 
 noncomputable instance : DecidableEq GoInstruction := fun a b => Classical.propDecidable (a = b)
 
@@ -338,7 +343,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake CompositeLiteral
-  SelectStmt InternalStringLen)
+  SelectStmt InternalStringLen EncodeBytes DecodeBytes SizeOf)
 
 section derived
 variable [ext : FfiSyntax]
@@ -544,7 +549,15 @@ in progress) or `Frozen n` (immutable, `n` readers): string data and type
 descriptors are frozen, and a write to a frozen byte is stuck. Address `0` is
 never allocated (a fresh range starts above it and does not wrap around). An
 allocation that finds no fresh range loops (`BAllocOomS`, ...): out of memory is a
-fatal error in Go, not a panic. -/
+fatal error in Go, not a panic.
+
+Rules for the Go-level code built on these primitives (not enforced here):
+* plain Go loads and stores use the non-atomic pairs (`BStartRead`/`BFinishRead`,
+  `BPrepareWrite`/`BFinishWrite`); `BLoad`/`BSwap` are for `sync/atomic` and
+  for frozen data. A plain access made atomic would be more atomic than Go, so
+  a program with a data race could verify;
+* an allocation keeps the runtime's checks before `BAlloc` (`makeslice: len out
+  of range` above `maxAlloc` is a recoverable panic in Go, not out of memory). -/
 
 inductive ByteMode where
   | Rd (n : Nat)

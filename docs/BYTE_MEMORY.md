@@ -22,16 +22,14 @@ the Go model onto it is future work (see "Migration" below).
 | `Perennial/GooseLang/Adequacy.lean` | allocates the byte-memory ghost state; the adequacy theorems take `σ.bmem = staticImage` (programs start with the program image: `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`) |
 | `Perennial/Golang/Defn/ByteRepr.lean` | trusted: the layout of Go values (`ByteRepr`: size, alignment, little-endian encode/decode; string, interface and slice headers; struct layout with padding) |
 | `Perennial/Golang/Theory/BytePrototype.lean` | the Go layer on top: typed points-to over bytes and struct field splitting, strings as heap objects (`isString`), calls through func pointers, an `unsafe.Add` field access |
-| `Perennial/Golang/Defn/StaticImage.lean` | sketch, trusted: symbols of the program image (`StaticSymbols`: `typeAddr`, `itabAddr`, `methodAddr`), facts packages assume about it (`IsTypeDesc`, `StaticItab`, `StaticMethod`), the interface semantics over the byte memory (`go.InterfaceSemanticsB`, bundled in `go.SemanticsB`) with `sorry`'d lowered primitives |
+| `Perennial/Golang/Defn/StaticImage.lean` | sketch, trusted: symbols of the program image (`StaticSymbols`: `typeAddr`, `itabAddr`, `methodAddr`, `itabMethods`), facts packages assume about it (`IfaceMethods`, `StaticItab`, `StaticMethod`), the byte encoding instructions (`go.BytesSemantics`) and the interface semantics over the byte memory (`go.InterfaceSemanticsB`), bundled in `go.SemanticsB` |
 | `Perennial/Golang/Theory/StaticIface.lean` | sketch: the interface abstraction (`isIface`, `isEface`, `Implements`, `ImplementsStatic`) and its instruction-level specs |
 | `Perennial/Proof/.../semantics_proof/interfaces_bytes.lean` | goose's unchanged interface tests proved under `go.SemanticsB` |
 
-The program logic of the byte-memory primitives is proved: `#print axioms` on
-the WP lemmas shows only `propext`, `Classical.choice` and `Quot.sound`. Two
-lemmas of the static-image extension are `sorry`'d: `bmem_init` (allocating the
-ghost state of the initial image, by induction over `staticBytes`) and
-`wp_static_func`. The interface sketch's lowered primitives are `sorry`'d by
-design (below).
+Everything is proved: `#print axioms` on the WP lemmas, the interface specs
+and the adequacy theorems shows only `propext`, `Classical.choice` and
+`Quot.sound`. Parts of Go the sketch does not model are stuck, not assumed
+(see "Static data and interfaces").
 
 ## The model
 
@@ -139,53 +137,66 @@ static data, like the generated `Assumptions` classes.
   a static range is available at any step (`wp_static_bytes`).
 * **Symbols** (`StaticSymbols`, to become fields of `GoSemanticsFunctions`):
   `typeAddr T` (`type:T`), `itabAddr T I` (`go:itab.T,I`), `methodAddr T m`
-  (the code a call through an itab jumps to), and the reverse map
-  `staticTypeAt`, which makes "one address, one type" a definition rather than
-  an assumption (a global injectivity assumption on `typeAddr` would be
-  unsatisfiable: there are more types than addresses).
+  (the code a call through an itab jumps to), and `itabMethods I`, the
+  interface's methods in its itabs' order (Go's flattened method set, sorted
+  as `cmd/compile`'s `CompareSyms` sorts it). The order is goose's to provide
+  (`IfaceMethods`), not computed in Lean: computing it from goose's interface
+  types was wrong for embedded interfaces and for non-ASCII exported names.
+  There is no map from addresses back to types: it would force syntactically
+  different `GoType`s that Go identifies (`interface{ io.Reader; io.Writer }`
+  and its methods written out) to have different descriptors. So a type
+  assertion that fails cannot be proved to fail; one that succeeds can.
 * **Package facts** (`StaticAssumptions` in the test file; goose would
-  generate them): `HasTypeDesc T`, and `ImplementsStatic T I elems` for each
-  concrete-to-interface conversion in the package (the static itab and the
-  methods' code). They compose by conjunction: two packages that use the same
-  type state the same fact about the same symbol.
+  generate them): `IfaceMethods I ms` for each interface type, and, for each
+  concrete-to-interface conversion, `StaticItab T I` (the itab, at a non-zero
+  address) and `Implements T I` (the methods' code). They compose by
+  conjunction: two packages that use the same type state the same fact about
+  the same symbol.
 * **Lowering.** `go.InterfaceSemanticsB` gives `Convert`, `MethodResolve`,
   `TypeAssert` and interface `==` byte-memory meanings, as the compiler lowers
-  them: `I(x)` boxes `x` and pairs it with `itabAddr T I` (or `typeAddr T` for
-  the empty interface); `i.m` loads `itab.Fun[k]`, the code at that address
-  loads the receiver from the data word and calls the method; `i.(J)` goes
-  through `runtime.getitab`. The primitives are `sorry`'d (`boxBytes`,
-  `loadAt`, `itabFun`, `typeAssertV`, `getitab`, `ifaceEqV`).
+  them, as GooseLang code over the byte memory and three instructions
+  (`EncodeBytes t`, `DecodeBytes t`, `SizeOf t`, from `ByteRepr`, in
+  `go.BytesSemantics`). `I(x)` boxes `x` and pairs it with `itabAddr T I`, or
+  with `typeAddr T` when `I`'s method set is empty; `nil` is `(0, 0)`; a
+  conversion between interfaces with the same underlying type is the identity
+  (as core's `convert_same` requires); `i.m` loads `itab.Fun[k]`, the code at
+  that address loads the receiver from the data word and calls the method;
+  `i.(T)` compares the dynamic type word with `typeAddr T`. Not modelled
+  (stuck): assertions and conversions to a non-empty interface from an
+  interface (`runtime.getitab`, to be translated), and `==` on two non-nil
+  interfaces with the same dynamic type (it needs the type's equality).
 * **The abstraction.** Program proofs see an interface value as an opaque
-  `i : GoIface` (or `GoEface`) with the persistent fact `isIface i elems T x`
-  ("an interface with methods `elems` holding `x : T`"), and the specs
-  `wp_convert_iface`, `wp_iface_method_resolve` (`i.m` resolves to `T`'s method
-  `m` on `x`), `wp_type_assert_iface`, `wp_type_assert_iface_iface`,
-  `wp_convert_eface`, `wp_type_assert_eface`, `wp_eq_eface_nil`. The lowered
-  steps are not instances, so automation stops at the interface instructions
-  and the proof applies these specs; itabs and descriptors never appear.
-  `wp_convert_iface` and `wp_iface_method_resolve` are proved from the
-  primitives' specs.
+  `i : GoIface` (or `GoEface`) with the persistent fact `isIface i I T x`
+  ("an interface of type `I` holding `x : T`"), and the specs
+  `wp_convert_iface`, `wp_convert_eface`, `wp_iface_method_resolve` (`i.m`
+  resolves to `T`'s method `m` on `x`), `wp_type_assert_iface`,
+  `wp_type_assert_eface`, `wp_eq_eface_nil`, all proved against the lowered
+  code. The lowered steps are not instances, so automation stops at the
+  interface instructions and the proof applies these specs; itabs and
+  descriptors never appear. The premises are goose-generated instances, found
+  by instance search.
 * **Static and dynamic.** `isItab` (and so `isIface`) is defined by the itab's
-  contents, not its address, so an itab built by `getitab` and a static one are
-  interchangeable: every consumer of an interface value (method call,
-  assertion, `==`) has one spec. Only the producers differ, and their premises
-  nest: `Implements T elems` (the methods' code: what `getitab` needs) and
-  `ImplementsStatic T I elems`, which extends it with the static itab (what a
-  concrete-to-interface conversion needs).
+  contents, not its address, so an itab built by `getitab` will be
+  interchangeable with a static one: every consumer of an interface value has
+  one spec. Only the producers differ: a conversion needs `StaticItab T I`;
+  `getitab` will need only `Implements T I`.
 * **Runtime state.** What Go mutates (`runtime.itabTable`, the per-site
   type-assertion caches, `reflect`'s caches) is ordinary package state of
   `runtime`/`reflect`, with proved invariants (every itab in the table is
   correct for its pair, one per pair); the static image only holds the
-  immutable data. `wp_type_assert_iface_iface` would take the itab table's
-  invariant (`runtime`'s `isPkgInit`) as a premise once `getitab` is
-  translated.
+  immutable data.
 
 **Result.** Of the interface tests (`interfaces.go`, `interfaces_complex.go`),
 on goose's unchanged translation: `testBasicInterface`,
 `testAssignInterface`, `testMultipleInterface`, `testBinaryExprInterface`,
 `testIfStmtInterface`, `testParamsInterface`, `testEmptyInterface` and
-`testTypeAssertionInterface` are proved under `go.SemanticsB`, modulo the
-`sorry`'d primitives. Not covered, and why:
+`testTypeAssertionInterface` are proved under `go.SemanticsB`, with no `sorry`
+(the remaining axioms are generated code's existing opaque types). An earlier
+version of the sketch was contradictory (`False` was derivable from
+`go.SemanticsB`: `PredeclaredSemantics` still converted untyped `nil` to the old
+nil interface while the new rule boxed it); the old representation's rules now
+live only in `go.Semantics` (`convert_nil_interface`) and
+`go.InterfaceSemantics`. Not covered, and why:
 
 * pointer receivers and pointer-shaped dynamic values
   (`testAcceptAddressInterface`, `testPolymorphismInterface`,
@@ -193,10 +204,8 @@ on goose's unchanged translation: `testBasicInterface`,
   be the pointer itself, but pointers are still `Loc`s, not addresses;
 * string-valued dynamic types (`testSharedFunctionsInterface`,
   `testStringInterface`): strings are still values, not headers;
-* `testDowncastInterface`: the itab's method order needs the interface's
-  flattened method set, but goose's interface types list an embedded interface
-  as a type element, and `underlying` is abstract, so the method set cannot be
-  computed (see the goose changes below).
+* `testDowncastInterface`: `f.(Flower)` on a `Flora` goes through
+  `runtime.getitab`, not modelled yet.
 
 **Changes the sketch needed outside its files.**
 
@@ -214,14 +223,17 @@ on goose's unchanged translation: `testBasicInterface`,
   for an empty interface but an itab's `Type` for a non-empty one, and which
   one it is cannot be told from the 16 bytes. The sketch tags interface values
   (`(false, _)`/`(true, _)`) instead.
-* Interface types must carry their flattened, sorted method list (the itab
-  layout), not embedded interfaces as type elements.
+* goose must provide each interface's itab method order (`IfaceMethods`: the
+  flattened method set, sorted by `CompareSyms`) and, ideally, canonical
+  interface types (so that identical interface types are one `GoType`).
 * Proofgen states the generated instances (typed points-to of structs, ...)
   under `go.Semantics` although they do not use the interface semantics; they
   should be stated under a class without it. The test file restates the two it
   needs.
-* Generating `StaticAssumptions` (descriptors, static itabs, method code per
-  conversion) and `ByteRepr` instances for the package's types.
+* Generating `StaticAssumptions` (itab orders, static itabs, method code per
+  conversion) and `ByteRepr` instances for the package's types, with an n-ary
+  struct layout (`ByteRepr`'s pair instance is the layout of a two-field
+  struct only).
 
 ## Migration plan (not started)
 

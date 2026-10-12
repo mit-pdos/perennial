@@ -339,6 +339,14 @@ variable {GF : BundledGFunctors} [AllG GF]
 def bytePointsto [hB : ByteMemGS GF] (a : w64) (dq : DFrac) (b : w8) : IProp GF :=
   naHeapPointsto a dq b
 
+/-- The func table: its auth, persistent fragments of all its entries (a step
+may run code the thread was never given, such as the image's), and that it
+contains the program image's code. -/
+def funcsCtx [GoGlobalContext] [hB : ByteMemGS GF] (funcs : GMap w64 val) : IProp GF :=
+  iprop(ghostMapAuth hB.bm_funcsName 1 funcs ∗
+    ⌜∀ p v, staticFuncs !! p = some v → funcs !! p = some v⌝ ∗
+    □ ∀ p v, ⌜funcs !! p = some v⌝ → ghostMapElem hB.bm_funcsName p .discard v)
+
 /-- The byte memory interpretation. Frozen bytes are kept persistently
 (`□ ∀ ...`), since a step may return them to a thread that does not own them
 (`BAllocFrozenReuseS`), and the static bytes are among them (`StaticAgree`). -/
@@ -346,7 +354,7 @@ def bmemCtx [GoGlobalContext] [hB : ByteMemGS GF] (m : ByteMem) : IProp GF :=
   iprop(naHeapCtx btls m.bytes ∗
     (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
     ghostMapAuth hB.bm_blocksName 1 m.blocks ∗
-    ghostMapAuth hB.bm_funcsName 1 m.funcs ∗
+    funcsCtx m.funcs ∗
     ⌜BmemWf m⌝)
 
 end byte_mem

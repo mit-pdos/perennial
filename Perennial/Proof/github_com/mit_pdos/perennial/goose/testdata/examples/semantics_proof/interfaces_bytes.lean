@@ -145,12 +145,15 @@ end NumStruct
 /-! ## The package's static data (goose would generate this class) -/
 
 class StaticAssumptions [GoGlobalContext] [GoSemanticsFunctions] [StaticSymbols] : Prop where
-  SquareStruct_desc : HasTypeDesc SquareStruct.ty
-  NumStruct_desc : HasTypeDesc NumStruct.ty
-  SquareStruct_geometryInterface :
-    ImplementsStatic SquareStruct.ty geometryInterface.ty (ifaceElems geometryInterface.underlying)
+  geometryInterface_methods : IfaceMethods geometryInterface.ty [go!"Square", go!"Volume"]
+  geometryInterface_underlying_methods :
+    IfaceMethods geometryInterface.underlying [go!"Square", go!"Volume"]
+  SquareStruct_geometryInterface_itab : StaticItab SquareStruct.ty geometryInterface.ty
+  SquareStruct_geometryInterface : Implements SquareStruct.ty geometryInterface.ty
 
-attribute [instance] StaticAssumptions.SquareStruct_desc StaticAssumptions.NumStruct_desc
+attribute [instance] StaticAssumptions.geometryInterface_methods
+  StaticAssumptions.geometryInterface_underlying_methods
+  StaticAssumptions.SquareStruct_geometryInterface_itab
   StaticAssumptions.SquareStruct_geometryInterface
 
 section wps
@@ -166,6 +169,12 @@ def TestFunOkB (name : GoString) : Prop :=
 
 open ProofMode
 
+theorem geometry_Square : go!"Square" ∈ itabMethods geometryInterface.ty := by
+  rw [IfaceMethods.itab_methods (t := geometryInterface.ty)]; simp
+
+theorem geometry_Volume : go!"Volume" ∈ itabMethods geometryInterface.ty := by
+  rw [IfaceMethods.itab_methods (t := geometryInterface.ty)]; simp
+
 omit package_sem static in
 include hG in
 theorem iface_val (tab d : w64) : PairV #true (PairV #tab #d) = #(⟨tab, d⟩ : GoIface) := by
@@ -177,9 +186,9 @@ theorem wp_testBasicInterface : TestFunOkB (GF := GF) testBasicInterface := by
   wp_func_call
   wp_call
   steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i #Hi
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i #Hi
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i _ $$ [$Hi]
+  wp_apply wp_iface_method_resolve go!"Square" i _ geometry_Square (by decide) $$ [$Hi]
   steps
   iexact HΦ
 
@@ -187,61 +196,61 @@ theorem wp_testBasicInterface : TestFunOkB (GF := GF) testBasicInterface := by
 theorem wp_testAssignInterface : TestFunOkB (GF := GF) testAssignInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i1 #Hi1
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i1 #Hi1
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i1 _ $$ [$Hi1]
+  wp_apply wp_iface_method_resolve go!"Square" i1 _ geometry_Square (by decide) $$ [$Hi1]
   steps
   iexact HΦ
 
 theorem wp_testMultipleInterface : TestFunOkB (GF := GF) testMultipleInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i2 #Hi2
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i2 #Hi2
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i2 _ $$ [$Hi2]
+  wp_apply wp_iface_method_resolve go!"Square" i2 _ geometry_Square (by decide) $$ [$Hi2]
   steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i3 #Hi3
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i3 #Hi3
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i3 _ $$ [$Hi3]
+  wp_apply wp_iface_method_resolve go!"Square" i3 _ geometry_Square (by decide) $$ [$Hi3]
   steps
   iexact HΦ
 
 theorem wp_testBinaryExprInterface : TestFunOkB (GF := GF) testBinaryExprInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i4 #Hi4
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i4 #Hi4
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i4 _ $$ [$Hi4]
+  wp_apply wp_iface_method_resolve go!"Square" i4 _ geometry_Square (by decide) $$ [$Hi4]
   steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i5 #Hi5
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i5 #Hi5
   steps
-  wp_apply wp_iface_method_resolve go!"Volume" i5 _ $$ [$Hi5]
+  wp_apply wp_iface_method_resolve go!"Volume" i5 _ geometry_Volume (by decide) $$ [$Hi5]
   steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i6 #Hi6
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i6 #Hi6
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i6 _ $$ [$Hi6]
+  wp_apply wp_iface_method_resolve go!"Square" i6 _ geometry_Square (by decide) $$ [$Hi6]
   steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i7 #Hi7
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i7 #Hi7
   steps
-  wp_apply wp_iface_method_resolve go!"Volume" i7 _ $$ [$Hi7]
+  wp_apply wp_iface_method_resolve go!"Volume" i7 _ geometry_Volume (by decide) $$ [$Hi7]
   steps
   iexact HΦ
 
 theorem wp_testIfStmtInterface : TestFunOkB (GF := GF) testIfStmtInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i8 #Hi8
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i8 #Hi8
   steps
-  wp_apply wp_iface_method_resolve go!"Square" i8 _ $$ [$Hi8]
+  wp_apply wp_iface_method_resolve go!"Square" i8 _ geometry_Square (by decide) $$ [$Hi8]
   steps
   iexact HΦ
 
 theorem wp_testParamsInterface : TestFunOkB (GF := GF) testParamsInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_iface (by rfl) (by simp) as %i9 #Hi9
+  wp_apply wp_convert_iface (by rfl) (by rfl) as %i9 #Hi9
   steps
-  wp_apply wp_iface_method_resolve go!"Volume" i9 _ $$ [$Hi9]
+  wp_apply wp_iface_method_resolve go!"Volume" i9 _ geometry_Volume (by decide) $$ [$Hi9]
   steps
   iexact HΦ
 
@@ -255,9 +264,9 @@ theorem wp_testEmptyInterface : TestFunOkB (GF := GF) testEmptyInterface := by
 theorem wp_testTypeAssertionInterface : TestFunOkB (GF := GF) testTypeAssertionInterface := by
   intro Φ; iintro HΦ
   wp_func_call; wp_call; steps
-  wp_apply wp_convert_eface (by rfl) as %i #Hi
+  wp_apply wp_convert_eface (by rfl) (by rfl) as %i #Hi
   steps
-  wp_apply wp_type_assert_eface NumStruct.ty i _ $$ [$Hi]
+  wp_apply wp_type_assert_eface (by rfl) i _ (by decide) $$ [$Hi]
   steps
   iexact HΦ
 

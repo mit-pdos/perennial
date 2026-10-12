@@ -352,6 +352,9 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .CompositeLiteral x0 => node 38 [of x0]
   | .SelectStmt => node 39 []
   | .InternalStringLen => node 40 []
+  | .EncodeBytes x0 => node 41 [of x0]
+  | .DecodeBytes x0 => node 42 [of x0]
+  | .SizeOf x0 => node 43 [of x0]
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -394,6 +397,9 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 38 [x0] => .CompositeLiteral (decLeaf x0)
   | node 39 [] => .SelectStmt
   | node 40 [] => .InternalStringLen
+  | node 41 [x0] => .EncodeBytes (decLeaf x0)
+  | node 42 [x0] => .DecodeBytes (decLeaf x0)
+  | node 43 [x0] => .SizeOf (decLeaf x0)
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree
