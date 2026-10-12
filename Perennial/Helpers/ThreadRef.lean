@@ -52,6 +52,24 @@ def modify (r : ThreadRef α) (f : α → α) : BaseIO Unit := do
     let m := m.erase tid
     m.insert tid (f a)
 
+/-- Take this thread's value out (its cell starts again as `init`), so that the
+value is not shared and can be updated in place. -/
+def take (r : ThreadRef α) : BaseIO α := do
+  let tid ← IO.getTID
+  r.cells.modifyGet fun m => (m.getD tid r.init, m.erase tid)
+
+/-- Run `k` with this thread's value in a local `IO.Ref`, written back at the end
+(also on an exception). For a hot loop: each `get`/`modify` of a `ThreadRef`
+looks up the thread (`IO.getTID`, a lookup in the shared map, in interpreted
+code), which in `needsGooseSimp`'s traversal doubled the time of `wp_auto`; a
+local `IO.Ref` costs what a global one did. A nested `withLocal` on the same
+`ThreadRef` sees `init` (its updates are lost when the outer one writes back),
+which is fine for a cache. -/
+@[inline] def withLocal {β : Type} {m : Type → Type} [Monad m] [MonadLiftT BaseIO m]
+    [MonadFinally m] (r : ThreadRef α) (k : IO.Ref α → m β) : m β := do
+  let c ← (do IO.mkRef (← r.take) : BaseIO _)
+  try k c finally (do r.set (← c.swap r.init) : BaseIO Unit)
+
 end ThreadRef
 
 end Perennial
