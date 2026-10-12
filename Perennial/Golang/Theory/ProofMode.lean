@@ -1146,7 +1146,9 @@ matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
 would do nothing. The subterms `known` are known to be in normal form (e.g. the
 subterms of the WP expression that a step only moves around) and are skipped. -/
-meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := do
+meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool :=
+  -- (the caches in local references for the traversal: `ThreadRef.withLocal`)
+  needsCache.withLocal fun nc => needsConstCache.withLocal fun ncc => do
   let heads? ← match ← needsHeadsCache.get with
     | some h => pure h
     | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
@@ -1156,7 +1158,7 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
   -- a constant some rule applies to; for a reducible definition (`sint.Z`, `W64`,
   -- seen through by simp's discrimination trees), the head of its unfolding
   let constNeeds (n : Name) : MetaM Bool := do
-    if let some b := (← needsConstCache.get)[n]? then return b
+    if let some b := (← ncc.get)[n]? then return b
     let b ← do
       if (heads.contains n).or ((isMatcherCore env n).or ((isAuxRecursor env n).or (isRecCore env n))) then
         pure true
@@ -1169,7 +1171,7 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
           pure ((body v).getAppFn.constName?.any heads.contains)
         | none => pure false
       else pure false
-    needsConstCache.modify (·.insert n b)
+    ncc.modify (·.insert n b)
     return b
   let localNeeds (s : Lean.Expr) : MetaM Bool := do
     match s with
@@ -1193,7 +1195,7 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
     | _ => return false
   let rec go (s : Lean.Expr) : MetaM Bool := do
     if known.contains s then return false
-    if let some b := (← needsCache.get)[s]? then return b
+    if let some b := (← nc.get)[s]? then return b
     let b ← do
       if ← localNeeds s then pure true
       else match s with
@@ -1203,7 +1205,7 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
         | .lam _ t b _ | .forallE _ t b _ => do if ← go t then pure true else go b
         | .mdata _ b => go b
         | _ => pure false
-    needsCache.modify (·.insert s b)
+    nc.modify (·.insert s b)
     return b
   go e
 
@@ -1786,8 +1788,9 @@ meta def notMemPf (ext : Lean.Expr) (x : String) (xe : Lean.Expr) (l : List Stri
 
 /-- The free variables of an `expr` built from constructors (`none` if some part
 is not), using the annotations `fvClosed S e` (whose set is `S`). -/
-meta partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
-  if let some r := (← fvCache.get)[e]? then return r
+meta partial def fvOfCore (c : IO.Ref (Std.HashMap Lean.Expr (Option (List String))))
+    (e : Lean.Expr) : MetaM (Option (List String)) := do
+  if let some r := (← c.get)[e]? then return r
   let union (a b : List String) : List String := a ++ b.filter (!a.contains ·)
   let r ← do
     if e.isAppOfArity ``fvClosed 3 then strList? (e.getArg! 1) else
@@ -1796,14 +1799,14 @@ meta partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
     let all (xs : List Lean.Expr) : MetaM (Option (List String)) := do
       let mut acc := []
       for x in xs do
-        let some f ← fvOf x | return none
+        let some f ← fvOfCore c x | return none
         acc := union acc f
       return some acc
     match e.getAppFn.constName? with
     | some ``Perennial.Expr.Val => pure (some [])
     | some ``Perennial.Expr.Var => pure ((← strLit? args[1]!).map ([·]))
     | some ``Perennial.Expr.Rec =>
-      match ← binderLit? args[1]!, ← binderLit? args[2]!, ← fvOf args[3]! with
+      match ← binderLit? args[1]!, ← binderLit? args[2]!, ← fvOfCore c args[3]! with
       | some f, some y, some b => pure (some (b.filter fun s => some s != f && some s != y))
       | _, _, _ => pure none
     | some ``Perennial.Expr.App => all [args[1]!, args[2]!]
@@ -1822,7 +1825,7 @@ meta partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
     -- composite literals (possibly long, e.g. lookup tables) are not annotated
     | some ``Perennial.Expr.LiteralValue => pure none
     | _ => pure none
-  fvCache.modify (·.insert e r)
+  c.modify (·.insert e r)
   return r
 where
   fvKEs (l : Lean.Expr) : MetaM (Option (List String)) := do
@@ -1843,34 +1846,39 @@ where
     match kk.getAppFn.constName? with
     | some ``Perennial.key.KeyField => return some []
     | some ``Perennial.key.KeyInteger => return some []
-    | some ``Perennial.key.KeyExpression => fvOf (kk.getArg! 2)
+    | some ``Perennial.key.KeyExpression => fvOfCore c (kk.getArg! 2)
     | some ``Perennial.key.KeyLiteralValue => fvKEs (kk.getArg! 1)
     | _ => return none
   fvElem (el : Lean.Expr) : MetaM (Option (List String)) := do
     let el ← whnfR el
     match el.getAppFn.constName? with
-    | some ``Perennial.Element.ElementExpression => fvOf (el.getArg! 2)
+    | some ``Perennial.Element.ElementExpression => fvOfCore c (el.getArg! 2)
     | some ``Perennial.Element.ElementLiteralValue => fvKEs (el.getArg! 1)
     | _ => return none
 
+/-- `fvOfCore` with this thread's cache in a local reference (`ThreadRef.withLocal`). -/
+meta def fvOf (e : Lean.Expr) : MetaM (Option (List String)) :=
+  fvCache.withLocal fun c => fvOfCore c e
+
 /-- A proof of `ClosedUnder S e` (`S` given as the literal `Se`), built from the
 constructors of `e`; `none` if it cannot be built. Cached on `(Se, e)`. -/
-meta partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
-  if let some r := (← closedCache.get)[(Se, e)]? then return r
+meta partial def closedPfCore (c : IO.Ref (Std.HashMap (Lean.Expr × Lean.Expr) (Option Lean.Expr)))
+    (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
+  if let some r := (← c.get)[(Se, e)]? then return r
   let lem (n : Name) (args : Array Lean.Expr) : Lean.Expr := mkAppN (mkConst n) (#[ext, Se] ++ args)
   let r ← do
     if e.isAppOfArity ``fvClosed 3 then
       -- a nested annotation: its own proof, and the inclusion of its set
       let Te := e.getArg! 1; let b := e.getArg! 2
       let some T ← strList? Te | pure none
-      let some hb ← closedPf ext T Te b | pure none
+      let some hb ← closedPfCore c ext T Te b | pure none
       hoistCandidates.modify (·.push hb)
       let some hsub ← subsetPf T Te | pure none
       pure (some (lem ``closed_fv #[Te, b, hb, hsub]))
     else
     let e ← whnfR e
     let args := e.getAppArgs
-    let rec' (x : Lean.Expr) := closedPf ext S Se x
+    let rec' (x : Lean.Expr) := closedPfCore c ext S Se x
     match e.getAppFn.constName? with
     | some ``Perennial.Expr.Val => pure (some (lem ``closed_val #[args[1]!]))
     | some ``Perennial.Expr.Var =>
@@ -1885,7 +1893,7 @@ meta partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (
       | some fb, some yb =>
         let T := fb.toList ++ yb.toList ++ S
         let Te := strListExpr T
-        match ← closedPf ext T Te args[3]! with
+        match ← closedPfCore c ext T Te args[3]! with
         | some hb =>
           -- `ClosedUnder (bnames f ++ bnames y ++ S) b` is `ClosedUnder T b` by `rfl`
           let ty ← mkAppM ``ClosedUnder #[← mkAppM ``HAppend.hAppend
@@ -1932,7 +1940,7 @@ meta partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (
     | some ``Perennial.Expr.LiteralValue =>
       return (← closedKEs args[1]!).map (lem ``closed_litval #[args[1]!, ·])
     | _ => pure none
-  closedCache.modify (·.insert (Se, e) r)
+  c.modify (·.insert (Se, e) r)
   return r
 where
   subsetPf (T : List String) (Te : Lean.Expr) : MetaM (Option Lean.Expr) := do
@@ -1967,7 +1975,7 @@ where
     | some ``Perennial.key.KeyField => return some (lem ``closed_okey_field #[kk.getArg! 1])
     | some ``Perennial.key.KeyInteger => return some (lem ``closed_okey_int #[kk.getArg! 1])
     | some ``Perennial.key.KeyExpression =>
-      return (← closedPf ext S Se (kk.getArg! 2)).map (lem ``closed_okey_expr #[kk.getArg! 1, kk.getArg! 2, ·])
+      return (← closedPfCore c ext S Se (kk.getArg! 2)).map (lem ``closed_okey_expr #[kk.getArg! 1, kk.getArg! 2, ·])
     | some ``Perennial.key.KeyLiteralValue =>
       return (← closedKEs (kk.getArg! 1)).map (lem ``closed_okey_lv #[kk.getArg! 1, ·])
     | _ => return none
@@ -1976,10 +1984,15 @@ where
     let el ← whnfR el
     match el.getAppFn.constName? with
     | some ``Perennial.Element.ElementExpression =>
-      return (← closedPf ext S Se (el.getArg! 2)).map (lem ``closed_el_expr #[el.getArg! 1, el.getArg! 2, ·])
+      return (← closedPfCore c ext S Se (el.getArg! 2)).map (lem ``closed_el_expr #[el.getArg! 1, el.getArg! 2, ·])
     | some ``Perennial.Element.ElementLiteralValue =>
       return (← closedKEs (el.getArg! 1)).map (lem ``closed_el_lv #[el.getArg! 1, ·])
     | _ => return none
+
+/-- `closedPfCore` with this thread's cache in a local reference (`ThreadRef.withLocal`). -/
+meta def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (e : Lean.Expr) :
+    MetaM (Option Lean.Expr) :=
+  closedCache.withLocal fun c => closedPfCore c ext S Se e
 
 mutual
 
