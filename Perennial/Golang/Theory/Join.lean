@@ -57,7 +57,7 @@ function, so `wp_auto`, `simp` and the kernel work on smaller terms, and the
 rest of the function is symbolically executed once.
 
 Examples: below, `docs/TutorialExamples.lean`, `WaitGroup.wp_Add` in
-`Perennial/Proof/sync_proof/waitgroup.lean`.
+`Perennial/Proof/sync/WaitGroup__Add.lean`.
 -/
 module
 

@@ -30,7 +30,8 @@ A guide to writing program proofs for Go code in Perennial's Lean 4 development
 | `Perennial/TrustedCode` | hand-written models of trusted Go code (e.g. `sync.Mutex`) |
 | `Perennial/Code/**` | **generated**: GooseLang translation of Go packages |
 | `Perennial/GeneratedProof/**` | **generated**: per-package proof boilerplate (struct points-to instances, ...) |
-| `Perennial/Proof/**` | hand-written proofs (`Perennial/Proof/sync_proof/mutex.lean`, `Perennial/Proof/sort_proof/search.lean`, ...) |
+| `Perennial/Spec/**` | the specs of the proved Go functions, one per file (`Perennial/Spec/sync/Mutex__Lock.lean`, ...) |
+| `Perennial/Proof/**` | hand-written proofs: one per Go function (`Perennial/Proof/sync/Mutex__Lock.lean`), shared definitions (`Perennial/Proof/sync/Base.lean`), the generated `Link.lean` of each package, and the package's umbrella module (`Perennial/Proof/sync.lean`) |
 | `goose/` | the goose translator (`goose` for code, `proofgen` for generated proofs) |
 | `etc/update-goose-new.py` | runs goose and proofgen over all supported packages |
 
@@ -40,11 +41,15 @@ lives in `Perennial/Code/github_com/mit_pdos/perennial/goose/testdata/examples/u
 `Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest`, and
 its package name is `pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest`.
 Standard-library packages are short: `Perennial/Code/sync.lean`, namespace
-`Perennial.sync`, package `pkg_id.sync`. Proofs follow the same package paths under `Perennial/Proof/`
-(`Perennial/Proof/sync_proof/mutex.lean`).
+`Perennial.sync`, package `pkg_id.sync`. Specs and proofs follow the same package paths
+under `Perennial/Spec/` and `Perennial/Proof/`, one Go function per file: the spec of
+`(*Mutex).Lock` is `sync.Mutex.Lock.spec` in `Perennial/Spec/sync/Mutex__Lock.lean`, its
+proof `sync.Mutex.Lock.wp_proof` in `Perennial/Proof/sync/Mutex__Lock.lean`, and clients
+use the linked result `sync.Mutex.wp_Lock` from `import Perennial.Proof.sync` (see
+`docs/PERENNIAL_PROOF_REFERENCE.md`, "Layout of the program proofs").
 
-Check a single file with `lake build Perennial.Proof.sync_proof.mutex` (module
-name = path with `.` for `/`).
+Check a single file with `lake build Perennial.Proof.sync.Mutex__Lock` (module
+name = path with `.` for `/`), a whole package with `lake build Perennial.Proof.sync`.
 
 ## 2. Generating code with goose
 
@@ -130,7 +135,7 @@ The unit-test package imports `github.com/goose-lang/primitive/disk`, so its
 FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude`)
 and the section does not bind it. Other packages are generic in the FFI and also
 bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
-as in `Perennial/Proof/sync_proof/mutex.lean`. Ghost state comes with `HeapGS`
+as in `Perennial/Spec/sync/Mutex__Lock.lean`. Ghost state comes with `HeapGS`
 (section 10).
 
 ## 4. Writing a specification
@@ -309,7 +314,7 @@ theorem own_bounded_get (l : Loc) :
 Seal definitions that clients should not unfold (`@[irreducible] def foo :=
 foo_def` with `theorem foo_unseal : foo = foo_def`) and unfold them in proofs
 with `simp only [foo_unseal, foo_def]` (see `isMutex` in
-`Perennial/Proof/sync_proof/mutex.lean`).
+`Perennial/Proof/sync/Base.lean`).
 
 ## 8. Loops, slices
 
@@ -533,22 +538,22 @@ theorem counter_incr (N : Namespace) (γ : GName) (n : Nat) :
 In a program proof, `iinv` is used right before an atomic step: focus on it with
 `wp_bind (Primitive1 _ _)` / `wp_bind (CmpXchg _ _ _)`, open the invariant,
 `wp_apply_core` the atomic spec, close the invariant and `imodintro`. See
-`wp_runtime_Semacquire` in `Perennial/Proof/sync_proof/sema.lean`. When the
+`wp_runtime_Semacquire` in `Perennial/Proof/sync/runtime_Semacquire.lean`. When the
 invariant content is not timeless, eliminate the later with a later credit:
 `wp_auto_lc 1` produces `Hlc1 : £ 1`, used as
 `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi` (see
-`Once.wp_Do` in `Perennial/Proof/sync_proof/once.lean`).
+`Once.wp_Do` in `Perennial/Proof/sync/Once__Do.lean`).
 
 ## 11. Package initialization
 
 `isPkgInit pkg` asserts that the package was initialized (it includes
 `isPkgInit` of all its imports). Each package proof defines two instances and
-proves `wp_initialize'`; `Perennial/Proof/sync_proof/base.lean` does this for
+proves `wp_initialize'`; `Perennial/Proof/sync/Base.lean` and `Perennial/Proof/sync/initialize.lean` do this for
 `sync`:
 
 ```lean
 -- The two instances every package proof defines (here as `example`s, since
--- `sync_proof/base.lean` already declares them for `sync`):
+-- `Perennial/Proof/sync/Base.lean` already declares them for `sync`):
 example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 

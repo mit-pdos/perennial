@@ -1,6 +1,6 @@
 -- Hand-written framework modules. Generated code (Perennial.Code.*,
--- Perennial.GeneratedProof.*) and program proofs (Perennial.Proof.*) are built
--- by naming them explicitly, e.g. `lake build Perennial.Proof.sync_proof.mutex`.
+-- Perennial.GeneratedProof.*) and program proofs (Perennial.Spec.*, Perennial.Proof.*) are built
+-- by naming them explicitly, e.g. `lake build Perennial.Proof.sync`.
 module
 
 public import Perennial.Std.All
