@@ -704,7 +704,7 @@ theorem wp_is (S : GoError → Prop) (M : GoInterfaceOk → Prop) (err target : 
     wp_join (Q := fun v => iprop(
         (⌜v = executeVal⌝ ∗ "err" ∷ err_ptr ↦ (interface.ok ii : GoError) ∗
           "target" ∷ target_ptr ↦ target ∗ "targetComparable" ∷ targetComparable_ptr ↦ c) ∨
-        ⌜v = returnVal #true ∧ M ii⌝)) at next with [err target targetComparable]
+        ⌜v = returnVal #true ∧ M ii⌝)) at next 2 with [err target targetComparable x ok]
     cases hIs : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Is" (go.Signature [go.error] false [go.bool])])
     case' true =>
