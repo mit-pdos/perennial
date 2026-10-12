@@ -96,11 +96,11 @@ Design (see also the comments at each definition):
 * A `*cancelCtx`'s lock invariant has an extra resource `R` (`cancelCtxLockInv`,
   `isCancelCtxOfR`; `isCancelCtxOf` hides it): the fields of an enclosing struct that the same
   `mu` protects, a `*timerCtx`'s `timer` (`timerR`: `nil` or a timer from `AfterFunc`,
-  `time.isFuncTimer`). `timerCtx.cancel` stops it with `time.Timer.wp_Stop_func` (an axiom).
+  `time.isFuncTimer`). `timerCtx.cancel` stops it (`time.Timer.wp_Stop_func`).
 * A `*timerCtx` (the context of `WithDeadlineCause`) has Done proposition `True`: its cancel
   function, its `AfterFunc` callback and its parent's cancellation all cancel it with nothing
-  to give. `AfterFunc` is modeled as a goroutine that calls the callback
-  (`TrustedCode/time.lean`).
+  to give. `time.AfterFunc` runs the callback in a goroutine (`time.wp_AfterFunc`; the runtime's
+  timer is modeled in `TrustedCode/time.lean`).
 
 Notes:
 * Texan triples nested inside `isContext` are written out as

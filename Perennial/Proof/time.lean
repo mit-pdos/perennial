@@ -10,8 +10,9 @@ Notes:
   the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
   `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
 * The axioms bind their package assumptions (`[package_sem : time.Assumptions]`) explicitly.
-* `AfterFunc` is modeled (`TrustedCode/time.lean`) as a fresh `*Timer` and a goroutine that
-  calls the callback (`wp_AfterFunc`); its timer's `Stop` is the axiom `Timer.wp_Stop_func`.
+* `AfterFunc` and `Timer.Stop` are translated; the runtime's `newTimer` (a fresh `*Timer` and
+  a goroutine that calls the callback) and `stopTimer` (some `bool`) are modeled in
+  `TrustedCode/time.lean`.
 * `wp_After` needs the channel theory, which fixes `hlc := HasLC.hasLC` and
   `[allG GF]`; it lives in its own section. `Pos.Countable time.Time.t` (for the
   channel ghost state) is defined here.
@@ -352,25 +353,28 @@ theorem wp_After (d : time.Duration) :
     itrivial
   wp_end
 
-/-! ### Timers (the trust boundary: `NewTimer`, `Timer.Stop` and `Timer.Reset` are not
-translated; the runtime's timers are not modelled)
+/-! ### Timers (the trust boundary: `NewTimer` and `Timer.Reset` are not translated; the
+runtime's `newTimer` and `stopTimer` are modeled in `TrustedCode/time.lean`)
 
 A `*Timer` from `NewTimer` is `isTimer t ch γ`: its `C` field holds, for good, a channel `ch` on
-which a receive may yield some time (a bag of times, `isChanBag`, with no logical content). The
-specs say nothing about *when* (or whether) a value arrives: `Stop` and `Reset` return some
-`bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
-timer's channel delivers nothing; the model allows it), which is sound for safety. -/
+which a receive may yield some time (a bag of times, `isChanBag`, with no logical content), and
+`initTimer` is set. The specs say nothing about *when* (or whether) a value arrives: `Stop`
+and `Reset` return some `bool` and change nothing the proof can observe. This over-approximates
+Go's timers (a stopped timer's channel delivers nothing; the model allows it), which is sound for
+safety. `Timer.Stop` is translated (it checks `initTimer` and calls `stopTimer`). -/
 
 /-- `t` is a `*Timer` made by `NewTimer`, whose channel `C` is `ch` (persistent). -/
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
+    structFieldRef time.Timer go!"initTimer" t ↦□ true ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
     Persistent (isTimer (GF := GF) t ch γ) := by
   unfold isTimer; infer_instance
 
-/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`). -/
+/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`; the runtime's `newTimer` sets
+`initTimer`). -/
 axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
     [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
     [sem : go.Semantics] [package_sem : time.Assumptions] (d : time.Duration) :
@@ -378,13 +382,33 @@ axiom wp_NewTimer [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemanti
       (App (Val (@! time.NewTimer)) (Val #d))
     {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTimer t ch γ }}
 
-/-- Spec of `(*Timer).Stop()` (axiom): some `bool`. -/
-axiom Timer.wp_Stop [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-    [go_gctx : GoGlobalContext] {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-    [sem : go.Semantics] [package_sem : time.Assumptions] (t ch : Loc) (γ : ChanNames) :
+theorem wp_stopTimer (t : Loc) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.stopTimer)) (Val #t))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+/-- `(*Timer).Stop()` on a timer with `initTimer` set: some `bool`. -/
+theorem Timer.wp_Stop_init (t : Loc) :
+    {{ (structFieldRef time.Timer go!"initTimer" t ↦□ true : IProp GF) }}
+      (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start as #Hi
+  wp_auto
+  wp_apply wp_stopTimer as %b -
+  wp_end
+
+/-- Spec of `(*Timer).Stop()`: some `bool`. -/
+theorem Timer.wp_Stop (t ch : Loc) (γ : ChanNames) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
-    {{ (b : Bool), RET #b; True }}
+    {{ (b : Bool), RET #b; True }} := by
+  iintro %Φ #Ht HΦ
+  unfold isTimer
+  icases Ht with ⟨-, #Hi, -⟩
+  iapply Timer.wp_Stop_init t $$ Hi HΦ
 
 /-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`. -/
 axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -397,9 +421,9 @@ axiom Timer.wp_Reset [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSema
 
 /-! ### `AfterFunc` timers
 
-`AfterFunc(d, f)` is modeled (`TrustedCode/time.lean`) as a fresh `*Timer` with no channel
-and `initTimer` set, and a goroutine that calls `f`. Its `Stop` is not translated (it calls the
-runtime's `stopTimer`); `Timer.wp_Stop_func` is its spec. -/
+`AfterFunc(d, f)` is translated: it calls the runtime's `newTimer` (modeled in
+`TrustedCode/time.lean` as a fresh `*Timer` with `initTimer` set and a goroutine that calls the
+callback) with `goFunc`, which runs `f` in a new goroutine. -/
 
 /-- `t` is a `*Timer` made by `AfterFunc` (persistent): `initTimer` is set. -/
 def isFuncTimer (t : Loc) : IProp GF :=
@@ -407,6 +431,15 @@ def isFuncTimer (t : Loc) : IProp GF :=
 
 instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t) := by
   unfold isFuncTimer; infer_instance
+
+theorem wp_when (d : time.Duration) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! time.when)) (Val #d))
+    {{ (x : w64), RET #x; True }} := by
+  wp_start
+  wp_auto
+  repeat' (first | wp_if_destruct | wp_apply wp_runtimeNano as %x -)
+  all_goals wp_end
 
 /-- `AfterFunc(d, f)`: `f()` runs in a new goroutine (the model ignores the delay, and an
 execution in which `f` never runs is a prefix of one in which it does), so it must be safe to
@@ -416,30 +449,42 @@ theorem wp_AfterFunc (d : time.Duration) (f : GoFunc) :
       (App (App (Val (@! time.AfterFunc)) (Val #d)) (Val #f))
     {{ (t : Loc), RET #t; isFuncTimer (GF := GF) t }} := by
   wp_start as Hf
+  wp_auto
+  wp_apply wp_when as %w -
+  wp_func_call
+  wp_call
   rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
   wp_auto
   iStructNamed t
   ipersist initTimer
   wp_bind (Fork _)
   iapply wp_fork $$ [Hf]
-  · inext; iexact Hf
+  · inext
+    wp_apply wp_ArbitraryInt as %x1 -
+    wp_apply wp_ArbitraryInt as %x2 -
+    wp_func_call
+    wp_call
+    wp_auto
+    wp_bind (Fork _)
+    iapply wp_fork $$ [Hf]
+    · inext; iexact Hf
+    inext
+    wp_auto
+    itrivial
   inext
   wp_pures
   iapply HΦ
   unfold isFuncTimer
   iexact initTimer
 
-/-- Spec of `(*Timer).Stop()` for a timer made by `AfterFunc` (axiom): some `bool`. Go's `Stop`
-checks `initTimer` (set by `AfterFunc`) and calls the runtime's `stopTimer`, which stops the
-timer if it has not fired (so that `f` does not run) and reports whether it did; the model of
-`AfterFunc` runs `f` regardless, so the result says nothing the proof can use. -/
-axiom Timer.wp_Stop_func [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
-    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {GF : BundledGFunctors}
-    [hG : HeapGS HasLC.hasLC GF] [sem : go.Semantics] [package_sem : time.Assumptions]
-    (t : Loc) :
+/-- `(*Timer).Stop()` for a timer made by `AfterFunc`: some `bool`. -/
+theorem Timer.wp_Stop_func (t : Loc) :
     {{ isFuncTimer (GF := GF) t }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))
-    {{ (b : Bool), RET #b; True }}
+    {{ (b : Bool), RET #b; True }} := by
+  iintro %Φ #Ht HΦ
+  unfold isFuncTimer
+  iapply Timer.wp_Stop_init t $$ Ht HΦ
 
 end chan_wps
 

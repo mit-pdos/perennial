@@ -15,8 +15,30 @@ namespace time
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
+/-- The runtime's `newTimer(when, period, f, arg, cp)` (a `go:linkname`): a new `*Timer` with
+`initTimer` set (and no channel; `NewTimer` sets `C` itself), whose runtime timer calls
+`f(arg, seq, delta)` from a goroutine when it fires, once, or every `period` if `period ≠ 0`.
+Modeled as a goroutine that calls `f` (with arbitrary `seq` and `delta`) once, or repeatedly if
+`period ≠ 0`. The delay is a no-op, and an execution in which the timer never fires (it is
+stopped first, or `when` is never reached) is a prefix of the model's executions. Not modeled:
+`Reset` (the runtime may then call `f` again); `Timer.Reset` is an axiom about `NewTimer`'s
+timers only. -/
 def newTimer.impl : val :=
-  λ: "when" "period" "f" "arg" "cp", #()
+  λ: "when" "period" "f" "arg" "cp",
+    let: "t" := GoAlloc (go.Named go!"time.Timer" [])
+      (CompositeLiteral (go.Named go!"time.Timer" []) (LiteralValue [
+        KeyedElement (some (KeyField go!"initTimer")) (ElementExpression go.bool #true)
+      ])) in
+    Fork ((rec: "fire" <> :=
+        "f" "arg" ArbitraryInt ArbitraryInt ;;
+        if: "period" =⟨go.int64⟩ #(W64 0) then #() else "fire" #()) #()) ;;
+    "t"
+
+/-- The runtime's `stopTimer(t)` (a `go:linkname`): stops the timer if it has not fired, and
+reports whether it did. Modeled as an arbitrary boolean with no effect (the model's timer
+goroutine runs regardless; see `newTimer`). -/
+def stopTimer.impl : val :=
+  λ: "t", ArbitraryInt =⟨go.int64⟩ #(W64 0)
 
 def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
@@ -54,20 +76,6 @@ def After.impl : val :=
 
 def Sleep.impl : val :=
   λ: "d", #()
-
-/-- `AfterFunc(d, f)`: Go's `AfterFunc` makes a runtime timer (`newTimer(when(d), 0, goFunc, f,
-nil)`) that, unless stopped first, runs `go f()` after `d`. Modeled as a fresh `*Timer` (with no
-channel; `initTimer` set, as `newTimer` does) and a goroutine that calls `f`: the delay is a
-no-op, and an execution in which the goroutine never runs (the timer is stopped, or never fires)
-is a prefix of the model's executions. -/
-def AfterFunc.impl : val :=
-  λ: "d" "f",
-    let: "t" := GoAlloc (go.Named go!"time.Timer" [])
-      (CompositeLiteral (go.Named go!"time.Timer" []) (LiteralValue [
-        KeyedElement (some (KeyField go!"initTimer")) (ElementExpression go.bool #true)
-      ])) in
-    Fork ("f" #()) ;;
-    "t"
 
 end code
 end time
