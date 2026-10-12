@@ -73,7 +73,7 @@ theorem wp_StringToByteSlice (str : GoString) :
       · rw [decide_eq_false h] at Hif; exact absurd Hif false_neq_true
     have hc : sint.nat i < str.length := by word
     obtain ⟨c, Hc_lookup⟩ : ∃ c, str[sint.nat i]? = some c := ⟨_, List.getElem?_eq_getElem hc⟩
-    simp only [Hc_lookup]
+    simp only [Hi.1, ↓reduceIte, Hc_lookup]
     wp_pure
     wp_pure
     wp_pure
